@@ -919,10 +919,6 @@ export default function InstructorLiveSession() {
              lastSeenAt={device.last_seen_at}
              isActive={isConnected}
            />
-
-           {/* Open Quartix Live Tracking */}
-           <QuartixLiveButton />
-
            {/* Session Start Panel */}
            <SessionStartPanel
               pupils={pupils}
