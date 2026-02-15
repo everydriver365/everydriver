@@ -4909,6 +4909,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
+          availability_paused: boolean
           available_from: string | null
           bio: string | null
           bonus_earned: number | null
@@ -5017,6 +5018,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null
@@ -5125,6 +5127,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null

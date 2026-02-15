@@ -35,6 +35,14 @@ interface InstructorProfile {
   fuel_cost_per_litre: number | null;
   klarna_enabled: boolean | null;
   clearpay_enabled: boolean | null;
+  availability_paused: boolean | null;
+  pupil_app_enabled: boolean | null;
+  pupil_app_dark_mode: boolean | null;
+  deposit_enabled: boolean | null;
+  truelayer_enabled: boolean | null;
+  custom_branding_enabled: boolean | null;
+  hero_show_logo: boolean | null;
+  is_online: boolean | null;
 }
 
 interface Subscription {
@@ -107,7 +115,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
-        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified, vehicle_mpg, fuel_cost_per_litre, klarna_enabled, clearpay_enabled')
+        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified, vehicle_mpg, fuel_cost_per_litre, klarna_enabled, clearpay_enabled, availability_paused, pupil_app_enabled, pupil_app_dark_mode, deposit_enabled, truelayer_enabled, custom_branding_enabled, hero_show_logo, is_online')
         .eq('auth_user_id', userId)
         .maybeSingle();
 
