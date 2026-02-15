@@ -185,6 +185,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
       // Calculate gaps
       const calculatedGaps: GapSlot[] = [];
       
+      const nowHour = new Date().getHours();
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      
       for (let i = 0; i < 14; i++) {
         const currentDate = addDays(startOfDay(new Date()), i);
         const dateStr = format(currentDate, "yyyy-MM-dd");
@@ -229,6 +232,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         const workEnd = parseInt(endHour.split(":")[0]);
 
         for (let hour = workStart; hour < workEnd - 1; hour += 2) {
+          // Skip past slots for today
+          if (dateStr === todayStr && hour + 2 <= nowHour) continue;
+          
           const slotStart = `${hour.toString().padStart(2, "0")}:00`;
           const slotEnd = `${(hour + 2).toString().padStart(2, "0")}:00`;
           const slotStartHour = hour;
