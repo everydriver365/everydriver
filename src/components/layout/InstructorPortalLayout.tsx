@@ -480,15 +480,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Search className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPaymentSheet(true)}
-                      className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold bg-primary-foreground/90 hover:bg-primary-foreground text-primary border-primary-foreground/30"
-                      title="Take Payment"
-                    >
-                      Pay
-                    </Button>
-                    <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => navigate("/instructor/availability")}
@@ -496,6 +487,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       title="Availability"
                     >
                       <Calendar className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPaymentSheet(true)}
+                      className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold bg-primary-foreground/90 hover:bg-primary-foreground text-primary border-primary-foreground/30"
+                      title="Take Payment"
+                    >
+                      Pay
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
