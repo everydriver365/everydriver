@@ -71,7 +71,7 @@ interface MenuItem {
 export default function InstructorMenu() {
   const navigate = useNavigate();
   const { instructor, subscription, signOut } = useInstructorAuth();
-  const { isFeatureLocked, getUpgradeMessage } = useMenuFeatureGates();
+  const { isFeatureLocked, getUpgradeMessage, getMinimumPlanName } = useMenuFeatureGates();
   const [showTestResultForm, setShowTestResultForm] = useState(false);
 
   const handleLogout = async () => {
@@ -230,7 +230,7 @@ export default function InstructorMenu() {
                       </div>
                       {locked ? (
                         <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground shrink-0">
-                          PRO
+                          {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
                         </Badge>
                       ) : (
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
