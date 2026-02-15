@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
@@ -76,6 +77,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
   const [completingLesson, setCompletingLesson] = useState<string | null>(null);
   const [rescheduleLesson, setRescheduleLesson] = useState<ScheduledLesson | null>(null);
   const [cancelLesson, setCancelLesson] = useState<ScheduledLesson | null>(null);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
     fetchLessons();
@@ -350,7 +352,48 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
         // Non-blocking - still complete the lesson
       }
 
-      // 4. Auto-calculate mileage if pickup postcode is available
+      // 4. Deduct lesson cost from pupil balance and record in payment_history
+      try {
+        const { data: instrRate } = await supabase
+          .from("instructors")
+          .select("hourly_rate")
+          .eq("id", instructorId)
+          .single();
+
+        const hourlyRate = instrRate?.hourly_rate || 40;
+        const lessonCost = (lesson.duration_minutes / 60) * hourlyRate;
+
+        // Read fresh balance to avoid race conditions
+        const { data: freshPupil } = await supabase
+          .from("pupils")
+          .select("account_balance")
+          .eq("id", lesson.pupil.id)
+          .single();
+
+        const currentBalance = freshPupil?.account_balance || 0;
+        const newBalance = currentBalance - lessonCost;
+
+        await supabase
+          .from("pupils")
+          .update({ account_balance: newBalance })
+          .eq("id", lesson.pupil.id);
+
+        // Record the charge in payment_history
+        await supabase.from("payment_history").insert({
+          pupil_id: lesson.pupil.id,
+          instructor_id: instructorId,
+          amount: -lessonCost,
+          payment_method: "Lesson Charge",
+          notes: `${lesson.duration_minutes}min lesson on ${lesson.lesson_date}`,
+        });
+
+        invalidatePaymentQueries({ pupilId: lesson.pupil.id, instructorId });
+      } catch (chargeError) {
+        console.error("Error recording lesson charge:", chargeError);
+        // Non-blocking - lesson is still completed
+      }
+
+      // 5. Auto-calculate mileage if pickup postcode is available
       if (lesson.pickup_postcode) {
         try {
           // Get instructor's home postcode

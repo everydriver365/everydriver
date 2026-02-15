@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 interface CancelLessonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,6 +49,7 @@ export function CancelLessonDialog({
   const [chargeOption, setChargeOption] = useState<"no_charge" | "charge">("no_charge");
   const [cancelling, setCancelling] = useState(false);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Check waitlist count when dialog opens
   useEffect(() => {
@@ -83,6 +85,17 @@ export function CancelLessonDialog({
           .eq("id", pupilId);
 
         if (balanceError) throw balanceError;
+
+        // Record cancellation fee in payment_history
+        await supabase.from("payment_history").insert({
+          pupil_id: pupilId,
+          instructor_id: instructorId,
+          amount: -amountDue,
+          payment_method: "Cancellation Fee",
+          notes: `Cancellation charge for ${lessonDate} ${lessonTime}`,
+        });
+
+        invalidatePaymentQueries({ pupilId, instructorId });
 
         toast({
           title: "Lesson cancelled with charge",
