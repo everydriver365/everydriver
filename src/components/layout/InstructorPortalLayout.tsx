@@ -307,253 +307,242 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header - White background with dark icons */}
-            <header
-              className={cn(
-                "sticky top-0 z-40 shadow-sm",
-                isAppStyle ? "border-b border-border/30" : "bg-background border-b border-border"
-              )}
-              style={isAppStyle ? { backgroundColor: appStyleBg } : undefined}
-            >
-              <div className="flex items-center justify-between px-3 sm:px-4 h-14">
-                {/* Left: Hamburger Menu + Logo */}
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                    <SheetTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
-                          !headerContrast && "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
-                        )}
-                        style={headerContrast ? { color: headerContrast } : undefined}
-                      >
-                        <Menu className="h-5 w-5" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-[280px] p-0">
-                      <SheetHeader className="p-4 border-b">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={instructor?.profile_image_url || undefined} />
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              {instructor?.name?.charAt(0) || "I"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                            <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-                          </div>
-                        </div>
-                      </SheetHeader>
+            {/* Mobile Header - Concept C: Gradient Navy + Avatar */}
+            <header className="sticky top-0 z-40">
+              <div className="bg-gradient-to-r from-primary via-primary/95 to-primary/85 text-primary-foreground relative overflow-hidden">
+                {/* Decorative circles */}
+                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-primary-foreground/5" />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary-foreground/[0.03]" />
 
-                      {/* Navigation Links */}
-                      <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                        {sidebarLinks.map((link) => {
-                          const isActive = location.pathname === link.href;
-                          const isMessages = link.href === "/instructor/messages";
-                          const isAdminChat = link.href === "/instructor/admin-chat";
-                          const isVisitorChats = link.href === "/instructor/visitor-chats";
-                          const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                          const isHighlighted = "highlight" in link && link.highlight;
-                          return (
-                            <button
-                              key={link.href}
-                              onClick={() => handleNavClick(link.href)}
-                              className={cn(
-                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                                isActive
-                                  ? "bg-primary text-primary-foreground"
-                                  : isHighlighted
-                                  ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                              )}
-                            >
-                              <span className="relative">
-                                <link.icon
-                                  className={cn(
-                                    "h-5 w-5",
-                                    isHighlighted && !isActive && "text-emerald-500"
-                                  )}
-                                />
-                                {isAdminChat && !isActive && <AdminMessageBadge />}
-                              </span>
-                              {link.label}
-                              {isVisitorChats && !isActive && (
-                                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                              {isMessages && !isActive && (
-                                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                              {isPendingScheduling && !isActive && (
-                                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </nav>
-
-                      {/* Menu Footer */}
-                      <div className="p-3 border-t mt-auto">
+                <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
+                  {/* Left: Hamburger + Avatar/Greeting */}
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                      <SheetTrigger asChild>
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            handleSignOut();
-                            setIsMobileMenuOpen(false);
-                          }}
+                          size="icon"
+                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
                         >
-                          <LogOut className="h-5 w-5 mr-3" />
-                          Sign Out
+                          <Menu className="h-5 w-5" />
                         </Button>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-[280px] p-0">
+                        <SheetHeader className="p-4 border-b">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={instructor?.profile_image_url || undefined} />
+                              <AvatarFallback className="bg-primary text-primary-foreground">
+                                {instructor?.name?.charAt(0) || "I"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
+                              <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                            </div>
+                          </div>
+                        </SheetHeader>
 
-                  {/* Logo + Plan Badge */}
-                  {isAppStyle ? (
-                    <span className="font-bold text-sm tracking-wide" style={{ fontFamily: "'Poppins', sans-serif", color: headerContrast || undefined }}>
-                      EVERY DRIVER
-                    </span>
-                  ) : (
-                    <img 
-                      src={instructorLogo}
-                      alt="EveryDriver" 
-                      className="h-4 sm:h-5 object-contain"
-                    />
-                  )}
+                        {/* Navigation Links */}
+                        <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                          {sidebarLinks.map((link) => {
+                            const isActive = location.pathname === link.href;
+                            const isMessages = link.href === "/instructor/messages";
+                            const isAdminChat = link.href === "/instructor/admin-chat";
+                            const isVisitorChats = link.href === "/instructor/visitor-chats";
+                            const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                            const isHighlighted = "highlight" in link && link.highlight;
+                            return (
+                              <button
+                                key={link.href}
+                                onClick={() => handleNavClick(link.href)}
+                                className={cn(
+                                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
+                                  isActive
+                                    ? "bg-primary text-primary-foreground"
+                                    : isHighlighted
+                                    ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                )}
+                              >
+                                <span className="relative">
+                                  <link.icon
+                                    className={cn(
+                                      "h-5 w-5",
+                                      isHighlighted && !isActive && "text-emerald-500"
+                                    )}
+                                  />
+                                  {isAdminChat && !isActive && <AdminMessageBadge />}
+                                </span>
+                                {link.label}
+                                {isVisitorChats && !isActive && (
+                                  <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                                {isMessages && !isActive && (
+                                  <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                                {isPendingScheduling && !isActive && (
+                                  <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </nav>
 
+                        {/* Menu Footer */}
+                        <div className="p-3 border-t mt-auto">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              handleSignOut();
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <LogOut className="h-5 w-5 mr-3" />
+                            Sign Out
+                          </Button>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
 
-                </div>
+                    {/* Avatar + Greeting */}
+                    <Avatar className="h-8 w-8 border-2 border-primary-foreground/30 shrink-0">
+                      <AvatarImage src={instructor?.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
+                        {instructor?.name?.charAt(0) || "I"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-tight truncate">Hi, {instructor?.name?.split(" ")[0] || "there"} 👋</p>
+                      <p className="text-[10px] text-primary-foreground/60">Ready to teach?</p>
+                    </div>
+                  </div>
 
-                {/* Right: Settings, QR, Schedule, ADD, Avatar */}
-                <div className="flex items-center gap-0.5">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", !headerContrast && "text-foreground hover:bg-[#D1E4FC]")}
-                        style={headerContrast ? { color: headerContrast } : undefined}
-                        title="Settings"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
-                      <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-                        <Sun className="h-4 w-4 mr-2" />
-                        Light Mode
-                        {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-                        <Moon className="h-4 w-4 mr-2" />
-                        Dark Mode
-                        {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
-                        <Contrast className="h-4 w-4 mr-2" />
-                        OLED Dark Mode
-                        {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                        <Palette className="h-4 w-4 mr-2" />
-                        Wallpaper
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        Hero Image
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                        <LayoutGrid className="h-4 w-4 mr-2" />
-                        Screen Layout
-                      </DropdownMenuItem>
-                      {location.pathname === "/instructor" && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => navigate("/instructor?editTiles=true")} className="cursor-pointer">
-                            <LayoutGrid className="h-4 w-4 mr-2" />
-                            Customize Tiles
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
-                    title="Search"
-                  >
-                    <Search className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPaymentSheet(true)}
-                    className={cn(
-                      "h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold",
-                      isAppStyle && "bg-emerald-400/80 hover:bg-emerald-400 text-white border-emerald-300/50"
-                    )}
-                    title="Take Payment"
-                  >
-                    Pay
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate("/instructor/availability")}
-                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
-                    title="Availability"
-                  >
-                    <Calendar className="h-4 w-4" />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[#0075c9] hover:bg-[#005a9e] text-white shrink-0"
-                        title="Quick Actions"
-                      >
-                        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-                      <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
-                        <Users className="h-4 w-4 mr-2" />
-                        Add Pupil
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=add")} className="cursor-pointer">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Add Lesson
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
-                        <Car className="h-4 w-4 mr-2" />
-                        Find My Car
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
-                        <CalendarClock className="h-4 w-4 mr-2" />
-                        Availability
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowPaymentSheet(true)} className="cursor-pointer">
-                        <PoundSterling className="h-4 w-4 mr-2" />
-                        Take Payment
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
-                        <Bell className="h-4 w-4 mr-2" />
-                        Add Reminder
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {/* Right: Action buttons */}
+                  <div className="flex items-center gap-0.5">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          title="Settings"
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
+                        <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
+                          <Sun className="h-4 w-4 mr-2" />
+                          Light Mode
+                          {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
+                          <Moon className="h-4 w-4 mr-2" />
+                          Dark Mode
+                          {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
+                          <Contrast className="h-4 w-4 mr-2" />
+                          OLED Dark Mode
+                          {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
+                          <Palette className="h-4 w-4 mr-2" />
+                          Wallpaper
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          Hero Image
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
+                          <LayoutGrid className="h-4 w-4 mr-2" />
+                          Screen Layout
+                        </DropdownMenuItem>
+                        {location.pathname === "/instructor" && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => navigate("/instructor?editTiles=true")} className="cursor-pointer">
+                              <LayoutGrid className="h-4 w-4 mr-2" />
+                              Customize Tiles
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
+                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                      title="Search"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPaymentSheet(true)}
+                      className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold bg-primary-foreground/90 hover:bg-primary-foreground text-primary border-primary-foreground/30"
+                      title="Take Payment"
+                    >
+                      Pay
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate("/instructor/availability")}
+                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8"
+                      title="Availability"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground shrink-0"
+                          title="Quick Actions"
+                        >
+                          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
+                        <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
+                          <Users className="h-4 w-4 mr-2" />
+                          Add Pupil
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=add")} className="cursor-pointer">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Add Lesson
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
+                          <Car className="h-4 w-4 mr-2" />
+                          Find My Car
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
+                          <CalendarClock className="h-4 w-4 mr-2" />
+                          Availability
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setShowPaymentSheet(true)} className="cursor-pointer">
+                          <PoundSterling className="h-4 w-4 mr-2" />
+                          Take Payment
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
+                          <Bell className="h-4 w-4 mr-2" />
+                          Add Reminder
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
             </header>
