@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Settings, Plus, PoundSterling, Bell, Search,
   Moon, Sun, ChevronLeft, Menu, MoreHorizontal, Wallet,
+  Clock, Navigation, Timer, BookOpen, Target, MapPin,
+  Car, CheckCircle, ChevronRight, Calendar, MessageSquare, Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,6 +14,17 @@ const mock = {
   name: "Sarah",
   initials: "SJ",
   unread: 3,
+  nextLesson: { pupil: "James W.", time: "10:30", postcode: "LS1 4AP", minutesUntil: 25, duration: "1h" },
+  lessons: 5,
+  earnings: 175,
+  weeklyProgress: 72,
+  timeline: [
+    { time: "09:00", pupil: "Alice B.", postcode: "LS2 3AA", done: true },
+    { time: "10:30", pupil: "James W.", postcode: "LS1 4AP", done: false, isNext: true },
+    { time: "12:00", pupil: "Maria G.", postcode: "LS6 2NB", done: false },
+    { time: "14:00", pupil: "Tom S.", postcode: "LS7 1RR", done: false },
+  ],
+  pendingJobs: 2,
 };
 
 // ══════════════════════════════════════════════════════
@@ -361,17 +374,7 @@ export default function HeaderRedesignDemo() {
               const Comp = concepts[selected].component;
               return <Comp showBack={false} />;
             })()}
-            {/* Fake page content */}
-            <div className="p-4 space-y-3">
-              <div className="h-24 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">
-                Page content area
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="h-16 rounded-xl bg-muted/50" />
-                <div className="h-16 rounded-xl bg-muted/50" />
-              </div>
-              <div className="h-20 rounded-xl bg-muted/50" />
-            </div>
+            <FakeHomepageContent />
           </div>
         </div>
 
@@ -385,12 +388,7 @@ export default function HeaderRedesignDemo() {
               const Comp = concepts[selected].component;
               return <Comp showBack={true} />;
             })()}
-            <div className="p-4 space-y-3">
-              <div className="h-24 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">
-                Sub-page content
-              </div>
-              <div className="h-16 rounded-xl bg-muted/50" />
-            </div>
+            <FakeSubpageContent />
           </div>
         </div>
       </div>
