@@ -511,33 +511,37 @@ export default function HeaderRedesignDemo() {
         </div>
       </div>
 
-      {/* Preview area */}
-      <div className="px-3 pb-6 space-y-4">
+      {/* Preview area — constrained to mobile width */}
+      <div className="flex flex-col items-center pb-6 space-y-6 px-3">
         {/* Normal view */}
-        <div>
+        <div className="w-full max-w-[390px]">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
             Home / Dashboard View
           </p>
-          <div className="rounded-2xl overflow-hidden border border-border shadow-sm bg-card">
+          <div className="rounded-[2rem] overflow-hidden border-2 border-foreground/20 shadow-xl bg-card ring-1 ring-black/5">
             {(() => {
               const Comp = concepts[selected].component;
               return <Comp showBack={false} />;
             })()}
-            <FakeHomepageContent />
+            <div className="max-h-[500px] overflow-y-auto">
+              <FakeHomepageContent />
+            </div>
           </div>
         </div>
 
         {/* Back button view */}
-        <div>
+        <div className="w-full max-w-[390px]">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
             Sub-Page View (with back button)
           </p>
-          <div className="rounded-2xl overflow-hidden border border-border shadow-sm bg-card">
+          <div className="rounded-[2rem] overflow-hidden border-2 border-foreground/20 shadow-xl bg-card ring-1 ring-black/5">
             {(() => {
               const Comp = concepts[selected].component;
               return <Comp showBack={true} />;
             })()}
-            <FakeSubpageContent />
+            <div className="max-h-[400px] overflow-y-auto">
+              <FakeSubpageContent />
+            </div>
           </div>
         </div>
       </div>
