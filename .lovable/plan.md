@@ -1,35 +1,85 @@
 
 
-# Replace Bottom Nav on Instructor Marketing Pages
+# Update All Remaining Blue Hex Colors to Dark Navy Primary
 
-## Problem
-The instructor marketing site (EveryDriver homepage at `/`) shows the learner-focused bottom navigation bar (Home, Search, Theory, FAQs, Help, Benefits). These items are irrelevant to instructors browsing the marketing site -- they relate to the Drive365 learner experience.
+## Overview
+Replace every instance of the bright blue hex values (`#0075c9`, `#0068b3`, `#005a9e`) with the dark navy `primary` Tailwind token across all 49 remaining files. This ensures visual consistency between the instructor app and the marketing pages.
 
-## Solution
-Create a dedicated bottom nav for the instructor marketing pages that mirrors the site's own navigation sections, and use it in `InstructorSaaSLayout` instead of the learner `MobileBottomNav`.
+## Replacement Rules
+All replacements follow the same pattern used in the first batch:
 
-## New Bottom Nav Items
-The nav will include the most important marketing page sections:
+| Old Value | New Value |
+|-----------|-----------|
+| `bg-[#0075c9]` | `bg-primary` |
+| `text-[#0075c9]` | `text-primary` |
+| `border-[#0075c9]/20` | `border-primary/20` |
+| `bg-[#0075c9]/10` | `bg-primary/10` |
+| `hover:bg-[#005a9e]` | `hover:bg-primary/90` |
+| `from-[#0075c9] via-[#0068b3] to-[#005a9e]` | `from-primary via-primary/90 to-primary/80` |
+| `from-[#0075c9] to-[#005a9e]` | `from-primary to-primary/80` |
+| Any other opacity/modifier variant | Equivalent `primary` with same modifier |
 
-| Icon | Label | Path |
-|------|-------|------|
-| Home | Home | / |
-| Sparkles | Features | /instructor-app/features |
-| Globe | Websites | /instructor-app/domains |
-| PoundSterling | Pricing | /instructor-app/pricing |
-| LogIn | Log In | /instructor-app/login |
+## Files to Update (49 total)
 
-This gives visitors quick access to the key decision-making pages (features, websites/domains, pricing) plus a direct login shortcut.
+### Pages (11 files)
+1. `src/pages/InstructorSchedule.tsx`
+2. `src/pages/InstructorPay.tsx`
+3. `src/pages/InstructorMenu.tsx`
+4. `src/pages/MobileHomeRedesignDemo.tsx`
+5. `src/pages/instructor-app/EveryDriverInstructorHome.tsx`
+6. `src/pages/instructor-app/InstructorFeatures.tsx`
+7. `src/pages/instructor-app/InstructorPricing.tsx`
+8. `src/pages/instructor-app/InstructorDomains.tsx`
+9. `src/pages/instructor-app/InstructorSignup.tsx`
+10. `src/pages/instructor-app/InstructorLogin.tsx`
+11. `src/pages/InstructorTrackingView.tsx`
 
-## Technical Changes
+### Layout Components (1 file)
+12. `src/components/layout/InstructorPortalLayout.tsx`
 
-### 1. New file: `src/components/layout/InstructorMarketingBottomNav.tsx`
-- A mobile-only (`md:hidden`) fixed bottom nav bar matching the existing styling conventions (primary background, safe area padding).
-- Uses the same active-state styling pattern as `MobileBottomNav` (white text when active, muted when inactive).
-- Icons from `lucide-react`: `Home`, `Sparkles`, `Globe`, `PoundSterling`, `LogIn`.
+### Instructor Components (37 files)
+13. `src/components/instructor/CalendarEventSheet.tsx`
+14. `src/components/instructor/PupilReflectiveLogs.tsx`
+15. `src/components/instructor/RadialFAB.tsx`
+16. `src/components/instructor/TomorrowScheduleView.tsx`
+17. `src/components/instructor/SmartInsightsPanel.tsx`
+18. `src/components/instructor/DrivingAlertsStrip.tsx`
+19. `src/components/instructor/vehicle-health/AutoMileageLog.tsx`
+20. `src/components/instructor/vehicle-health/VehicleHealthHub.tsx`
+21. `src/components/instructor/vehicle-health/ServiceReminders.tsx`
+22. `src/components/instructor/vehicle-health/MOTCheckerTab.tsx`
+23. `src/components/instructor/dashboard/UnifiedAgendaTile.tsx`
+24. `src/components/instructor/dashboard/MessagesWidget.tsx`
+25. `src/components/instructor/TestDayPrepChecklist.tsx`
+26. `src/components/instructor/PupilDetailView.tsx`
+27. `src/components/instructor/PupilProgressTracker.tsx`
+28. `src/components/instructor/InstructorFAQs.tsx`
+29. `src/components/instructor/InstructorCalendarView.tsx`
+30. `src/components/instructor/LessonPlanBuilder.tsx`
+31. `src/components/instructor/MiniWebsiteEditor.tsx`
+32. `src/components/instructor/PupilLessonHistory.tsx`
+33. `src/components/instructor/ScheduleWeekView.tsx`
+34. `src/components/instructor/AddLessonSheet.tsx`
+35. `src/components/instructor/EditLessonSheet.tsx`
+36. `src/components/instructor/PaymentSheet.tsx`
+37. `src/components/instructor/ResourcesPage.tsx`
+38. `src/components/instructor/driving-test/TestDayTimeline.tsx`
+39. `src/components/instructor/driving-test/TestRouteNotes.tsx`
+40. `src/components/instructor/WeatherDrivingAlerts.tsx`
+41. `src/components/instructor/SettingsContent.tsx`
+42. `src/components/instructor/PupilsList.tsx`
+43. `src/components/instructor/PupilProfileCard.tsx`
+44. `src/components/instructor/InstructorAccountsView.tsx`
+45. `src/components/instructor/TrackingHeader.tsx`
+46. `src/components/instructor/LiveTrackingMap.tsx`
+47. `src/components/instructor/TrackingDashboard.tsx`
+48. `src/components/instructor/JourneyReplayControls.tsx`
+49. `src/components/instructor/GeofenceManager.tsx`
 
-### 2. Update: `src/components/layout/InstructorSaaSLayout.tsx`
-- Replace the `<MobileBottomNav />` import and usage on line 129 with the new `<InstructorMarketingBottomNav />` component.
-- Remove the `MobileBottomNav` import (line 8).
+## Technical Notes
+- No new dependencies or database changes required.
+- The `primary` CSS variable is already set to `218 54% 17%` (dark navy) in the project theme.
+- Gradient patterns like `from-[#0075c9] via-[#0068b3] to-[#005a9e]` become `from-primary via-primary/90 to-primary/80` to maintain visual depth.
+- Hover states like `hover:bg-[#005a9e]` become `hover:bg-primary/90` for a subtle darkening effect.
+- All semantic status colors (emerald for positive, rose for negative, amber for warnings) remain unchanged.
 
-No other files are affected. The learner `MobileBottomNav` continues to work in `MainLayout` for Drive365 pages.
