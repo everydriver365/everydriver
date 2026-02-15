@@ -61,6 +61,7 @@ import { TestResultsHistory, DrivingTestReportForm } from "@/components/instruct
 import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
 import { NextLessonTile } from "@/components/instructor/NextLessonTile";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
+import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 
 interface Pupil {
   id: string;
@@ -591,6 +592,11 @@ export default function InstructorPupils() {
             ))}
           </div>
         )}
+        {/* Progress Reports */}
+        <PupilProgressReportGenerator 
+          instructorId={instructorId} 
+          pupils={pupils.map(p => ({ id: p.id, name: p.name }))} 
+        />
       </div>
 
       {/* Add Pupil Dialog */}
