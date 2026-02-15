@@ -76,7 +76,7 @@ import { LayoutGrid, Palette, ImageIcon } from "lucide-react";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
-import instructorLogo from "@/assets/everydriver-logo.png";
+import instructorLogo from "@/assets/ed-white-logo.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
@@ -407,7 +407,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </Sheet>
 
                     <div className="min-w-0">
-                      <img src={instructorLogo} alt="EveryDriver" className="h-5 brightness-0 invert" />
+                      <img src={instructorLogo} alt="EveryDriver" className="h-5" />
                     </div>
                   </div>
 
