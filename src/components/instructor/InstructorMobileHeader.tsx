@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,78 +76,112 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
     navigate(-1);
   };
 
+  // Get instructor initials
+  const getInitials = () => {
+    if (!instructor?.name) return "?";
+    return instructor.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+  };
+
   return (
-    <div className="sticky top-0 bg-background/80 backdrop-blur-xl z-50 border-b border-border/30">
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center">
-          {showBackButton && (
-            <Button variant="ghost" size="icon" onClick={handleBackClick} className="mr-2">
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-          )}
-            <img src={edLogo} alt="Logo" className="h-8 w-auto mr-2" />
-          <h1 className="text-lg font-semibold">{title}</h1>
-        </div>
-        <div className="flex items-center space-x-1">
-          <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
-          {showAddButton && (
-            <Button variant="ghost" size="icon" onClick={onAddClick}>
-              <Plus className="h-6 w-6" />
-            </Button>
-          )}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setPaymentSheetOpen(true)}
-            className="relative gap-1 px-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
-          >
-            <PoundSterling className="h-4 w-4" />
-            <span className="text-xs font-semibold">Pay</span>
-          </Button>
-          {showSettings && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-6 w-6" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/instructor/profile")}>
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={toggleTheme}>
-                  {theme === "dark" ? (
-                    <>
-                      <Sun className="mr-2 h-4 w-4" />
-                      Light
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="mr-2 h-4 w-4" />
-                      Dark
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
-                  <Palette className="mr-2 h-4 w-4" />
-                  Wallpaper
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  Hero Image
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  Screen Layout
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/logout")}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+    <div className="sticky top-0 z-50">
+      <div className="bg-gradient-to-r from-primary via-primary/95 to-primary/85 text-primary-foreground relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-primary-foreground/5" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary-foreground/[0.03]" />
+        
+        <div className="relative flex items-center justify-between px-4 py-3">
+          {/* Left: Back button OR Avatar + Greeting */}
+          <div className="flex items-center gap-3">
+            {showBackButton ? (
+              <button
+                onClick={handleBackClick}
+                className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            ) : (
+              <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
+                <AvatarImage src={undefined} />
+                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div>
+              {showBackButton ? (
+                <p className="text-sm font-semibold leading-tight">{title}</p>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold leading-tight">Hi, {instructor?.name?.split(" ")[0] || "there"} 👋</p>
+                  <p className="text-[10px] text-primary-foreground/60">Ready to teach?</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Action buttons */}
+          <div className="flex items-center gap-1.5">
+            <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
+            {showAddButton && (
+              <button
+                onClick={onAddClick}
+                className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            )}
+            <button
+              onClick={() => setPaymentSheetOpen(true)}
+              className="h-8 px-3 rounded-full bg-primary-foreground/90 flex items-center gap-1.5 hover:bg-primary-foreground transition-colors"
+            >
+              <PoundSterling className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">Pay</span>
+            </button>
+            {showSettings && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+                    <Settings className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/instructor/profile")}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleTheme}>
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="mr-2 h-4 w-4" />
+                        Light
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="mr-2 h-4 w-4" />
+                        Dark
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                    <Palette className="mr-2 h-4 w-4" />
+                    Wallpaper
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Hero Image
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                    <LayoutGrid className="mr-2 h-4 w-4" />
+                    Screen Layout
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/logout")}>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </div>
       <TakePaymentSheet
