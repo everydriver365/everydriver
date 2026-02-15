@@ -72,8 +72,9 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
-import { LayoutGrid, Palette, ImageIcon } from "lucide-react";
+import { LayoutGrid, Palette, ImageIcon, SlidersHorizontal } from "lucide-react";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
+import { QuickSettingsSheet } from "@/components/instructor/QuickSettingsSheet";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 import instructorLogo from "@/assets/ed-white-logo.png";
@@ -178,6 +179,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [quickSettingsOpen, setQuickSettingsOpen] = useState(false);
 
   // Appearance settings for app-style layout
   const { layoutStyle, wallpaperColor } = useInstructorAppearance(instructor?.id);
@@ -425,6 +427,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
+                        <DropdownMenuItem onClick={() => setQuickSettingsOpen(true)} className="cursor-pointer">
+                          <SlidersHorizontal className="h-4 w-4 mr-2" />
+                          Quick Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
                           <Settings className="h-4 w-4 mr-2" />
                           Settings
@@ -977,6 +984,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </div>
         </SheetContent>
       </Sheet>
+      <QuickSettingsSheet open={quickSettingsOpen} onOpenChange={setQuickSettingsOpen} />
     </>
   );
 }
