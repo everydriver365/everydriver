@@ -12,7 +12,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
-import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
+
 
 interface DevicePosition {
   id: string;
@@ -191,10 +191,6 @@ export default function InstructorFindMyCar() {
           </Button>
         </div>
 
-        {/* Mobile GPS Tracking Banner */}
-        {instructor?.id && (
-          <MobileTrackingSettingsBanner instructorId={instructor.id} />
-        )}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
