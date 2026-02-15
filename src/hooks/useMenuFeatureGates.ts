@@ -12,20 +12,39 @@ export interface MenuFeatureGate {
   display_order: number;
 }
 
+interface PlanInfo {
+  slug: string;
+  name: string;
+  features: string[];
+  display_order: number;
+}
+
+// Plan tier order for determining minimum required plan
+const PLAN_ORDER = ['free', 'pro', 'max', 'multi', 'enterprise'];
+
 export function useMenuFeatureGates() {
   const [gates, setGates] = useState<MenuFeatureGate[]>([]);
+  const [plans, setPlans] = useState<PlanInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchGates = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('menu_feature_gates')
-        .select('*')
-        .order('display_order');
+      const [gatesRes, plansRes] = await Promise.all([
+        supabase
+          .from('menu_feature_gates')
+          .select('*')
+          .order('display_order'),
+        supabase
+          .from('subscription_plans')
+          .select('slug, name, features, display_order')
+          .eq('is_active', true)
+          .order('display_order'),
+      ]);
 
-      if (error) throw error;
-      setGates(data || []);
+      if (gatesRes.error) throw gatesRes.error;
+      setGates(gatesRes.data || []);
+      setPlans((plansRes.data as PlanInfo[]) || []);
     } catch (error) {
       console.error('Error fetching menu feature gates:', error);
     } finally {
@@ -45,10 +64,29 @@ export function useMenuFeatureGates() {
     return !features.includes(gate.required_feature);
   };
 
+  const getMinimumPlanName = (menuItemKey: string): string => {
+    const gate = gates.find(g => g.menu_item_key === menuItemKey);
+    if (!gate?.required_feature) return 'PRO';
+    
+    // Find the lowest-tier plan that includes this feature
+    const sortedPlans = [...plans].sort((a, b) => {
+      const aIdx = PLAN_ORDER.indexOf(a.slug);
+      const bIdx = PLAN_ORDER.indexOf(b.slug);
+      return aIdx - bIdx;
+    });
+
+    for (const plan of sortedPlans) {
+      if (plan.features?.includes(gate.required_feature)) {
+        return plan.name.toUpperCase();
+      }
+    }
+    return 'PRO';
+  };
+
   const getUpgradeMessage = (menuItemKey: string): string => {
     const gate = gates.find(g => g.menu_item_key === menuItemKey);
     return gate?.upgrade_message || 'Upgrade your plan to access this feature';
   };
 
-  return { gates, loading, isFeatureLocked, getUpgradeMessage, refetch: fetchGates };
+  return { gates, loading, isFeatureLocked, getUpgradeMessage, getMinimumPlanName, refetch: fetchGates };
 }
