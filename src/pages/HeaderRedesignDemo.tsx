@@ -317,6 +317,155 @@ function ConceptF({ showBack = false }: { showBack?: boolean }) {
   );
 }
 
+// Realistic instructor mobile homepage content
+function FakeHomepageContent() {
+  return (
+    <div className="bg-[#f2f2f7] dark:bg-background">
+      {/* Next Up Tile */}
+      <div className="px-3 pt-3">
+        <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white relative overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="relative flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-primary text-xs font-extrabold tracking-wide shadow-sm">
+                <Clock className="h-3 w-3" /> NEXT UP
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-400/30 text-white text-[11px] font-bold animate-pulse">
+                <Timer className="h-3 w-3" /> in 25 min
+              </span>
+            </div>
+          </div>
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">JW</div>
+              <div>
+                <p className="font-bold text-foreground text-sm">{mock.nextLesson.pupil}</p>
+                <p className="text-xs text-muted-foreground">{mock.nextLesson.postcode}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 border border-primary/10 text-xs font-medium text-foreground">
+                <Clock className="h-3.5 w-3.5 text-primary" /> Today · {mock.nextLesson.time}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                {mock.nextLesson.duration} lesson
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2">
+              <Button size="sm" className="flex-1 rounded-xl gap-1 h-8 text-xs">
+                <Navigation className="h-3.5 w-3.5" /> Navigate
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-xl gap-1 h-8 text-xs">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> On Way
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Banners */}
+      <div className="px-3 mt-2 space-y-1.5">
+        <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-2xl px-4 py-3 text-white relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Briefcase className="h-5 w-5" />
+              <div><span className="font-semibold text-sm">Job Offers</span><p className="text-white/70 text-[10px]">{mock.pendingJobs} pending</p></div>
+            </div>
+            <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center">{mock.pendingJobs}</span>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-2xl px-4 py-3 text-white relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <MessageSquare className="h-5 w-5" />
+              <div><span className="font-semibold text-sm">Messages</span><p className="text-white/70 text-[10px]">{mock.unread} unread</p></div>
+            </div>
+            <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-rose-400 text-white text-xs font-bold flex items-center justify-center">{mock.unread}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Your Day */}
+      <div className="px-3 mt-3">
+        <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 px-4 py-2.5 flex items-center justify-between text-white">
+            <span className="text-xs font-bold uppercase tracking-wider">Your Day</span>
+            <ChevronRight className="h-4 w-4 text-white/60" />
+          </div>
+          <div className="p-3">
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-primary/5">
+                <BookOpen className="h-4 w-4 text-primary" />
+                <div><p className="text-sm font-bold text-foreground">{mock.lessons}</p><p className="text-[10px] text-muted-foreground">Lessons</p></div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-500/5">
+                <PoundSterling className="h-4 w-4 text-emerald-500" />
+                <div><p className="text-sm font-bold text-foreground">£{mock.earnings}</p><p className="text-[10px] text-muted-foreground">Earn</p></div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-violet-500/5">
+                <Target className="h-4 w-4 text-violet-500" />
+                <div><p className="text-sm font-bold text-foreground">{mock.weeklyProgress}%</p><p className="text-[10px] text-muted-foreground">Goal</p></div>
+              </div>
+            </div>
+            <div className="space-y-0">
+              {mock.timeline.map((item, i) => (
+                <div key={i} className="flex gap-2.5 pb-2">
+                  <div className="flex flex-col items-center">
+                    <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1.5 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-primary ring-3 ring-primary/20" : "bg-muted"}`} />
+                    {i < mock.timeline.length - 1 && <div className="w-0.5 flex-1 bg-border mt-0.5" />}
+                  </div>
+                  <div className="flex-1 pb-1">
+                    <p className="text-xs text-muted-foreground">{item.time}</p>
+                    <p className={`text-sm font-medium ${item.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{item.pupil}</p>
+                  </div>
+                  {item.isNext && <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full self-start mt-1">Next</span>}
+                  {item.done && <CheckCircle className="h-3.5 w-3.5 text-emerald-400 mt-1.5 shrink-0" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Plan ahead */}
+      <div className="px-3 mt-3 pb-4">
+        <div className="bg-card rounded-2xl shadow-sm p-3 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
+            <Calendar className="h-5 w-5 text-violet-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Tomorrow</p>
+            <p className="text-xs text-muted-foreground">4 lessons · 6hrs · £210</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FakeSubpageContent() {
+  return (
+    <div className="bg-[#f2f2f7] dark:bg-background p-3 space-y-3">
+      <div className="bg-card rounded-2xl shadow-sm p-4">
+        <h3 className="font-semibold text-foreground mb-2">Schedule</h3>
+        <div className="space-y-2">
+          {mock.timeline.map((item, i) => (
+            <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30">
+              <span className="text-xs font-medium text-muted-foreground w-10">{item.time}</span>
+              <div className={`h-2 w-2 rounded-full ${item.done ? "bg-emerald-400" : "bg-primary"}`} />
+              <span className={`text-sm ${item.done ? "text-muted-foreground line-through" : "text-foreground font-medium"}`}>{item.pupil}</span>
+              <span className="text-xs text-muted-foreground ml-auto">{item.postcode}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════
 // Demo page wrapper
 // ══════════════════════════════════════════════════════
