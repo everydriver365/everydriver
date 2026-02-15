@@ -11,7 +11,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
-import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 
 function getContrastColor(hex: string, activeOpacity = "1", inactiveOpacity = "0.6"): { active: string; inactive: string } {
@@ -123,16 +123,12 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   const contrast = wallpaperColor ? getContrastColor(wallpaperColor) : null;
 
-  const getIconColor = (_item: NavItem, isActive: boolean) => {
-    if (contrast) return ""; // handled via inline style
-    return isActive ? "text-primary" : "text-muted-foreground";
-  };
 
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border/30",
-        wallpaperColor ? "" : "bg-background/80 backdrop-blur-xl"
+        "fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-black/5",
+        wallpaperColor ? "" : "bg-[#f2f2f7]"
       )}
       style={wallpaperColor ? { backgroundColor: wallpaperColor } : undefined}
     >
@@ -143,7 +139,6 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
           const isMore = item.isMore;
-          const iconColor = getIconColor(item, isActive);
           
           // Calculate badge count for this item
           const getBadgeCount = () => {
@@ -159,39 +154,27 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
-              className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
-                !contrast
-                  ? (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
-                  : ""
-              }`}
-              style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
+              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full"
             >
-              {/* Active indicator pill */}
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", !contrast && "bg-primary")}
-                  style={contrast ? { backgroundColor: contrast.active } : undefined}
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-              
               <div className="relative">
-                <motion.div
-                  animate={{ 
-                    scale: isActive ? 1.1 : 1,
-                    y: isActive ? -2 : 0
-                  }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                {/* Filled tile for active icon */}
+                <div
+                  className={cn(
+                    "flex items-center justify-center rounded-lg w-8 h-8 transition-colors",
+                    isActive && !contrast ? "bg-[#0075c9]" : ""
+                  )}
+                  style={isActive && contrast ? { backgroundColor: contrast.active } : undefined}
                 >
                   <item.icon
-                    className={`h-5 w-5 transition-all duration-200 ${iconColor} ${
-                      isActive ? 'drop-shadow-sm' : ''
-                    }`}
-                    strokeWidth={isActive ? 2.5 : 2}
+                    className="h-5 w-5 transition-all duration-200"
+                    strokeWidth={isActive ? 2 : 1.8}
+                    color={
+                      contrast
+                        ? (isActive ? (wallpaperColor || "#ffffff") : contrast.inactive)
+                        : (isActive ? "#ffffff" : "#8e8e93")
+                    }
                   />
-                </motion.div>
+                </div>
                 {showNotification && (
                   <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
@@ -211,12 +194,13 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-background" />
                 )}
               </div>
-              <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                !contrast
-                  ? (isActive ? "font-medium text-primary" : "font-normal text-muted-foreground")
-                  : (isActive ? "font-medium" : "font-normal")
-              }`}
-              style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
+              <span
+                className="text-[12px] font-medium transition-all duration-200"
+                style={{
+                  color: contrast
+                    ? (isActive ? contrast.active : contrast.inactive)
+                    : (isActive ? "#0075c9" : "#8e8e93")
+                }}
               >
                 {item.label}
               </span>

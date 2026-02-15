@@ -134,7 +134,7 @@ import InstructorPortalLogin from "./pages/InstructorPortalLogin";
 import CalendarCallback from "./pages/CalendarCallback";
 import DiaryImageDemo from "./pages/DiaryImageDemo";
 import TileDesignDemo from "./pages/TileDesignDemo";
-import BottomNavDemo from "./pages/BottomNavDemo";
+
 
 
 const queryClient = new QueryClient();
@@ -303,7 +303,7 @@ const App = () => (
                <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
               <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
               <Route path="/tile-design-demo" element={<TileDesignDemo />} />
-              <Route path="/bottom-nav-demo" element={<BottomNavDemo />} />
+              
 
 
               {/* Catch-all */}
