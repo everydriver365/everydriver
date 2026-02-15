@@ -6,7 +6,7 @@ import {
   Users, 
   Radio,
   MessageCircle,
-  PoundSterling,
+  TrendingUp,
   Grid3X3,
   LucideIcon
 } from "lucide-react";
@@ -59,9 +59,9 @@ const navItems: NavItem[] = [
     isTrack: true
   },
   { 
-    label: "Money", 
-    icon: PoundSterling, 
-    path: "/instructor/pay"
+    label: "Progress", 
+    icon: TrendingUp, 
+    path: "/instructor/pupils"
   },
   { 
     label: "Pupils", 
