@@ -141,8 +141,28 @@ export default function InstructorTax() {
 
       if (expensesError) throw expensesError;
 
-      const totalIncome = (payments || []).reduce((sum, p) => sum + Number(p.amount), 0);
-      const totalExpenses = (expenses || []).reduce((sum, e) => sum + Number(e.amount), 0);
+      // Fetch business mileage for HMRC mileage allowance
+      const { data: mileageLogs } = await supabase
+        .from("mileage_logs")
+        .select("distance_km")
+        .eq("instructor_id", instructorId)
+        .eq("trip_type", "business")
+        .gte("log_date", taxYearStart)
+        .lte("log_date", taxYearEnd);
+
+      const totalBusinessMiles = (mileageLogs || [])
+        .reduce((sum, l: any) => sum + (Number(l.distance_km) * 0.621371), 0);
+
+      const mileageDeduction = totalBusinessMiles <= 10000
+        ? totalBusinessMiles * 0.45
+        : 10000 * 0.45 + (totalBusinessMiles - 10000) * 0.25;
+
+      // Only count positive payments as income (negative = lesson charges / cancellation fees)
+      const totalIncome = (payments || [])
+        .filter(p => Number(p.amount) > 0)
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+      const manualExpenses = (expenses || []).reduce((sum, e) => sum + Number(e.amount), 0);
+      const totalExpenses = manualExpenses + mileageDeduction;
       const taxableIncome = Math.max(0, totalIncome - totalExpenses);
       
       const estimatedTax = calculateTax(taxableIncome);
@@ -162,6 +182,11 @@ export default function InstructorTax() {
       (expenses || []).forEach((e: any) => {
         categoryTotals[e.category] = (categoryTotals[e.category] || 0) + Number(e.amount);
       });
+
+      // Add mileage allowance as a category if applicable
+      if (mileageDeduction > 0) {
+        categoryTotals["Mileage Allowance"] = mileageDeduction;
+      }
 
       const breakdown = Object.entries(categoryTotals)
         .map(([category, amount]) => ({
