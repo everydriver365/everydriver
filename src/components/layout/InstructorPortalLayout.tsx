@@ -407,7 +407,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </Sheet>
 
                     <div className="min-w-0">
-                      <img src={instructorLogo} alt="EveryDriver" className="h-5" />
+                      <img src={instructorLogo} alt="EveryDriver" className="h-7 w-auto object-contain" />
                     </div>
                   </div>
 

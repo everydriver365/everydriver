@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import edLogo from "@/assets/everydriver-logo.png";
+import edLogo from "@/assets/ed-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Bell, SlidersHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,7 +114,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <p className="text-sm font-semibold leading-tight">{title}</p>
               ) : (
                 <>
-                  <img src={edLogo} alt="EveryDriver" className="h-5 brightness-0 invert" />
+                  <img src={edLogo} alt="EveryDriver" className="h-7 w-auto object-contain" />
                 </>
               )}
             </div>
