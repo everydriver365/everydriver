@@ -415,7 +415,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   {/* Right: Action buttons */}
                   <div className="flex items-center gap-1.5">
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
@@ -427,7 +427,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
-                        <DropdownMenuItem onClick={() => setQuickSettingsOpen(true)} className="cursor-pointer">
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onSelect={() => {
+                            setTimeout(() => setQuickSettingsOpen(true), 300);
+                          }}
+                        >
                           <SlidersHorizontal className="h-4 w-4 mr-2" />
                           Quick Settings
                         </DropdownMenuItem>
