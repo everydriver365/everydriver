@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS availability_paused boolean NOT NULL DEFAULT false;

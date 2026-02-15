@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Bell } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Bell, SlidersHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
+import { QuickSettingsSheet } from "@/components/instructor/QuickSettingsSheet";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
@@ -52,6 +53,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [quickSettingsOpen, setQuickSettingsOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
 
   useEffect(() => {
@@ -147,6 +149,11 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setQuickSettingsOpen(true)}>
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    Quick Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/instructor/profile")}>
                     Profile
                   </DropdownMenuItem>
@@ -212,6 +219,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           </div>
         </SheetContent>
       </Sheet>
+      <QuickSettingsSheet open={quickSettingsOpen} onOpenChange={setQuickSettingsOpen} />
     </div>
   );
 };
