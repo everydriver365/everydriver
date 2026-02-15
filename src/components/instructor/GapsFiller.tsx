@@ -231,7 +231,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         const workStart = parseInt(startHour.split(":")[0]);
         const workEnd = parseInt(endHour.split(":")[0]);
 
-        for (let hour = workStart; hour < workEnd - 1; hour += 2) {
+        for (let hour = workStart; hour + 2 <= workEnd; hour += 2) {
           // Skip past slots for today
           if (dateStr === todayStr && hour + 2 <= nowHour) continue;
           
