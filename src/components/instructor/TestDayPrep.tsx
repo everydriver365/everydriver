@@ -202,7 +202,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             {/* Countdown Banner */}
             <div className={cn(
               "rounded-xl p-4 text-center",
-              isUrgent ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e]"
+              isUrgent ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-primary via-primary/90 to-primary/80"
             )}>
               <Car className="h-8 w-8 mx-auto mb-1 text-white/90" />
               <div className="text-3xl font-bold text-white">{getCountdownLabel()}</div>
@@ -237,7 +237,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
 
                 {testCentre.parking_info && (
                   <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                    <ParkingCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[#0075c9]" />
+                    <ParkingCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary" />
                     <span>{testCentre.parking_info}</span>
                   </div>
                 )}
@@ -293,7 +293,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             <div className="rounded-xl border bg-card p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <FileCheck className="h-4 w-4 text-[#0075c9]" />
+                  <FileCheck className="h-4 w-4 text-primary" />
                   <span className="font-medium text-sm">Documents</span>
                 </div>
                 <Badge variant={DOCUMENT_CHECKLIST.every(i => checkedItems[i.id]) ? "default" : "secondary"} className="text-[10px] h-5">

@@ -75,19 +75,19 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
               className={cn(
                 "relative overflow-hidden rounded-xl border shadow-sm",
                 isWeather
-                  ? "border-[#0075c9]/20 dark:border-[#0075c9]/30"
+                  ? "border-primary/20 dark:border-primary/30"
                   : isSevere
                     ? "bg-gradient-to-r from-destructive/10 to-destructive/5 border-destructive/30 dark:from-destructive/20 dark:to-destructive/10"
                     : "bg-gradient-to-r from-warning/10 to-warning/5 border-warning/30 dark:from-warning/20 dark:to-warning/10"
               )}
-              style={isWeather ? { backgroundColor: '#D1E4FC' } : undefined}
+              style={isWeather ? { backgroundColor: 'hsl(var(--primary) / 0.1)' } : undefined}
             >
               <div className="flex items-start gap-3 p-3">
                 {/* Icon */}
                 <div className={cn(
                   "flex-shrink-0 p-2 rounded-lg",
                   isWeather
-                    ? "bg-[#0075c9]/20 text-[#0075c9]"
+                    ? "bg-primary/20 text-primary"
                     : isSevere 
                       ? "bg-destructive/20 text-destructive" 
                       : "bg-warning/20 text-warning-foreground"
@@ -112,7 +112,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                     <span className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
                       isWeather
-                        ? "text-[#0075c9] bg-[#0075c9]/20 font-bold text-[11px]"
+                        ? "text-primary bg-primary/20 font-bold text-[11px]"
                         : isSevere 
                           ? "text-destructive bg-destructive/15" 
                           : "text-warning-foreground bg-warning/20"

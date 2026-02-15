@@ -135,11 +135,11 @@ export default function InstructorPendingScheduling() {
         </div>
 
         {/* Info Banner */}
-        <Card className="border-[#0075c9]/20 bg-[#0075c9]/5 dark:border-[#0075c9]/30 dark:bg-[#0075c9]/10">
+        <Card className="border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-[#0075c9] mt-0.5" />
-              <div className="text-sm text-[#0075c9]/80 dark:text-[#0075c9]/70">
+              <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
+              <div className="text-sm text-primary/80 dark:text-primary/70">
                 <p className="font-medium mb-1">These pupils have booked and paid but their lessons haven't been scheduled yet.</p>
                 <p>Click "Schedule Lessons" to add their lessons to your calendar, then they'll receive a confirmation.</p>
               </div>
