@@ -195,8 +195,8 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
         
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-[#0075c9]/10 dark:bg-[#0075c9]/20 rounded-lg">
-              <Users className="h-5 w-5 text-[#0075c9]" />
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.totalActiveCount}</p>

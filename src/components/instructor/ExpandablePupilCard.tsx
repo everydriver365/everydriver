@@ -415,7 +415,7 @@ export function ExpandablePupilCard({
   const getProgressColor = () => {
     const progress = pupil.progress || 0;
     if (progress >= 100) return "text-emerald-500";
-    if (progress >= 75) return "text-[#0075c9]";
+    if (progress >= 75) return "text-primary";
     if (progress >= 50) return "text-amber-500";
     return "text-muted-foreground";
   };
@@ -478,7 +478,7 @@ export function ExpandablePupilCard({
       <div className="absolute inset-y-0 right-0 flex items-stretch">
         <motion.button
           onClick={handleSwipeMessage}
-          className="w-[70px] flex flex-col items-center justify-center gap-1 bg-[#0075c9] text-white"
+          className="w-[70px] flex flex-col items-center justify-center gap-1 bg-primary text-primary-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: dragX < -20 ? 1 : 0 }}
         >
@@ -1110,7 +1110,7 @@ export function ExpandablePupilCard({
                     handleNavigate();
                   }}
                 >
-                  <Navigation className="h-4 w-4 text-[#0075c9]" />
+                  <Navigation className="h-4 w-4 text-primary" />
                   <span className="text-[10px]">Navigate</span>
                 </Button>
 
@@ -1222,7 +1222,7 @@ export function ExpandablePupilCard({
                           onRecordTestResult(pupil, true);
                         }}
                       >
-                        <ClipboardList className="h-4 w-4 text-[#0075c9]" />
+                        <ClipboardList className="h-4 w-4 text-primary" />
                         <span className="text-[10px]">Mock</span>
                       </Button>
                     </>

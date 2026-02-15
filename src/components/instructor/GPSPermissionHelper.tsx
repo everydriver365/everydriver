@@ -176,8 +176,8 @@ export function GPSPermissionHelper() {
 
   const IOSInstructions = () => (
     <div className="space-y-4">
-      <div className="p-3 bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-lg">
-        <p className="text-sm text-[#0075c9] font-medium">
+      <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+        <p className="text-sm text-primary font-medium">
           {deviceInfo?.isPWA 
             ? "You're using Drive365 as an installed app" 
             : "You're using Drive365 in Safari"}

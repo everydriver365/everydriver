@@ -20,7 +20,7 @@ export function PlanWidget() {
       {/* Gradient header - tappable to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white text-left"
+        className="w-full relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white text-left"
       >
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />

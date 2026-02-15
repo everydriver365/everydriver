@@ -108,7 +108,7 @@ export function WeeklySummaryWidget({ instructorId }: WeeklySummaryWidgetProps) 
       icon: Clock,
       value: stats.hoursTaught.toFixed(1),
       label: "Hours",
-      color: "text-[#0075c9]",
+      color: "text-primary",
     },
     {
       icon: PoundSterling,

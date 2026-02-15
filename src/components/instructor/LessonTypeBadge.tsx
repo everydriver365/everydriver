@@ -17,7 +17,7 @@ const lessonTypeConfig: Record<LessonType, {
   standard: {
     label: "Standard",
     icon: Car,
-    colors: "border-[#0075c9]/30 bg-[#0075c9]/10 text-[#0075c9]",
+    colors: "border-primary/30 bg-primary/10 text-primary",
   },
   intensive: {
     label: "Intensive",

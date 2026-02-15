@@ -42,7 +42,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
     <Link to="/instructor/vehicle-health" className="block mt-4">
       <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
         {/* Gradient header */}
-        <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+        <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
             <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -71,7 +71,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
           <div className="grid grid-cols-4 gap-2">
             {/* Battery */}
             <div className={cn("flex items-center gap-2 p-2.5 rounded-xl", 
-              battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-[#0075c9]/10"
+              battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-primary/10"
             )}>
               <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
               <div>

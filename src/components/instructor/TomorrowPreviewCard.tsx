@@ -116,11 +116,11 @@ export function TomorrowPreviewCard({
         animate={{ opacity: 1, y: 0 }}
         className={`mx-4 ${className}`}
       >
-        <div className="bg-gradient-to-br from-slate-100 via-[#0075c9]/5 to-indigo-50/30 dark:from-slate-800 dark:via-[#0075c9]/10 dark:to-indigo-950/20 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+        <div className="bg-gradient-to-br from-slate-100 via-primary/5 to-indigo-50/30 dark:from-slate-800 dark:via-primary/10 dark:to-indigo-950/20 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#0075c9]/5 dark:bg-[#0075c9]/20 border border-[#0075c9]/10 dark:border-[#0075c9]/30 flex items-center justify-center shadow-sm">
-              <Calendar className="h-7 w-7 text-[#0075c9]" />
+            <div className="w-14 h-14 rounded-2xl bg-primary/5 dark:bg-primary/20 border border-primary/10 dark:border-primary/30 flex items-center justify-center shadow-sm">
+              <Calendar className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export function TomorrowPreviewCard({
               </Button>
             </Link>
             <Link to="/instructor/gaps" className="flex-1">
-              <Button size="default" className="w-full gap-2 h-12 rounded-2xl bg-[#0075c9] hover:bg-[#005a9e] text-white shadow-md font-semibold">
+              <Button size="default" className="w-full gap-2 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-md font-semibold">
                 <ClipboardList className="h-5 w-5" />
                 Check Waitlist
               </Button>

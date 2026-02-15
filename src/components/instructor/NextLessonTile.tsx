@@ -144,7 +144,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     >
       <div
         className={cn(
-          "rounded-2xl p-4 text-white bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e]",
+          "rounded-2xl p-4 text-primary-foreground bg-gradient-to-br from-primary via-primary/90 to-primary/80",
           "hover:shadow-lg transition-all duration-200"
         )}
       >

@@ -99,7 +99,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             variant="ghost" 
             size="sm" 
             onClick={() => setPaymentSheetOpen(true)}
-            className="relative gap-1 px-2 bg-[#0075c9] hover:bg-[#005a9e] text-white rounded-full"
+            className="relative gap-1 px-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
           >
             <PoundSterling className="h-4 w-4" />
             <span className="text-xs font-semibold">Pay</span>

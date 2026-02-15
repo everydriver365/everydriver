@@ -62,7 +62,7 @@ const assignmentTypeLabels = {
 
 const statusConfig = {
   pending: { label: "Pending", color: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400", icon: Clock },
-  in_progress: { label: "In Progress", color: "bg-[#0075c9]/10 text-[#0075c9] dark:bg-[#0075c9]/20", icon: Play },
+  in_progress: { label: "In Progress", color: "bg-primary/10 text-primary dark:bg-primary/20", icon: Play },
   completed: { label: "Completed", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400", icon: Check },
   cancelled: { label: "Cancelled", color: "bg-muted text-muted-foreground", icon: XCircle },
 };

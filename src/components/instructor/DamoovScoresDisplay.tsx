@@ -203,9 +203,9 @@ const DamoovScoresDisplay: React.FC<DamoovScoresDisplayProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="p-3 bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-lg"
+              className="p-3 bg-primary/10 border border-primary/20 rounded-lg"
             >
-              <p className="text-sm text-[#0075c9] dark:text-[#0075c9]/80">
+              <p className="text-sm text-primary dark:text-primary/80">
                 💡 <strong>Tip:</strong> Focus on{' '}
                 {scores.brakingScore === Math.min(scores.accelerationScore, scores.brakingScore, scores.corneringScore, scores.speedingScore)
                   ? 'smoother braking - start slowing down earlier'

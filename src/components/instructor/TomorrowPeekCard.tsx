@@ -75,7 +75,7 @@ export function TomorrowPeekCard({
         {/* Gradient header - matches Your Plan tile */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white text-left"
+          className="w-full relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white text-left"
         >
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
@@ -146,7 +146,7 @@ export function TomorrowPeekCard({
                           key={lesson.id}
                           className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-xl"
                         >
-                          <div className="w-1 h-8 rounded-full bg-[#0075c9]" />
+                          <div className="w-1 h-8 rounded-full bg-primary" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate flex items-center gap-1.5">
                               <User className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -194,7 +194,7 @@ export function TomorrowPeekCard({
                 {/* View full schedule button */}
                 <button
                   onClick={() => navigate("/instructor/schedule")}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-[#0075c9] hover:bg-muted/30 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-primary hover:bg-muted/30 rounded-xl transition-colors"
                 >
                   View full schedule
                   <ChevronRight className="h-3 w-3" />

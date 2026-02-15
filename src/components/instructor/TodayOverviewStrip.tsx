@@ -49,8 +49,8 @@ export function TodayOverviewStrip({ instructorId }: TodayOverviewStripProps) {
 
               {/* Hours */}
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-[#0075c9]/15 dark:bg-[#0075c9]/20 mb-1">
-                  <Clock className="h-3.5 w-3.5 text-[#0075c9]" />
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary/15 dark:bg-primary/20 mb-1">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <span className="text-sm font-bold text-foreground">{overview.totalHours}h</span>
                 <span className="text-[9px] text-muted-foreground -mt-0.5">Hours</span>

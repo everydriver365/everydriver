@@ -48,7 +48,7 @@ export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsP
               flex-shrink-0 flex flex-col items-center justify-center
               px-2.5 py-1.5 rounded-lg min-w-[56px] transition-all
               ${selected 
-                ? "bg-[#0075c9] text-white shadow-md" 
+                ? "bg-primary text-primary-foreground shadow-md" 
                 : "bg-card text-foreground hover:bg-muted border border-border"
               }
             `}

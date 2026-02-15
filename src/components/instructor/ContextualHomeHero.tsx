@@ -84,7 +84,7 @@ const getWeatherIconColor = (icon: string): string => {
     case "Sun": return "text-amber-500";
     case "CloudSun": return "text-amber-400";
     case "Cloud": return "text-slate-400";
-    case "CloudRain": case "CloudDrizzle": return "text-[#0075c9]";
+    case "CloudRain": case "CloudDrizzle": return "text-primary";
     case "CloudFog": return "text-slate-500";
     case "CloudLightning": return "text-purple-500";
     case "Snowflake": return "text-sky-400";
@@ -232,8 +232,8 @@ export function ContextualHomeHero({
                   </div>
                   {unreadMessages > 0 && (
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4 text-[#0075c9]" />
-                      <span className="text-sm text-[#0075c9] font-medium">
+                      <MessageCircle className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-primary font-medium">
                         {unreadMessages} unread message{unreadMessages !== 1 ? "s" : ""}
                       </span>
                     </div>
@@ -345,8 +345,8 @@ export function ContextualHomeHero({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-[#0075c9]/5">
-                      <Clock className="h-4 w-4 text-[#0075c9]" />
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <Clock className="h-4 w-4 text-primary" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">
                           {todayOverview?.totalHours || 0}h
