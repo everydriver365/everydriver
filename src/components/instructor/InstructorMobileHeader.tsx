@@ -114,14 +114,14 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <p className="text-sm font-semibold leading-tight">{title}</p>
               ) : (
                 <>
-                  <img src={edLogo} alt="EveryDriver" className="h-7 w-auto object-contain" />
+                  <img src={edLogo} alt="EveryDriver" className="h-9 w-auto object-contain" />
                 </>
               )}
             </div>
           </div>
 
           {/* Right: Action buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
             {showAddButton && (
               <button
