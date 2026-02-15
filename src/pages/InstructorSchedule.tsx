@@ -119,8 +119,8 @@ export default function InstructorSchedule() {
       <div className="space-y-4 h-full flex flex-col">
         <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-[#0075c9]/10 dark:bg-[#0075c9]/20 flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-[#0075c9]" />
+            <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-primary" />
             </div>
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
@@ -157,7 +157,7 @@ export default function InstructorSchedule() {
 
             <Button
               size="sm"
-              className="h-8 w-8 p-0 bg-[#0075c9] hover:bg-[#005a9e] text-white"
+              className="h-8 w-8 p-0 bg-primary hover:bg-primary/90 text-white"
               onClick={() => setFabLessonSheetOpen(true)}
             >
               <Plus className="h-4 w-4" />

@@ -98,7 +98,7 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
       case 'external':
         return <Badge variant="secondary">External</Badge>;
       case 'block':
-        return <Badge className="bg-[#0075c9]">Block</Badge>;
+        return <Badge className="bg-primary">Block</Badge>;
     }
   };
 

@@ -1,3 +1,5 @@
+// ============= Full file contents =============
+
 import { useState, useRef, useEffect, useMemo } from "react";
 import agendaIcon from "@/assets/agenda-icon.png";
 import { Link } from "react-router-dom";
@@ -48,7 +50,7 @@ function isOverdue(dateStr: string) {
 const PRIORITY_FLAGS: Record<number, string> = {
   1: "text-red-500",
   2: "text-orange-500",
-  3: "text-[#0075c9]",
+  3: "text-primary",
   4: "text-muted-foreground/30",
 };
 
@@ -190,7 +192,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       className
     )}>
       {/* Gradient header */}
-      <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+      <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
           <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -360,7 +362,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                     : entry.todo?.priority === 2
                     ? "border-orange-500 bg-orange-500/20"
                     : entry.todo?.priority === 3
-                    ? "border-[#0075c9] bg-[#0075c9]/20"
+                    ? "border-primary bg-primary/20"
                     : "border-muted-foreground/30 bg-muted"
                 )} />
                 {idx < timeline.length - 1 && <div className="w-px flex-1 bg-border/60 my-0.5" />}
@@ -451,121 +453,86 @@ function ManualReminderRow({ todo, onToggle, onDelete }: {
         <button onClick={onToggle} className="text-sm font-medium truncate text-left hover:line-through transition-all">
           {todo.title}
         </button>
-        <div className="flex items-center gap-1.5 shrink-0 ml-2">
-          {timeLabel && (
-            <span className="text-[10px] text-muted-foreground">{timeLabel}</span>
-          )}
-          <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-          </button>
-        </div>
+        {timeLabel && (
+          <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
+            {timeLabel}
+          </span>
+        )}
       </div>
-      <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0 border-primary/30 bg-primary/10 text-primary">
-        <Bell className="h-2.5 w-2.5 mr-0.5" />
-        Reminder
-      </Badge>
+      <div className="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={onDelete} className="text-muted-foreground hover:text-red-500">
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
     </>
   );
 }
 
 // ─── Todo row ──────────────────────────────────────────────────
-function TodoRow({ todo, isOverdue: overdue, onToggle, onDelete, onUpdate }: {
+function TodoRow({ todo, isOverdue, onToggle, onDelete, onUpdate }: {
   todo: InstructorTodo;
   isOverdue: boolean;
   onToggle: () => void;
   onDelete: () => void;
-  onUpdate: (updates: Partial<InstructorTodo>) => void;
+  onUpdate: (u: Partial<InstructorTodo>) => void;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(todo.title);
-  const [editDueDate, setEditDueDate] = useState<Date | undefined>(
-    todo.due_date ? parseISO(todo.due_date) : undefined
-  );
-  const editRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (editing && editRef.current) editRef.current.focus();
-  }, [editing]);
-
-  const handleSave = () => {
-    if (!editTitle.trim()) return;
-    onUpdate({
-      title: editTitle.trim(),
-      due_date: editDueDate ? format(editDueDate, "yyyy-MM-dd") : null,
-    });
-    setEditing(false);
+  const saveEdit = () => {
+    if (editTitle.trim() !== todo.title) {
+      onUpdate({ title: editTitle.trim() });
+    }
+    setIsEditing(false);
   };
 
-  if (editing) {
-    return (
-      <div className="space-y-2">
-        <Input
-          ref={editRef}
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSave();
-            if (e.key === "Escape") setEditing(false);
-          }}
-          className="h-8 text-sm"
-        />
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
-                <CalendarIcon className="h-3 w-3" />
-                {editDueDate ? format(editDueDate, "d MMM") : "Due date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={editDueDate} onSelect={setEditDueDate} initialFocus className="p-3 pointer-events-auto" />
-            </PopoverContent>
-          </Popover>
-          {editDueDate && (
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditDueDate(undefined)}>
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-          <div className="flex-1" />
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
-          <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>Save</Button>
-        </div>
-      </div>
-    );
-  }
-
-  const timeLabel = todo.due_date ? formatDueDate(todo.due_date) : "";
-
   return (
-    <>
-      <div className="flex items-center justify-between">
-        <button onClick={onToggle} className="text-sm font-medium truncate text-left hover:line-through transition-all">
-          <span className={cn(overdue && "text-red-500")}>{todo.title}</span>
+    <div className="relative">
+      <div className="flex items-start gap-2">
+        {/* Checkbox area */}
+        <button
+          onClick={onToggle}
+          className="mt-0.5 h-4 w-4 rounded border border-muted-foreground/40 hover:border-primary flex items-center justify-center transition-colors"
+        >
+          {/* Empty square */}
         </button>
-        <div className="flex items-center gap-1.5 shrink-0 ml-2">
-          {timeLabel && (
-            <span className={cn(
-              "text-[10px]",
-              overdue ? "text-red-500 font-bold" : "text-muted-foreground"
-            )}>
-              {timeLabel}
-            </span>
+
+        <div className="flex-1 min-w-0">
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+                onBlur={saveEdit}
+                className="h-6 text-sm px-1 py-0"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <span className={cn("text-sm font-medium truncate", isOverdue && "text-red-500")}>
+                {todo.title}
+              </span>
+              {todo.due_date && (
+                <span className={cn("text-[10px]", isOverdue ? "text-red-500 font-medium" : "text-muted-foreground")}>
+                  {formatDueDate(todo.due_date)}
+                </span>
+              )}
+            </div>
           )}
-          <button
-            onClick={() => {
-              setEditTitle(todo.title);
-              setEditDueDate(todo.due_date ? parseISO(todo.due_date) : undefined);
-              setEditing(true);
-            }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-          </button>
-          <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-          </button>
         </div>
       </div>
-    </>
+
+      {/* Hover actions */}
+      <div className="absolute right-0 top-0 hidden group-hover:flex items-center gap-1 bg-card/80 backdrop-blur-sm pl-2">
+        <button onClick={() => setIsEditing(true)} className="p-1 hover:bg-muted rounded text-muted-foreground">
+          <Pencil className="h-3 w-3" />
+        </button>
+        <button onClick={onDelete} className="p-1 hover:bg-red-100 hover:text-red-600 rounded text-muted-foreground">
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
   );
 }

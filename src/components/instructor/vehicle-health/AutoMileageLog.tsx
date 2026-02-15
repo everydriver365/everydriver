@@ -123,16 +123,16 @@ export function AutoMileageLog() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 border-[#0075c9]/20 dark:border-[#0075c9]/30">
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 border-primary/20 dark:border-primary/30">
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
-              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#0075c9]" />
-              <span className="text-[10px] sm:text-xs font-medium text-[#0075c9]">Personal</span>
+              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+              <span className="text-[10px] sm:text-xs font-medium text-primary">Personal</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-[#0075c9]">
+            <p className="text-lg sm:text-2xl font-bold text-primary">
               {summary.totalPersonal.toFixed(0)} mi
             </p>
-            <p className="text-[10px] sm:text-xs text-[#0075c9]/70">
+            <p className="text-[10px] sm:text-xs text-primary/70">
               {(100 - summary.businessPercentage).toFixed(0)}% of total
             </p>
           </CardContent>
@@ -245,7 +245,7 @@ export function AutoMileageLog() {
                                   "cursor-pointer transition-colors",
                                   log.trip_type === "business" 
                                     ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300"
-                                    : "bg-[#0075c9]/10 text-[#0075c9] hover:bg-[#0075c9]/20 dark:bg-[#0075c9]/20"
+                                    : "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20"
                                 )}
                                 onClick={() => handleToggleTripType(log)}
                               >

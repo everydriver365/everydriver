@@ -34,7 +34,7 @@ const mock = {
   ],
   tomorrow: { lessons: 4, hours: 6, earnings: 210, firstTime: "08:30" },
   quickActions: [
-    { label: "Schedule", icon: Calendar, color: "text-[#0075c9]", bg: "bg-[#0075c9]/10" },
+    { label: "Schedule", icon: Calendar, color: "text-primary", bg: "bg-primary/10" },
     { label: "Pupils", icon: Users, color: "text-emerald-600", bg: "bg-emerald-500/10" },
     { label: "Pay", icon: PoundSterling, color: "text-violet-600", bg: "bg-violet-500/10" },
     { label: "Track", icon: MapPin, color: "text-rose-600", bg: "bg-rose-500/10" },
@@ -78,7 +78,7 @@ const StatItem = ({ icon: Icon, value, label, iconColor, bg }: { icon: any; valu
 const AlertBanner = ({ icon, label, count, onClick, variant = "blue" }: { icon: string; label: string; count: number; onClick?: () => void; variant?: "blue" | "red" }) => {
   if (count <= 0) return null;
   return (
-    <div className="bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] rounded-none px-4 py-3 text-white relative overflow-hidden">
+    <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-none px-4 py-3 text-white relative overflow-hidden">
       <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
       <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
       <div className="relative flex items-center justify-between">
@@ -89,7 +89,7 @@ const AlertBanner = ({ icon, label, count, onClick, variant = "blue" }: { icon: 
             <p className="text-white/70 text-[10px]">{count} {label === "Messages" ? "unread" : "pending"}</p>
           </div>
         </div>
-        <span className={`min-w-[28px] h-7 px-2.5 rounded-full ${variant === "red" ? "bg-red-400 text-white" : "bg-white/90 text-[#0075c9]"} text-xs font-bold flex items-center justify-center`}>
+        <span className={`min-w-[28px] h-7 px-2.5 rounded-full ${variant === "red" ? "bg-red-400 text-white" : "bg-white/90 text-primary"} text-xs font-bold flex items-center justify-center`}>
           {count > 9 ? "9+" : count}
         </span>
       </div>
@@ -110,7 +110,7 @@ const NextLessonCard = ({ style = "default" }: { style?: string }) => (
           <p className="font-semibold text-gray-900">{mock.nextLesson.pupil}</p>
           <p className="text-xs text-gray-500">{mock.nextLesson.time} · {mock.nextLesson.postcode} · {mock.nextLesson.duration}</p>
         </div>
-        <div className="h-9 w-9 rounded-full bg-[#0075c9] flex items-center justify-center">
+        <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
           <Navigation className="h-4 w-4 text-white" />
         </div>
       </div>
@@ -124,14 +124,14 @@ const MiniTimeline = () => (
     {mock.timeline.map((item, i) => (
       <div key={i} className="flex gap-2.5 pb-2">
         <div className="flex flex-col items-center">
-          <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1.5 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-[#0075c9] ring-3 ring-[#0075c9]/20" : "bg-gray-200"}`} />
+          <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1.5 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-primary ring-3 ring-primary/20" : "bg-gray-200"}`} />
           {i < mock.timeline.length - 1 && <div className="w-0.5 flex-1 bg-gray-100 mt-0.5" />}
         </div>
         <div className="flex-1 pb-1">
           <p className={`text-xs ${item.done ? "text-gray-400" : "text-gray-500"}`}>{item.time}</p>
           <p className={`text-sm font-medium ${item.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{item.pupil}</p>
         </div>
-        {item.isNext && <span className="text-[10px] font-medium text-[#0075c9] bg-[#0075c9]/10 px-2 py-0.5 rounded-full self-start mt-1">Next</span>}
+        {item.isNext && <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full self-start mt-1">Next</span>}
         {item.done && <CheckCircle className="h-3.5 w-3.5 text-emerald-400 mt-1.5 shrink-0" />}
       </div>
     ))}
@@ -165,7 +165,7 @@ const AgendaSection = () => (
         <ChevronRight className="h-4 w-4 text-gray-300" />
       </div>
       <div className="h-1.5 bg-gray-100 rounded-full">
-        <div className="h-full bg-[#0075c9] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} />
+        <div className="h-full bg-primary rounded-full" style={{ width: `${mock.weeklyProgress}%` }} />
       </div>
       <p className="text-xs text-gray-500 mt-1">{mock.weeklyProgress}% of weekly goal</p>
     </div>
@@ -199,7 +199,7 @@ function Concept1() {
       {/* Overlap card */}
       <div className="-mt-8 mx-3 bg-white rounded-2xl shadow-lg p-4 relative z-10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 rounded-full bg-[#0075c9] flex items-center justify-center text-white font-bold text-sm">{mock.initials}</div>
+          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">{mock.initials}</div>
           <div className="flex-1">
             <p className="font-semibold text-sm text-gray-900">{getGreeting()}, {mock.name}</p>
             <div className="flex items-center gap-2 text-[10px] text-gray-400">
@@ -209,7 +209,7 @@ function Concept1() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <StatItem icon={BookOpen} value={String(mock.lessons)} label="Lessons" iconColor="text-[#0075c9]" bg="bg-[#0075c9]/5" />
+          <StatItem icon={BookOpen} value={String(mock.lessons)} label="Lessons" iconColor="text-primary" bg="bg-primary/5" />
           <StatItem icon={PoundSterling} value={`£${mock.earnings}`} label="Expected" iconColor="text-emerald-500" bg="bg-emerald-500/5" />
           <StatItem icon={Target} value={`${mock.weeklyProgress}%`} label="Weekly" iconColor="text-violet-500" bg="bg-violet-500/5" />
           <StatItem icon={Timer} value={mock.nextLesson.time} label={mock.nextLesson.pupil} iconColor="text-amber-500" bg="bg-amber-500/5" />
@@ -236,10 +236,10 @@ function Concept1() {
 function Concept2() {
   return (
     <div className="bg-white min-h-full">
-      <HeroImage className="h-[150px]" overlay="from-[#0075c9]/80 via-[#0075c9]/40 to-transparent" />
+      <HeroImage className="h-[150px]" overlay="from-primary/80 via-primary/40 to-transparent" />
       <div className="-mt-6 mx-3 relative z-10">
         {/* Big gradient card */}
-        <div className="bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] rounded-2xl p-4 text-white shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-2xl p-4 text-white shadow-xl relative overflow-hidden">
           <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
           <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
           <div className="relative">
@@ -294,7 +294,7 @@ function Concept3() {
       <div className="-mt-8 mx-3 relative z-10">
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#0075c9] to-[#00a3ff] flex items-center justify-center text-sm font-bold">{mock.initials}</div>
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-[#00a3ff] flex items-center justify-center text-sm font-bold">{mock.initials}</div>
             <div className="flex-1">
               <p className="font-bold text-sm">{getGreeting()}, {mock.name}</p>
               <div className="flex items-center gap-2 text-[10px] text-gray-400">
@@ -305,7 +305,7 @@ function Concept3() {
           </div>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { v: mock.lessons, l: "Lessons", c: "from-[#0075c9] to-[#00a3ff]" },
+              { v: mock.lessons, l: "Lessons", c: "from-primary to-[#00a3ff]" },
               { v: `£${mock.earnings}`, l: "Earned", c: "from-emerald-400 to-emerald-300" },
               { v: `${mock.weeklyProgress}%`, l: "Goal", c: "from-violet-400 to-violet-300" },
               { v: `${mock.streak}🔥`, l: "Streak", c: "from-amber-400 to-amber-300" },
@@ -323,7 +323,7 @@ function Concept3() {
         {mock.pendingJobs > 0 && (
           <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5"><Briefcase className="h-5 w-5 text-[#00a3ff]" /><div><span className="font-semibold text-sm">Job Offers</span><p className="text-gray-500 text-[10px]">{mock.pendingJobs} pending</p></div></div>
-            <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-[#0075c9] text-white text-xs font-bold flex items-center justify-center">{mock.pendingJobs}</span>
+            <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">{mock.pendingJobs}</span>
           </div>
         )}
         <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
@@ -336,7 +336,7 @@ function Concept3() {
         {/* Next lesson dark */}
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">YOUR DAY</p>
-          <div className="bg-white/5 border border-[#0075c9]/20 rounded-xl p-4">
+          <div className="bg-white/5 border border-primary/20 rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs text-[#00a3ff] font-medium mb-2"><Zap className="h-3.5 w-3.5" /> Next in {mock.nextLesson.minutesUntil}min</div>
             <div className="flex items-center justify-between">
               <div><p className="font-semibold">{mock.nextLesson.pupil}</p><p className="text-xs text-gray-400">{mock.nextLesson.time} · {mock.nextLesson.postcode}</p></div>
@@ -376,7 +376,7 @@ function Concept3() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">AGENDA</p>
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="flex items-center justify-between mb-2"><span className="text-sm font-semibold">This Week</span><ChevronRight className="h-4 w-4 text-gray-600" /></div>
-            <div className="h-1.5 bg-white/10 rounded-full"><div className="h-full bg-gradient-to-r from-[#0075c9] to-[#00a3ff] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} /></div>
+            <div className="h-1.5 bg-white/10 rounded-full"><div className="h-full bg-gradient-to-r from-primary to-[#00a3ff] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} /></div>
             <p className="text-xs text-gray-500 mt-1">{mock.weeklyProgress}% of weekly goal</p>
           </div>
         </div>
@@ -402,7 +402,7 @@ function Concept4() {
     <div className="bg-gray-50 min-h-full">
       <HeroImage className="h-[130px]" />
       {/* Blue stat bar */}
-      <div className="bg-[#0075c9] px-4 py-3 text-white">
+      <div className="bg-primary px-4 py-3 text-white">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">{mock.initials}</div>
           <div className="flex-1">
@@ -459,7 +459,7 @@ function Concept5() {
       {/* Pill stats scroll */}
       <div className="flex gap-2 overflow-x-auto px-3 -mt-4 relative z-10 pb-1">
         {[
-          { l: `${mock.lessons} Lessons`, c: "bg-[#0075c9] text-white" },
+          { l: `${mock.lessons} Lessons`, c: "bg-primary text-white" },
           { l: `£${mock.earnings}`, c: "bg-emerald-500 text-white" },
           { l: `${mock.streak}🔥 Streak`, c: "bg-amber-500 text-white" },
           { l: `${mock.weeklyProgress}% Goal`, c: "bg-violet-500 text-white" },
@@ -497,14 +497,14 @@ function Concept6() {
               <p className="text-xs text-gray-400">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</p>
             </div>
             <div className="flex gap-1.5">
-              <span className="bg-[#0075c9]/10 text-[#0075c9] text-xs font-medium px-2 py-0.5 rounded-full">{mock.lessons}</span>
+              <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">{mock.lessons}</span>
               <span className="bg-emerald-50 text-emerald-600 text-xs font-medium px-2 py-0.5 rounded-full">£{mock.earnings}</span>
             </div>
           </div>
         </div>
         <div className="px-4 py-3">
           <div className="grid grid-cols-4 gap-2 mb-3">
-            <StatItem icon={BookOpen} value={String(mock.lessons)} label="Lessons" iconColor="text-[#0075c9]" bg="bg-[#0075c9]/5" />
+            <StatItem icon={BookOpen} value={String(mock.lessons)} label="Lessons" iconColor="text-primary" bg="bg-primary/5" />
             <StatItem icon={PoundSterling} value={`£${mock.earnings}`} label="Earned" iconColor="text-emerald-500" bg="bg-emerald-500/5" />
             <StatItem icon={Target} value={`${mock.weeklyProgress}%`} label="Weekly" iconColor="text-violet-500" bg="bg-violet-500/5" />
             <StatItem icon={Star} value={`${mock.streak}`} label="Streak" iconColor="text-amber-500" bg="bg-amber-500/5" />
@@ -522,17 +522,17 @@ function Concept6() {
           {mock.timeline.map((item, i) => (
             <div key={i} className="flex gap-3 pb-3">
               <div className="flex flex-col items-center">
-                <div className={`h-3 w-3 rounded-full shrink-0 mt-1 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-[#0075c9] ring-4 ring-[#0075c9]/20" : "bg-gray-200"}`} />
+                <div className={`h-3 w-3 rounded-full shrink-0 mt-1 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-primary ring-4 ring-primary/20" : "bg-gray-200"}`} />
                 {i < mock.timeline.length - 1 && <div className="w-0.5 flex-1 bg-gray-100 mt-1" />}
               </div>
-              <div className={`flex-1 rounded-xl p-3 ${item.isNext ? "bg-[#0075c9]/5 border border-[#0075c9]/20" : "bg-gray-50"}`}>
+              <div className={`flex-1 rounded-xl p-3 ${item.isNext ? "bg-primary/5 border border-primary/20" : "bg-gray-50"}`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className={`text-xs ${item.done ? "text-gray-400" : "text-gray-500"}`}>{item.time}</p>
                     <p className={`font-medium text-sm ${item.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{item.pupil}</p>
                     <p className="text-[10px] text-gray-400">{item.postcode}</p>
                   </div>
-                  {item.isNext && <span className="text-xs font-medium text-[#0075c9] bg-[#0075c9]/10 px-2 py-0.5 rounded-full">Next</span>}
+                  {item.isNext && <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Next</span>}
                   {item.done && <CheckCircle className="h-4 w-4 text-emerald-400" />}
                 </div>
               </div>
@@ -556,7 +556,7 @@ function Concept7() {
       <HeroImage className="h-[140px]" />
       <div className="p-3 -mt-6 relative z-10 space-y-2">
         {/* Greeting bento */}
-        <div className="bg-[#0075c9] rounded-2xl p-4 text-white">
+        <div className="bg-primary rounded-2xl p-4 text-white">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{mock.initials}</div>
             <div className="flex-1">
@@ -568,7 +568,7 @@ function Concept7() {
         {/* Stats bento */}
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-white rounded-2xl p-3 shadow-sm">
-            <BookOpen className="h-5 w-5 text-[#0075c9] mb-1" />
+            <BookOpen className="h-5 w-5 text-primary mb-1" />
             <p className="text-2xl font-bold text-gray-900">{mock.lessons}</p>
             <p className="text-[10px] text-gray-400">Lessons today</p>
           </div>
@@ -625,7 +625,7 @@ function Concept8() {
         {/* Widget: Greeting */}
         <div className="bg-white rounded-[20px] p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-[#0075c9] flex items-center justify-center text-white font-bold">{mock.initials}</div>
+            <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-white font-bold">{mock.initials}</div>
             <div className="flex-1">
               <p className="font-bold text-gray-900">{getGreeting()}, {mock.name}</p>
               <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
@@ -638,12 +638,12 @@ function Concept8() {
         {/* Widget: Next lesson */}
         <div className="bg-white rounded-[20px] p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <div className="h-6 w-6 rounded-md bg-[#0075c9] flex items-center justify-center"><Calendar className="h-3.5 w-3.5 text-white" /></div>
+            <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center"><Calendar className="h-3.5 w-3.5 text-white" /></div>
             <span className="text-xs font-semibold text-gray-400 uppercase">Next Lesson</span>
           </div>
           <div className="flex items-center justify-between">
             <div><p className="font-semibold text-gray-900">{mock.nextLesson.pupil}</p><p className="text-sm text-gray-500">{mock.nextLesson.time} · {mock.nextLesson.postcode}</p></div>
-            <div className="bg-[#0075c9]/10 rounded-full px-3 py-1 text-xs font-medium text-[#0075c9]">{mock.nextLesson.minutesUntil}min</div>
+            <div className="bg-primary/10 rounded-full px-3 py-1 text-xs font-medium text-primary">{mock.nextLesson.minutesUntil}min</div>
           </div>
         </div>
         {/* Widget: Stats */}
@@ -673,7 +673,7 @@ function Concept8() {
           </div>
           <div className="space-y-2">
             {["New message from Alice B.", "Payment received - James W."].map((m, i) => (
-              <div key={i} className="flex items-center gap-2 py-1"><div className="h-1.5 w-1.5 rounded-full bg-[#0075c9] shrink-0" /><p className="text-sm text-gray-700 truncate">{m}</p></div>
+              <div key={i} className="flex items-center gap-2 py-1"><div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" /><p className="text-sm text-gray-700 truncate">{m}</p></div>
             ))}
           </div>
         </div>
@@ -691,7 +691,7 @@ function Concept8() {
         {/* Timeline widget */}
         <div className="bg-white rounded-[20px] p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <div className="h-6 w-6 rounded-md bg-[#0075c9] flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-white" /></div>
+            <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-white" /></div>
             <span className="text-xs font-semibold text-gray-400 uppercase">Schedule</span>
           </div>
           <MiniTimeline />
@@ -712,7 +712,7 @@ function Concept9() {
     <div className="bg-white min-h-full">
       <HeroImage className="h-[120px]" />
       {/* Compact header bar */}
-      <div className="bg-gradient-to-r from-[#0075c9] to-[#0090e0] px-4 py-2.5 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-primary to-[#0090e0] px-4 py-2.5 flex items-center gap-3">
         <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs">{mock.initials}</div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">{mock.name}</p>
@@ -724,7 +724,7 @@ function Concept9() {
         {/* Horizontal stats */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           {[
-            { v: mock.lessons, l: "Lessons", c: "border-[#0075c9]", tc: "text-[#0075c9]" },
+            { v: mock.lessons, l: "Lessons", c: "border-primary", tc: "text-primary" },
             { v: `£${mock.earnings}`, l: "Earned", c: "border-emerald-400", tc: "text-emerald-600" },
             { v: `${mock.weeklyProgress}%`, l: "Goal", c: "border-violet-400", tc: "text-violet-600" },
             { v: `${mock.streak}🔥`, l: "Streak", c: "border-amber-400", tc: "text-amber-600" },
@@ -736,10 +736,10 @@ function Concept9() {
           ))}
         </div>
         {/* Next lesson compact */}
-        <div className="flex items-center gap-3 bg-[#0075c9]/5 rounded-xl p-3 border border-[#0075c9]/10">
-          <div className="h-10 w-10 rounded-lg bg-[#0075c9] flex items-center justify-center shrink-0"><Timer className="h-5 w-5 text-white" /></div>
+        <div className="flex items-center gap-3 bg-primary/5 rounded-xl p-3 border border-primary/10">
+          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center shrink-0"><Timer className="h-5 w-5 text-white" /></div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-[#0075c9] font-medium">Next in {mock.nextLesson.minutesUntil}min</p>
+            <p className="text-xs text-primary font-medium">Next in {mock.nextLesson.minutesUntil}min</p>
             <p className="text-sm font-semibold text-gray-900 truncate">{mock.nextLesson.pupil} · {mock.nextLesson.time}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
@@ -787,7 +787,7 @@ function Concept10() {
         {/* Stats pills floating */}
         <div className="flex gap-2">
           {[
-            { v: `${mock.lessons} lessons`, bg: "bg-white", c: "text-[#0075c9]" },
+            { v: `${mock.lessons} lessons`, bg: "bg-white", c: "text-primary" },
             { v: `£${mock.earnings}`, bg: "bg-white", c: "text-emerald-600" },
             { v: `${mock.weeklyProgress}% goal`, bg: "bg-white", c: "text-violet-600" },
           ].map(p => (
@@ -796,11 +796,11 @@ function Concept10() {
         </div>
         {/* Next lesson soft card */}
         <div className="bg-white rounded-3xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-xs text-[#0075c9] font-medium mb-2"><Zap className="h-3.5 w-3.5" /> NEXT LESSON</div>
+          <div className="flex items-center gap-2 text-xs text-primary font-medium mb-2"><Zap className="h-3.5 w-3.5" /> NEXT LESSON</div>
           <div className="flex items-center justify-between">
             <div><p className="font-semibold text-gray-900">{mock.nextLesson.pupil}</p><p className="text-xs text-gray-500">{mock.nextLesson.time} · {mock.nextLesson.postcode}</p></div>
             <div className="flex gap-2">
-              <div className="h-9 w-9 rounded-full bg-[#0075c9] flex items-center justify-center"><Navigation className="h-4 w-4 text-white" /></div>
+              <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center"><Navigation className="h-4 w-4 text-white" /></div>
             </div>
           </div>
         </div>
@@ -837,7 +837,7 @@ function Concept10() {
         {/* Agenda soft */}
         <div className="bg-white rounded-3xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2"><span className="text-sm font-semibold text-gray-900">This Week</span><ChevronRight className="h-4 w-4 text-gray-300" /></div>
-          <div className="h-2 bg-gray-100 rounded-full"><div className="h-full bg-gradient-to-r from-[#0075c9] to-[#00a3ff] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} /></div>
+          <div className="h-2 bg-gray-100 rounded-full"><div className="h-full bg-gradient-to-r from-primary to-[#00a3ff] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} /></div>
           <p className="text-xs text-gray-500 mt-1">{mock.weeklyProgress}% of weekly goal</p>
         </div>
         {/* Tomorrow soft */}
@@ -889,7 +889,7 @@ export default function MobileHomeRedesignDemo() {
               key={c.id}
               onClick={() => setSelected(i)}
               className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                selected === i ? "bg-[#0075c9] text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"
+                selected === i ? "bg-primary text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"
               }`}
             >
               {c.id}. {c.name}
@@ -905,7 +905,7 @@ export default function MobileHomeRedesignDemo() {
           </div>
 
           <div className="relative">
-            <div className="w-[375px] h-[812px] bg-black rounded-[50px] p-3 shadow-2xl shadow-[#0075c9]/10 border border-white/10">
+            <div className="w-[375px] h-[812px] bg-black rounded-[50px] p-3 shadow-2xl shadow-primary/10 border border-white/10">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150px] h-[30px] bg-black rounded-b-2xl z-10" />
               <div className="w-full h-full rounded-[40px] overflow-hidden bg-white">
                 <div className="h-full overflow-y-auto">
@@ -946,7 +946,7 @@ export default function MobileHomeRedesignDemo() {
                   key={c.id}
                   onClick={() => { setSelected(i); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                   className={`rounded-2xl overflow-hidden border-2 transition-all ${
-                    selected === i ? "border-[#0075c9] shadow-lg shadow-[#0075c9]/20" : "border-white/10 hover:border-white/30"
+                    selected === i ? "border-primary shadow-lg shadow-primary/20" : "border-white/10 hover:border-white/30"
                   }`}
                 >
                   <div className="h-[200px] overflow-hidden bg-white">

@@ -106,7 +106,7 @@ export default function InstructorMenu() {
     {
       title: "Schedule & Pupils",
       items: [
-        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
+        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-white", iconBg: "bg-primary", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
         { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-white", iconBg: "bg-indigo-500", gateKey: "pupils", path: "/instructor/pupils", customIcon: pupilsIcon },
       ],
     },
@@ -128,7 +128,7 @@ export default function InstructorMenu() {
     {
       title: "Resources",
       items: [
-        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "resources", path: "/instructor/resources" },
+        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-white", iconBg: "bg-primary", gateKey: "resources", path: "/instructor/resources" },
       ],
     },
     {
@@ -142,13 +142,13 @@ export default function InstructorMenu() {
       items: [
         { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-white", iconBg: "bg-gray-500", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
         { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-white", iconBg: "bg-violet-500", gateKey: "website", path: "/instructor/website" },
-        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "faqs", path: "/instructor/faqs" },
+        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-white", iconBg: "bg-primary", gateKey: "faqs", path: "/instructor/faqs" },
       ],
     },
     {
       title: "Account",
       items: [
-        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-white", iconBg: "bg-[#0075c9]", path: "/instructor/settings" },
+        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-white", iconBg: "bg-primary", path: "/instructor/settings" },
         { icon: LogOut, label: "Sign Out", description: "Log out", iconColor: "text-white", iconBg: "bg-destructive", action: handleLogout },
       ],
     },
@@ -169,7 +169,7 @@ export default function InstructorMenu() {
         {menuSections.map((section) => (
           <div key={section.title} className="rounded-2xl overflow-hidden shadow-sm">
             {/* Gradient section header */}
-            <div className="bg-gradient-to-r from-[#0075c9] to-[#0075c9]/70 px-4 py-2">
+            <div className="bg-gradient-to-r from-primary to-primary/70 px-4 py-2">
               <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
             </div>
             <div className="bg-card divide-y divide-border/30">
@@ -205,7 +205,7 @@ export default function InstructorMenu() {
                       <div
                         className={cn(
                           "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                          locked ? "bg-muted" : (item.iconBg || "bg-[#0075c9]")
+                          locked ? "bg-muted" : (item.iconBg || "bg-primary")
                         )}
                       >
                         {locked ? (

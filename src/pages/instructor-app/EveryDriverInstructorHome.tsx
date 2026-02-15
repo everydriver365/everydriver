@@ -35,7 +35,7 @@ export default function EveryDriverInstructorHome() {
               </Button>
             </Link>
             <Link to="/instructor-app/signup">
-              <Button className="bg-[#0075c9] hover:bg-[#005a9e] text-white">
+              <Button className="bg-primary hover:bg-primary/90 text-white">
                 Get Started Free
               </Button>
             </Link>
@@ -71,7 +71,7 @@ export default function EveryDriverInstructorHome() {
                   </Button>
                 </Link>
                 <Link to="/instructor-app/signup" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-[#0075c9] hover:bg-[#005a9e] text-white justify-center">
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white justify-center">
                     Get Started Free
                   </Button>
                 </Link>
@@ -89,19 +89,19 @@ export default function EveryDriverInstructorHome() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block px-4 py-1.5 bg-[#0075c9]/10 text-[#0075c9] rounded-full text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
               {hero.badge_text}
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-foreground">
               {hero.headline_part1}{" "}
-              <span className="text-[#0075c9]">{hero.headline_highlight}</span>
+              <span className="text-primary">{hero.headline_highlight}</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
               {hero.subtext}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={hero.primary_cta_link}>
-                <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white px-8 py-6 text-lg">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg">
                   {hero.primary_cta_text}
                 </Button>
               </Link>
@@ -113,11 +113,11 @@ export default function EveryDriverInstructorHome() {
             </div>
             <div className="flex items-center justify-center gap-6 mt-8 text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[#0075c9]" />
+                <Shield className="w-4 h-4 text-primary" />
                 {hero.trust_badge1}
               </span>
               <span className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-[#0075c9]" />
+                <CreditCard className="w-4 h-4 text-primary" />
                 {hero.trust_badge2}
               </span>
             </div>
@@ -161,10 +161,10 @@ export default function EveryDriverInstructorHome() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-card border border-border rounded-xl p-6 hover:border-[#0075c9]/50 transition-colors"
+                    className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
                   >
-                    <div className="w-12 h-12 bg-[#0075c9]/10 rounded-lg flex items-center justify-center mb-4">
-                      <feature.icon className="w-6 h-6 text-[#0075c9]" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                      <feature.icon className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">
                       {feature.title}
@@ -181,7 +181,7 @@ export default function EveryDriverInstructorHome() {
       )}
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#0075c9] to-[#005a9e]">
+      <section className="py-20 bg-gradient-to-r from-primary to-primary/80">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -195,7 +195,7 @@ export default function EveryDriverInstructorHome() {
               Join hundreds of driving instructors already using EveryDriver
             </p>
             <Link to="/instructor-app/signup">
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-[#0075c9] px-8 py-6 text-lg font-semibold">
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-primary px-8 py-6 text-lg font-semibold">
                 Start Your Free Account
               </Button>
             </Link>
@@ -226,7 +226,7 @@ export default function EveryDriverInstructorHome() {
                 Terms
               </Link>
               <span className="text-gray-300">|</span>
-              <Link to="/drive365" className="hover:text-foreground transition-colors text-[#0075c9] font-medium">
+              <Link to="/drive365" className="hover:text-foreground transition-colors text-primary font-medium">
                 Drive365 Learners
               </Link>
               <Link to="/pupil/login" className="hover:text-foreground transition-colors">

@@ -111,7 +111,7 @@ const getWeatherIconColor = (icon: string): string => {
       return "text-slate-400";
     case "CloudRain":
     case "CloudDrizzle":
-      return "text-[#0075c9]";
+      return "text-primary";
     case "CloudFog":
       return "text-slate-500";
     case "CloudLightning":
@@ -331,7 +331,7 @@ export function InstructorMobileHome({
           className="bg-card rounded-2xl shadow-sm overflow-hidden"
         >
           {/* Gradient header */}
-          <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-4 text-white">
+          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-4 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -371,8 +371,8 @@ export function InstructorMobileHome({
           {/* Stats grid */}
           <div className="p-4">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0075c9]/10">
-                <BookOpen className="h-4 w-4 text-[#0075c9]" />
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-primary/10">
+                <BookOpen className="h-4 w-4 text-primary" />
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Lessons</p>
@@ -412,7 +412,7 @@ export function InstructorMobileHome({
             onClick={() => navigate("/instructor/jobs")}
             className="w-full bg-card rounded-2xl shadow-sm overflow-hidden active:scale-[0.99] transition-all"
           >
-            <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+            <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
                 <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -425,7 +425,7 @@ export function InstructorMobileHome({
                     <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
                   </div>
                 </div>
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-[#0075c9] text-xs font-bold flex items-center justify-center shadow-sm">
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center shadow-sm">
                   {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                 </span>
               </div>
@@ -436,7 +436,7 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/messages")}
           className="w-full bg-card rounded-2xl shadow-sm overflow-hidden active:scale-[0.99] transition-all"
         >
-          <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -579,7 +579,7 @@ export function InstructorMobileHome({
             className="bg-card rounded-2xl shadow-sm overflow-hidden cursor-pointer"
             onClick={() => navigate("/instructor/gaps")}
           >
-            <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+            <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
                 <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
