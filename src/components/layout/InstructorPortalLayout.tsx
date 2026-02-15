@@ -406,13 +406,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </SheetContent>
                     </Sheet>
 
-                    {/* Avatar + Greeting */}
-                    <Avatar className="h-8 w-8 border-2 border-primary-foreground/30 shrink-0">
-                      <AvatarImage src={instructor?.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
-                        {instructor?.name?.charAt(0) || "I"}
-                      </AvatarFallback>
-                    </Avatar>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold leading-tight truncate">Hi, {instructor?.name?.split(" ")[0] || "there"} 👋</p>
                       <p className="text-[10px] text-primary-foreground/60">Ready to teach?</p>
