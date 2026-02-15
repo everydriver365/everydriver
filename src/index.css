@@ -341,3 +341,8 @@
 }
 
 /* Instructor portal: iOS-style rounded cards */
+
+/* Global safe-area chrome: fill status bar / notch area with primary navy */
+html {
+  background-color: hsl(218, 54%, 17%);
+}
