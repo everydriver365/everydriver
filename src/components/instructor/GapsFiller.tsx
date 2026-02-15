@@ -262,11 +262,17 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           });
 
           // Check if this slot overlaps with any external calendar event
+          // Ignore all-day events (00:00 to 23:59 or spanning multiple days) as they are informational
           const hasCalendarConflict = dayCalendarEvents.some(event => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time);
+            
+            // Skip all-day / multi-day events (informational, not blocking)
             const eventStartHour = eventStart.getHours() + eventStart.getMinutes() / 60;
             const eventEndHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
+            const isAllDay = (eventStartHour === 0 && (eventEndHour === 0 || eventEndHour >= 23.5));
+            const isMultiDay = (eventEnd.getTime() - eventStart.getTime()) >= 24 * 60 * 60 * 1000;
+            if (isAllDay || isMultiDay) return false;
             
             // Check if event is on this specific date
             if (format(eventStart, "yyyy-MM-dd") === dateStr) {
