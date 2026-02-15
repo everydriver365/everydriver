@@ -246,9 +246,48 @@ export default function InstructorFuel() {
       {/* Content */}
       {!loading && !error && stations.length > 0 && (
         <>
-          {/* Cheapest Summary Card */}
-          {cheapest && (
-            <div className="p-4">
+          {/* Summary Cards */}
+          <div className="p-4 space-y-3">
+            {/* Nearest Station Card */}
+            {nearest && (
+              <Card className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30 border-blue-200/50 dark:border-blue-800/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md",
+                      getBrandColor(nearest.brand)
+                    )}>
+                      {nearest.brand.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Nearest</span>
+                      </div>
+                      <p className="text-sm font-medium text-foreground">{nearest.name}</p>
+                      <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="text-lg font-bold text-foreground">
+                          {nearest.distance_miles.toFixed(1)} mi
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {formatPrice(nearest.prices[fuelType as keyof typeof nearest.prices] || nearest.prices.E10)}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                      onClick={() => handleNavigate(nearest)}
+                    >
+                      <Navigation className="h-4 w-4" />
+                      Go
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Cheapest Station Card */}
+            {cheapest && (
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200/50 dark:border-green-800/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
@@ -259,29 +298,32 @@ export default function InstructorFuel() {
                       {cheapest.brand.charAt(0)}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-foreground">
-                          {formatPrice(cheapest.prices[fuelType as keyof typeof cheapest.prices] || cheapest.prices.E10)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">{fuelType}</span>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <TrendingDown className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        <span className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Cheapest</span>
                       </div>
                       <p className="text-sm font-medium text-foreground">{cheapest.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {cheapest.distance_miles.toFixed(1)} miles away
-                      </p>
+                      <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="text-lg font-bold text-foreground">
+                          {formatPrice(cheapest.prices[fuelType as keyof typeof cheapest.prices] || cheapest.prices.E10)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {cheapest.distance_miles.toFixed(1)} mi away
+                        </span>
+                      </div>
                     </div>
                     <Button
                       className="bg-green-600 hover:bg-green-700 text-white gap-2"
                       onClick={() => handleNavigate(cheapest)}
                     >
                       <Navigation className="h-4 w-4" />
-                      Navigate
+                      Go
                     </Button>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Tabs for List/Map */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
