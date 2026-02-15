@@ -312,7 +312,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
             <p className="text-xl font-bold text-foreground">£{totalThisMonth.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#0075c9]/10 to-cyan-500/10 border-[#0075c9]/30">
+        <Card className="bg-gradient-to-br from-primary/10 to-cyan-500/10 border-primary/30">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Pending Xero Sync</p>
             <p className="text-xl font-bold text-foreground">£{totalUnsynced.toFixed(2)}</p>

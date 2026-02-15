@@ -282,7 +282,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
         <Card>
           <CardHeader className="pb-3 px-4">
             <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-[#0075c9]" />
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Vehicle Efficiency
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">Miles per gallon</CardDescription>
@@ -381,9 +381,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           <CollapsibleContent>
             <CardContent className="px-4 pt-0 pb-4">
               {/* Info Banner */}
-              <div className="flex items-start gap-2 p-3 mb-4 bg-[#0075c9]/5 dark:bg-[#0075c9]/10 rounded-lg border border-[#0075c9]/20 dark:border-[#0075c9]/30">
-                <Info className="h-4 w-4 mt-0.5 text-[#0075c9] flex-shrink-0" />
-                <p className="text-xs text-[#0075c9]/80 dark:text-[#0075c9]/70">
+              <div className="flex items-start gap-2 p-3 mb-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
+                <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <p className="text-xs text-primary/80 dark:text-primary/70">
                   Select the expenses you claim against your income. These are tracked in your expense records and recurring costs below.
                 </p>
               </div>

@@ -190,7 +190,7 @@ export function TestResultsHistory({
                     <TableRow
                       key={result.id}
                       className={cn(
-                        result.is_mock && "bg-[#0075c9]/5 dark:bg-[#0075c9]/10"
+                        result.is_mock && "bg-primary/5 dark:bg-primary/10"
                       )}
                     >
                       <TableCell>

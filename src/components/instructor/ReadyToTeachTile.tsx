@@ -37,7 +37,7 @@ export function ReadyToTeachTile({
   const clampedProgress = Math.min(progressPercent, 100);
 
   const stats = [
-    { icon: BookOpen, label: "Lessons", value: lessonCount.toString(), iconColor: "text-[#0075c9]", bg: "bg-[#0075c9]/10" },
+    { icon: BookOpen, label: "Lessons", value: lessonCount.toString(), iconColor: "text-primary", bg: "bg-primary/10" },
     { icon: PoundSterling, label: "Expected", value: `£${expectedEarnings}`, iconColor: "text-emerald-500", bg: "bg-emerald-500/10" },
     { icon: Target, label: "Weekly", value: `${clampedProgress}%`, iconColor: "text-violet-500", bg: "bg-violet-500/10" },
     { icon: Timer, label: nextPupilFirstName || "Next up", value: nextLessonTime ? `${nextLessonTime}${nextPostcode ? ` • ${nextPostcode}` : ""}` : (nextMinutesUntil != null ? `${nextMinutesUntil}m` : "--"), iconColor: "text-amber-500", bg: "bg-amber-500/10" },
@@ -55,7 +55,7 @@ export function ReadyToTeachTile({
         {profileImageUrl ? (
           <img src={profileImageUrl} alt={firstName} className="h-10 w-10 rounded-full object-cover" />
         ) : (
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-[#0075c9] flex items-center justify-center text-white font-bold text-sm">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center text-white font-bold text-sm">
             {firstName[0]}
           </div>
         )}

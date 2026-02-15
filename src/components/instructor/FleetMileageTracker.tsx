@@ -209,8 +209,8 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <User className="h-4 w-4 mx-auto text-[#0075c9] mb-1" />
-            <p className="text-xl font-bold text-[#0075c9]">{summary.personalMiles}</p>
+            <User className="h-4 w-4 mx-auto text-primary mb-1" />
+            <p className="text-xl font-bold text-primary">{summary.personalMiles}</p>
             <p className="text-[10px] text-muted-foreground">Personal Miles</p>
           </CardContent>
         </Card>
