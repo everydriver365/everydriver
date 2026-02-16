@@ -1,40 +1,97 @@
 
 
-# Add Test Swap Alert Bell to Instructor Mobile Header
+# Plan Settings Overhaul: Feature-Plan Matrix with Checkboxes
 
-## What This Does
+## Overview
 
-Adds a notification bell icon to the instructor mobile app header that shows a red badge when there are new test swap offers or matching tests available. Tapping it navigates directly to the Test Swap page.
+Replace the current single `plan_tier` column approach on `feature_showcase_items` with a proper many-to-many relationship so each feature can be ticked on/off for each plan. Create a new dedicated admin page for this, accessible from its own tab in the admin navigation. Also add a "Contact Us" option for plan pricing.
 
-## How It Works
+## Database Changes
 
-1. **New hook: `useTestSwapNotifications`** -- Queries the database for:
-   - Pending swap offers on the instructor's test requests (someone offered them a test)
-   - New active "have_test" requests on the swap board that match what the instructor's pupils want
-   - Polls every 30 seconds and listens via realtime for instant updates
+### New table: `feature_plan_assignments`
 
-2. **Header update** -- A bell icon button is added to the right-side action buttons in `InstructorMobileHeader.tsx`. When there are unread notifications, a small red dot/count badge appears on the bell. Tapping it navigates to `/instructor/test-requests`.
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | Default gen_random_uuid() |
+| feature_id | uuid FK -> feature_showcase_items(id) ON DELETE CASCADE | |
+| plan_slug | text | e.g. 'free', 'pro', 'max', 'multi', 'enterprise' |
+| created_at | timestamptz | Default now() |
+| UNIQUE(feature_id, plan_slug) | | Prevent duplicates |
 
-## Technical Details
+### Seed data
 
-### New File: `src/hooks/useTestSwapNotifications.ts`
+Migrate existing `plan_tier` data into the new table. For each feature, assign it to the matching plan and all higher plans (since currently a feature on "free" means it's available on all plans above too). This will pre-populate the checkboxes.
 
-A React Query hook that:
-- Counts `test_swap_offers` with status `'pending'` linked to `test_requests` where `instructor_id` matches the current instructor
-- Counts new active `test_requests` with `request_type = 'have_test'` posted by other instructors (potential matches)
-- Returns `{ count: number }` for the badge
-- Uses a 30-second refetch interval
-- Subscribes to realtime changes on `test_swap_offers` table for instant updates
+### Subscription plans: `show_contact_us` column
 
-### Modified File: `src/components/instructor/InstructorMobileHeader.tsx`
+Add a `show_contact_us` boolean column (default false) to `subscription_plans`. When true, the plans page shows "Contact Us" instead of a price.
 
-- Import the new `useTestSwapNotifications` hook
-- Add a bell button between the OfflineSyncIndicator and the Pay button
-- Show a red badge with the count when count > 0
-- On click, navigate to `/instructor/test-requests`
+## New Component: `PlanFeatureMatrixManager.tsx`
+
+A full-page admin component that displays:
+
+- A table with all features from `feature_showcase_items` grouped by category
+- Column headers for each plan (Free, Pro, Max, Multi, Enterprise)
+- A checkbox at each intersection
+- Checking/unchecking inserts/deletes from `feature_plan_assignments`
+- Changes save immediately on toggle (no save button needed)
+
+### Layout
+
+```
+Category / Feature          | Free | Pro | Max | Multi | Enterprise
+----------------------------------------------------------------
+Diary & Scheduling
+  Drag-and-drop calendar    |  [x] | [x] | [x] |  [x]  |    [x]
+  Google Calendar sync      |  [x] | [x] | [x] |  [x]  |    [x]
+  Gap-fill SMS blasts       |  [ ] | [x] | [x] |  [x]  |    [x]
+Pupil Management
+  Pupil profiles            |  [x] | [x] | [x] |  [x]  |    [x]
+  Automated follow-ups      |  [ ] | [ ] | [x] |  [x]  |    [x]
+...
+```
+
+## Admin Navigation Changes
+
+### `AdminLayout.tsx`
+
+Add a new nav tab:
+```
+{ id: "plan-features", label: "Plan Features", icon: CheckSquare }
+```
+
+Map it in `sectionToTab` and add it to `navTabs`.
+
+### `AdminPortal.tsx`
+
+- Add `plan-features` to `sectionMeta`
+- Add a new `case "plan-features"` in the section renderer that shows `PlanFeatureMatrixManager`
+
+## Plan Pricing: "Contact Us" Option
+
+### `SubscriptionPlansManager.tsx` (edit dialog)
+
+Add a toggle: "Show 'Contact Us' instead of price". When enabled, the price fields can be left as-is but won't be displayed on the plans page.
+
+### `InstructorPlans.tsx`
+
+Update the price display section: if `show_contact_us` is true, show "Contact Us" instead of the price.
+
+## Files Summary
 
 | File | Change |
 |------|--------|
-| **New** `src/hooks/useTestSwapNotifications.ts` | Hook to query pending offers and matching requests |
-| `src/components/instructor/InstructorMobileHeader.tsx` | Add bell icon with notification badge |
+| **Migration** | Create `feature_plan_assignments` table, seed from existing data, add `show_contact_us` to `subscription_plans` |
+| **New** `src/components/admin/PlanFeatureMatrixManager.tsx` | Checkbox matrix UI |
+| `src/components/admin/AdminLayout.tsx` | Add "Plan Features" nav tab |
+| `src/pages/AdminPortal.tsx` | Add section metadata + case for rendering |
+| `src/components/admin/SubscriptionPlansManager.tsx` | Add "Contact Us" toggle in edit dialog |
+| `src/pages/InstructorPlans.tsx` | Respect `show_contact_us` flag in price display |
+
+## Technical Details
+
+- The `PlanFeatureMatrixManager` fetches all `feature_showcase_items` (ordered by category + display_order) and all `feature_plan_assignments`, then renders the matrix
+- Toggling a checkbox does an upsert or delete on `feature_plan_assignments`
+- RLS: Admin-only write access via `has_role('admin')`, public read for the assignments table
+- The existing `plan_tier` column on `feature_showcase_items` remains for backward compatibility but the matrix becomes the source of truth
 
