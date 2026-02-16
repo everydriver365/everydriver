@@ -9435,6 +9435,163 @@ export type Database = {
         }
         Relationships: []
       }
+      test_requests: {
+        Row: {
+          created_at: string
+          created_by_type: string
+          date_range_end: string | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          pupil_id: string | null
+          request_type: string
+          status: string
+          test_centre_id: string | null
+          test_centre_name: string | null
+          test_date: string
+          test_time: string
+          time_range_end: string | null
+          updated_at: string
+          willing_to_pay_swap_fee: boolean
+        }
+        Insert: {
+          created_at?: string
+          created_by_type?: string
+          date_range_end?: string | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          pupil_id?: string | null
+          request_type?: string
+          status?: string
+          test_centre_id?: string | null
+          test_centre_name?: string | null
+          test_date: string
+          test_time: string
+          time_range_end?: string | null
+          updated_at?: string
+          willing_to_pay_swap_fee?: boolean
+        }
+        Update: {
+          created_at?: string
+          created_by_type?: string
+          date_range_end?: string | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          pupil_id?: string | null
+          request_type?: string
+          status?: string
+          test_centre_id?: string | null
+          test_centre_name?: string | null
+          test_date?: string
+          test_time?: string
+          time_range_end?: string | null
+          updated_at?: string
+          willing_to_pay_swap_fee?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_requests_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_swap_offers: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          offered_by_admin: boolean
+          offered_by_instructor_id: string | null
+          offered_test_centre_id: string | null
+          offered_test_centre_name: string | null
+          offered_test_date: string
+          offered_test_time: string
+          status: string
+          test_request_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          offered_by_admin?: boolean
+          offered_by_instructor_id?: string | null
+          offered_test_centre_id?: string | null
+          offered_test_centre_name?: string | null
+          offered_test_date: string
+          offered_test_time: string
+          status?: string
+          test_request_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          offered_by_admin?: boolean
+          offered_by_instructor_id?: string | null
+          offered_test_centre_id?: string | null
+          offered_test_centre_name?: string | null
+          offered_test_date?: string
+          offered_test_time?: string
+          status?: string
+          test_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_swap_offers_offered_by_instructor_id_fkey"
+            columns: ["offered_by_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_swap_offers_offered_by_instructor_id_fkey"
+            columns: ["offered_by_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_swap_offers_offered_test_centre_id_fkey"
+            columns: ["offered_test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_swap_offers_test_request_id_fkey"
+            columns: ["test_request_id"]
+            isOneToOne: false
+            referencedRelation: "test_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       theory_questions: {
         Row: {
           category: string

@@ -65,6 +65,7 @@ const additionalTiles: QuickAction[] = [
   { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
   { id: "find-fuel", title: "Find Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 100.5 },
   { id: "test-results", title: "Log Test Result", icon: "Award", route: "/instructor/test-results", display_order: 101 },
+  { id: "test-requests", title: "Test Swap", icon: "Award", route: "/instructor/test-requests", display_order: 101.5 },
   { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 102 },
   { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 103 },
   { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 104 },
