@@ -1,36 +1,68 @@
 
 
-# Single Active Tracker Selection
+# Consolidate Settings into One Unified Hub
 
-## Problem
-You have 2 Quartix units linked (Yaris and Olivia), but the sync system tracks all units marked as `is_active: true`. There is no way to pick just one to track at a time.
+## The Problem
 
-## Solution
-Add a "Set as Active" toggle to the Quartix Units list so only one unit tracks at a time. When you activate one unit, the other is automatically deactivated. The existing sync system already filters by `is_active = true`, so this works out of the box with no backend changes.
+Settings are currently scattered across 5+ different places:
 
-## What Changes
+1. **Main Settings page** (`/instructor/settings`) -- 7 categories with ~25 collapsible tiles
+2. **Quick Settings sheet** -- slides up from the header cog with toggle switches
+3. **Header dropdown menu** -- theme toggle, wallpaper, hero image, screen layout
+4. **Appearance sheet** -- another bottom sheet for wallpaper/hero/layout
+5. **Separate GPS Setup page** (`/instructor/settings/gps`) -- standalone page for Quartix
 
-### 1. QuartixIdSearch.tsx (Quartix Units list in Settings)
-- For linked units, replace the simple "Linked" badge with either an **"Active"** (green) or **"Inactive"** (grey) badge
-- Add a **"Set Active"** button on inactive linked units that:
-  - Sets all other Quartix devices for this instructor to `is_active: false`
-  - Sets the selected device to `is_active: true`
-- The "Unlink" button remains available on all linked units
-- Active unit gets a prominent green highlight; inactive linked units get a subtle grey style
+This means an instructor might look in 3 different places just to find a notification toggle or theme switch.
 
-### 2. No database or backend changes needed
-- The `quartix-sync` edge function already only processes devices where `is_active = true`
-- The `TrackerSelectorTile` in live sessions already queries by `is_active` implicitly through the devices list
+## The Solution
 
-## User Experience
-1. Go to Settings -> Vehicle GPS Device
-2. See both Quartix units listed
-3. One shows "Active" (green), the other shows "Linked" (grey)
-4. Tap "Set Active" on the other unit to switch tracking to it
-5. The previous unit automatically becomes inactive
+Merge everything into the existing **Main Settings page** and simplify the header to just link there.
 
-## Technical Details
-- When "Set Active" is tapped: batch update sets all instructor's Quartix devices to `is_active: false`, then sets the chosen one to `is_active: true`
-- The footer summary updates to show "X units on Quartix / 1 active / Y linked"
-- File modified: `src/components/instructor/QuartixIdSearch.tsx`
+### 1. Remove the Quick Settings Sheet
+
+All 6 toggle sections (Visibility, Pupil App, Payments, Notifications, Website, Appearance) already have equivalents on the main settings page. Remove the `QuickSettingsSheet` component entirely.
+
+### 2. Simplify the Header Dropdown
+
+Replace the current dropdown (which has theme toggle, wallpaper, hero image, screen layout, and quick settings) with a streamlined version:
+- **Settings** -- links to `/instructor/settings`
+- **Profile** -- links to `/instructor/settings` (scrolls to profile)
+- **Logout**
+
+Remove the individual "Wallpaper", "Hero Image", and "Screen Layout" items -- these already live under Appearance and Dashboard Layout tiles in Settings.
+
+### 3. Remove the Standalone Appearance Sheet
+
+The header currently opens a separate `AppearanceSettings` bottom sheet. Remove this since the same component already exists as a tile in the Preferences & Data category on the main settings page.
+
+### 4. Embed GPS Setup Inline
+
+The "Vehicle GPS Device" tile currently just shows buttons that link out to `/instructor/settings/gps`. Instead, embed the `QuartixIdSearch` component directly (which it already partially does) and remove the "Device Setup" navigation button that sends users to a separate page. Keep the separate route working as a redirect for backward compatibility.
+
+### 5. Add a Quick-Jump Bar to Main Settings
+
+Add a horizontal scrollable chip/pill bar at the top of the settings page so users can quickly tap a category (Profile, Teaching, Payments, Website, Schedule, Tracking, Preferences) to jump straight to that section. This replaces the need for a separate Quick Settings panel.
+
+### 6. Update the Menu Page
+
+In the "Settings" section of the More menu:
+- Keep "All Settings" pointing to `/instructor/settings`
+- Keep "Mini-Website" and "FAQs"
+- Move "My Profile" from the Account section to instead link to `/instructor/settings` with the profile category auto-opened
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `src/components/instructor/QuickSettingsSheet.tsx` | Delete entirely |
+| `src/components/instructor/InstructorMobileHeader.tsx` | Remove Quick Settings sheet, Appearance sheet, and simplify dropdown to just Settings/Profile/Logout |
+| `src/pages/InstructorSettings.tsx` | Add horizontal quick-jump pill bar at top; embed GPS device content inline |
+| `src/pages/InstructorMenu.tsx` | Move "My Profile" into Settings section |
+
+## What It Looks Like After
+
+- **Header cog**: Simple dropdown with Settings, Profile, Logout
+- **Settings page**: One scrollable page with a quick-jump bar at the top and all 7 categories below
+- **Menu > Settings section**: Clean list with All Settings, Mini-Website, FAQs, Profile
+- **No more** floating sheets, duplicate toggles, or separate GPS pages
 
