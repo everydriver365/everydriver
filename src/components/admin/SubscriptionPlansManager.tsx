@@ -48,6 +48,8 @@ interface SubscriptionPlan {
   display_order: number;
   gocardless_plan_id: string | null;
   show_contact_us: boolean;
+  commission_rate_percent: number | null;
+  commission_fixed_pence: number | null;
 }
 
 const defaultPlan: Omit<SubscriptionPlan, "id"> = {
@@ -65,6 +67,8 @@ const defaultPlan: Omit<SubscriptionPlan, "id"> = {
   display_order: 0,
   gocardless_plan_id: null,
   show_contact_us: false,
+  commission_rate_percent: null,
+  commission_fixed_pence: null,
 };
 
 export function SubscriptionPlansManager() {
@@ -95,6 +99,8 @@ export function SubscriptionPlansManager() {
       features: (plan.features as string[]) || [],
       is_popular: plan.is_popular || false,
       show_contact_us: (plan as any).show_contact_us || false,
+      commission_rate_percent: (plan as any).commission_rate_percent ?? null,
+      commission_fixed_pence: (plan as any).commission_fixed_pence ?? null,
     }));
     setPlans(typedPlans);
     setLoading(false);
@@ -134,6 +140,8 @@ export function SubscriptionPlansManager() {
       display_order: editingPlan.display_order,
       gocardless_plan_id: editingPlan.gocardless_plan_id,
       show_contact_us: editingPlan.show_contact_us,
+      commission_rate_percent: editingPlan.commission_rate_percent,
+      commission_fixed_pence: editingPlan.commission_fixed_pence,
     };
 
     if (isCreating) {
@@ -471,6 +479,49 @@ export function SubscriptionPlansManager() {
                     }
                     placeholder="Optional"
                   />
+                </div>
+              </div>
+
+              {/* Commission Rates */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Commission Rate (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={editingPlan.commission_rate_percent ?? ""}
+                    onChange={(e) =>
+                      setEditingPlan({
+                        ...editingPlan,
+                        commission_rate_percent: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      })
+                    }
+                    placeholder="e.g. 2.5"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Platform fee % per card payment
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Fixed Fee (pence)</Label>
+                  <Input
+                    type="number"
+                    value={editingPlan.commission_fixed_pence ?? ""}
+                    onChange={(e) =>
+                      setEditingPlan({
+                        ...editingPlan,
+                        commission_fixed_pence: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      })
+                    }
+                    placeholder="e.g. 20"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Fixed fee in pence per transaction
+                  </p>
                 </div>
               </div>
 
