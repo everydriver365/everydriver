@@ -1,54 +1,79 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, MapPin, Calendar, Clock, AlertCircle } from "lucide-react";
+import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { fetchAvailableTestSlots, type TestSlot } from "@/lib/api/firecrawl";
+import { fetchTestCentres, fetchSlotsForCentre, type TestSlot } from "@/lib/api/firecrawl";
 
 export function AvailableTestSlots() {
   const { toast } = useToast();
+  const [centres, setCentres] = useState<string[]>([]);
+  const [selectedCentre, setSelectedCentre] = useState<string>("");
   const [slots, setSlots] = useState<TestSlot[]>([]);
-  const [rawMarkdown, setRawMarkdown] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingCentres, setIsLoadingCentres] = useState(true);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSlots = async () => {
-    setIsLoading(true);
+  const loadCentres = async () => {
+    setIsLoadingCentres(true);
     setError(null);
     try {
-      const response = await fetchAvailableTestSlots();
+      const response = await fetchTestCentres();
       if (response.success) {
-        setSlots(response.slots || []);
-        setRawMarkdown(response.rawMarkdown || "");
-        if ((response.slots || []).length === 0 && response.rawMarkdown) {
-          toast({
-            title: "Data loaded",
-            description: "Page scraped but no structured slots found. Showing raw content.",
-          });
+        setCentres(response.centres || []);
+        if (response.slots && response.slots.length > 0) {
+          setSlots(response.slots);
+          setSelectedCentre(response.slots[0].centre);
         }
       } else {
-        setError(response.error || "Failed to load available slots");
-        toast({ title: "Error", description: response.error || "Failed to load slots", variant: "destructive" });
+        setError(response.error || "Failed to load test centres");
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unexpected error";
-      setError(msg);
-      toast({ title: "Error", description: msg, variant: "destructive" });
+      setError(err instanceof Error ? err.message : "Unexpected error");
     } finally {
-      setIsLoading(false);
+      setIsLoadingCentres(false);
     }
   };
 
-  useEffect(() => { loadSlots(); }, []);
+  const loadSlots = async (centre: string) => {
+    setIsLoadingSlots(true);
+    setSlots([]);
+    try {
+      const response = await fetchSlotsForCentre(centre);
+      if (response.success) {
+        setSlots(response.slots || []);
+        if ((response.slots || []).length === 0) {
+          toast({ title: "No slots", description: `No available slots found for ${centre}` });
+        }
+      } else {
+        toast({ title: "Error", description: response.error || "Failed to load slots", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
 
-  if (isLoading) {
+  useEffect(() => {
+    loadCentres();
+  }, []);
+
+  const handleCentreChange = (centre: string) => {
+    setSelectedCentre(centre);
+    loadSlots(centre);
+  };
+
+  if (isLoadingCentres) {
     return (
       <div className="space-y-3 mt-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          Scraping available test slots...
+          Loading available test centres...
         </div>
+        <Skeleton className="h-10 w-full rounded-lg" />
         {[1, 2, 3].map(i => (
           <Skeleton key={i} className="h-20 w-full rounded-xl" />
         ))}
@@ -63,12 +88,12 @@ export function AvailableTestSlots() {
           <CardContent className="p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
             <div>
-              <p className="font-medium">Failed to load slots</p>
+              <p className="font-medium">Failed to load</p>
               <p className="text-sm text-muted-foreground">{error}</p>
             </div>
           </CardContent>
         </Card>
-        <Button variant="outline" size="sm" onClick={loadSlots} className="gap-1">
+        <Button variant="outline" size="sm" onClick={loadCentres} className="gap-1">
           <RefreshCw className="h-4 w-4" /> Retry
         </Button>
       </div>
@@ -77,49 +102,75 @@ export function AvailableTestSlots() {
 
   return (
     <div className="mt-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {slots.length > 0 ? `${slots.length} slot${slots.length !== 1 ? "s" : ""} found` : "No structured slots found"}
-        </p>
-        <Button variant="outline" size="sm" onClick={loadSlots} className="gap-1">
-          <RefreshCw className="h-4 w-4" /> Refresh
+      <div className="flex items-center gap-2">
+        <Select value={selectedCentre} onValueChange={handleCentreChange}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select a test centre" />
+          </SelectTrigger>
+          <SelectContent>
+            {centres.map((centre) => (
+              <SelectItem key={centre} value={centre}>
+                {centre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => selectedCentre && loadSlots(selectedCentre)}
+          disabled={!selectedCentre || isLoadingSlots}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoadingSlots ? "animate-spin" : ""}`} />
         </Button>
       </div>
 
-      {slots.length > 0 ? (
-        slots.map((slot, i) => (
-          <Card key={i}>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-1.5 font-medium">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  {slot.centre}
+      {isLoadingSlots ? (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Search className="h-4 w-4 animate-pulse" />
+            Searching slots for {selectedCentre}...
+          </div>
+          {[1, 2].map(i => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : slots.length > 0 ? (
+        <>
+          <p className="text-sm text-muted-foreground">
+            {slots.length} slot{slots.length !== 1 ? "s" : ""} found
+          </p>
+          {slots.map((slot, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {slot.centre}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {slot.date}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {slot.time}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    {slot.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {slot.time}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
-      ) : rawMarkdown ? (
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground mb-2">Raw scraped content:</p>
-            <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded-lg max-h-60 overflow-auto">
-              {rawMarkdown}
-            </pre>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </>
+      ) : selectedCentre ? (
+        <p className="text-sm text-muted-foreground text-center py-4">
+          No available slots for {selectedCentre}
+        </p>
       ) : (
-        <p className="text-sm text-muted-foreground">No available test slots found at this time.</p>
+        <p className="text-sm text-muted-foreground text-center py-4">
+          Select a test centre to view available slots
+        </p>
       )}
 
       <p className="text-xs text-muted-foreground text-center">

@@ -6,19 +6,32 @@ export interface TestSlot {
   time: string;
 }
 
-interface ScrapeResponse {
+interface CentresResponse {
   success: boolean;
+  centres?: string[];
   slots?: TestSlot[];
-  rawMarkdown?: string;
   error?: string;
 }
 
-export async function fetchAvailableTestSlots(): Promise<ScrapeResponse> {
-  const { data, error } = await supabase.functions.invoke('scrape-test-slots');
+interface SlotsResponse {
+  success: boolean;
+  slots?: TestSlot[];
+  centre?: string;
+  error?: string;
+}
 
-  if (error) {
-    return { success: false, error: error.message };
-  }
+export async function fetchTestCentres(): Promise<CentresResponse> {
+  const { data, error } = await supabase.functions.invoke('scrape-test-slots', {
+    body: {},
+  });
+  if (error) return { success: false, error: error.message };
+  return data as CentresResponse;
+}
 
-  return data as ScrapeResponse;
+export async function fetchSlotsForCentre(centre: string): Promise<SlotsResponse> {
+  const { data, error } = await supabase.functions.invoke('scrape-test-slots', {
+    body: { centre },
+  });
+  if (error) return { success: false, error: error.message };
+  return data as SlotsResponse;
 }
