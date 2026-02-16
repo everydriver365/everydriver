@@ -53,18 +53,65 @@ function extractCentreNames(markdown: string): string[] {
   return centres;
 }
 
+function getSupabaseClient() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !supabaseServiceKey) return null;
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
+
+async function scrapeSpecificCentre(apiKey: string, centreName: string): Promise<TestSlot[]> {
+  const escapedCentre = centreName.replace(/'/g, "\\'");
+  const clickScript = `
+    const options = document.querySelectorAll('mat-option');
+    for (const opt of options) {
+      if (opt.textContent?.trim() === '${escapedCentre}') {
+        opt.click();
+        break;
+      }
+    }
+  `;
+
+  const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url: 'https://testbooking.onrender.com/available-slots',
+      formats: ['markdown'],
+      onlyMainContent: true,
+      waitFor: 2000,
+      actions: [
+        { type: 'wait', milliseconds: 2000 },
+        { type: 'click', selector: 'mat-select' },
+        { type: 'wait', milliseconds: 1000 },
+        { type: 'executeJavascript', script: clickScript },
+        { type: 'wait', milliseconds: 2500 },
+        { type: 'scrape' },
+      ],
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.error(`Scrape failed for ${centreName}:`, data.error);
+    return [];
+  }
+
+  const md = data.data?.actions?.scrapes?.[0]?.markdown || data.data?.markdown || data.markdown || '';
+  return parseMarkdownToSlots(md, centreName);
+}
+
 async function checkForMatchingRequests(slots: TestSlot[]) {
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !supabaseServiceKey) {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
       console.log('No Supabase credentials for matching check');
       return;
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get all active "want_test" requests
     const { data: wantRequests, error } = await supabase
       .from('test_requests')
       .select('id, instructor_id, test_centre_name, test_date, notes, pupil_id')
@@ -76,7 +123,7 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
       return;
     }
 
-    // Check for matches: centre name contains match
+    // Match by centre name only (ignoring date/time)
     const matches: { slot: TestSlot; request: typeof wantRequests[0] }[] = [];
     for (const slot of slots) {
       for (const req of wantRequests) {
@@ -94,7 +141,6 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
 
     console.log(`Found ${matches.length} matching slots!`);
 
-    // Get instructor names for the matches
     const instructorIds = [...new Set(matches.map(m => m.request.instructor_id))];
     const { data: instructors } = await supabase
       .from('instructors')
@@ -103,7 +149,6 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
 
     const instructorMap = new Map((instructors || []).map(i => [i.id, i.name]));
 
-    // Build alert message
     const alertLines = matches.map(m => {
       const name = instructorMap.get(m.request.instructor_id) || 'Unknown';
       return `• ${name} wants ${m.request.test_centre_name} — slot available: ${m.slot.date} at ${m.slot.time}`;
@@ -111,7 +156,6 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
 
     const alertMessage = `Test Slot Match Alert!\n\n${alertLines.join('\n')}`;
 
-    // Insert admin activity log entry
     await supabase.from('admin_activity_log').insert({
       action_type: 'test_slot_match',
       description: `${matches.length} available test slot(s) match instructor requests`,
@@ -126,9 +170,8 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
       }))},
     });
 
-    // Auto-insert scraped matches into test_slot_reservations so notification hook picks them up
+    // Insert scraped_match records (with dedup)
     for (const m of matches) {
-      // Check if this exact slot already exists to avoid duplicates
       const { data: existing } = await supabase
         .from('test_slot_reservations')
         .select('id')
@@ -159,11 +202,7 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
 
     if (adminPhone && twilioAccountSid && twilioAuthToken) {
       try {
-        const smsBody = new URLSearchParams({
-          To: adminPhone,
-          Body: alertMessage,
-        });
-
+        const smsBody = new URLSearchParams({ To: adminPhone, Body: alertMessage });
         if (twilioMessagingServiceSid) {
           smsBody.set('MessagingServiceSid', twilioMessagingServiceSid);
         } else if (twilioPhoneNumber) {
@@ -199,6 +238,70 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
   }
 }
 
+async function handleAutoMode(apiKey: string): Promise<Response> {
+  console.log('AUTO MODE: Starting scheduled scrape...');
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'No Supabase credentials' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Get all unique centre names from active want_test requests
+  const { data: wantRequests, error } = await supabase
+    .from('test_requests')
+    .select('test_centre_name')
+    .eq('request_type', 'want_test')
+    .eq('status', 'active');
+
+  if (error || !wantRequests || wantRequests.length === 0) {
+    console.log('AUTO MODE: No active want_test requests, nothing to scrape');
+    return new Response(
+      JSON.stringify({ success: true, message: 'No active requests to check', centres_scraped: 0 }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const uniqueCentres = [...new Set(
+    wantRequests
+      .map(r => r.test_centre_name)
+      .filter((name): name is string => !!name)
+  )];
+
+  console.log(`AUTO MODE: Scraping ${uniqueCentres.length} centres: ${uniqueCentres.join(', ')}`);
+
+  let allSlots: TestSlot[] = [];
+
+  for (const centre of uniqueCentres) {
+    try {
+      console.log(`AUTO MODE: Scraping ${centre}...`);
+      const slots = await scrapeSpecificCentre(apiKey, centre);
+      console.log(`AUTO MODE: Found ${slots.length} slots at ${centre}`);
+      allSlots = allSlots.concat(slots);
+    } catch (err) {
+      console.error(`AUTO MODE: Failed to scrape ${centre}:`, err);
+    }
+  }
+
+  console.log(`AUTO MODE: Total ${allSlots.length} slots found across all centres`);
+
+  if (allSlots.length > 0) {
+    await checkForMatchingRequests(allSlots);
+  }
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      centres_scraped: uniqueCentres.length, 
+      total_slots: allSlots.length,
+      centres: uniqueCentres,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -213,17 +316,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    let body: { centre?: string } = {};
+    let body: { centre?: string; mode?: string } = {};
     try {
       body = await req.json();
     } catch {
-      // No body is fine — means "get centres list"
+      // No body means auto mode
+    }
+
+    // AUTO MODE: triggered by cron or explicit request
+    if (!body.centre && (!body.mode || body.mode === 'auto')) {
+      // If no centre specified and mode is auto (or no body at all), run auto
+      // But distinguish: if body has no mode and no centre, it could be the old "discover centres" call
+      // We use presence of mode:'auto' or completely empty body for auto mode
+      if (body.mode === 'auto' || Object.keys(body).length === 0) {
+        return await handleAutoMode(apiKey);
+      }
     }
 
     const targetCentre = body.centre;
 
     if (!targetCentre) {
-      // MODE 1: Discover all available centres
+      // MODE 1: Discover all available centres (explicit call without centre)
       console.log('Discovering centres...');
       const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
@@ -257,7 +370,6 @@ Deno.serve(async (req) => {
       const centres = extractCentreNames(md);
       const defaultSlots = parseMarkdownToSlots(md, centres[0] || 'Unknown');
 
-      // Check for matching requests in background
       if (defaultSlots.length > 0) {
         checkForMatchingRequests(defaultSlots).catch(console.error);
       }
@@ -271,53 +383,9 @@ Deno.serve(async (req) => {
 
     // MODE 2: Scrape slots for a specific centre
     console.log(`Scraping slots for: ${targetCentre}`);
-
-    const escapedCentre = targetCentre.replace(/'/g, "\\'");
-    const clickScript = `
-      const options = document.querySelectorAll('mat-option');
-      for (const opt of options) {
-        if (opt.textContent?.trim() === '${escapedCentre}') {
-          opt.click();
-          break;
-        }
-      }
-    `;
-
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: 'https://testbooking.onrender.com/available-slots',
-        formats: ['markdown'],
-        onlyMainContent: true,
-        waitFor: 2000,
-        actions: [
-          { type: 'wait', milliseconds: 2000 },
-          { type: 'click', selector: 'mat-select' },
-          { type: 'wait', milliseconds: 1000 },
-          { type: 'executeJavascript', script: clickScript },
-          { type: 'wait', milliseconds: 2500 },
-          { type: 'scrape' },
-        ],
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({ success: false, error: data.error || 'Scrape failed' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const md = data.data?.actions?.scrapes?.[0]?.markdown || data.data?.markdown || data.markdown || '';
-    const slots = parseMarkdownToSlots(md, targetCentre);
+    const slots = await scrapeSpecificCentre(apiKey, targetCentre);
     console.log(`Found ${slots.length} slots for ${targetCentre}`);
 
-    // Check for matching requests
     if (slots.length > 0) {
       checkForMatchingRequests(slots).catch(console.error);
     }
