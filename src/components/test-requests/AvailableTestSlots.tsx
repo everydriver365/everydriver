@@ -192,7 +192,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
       ) : slots.length > 0 ? (
         <>
           <p className="text-sm text-muted-foreground">
-            {slots.length} slot{slots.length !== 1 ? "s" : ""} found — each test costs £150
+            {slots.length} slot{slots.length !== 1 ? "s" : ""} found
           </p>
           {slots.map((slot, i) => (
             <Card key={i}>
