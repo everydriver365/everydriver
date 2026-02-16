@@ -224,7 +224,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
                     onClick={() => handleReserve(slot, i)}
                     disabled={reservingIndex === i || !instructorId}
                   >
-                    {reservingIndex === i ? "Sending..." : "Reserve — £150"}
+                    {reservingIndex === i ? "Sending..." : "Reserve"}
                   </Button>
                 )}
               </CardContent>
