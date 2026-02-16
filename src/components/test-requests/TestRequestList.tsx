@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Loader2, MapPin, Calendar, Clock, PoundSterling, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Calendar, Clock, PoundSterling, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { TestRequestForm, type TestRequestData } from "./TestRequestForm";
 
 interface TestRequestListProps {
   instructorId?: string;
@@ -14,6 +16,7 @@ interface TestRequestListProps {
 
 export function TestRequestList({ instructorId, pupilId }: TestRequestListProps) {
   const queryClient = useQueryClient();
+  const [editingRequest, setEditingRequest] = useState<TestRequestData | null>(null);
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["test-requests", instructorId, pupilId],
@@ -66,57 +69,86 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
   }
 
   return (
-    <div className="space-y-3">
-      {requests.map((req) => (
-        <Card key={req.id}>
-          <CardContent className="p-4 space-y-2">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant={req.request_type === "have_test" ? "default" : "secondary"}>
-                  {req.request_type === "have_test" ? "Have Test" : "Want Test"}
-                </Badge>
-                <Badge variant={req.status === "active" ? "outline" : req.status === "matched" ? "default" : "secondary"}>
-                  {req.status}
-                </Badge>
-                {req.willing_to_pay_swap_fee && (
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
-                    <PoundSterling className="h-3 w-3 mr-0.5" />
-                    £150
+    <>
+      <div className="space-y-3">
+        {requests.map((req) => (
+          <Card key={req.id}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant={req.request_type === "have_test" ? "default" : "secondary"}>
+                    {req.request_type === "have_test" ? "Have Test" : "Want Test"}
                   </Badge>
+                  <Badge variant={req.status === "active" ? "outline" : req.status === "matched" ? "default" : "secondary"}>
+                    {req.status}
+                  </Badge>
+                  {req.willing_to_pay_swap_fee && (
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
+                      <PoundSterling className="h-3 w-3 mr-0.5" />
+                      £150
+                    </Badge>
+                  )}
+                </div>
+                {req.status === "active" && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setEditingRequest(req as TestRequestData)}
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCancel(req.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </div>
                 )}
               </div>
-              {req.status === "active" && (
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCancel(req.id)}>
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
 
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              {req.test_centre_name && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                {req.test_centre_name && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {req.test_centre_name}
+                  </span>
+                )}
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {req.test_centre_name}
+                  <Calendar className="h-3.5 w-3.5" />
+                  {req.test_date}
+                  {req.date_range_end && ` – ${req.date_range_end}`}
                 </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                {req.test_date}
-                {req.date_range_end && ` – ${req.date_range_end}`}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {req.test_time?.slice(0, 5)}
-                {req.time_range_end && ` – ${req.time_range_end.slice(0, 5)}`}
-              </span>
-            </div>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {req.test_time?.slice(0, 5)}
+                  {req.time_range_end && ` – ${req.time_range_end.slice(0, 5)}`}
+                </span>
+              </div>
 
-            {req.notes && (
-              <p className="text-xs text-muted-foreground">{req.notes}</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+              {req.notes && (
+                <p className="text-xs text-muted-foreground">{req.notes}</p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Test Request</DialogTitle>
+          </DialogHeader>
+          {editingRequest && (
+            <TestRequestForm
+              instructorId={instructorId}
+              pupilId={pupilId}
+              mode={pupilId ? "pupil" : "instructor"}
+              editData={editingRequest}
+              onSuccess={() => setEditingRequest(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,28 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+
+export interface TestRequestData {
+  id: string;
+  request_type: "have_test" | "want_test";
+  test_centre_id: string | null;
+  test_centre_name: string | null;
+  test_date: string;
+  test_time: string;
+  date_range_end: string | null;
+  time_range_end: string | null;
+  willing_to_pay_swap_fee: boolean;
+  notes: string | null;
+  pupil_id: string | null;
+}
 
 interface TestRequestFormProps {
   instructorId?: string;
   pupilId?: string;
   mode: "instructor" | "pupil";
   onSuccess?: () => void;
+  editData?: TestRequestData;
 }
 
 interface TestCentre {
@@ -30,19 +46,20 @@ interface PupilOption {
   name: string;
 }
 
-export function TestRequestForm({ instructorId, pupilId, mode, onSuccess }: TestRequestFormProps) {
-  const [requestType, setRequestType] = useState<"have_test" | "want_test">("have_test");
-  const [testCentreSearch, setTestCentreSearch] = useState("");
+export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editData }: TestRequestFormProps) {
+  const queryClient = useQueryClient();
+  const [requestType, setRequestType] = useState<"have_test" | "want_test">(editData?.request_type || "have_test");
+  const [testCentreSearch, setTestCentreSearch] = useState(editData?.test_centre_name || "");
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
-  const [selectedCentreId, setSelectedCentreId] = useState<string | null>(null);
-  const [manualCentreName, setManualCentreName] = useState("");
-  const [testDate, setTestDate] = useState<Date>();
-  const [testTime, setTestTime] = useState("");
-  const [dateRangeEnd, setDateRangeEnd] = useState<Date>();
-  const [timeRangeEnd, setTimeRangeEnd] = useState("");
-  const [willingToPayFee, setWillingToPayFee] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [selectedPupilId, setSelectedPupilId] = useState<string>("");
+  const [selectedCentreId, setSelectedCentreId] = useState<string | null>(editData?.test_centre_id || null);
+  const [manualCentreName, setManualCentreName] = useState(editData?.test_centre_name || "");
+  const [testDate, setTestDate] = useState<Date | undefined>(editData?.test_date ? parseISO(editData.test_date) : undefined);
+  const [testTime, setTestTime] = useState(editData?.test_time?.slice(0, 5) || "");
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(editData?.date_range_end ? parseISO(editData.date_range_end) : undefined);
+  const [timeRangeEnd, setTimeRangeEnd] = useState(editData?.time_range_end?.slice(0, 5) || "");
+  const [willingToPayFee, setWillingToPayFee] = useState(editData?.willing_to_pay_swap_fee || false);
+  const [notes, setNotes] = useState(editData?.notes || "");
+  const [selectedPupilId, setSelectedPupilId] = useState<string>(editData?.pupil_id || "");
   const [pupils, setPupils] = useState<PupilOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showCentreDropdown, setShowCentreDropdown] = useState(false);
@@ -98,10 +115,7 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess }: Test
     setSubmitting(true);
     try {
       const centreName = manualCentreName || testCentreSearch;
-      const { error } = await supabase.from("test_requests").insert({
-        instructor_id: instructorId!,
-        pupil_id: mode === "pupil" ? pupilId : (selectedPupilId || null),
-        created_by_type: mode,
+      const payload = {
         request_type: requestType,
         test_centre_id: selectedCentreId,
         test_centre_name: centreName,
@@ -111,10 +125,27 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess }: Test
         time_range_end: timeRangeEnd || null,
         willing_to_pay_swap_fee: willingToPayFee,
         notes: notes || null,
-      });
+      };
 
-      if (error) throw error;
-      toast({ title: "Test request created!" });
+      if (editData) {
+        const { error } = await supabase
+          .from("test_requests")
+          .update(payload)
+          .eq("id", editData.id);
+        if (error) throw error;
+        toast({ title: "Request updated!" });
+      } else {
+        const { error } = await supabase.from("test_requests").insert({
+          ...payload,
+          instructor_id: instructorId!,
+          pupil_id: mode === "pupil" ? pupilId : (selectedPupilId || null),
+          created_by_type: mode,
+        });
+        if (error) throw error;
+        toast({ title: "Test request created!" });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["test-requests"] });
       onSuccess?.();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -148,8 +179,8 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess }: Test
         </div>
       </div>
 
-      {/* Pupil Selector (instructor mode) */}
-      {mode === "instructor" && pupils.length > 0 && (
+      {/* Pupil Selector (instructor mode, only for new requests) */}
+      {mode === "instructor" && pupils.length > 0 && !editData && (
         <div className="space-y-2">
           <Label>Pupil (optional)</Label>
           <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
@@ -267,7 +298,7 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess }: Test
       </div>
 
       <Button onClick={handleSubmit} disabled={submitting} className="w-full">
-        {submitting ? "Submitting..." : "Submit Request"}
+        {submitting ? "Saving..." : editData ? "Update Request" : "Submit Request"}
       </Button>
     </div>
   );
