@@ -173,9 +173,6 @@ export function AvailableTestSlots() {
         </p>
       )}
 
-      <p className="text-xs text-muted-foreground text-center">
-        Data sourced from TestBooking
-      </p>
     </div>
   );
 }

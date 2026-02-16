@@ -50,7 +50,7 @@ export default function InstructorTestRequests() {
           <TabsList className="w-full">
             <TabsTrigger value="my-requests" className="flex-1">My Requests</TabsTrigger>
             <TabsTrigger value="swap-board" className="flex-1">Swap Board</TabsTrigger>
-            <TabsTrigger value="available-slots" className="flex-1">Available Slots</TabsTrigger>
+            <TabsTrigger value="available-slots" className="flex-1 data-[state=active]:text-emerald-500">Available</TabsTrigger>
           </TabsList>
           <TabsContent value="my-requests">
             <TestRequestList instructorId={instructor?.id} />
