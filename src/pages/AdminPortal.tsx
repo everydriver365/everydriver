@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -70,6 +70,7 @@ import { MarketingPageBuilder } from "@/components/admin/MarketingPageBuilder";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
+import { PlanFeatureMatrixManager } from "@/components/admin/PlanFeatureMatrixManager";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 
 const stats = [
@@ -158,6 +159,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
+  "plan-features": { title: "Plan Feature Matrix", group: "Products & Booking", icon: CheckSquare },
 };
 
 export default function AdminPortal() {
@@ -344,6 +346,14 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="plans" className="mb-4" />
             <SubscriptionPlansManager />
+          </motion.div>
+        );
+
+      case "plan-features":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <PlanFeatureMatrixManager />
           </motion.div>
         );
 

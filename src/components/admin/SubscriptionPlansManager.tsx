@@ -47,6 +47,7 @@ interface SubscriptionPlan {
   sms_credits_monthly: number | null;
   display_order: number;
   gocardless_plan_id: string | null;
+  show_contact_us: boolean;
 }
 
 const defaultPlan: Omit<SubscriptionPlan, "id"> = {
@@ -63,6 +64,7 @@ const defaultPlan: Omit<SubscriptionPlan, "id"> = {
   sms_credits_monthly: 0,
   display_order: 0,
   gocardless_plan_id: null,
+  show_contact_us: false,
 };
 
 export function SubscriptionPlansManager() {
@@ -92,6 +94,7 @@ export function SubscriptionPlansManager() {
       ...plan,
       features: (plan.features as string[]) || [],
       is_popular: plan.is_popular || false,
+      show_contact_us: (plan as any).show_contact_us || false,
     }));
     setPlans(typedPlans);
     setLoading(false);
@@ -130,6 +133,7 @@ export function SubscriptionPlansManager() {
       sms_credits_monthly: editingPlan.sms_credits_monthly,
       display_order: editingPlan.display_order,
       gocardless_plan_id: editingPlan.gocardless_plan_id,
+      show_contact_us: editingPlan.show_contact_us,
     };
 
     if (isCreating) {
@@ -583,7 +587,7 @@ export function SubscriptionPlansManager() {
               </div>
 
               {/* Toggles */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-6 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={editingPlan.is_active}
@@ -601,6 +605,15 @@ export function SubscriptionPlansManager() {
                     }
                   />
                   <Label>Popular Badge</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={editingPlan.show_contact_us}
+                    onCheckedChange={(checked) =>
+                      setEditingPlan({ ...editingPlan, show_contact_us: checked })
+                    }
+                  />
+                  <Label>Show "Contact Us" instead of price</Label>
                 </div>
               </div>
             </div>

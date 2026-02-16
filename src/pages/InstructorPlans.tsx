@@ -23,6 +23,7 @@ interface Plan {
   max_pupils: number | null;
   sms_credits_monthly: number | null;
   cta_text: string | null;
+  show_contact_us: boolean;
 }
 
 const tierIcons: Record<string, typeof Star> = {
@@ -61,7 +62,7 @@ export default function InstructorPlans() {
     const fetchPlans = async () => {
       const { data, error } = await supabase
         .from("subscription_plans")
-        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text")
+        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
@@ -69,6 +70,7 @@ export default function InstructorPlans() {
         setPlans(data.map(p => ({
           ...p,
           features: Array.isArray(p.features) ? (p.features as string[]) : [],
+          show_contact_us: (p as any).show_contact_us || false,
         })));
       }
       setLoading(false);
@@ -182,7 +184,9 @@ export default function InstructorPlans() {
 
                       {/* Price */}
                       <div className="flex items-baseline gap-1">
-                        {plan.price_monthly === 0 ? (
+                        {plan.show_contact_us ? (
+                          <span className="text-2xl font-extrabold text-white">Contact Us</span>
+                        ) : plan.price_monthly === 0 ? (
                           <span className="text-3xl font-extrabold text-white">Free</span>
                         ) : (
                           <>
@@ -192,7 +196,7 @@ export default function InstructorPlans() {
                         )}
                       </div>
 
-                      {plan.price_yearly && plan.price_monthly > 0 && (
+                      {!plan.show_contact_us && plan.price_yearly && plan.price_monthly > 0 && (
                         <p className="text-xs text-white/60 mt-1">
                           or £{plan.price_yearly}/year (save £{(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)})
                         </p>
