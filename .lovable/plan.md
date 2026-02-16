@@ -1,39 +1,55 @@
 
-# Fix: Show All Test Centres from Scrape
 
-## Problem
-The `fetchTestCentres()` function sends an empty body `{}` to the edge function. The edge function treats empty bodies as "auto mode", which only scrapes centres that match existing `want_test` requests (currently just "Lee on the Solent"). The "discover all centres" code path (lines 338-381 of the edge function) is never reached.
+# Add Test Reservation Alert to Admin Dashboard
 
-## Solution
-Two small changes to fix the routing logic:
+## What's Missing
+The admin dashboard's System Alerts card currently monitors compliance expirations, pending payments, and inactive instructors. It has no visibility into test slot reservations. When an instructor reserves a scraped test slot, nothing appears on the admin dashboard.
 
-### 1. Update `src/lib/api/firecrawl.ts`
-Change `fetchTestCentres()` to send `{ mode: 'discover' }` instead of `{}`, so the edge function knows to run the "discover all centres" scrape.
+## Plan
 
-### 2. Update `supabase/functions/scrape-test-slots/index.ts`
-Adjust the routing logic so that:
-- `mode: 'auto'` or completely empty body (from cron) triggers auto mode
-- `mode: 'discover'` or any body without a `centre` and without `mode: 'auto'` triggers the discover-all-centres scrape
-- A body with `centre` specified triggers single-centre scrape (unchanged)
+### 1. Update `src/components/admin/SystemAlertsCard.tsx`
+Add a new query to the `fetchAlerts` function that counts recent/pending test slot reservations from the `test_slot_reservations` table. If any exist, display a new alert like:
+
+> "3 test slot reservations pending" (info type, with a navigation action)
+
+**Changes:**
+- Add a new parallel query: count rows from `test_slot_reservations` where `status = 'reserved'` (or all recent ones)
+- Add a new alert entry with type "info", a calendar/clipboard icon, and navigation to the test swap section
+- Subscribe to realtime changes on `test_slot_reservations` so the alert updates automatically
+
+### 2. Update `src/hooks/useAdminDashboardStats.ts` (optional enhancement)
+Add a `testReservations` count to the dashboard stats so it can also appear in the overview cards if desired.
+
+### 3. Wire up navigation
+The alert's "Review" button will call `onNavigate("test-swap")` (or whichever section key the admin dashboard uses for test swap management).
 
 ## Technical Details
 
-**`src/lib/api/firecrawl.ts`** - Change line 27:
+**SystemAlertsCard.tsx** - Add to the `Promise.all` block:
 ```typescript
-// Before:
-body: {},
-// After:
-body: { mode: 'discover' },
+// Test slot reservations
+supabase
+  .from("test_slot_reservations")
+  .select("id", { count: "exact", head: true })
+  .eq("status", "reserved"),
 ```
 
-**`supabase/functions/scrape-test-slots/index.ts`** - Adjust the condition at lines 327-334:
+Add alert generation:
 ```typescript
-// Only run auto mode if explicitly mode:'auto' OR if body parsing failed (no body = cron trigger)
-if (body.mode === 'auto') {
-  return await handleAutoMode(apiKey);
+const reservationCount = reservationsRes.count || 0;
+if (reservationCount > 0) {
+  newAlerts.push({
+    id: "test-reservations",
+    type: "info",
+    icon: CalendarCheck,
+    message: `${reservationCount} test slot reservation${reservationCount > 1 ? "s" : ""} pending`,
+    count: reservationCount,
+    action: "Review",
+    section: "test-swap",
+  });
 }
 ```
 
-This way, the default call from the frontend (with `mode: 'discover'`) will fall through to the centre discovery scrape, which opens the dropdown on the test booking site and extracts all available centre names. The cron/scheduled calls can explicitly use `mode: 'auto'`.
+Add realtime subscription for `test_slot_reservations` table alongside the existing ones.
 
-No other files need to change. The existing dropdown UI and slot-loading-per-centre logic in `AvailableTestSlots.tsx` remains exactly as it is.
+No database changes needed -- the `test_slot_reservations` table already exists.
