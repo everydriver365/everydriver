@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -49,6 +51,128 @@ function extractCentreNames(markdown: string): string[] {
   }
 
   return centres;
+}
+
+async function checkForMatchingRequests(slots: TestSlot[]) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.log('No Supabase credentials for matching check');
+      return;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get all active "want_test" requests
+    const { data: wantRequests, error } = await supabase
+      .from('test_requests')
+      .select('id, instructor_id, test_centre_name, test_date, notes, pupil_id')
+      .eq('request_type', 'want_test')
+      .eq('status', 'active');
+
+    if (error || !wantRequests || wantRequests.length === 0) {
+      console.log('No active want_test requests to match');
+      return;
+    }
+
+    // Check for matches: centre name contains match
+    const matches: { slot: TestSlot; request: typeof wantRequests[0] }[] = [];
+    for (const slot of slots) {
+      for (const req of wantRequests) {
+        if (req.test_centre_name && 
+            slot.centre.toLowerCase().includes(req.test_centre_name.toLowerCase())) {
+          matches.push({ slot, request: req });
+        }
+      }
+    }
+
+    if (matches.length === 0) {
+      console.log('No matching slots found for want_test requests');
+      return;
+    }
+
+    console.log(`Found ${matches.length} matching slots!`);
+
+    // Get instructor names for the matches
+    const instructorIds = [...new Set(matches.map(m => m.request.instructor_id))];
+    const { data: instructors } = await supabase
+      .from('instructors')
+      .select('id, name')
+      .in('id', instructorIds);
+
+    const instructorMap = new Map((instructors || []).map(i => [i.id, i.name]));
+
+    // Build alert message
+    const alertLines = matches.map(m => {
+      const name = instructorMap.get(m.request.instructor_id) || 'Unknown';
+      return `• ${name} wants ${m.request.test_centre_name} — slot available: ${m.slot.date} at ${m.slot.time}`;
+    });
+
+    const alertMessage = `Test Slot Match Alert!\n\n${alertLines.join('\n')}`;
+
+    // Insert admin activity log entry
+    await supabase.from('admin_activity_log').insert({
+      action_type: 'test_slot_match',
+      description: `${matches.length} available test slot(s) match instructor requests`,
+      entity_type: 'test_request',
+      metadata: { matches: matches.map(m => ({ 
+        centre: m.slot.centre, 
+        date: m.slot.date, 
+        time: m.slot.time,
+        instructor_id: m.request.instructor_id,
+        instructor_name: instructorMap.get(m.request.instructor_id),
+        request_id: m.request.id,
+      }))},
+    });
+
+    // Send SMS to admin
+    const adminPhone = Deno.env.get('ADMIN_PHONE_NUMBER');
+    const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const twilioMessagingServiceSid = Deno.env.get('TWILIO_MESSAGING_SERVICE_SID');
+    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+
+    if (adminPhone && twilioAccountSid && twilioAuthToken) {
+      try {
+        const smsBody = new URLSearchParams({
+          To: adminPhone,
+          Body: alertMessage,
+        });
+
+        if (twilioMessagingServiceSid) {
+          smsBody.set('MessagingServiceSid', twilioMessagingServiceSid);
+        } else if (twilioPhoneNumber) {
+          smsBody.set('From', twilioPhoneNumber);
+        }
+
+        const smsResponse = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: smsBody.toString(),
+          }
+        );
+
+        if (smsResponse.ok) {
+          console.log('Admin SMS sent successfully');
+        } else {
+          const errData = await smsResponse.text();
+          console.error('Failed to send admin SMS:', errData);
+        }
+      } catch (smsErr) {
+        console.error('SMS send error:', smsErr);
+      }
+    } else {
+      console.log('Admin phone or Twilio not configured, skipping SMS');
+    }
+  } catch (err) {
+    console.error('Error checking for matching requests:', err);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -107,8 +231,12 @@ Deno.serve(async (req) => {
 
       const md = data.data?.actions?.scrapes?.[0]?.markdown || data.data?.markdown || data.markdown || '';
       const centres = extractCentreNames(md);
-      // Also get default centre slots
       const defaultSlots = parseMarkdownToSlots(md, centres[0] || 'Unknown');
+
+      // Check for matching requests in background
+      if (defaultSlots.length > 0) {
+        checkForMatchingRequests(defaultSlots).catch(console.error);
+      }
 
       console.log(`Found ${centres.length} centres`);
       return new Response(
@@ -164,6 +292,11 @@ Deno.serve(async (req) => {
     const md = data.data?.actions?.scrapes?.[0]?.markdown || data.data?.markdown || data.markdown || '';
     const slots = parseMarkdownToSlots(md, targetCentre);
     console.log(`Found ${slots.length} slots for ${targetCentre}`);
+
+    // Check for matching requests
+    if (slots.length > 0) {
+      checkForMatchingRequests(slots).catch(console.error);
+    }
 
     return new Response(
       JSON.stringify({ success: true, slots, centre: targetCentre }),
