@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2,
-  Sparkles, LogOut, Gauge, CreditCard, Calculator, ChevronDown, Camera,
-  Globe, Calendar, Smartphone
+  Sparkles, LogOut, Gauge, CreditCard, ChevronDown, Camera,
+  Globe, Calendar, Smartphone, Wrench, Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +61,8 @@ const categoryConfig: Record<string, { icon: typeof Star; color: string; label: 
   "Diary & Scheduling": { icon: Calendar, color: "text-emerald-500", label: "Diary" },
   "Pupil Management": { icon: Users, color: "text-indigo-500", label: "Pupils" },
   "Apps & Portals": { icon: Smartphone, color: "text-pink-500", label: "Apps" },
+  "Tools & Productivity": { icon: Wrench, color: "text-cyan-500", label: "Tools" },
+  "Health & Wellbeing": { icon: Heart, color: "text-rose-500", label: "Wellbeing" },
   "Driving Schools": { icon: Building2, color: "text-amber-500", label: "Schools" },
 };
 
