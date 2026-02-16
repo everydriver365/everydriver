@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
 import { Loader2, MapPin, Calendar, Clock, PoundSterling, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -115,8 +116,8 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5" />
-                  {req.test_date}
-                  {req.date_range_end && ` – ${req.date_range_end}`}
+                  {format(parseISO(req.test_date), "dd/MM/yyyy")}
+                  {req.date_range_end && ` – ${format(parseISO(req.date_range_end), "dd/MM/yyyy")}`}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
