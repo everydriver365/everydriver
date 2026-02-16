@@ -106,7 +106,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
       });
 
       setReservedIndices((prev) => new Set(prev).add(index));
-      toast({ title: "Request sent", description: "Awaiting confirmation — test fee is £150" });
+      toast({ title: "Request sent", description: "Awaiting confirmation from admin" });
     } catch (err) {
       console.error(err);
       toast({ title: "Error", description: "Failed to reserve slot", variant: "destructive" });
