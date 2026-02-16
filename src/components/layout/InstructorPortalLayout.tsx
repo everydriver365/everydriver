@@ -171,6 +171,27 @@ function DesktopNotificationBell({ instructorId }: { instructorId: string | unde
   );
 }
 
+function MobileNotificationBell({ instructorId }: { instructorId: string | undefined }) {
+  const navigate = useNavigate();
+  const { total } = useCombinedNotificationCount(instructorId);
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 relative"
+      onClick={() => navigate("/instructor/test-requests")}
+      title="Notifications"
+    >
+      <Bell className="h-4 w-4" />
+      {total > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center animate-pulse">
+          {total > 9 ? "9+" : total}
+        </span>
+      )}
+    </Button>
+  );
+}
+
 interface InstructorPortalLayoutProps {
   children: ReactNode;
 }
@@ -433,6 +454,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   {/* Right: Action buttons */}
                   <div className="flex items-center gap-1.5">
+                    <MobileNotificationBell instructorId={instructor?.id} />
                     <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button
