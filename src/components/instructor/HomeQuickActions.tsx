@@ -16,6 +16,7 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
     { id: "take-payment", label: "Take Payment", subtitle: "Record income", icon: PoundSterling, iconColor: "text-rose-600", onClick: onTakePayment },
     { id: "find-my-car", label: "Find My Car", subtitle: "Car location", icon: Car, iconColor: "text-sky-600", route: "/instructor/find-my-car" },
     { id: "health-hub", label: "Health Hub", subtitle: "Wellness tips", icon: Heart, iconColor: "text-pink-600", route: "/instructor/health" },
+    { id: "test-requests", label: "Test Swap", subtitle: "Swap a test", icon: Calendar, iconColor: "text-amber-600", route: "/instructor/test-requests" },
   ];
 
   return (
