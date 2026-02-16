@@ -106,7 +106,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
       });
 
       setReservedIndices((prev) => new Set(prev).add(index));
-      toast({ title: "Reserved", description: "Reservation request sent to admin" });
+      toast({ title: "Request sent", description: "Awaiting confirmation — test fee is £150" });
     } catch (err) {
       console.error(err);
       toast({ title: "Error", description: "Failed to reserve slot", variant: "destructive" });
@@ -192,7 +192,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
       ) : slots.length > 0 ? (
         <>
           <p className="text-sm text-muted-foreground">
-            {slots.length} slot{slots.length !== 1 ? "s" : ""} found
+            {slots.length} slot{slots.length !== 1 ? "s" : ""} found — each test costs £150
           </p>
           {slots.map((slot, i) => (
             <Card key={i}>
@@ -214,9 +214,9 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
                   </div>
                 </div>
                 {reservedIndices.has(i) ? (
-                  <Button size="sm" variant="outline" disabled className="gap-1 text-emerald-600 border-emerald-300">
-                    <CheckCircle className="h-4 w-4" />
-                    Reserved
+                  <Button size="sm" variant="outline" disabled className="gap-1 text-amber-600 border-amber-300">
+                    <Clock className="h-4 w-4" />
+                    Awaiting confirmation
                   </Button>
                 ) : (
                   <Button
@@ -224,7 +224,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
                     onClick={() => handleReserve(slot, i)}
                     disabled={reservingIndex === i || !instructorId}
                   >
-                    {reservingIndex === i ? "Reserving..." : "Reserve"}
+                    {reservingIndex === i ? "Sending..." : "Reserve — £150"}
                   </Button>
                 )}
               </CardContent>
