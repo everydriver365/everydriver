@@ -314,7 +314,27 @@ export default function InstructorSettings() {
           <p className="text-sm text-muted-foreground mt-1">Manage your profile and preferences</p>
         </div>
 
-        {/* Quick Jump Navigation - removed in favour of section headers */}
+        {/* Quick Jump Navigation */}
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-2 pb-2">
+            {settingsCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0",
+                  selectedCategory === cat.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <cat.icon className="h-3.5 w-3.5" />
+                {cat.title.split(" ")[0]}
+              </button>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
 
         {/* Profile & Identity Category */}
         <div ref={el => categoryRefs.current["profile"] = el} className="space-y-3">

@@ -142,6 +142,7 @@ export default function InstructorMenu() {
       title: "Settings",
       items: [
         { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-white", iconBg: "bg-gray-500", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
+        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-white", iconBg: "bg-primary", path: "/instructor/settings" },
         { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-white", iconBg: "bg-violet-500", gateKey: "website", path: "/instructor/website" },
         { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-white", iconBg: "bg-primary", gateKey: "faqs", path: "/instructor/faqs" },
       ],
@@ -149,7 +150,6 @@ export default function InstructorMenu() {
     {
       title: "Account",
       items: [
-        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-white", iconBg: "bg-primary", path: "/instructor/settings" },
         { icon: LogOut, label: "Sign Out", description: "Log out", iconColor: "text-white", iconBg: "bg-destructive", action: handleLogout },
       ],
     },
