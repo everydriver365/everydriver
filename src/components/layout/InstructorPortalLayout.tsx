@@ -72,9 +72,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
-import { LayoutGrid, Palette, ImageIcon, SlidersHorizontal } from "lucide-react";
-import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
-import { QuickSettingsSheet } from "@/components/instructor/QuickSettingsSheet";
+import { LayoutGrid } from "lucide-react";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 import instructorLogo from "@/assets/ed-white-logo.png";
@@ -179,8 +177,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [quickSettingsOpen, setQuickSettingsOpen] = useState(false);
 
   // Appearance settings for app-style layout
   const { layoutStyle, wallpaperColor } = useInstructorAppearance(instructor?.id);
@@ -428,48 +424,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onSelect={() => {
-                            setTimeout(() => setQuickSettingsOpen(true), 300);
-                          }}
-                        >
-                          <SlidersHorizontal className="h-4 w-4 mr-2" />
-                          Quick Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
                           <Settings className="h-4 w-4 mr-2" />
                           Settings
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-                          <Sun className="h-4 w-4 mr-2" />
-                          Light Mode
-                          {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-                          <Moon className="h-4 w-4 mr-2" />
-                          Dark Mode
-                          {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
-                          <Contrast className="h-4 w-4 mr-2" />
-                          OLED Dark Mode
-                          {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                          <Palette className="h-4 w-4 mr-2" />
-                          Wallpaper
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                          <ImageIcon className="h-4 w-4 mr-2" />
-                          Hero Image
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setAppearanceOpen(true)} className="cursor-pointer">
-                          <LayoutGrid className="h-4 w-4 mr-2" />
-                          Screen Layout
+                        <DropdownMenuItem onClick={() => navigate("/logout")} className="cursor-pointer">
+                          Logout
                         </DropdownMenuItem>
                         {location.pathname === "/instructor" && (
                           <>
@@ -640,16 +601,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorId={instructor?.id}
           instructorName={instructor?.name}
         />
-        <Sheet open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Appearance</SheetTitle>
-            </SheetHeader>
-            <div className="py-4">
-              <AppearanceSettings instructorId={instructor?.id} />
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
       </>
     );
@@ -980,17 +931,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
-      <Sheet open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Appearance</SheetTitle>
-          </SheetHeader>
-          <div className="py-4">
-            <AppearanceSettings instructorId={instructor?.id} />
-          </div>
-        </SheetContent>
-      </Sheet>
-      <QuickSettingsSheet open={quickSettingsOpen} onOpenChange={setQuickSettingsOpen} />
     </>
   );
 }
