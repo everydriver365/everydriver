@@ -76,7 +76,7 @@ const RoadSegmentCard: React.FC<RoadSegmentCardProps> = ({
               style={{ width: `${avgBarWidth}%` }}
             />
           </div>
-          <span className="text-xs font-medium w-12 text-right">{avgSpeedMph} mph</span>
+          <span className="text-[10px] font-medium w-10 text-right">{avgSpeedMph} mph</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground w-8">Max</span>
@@ -89,7 +89,7 @@ const RoadSegmentCard: React.FC<RoadSegmentCardProps> = ({
               style={{ width: `${maxBarWidth}%` }}
             />
           </div>
-          <span className="text-xs font-medium w-12 text-right">{maxSpeedMph} mph</span>
+          <span className="text-[10px] font-medium w-10 text-right">{maxSpeedMph} mph</span>
         </div>
       </div>
       
