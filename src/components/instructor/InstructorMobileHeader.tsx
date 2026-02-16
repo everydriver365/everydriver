@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Bell, SlidersHorizontal } from "lucide-react";
+import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +56,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [quickSettingsOpen, setQuickSettingsOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
+  const { data: swapNotifCount = 0 } = useTestSwapNotifications(instructor?.id);
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -123,6 +125,17 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           {/* Right: Action buttons */}
           <div className="flex items-center gap-1">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
+            <button
+              onClick={() => navigate("/instructor/test-requests")}
+              className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+            >
+              <Bell className="h-4 w-4" />
+              {swapNotifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                  {swapNotifCount > 9 ? "9+" : swapNotifCount}
+                </span>
+              )}
+            </button>
             {showAddButton && (
               <button
                 onClick={onAddClick}
