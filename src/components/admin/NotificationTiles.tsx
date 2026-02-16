@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, FileEdit, Phone, ShieldCheck, Headphones } from "lucide-react";
+import { Mail, FileEdit, Phone, ShieldCheck, Headphones, CalendarCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     unreadEmails: 0,
     bespokeRequests: 0,
     callbackRequests: 0,
+    testSlotMatches: 0,
   });
   const [emailLoading, setEmailLoading] = useState(true);
 
@@ -93,6 +94,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         offlineMessagesRes,
         bespokeRes,
         callbackRes,
+        testSlotMatchRes,
       ] = await Promise.all([
         supabase
           .from("live_chat_sessions")
@@ -119,6 +121,11 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
           .select("id", { count: "exact", head: true })
           .eq("status", "pending")
           .in("course_type", ["callback", "general"]),
+        supabase
+          .from("admin_activity_log")
+          .select("id", { count: "exact", head: true })
+          .eq("action_type", "test_slot_match")
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
       ]);
 
       const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
@@ -146,6 +153,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         offlineMessages: offlineMessagesRes.count || 0,
         bespokeRequests: bespokeRes.count || 0,
         callbackRequests: callbackRes.count || 0,
+        testSlotMatches: testSlotMatchRes.count || 0,
       }));
     } catch (error) {
       console.error("Error fetching notification counts:", error);
@@ -201,6 +209,11 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         { event: "*", schema: "public", table: "admin_messages" },
         () => fetchCounts()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_activity_log" },
+        () => fetchCounts()
+      )
       .subscribe();
 
     return () => {
@@ -251,6 +264,13 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       hasNew: counts.callbackRequests > 0,
       section: "enquiries",
     },
+    {
+      icon: CalendarCheck,
+      label: "Test Slot Matches",
+      count: counts.testSlotMatches,
+      hasNew: counts.testSlotMatches > 0,
+      section: "test-requests",
+    },
   ];
 
   return (
@@ -284,7 +304,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       </div>
 
       {/* Second row: enquiries */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         {enquiryTiles.map((tile, index) => (
           <NotificationTile
             key={tile.label}
