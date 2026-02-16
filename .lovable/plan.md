@@ -1,151 +1,50 @@
 
-# Payment, Balance & Tax Synchronisation Fix
 
-## What's Wrong Today
+# Make Driving Report Mobile-Friendly
 
-1. **Lessons completed = no charge deducted**: When you mark a lesson as "done", the pupil's balance is never reduced and no record appears in payment history. Money goes in but never comes out.
+## Problems Identified
 
-2. **Cancellation fees invisible**: Cancelling with a charge deducts from the balance but creates no payment history record, so income reports and tax summaries miss it.
-
-3. **Tax page missing mileage deductions**: The Tax page only counts manually logged expenses. It ignores HMRC mileage allowance (45p/25p per mile) from tracked mileage logs -- typically the biggest deduction for a driving instructor.
-
-4. **UI doesn't refresh after lesson completion**: The `usePaymentInvalidation` hook is not used in `TodayScheduleView`, so balance badges stay stale.
-
----
+1. **SheetContent too narrow on mobile**: The driving report opens in a `SheetContent side="right"` with `sm:max-w-2xl`, which on mobile takes only part of the screen width.
+2. **5-column stats grid doesn't fit**: `grid-cols-2 md:grid-cols-5` means 2 columns on mobile with the 5th stat orphaned on its own row.
+3. **Session list + map side-by-side on mobile**: `grid lg:grid-cols-3` falls back to single column, but the `ScrollArea h-[400px]` wastes vertical space on small screens.
+4. **Map height fixed at 250px**: Too tall relative to mobile viewport, pushing content below the fold.
+5. **Event rows have too many inline elements**: Badge + speed + time all on one line causes overflow on narrow screens.
+6. **Header title and Export button cramped**: `flex items-center justify-between` with long pupil names causes wrapping issues.
 
 ## Changes
 
-### 1. TodayScheduleView -- Deduct balance on lesson completion
+### 1. SheetContent (InstructorPupils.tsx)
+- Change to `className="w-full sm:max-w-2xl overflow-y-auto"` so it takes full width on mobile.
 
-**File:** `src/components/instructor/TodayScheduleView.tsx`
+### 2. PupilDrivingReport.tsx -- Summary Stats
+- Change grid from `grid-cols-2 md:grid-cols-5` to `grid-cols-3 sm:grid-cols-5` so the 5 stats wrap more naturally (3+2 on small screens, 5 on larger).
+- Reduce font size on mobile: `text-xl sm:text-2xl` for stat values.
 
-After the lesson is marked completed and rewards are awarded, add:
+### 3. PupilDrivingReport.tsx -- Header
+- Stack the title and Export button vertically on mobile using `flex flex-col sm:flex-row`.
+- Truncate long pupil names.
 
-- Fetch the instructor's `hourly_rate` from the `instructors` table
-- Calculate the lesson cost: `(duration_minutes / 60) * hourly_rate`
-- Read the pupil's current `account_balance` (already fetched in the lesson data)
-- Deduct: update `pupils.account_balance` = current balance - lesson cost
-- Insert a `payment_history` record with a **negative amount** representing the lesson charge, payment_method = "Lesson Charge", notes describing the duration
-- Import and call `usePaymentInvalidation` to refresh all balance tiles
+### 4. PupilDrivingReport.tsx -- Sessions Tab
+- Reduce `ScrollArea` height on mobile: `h-[250px] lg:h-[400px]`.
+- Reduce map height on mobile: pass `height` as `"180px"` on small screens (or use a responsive class).
 
-### 2. CancelLessonDialog -- Record cancellation fee in payment_history
+### 5. PupilDrivingReport.tsx -- Event Rows
+- Wrap badge and speed/time onto a second line on mobile using `flex-wrap` and responsive layout.
+- Ensure text truncation on notes.
 
-**File:** `src/components/instructor/CancelLessonDialog.tsx`
+### 6. PupilDrivingReport.tsx -- Tabs
+- Make the TabsList horizontally scrollable on mobile if text overflows, similar to the fleet dashboard pattern (`overflow-x-auto`).
 
-When `chargeOption === "charge"` and the balance is updated, also:
+### 7. GeneratedDrivingReport.tsx
+- Score display: reduce SVG size on mobile (`w-16 h-16 sm:w-20 sm:h-20`).
+- Stats grid already uses `grid-cols-3` which is fine.
+- No major issues here -- this component is already fairly mobile-friendly.
 
-- Insert a `payment_history` record with a **negative amount** for the cancellation fee, payment_method = "Cancellation Fee"
-- Import and call `usePaymentInvalidation` after the cancellation
-
-### 3. InstructorTax -- Add HMRC mileage deduction
-
-**File:** `src/pages/InstructorTax.tsx`
-
-In `fetchTaxData()`, add a query to `mileage_logs`:
-
-- Filter by `instructor_id`, `trip_type = 'business'`, and the tax year date range
-- Sum total business miles (convert from km using * 0.621371)
-- Calculate HMRC allowance: 45p for first 10,000 miles, 25p for miles beyond
-- Add as a "Mileage Allowance" entry in the expense breakdown
-- Include in `totalExpenses` so it reduces taxable income
-
-Also fix income calculation: currently it sums ALL `payment_history` amounts (including negative lesson charges). Change to only sum positive amounts (actual payments received) for income, and treat negative amounts as additional deductions -- or filter to only `amount > 0` for income.
-
----
-
-## Technical Details
-
-### Lesson charge code (TodayScheduleView)
-
-After the rewards section (around line 351), before the mileage calc:
-
-```text
-// Fetch instructor hourly rate
-const { data: instrRate } = await supabase
-  .from("instructors")
-  .select("hourly_rate")
-  .eq("id", instructorId)
-  .single();
-
-const hourlyRate = instrRate?.hourly_rate || 40;
-const lessonCost = (lesson.duration_minutes / 60) * hourlyRate;
-
-// Deduct from pupil balance
-const currentBalance = lesson.pupil.account_balance || 0;
-const newBalance = currentBalance - lessonCost;
-
-await supabase
-  .from("pupils")
-  .update({ account_balance: newBalance })
-  .eq("id", lesson.pupil.id);
-
-// Record charge in payment_history
-await supabase.from("payment_history").insert({
-  pupil_id: lesson.pupil.id,
-  instructor_id: instructorId,
-  amount: -lessonCost,
-  payment_method: "Lesson Charge",
-  notes: `${lesson.duration_minutes}min lesson on ${lesson.lesson_date}`,
-});
-
-invalidatePaymentQueries({
-  pupilId: lesson.pupil.id,
-  instructorId
-});
-```
-
-### Cancellation fee record (CancelLessonDialog)
-
-After the balance update inside the `chargeOption === "charge"` block:
-
-```text
-await supabase.from("payment_history").insert({
-  pupil_id: pupilId,
-  instructor_id: instructorId,
-  amount: -amountDue,
-  payment_method: "Cancellation Fee",
-  notes: `Cancellation charge for ${lessonDate} ${lessonTime}`,
-});
-
-invalidatePaymentQueries({ pupilId, instructorId });
-```
-
-### Tax mileage query (InstructorTax)
-
-```text
-// Fetch business mileage
-const { data: mileageLogs } = await supabase
-  .from("mileage_logs")
-  .select("distance_km")
-  .eq("instructor_id", instructorId)
-  .eq("trip_type", "business")
-  .gte("log_date", taxYearStart)
-  .lte("log_date", taxYearEnd);
-
-const totalBusinessMiles = (mileageLogs || [])
-  .reduce((sum, l) => sum + (Number(l.distance_km) * 0.621371), 0);
-
-const mileageDeduction = totalBusinessMiles <= 10000
-  ? totalBusinessMiles * 0.45
-  : 10000 * 0.45 + (totalBusinessMiles - 10000) * 0.25;
-```
-
-Add `mileageDeduction` to `totalExpenses` and include "Mileage Allowance" in the expense breakdown.
-
-### Income calculation fix (InstructorTax)
-
-Change line 144 from summing all amounts to only positive ones:
-
-```text
-const totalIncome = (payments || [])
-  .filter(p => Number(p.amount) > 0)
-  .reduce((sum, p) => sum + Number(p.amount), 0);
-```
-
-### Files to change
+## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/TodayScheduleView.tsx` | Deduct balance + insert payment_history + call invalidation |
-| `src/components/instructor/CancelLessonDialog.tsx` | Insert payment_history record for cancellation fee + call invalidation |
-| `src/pages/InstructorTax.tsx` | Add mileage deduction query + fix income filter |
+| `src/pages/InstructorPupils.tsx` | Full-width sheet on mobile |
+| `src/components/instructor/PupilDrivingReport.tsx` | Responsive stats grid, smaller map, shorter scroll area, stacked header, scrollable tabs, wrapped event rows |
+| `src/components/instructor/GeneratedDrivingReport.tsx` | Minor: smaller score circle on mobile |
+
