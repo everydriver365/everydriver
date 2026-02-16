@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut } from "lucide-react";
-import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
-  const { data: swapNotifCount = 0 } = useTestSwapNotifications(instructor?.id);
+  const { total: totalNotifCount } = useCombinedNotificationCount(instructor?.id);
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -119,9 +119,9 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
             >
               <Bell className="h-4 w-4" />
-              {swapNotifCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                  {swapNotifCount > 9 ? "9+" : swapNotifCount}
+              {totalNotifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
+                  {totalNotifCount > 9 ? "9+" : totalNotifCount}
                 </span>
               )}
             </button>
