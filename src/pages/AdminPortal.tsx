@@ -159,7 +159,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
-  "plan-features": { title: "Plan Feature Matrix", group: "Products & Booking", icon: CheckSquare },
+  "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
 };
 
 export default function AdminPortal() {

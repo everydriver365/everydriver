@@ -39,7 +39,6 @@ const navTabs = [
   { id: "payments", label: "Money", icon: CreditCard },
   { id: "bookings", label: "Stats", icon: BarChart3 },
   { id: "hero", label: "CMS", icon: FileText },
-  { id: "plan-features", label: "Plan Features", icon: CheckSquare },
 ];
 
 export function AdminLayout({
@@ -89,7 +88,7 @@ export function AdminLayout({
       "reward-tiers": "overview",
       bonuses: "overview",
       promotions: "overview",
-      "plan-features": "plan-features",
+      "plan-features": "hero",
     };
     return sectionToTab[activeSection] || "overview";
   };
