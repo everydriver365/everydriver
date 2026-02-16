@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle, Clock, Shield, Car, FileText, CreditCard } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Shield, Car, FileText, CreditCard, CalendarCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -40,6 +40,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
         dbsExpiringRes,
         pendingPaymentsRes,
         inactiveInstructorsRes,
+        testReservationsRes,
       ] = await Promise.all([
         // ADI badges expiring within 30 days
         supabase
@@ -69,7 +70,7 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .eq("is_active", true)
           .not("dbs_certificate_expiry", "is", null)
           .lte("dbs_certificate_expiry", thirtyDaysStr),
-        // Pending payment approvals (if payment_link_tracking exists with pending status)
+        // Pending payment approvals
         supabase
           .from("payment_link_tracking")
           .select("id", { count: "exact", head: true })
@@ -79,6 +80,11 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
           .from("instructors")
           .select("id", { count: "exact", head: true })
           .eq("is_active", false),
+        // Test slot reservations pending
+        supabase
+          .from("test_slot_reservations")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "reserved"),
       ]);
 
       const newAlerts: SystemAlert[] = [];
@@ -167,6 +173,20 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
         });
       }
 
+      // Test slot reservations
+      const reservationCount = testReservationsRes.count || 0;
+      if (reservationCount > 0) {
+        newAlerts.push({
+          id: "test-reservations",
+          type: "info",
+          icon: CalendarCheck,
+          message: `${reservationCount} test slot reservation${reservationCount > 1 ? "s" : ""} pending`,
+          count: reservationCount,
+          action: "Review",
+          section: "test-swap",
+        });
+      }
+
       // If no alerts, show success message
       if (newAlerts.length === 0) {
         newAlerts.push({
@@ -201,6 +221,11 @@ export function SystemAlertsCard({ onNavigate }: SystemAlertsCardProps) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "payment_link_tracking" },
+        () => fetchAlerts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "test_slot_reservations" },
         () => fetchAlerts()
       )
       .subscribe();
