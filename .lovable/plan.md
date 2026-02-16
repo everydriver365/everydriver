@@ -1,50 +1,127 @@
 
 
-# Make Driving Report Mobile-Friendly
+# Test Requests Feature
 
-## Problems Identified
+## Overview
 
-1. **SheetContent too narrow on mobile**: The driving report opens in a `SheetContent side="right"` with `sm:max-w-2xl`, which on mobile takes only part of the screen width.
-2. **5-column stats grid doesn't fit**: `grid-cols-2 md:grid-cols-5` means 2 columns on mobile with the 5th stat orphaned on its own row.
-3. **Session list + map side-by-side on mobile**: `grid lg:grid-cols-3` falls back to single column, but the `ScrollArea h-[400px]` wastes vertical space on small screens.
-4. **Map height fixed at 250px**: Too tall relative to mobile viewport, pushing content below the fold.
-5. **Event rows have too many inline elements**: Badge + speed + time all on one line causes overflow on narrow screens.
-6. **Header title and Export button cramped**: `flex items-center justify-between` with long pupil names causes wrapping issues.
+A new "Test Requests" system where pupils and instructors can register their current driving test booking or request a test swap. Instructors and admins can then offer available tests to those who need them.
 
-## Changes
+## Database Schema
 
-### 1. SheetContent (InstructorPupils.tsx)
-- Change to `className="w-full sm:max-w-2xl overflow-y-auto"` so it takes full width on mobile.
+### New table: `test_requests`
 
-### 2. PupilDrivingReport.tsx -- Summary Stats
-- Change grid from `grid-cols-2 md:grid-cols-5` to `grid-cols-3 sm:grid-cols-5` so the 5 stats wrap more naturally (3+2 on small screens, 5 on larger).
-- Reduce font size on mobile: `text-xl sm:text-2xl` for stat values.
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| pupil_id | uuid FK -> pupils(id) | Nullable (instructor may create on behalf) |
+| instructor_id | uuid FK -> instructors(id) | The associated instructor |
+| created_by_type | text | 'pupil', 'instructor', or 'admin' |
+| request_type | text | 'have_test' (already booked) or 'want_test' (looking for one) |
+| test_centre_id | uuid FK -> test_centres(id) | Nullable (manual entry allowed) |
+| test_centre_name | text | For manual entry / display |
+| test_date | date | Exact date if booked, or preferred start date |
+| test_time | time | Exact time if booked, or preferred start time |
+| date_range_end | date | Nullable -- end of preferred window (for want_test) |
+| time_range_end | time | Nullable -- end of preferred time window |
+| willing_to_pay_swap_fee | boolean | Default false -- the GBP 150 toggle |
+| status | text | 'active', 'matched', 'cancelled' -- default 'active' |
+| notes | text | Optional free-text |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
 
-### 3. PupilDrivingReport.tsx -- Header
-- Stack the title and Export button vertically on mobile using `flex flex-col sm:flex-row`.
-- Truncate long pupil names.
+### New table: `test_swap_offers`
 
-### 4. PupilDrivingReport.tsx -- Sessions Tab
-- Reduce `ScrollArea` height on mobile: `h-[250px] lg:h-[400px]`.
-- Reduce map height on mobile: pass `height` as `"180px"` on small screens (or use a responsive class).
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| test_request_id | uuid FK -> test_requests(id) | The request being offered to |
+| offered_by_instructor_id | uuid FK -> instructors(id) | Nullable |
+| offered_by_admin | boolean | Default false |
+| offered_test_date | date | The test date/time being offered |
+| offered_test_time | time | |
+| offered_test_centre_id | uuid FK -> test_centres(id) | |
+| offered_test_centre_name | text | |
+| message | text | Optional message |
+| status | text | 'pending', 'accepted', 'declined' |
+| created_at | timestamptz | |
 
-### 5. PupilDrivingReport.tsx -- Event Rows
-- Wrap badge and speed/time onto a second line on mobile using `flex-wrap` and responsive layout.
-- Ensure text truncation on notes.
+### RLS Policies
 
-### 6. PupilDrivingReport.tsx -- Tabs
-- Make the TabsList horizontally scrollable on mobile if text overflows, similar to the fleet dashboard pattern (`overflow-x-auto`).
+- **test_requests**: Instructors can read/write rows where `instructor_id` matches their instructor record. Pupils can read/write their own rows via `pupil_id`.
+- **test_swap_offers**: Instructors can read offers linked to their test_requests or created by them. Admins (via `has_role`) can read/write all.
 
-### 7. GeneratedDrivingReport.tsx
-- Score display: reduce SVG size on mobile (`w-16 h-16 sm:w-20 sm:h-20`).
-- Stats grid already uses `grid-cols-3` which is fine.
-- No major issues here -- this component is already fairly mobile-friendly.
+## New Components
 
-## Files Modified
+### 1. `src/pages/InstructorTestRequests.tsx`
+Main page at route `/instructor/test-requests`. Contains:
+- A list of the instructor's pupils' active test requests
+- A form to add a new request (on behalf of a pupil or the instructor themselves)
+- A "Swap Board" tab showing all active requests in their area that match available tests, with an "Offer Test" button
+
+### 2. `src/components/test-requests/TestRequestForm.tsx`
+Shared form component used by both instructor and pupil portals:
+- **Request Type** toggle: "I have a test booked" vs "I'm looking for a test"
+- **Test Centre** search (autocomplete from existing `test_centres` table) + manual input fallback
+- **Date/Time** picker (exact for "have", range for "want")
+- **Swap Fee toggle**: "I'm happy to pay GBP 150 to swap" with clear labelling
+- **Pupil selector** (instructor-only, to pick which pupil)
+
+### 3. `src/components/test-requests/TestRequestList.tsx`
+Displays active requests with status badges, test centre name, date/time, and swap fee indicator.
+
+### 4. `src/components/test-requests/SwapBoard.tsx`
+Shows matching requests (people who "have" a test matching what someone "wants" and vice versa). Instructors and admins can click "Offer This Test" to create a `test_swap_offer`.
+
+### 5. `src/components/test-requests/TestSwapOfferDialog.tsx`
+Dialog for instructors/admins to send an offer with optional message.
+
+## Integration Points
+
+### Instructor Mobile App (tile)
+Add a "Test Swap" tile to the `additionalTiles` arrays in:
+- `AppStyleHomeView.tsx`
+- `QuickActionTiles.tsx`
+- `DashboardLayoutManager.tsx`
+
+```
+{ id: "test-requests", title: "Test Swap", icon: "Award", route: "/instructor/test-requests", display_order: 101.5 }
+```
+
+### Pupil Portal
+Add a new menu item in `BrandedPupilPortal.tsx` navigation list:
+```
+{ id: 'test-requests', icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap a driving test' }
+```
+
+Add a new `ActiveSection` type value `'test-requests'` and render the `TestRequestForm` + `TestRequestList` for the pupil's own requests.
+
+### Instructor Desktop Dashboard
+Add route in `App.tsx` and sidebar link in `InstructorPortalLayout.tsx`.
+
+### Admin Portal
+Add a "Test Swap Board" section in the admin portal where admins can view all active requests across all instructors and offer tests.
+
+## Route
+
+| Route | Component |
+|-------|-----------|
+| `/instructor/test-requests` | `InstructorTestRequests` |
+
+## File Changes Summary
 
 | File | Change |
 |------|--------|
-| `src/pages/InstructorPupils.tsx` | Full-width sheet on mobile |
-| `src/components/instructor/PupilDrivingReport.tsx` | Responsive stats grid, smaller map, shorter scroll area, stacked header, scrollable tabs, wrapped event rows |
-| `src/components/instructor/GeneratedDrivingReport.tsx` | Minor: smaller score circle on mobile |
+| **New** `src/pages/InstructorTestRequests.tsx` | Main instructor page |
+| **New** `src/components/test-requests/TestRequestForm.tsx` | Shared form |
+| **New** `src/components/test-requests/TestRequestList.tsx` | Request list |
+| **New** `src/components/test-requests/SwapBoard.tsx` | Matching board |
+| **New** `src/components/test-requests/TestSwapOfferDialog.tsx` | Offer dialog |
+| `src/App.tsx` | Add route |
+| `src/components/instructor/AppStyleHomeView.tsx` | Add tile |
+| `src/components/instructor/QuickActionTiles.tsx` | Add tile |
+| `src/components/instructor/DashboardLayoutManager.tsx` | Add tile |
+| `src/components/layout/InstructorPortalLayout.tsx` | Add sidebar link |
+| `src/pages/BrandedPupilPortal.tsx` | Add pupil section |
+| `src/pages/AdminPortal.tsx` | Add admin swap board view |
+| **Migration** | Create `test_requests` and `test_swap_offers` tables with RLS |
 
