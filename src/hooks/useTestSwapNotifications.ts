@@ -17,15 +17,29 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
         .eq("test_requests.instructor_id", instructorId)
         .eq("status", "pending");
 
-      // Count active "have_test" requests from other instructors (potential matches)
-      const { count: availableTests } = await supabase
+      // Get centres this instructor wants a test at
+      const { data: wantRequests } = await supabase
         .from("test_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("request_type", "have_test")
-        .eq("status", "active")
-        .neq("instructor_id", instructorId);
+        .select("test_centre_id")
+        .eq("instructor_id", instructorId)
+        .eq("request_type", "want_test")
+        .eq("status", "active");
 
-      return (pendingOffers || 0) + (availableTests || 0);
+      const wantedCentreIds = (wantRequests || []).map(r => r.test_centre_id).filter(Boolean);
+
+      let matchingTests = 0;
+      if (wantedCentreIds.length > 0) {
+        // Count have_test listings at wanted centres from ANY source
+        const { count } = await supabase
+          .from("test_requests")
+          .select("*", { count: "exact", head: true })
+          .eq("request_type", "have_test")
+          .eq("status", "active")
+          .in("test_centre_id", wantedCentreIds);
+        matchingTests = count || 0;
+      }
+
+      return (pendingOffers || 0) + matchingTests;
     },
     enabled: !!instructorId,
     refetchInterval: 30_000,
