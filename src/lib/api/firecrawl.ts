@@ -22,7 +22,7 @@ interface SlotsResponse {
 
 export async function fetchTestCentres(): Promise<CentresResponse> {
   const { data, error } = await supabase.functions.invoke('scrape-test-slots', {
-    body: {},
+    body: { mode: 'discover' },
   });
   if (error) return { success: false, error: error.message };
   return data as CentresResponse;
