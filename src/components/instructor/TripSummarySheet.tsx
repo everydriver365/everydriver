@@ -318,19 +318,19 @@ Roads Visited: ${report.stats.roadsVisited}
 
                 {/* Duration & Distance - Large Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted/30 rounded-xl p-4 text-center">
-                    <Clock className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                    <p className="text-2xl font-bold">
+                  <div className="bg-muted/30 rounded-xl px-3 py-3 text-center">
+                    <Clock className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                    <p className="text-xl font-bold">
                       {report.stats.duration ? formatDuration(report.stats.duration * 60) : 'N/A'}
                     </p>
-                    <p className="text-xs text-muted-foreground">Duration</p>
+                    <p className="text-[10px] text-muted-foreground">Duration</p>
                   </div>
-                  <div className="bg-muted/30 rounded-xl p-4 text-center">
-                    <Navigation className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                    <p className="text-2xl font-bold">
+                  <div className="bg-muted/30 rounded-xl px-3 py-3 text-center">
+                    <Navigation className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                    <p className="text-xl font-bold">
                       {(Number(report.stats.distance) * 0.621371).toFixed(1)} mi
                     </p>
-                    <p className="text-xs text-muted-foreground">Distance</p>
+                    <p className="text-[10px] text-muted-foreground">Distance</p>
                   </div>
                 </div>
 
@@ -416,22 +416,22 @@ Roads Visited: ${report.stats.roadsVisited}
           <div className="sticky bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background border-t border-border flex gap-2 flex-shrink-0">
             <Button 
               variant="outline" 
-              className="flex-1 h-12 text-sm"
+              className="flex-1 h-10 text-xs"
               onClick={handleDownloadPDF}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-3.5 w-3.5 mr-1.5" />
               PDF
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 h-12 text-sm"
+              className="flex-1 h-10 text-xs"
               onClick={handleShare}
             >
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share2 className="h-3.5 w-3.5 mr-1.5" />
               Share
             </Button>
             <Button 
-              className="flex-1 h-12 text-sm"
+              className="flex-1 h-10 text-xs"
               onClick={() => onOpenChange(false)}
             >
               Done
