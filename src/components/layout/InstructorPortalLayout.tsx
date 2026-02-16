@@ -710,8 +710,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
             </div>
 
-            {/* Center: Navigation Tabs */}
-            <nav className="hidden md:flex items-center gap-0.5">
+            {/* Center: Navigation Tabs - 2 rows */}
+            <nav className="hidden md:flex flex-wrap items-center justify-center gap-x-0.5 gap-y-0.5 max-w-2xl">
               {desktopNavTabs.map((tab) => (
                 <Link
                   key={tab.id}
