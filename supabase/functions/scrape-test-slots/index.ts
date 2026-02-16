@@ -323,14 +323,9 @@ Deno.serve(async (req) => {
       // No body means auto mode
     }
 
-    // AUTO MODE: triggered by cron or explicit request
-    if (!body.centre && (!body.mode || body.mode === 'auto')) {
-      // If no centre specified and mode is auto (or no body at all), run auto
-      // But distinguish: if body has no mode and no centre, it could be the old "discover centres" call
-      // We use presence of mode:'auto' or completely empty body for auto mode
-      if (body.mode === 'auto' || Object.keys(body).length === 0) {
-        return await handleAutoMode(apiKey);
-      }
+    // AUTO MODE: only if explicitly mode:'auto' or completely empty body (cron trigger)
+    if (body.mode === 'auto' || Object.keys(body).length === 0) {
+      return await handleAutoMode(apiKey);
     }
 
     const targetCentre = body.centre;
