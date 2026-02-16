@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchTestCentres, fetchSlotsForCentre, type TestSlot } from "@/lib/api/firecrawl";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AvailableTestSlotsProps {
   instructorId?: string;
@@ -20,7 +27,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
   const [reservedIndices, setReservedIndices] = useState<Set<string>>(new Set());
   const [reservingKey, setReservingKey] = useState<string | null>(null);
   const [centres, setCentres] = useState<string[]>([]);
-  const [expandedCentre, setExpandedCentre] = useState<string | null>(null);
+  const [selectedCentre, setSelectedCentre] = useState<string | null>(null);
   const [centreSlots, setCentreSlots] = useState<Record<string, TestSlot[]>>({});
   const [loadingCentreSlots, setLoadingCentreSlots] = useState<string | null>(null);
   const [isLoadingCentres, setIsLoadingCentres] = useState(true);
@@ -75,12 +82,8 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
     }
   };
 
-  const handleToggleCentre = (centre: string) => {
-    if (expandedCentre === centre) {
-      setExpandedCentre(null);
-      return;
-    }
-    setExpandedCentre(centre);
+  const handleSelectCentre = (centre: string) => {
+    setSelectedCentre(centre);
     if (!centreSlots[centre]) {
       loadSlotsForCentre(centre);
     }
@@ -158,97 +161,91 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
   }
 
   return (
-    <div className="mt-4 space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {centres.length} test centre{centres.length !== 1 ? "s" : ""}
-        </p>
-        <Button variant="outline" size="sm" onClick={() => loadCentres(true)} className="gap-1">
+    <div className="mt-4 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <Select
+          value={selectedCentre || ""}
+          onValueChange={handleSelectCentre}
+        >
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select a test centre..." />
+          </SelectTrigger>
+          <SelectContent className="z-50 bg-popover">
+            {centres.map(centre => (
+              <SelectItem key={centre} value={centre}>
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                  {centre}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm" onClick={() => loadCentres(true)} className="gap-1 shrink-0">
           <RefreshCw className="h-4 w-4" /> Refresh
         </Button>
       </div>
 
-      {centres.map(centre => {
-        const isExpanded = expandedCentre === centre;
-        const slots = centreSlots[centre];
-        const isLoading = loadingCentreSlots === centre;
-
-        return (
-          <Card key={centre}>
-            <CardContent className="p-0">
-              <button
-                className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/50 transition-colors"
-                onClick={() => handleToggleCentre(centre)}
-              >
-                <span className="flex items-center gap-2 font-medium text-sm">
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
-                  {centre}
-                  {slots && (
-                    <span className="text-xs text-muted-foreground font-normal">
-                      ({slots.length} slot{slots.length !== 1 ? "s" : ""})
-                    </span>
-                  )}
-                </span>
-                {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-              </button>
-
-              {isExpanded && (
-                <div className="border-t px-3 pb-3 pt-2 space-y-2">
-                  {isLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                      <Search className="h-4 w-4 animate-pulse" />
-                      Searching slots for {centre}...
-                    </div>
-                  ) : slots && slots.length > 0 ? (
-                    slots.map((slot, i) => {
-                      const key = slotKey(centre, i);
-                      return (
-                        <div key={i} className="flex items-center justify-between gap-2 py-1.5">
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {slot.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {slot.time}
-                            </span>
-                          </div>
-                          {reservedIndices.has(key) ? (
-                            <Button size="sm" variant="outline" disabled className="gap-1 text-amber-600 border-amber-300 shrink-0">
-                              <Clock className="h-4 w-4" />
-                              Pending
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => handleReserve(slot, key)}
-                              disabled={reservingKey === key || !instructorId}
-                            >
-                              {reservingKey === key ? "Sending..." : "Reserve"}
-                            </Button>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : slots && slots.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-2">No available slots</p>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => loadSlotsForCentre(centre)}
-                      className="gap-1"
-                    >
-                      <Search className="h-4 w-4" /> Load Slots
-                    </Button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+      {selectedCentre && (
+        <div className="space-y-2">
+          {loadingCentreSlots === selectedCentre ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <Search className="h-4 w-4 animate-pulse" />
+              Searching slots for {selectedCentre}...
+            </div>
+          ) : centreSlots[selectedCentre] && centreSlots[selectedCentre].length > 0 ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {centreSlots[selectedCentre].length} slot{centreSlots[selectedCentre].length !== 1 ? "s" : ""} available
+              </p>
+              {centreSlots[selectedCentre].map((slot, i) => {
+                const key = slotKey(selectedCentre, i);
+                return (
+                  <Card key={i}>
+                    <CardContent className="p-3 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {slot.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          {slot.time}
+                        </span>
+                      </div>
+                      {reservedIndices.has(key) ? (
+                        <Button size="sm" variant="outline" disabled className="gap-1 text-amber-600 border-amber-300 shrink-0">
+                          <Clock className="h-4 w-4" />
+                          Pending
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => handleReserve(slot, key)}
+                          disabled={reservingKey === key || !instructorId}
+                        >
+                          {reservingKey === key ? "Sending..." : "Reserve"}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </>
+          ) : centreSlots[selectedCentre] && centreSlots[selectedCentre].length === 0 ? (
+            <p className="text-sm text-muted-foreground py-2">No available slots at {selectedCentre}</p>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadSlotsForCentre(selectedCentre)}
+              className="gap-1"
+            >
+              <Search className="h-4 w-4" /> Load Slots
+            </Button>
+          )}
+        </div>
+      )}
 
       {centres.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">
