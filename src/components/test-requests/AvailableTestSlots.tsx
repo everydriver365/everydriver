@@ -214,9 +214,9 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
                   </div>
                 </div>
                 {reservedIndices.has(i) ? (
-                  <Button size="sm" variant="outline" disabled className="gap-1 text-amber-600 border-amber-300">
+                  <Button size="sm" variant="outline" disabled className="gap-1 text-amber-600 border-amber-300 shrink-0">
                     <Clock className="h-4 w-4" />
-                    Awaiting confirmation
+                    Pending
                   </Button>
                 ) : (
                   <Button
