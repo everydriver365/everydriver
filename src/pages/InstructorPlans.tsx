@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, X, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2, Sparkles, LogOut } from "lucide-react";
+import { Check, X, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2, Sparkles, LogOut, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
@@ -54,28 +54,50 @@ export default function InstructorPlans() {
   const { subscription, signOut } = useInstructorAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [telematicsFeatures, setTelematicsFeatures] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
 
   const currentPlanSlug = subscription?.plan_slug || "free";
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      const { data, error } = await supabase
-        .from("subscription_plans")
-        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
+    const fetchData = async () => {
+      const [plansRes, telematicsRes] = await Promise.all([
+        supabase
+          .from("subscription_plans")
+          .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us")
+          .eq("is_active", true)
+          .order("display_order", { ascending: true }),
+        supabase
+          .from("feature_plan_assignments")
+          .select("plan_slug, feature_showcase_items!inner(title, category, display_order)")
+          .eq("feature_showcase_items.category", "Telematics & GPS")
+          .order("plan_slug"),
+      ]);
 
-      if (!error && data) {
-        setPlans(data.map(p => ({
+      if (!plansRes.error && plansRes.data) {
+        setPlans(plansRes.data.map(p => ({
           ...p,
           features: Array.isArray(p.features) ? (p.features as string[]) : [],
           show_contact_us: (p as any).show_contact_us || false,
         })));
       }
+
+      if (!telematicsRes.error && telematicsRes.data) {
+        const map: Record<string, string[]> = {};
+        telematicsRes.data.forEach((row: any) => {
+          const slug = row.plan_slug;
+          const title = row.feature_showcase_items?.title;
+          if (title) {
+            if (!map[slug]) map[slug] = [];
+            if (!map[slug].includes(title)) map[slug].push(title);
+          }
+        });
+        setTelematicsFeatures(map);
+      }
+
       setLoading(false);
     };
-    fetchPlans();
+    fetchData();
   }, []);
 
   const handleUpgrade = (plan: Plan) => {
@@ -231,7 +253,7 @@ export default function InstructorPlans() {
 
                       {/* Features */}
                       {plan.features.length > 0 && (
-                        <ul className="space-y-1.5 mb-4 flex-1">
+                        <ul className="space-y-1.5 mb-3 flex-1">
                           {plan.features.map((feature, i) => (
                             <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
                               <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
@@ -239,6 +261,24 @@ export default function InstructorPlans() {
                             </li>
                           ))}
                         </ul>
+                      )}
+
+                      {/* Telematics Section */}
+                      {(telematicsFeatures[plan.slug] || []).length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-border">
+                            <Gauge className="h-3.5 w-3.5 text-violet-500" />
+                            <span className="text-[11px] font-semibold text-foreground">Telematics</span>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {telematicsFeatures[plan.slug].map((feature, i) => (
+                              <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                                <Check className="h-3.5 w-3.5 text-violet-500 shrink-0 mt-0.5" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
 
                       {/* CTA */}
