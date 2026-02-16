@@ -9092,6 +9092,8 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          commission_fixed_pence: number | null
+          commission_rate_percent: number | null
           created_at: string | null
           cta_text: string | null
           description: string | null
@@ -9112,6 +9114,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          commission_fixed_pence?: number | null
+          commission_rate_percent?: number | null
           created_at?: string | null
           cta_text?: string | null
           description?: string | null
@@ -9132,6 +9136,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          commission_fixed_pence?: number | null
+          commission_rate_percent?: number | null
           created_at?: string | null
           cta_text?: string | null
           description?: string | null
