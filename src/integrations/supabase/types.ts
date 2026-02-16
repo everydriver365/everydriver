@@ -1620,6 +1620,35 @@ export type Database = {
           },
         ]
       }
+      feature_plan_assignments: {
+        Row: {
+          created_at: string
+          feature_id: string
+          id: string
+          plan_slug: string
+        }
+        Insert: {
+          created_at?: string
+          feature_id: string
+          id?: string
+          plan_slug: string
+        }
+        Update: {
+          created_at?: string
+          feature_id?: string
+          id?: string
+          plan_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_plan_assignments_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "feature_showcase_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_showcase_items: {
         Row: {
           category: string
@@ -9076,6 +9105,7 @@ export type Database = {
           name: string
           price_monthly: number
           price_yearly: number | null
+          show_contact_us: boolean
           slug: string
           sms_credits_monthly: number | null
           square_plan_variation_id: string | null
@@ -9095,6 +9125,7 @@ export type Database = {
           name: string
           price_monthly?: number
           price_yearly?: number | null
+          show_contact_us?: boolean
           slug: string
           sms_credits_monthly?: number | null
           square_plan_variation_id?: string | null
@@ -9114,6 +9145,7 @@ export type Database = {
           name?: string
           price_monthly?: number
           price_yearly?: number | null
+          show_contact_us?: boolean
           slug?: string
           sms_credits_monthly?: number | null
           square_plan_variation_id?: string | null

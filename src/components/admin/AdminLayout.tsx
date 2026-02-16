@@ -9,7 +9,8 @@ import {
   FileText,
   LogOut,
   ChevronRight,
-  Globe
+  Globe,
+  CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/layout/Footer";
@@ -38,6 +39,7 @@ const navTabs = [
   { id: "payments", label: "Money", icon: CreditCard },
   { id: "bookings", label: "Stats", icon: BarChart3 },
   { id: "hero", label: "CMS", icon: FileText },
+  { id: "plan-features", label: "Plan Features", icon: CheckSquare },
 ];
 
 export function AdminLayout({
@@ -87,6 +89,7 @@ export function AdminLayout({
       "reward-tiers": "overview",
       bonuses: "overview",
       promotions: "overview",
+      "plan-features": "plan-features",
     };
     return sectionToTab[activeSection] || "overview";
   };
