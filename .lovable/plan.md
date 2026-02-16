@@ -1,38 +1,39 @@
 
+# Fix: Show All Test Centres from Scrape
 
-## Auto-Scrape Test Slots Every 12 Hours
+## Problem
+The `fetchTestCentres()` function sends an empty body `{}` to the edge function. The edge function treats empty bodies as "auto mode", which only scrapes centres that match existing `want_test` requests (currently just "Lee on the Solent"). The "discover all centres" code path (lines 338-381 of the edge function) is never reached.
 
-### What This Does
-Sets up an automatic scrape of the test booking site every 12 hours. When a test slot is found at a centre that matches any instructor's active "want test" request (regardless of date/time), it will:
-- Insert a `scraped_match` record into the database
-- Trigger the notification bell in the app
-- Send an SMS alert to the admin
+## Solution
+Two small changes to fix the routing logic:
 
-### Implementation Steps
+### 1. Update `src/lib/api/firecrawl.ts`
+Change `fetchTestCentres()` to send `{ mode: 'discover' }` instead of `{}`, so the edge function knows to run the "discover all centres" scrape.
 
-**1. Update the scrape-test-slots backend function**
+### 2. Update `supabase/functions/scrape-test-slots/index.ts`
+Adjust the routing logic so that:
+- `mode: 'auto'` or completely empty body (from cron) triggers auto mode
+- `mode: 'discover'` or any body without a `centre` and without `mode: 'auto'` triggers the discover-all-centres scrape
+- A body with `centre` specified triggers single-centre scrape (unchanged)
 
-Add a new `mode: 'auto'` path that:
-- Queries all active `want_test` requests to get the list of desired centre names
-- Scrapes each requested centre one by one using the existing scrape logic
-- Runs the matching logic against all found slots (matching by centre name only, ignoring date/time)
-- Inserts `scraped_match` records and sends SMS alerts as it already does
+## Technical Details
 
-When called with no body or `{"mode": "auto"}`, it will automatically determine which centres to scrape based on active requests.
+**`src/lib/api/firecrawl.ts`** - Change line 27:
+```typescript
+// Before:
+body: {},
+// After:
+body: { mode: 'discover' },
+```
 
-**2. Create a scheduled job (every 12 hours)**
+**`supabase/functions/scrape-test-slots/index.ts`** - Adjust the condition at lines 327-334:
+```typescript
+// Only run auto mode if explicitly mode:'auto' OR if body parsing failed (no body = cron trigger)
+if (body.mode === 'auto') {
+  return await handleAutoMode(apiKey);
+}
+```
 
-Add a `pg_cron` job that calls the `scrape-test-slots` function with `{"mode": "auto"}` at 7am and 7pm daily (every 12 hours).
+This way, the default call from the frontend (with `mode: 'discover'`) will fall through to the centre discovery scrape, which opens the dropdown on the test booking site and extracts all available centre names. The cron/scheduled calls can explicitly use `mode: 'auto'`.
 
-**3. No changes needed to the notification hook**
-
-The existing `useTestSwapNotifications` hook already picks up `scraped_match` records and shows the bell badge -- no changes required there.
-
-### Technical Details
-
-- The edge function will iterate through each unique centre name from active `want_test` requests
-- Each centre requires a separate Firecrawl scrape call (the site requires selecting a centre from a dropdown)
-- The matching is centre-name only (as requested -- any date/time at the right centre triggers an alert)
-- Duplicate detection prevents the same slot from being inserted twice
-- The cron schedule `0 7,19 * * *` runs at 7:00 AM and 7:00 PM UTC daily
-
+No other files need to change. The existing dropdown UI and slot-loading-per-centre logic in `AvailableTestSlots.tsx` remains exactly as it is.
