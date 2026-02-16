@@ -30,6 +30,8 @@ import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PupilDashboardInsights } from "@/components/pupil-portal/PupilDashboardInsights";
 import { PupilAICoaching } from "@/components/pupil-portal/PupilAICoaching";
+import { PupilTestRequests } from "@/components/test-requests/PupilTestRequests";
+import { RefreshCw } from "lucide-react";
 
 interface InstructorBranding {
   id: string;
@@ -56,7 +58,7 @@ interface Pupil {
   profile_image_url: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -457,6 +459,7 @@ export default function BrandedPupilPortal() {
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised driving insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
+                    { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap a driving test' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
                     <Card 
@@ -730,6 +733,32 @@ export default function BrandedPupilPortal() {
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
                   instructorName={instructor.name}
+                />
+              </motion.div>
+            )}
+
+            {activeSection === 'test-requests' && (
+              <motion.div
+                key="test-requests"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="p-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setActiveSection('home')}
+                    className="mb-4"
+                    style={{ color: 'var(--brand-text)' }}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <PupilTestRequests
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={instructor.brand_colour}
                 />
               </motion.div>
             )}

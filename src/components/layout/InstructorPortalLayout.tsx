@@ -96,6 +96,7 @@ const sidebarGroups = [
       { href: "/instructor/pending-scheduling", label: "Pending", icon: ClipboardList },
       { href: "/instructor/pupils", label: "Pupils", icon: Users },
       { href: "/instructor/test-results", label: "Test Results", icon: Award },
+      { href: "/instructor/test-requests", label: "Test Swap", icon: Award },
       { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
     ],
   },
