@@ -79,6 +79,7 @@ import instructorLogo from "@/assets/ed-white-logo.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
@@ -149,6 +150,26 @@ const desktopNavTabs = [
   { id: "/instructor/website", label: "Website", icon: Globe },
   { id: "/instructor/settings", label: "Settings", icon: Settings },
 ];
+
+function DesktopNotificationBell({ instructorId }: { instructorId: string | undefined }) {
+  const navigate = useNavigate();
+  const { total } = useCombinedNotificationCount(instructorId);
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8 relative"
+      onClick={() => navigate("/instructor/test-requests")}
+    >
+      <Bell className="h-4 w-4" />
+      {total > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
+          {total > 9 ? "9+" : total}
+        </span>
+      )}
+    </Button>
+  );
+}
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
@@ -685,19 +706,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 </Link>
               ))}
             </nav>
-              
 
             {/* Right: Notifications + Theme + Avatar */}
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8 relative"
-                onClick={() => navigate("/instructor/messages")}
-              >
-                <Bell className="h-4 w-4" />
-                <MessageNotificationBadge instructorId={instructor?.id} className="absolute -top-0.5 -right-0.5" />
-              </Button>
+              <DesktopNotificationBell instructorId={instructor?.id} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
