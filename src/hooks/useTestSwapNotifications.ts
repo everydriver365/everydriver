@@ -47,7 +47,7 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
           .from("test_slot_reservations" as any)
           .select("*", { count: "exact", head: true })
           .in("centre", wantedCentreNames)
-          .eq("status", "pending");
+          .in("status", ["pending", "scraped_match"]);
         scrapedMatches = count || 0;
       }
 

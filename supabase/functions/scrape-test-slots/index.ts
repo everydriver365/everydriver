@@ -126,6 +126,30 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
       }))},
     });
 
+    // Auto-insert scraped matches into test_slot_reservations so notification hook picks them up
+    for (const m of matches) {
+      // Check if this exact slot already exists to avoid duplicates
+      const { data: existing } = await supabase
+        .from('test_slot_reservations')
+        .select('id')
+        .eq('instructor_id', m.request.instructor_id)
+        .eq('centre', m.slot.centre)
+        .eq('date', m.slot.date)
+        .eq('time', m.slot.time)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from('test_slot_reservations').insert({
+          instructor_id: m.request.instructor_id,
+          centre: m.slot.centre,
+          date: m.slot.date,
+          time: m.slot.time,
+          status: 'scraped_match',
+        });
+        console.log(`Inserted scraped_match for ${m.slot.centre} ${m.slot.date} ${m.slot.time}`);
+      }
+    }
+
     // Send SMS to admin
     const adminPhone = Deno.env.get('ADMIN_PHONE_NUMBER');
     const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
