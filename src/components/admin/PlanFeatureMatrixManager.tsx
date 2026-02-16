@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save, CheckCircle2, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Feature {
   id: string;
@@ -29,10 +32,22 @@ const PLAN_LABELS: Record<string, string> = {
 export function PlanFeatureMatrixManager() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
+  const [savedAssignments, setSavedAssignments] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [toggling, setToggling] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const makeKey = (featureId: string, planSlug: string) => `${featureId}:${planSlug}`;
+
+  const hasChanges = (() => {
+    if (assignments.size !== savedAssignments.size) return true;
+    for (const key of assignments) {
+      if (!savedAssignments.has(key)) return true;
+    }
+    return false;
+  })();
 
   useEffect(() => {
     fetchData();
@@ -58,47 +73,87 @@ export function PlanFeatureMatrixManager() {
     setFeatures(featuresRes.data || []);
     const set = new Set<string>();
     (assignmentsRes.data || []).forEach((a: Assignment) => set.add(makeKey(a.feature_id, a.plan_slug)));
-    setAssignments(set);
+    setAssignments(new Set(set));
+    setSavedAssignments(new Set(set));
     setLoading(false);
   };
 
-  const handleToggle = async (featureId: string, planSlug: string) => {
+  const handleToggle = (featureId: string, planSlug: string) => {
     const key = makeKey(featureId, planSlug);
-    const isChecked = assignments.has(key);
-
-    setToggling((prev) => new Set(prev).add(key));
-
-    if (isChecked) {
-      const { error } = await supabase
-        .from("feature_plan_assignments")
-        .delete()
-        .eq("feature_id", featureId)
-        .eq("plan_slug", planSlug);
-
-      if (error) {
-        toast.error("Failed to remove assignment");
+    setAssignments((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        setAssignments((prev) => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
-        });
+        next.add(key);
       }
-    } else {
-      const { error } = await supabase
-        .from("feature_plan_assignments")
-        .insert({ feature_id: featureId, plan_slug: planSlug });
+      return next;
+    });
+    // Clear "just saved" indicator when making new changes
+    setJustSaved(false);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+  };
 
-      if (error) {
-        toast.error("Failed to add assignment");
-      } else {
-        setAssignments((prev) => new Set(prev).add(key));
+  const handleSave = async () => {
+    setSaving(true);
+
+    // Calculate diffs
+    const toAdd: { feature_id: string; plan_slug: string }[] = [];
+    const toRemove: { feature_id: string; plan_slug: string }[] = [];
+
+    for (const key of assignments) {
+      if (!savedAssignments.has(key)) {
+        const [feature_id, plan_slug] = key.split(":");
+        toAdd.push({ feature_id, plan_slug });
+      }
+    }
+    for (const key of savedAssignments) {
+      if (!assignments.has(key)) {
+        const [feature_id, plan_slug] = key.split(":");
+        toRemove.push({ feature_id, plan_slug });
       }
     }
 
-    setToggling((prev) => {
+    let hasError = false;
+
+    // Batch delete
+    for (const item of toRemove) {
+      const { error } = await supabase
+        .from("feature_plan_assignments")
+        .delete()
+        .eq("feature_id", item.feature_id)
+        .eq("plan_slug", item.plan_slug);
+      if (error) hasError = true;
+    }
+
+    // Batch insert
+    if (toAdd.length > 0) {
+      const { error } = await supabase
+        .from("feature_plan_assignments")
+        .insert(toAdd);
+      if (error) hasError = true;
+    }
+
+    if (hasError) {
+      toast.error("Some changes failed to save");
+    } else {
+      setSavedAssignments(new Set(assignments));
+      setJustSaved(true);
+      toast.success(`Saved ${toAdd.length + toRemove.length} changes`);
+      savedTimerRef.current = setTimeout(() => setJustSaved(false), 4000);
+    }
+
+    setSaving(false);
+  };
+
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories((prev) => {
       const next = new Set(prev);
-      next.delete(key);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
       return next;
     });
   };
@@ -118,13 +173,51 @@ export function PlanFeatureMatrixManager() {
     grouped[f.category].push(f);
   });
 
+  const changeCount = (() => {
+    let count = 0;
+    for (const key of assignments) {
+      if (!savedAssignments.has(key)) count++;
+    }
+    for (const key of savedAssignments) {
+      if (!assignments.has(key)) count++;
+    }
+    return count;
+  })();
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold">Plan Feature Matrix</h2>
-        <p className="text-sm text-muted-foreground">
-          Tick which features are included in each plan. Changes save automatically.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Plan Feature Matrix</h2>
+          <p className="text-sm text-muted-foreground">
+            Tick which features are included in each plan, then hit Save.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {justSaved && (
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-medium animate-in fade-in">
+              <CheckCircle2 className="h-4 w-4" />
+              Saved
+            </div>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className="gap-2"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            Save Changes
+            {hasChanges && (
+              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                {changeCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -141,32 +234,54 @@ export function PlanFeatureMatrixManager() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(grouped).map(([category, items]) => (
-                <>
-                  <tr key={`cat-${category}`} className="bg-muted/30">
-                    <td colSpan={PLAN_SLUGS.length + 1} className="py-2 px-4 font-semibold text-foreground">
-                      {category}
-                    </td>
-                  </tr>
-                  {items.map((feature) => (
-                    <tr key={feature.id} className="border-b border-border/50 hover:bg-muted/20">
-                      <td className="py-2.5 px-4 pl-8 text-muted-foreground">{feature.title}</td>
-                      {PLAN_SLUGS.map((slug) => {
-                        const key = makeKey(feature.id, slug);
-                        return (
-                          <td key={slug} className="text-center py-2.5 px-3">
-                            <Checkbox
-                              checked={assignments.has(key)}
-                              onCheckedChange={() => handleToggle(feature.id, slug)}
-                              disabled={toggling.has(key)}
-                            />
-                          </td>
-                        );
-                      })}
+              {Object.entries(grouped).map(([category, items]) => {
+                const isCollapsed = collapsedCategories.has(category);
+                const assignedCount = items.reduce((acc, f) => {
+                  return acc + PLAN_SLUGS.filter((s) => assignments.has(makeKey(f.id, s))).length;
+                }, 0);
+
+                return (
+                  <Fragment key={`cat-${category}`}>
+                    <tr
+                      className="bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => toggleCategory(category)}
+                    >
+                      <td colSpan={PLAN_SLUGS.length + 1} className="py-2 px-4">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className={cn(
+                            "h-4 w-4 text-muted-foreground transition-transform",
+                            isCollapsed && "-rotate-90"
+                          )} />
+                          <span className="font-semibold text-foreground">{category}</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                            {items.length} features · {assignedCount} assigned
+                          </Badge>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
-                </>
-              ))}
+                    {!isCollapsed && items.map((feature) => (
+                      <tr key={feature.id} className="border-b border-border/50 hover:bg-muted/20">
+                        <td className="py-2.5 px-4 pl-8 text-muted-foreground">{feature.title}</td>
+                        {PLAN_SLUGS.map((slug) => {
+                          const key = makeKey(feature.id, slug);
+                          const isChanged = assignments.has(key) !== savedAssignments.has(key);
+                          return (
+                            <td key={slug} className={cn(
+                              "text-center py-2.5 px-3",
+                              isChanged && "bg-amber-500/10"
+                            )}>
+                              <Checkbox
+                                checked={assignments.has(key)}
+                                onCheckedChange={() => handleToggle(feature.id, slug)}
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </CardContent>
