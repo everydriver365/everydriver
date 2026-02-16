@@ -912,7 +912,7 @@ export default function InstructorPupils() {
 
       {/* Driving Report Sheet */}
       <Sheet open={isDrivingReportOpen} onOpenChange={setIsDrivingReportOpen}>
-        <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto">
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Driving Report</SheetTitle>
             <SheetDescription>

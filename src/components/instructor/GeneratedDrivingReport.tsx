@@ -156,7 +156,7 @@ ${report.feedback.encouragement}
           {/* Score Display */}
           <div className="flex items-center gap-6 mb-4">
             <div className="relative">
-              <svg className="w-20 h-20 transform -rotate-90">
+              <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90">
                 <circle
                   cx="40" cy="40" r="35"
                   fill="none" stroke="currentColor" strokeWidth="6"

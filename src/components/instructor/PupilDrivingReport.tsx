@@ -208,12 +208,12 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       {/* Header */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Driving Report: {pupilName}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 min-w-0">
+              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+              <span className="truncate">Driving Report: {pupilName}</span>
             </CardTitle>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 flex-shrink-0 self-start sm:self-auto">
               <Download className="h-4 w-4" />
               Export PDF
             </Button>
@@ -221,25 +221,25 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
         </CardHeader>
         <CardContent>
           {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-2xl font-bold text-primary">{overallScore}</p>
-              <p className="text-xs text-muted-foreground">Overall Score</p>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-primary">{overallScore}</p>
+              <p className="text-xs text-muted-foreground">Score</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-2xl font-bold">{totalSessions}</p>
-              <p className="text-xs text-muted-foreground">Tracked Lessons</p>
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold">{totalSessions}</p>
+              <p className="text-xs text-muted-foreground">Lessons</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-2xl font-bold">{totalDistance.toFixed(1)}</p>
-              <p className="text-xs text-muted-foreground">km Driven</p>
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold">{totalDistance.toFixed(1)}</p>
+              <p className="text-xs text-muted-foreground">km</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-2xl font-bold text-green-500">{goodEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Good Events</p>
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-green-500">{goodEvents.length}</p>
+              <p className="text-xs text-muted-foreground">Good</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-2xl font-bold text-amber-500">{badEvents.length}</p>
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-amber-500">{badEvents.length}</p>
               <p className="text-xs text-muted-foreground">Needs Work</p>
             </div>
           </div>
@@ -259,13 +259,13 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       {/* Tabs for Sessions, Heatmap, and Events */}
       <Tabs defaultValue="sessions" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="heatmap">
+        <TabsList className="w-full overflow-x-auto grid grid-cols-3">
+          <TabsTrigger value="sessions" className="text-xs sm:text-sm">Sessions</TabsTrigger>
+          <TabsTrigger value="heatmap" className="text-xs sm:text-sm">
             <Map className="h-4 w-4 mr-1" />
             Heatmap
           </TabsTrigger>
-          <TabsTrigger value="events">Events ({allEvents.length})</TabsTrigger>
+          <TabsTrigger value="events" className="text-xs sm:text-sm">Events ({allEvents.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="space-y-4">
@@ -276,7 +276,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                 <CardTitle className="text-base">Recorded Lessons</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[250px] lg:h-[400px]">
                   <div className="p-4 space-y-2">
                     {sessions.map((session) => (
                       <button
@@ -323,7 +323,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                   <RouteMapView 
                     gpsPoints={gpsPoints} 
                     title={`Route - ${format(new Date(selectedSession.started_at), 'd MMM yyyy')}`}
-                    height="250px"
+                    height="180px"
                   />
 
                   {/* Session Stats */}
@@ -355,23 +355,25 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                       <CardContent>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {events.map((event) => (
-                            <div key={event.id} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                            <div key={event.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-2 bg-muted/30 rounded-lg">
                               {getEventIcon(event.event_type)}
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">{formatEventType(event.event_type)}</p>
                                 {event.notes && (
-                                  <p className="text-xs text-muted-foreground">{event.notes}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{event.notes}</p>
                                 )}
                               </div>
-                              <Badge 
-                                variant={event.severity === 'high' ? 'destructive' : event.severity === 'medium' ? 'secondary' : 'outline'}
-                                className="text-xs"
-                              >
-                                {event.severity}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(event.recorded_at), 'HH:mm')}
-                              </span>
+                              <div className="flex items-center gap-2 ml-auto">
+                                <Badge 
+                                  variant={event.severity === 'high' ? 'destructive' : event.severity === 'medium' ? 'secondary' : 'outline'}
+                                  className="text-xs"
+                                >
+                                  {event.severity}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {format(new Date(event.recorded_at), 'HH:mm')}
+                                </span>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -401,10 +403,10 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
               {allEvents.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No events recorded yet</p>
               ) : (
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[300px] lg:h-[400px]">
                   <div className="space-y-2 pr-4">
                     {allEvents.map((event) => (
-                      <div key={event.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div key={event.id} className="flex flex-wrap items-start gap-2 sm:gap-3 p-3 border rounded-lg">
                         {getEventIcon(event.event_type)}
                         <div className="flex-1">
                           <p className="font-medium text-sm">{formatEventType(event.event_type)}</p>
