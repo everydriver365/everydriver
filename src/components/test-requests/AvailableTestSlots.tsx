@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,9 @@ interface AvailableTestSlotsProps {
   instructorId?: string;
 }
 
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let centresCache: { centres: string[]; slots: TestSlot[]; selectedCentre: string; timestamp: number } | null = null;
+
 export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
   const { toast } = useToast();
   const [reservedIndices, setReservedIndices] = useState<Set<number>>(new Set());
@@ -24,17 +27,28 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCentres = async () => {
+  const loadCentres = async (forceRefresh = false) => {
+    // Use cache if valid
+    if (!forceRefresh && centresCache && Date.now() - centresCache.timestamp < CACHE_TTL_MS) {
+      setCentres(centresCache.centres);
+      setSlots(centresCache.slots);
+      setSelectedCentre(centresCache.selectedCentre);
+      setIsLoadingCentres(false);
+      return;
+    }
+
     setIsLoadingCentres(true);
     setError(null);
     try {
       const response = await fetchTestCentres();
       if (response.success) {
-        setCentres(response.centres || []);
-        if (response.slots && response.slots.length > 0) {
-          setSlots(response.slots);
-          setSelectedCentre(response.slots[0].centre);
-        }
+        const c = response.centres || [];
+        const s = response.slots || [];
+        const sc = s.length > 0 ? s[0].centre : "";
+        setCentres(c);
+        setSlots(s);
+        setSelectedCentre(sc);
+        centresCache = { centres: c, slots: s, selectedCentre: sc, timestamp: Date.now() };
       } else {
         setError(response.error || "Failed to load test centres");
       }
@@ -133,7 +147,7 @@ export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
             </div>
           </CardContent>
         </Card>
-        <Button variant="outline" size="sm" onClick={loadCentres} className="gap-1">
+        <Button variant="outline" size="sm" onClick={() => loadCentres(true)} className="gap-1">
           <RefreshCw className="h-4 w-4" /> Retry
         </Button>
       </div>
