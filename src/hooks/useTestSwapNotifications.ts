@@ -20,12 +20,13 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
       // Get centres this instructor wants a test at
       const { data: wantRequests } = await supabase
         .from("test_requests")
-        .select("test_centre_id")
+        .select("test_centre_id, test_centre_name")
         .eq("instructor_id", instructorId)
         .eq("request_type", "want_test")
         .eq("status", "active");
 
       const wantedCentreIds = (wantRequests || []).map(r => r.test_centre_id).filter(Boolean);
+      const wantedCentreNames = (wantRequests || []).map(r => r.test_centre_name).filter(Boolean);
 
       let matchingTests = 0;
       if (wantedCentreIds.length > 0) {
@@ -39,7 +40,18 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
         matchingTests = count || 0;
       }
 
-      return (pendingOffers || 0) + matchingTests;
+      // Also check scraped test slot reservations matching wanted centre names
+      let scrapedMatches = 0;
+      if (wantedCentreNames.length > 0) {
+        const { count } = await supabase
+          .from("test_slot_reservations" as any)
+          .select("*", { count: "exact", head: true })
+          .in("centre", wantedCentreNames)
+          .eq("status", "pending");
+        scrapedMatches = count || 0;
+      }
+
+      return (pendingOffers || 0) + matchingTests + scrapedMatches;
     },
     enabled: !!instructorId,
     refetchInterval: 30_000,
@@ -61,6 +73,13 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "test_requests" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "test_slot_reservations" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["test-swap-notifications", instructorId] });
         }
