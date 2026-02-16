@@ -315,13 +315,13 @@ export default function InstructorSettings() {
         </div>
 
         {/* Quick Jump Navigation */}
-        <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div className="flex flex-wrap gap-1.5">
           {settingsCategories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => scrollToCategory(cat.id)}
               className={cn(
-                "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors shrink-0",
+                "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors",
                 selectedCategory === cat.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
