@@ -91,6 +91,7 @@ export default function InstructorMenu() {
         { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-white", iconBg: "bg-cyan-500", gateKey: "tracking", path: "/instructor/tracking", customIcon: trackIcon },
         { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-white", iconBg: "bg-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car", customIcon: findMyCarIcon },
         { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-white", iconBg: "bg-amber-500", gateKey: "expenses", path: "/instructor/expenses", customIcon: expensesIcon },
+        { icon: Award, label: "Test Swap", description: "Request or swap a test", iconColor: "text-white", iconBg: "bg-amber-600", gateKey: "test-requests", path: "/instructor/test-requests" },
       ],
     },
     {
