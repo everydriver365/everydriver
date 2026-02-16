@@ -1,84 +1,38 @@
 
 
-# Add "Reserve" Button to Available Test Slots
+## Auto-Scrape Test Slots Every 12 Hours
 
-## Overview
+### What This Does
+Sets up an automatic scrape of the test booking site every 12 hours. When a test slot is found at a centre that matches any instructor's active "want test" request (regardless of date/time), it will:
+- Insert a `scraped_match` record into the database
+- Trigger the notification bell in the app
+- Send an SMS alert to the admin
 
-Add a "Reserve" button to each slot card that inserts a reservation request into a new database table and sends an urgent alert to the admin so they know to book the test.
+### Implementation Steps
 
-## Changes
+**1. Update the scrape-test-slots backend function**
 
-### 1. Create Database Table: `test_slot_reservations`
+Add a new `mode: 'auto'` path that:
+- Queries all active `want_test` requests to get the list of desired centre names
+- Scrapes each requested centre one by one using the existing scrape logic
+- Runs the matching logic against all found slots (matching by centre name only, ignoring date/time)
+- Inserts `scraped_match` records and sends SMS alerts as it already does
 
-A new table to store reservation requests from instructors:
+When called with no body or `{"mode": "auto"}`, it will automatically determine which centres to scrape based on active requests.
 
-- `id` (uuid, primary key)
-- `instructor_id` (uuid, FK to instructors)
-- `centre` (text) -- test centre name
-- `date` (text) -- slot date
-- `time` (text) -- slot time
-- `status` (text, default 'pending') -- pending / booked / cancelled
-- `created_at` (timestamptz)
+**2. Create a scheduled job (every 12 hours)**
 
-RLS policies: instructors can insert and read their own reservations. Admins can read/update all.
+Add a `pg_cron` job that calls the `scrape-test-slots` function with `{"mode": "auto"}` at 7am and 7pm daily (every 12 hours).
 
-### 2. Update `AvailableTestSlots` Component
+**3. No changes needed to the notification hook**
 
-- Pass `instructorId` as a prop (from the parent page)
-- Add a "Reserve" button to each slot card
-- On click: insert a row into `test_slot_reservations` and insert an admin notification into `admin_activity_log`
-- Show a success toast confirming the reservation request was sent
-- Disable the button after reserving (track reserved slot indices in local state)
+The existing `useTestSwapNotifications` hook already picks up `scraped_match` records and shows the bell badge -- no changes required there.
 
-### 3. Update `InstructorTestRequests` Page
+### Technical Details
 
-- Pass `instructor?.id` to the `AvailableTestSlots` component
-
-## Technical Details
-
-### Database Migration
-
-```sql
-CREATE TABLE public.test_slot_reservations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  instructor_id UUID NOT NULL REFERENCES public.instructors(id),
-  centre TEXT NOT NULL,
-  date TEXT NOT NULL,
-  time TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-ALTER TABLE public.test_slot_reservations ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Instructors can insert own reservations"
-  ON public.test_slot_reservations FOR INSERT
-  TO authenticated
-  WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()));
-
-CREATE POLICY "Instructors can read own reservations"
-  ON public.test_slot_reservations FOR SELECT
-  TO authenticated
-  USING (instructor_id = public.get_instructor_id_for_user(auth.uid()));
-
-CREATE POLICY "Admins can manage all reservations"
-  ON public.test_slot_reservations FOR ALL
-  TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'));
-```
-
-### Component Changes
-
-Each slot card gets a "Reserve" button on the right side. When clicked, it:
-1. Inserts a row into `test_slot_reservations`
-2. Logs to `admin_activity_log` with action_type `'test_slot_reservation'` so admin sees it
-3. Shows a success toast: "Reservation request sent to admin"
-4. Disables the button and shows "Reserved" state
-
-### Files Modified
-- `src/components/test-requests/AvailableTestSlots.tsx` -- add Reserve button and reservation logic
-- `src/pages/InstructorTestRequests.tsx` -- pass instructorId prop
-
-### Files Created
-- None (database table created via migration)
+- The edge function will iterate through each unique centre name from active `want_test` requests
+- Each centre requires a separate Firecrawl scrape call (the site requires selecting a centre from a dropdown)
+- The matching is centre-name only (as requested -- any date/time at the right centre triggers an alert)
+- Duplicate detection prevents the same slot from being inserted twice
+- The cron schedule `0 7,19 * * *` runs at 7:00 AM and 7:00 PM UTC daily
 
