@@ -315,22 +315,19 @@ export default function InstructorSettings() {
         </div>
 
         {/* Quick Jump Navigation */}
-        <div className="flex flex-wrap gap-1.5">
-          {settingsCategories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => scrollToCategory(cat.id)}
-              className={cn(
-                "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors",
-                selectedCategory === cat.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <cat.icon className="h-3 w-3" />
-              {cat.title.split(" ")[0]}
-            </button>
-          ))}
+        <div className="relative">
+          <select
+            value={selectedCategory}
+            onChange={(e) => scrollToCategory(e.target.value)}
+            className="w-full appearance-none rounded-lg border border-border bg-card px-4 py-2.5 pr-10 text-sm font-medium text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {settingsCategories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.title}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
 
         {/* Profile & Identity Category */}
