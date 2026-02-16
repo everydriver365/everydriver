@@ -110,14 +110,14 @@ export function AdminLayout({
             <HeaderSearchBox variant="admin" />
           </div>
 
-          {/* Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Navigation Tabs - 2 rows */}
+          <nav className="hidden md:flex flex-wrap items-center justify-center gap-1 max-w-3xl">
             {navTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => onSectionChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors relative",
+                  "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors relative",
                   activeTab === tab.id
                     ? "bg-white/20 text-white"
                     : "text-white/70 hover:text-white hover:bg-white/10"
