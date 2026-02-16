@@ -8,6 +8,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { TestRequestForm } from "@/components/test-requests/TestRequestForm";
 import { TestRequestList } from "@/components/test-requests/TestRequestList";
 import { SwapBoard } from "@/components/test-requests/SwapBoard";
+import { AvailableTestSlots } from "@/components/test-requests/AvailableTestSlots";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function InstructorTestRequests() {
@@ -49,12 +50,16 @@ export default function InstructorTestRequests() {
           <TabsList className="w-full">
             <TabsTrigger value="my-requests" className="flex-1">My Requests</TabsTrigger>
             <TabsTrigger value="swap-board" className="flex-1">Swap Board</TabsTrigger>
+            <TabsTrigger value="available-slots" className="flex-1">Available Slots</TabsTrigger>
           </TabsList>
           <TabsContent value="my-requests">
             <TestRequestList instructorId={instructor?.id} />
           </TabsContent>
           <TabsContent value="swap-board">
             <SwapBoard instructorId={instructor?.id} />
+          </TabsContent>
+          <TabsContent value="available-slots">
+            <AvailableTestSlots />
           </TabsContent>
         </Tabs>
       </div>
