@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Satellite, Search, Loader2, Car, RefreshCw, Link2, Check, Unlink } from "lucide-react";
+import { Satellite, Search, Loader2, Car, RefreshCw, Link2, Check, Unlink, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -167,7 +167,7 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
     try {
       const { error } = await supabase
         .from("gps_devices")
-        .update({ is_active: false })
+        .delete()
         .eq("id", device.id);
       if (error) throw error;
 
@@ -176,6 +176,36 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
     } catch (err) {
       console.error("Unlink error:", err);
       toast({ title: "Error", description: "Failed to unlink unit", variant: "destructive" });
+    } finally {
+      setLinkingId(null);
+    }
+  };
+
+  const setActiveUnit = async (deviceId: string, deviceName: string) => {
+    if (!instructorId) return;
+    setLinkingId(deviceId);
+
+    try {
+      // Deactivate all quartix devices for this instructor
+      const { error: deactivateError } = await supabase
+        .from("gps_devices")
+        .update({ is_active: false })
+        .eq("instructor_id", instructorId)
+        .eq("tracking_provider", "quartix");
+      if (deactivateError) throw deactivateError;
+
+      // Activate the selected one
+      const { error: activateError } = await supabase
+        .from("gps_devices")
+        .update({ is_active: true })
+        .eq("id", deviceId);
+      if (activateError) throw activateError;
+
+      await queryClient.invalidateQueries({ queryKey: ["linked-quartix-devices", instructorId] });
+      toast({ title: "Active tracker changed", description: `Now tracking: ${deviceName}` });
+    } catch (err) {
+      console.error("Set active error:", err);
+      toast({ title: "Error", description: "Failed to set active tracker", variant: "destructive" });
     } finally {
       setLinkingId(null);
     }
@@ -220,7 +250,8 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {filtered.map((sv) => {
               const linked = linkedMap.get(sv.vehicleId);
-              const isLinked = !!linked?.is_active;
+              const isLinked = !!linked;
+              const isActive = linked?.is_active === true;
               const assignedVehicle = isLinked && linked?.vehicle_id
                 ? vehicles?.find((v) => v.id === linked.vehicle_id)
                 : null;
@@ -229,8 +260,10 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
                 <div
                   key={sv.vehicleId}
                   className={`rounded-lg border p-3 space-y-2 transition-colors ${
-                    isLinked
+                    isActive
                       ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                      : isLinked
+                      ? "bg-muted/20 border-border"
                       : "bg-muted/30 border-border"
                   }`}
                 >
@@ -246,14 +279,21 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
                       </div>
                     </div>
                     {isLinked && (
-                      <span className="shrink-0 text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="h-3 w-3" />
-                        Linked
-                      </span>
+                      isActive ? (
+                        <span className="shrink-0 text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Radio className="h-3 w-3" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="shrink-0 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          Linked
+                        </span>
+                      )
                     )}
                   </div>
 
-                  {/* Linked: show assigned vehicle + unlink */}
+                  {/* Linked: show assigned vehicle + set active / unlink */}
                   {isLinked ? (
                     <div className="flex items-center gap-2">
                       <div className="flex-1 text-xs text-muted-foreground flex items-center gap-1.5">
@@ -262,6 +302,24 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
                           ? `${assignedVehicle.registration} (${assignedVehicle.make || ""} ${assignedVehicle.model || ""})`
                           : "No vehicle assigned"}
                       </div>
+                      {!isActive && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30"
+                          onClick={() => setActiveUnit(linked.id, sv.registration || sv.vehicleName || sv.vehicleId)}
+                          disabled={linkingId === sv.vehicleId || linkingId === linked.id}
+                        >
+                          {linkingId === linked.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <>
+                              <Radio className="h-3 w-3 mr-1" />
+                              Set Active
+                            </>
+                          )}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -338,7 +396,7 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
         )}
 
         <p className="text-xs text-muted-foreground text-center">
-          {serverVehicles?.length ?? 0} units on Quartix · {linkedMap.size} linked
+          {serverVehicles?.length ?? 0} units on Quartix · {linkedDevices?.filter(d => d.is_active).length ?? 0} active · {linkedMap.size} linked
         </p>
       </div>
     </div>
