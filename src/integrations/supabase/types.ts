@@ -9559,6 +9559,51 @@ export type Database = {
           },
         ]
       }
+      test_slot_reservations: {
+        Row: {
+          centre: string
+          created_at: string | null
+          date: string
+          id: string
+          instructor_id: string
+          status: string
+          time: string
+        }
+        Insert: {
+          centre: string
+          created_at?: string | null
+          date: string
+          id?: string
+          instructor_id: string
+          status?: string
+          time: string
+        }
+        Update: {
+          centre?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          instructor_id?: string
+          status?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_slot_reservations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_slot_reservations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_swap_offers: {
         Row: {
           created_at: string
