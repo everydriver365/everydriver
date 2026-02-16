@@ -59,7 +59,7 @@ export default function InstructorTestRequests() {
             <SwapBoard instructorId={instructor?.id} />
           </TabsContent>
           <TabsContent value="available-slots">
-            <AvailableTestSlots />
+            <AvailableTestSlots instructorId={instructor?.id} />
           </TabsContent>
         </Tabs>
       </div>

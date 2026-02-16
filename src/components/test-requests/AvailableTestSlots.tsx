@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search } from "lucide-react";
+import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { fetchTestCentres, fetchSlotsForCentre, type TestSlot } from "@/lib/api/firecrawl";
+import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/adminLogger";
 
-export function AvailableTestSlots() {
+interface AvailableTestSlotsProps {
+  instructorId?: string;
+}
+
+export function AvailableTestSlots({ instructorId }: AvailableTestSlotsProps) {
   const { toast } = useToast();
+  const [reservedIndices, setReservedIndices] = useState<Set<number>>(new Set());
+  const [reservingIndex, setReservingIndex] = useState<number | null>(null);
   const [centres, setCentres] = useState<string[]>([]);
   const [selectedCentre, setSelectedCentre] = useState<string>("");
   const [slots, setSlots] = useState<TestSlot[]>([]);
@@ -60,6 +68,38 @@ export function AvailableTestSlots() {
   useEffect(() => {
     loadCentres();
   }, []);
+
+  const handleReserve = async (slot: TestSlot, index: number) => {
+    if (!instructorId) {
+      toast({ title: "Error", description: "Not logged in", variant: "destructive" });
+      return;
+    }
+    setReservingIndex(index);
+    try {
+      const { error } = await supabase.from("test_slot_reservations" as any).insert({
+        instructor_id: instructorId,
+        centre: slot.centre,
+        date: slot.date,
+        time: slot.time,
+      });
+      if (error) throw error;
+
+      await logAdminAction({
+        actionType: "test_slot_reservation",
+        description: `Instructor requested test slot: ${slot.centre} on ${slot.date} at ${slot.time}`,
+        entityType: "test_slot_reservation",
+        entityId: instructorId,
+      });
+
+      setReservedIndices((prev) => new Set(prev).add(index));
+      toast({ title: "Reserved", description: "Reservation request sent to admin" });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error", description: "Failed to reserve slot", variant: "destructive" });
+    } finally {
+      setReservingIndex(null);
+    }
+  };
 
   const handleCentreChange = (centre: string) => {
     setSelectedCentre(centre);
@@ -159,6 +199,20 @@ export function AvailableTestSlots() {
                     </span>
                   </div>
                 </div>
+                {reservedIndices.has(i) ? (
+                  <Button size="sm" variant="outline" disabled className="gap-1 text-emerald-600 border-emerald-300">
+                    <CheckCircle className="h-4 w-4" />
+                    Reserved
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => handleReserve(slot, i)}
+                    disabled={reservingIndex === i || !instructorId}
+                  >
+                    {reservingIndex === i ? "Reserving..." : "Reserve"}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
