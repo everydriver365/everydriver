@@ -329,7 +329,7 @@ export function InstructorMobileHome({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="bg-card rounded-2xl shadow-sm overflow-hidden"
+          className="bg-card rounded-none shadow-sm overflow-hidden"
         >
           {/* Gradient header */}
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-4 text-white">
@@ -411,7 +411,7 @@ export function InstructorMobileHome({
         {pendingJobsCount > 0 && (
           <button
             onClick={() => navigate("/instructor/jobs")}
-            className="w-full bg-card rounded-2xl shadow-sm overflow-hidden active:scale-[0.99] transition-all"
+            className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all"
           >
             <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
               <div className="absolute inset-0 overflow-hidden">
@@ -435,7 +435,7 @@ export function InstructorMobileHome({
         )}
         <button
           onClick={() => navigate("/instructor/messages")}
-          className="w-full bg-card rounded-2xl shadow-sm overflow-hidden active:scale-[0.99] transition-all"
+          className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all"
         >
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
             <div className="absolute inset-0 overflow-hidden">
@@ -581,7 +581,7 @@ export function InstructorMobileHome({
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
           <div
-            className="bg-card rounded-2xl shadow-sm overflow-hidden cursor-pointer"
+            className="bg-card rounded-none shadow-sm overflow-hidden cursor-pointer"
             onClick={() => navigate("/instructor/gaps")}
           >
             <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">

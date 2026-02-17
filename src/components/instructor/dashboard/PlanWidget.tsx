@@ -16,7 +16,7 @@ export function PlanWidget() {
   const isFreePlan = planSlug === "free";
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-card rounded-none shadow-sm overflow-hidden">
       {/* Gradient header - tappable to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

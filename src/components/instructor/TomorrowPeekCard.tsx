@@ -71,7 +71,7 @@ export function TomorrowPeekCard({
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-card rounded-none shadow-sm overflow-hidden">
         {/* Gradient header - matches Your Plan tile */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
