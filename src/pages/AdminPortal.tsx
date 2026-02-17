@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -71,6 +71,7 @@ import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 import { PlanFeatureMatrixManager } from "@/components/admin/PlanFeatureMatrixManager";
+import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 
 const stats = [
@@ -160,6 +161,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
+  trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
 };
 
 export default function AdminPortal() {
@@ -919,6 +921,14 @@ export default function AdminPortal() {
                 <AdminNotesManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+
+      case "trackers":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminTrackersManager />
           </motion.div>
         );
 
