@@ -183,13 +183,15 @@ export function MobileHomepage() {
             transition={{ delay: 0.85 }}
             className="relative bg-card border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden hover:shadow-xl transition-shadow"
           >
-            <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute top-1 right-1 w-9 h-9 z-10 drop-shadow-md" />
             <div className="w-24 h-24 flex-shrink-0 bg-primary/5">
               <img src={intensiveCoursesIcon} alt="Intensive Courses" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 p-4">
               <h4 className="font-semibold text-foreground">Intensive Courses</h4>
               <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
+              <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                <ShieldCheck className="h-2.5 w-2.5" /> Earlier Test Guarantee
+              </span>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground mr-4" />
           </motion.div>
@@ -204,13 +206,15 @@ export function MobileHomepage() {
               transition={{ delay: 0.9 }}
               className="relative bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden hover:shadow-xl transition-shadow"
             >
-              <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute top-1 right-1 w-7 h-7 z-10 drop-shadow-md" />
               <div className="h-20 w-full overflow-hidden">
                 <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover" />
               </div>
               <div className="p-3">
                 <h4 className="font-semibold text-sm text-foreground">Semi Intensive</h4>
                 <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
+                <span className="inline-flex items-center gap-1 mt-1 text-[9px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                  <ShieldCheck className="h-2 w-2" /> Earlier Test
+                </span>
               </div>
             </motion.div>
           </Link>
