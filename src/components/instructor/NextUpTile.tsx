@@ -183,7 +183,7 @@ export function NextUpTile({
             </div>
             <div className="relative flex items-center justify-between">
               <span className="inline-flex items-center">
-                <img src={nextUpIcon} alt="Next Up" className="h-4 object-contain" />
+                <img src={nextUpIcon} alt="Next Up" className="h-7 object-contain" />
               </span>
               <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
                 isUrgent
