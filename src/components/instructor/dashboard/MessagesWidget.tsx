@@ -1,8 +1,8 @@
-import { MessageSquare, ChevronRight } from "lucide-react";
+import { MessageSquare, ChevronRight, Briefcase, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -12,7 +12,7 @@ interface MessagesWidgetProps {
 }
 
 export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
-  const { data: unreadCount = 0 } = useUnreadMessagesCount(instructorId);
+  const { total, messageCount: pupilMsgCount, visitorChatCount, pendingJobsCount, swapCount } = useCombinedNotificationCount(instructorId);
 
   const { data: recentConversations = [] } = useQuery({
     queryKey: ["recent-conversations", instructorId],
@@ -29,6 +29,13 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
     enabled: !!instructorId,
   });
 
+  const alertSummary = [
+    pupilMsgCount > 0 && `${pupilMsgCount} pupil`,
+    visitorChatCount > 0 && `${visitorChatCount} chat`,
+    pendingJobsCount > 0 && `${pendingJobsCount} job`,
+    swapCount > 0 && `${swapCount} test`,
+  ].filter(Boolean).join(" · ");
+
   return (
     <Card className="border-border">
       <CardContent className="p-4">
@@ -37,10 +44,15 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
             <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
               <MessageSquare className="h-4 w-4 text-primary" />
             </div>
-            <h3 className="font-medium text-sm text-foreground">Messages</h3>
-            {unreadCount > 0 && (
-              <span className="text-[10px] font-medium bg-destructive/10 text-destructive px-1.5 py-0.5">
-                {unreadCount} new
+            <div>
+              <h3 className="font-medium text-sm text-foreground">Messages & Alerts</h3>
+              {alertSummary && (
+                <p className="text-[10px] text-muted-foreground">{alertSummary}</p>
+              )}
+            </div>
+            {total > 0 && (
+              <span className="text-[10px] font-bold bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                {total > 9 ? "9+" : total}
               </span>
             )}
           </div>

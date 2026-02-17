@@ -355,6 +355,9 @@ export default function InstructorPortal() {
           ))}
         </div>
 
+        {/* Messages & Alerts */}
+        <MessagesWidget instructorId={instructorId} />
+
         {/* Job Alerts */}
         <JobOfferAlert instructorId={instructorId} />
 
@@ -433,7 +436,6 @@ export default function InstructorPortal() {
             </Card>
             <UnifiedAgendaTile instructorId={instructorId} />
             <NotesWidget instructorId={instructorId} />
-            <MessagesWidget instructorId={instructorId} />
             <PlanWidget />
             <ReferralStatsWidget />
           </div>
