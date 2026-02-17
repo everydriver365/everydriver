@@ -210,7 +210,7 @@ export function MobileHomepage() {
               <div className="p-3">
                 <h4 className="font-semibold text-sm text-foreground">Semi Intensive</h4>
                 <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-14 h-14 mt-1 drop-shadow-md object-contain" />
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-16 h-16 mt-1 drop-shadow-md object-contain" />
               </div>
             </motion.div>
           </Link>
