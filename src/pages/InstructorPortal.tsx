@@ -441,19 +441,6 @@ export default function InstructorPortal() {
           </div>
         </div>
 
-        {/* Plan & Logout - sticky bottom area */}
-        <div className="space-y-3">
-          <PlanWidget />
-          <Button
-            variant="destructive"
-            size="lg"
-            className="w-full gap-2 sticky bottom-4 shadow-lg"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </Button>
-        </div>
 
         <TakePaymentSheet
           open={paymentSheetOpen}
