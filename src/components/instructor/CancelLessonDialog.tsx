@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Loader2, AlertTriangle, Users } from "lucide-react";
+import { CancellationBackfillSheet } from "./CancellationBackfillSheet";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,6 +50,7 @@ export function CancelLessonDialog({
   const [chargeOption, setChargeOption] = useState<"no_charge" | "charge">("no_charge");
   const [cancelling, setCancelling] = useState(false);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
+  const [showBackfill, setShowBackfill] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Check waitlist count when dialog opens
@@ -149,6 +151,8 @@ export function CancelLessonDialog({
 
       onCancelled();
       onOpenChange(false);
+      // Show backfill sheet after cancellation
+      setShowBackfill(true);
     } catch (error) {
       console.error("Error cancelling lesson:", error);
       toast({
@@ -162,73 +166,86 @@ export function CancelLessonDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            Cancel Lesson
-          </DialogTitle>
-          <DialogDescription>
-            Cancel the {durationMinutes}-minute lesson with {pupilName}?
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Cancel Lesson
+            </DialogTitle>
+            <DialogDescription>
+              Cancel the {durationMinutes}-minute lesson with {pupilName}?
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="py-4">
-          <RadioGroup
-            value={chargeOption}
-            onValueChange={(v) => setChargeOption(v as "no_charge" | "charge")}
-            className="space-y-3"
-          >
-            <div className="flex items-start space-x-3 rounded-lg border p-4">
-              <RadioGroupItem value="no_charge" id="no_charge" className="mt-1" />
-              <div className="flex-1">
-                <Label htmlFor="no_charge" className="font-medium cursor-pointer">
-                  Cancel without charge
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  The lesson will be cancelled and no fee will be applied
-                </p>
+          <div className="py-4">
+            <RadioGroup
+              value={chargeOption}
+              onValueChange={(v) => setChargeOption(v as "no_charge" | "charge")}
+              className="space-y-3"
+            >
+              <div className="flex items-start space-x-3 rounded-lg border p-4">
+                <RadioGroupItem value="no_charge" id="no_charge" className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor="no_charge" className="font-medium cursor-pointer">
+                    Cancel without charge
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The lesson will be cancelled and no fee will be applied
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-start space-x-3 rounded-lg border p-4">
-              <RadioGroupItem value="charge" id="charge" className="mt-1" />
-              <div className="flex-1">
-                <Label htmlFor="charge" className="font-medium cursor-pointer">
-                  Charge cancellation fee
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deduct{" "}
-                  <span className="font-semibold text-foreground">
-                    £{amountDue.toFixed(2)}
-                  </span>{" "}
-                  from {pupilName}'s balance
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - amountDue).toFixed(2)}
-                </p>
+              <div className="flex items-start space-x-3 rounded-lg border p-4">
+                <RadioGroupItem value="charge" id="charge" className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor="charge" className="font-medium cursor-pointer">
+                    Charge cancellation fee
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Deduct{" "}
+                    <span className="font-semibold text-foreground">
+                      £{amountDue.toFixed(2)}
+                    </span>{" "}
+                    from {pupilName}'s balance
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - amountDue).toFixed(2)}
+                  </p>
+                </div>
               </div>
-            </div>
-          </RadioGroup>
-        </div>
+            </RadioGroup>
+          </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Keep Lesson
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleCancel}
-            disabled={cancelling}
-          >
-            {cancelling ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            {chargeOption === "charge" ? "Cancel & Charge" : "Cancel Lesson"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Keep Lesson
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancel}
+              disabled={cancelling}
+            >
+              {cancelling ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              {chargeOption === "charge" ? "Cancel & Charge" : "Cancel Lesson"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <CancellationBackfillSheet
+        open={showBackfill}
+        onOpenChange={setShowBackfill}
+        instructorId={instructorId}
+        lessonDate={lessonDate}
+        startTime={lessonTime}
+        endTime={endTime || lessonTime}
+        durationMinutes={durationMinutes}
+        originalLessonId={lessonId}
+      />
+    </>
   );
 }

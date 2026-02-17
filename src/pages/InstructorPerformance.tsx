@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, Brain } from "lucide-react";
+import { TrendingUp, Brain, Trophy } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PerformanceDashboard } from "@/components/instructor/PerformanceDashboard";
 import { SmartInsightsPanel } from "@/components/instructor/SmartInsightsPanel";
+import { PassRateDashboard } from "@/components/instructor/PassRateDashboard";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -46,10 +47,14 @@ export default function InstructorPerformance() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="insights" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
               AI Insights
+            </TabsTrigger>
+            <TabsTrigger value="passrate" className="flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              Pass Rate
             </TabsTrigger>
             <TabsTrigger value="metrics" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -58,6 +63,9 @@ export default function InstructorPerformance() {
           </TabsList>
           <TabsContent value="insights" className="mt-4">
             <SmartInsightsPanel instructorId={instructor.id} />
+          </TabsContent>
+          <TabsContent value="passrate" className="mt-4">
+            <PassRateDashboard instructorId={instructor.id} />
           </TabsContent>
           <TabsContent value="metrics" className="mt-4">
             <PerformanceDashboard instructorId={instructor.id} />

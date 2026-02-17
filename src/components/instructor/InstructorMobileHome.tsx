@@ -75,6 +75,7 @@ import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
+import { WeatherWidget } from "@/components/instructor/WeatherWidget";
 import { CardSection } from "@/components/ui/CardSection";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
@@ -446,6 +447,11 @@ export function InstructorMobileHome({
         trigger={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
       />
+
+      {/* Weather Widget */}
+      {currentWeather?.temperature != null && (
+        <WeatherWidget weather={currentWeather} className="mt-4" />
+      )}
 
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
