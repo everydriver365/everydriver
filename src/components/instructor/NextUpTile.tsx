@@ -182,7 +182,7 @@ export function NextUpTile({
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
             </div>
             <div className="relative flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 shadow-sm">
+              <span className="inline-flex items-center">
                 <img src={nextUpIcon} alt="Next Up" className="h-4 object-contain" />
               </span>
               <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
