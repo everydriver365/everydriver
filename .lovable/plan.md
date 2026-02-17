@@ -1,74 +1,41 @@
 
 
-# Feature Plan: Smart Cancellation Backfill, Weather Widget, and Pass Rate Dashboard
+# Earlier Test Guarantee - Dedicated Page with CTA
 
-## 1. Smart Cancellation Backfill
+## What changes
 
-**What it does:** When a lesson is cancelled, the instructor gets a prompt to automatically offer that slot to pupils from their waitlist -- one tap to select pupils and send them an SMS offer.
+### 1. New page: `/earlier-test-guarantee`
 
-**Implementation:**
-- Create a new component `CancellationBackfillSheet.tsx` -- a bottom sheet that triggers when a lesson is cancelled
-- It queries the `waitlist_entries` table for active waitlisted pupils whose preferred days/times match the cancelled slot
-- Shows matched pupils with one-tap select and a "Send Offer" button that uses the existing SMS flow (via `sms:` links, same pattern as `GapFillerCard`)
-- Also creates a record in `pending_slot_offers` table (already exists) so the instructor can track responses
-- Hook into `CancelLessonDialog.tsx` -- after successful cancellation, show the backfill sheet with matching waitlist pupils
-- No database changes needed -- uses existing `waitlist_entries` and `pending_slot_offers` tables
+Create `src/pages/EarlierTestGuarantee.tsx` -- a dedicated landing page explaining the guarantee in full detail:
 
-**Files to create:**
-- `src/components/instructor/CancellationBackfillSheet.tsx`
+- **Hero section** with the emerald gradient and the existing badge image, headline "Earlier Test Guarantee", and a clear subheading
+- **How It Works** section with 3 steps: Book an intensive/semi-intensive course > We monitor DVSA cancellations > Get an earlier test date
+- **The Guarantee** section explaining: if we cannot offer an earlier test slot at a test centre within 30 miles of their home address, they get the £62 test fee refunded
+- **Key details** card covering eligibility (intensive and semi-intensive courses only), the 30-mile radius rule, and the £62 refund amount
+- **CTA button** linking to `/courses` to book a course
+- Consistent design using the emerald/teal gradient palette already established
 
-**Files to modify:**
-- `src/components/instructor/CancelLessonDialog.tsx` -- add post-cancellation backfill trigger
+### 2. Update the banner on desktop (`Index.tsx`)
 
----
+Wrap the existing emerald banner in a `Link to="/earlier-test-guarantee"` so clicking it navigates to the new page.
 
-## 2. Weather Alerts Home Widget
+### 3. Update the banner on mobile (`MobileHomepage.tsx`)
 
-**What it does:** A compact weather conditions card on the home screen showing current temperature, conditions, and driving-relevant warnings (ice risk, heavy rain, fog, etc.).
+Change the banner's `onClick` from opening the modal to navigating to `/earlier-test-guarantee` using `useNavigate`. The existing modal can remain but will no longer be the primary action from the banner.
 
-**Implementation:**
-- Create a `WeatherWidget.tsx` component that uses the existing `currentWeather` data from `useDrivingAlerts` hook (already fetched)
-- Shows: current temp, weather icon, condition description, and a colour-coded driving safety tip (e.g. "Watch for ice", "Reduced visibility")
-- Compact card design matching the existing home screen tile style (gradient card pattern)
-- No new API calls needed -- piggybacks on the existing `get-driving-alerts` edge function which already returns `currentWeather`
-- Place it on the home screen between the hero card and the alerts strip
+### 4. Add route
+
+Register `/earlier-test-guarantee` in the app router.
+
+## Technical details
 
 **Files to create:**
-- `src/components/instructor/WeatherWidget.tsx`
+- `src/pages/EarlierTestGuarantee.tsx`
 
 **Files to modify:**
-- `src/components/instructor/InstructorMobileHome.tsx` -- add WeatherWidget after the stats grid
+- `src/pages/Index.tsx` -- wrap banner in Link
+- `src/components/MobileHomepage.tsx` -- change onClick to navigate
+- `src/App.tsx` (or wherever routes are defined) -- add new route
 
----
-
-## 3. Pass Rate Dashboard
-
-**What it does:** A dedicated pass rate analytics view showing the instructor's overall and rolling pass rate, pass/fail breakdown by test centre and examiner, average faults, and comparison to the national average (currently ~49%).
-
-**Implementation:**
-- Create a `PassRateDashboard.tsx` component with:
-  - Overall pass rate (big ring/donut chart) with national average comparison
-  - Rolling 12-month pass rate trend (line chart)
-  - Pass/fail breakdown by test centre (bar chart using `driving_test_results` joined with `test_centres`)
-  - Average minor faults for passes vs fails
-  - Top fault categories from the `faults` JSON field
-- Uses existing `driving_test_results` table which already has `result`, `test_centre_id`, `examiner_id`, `total_minor_faults`, `total_serious_faults`, `total_dangerous_faults`, and `faults` JSON
-- No database changes needed
-- Add a new tab "Pass Rate" to the existing `InstructorPerformance.tsx` page (which already has "AI Insights" and "Metrics" tabs)
-
-**Files to create:**
-- `src/components/instructor/PassRateDashboard.tsx`
-
-**Files to modify:**
-- `src/pages/InstructorPerformance.tsx` -- add third tab for Pass Rate dashboard
-
----
-
-## Technical Notes
-
-- All three features use existing database tables and hooks -- no migrations required
-- The weather widget reuses data already being fetched by `useDrivingAlerts`
-- The cancellation backfill reuses the SMS pattern from `GapFillerCard`
-- The pass rate dashboard uses `recharts` (already installed) for all charts
-- All components follow the existing design patterns: gradient cards, motion animations, mobile-first layout
+No database changes required.
 
