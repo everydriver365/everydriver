@@ -24,7 +24,7 @@ import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 // GPSgate removed - Quartix only
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
-import { QuartixIdSearch } from "@/components/instructor/QuartixIdSearch";
+
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -364,8 +364,6 @@ export default function InstructorGPSSetup() {
             ))
           )}
         </div>
-        {/* Quartix User ID Search */}
-        <QuartixIdSearch instructorId={instructor?.id} />
       </div>
     </div>
     </InstructorPortalLayout>

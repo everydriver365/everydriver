@@ -89,6 +89,7 @@ export function AdminLayout({
       bonuses: "overview",
       promotions: "overview",
       "plan-features": "hero",
+      trackers: "instructors",
     };
     return sectionToTab[activeSection] || "overview";
   };

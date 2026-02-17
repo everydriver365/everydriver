@@ -28,7 +28,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
-import { QuartixIdSearch } from "@/components/instructor/QuartixIdSearch";
+
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -1062,7 +1062,7 @@ export default function InstructorSettings() {
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </div>
-                  <QuartixIdSearch instructorId={instructorId} />
+                  
                 </div>
               </SettingsTile>
 
