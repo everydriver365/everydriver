@@ -481,20 +481,13 @@ export function InstructorMobileHome({
               <div>
                 <span className="font-semibold text-sm">Messages</span>
                 <p className="text-white/70 text-[10px]">
-                  {combinedNotifCount > 0
-                    ? [
-                        pupilMsgCount > 0 && `${pupilMsgCount} pupil`,
-                        visitorChatCount > 0 && `${visitorChatCount} chat`,
-                        notifJobCount > 0 && `${notifJobCount} job`,
-                        testSwapCount > 0 && `${testSwapCount} test`,
-                      ].filter(Boolean).join(" · ")
-                    : "No new alerts"}
+                  {pupilMsgCount > 0 ? `${pupilMsgCount} unread` : "No new messages"}
                 </p>
               </div>
             </div>
-            {combinedNotifCount > 0 && (
+            {pupilMsgCount > 0 && (
               <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
-                {combinedNotifCount > 9 ? "9+" : combinedNotifCount}
+                {pupilMsgCount > 9 ? "9+" : pupilMsgCount}
               </span>
             )}
           </div>
