@@ -7,7 +7,6 @@ import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import nextUpIcon from "@/assets/next_up_white.png";
 
 interface NextLessonTileProps {
   instructorId: string;
@@ -163,9 +162,9 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <img src={nextUpIcon} alt="Next Up" className="h-4 object-contain" />
-            </div>
+            <p className="text-xs text-primary-foreground/70 font-medium uppercase tracking-wide mb-0.5">
+              Next Lesson
+            </p>
             <h3 className="font-semibold text-primary-foreground truncate text-lg">
               {nextLesson.pupil.name}
             </h3>
