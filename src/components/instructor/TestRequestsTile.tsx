@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, MapPin, Calendar, Clock, RefreshCw, Search, ArrowRight, Bell } from "lucide-react";
+import { ChevronDown, MapPin, Calendar, Clock, RefreshCw, Search, ArrowRight } from "lucide-react";
+import greenTickIcon from "@/assets/green_tick-removebg-preview.png";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -149,7 +150,7 @@ export function TestRequestsTile({ instructorId }: TestRequestsTileProps) {
           </div>
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Bell className="h-5 w-5" />
+              <img src={greenTickIcon} alt="Test Requests" className="h-6 w-6" />
               <div className="text-left">
                 <span className="font-semibold text-sm">Test Requests</span>
                 {notificationCount > 0 && (
