@@ -58,6 +58,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
+import earlyTestBadge from "@/assets/early_test_guaranteed.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
@@ -395,6 +396,7 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 top-3 w-10 h-10 drop-shadow-md" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -449,6 +451,7 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 top-3 w-10 h-10 drop-shadow-md" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
