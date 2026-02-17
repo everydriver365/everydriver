@@ -32,6 +32,7 @@ import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -197,6 +198,7 @@ export function InstructorMobileHome({
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
+  const { total: combinedNotifCount, messageCount: pupilMsgCount, pendingJobsCount: notifJobCount, swapCount: testSwapCount, visitorChatCount } = useCombinedNotificationCount(instructorId);
   const { alerts, dismissAlert, location: alertsLocation, currentWeather } = useDrivingAlerts(instructorId);
   const { roadName: gpsRoadName } = useInstructorLastPosition(instructorId || null);
   
@@ -407,7 +409,7 @@ export function InstructorMobileHome({
           </div>
         </motion.div>
       </div>
-      {/* Job Offers & Messages — gradient style */}
+      {/* Job Offers — gradient style */}
       <div className="px-4 flex flex-col gap-2 mt-3">
         {pendingJobsCount > 0 && (
           <button
@@ -434,33 +436,6 @@ export function InstructorMobileHome({
             </div>
           </button>
         )}
-        <button
-          onClick={() => navigate("/instructor/messages")}
-          className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all"
-        >
-          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            </div>
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <img src={messagesIcon} alt="Messages" className="h-10 w-10 object-cover" />
-                <div>
-                  <span className="font-semibold text-sm">Messages</span>
-                  <p className="text-white/70 text-[10px]">
-                    {(unreadCount || 0) > 0 ? `${unreadCount} unread` : "No unread messages"}
-                  </p>
-                </div>
-              </div>
-              {(unreadCount || 0) > 0 && (
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
-                  {(unreadCount || 0) > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </div>
-          </div>
-        </button>
       </div>
 
       {/* Test Requests Tile */}
@@ -495,6 +470,42 @@ export function InstructorMobileHome({
             minutesUntil={nextLesson.minutesUntil}
           />
       )}
+
+      {/* Messages tile — above schedule */}
+      <button
+        onClick={() => navigate("/instructor/messages")}
+        className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all mt-4"
+      >
+        <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+          </div>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <img src={messagesIcon} alt="Messages" className="h-10 w-10 object-cover" />
+              <div>
+                <span className="font-semibold text-sm">Messages</span>
+                <p className="text-white/70 text-[10px]">
+                  {combinedNotifCount > 0
+                    ? [
+                        pupilMsgCount > 0 && `${pupilMsgCount} pupil`,
+                        visitorChatCount > 0 && `${visitorChatCount} chat`,
+                        notifJobCount > 0 && `${notifJobCount} job`,
+                        testSwapCount > 0 && `${testSwapCount} test`,
+                      ].filter(Boolean).join(" · ")
+                    : "No new alerts"}
+                </p>
+              </div>
+            </div>
+            {combinedNotifCount > 0 && (
+              <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                {combinedNotifCount > 9 ? "9+" : combinedNotifCount}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
 
       {/* YOUR DAY section */}
       {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
