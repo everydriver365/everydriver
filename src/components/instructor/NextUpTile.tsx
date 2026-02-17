@@ -12,6 +12,7 @@ import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Button } from "@/components/ui/button";
+import nextUpIcon from "@/assets/next_up_white.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,8 +182,8 @@ export function NextUpTile({
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
             </div>
             <div className="relative flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-primary text-xs font-extrabold tracking-wide shadow-sm">
-                <Clock className="h-3 w-3" /> NEXT UP
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 shadow-sm">
+                <img src={nextUpIcon} alt="Next Up" className="h-4 object-contain" />
               </span>
               <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
                 isUrgent
