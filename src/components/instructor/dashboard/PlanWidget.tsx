@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Crown, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import planIcon from "@/assets/plan-icon.png";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
@@ -28,8 +29,8 @@ export function PlanWidget() {
         </div>
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
-              <Crown className="h-4 w-4 text-white" />
+            <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+              <img src={planIcon} alt="Plan" className="h-7 w-7 object-contain" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">Your Plan</h3>
