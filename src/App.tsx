@@ -70,6 +70,7 @@ import TermsOfService from "./pages/TermsOfService";
 import GoogleApiDisclosure from "./pages/GoogleApiDisclosure";
 import Benefits from "./pages/Benefits";
 import NotFound from "./pages/NotFound";
+import EarlierTestGuarantee from "./pages/EarlierTestGuarantee";
 import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
 import InstructorMiniWebsiteSettings from "./pages/InstructorMiniWebsiteSettings";
 import MiniWebsiteHome from "./pages/mini-website/MiniWebsiteHome";
@@ -176,6 +177,7 @@ const App = () => (
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/google-api-disclosure" element={<GoogleApiDisclosure />} />
               <Route path="/benefits" element={<Benefits />} />
+              <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
               <Route path="/i/:slug" element={<MiniWebsiteHome />} />
               <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
               <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />

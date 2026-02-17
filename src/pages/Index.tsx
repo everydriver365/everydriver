@@ -327,23 +327,25 @@ export default function Index() {
       {/* Guaranteed Earlier Test Promotion Banner */}
       <section className="py-4">
         <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-            className="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer hover:shadow-2xl transition-shadow"
-          >
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
-            <div className="p-5 flex items-center gap-5">
-              <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 drop-shadow-lg object-contain shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
-                <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
+          <Link to="/earlier-test-guarantee">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              viewport={{ once: true }}
+              className="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer hover:shadow-2xl transition-shadow"
+            >
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
+              <div className="p-5 flex items-center gap-5">
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 drop-shadow-lg object-contain shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
+                  <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
+                </div>
+                <ChevronRight className="h-6 w-6 text-white/60 shrink-0" />
               </div>
-              <ChevronRight className="h-6 w-6 text-white/60 shrink-0" />
-            </div>
-          </motion.div>
+            </motion.div>
+          </Link>
         </div>
       </section>
 
