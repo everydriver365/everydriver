@@ -189,7 +189,6 @@ export function MobileHomepage() {
             <div className="flex-1 p-4">
               <h4 className="font-semibold text-foreground">Intensive Courses</h4>
               <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
-              <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-16 h-16 mt-1 drop-shadow-md object-contain" />
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground mr-4" />
           </motion.div>
@@ -210,7 +209,6 @@ export function MobileHomepage() {
               <div className="p-3">
                 <h4 className="font-semibold text-sm text-foreground">Semi Intensive</h4>
                 <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-16 h-16 mt-1 drop-shadow-md object-contain" />
               </div>
             </motion.div>
           </Link>
