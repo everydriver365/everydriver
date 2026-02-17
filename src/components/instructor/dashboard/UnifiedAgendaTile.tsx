@@ -211,7 +211,12 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                 {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""} today` : "Nothing scheduled"}
               </p>
             </div>
-          </div>
+            </div>
+            {totalItems > 0 && (
+              <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center shadow-sm">
+                {totalItems > 9 ? "9+" : totalItems}
+              </span>
+            )}
           <div className="flex items-center gap-1">
             <Popover>
               <PopoverTrigger asChild>
