@@ -429,7 +429,7 @@ export function InstructorMobileHome({
                     <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
                   </div>
                 </div>
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center shadow-sm">
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
                   {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                 </span>
               </div>
