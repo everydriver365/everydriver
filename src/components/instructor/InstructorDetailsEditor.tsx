@@ -241,38 +241,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   if (defaultTab === "gps") {
     return (
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Tracker Name</Label>
-          <Input
-            placeholder="e.g., Toyota Yaris - Roller Skate"
-            value={quartixDeviceName}
-            onChange={(e) => setQuartixDeviceName(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">A friendly name for this instructor's tracker</p>
-        </div>
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Satellite className="h-4 w-4" />
-            Quartix Vehicle ID
-          </Label>
-          <Input
-            placeholder="Enter the Quartix vehicle ID"
-            value={quartixVehicleId}
-            onChange={(e) => setQuartixVehicleId(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Quartix Driver ID (optional)</Label>
-          <Input
-            placeholder="Enter the Quartix driver ID"
-            value={quartixDriverId}
-            onChange={(e) => setQuartixDriverId(e.target.value)}
-          />
-        </div>
-        <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-          Save Quartix Settings
-        </Button>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -304,11 +272,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         <Button variant="outline" onClick={testConnection} disabled={testingConnection} className="w-full">
           {testingConnection ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Test Connection
-        </Button>
-
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Save GPS Settings
         </Button>
       </div>
     );
