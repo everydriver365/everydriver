@@ -58,7 +58,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
-import earlyTestBadge from "@/assets/early_test_guaranteed.png";
+import earlyTestBadge from "@/assets/early-test-guarantee.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
@@ -396,10 +396,7 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/30 animate-pulse">
-                  <ShieldCheck className="h-4 w-4" />
-                  Earlier Test Guarantee
-                </div>
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 bottom-3 w-16 h-16 drop-shadow-lg" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -454,10 +451,7 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/30 animate-pulse">
-                  <ShieldCheck className="h-4 w-4" />
-                  Earlier Test Guarantee
-                </div>
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 bottom-3 w-14 h-14 drop-shadow-lg" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
