@@ -375,8 +375,7 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl"
-              style={{ backgroundColor: "#e9f4f9" }}
+              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-white dark:bg-card"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -430,8 +429,7 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl"
-              style={{ backgroundColor: "#e9f4f9" }}
+              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-white dark:bg-card"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -485,8 +483,7 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl"
-              style={{ backgroundColor: "#e9f4f9" }}
+              className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-white dark:bg-card"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
