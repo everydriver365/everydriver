@@ -396,10 +396,10 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <Badge className="absolute left-3 bottom-3 border-0 bg-amber-500 text-white gap-1 shadow-md">
-                  <ShieldCheck className="h-3 w-3" />
+                <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/30 animate-pulse">
+                  <ShieldCheck className="h-4 w-4" />
                   Earlier Test Guarantee
-                </Badge>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -454,10 +454,10 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <Badge className="absolute left-3 bottom-3 border-0 bg-amber-500 text-white gap-1 shadow-md">
-                  <ShieldCheck className="h-3 w-3" />
+                <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/30 animate-pulse">
+                  <ShieldCheck className="h-4 w-4" />
                   Earlier Test Guarantee
-                </Badge>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>

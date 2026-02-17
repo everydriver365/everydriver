@@ -189,8 +189,8 @@ export function MobileHomepage() {
             <div className="flex-1 p-4">
               <h4 className="font-semibold text-foreground">Intensive Courses</h4>
               <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
-              <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                <ShieldCheck className="h-2.5 w-2.5" /> Earlier Test Guarantee
+              <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-1 rounded-full shadow-sm shadow-amber-500/30 animate-pulse">
+                <ShieldCheck className="h-3 w-3" /> Earlier Test Guarantee
               </span>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground mr-4" />
@@ -212,8 +212,8 @@ export function MobileHomepage() {
               <div className="p-3">
                 <h4 className="font-semibold text-sm text-foreground">Semi Intensive</h4>
                 <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
-                <span className="inline-flex items-center gap-1 mt-1 text-[9px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
-                  <ShieldCheck className="h-2 w-2" /> Earlier Test
+                <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 rounded-full shadow-sm shadow-amber-500/30 animate-pulse">
+                  <ShieldCheck className="h-2.5 w-2.5" /> Earlier Test
                 </span>
               </div>
             </motion.div>
