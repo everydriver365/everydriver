@@ -278,7 +278,7 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 1.1 }}
-          onClick={() => setShowTestGuaranteeModal(true)}
+          onClick={() => navigate("/earlier-test-guarantee")}
           className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer active:scale-[0.98] transition-transform"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
