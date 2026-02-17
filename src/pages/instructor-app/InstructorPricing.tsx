@@ -4,7 +4,7 @@ import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Loader2, ShieldCheck } from "lucide-react";
+import { Check, Loader2, ShieldCheck, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +19,7 @@ interface SubscriptionPlan {
   is_popular: boolean;
   cta_text: string | null;
   max_pupils: number | null;
+  payout_speed: string | null;
 }
 
 export default function InstructorPricing() {
@@ -125,6 +126,17 @@ export default function InstructorPricing() {
                   </CardHeader>
                   
                   <CardContent>
+                    {plan.payout_speed && (
+                      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Payout Speed:</span>
+                        {plan.payout_speed === 'Instant'
+                          ? <span className="text-sm text-emerald-500 font-semibold">⚡ Instant</span>
+                          : <span className="text-sm font-medium text-foreground">{plan.payout_speed}</span>
+                        }
+                      </div>
+                    )}
+
                     <ul className="space-y-3 mb-6">
                       {(plan.features || []).map((feature) => (
                         <li key={feature} className="flex items-start gap-3">
