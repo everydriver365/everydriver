@@ -396,7 +396,10 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 top-3 w-10 h-10 drop-shadow-md" />
+                <Badge className="absolute left-3 bottom-3 border-0 bg-amber-500 text-white gap-1 shadow-md">
+                  <ShieldCheck className="h-3 w-3" />
+                  Earlier Test Guarantee
+                </Badge>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -451,7 +454,10 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-3 top-3 w-10 h-10 drop-shadow-md" />
+                <Badge className="absolute left-3 bottom-3 border-0 bg-amber-500 text-white gap-1 shadow-md">
+                  <ShieldCheck className="h-3 w-3" />
+                  Earlier Test Guarantee
+                </Badge>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
