@@ -1,33 +1,34 @@
 
-# Messages & Alerts Widget - Separate Clickable Sections
 
-## Overview
-Redesign the MessagesWidget to show separate, clickable rows for each alert category instead of a single summary line. Each row will display an icon, label, count badge, and link to the relevant page.
+## Add "Your Plan" and "Sign Out" to the Bottom of the Desktop Sidebar
 
-## Changes
+### What Changes
 
-### File: `src/components/instructor/dashboard/MessagesWidget.tsx`
+The left-hand sidebar on the instructor dashboard (desktop view) currently shows navigation groups and a small user info + logout section at the bottom. This plan adds a **"Your Plan"** tile above the existing sign out area, styled to fit the sidebar's compact layout.
 
-Replace the current layout (header + recent conversations list) with a structured list of 4 clickable alert rows:
+### Implementation Details
 
-1. **Pupil Messages** - icon: MessageSquare, count from `pupilMsgCount`, links to `/instructor/messages`
-2. **Admin / Visitor Chats** - icon: MessageCircle or Headset, count from `visitorChatCount`, links to `/instructor/messages`
-3. **Job Offers** - icon: Briefcase, count from `pendingJobsCount`, links to `/instructor/jobs`
-4. **Test Alerts** - icon: Award/CalendarCheck, count from `swapCount`, links to `/instructor/test-requests`
+**File: `src/components/layout/InstructorPortalLayout.tsx`**
 
-Each row will be a clickable Link with:
-- Left: coloured icon in a rounded container
-- Middle: label text + subtitle (e.g. "2 unread" or "No new alerts")
-- Right: count badge (red if > 0) + chevron arrow
-
-The overall card header ("Messages & Alerts" with total badge) will remain at the top.
-
-Remove the recent conversations list (the full conversation view is accessible from the Messages page).
+1. Import the `PlanBadge` component (already imported) and the `useInstructorAuth` context (already available via `instructor` and `subscription`).
+2. Import `planIcon` from `@/assets/plan-icon.png`.
+3. In the desktop sidebar bottom section (lines 928-959), add a "Your Plan" button/link above the existing user info:
+   - When sidebar is expanded: Show a compact card with plan icon, "Your Plan" label, and the `PlanBadge` showing the current plan. Clicking navigates to `/instructor/plans`.
+   - When sidebar is collapsed: Show just the plan icon as a small button that navigates to `/instructor/plans`.
+4. Keep the existing sign out button below, unchanged.
 
 ### Technical Details
 
-- No new dependencies or database changes needed
-- Reuses existing `useCombinedNotificationCount` hook (already provides all 4 counts)
-- Remove the `useQuery` for recent conversations since the widget will now show category rows instead
-- Each row uses `Link` from react-router-dom pointing to the correct route
-- Styling: consistent with existing widget card patterns, hover states on rows
+The bottom `<div className="border-t p-2">` section will be restructured to:
+
+```
+border-t section:
+  [Your Plan button/link -> navigates to /instructor/plans]
+  [separator]
+  [Existing user info + sign out]
+```
+
+The Plan button will use the same styling patterns as the sidebar nav links (compact, with icon + text when expanded, icon-only when collapsed). The `PlanBadge` component will show the current plan tier (Free, Pro, etc.) as a small badge.
+
+No new components are needed -- this reuses `PlanBadge` and `planIcon` already in the codebase.
+
