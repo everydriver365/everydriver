@@ -9105,6 +9105,7 @@ export type Database = {
           is_popular: boolean | null
           max_pupils: number | null
           name: string
+          payout_speed: string | null
           price_monthly: number
           price_yearly: number | null
           show_contact_us: boolean
@@ -9127,6 +9128,7 @@ export type Database = {
           is_popular?: boolean | null
           max_pupils?: number | null
           name: string
+          payout_speed?: string | null
           price_monthly?: number
           price_yearly?: number | null
           show_contact_us?: boolean
@@ -9149,6 +9151,7 @@ export type Database = {
           is_popular?: boolean | null
           max_pupils?: number | null
           name?: string
+          payout_speed?: string | null
           price_monthly?: number
           price_yearly?: number | null
           show_contact_us?: boolean

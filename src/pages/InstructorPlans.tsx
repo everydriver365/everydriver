@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2,
   Sparkles, LogOut, Gauge, CreditCard, ChevronDown, Camera,
-  Globe, Calendar, Smartphone, Wrench, Heart
+  Globe, Calendar, Smartphone, Wrench, Heart, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ interface Plan {
   show_contact_us: boolean;
   commission_rate_percent: number | null;
   commission_fixed_pence: number | null;
+  payout_speed: string | null;
 }
 
 interface CategoryFeatures {
@@ -134,7 +135,7 @@ export default function InstructorPlans() {
       const [plansRes, assignmentsRes] = await Promise.all([
         supabase
           .from("subscription_plans")
-          .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us, commission_rate_percent, commission_fixed_pence")
+          .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us, commission_rate_percent, commission_fixed_pence, payout_speed")
           .eq("is_active", true)
           .order("display_order", { ascending: true }),
         supabase
@@ -150,6 +151,7 @@ export default function InstructorPlans() {
           show_contact_us: (p as any).show_contact_us || false,
           commission_rate_percent: (p as any).commission_rate_percent ?? null,
           commission_fixed_pence: (p as any).commission_fixed_pence ?? null,
+          payout_speed: (p as any).payout_speed ?? null,
         })));
       }
 
@@ -348,6 +350,22 @@ export default function InstructorPlans() {
                                   <span> per transaction</span>
                                 </>
                               )
+                            }
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Payout Speed */}
+                      {plan.payout_speed && (
+                        <div className="mb-3 pb-3 border-b border-border">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Clock className="h-3.5 w-3.5 text-blue-500" />
+                            <span className="text-[11px] font-semibold text-foreground">Payout Speed</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {plan.payout_speed === 'Instant'
+                              ? <span className="text-emerald-500 font-semibold">⚡ Instant</span>
+                              : <span className="font-semibold text-foreground">{plan.payout_speed}</span>
                             }
                           </p>
                         </div>

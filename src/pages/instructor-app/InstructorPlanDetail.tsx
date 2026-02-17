@@ -4,9 +4,10 @@ import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowLeft, Loader2, Users, MessageSquare } from "lucide-react";
+import { Check, ArrowLeft, Loader2, Users, MessageSquare, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface SubscriptionPlan {
   id: string;
@@ -20,6 +21,7 @@ interface SubscriptionPlan {
   cta_text: string | null;
   max_pupils: number | null;
   sms_credits_monthly: number | null;
+  payout_speed: string | null;
 }
 
 interface FeatureDescription {
@@ -176,6 +178,22 @@ export default function InstructorPlanDetail() {
                         : plan.sms_credits_monthly}
                     </p>
                     <p className="text-sm text-muted-foreground">SMS / month</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {plan.payout_speed && (
+              <Card>
+                <CardContent className="flex items-center gap-3 p-5">
+                  <Clock className="h-6 w-6 text-emerald-500" />
+                  <div>
+                    <p className={cn(
+                      "text-2xl font-bold",
+                      plan.payout_speed === 'Instant' ? "text-emerald-500" : "text-foreground"
+                    )}>
+                      {plan.payout_speed === 'Instant' ? '⚡ Instant' : plan.payout_speed}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Payout Speed</p>
                   </div>
                 </CardContent>
               </Card>
