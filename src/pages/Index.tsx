@@ -348,7 +348,7 @@ export default function Index() {
       </section>
 
       {/* Choose Your Learning Path Section */}
-      <section className="bg-secondary/30 py-16">
+      <section className="bg-background py-16">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
