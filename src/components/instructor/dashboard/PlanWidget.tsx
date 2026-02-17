@@ -30,7 +30,7 @@ export function PlanWidget() {
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
-              <img src={planIcon} alt="Plan" className="h-7 w-7 object-contain" />
+              <img src={planIcon} alt="Plan" className="h-9 w-9 object-contain" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">Your Plan</h3>
