@@ -342,7 +342,10 @@ export default function Index() {
                   <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
                   <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
                 </div>
-                <ChevronRight className="h-6 w-6 text-white/60 shrink-0" />
+                <span className="inline-flex items-center gap-1.5 bg-white text-emerald-700 font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shrink-0 hover:bg-white/90 transition-colors">
+                  Learn More
+                  <ChevronRight className="h-4 w-4" />
+                </span>
               </div>
             </motion.div>
           </Link>
