@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
+import earlyTestBadge from "@/assets/early_test_guaranteed.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 
@@ -180,8 +181,9 @@ export function MobileHomepage() {
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ delay: 0.85 }}
-            className="bg-card border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden hover:shadow-xl transition-shadow"
+            className="relative bg-card border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden hover:shadow-xl transition-shadow"
           >
+            <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute top-1 right-1 w-9 h-9 z-10 drop-shadow-md" />
             <div className="w-24 h-24 flex-shrink-0 bg-primary/5">
               <img src={intensiveCoursesIcon} alt="Intensive Courses" className="w-full h-full object-cover" />
             </div>
@@ -200,8 +202,9 @@ export function MobileHomepage() {
               initial={{ opacity: 0, y: 20 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ delay: 0.9 }}
-              className="bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden hover:shadow-xl transition-shadow"
+              className="relative bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden hover:shadow-xl transition-shadow"
             >
+              <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute top-1 right-1 w-7 h-7 z-10 drop-shadow-md" />
               <div className="h-20 w-full overflow-hidden">
                 <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover" />
               </div>
