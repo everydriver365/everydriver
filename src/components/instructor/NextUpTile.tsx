@@ -173,7 +173,7 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-card rounded-none shadow-sm overflow-hidden">
           {/* Gradient header with NEXT UP badge */}
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
             <div className="absolute inset-0 overflow-hidden">

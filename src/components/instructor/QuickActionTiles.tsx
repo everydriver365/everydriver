@@ -289,10 +289,10 @@ export function QuickActionTiles({
   if (loading) {
     return (
       <div className="space-y-3">
-        <div className="bg-card rounded-2xl p-4 h-16 animate-pulse shadow-sm" />
+        <div className="bg-card rounded-none p-4 h-16 animate-pulse shadow-sm" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card rounded-2xl p-4 h-20 animate-pulse shadow-sm" />
+            <div key={i} className="bg-card rounded-none p-4 h-20 animate-pulse shadow-sm" />
           ))}
         </div>
       </div>
@@ -437,7 +437,7 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-card rounded-2xl shadow-sm active:shadow-none transition-all">
+                 <div className="relative overflow-hidden bg-card rounded-none shadow-sm active:shadow-none transition-all">
                   <div className="bg-gradient-to-r from-primary to-primary/80 px-4 py-1.5">
                     <span className="text-white text-[10px] font-semibold uppercase tracking-wider">Top Action</span>
                   </div>
@@ -515,7 +515,7 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-2xl px-3 py-2.5 flex items-center gap-2.5 shadow-sm hover:shadow-md active:shadow-none transition-shadow`}
+                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-sm hover:shadow-md active:shadow-none transition-shadow`}
                   >
                     <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-primary/30 shadow-[0_0_8px_hsl(var(--primary)/0.2)]`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}

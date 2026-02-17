@@ -48,7 +48,7 @@ export function ReadyToTeachTile({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="bg-card rounded-2xl shadow-[0_2px_12px_rgba(20,37,66,0.10)] border border-border/40 p-4"
+      className="bg-card rounded-none shadow-[0_2px_12px_rgba(20,37,66,0.10)] border border-border/40 p-4"
     >
       {/* Header row */}
       <div className="flex items-center gap-3 mb-3">

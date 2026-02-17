@@ -41,7 +41,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
     : BatteryFull;
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm overflow-hidden mt-4">
+    <div className="bg-card rounded-none shadow-sm overflow-hidden mt-4">
       {/* Gradient header - clickable to toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

@@ -37,7 +37,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
 
   return (
     <div className={className}>
-      <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-card rounded-none shadow-sm overflow-hidden">
         {/* Gradient header */}
         <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
           <div className="absolute inset-0 overflow-hidden">

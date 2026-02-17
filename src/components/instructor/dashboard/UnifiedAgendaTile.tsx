@@ -190,7 +190,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   return (
     <div className={cn(
-      "bg-card rounded-2xl shadow-sm overflow-hidden",
+      "bg-card rounded-none shadow-sm overflow-hidden",
       className
     )}>
       {/* Gradient header - clickable to toggle */}
