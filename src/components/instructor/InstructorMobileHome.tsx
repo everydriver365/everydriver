@@ -464,10 +464,6 @@ export function InstructorMobileHome({
       {/* Content with horizontal padding */}
       <div className="px-4">
 
-      {/* Vehicle Health Strip */}
-      {authInstructor?.id && (
-        <VehicleHealthStrip instructorId={authInstructor.id} />
-      )}
 
       {/* Celebration Confetti */}
       <CelebrationConfetti
@@ -554,8 +550,11 @@ export function InstructorMobileHome({
 
 
 
-      {/* Plan, Reminders & Referrals Widgets */}
+      {/* Vehicle Health & Agenda */}
       <div className="mt-4 space-y-3">
+        {authInstructor?.id && (
+          <VehicleHealthStrip instructorId={authInstructor.id} />
+        )}
         <UnifiedAgendaTile instructorId={instructor?.id} />
         <PlanWidget />
         
