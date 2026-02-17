@@ -72,6 +72,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
 import { CardSection } from "@/components/ui/CardSection";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
@@ -460,6 +461,11 @@ export function InstructorMobileHome({
           </div>
         </button>
       </div>
+
+      {/* Test Requests Tile */}
+      {authInstructor?.id && (
+        <TestRequestsTile instructorId={authInstructor.id} />
+      )}
 
       {/* Content with horizontal padding */}
       <div className="px-4">
