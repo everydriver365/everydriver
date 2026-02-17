@@ -20,13 +20,12 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
       // Get centres this instructor wants a test at
       const { data: wantRequests } = await supabase
         .from("test_requests")
-        .select("test_centre_id, test_centre_name")
+        .select("test_centre_id")
         .eq("instructor_id", instructorId)
         .eq("request_type", "want_test")
         .eq("status", "active");
 
       const wantedCentreIds = (wantRequests || []).map(r => r.test_centre_id).filter(Boolean);
-      const wantedCentreNames = (wantRequests || []).map(r => r.test_centre_name).filter(Boolean);
 
       let matchingTests = 0;
       if (wantedCentreIds.length > 0) {
@@ -40,18 +39,14 @@ export function useTestSwapNotifications(instructorId: string | undefined) {
         matchingTests = count || 0;
       }
 
-      // Also check scraped test slot reservations matching wanted centre names
-      let scrapedMatches = 0;
-      if (wantedCentreNames.length > 0) {
-        const { count } = await supabase
-          .from("test_slot_reservations" as any)
-          .select("*", { count: "exact", head: true })
-          .in("centre", wantedCentreNames)
-          .in("status", ["pending", "scraped_match"]);
-        scrapedMatches = count || 0;
-      }
+      // Count scraped_match records for this instructor directly
+      const { count: scrapedMatches } = await supabase
+        .from("test_slot_reservations" as any)
+        .select("*", { count: "exact", head: true })
+        .eq("instructor_id", instructorId)
+        .eq("status", "scraped_match");
 
-      return (pendingOffers || 0) + matchingTests + scrapedMatches;
+      return (pendingOffers || 0) + matchingTests + (scrapedMatches || 0);
     },
     enabled: !!instructorId,
     refetchInterval: 30_000,

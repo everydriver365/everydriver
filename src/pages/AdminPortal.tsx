@@ -73,6 +73,7 @@ import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 import { PlanFeatureMatrixManager } from "@/components/admin/PlanFeatureMatrixManager";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
+import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -929,6 +930,24 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminTrackersManager />
+          </motion.div>
+        );
+
+      case "test-requests":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarClock className="h-5 w-5 text-primary" />
+                  Test Slot Matches & Reservations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminScrapedMatchesPanel />
+              </CardContent>
+            </Card>
           </motion.div>
         );
 
