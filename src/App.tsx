@@ -13,6 +13,7 @@ import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
 import { ConditionalHome } from "@/components/ConditionalHome";
 import Index from "./pages/Index";
+import DemoCtaOptions from "./pages/DemoCtaOptions";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
 import BookingConfirmation from "./pages/BookingConfirmation";
@@ -156,6 +157,7 @@ const App = () => (
               <Route path="/" element={<ConditionalHome />} />
               {/* Drive365 learner homepage preview (bypasses domain routing) */}
               <Route path="/drive365" element={<Index />} />
+              <Route path="/demo-cta" element={<DemoCtaOptions />} />
               {/* Learner-facing routes (EveryDriver branding) */}
               <Route path="/courses" element={<Courses />} />
               <Route path="/book/:instructorId" element={<BookingSummary />} />
