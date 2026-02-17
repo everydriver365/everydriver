@@ -325,31 +325,23 @@ export default function Index() {
       </section>
 
       {/* Guaranteed Earlier Test Promotion Banner */}
-      <section className="bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-emerald-500/10 border-y border-emerald-200 dark:border-emerald-800">
-        <div className="container py-4">
+      <section className="py-4">
+        <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             viewport={{ once: true }}
-            className="flex flex-col sm:flex-row items-center justify-between gap-4"
+            className="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer hover:shadow-2xl transition-shadow"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shrink-0">
-                <Calendar className="h-5 w-5" />
+            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
+            <div className="p-5 flex items-center gap-5">
+              <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 drop-shadow-lg object-contain shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
+                <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
               </div>
-              <div>
-                <h3 className="font-bold text-foreground">Guaranteed Earlier Test Date</h3>
-                <p className="text-sm text-muted-foreground">We'll find you an earlier slot or your money back!</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border-0">
-                Only £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
-              </Badge>
-              <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                <a href="/courses">Book Now</a>
-              </Button>
+              <ChevronRight className="h-6 w-6 text-white/60 shrink-0" />
             </div>
           </motion.div>
         </div>

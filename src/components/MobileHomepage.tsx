@@ -281,29 +281,16 @@ export function MobileHomepage() {
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 1.1 }}
           onClick={() => setShowTestGuaranteeModal(true)}
-          className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 cursor-pointer active:scale-[0.98] transition-transform"
+          className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer active:scale-[0.98] transition-transform"
         >
-          <div className="p-4 flex items-start gap-3">
-            <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <CalendarSearch className="h-6 w-6 text-white" />
-            </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+          <div className="p-4 flex items-center gap-4">
+            <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-16 h-16 drop-shadow-lg object-contain shrink-0" />
             <div className="flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h4 className="font-bold text-white text-sm">Guaranteed Earlier Test</h4>
-                  <p className="text-xs text-white/80 mt-0.5">We'll find you an earlier slot or your money back!</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-white/60 shrink-0 mt-0.5" />
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1 rounded-full">
-                  £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
-                </span>
-                <span className="text-white/70 text-xs flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3" /> Money-back guarantee
-                </span>
-              </div>
+              <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
+              <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
             </div>
+            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
           </div>
         </motion.div>
       </div>
