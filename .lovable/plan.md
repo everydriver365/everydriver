@@ -1,55 +1,82 @@
 
+# Admin-Only Tracker Assignment
 
-# Add Test Reservation Alert to Admin Dashboard
+## Summary
+Move all GPS tracker search/link/unlink functionality out of the instructor-facing pages and into a new "Trackers" section in the admin panel. Instructors will no longer be able to discover or assign Quartix units themselves.
 
-## What's Missing
-The admin dashboard's System Alerts card currently monitors compliance expirations, pending payments, and inactive instructors. It has no visibility into test slot reservations. When an instructor reserves a scraped test slot, nothing appears on the admin dashboard.
+## Changes
 
-## Plan
+### 1. Remove `QuartixIdSearch` from Instructor Pages
 
-### 1. Update `src/components/admin/SystemAlertsCard.tsx`
-Add a new query to the `fetchAlerts` function that counts recent/pending test slot reservations from the `test_slot_reservations` table. If any exist, display a new alert like:
+**`src/pages/InstructorSettings.tsx`**
+- Remove the `import { QuartixIdSearch }` line
+- Remove the `<QuartixIdSearch instructorId={instructorId} />` usage (around line 1065)
 
-> "3 test slot reservations pending" (info type, with a navigation action)
+**`src/pages/InstructorGPSSetup.tsx`**
+- Remove the `import { QuartixIdSearch }` line
+- Remove `<QuartixIdSearch instructorId={instructor?.id} />` (around line 368)
 
-**Changes:**
-- Add a new parallel query: count rows from `test_slot_reservations` where `status = 'reserved'` (or all recent ones)
-- Add a new alert entry with type "info", a calendar/clipboard icon, and navigation to the test swap section
-- Subscribe to realtime changes on `test_slot_reservations` so the alert updates automatically
+### 2. Create Admin Trackers Manager Component
 
-### 2. Update `src/hooks/useAdminDashboardStats.ts` (optional enhancement)
-Add a `testReservations` count to the dashboard stats so it can also appear in the overview cards if desired.
+**New file: `src/components/admin/AdminTrackersManager.tsx`**
 
-### 3. Wire up navigation
-The alert's "Review" button will call `onNavigate("test-swap")` (or whichever section key the admin dashboard uses for test swap management).
+This component will provide the full tracker management UI for admins:
+- A dropdown/select to pick an instructor
+- Once selected, show the Quartix server vehicle list (reusing the `quartix-vehicles` edge function)
+- Link/unlink units to the selected instructor
+- Assign units to the instructor's vehicles
+- Set active/inactive status
+- Show a summary table of all currently assigned trackers across all instructors
+
+### 3. Register the "Trackers" Section in Admin Portal
+
+**`src/pages/AdminPortal.tsx`**
+- Add `"trackers"` to `sectionMeta` with title "GPS Trackers", group "System Settings", icon `Satellite`
+- Add a `case "trackers"` in the `renderContent` switch to render `<AdminTrackersManager />`
+
+**`src/components/admin/AdminLayout.tsx`**
+- Add `"trackers"` to `sectionToTab` mapping (map it to the "instructors" tab or add as its own top-level tab)
+- Alternatively, make it accessible from the Settings grid rather than a top-level tab (to avoid adding yet another tab to the header)
+
+### 4. Wire into Admin Settings Grid
+
+**`src/components/admin/AdminSettingsGrid.tsx`** (or equivalent overview grid)
+- Add a "GPS Trackers" tile so admins can navigate to the trackers section from the overview
 
 ## Technical Details
 
-**SystemAlertsCard.tsx** - Add to the `Promise.all` block:
-```typescript
-// Test slot reservations
-supabase
-  .from("test_slot_reservations")
-  .select("id", { count: "exact", head: true })
-  .eq("status", "reserved"),
+### AdminTrackersManager Component Structure
+
+```text
++------------------------------------------+
+| GPS Tracker Management                    |
++------------------------------------------+
+| [Select Instructor v]                     |
++------------------------------------------+
+| All Assigned Trackers (table view)        |
+| Instructor | Device | Vehicle | Status   |
+| ...        | ...    | ...     | Active   |
++------------------------------------------+
+| Quartix Server Units (when instructor    |
+| selected)                                 |
+| [Search box] [Refresh]                   |
+| Unit list with Link/Unlink/Set Active    |
++------------------------------------------+
 ```
 
-Add alert generation:
-```typescript
-const reservationCount = reservationsRes.count || 0;
-if (reservationCount > 0) {
-  newAlerts.push({
-    id: "test-reservations",
-    type: "info",
-    icon: CalendarCheck,
-    message: `${reservationCount} test slot reservation${reservationCount > 1 ? "s" : ""} pending`,
-    count: reservationCount,
-    action: "Review",
-    section: "test-swap",
-  });
-}
-```
+The component will:
+- Fetch all instructors for the dropdown
+- Fetch all `gps_devices` rows to show a global overview table
+- When an instructor is selected, call the `quartix-vehicles` edge function and show linkable units
+- Reuse the same linking/unlinking/set-active logic currently in `QuartixIdSearch`, but scoped to the admin-selected instructor
+- Include the instructor's vehicles for assignment (fetched from `instructor_vehicles`)
 
-Add realtime subscription for `test_slot_reservations` table alongside the existing ones.
+### Files Summary
 
-No database changes needed -- the `test_slot_reservations` table already exists.
+| File | Action |
+|------|--------|
+| `src/pages/InstructorSettings.tsx` | Remove QuartixIdSearch usage |
+| `src/pages/InstructorGPSSetup.tsx` | Remove QuartixIdSearch usage |
+| `src/components/admin/AdminTrackersManager.tsx` | New - admin tracker management UI |
+| `src/pages/AdminPortal.tsx` | Add trackers section metadata + render case |
+| `src/components/admin/AdminLayout.tsx` | Add trackers to sectionToTab mapping |
