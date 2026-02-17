@@ -48,6 +48,7 @@ import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
+import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
@@ -591,8 +592,8 @@ export function InstructorMobileHome({
               </div>
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-white" />
+                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+                    <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm">Plan Ahead</h3>

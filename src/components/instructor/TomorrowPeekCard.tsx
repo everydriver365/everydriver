@@ -2,7 +2,6 @@ import { useState } from "react";
 import { format, parse, addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Calendar,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -12,6 +11,7 @@ import {
   MapPin,
   User,
 } from "lucide-react";
+import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useInstructorTodos } from "@/hooks/useInstructorTodos";
@@ -83,8 +83,8 @@ export function TomorrowPeekCard({
           </div>
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-white" />
+              <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+                <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">Plan Ahead</h3>
