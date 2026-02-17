@@ -438,14 +438,8 @@ export function InstructorMobileHome({
         )}
       </div>
 
-      {/* Test Requests Tile */}
-      {authInstructor?.id && (
-        <TestRequestsTile instructorId={authInstructor.id} />
-      )}
-
       {/* Content with horizontal padding */}
       <div className="px-4">
-
 
       {/* Celebration Confetti */}
       <CelebrationConfetti
@@ -471,7 +465,7 @@ export function InstructorMobileHome({
           />
       )}
 
-      {/* Messages tile — above schedule */}
+      {/* Messages tile — above test requests */}
       <button
         onClick={() => navigate("/instructor/messages")}
         className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all mt-4"
@@ -506,6 +500,15 @@ export function InstructorMobileHome({
           </div>
         </div>
       </button>
+
+      </div>
+
+      {/* Test Requests Tile */}
+      {authInstructor?.id && (
+        <TestRequestsTile instructorId={authInstructor.id} />
+      )}
+
+      <div className="px-4">
 
       {/* YOUR DAY section */}
       {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
