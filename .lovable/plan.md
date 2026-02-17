@@ -1,20 +1,40 @@
 
 
-## Add "Earlier Test Guarantee" Badge to Course Tiles
+# Add Payout Speed Options to Plan Cards
 
-### What will change
-The uploaded "Earlier Test Guarantee" gold badge image will be added as a small overlay icon on the **Intensive Courses** and **Semi-Intensive** tiles on the Drive365 homepage.
+## Overview
+Add a "Payout Speed" section to each plan card on the instructor plans comparison page, showing whether the plan includes "24 hours" or "Instant" payouts. This helps instructors understand how quickly they receive their money based on their subscription tier.
 
-### How it will look
-- On the **Intensive Courses** tile (full-width): the badge will appear as a small circular icon (approx. 36x36px) positioned in the top-right corner of the tile, overlapping slightly.
-- On the **Semi-Intensive** tile (half-width grid): the badge will appear slightly smaller (approx. 28x28px) in the top-right corner.
-- The badge will NOT appear on the Weekly Lessons tile.
+## What Will Change
 
-### Technical Steps
+A new column `payout_speed` will be added to the `subscription_plans` table to store the payout timing for each plan (e.g., "24 hours", "Instant"). This value will be displayed on each plan card, right below the existing "Card Payment Fees" section, with a clock icon and clear labelling.
 
-1. **Copy the uploaded image** into `src/assets/early_test_guaranteed.png`
-2. **Edit `src/components/MobileHomepage.tsx`**:
-   - Import the new badge image
-   - Add the badge as an absolutely-positioned `<img>` element inside both the Intensive and Semi-Intensive tile `motion.div` containers (which already have `overflow-hidden` and can receive `relative` positioning)
-   - Size: `w-9 h-9` on the intensive tile, `w-7 h-7` on the semi-intensive tile
-   - Position: `absolute top-1 right-1` with a subtle drop shadow for visibility
+**Suggested tier mapping:**
+- **Free** -- 24 hours
+- **Pro** -- 24 hours
+- **Max** -- Instant
+- **Multi** -- Instant
+- **Enterprise** -- Instant
+
+## How It Will Look
+
+On each plan card, below the "Card Payment Fees" row, a new row will appear:
+
+```text
+[Clock icon] Payout Speed
+24 hours          (for Free/Pro, shown in neutral text)
+Instant           (for Max+, shown in green/bold as a perk)
+```
+
+## Technical Steps
+
+1. **Database migration** -- Add a `payout_speed` text column to `subscription_plans` and populate it with default values per plan tier.
+
+2. **Update `src/pages/InstructorPlans.tsx`** -- Add a "Payout Speed" section below the existing "Card Payment Fees" block. Import a `Clock` icon from lucide-react. Display the value from the new column, highlighting "Instant" in green.
+
+3. **Update `src/pages/instructor-app/InstructorPricing.tsx`** (public pricing page) -- Add the same payout speed display to the public-facing plan cards for consistency.
+
+4. **Update `src/pages/instructor-app/InstructorPlanDetail.tsx`** (plan detail page) -- Show payout speed as an additional metric card alongside Pupils and SMS.
+
+5. **Update TypeScript interfaces** in each affected file to include the new `payout_speed` field.
+
