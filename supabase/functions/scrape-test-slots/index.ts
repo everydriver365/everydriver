@@ -123,12 +123,12 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
       return;
     }
 
-    // Match by centre name only (ignoring date/time)
+    // Match by centre name only (case-insensitive)
     const matches: { slot: TestSlot; request: typeof wantRequests[0] }[] = [];
     for (const slot of slots) {
       for (const req of wantRequests) {
         if (req.test_centre_name && 
-            slot.centre.toLowerCase().includes(req.test_centre_name.toLowerCase())) {
+            slot.centre.toLowerCase().trim().includes(req.test_centre_name.toLowerCase().trim())) {
           matches.push({ slot, request: req });
         }
       }
@@ -170,13 +170,16 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
       }))},
     });
 
-    // Insert scraped_match records (with dedup)
+    // Insert scraped_match records (with case-insensitive dedup)
+    const newMatchesByInstructor = new Map<string, { slot: TestSlot; request: typeof wantRequests[0] }[]>();
+
     for (const m of matches) {
+      // Case-insensitive dedup: check existing records by normalised centre name
       const { data: existing } = await supabase
         .from('test_slot_reservations')
         .select('id')
         .eq('instructor_id', m.request.instructor_id)
-        .eq('centre', m.slot.centre)
+        .ilike('centre', m.slot.centre.trim())
         .eq('date', m.slot.date)
         .eq('time', m.slot.time)
         .maybeSingle();
@@ -190,6 +193,63 @@ async function checkForMatchingRequests(slots: TestSlot[]) {
           status: 'scraped_match',
         });
         console.log(`Inserted scraped_match for ${m.slot.centre} ${m.slot.date} ${m.slot.time}`);
+
+        // Track new matches per instructor for notifications
+        const instrId = m.request.instructor_id;
+        if (!newMatchesByInstructor.has(instrId)) {
+          newMatchesByInstructor.set(instrId, []);
+        }
+        newMatchesByInstructor.get(instrId)!.push(m);
+      }
+    }
+
+    // Insert instructor notifications and send push for new matches
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    for (const [instrId, instrMatches] of newMatchesByInstructor) {
+      // Insert a notification for each matched slot
+      for (const m of instrMatches) {
+        await supabase.from('instructor_notifications').insert({
+          instructor_id: instrId,
+          type: 'test_slot_match',
+          title: 'Test Slot Available!',
+          message: `${m.slot.centre} - ${m.slot.date} at ${m.slot.time}`,
+          action_url: '/instructor/test-requests',
+          metadata: {
+            centre: m.slot.centre,
+            date: m.slot.date,
+            time: m.slot.time,
+            request_id: m.request.id,
+          },
+        });
+      }
+
+      // Send push notification (one per instructor, summarising matches)
+      try {
+        const pushBody = instrMatches.length === 1
+          ? `${instrMatches[0].slot.centre} - ${instrMatches[0].slot.date} at ${instrMatches[0].slot.time}`
+          : `${instrMatches.length} test slots matched your requests!`;
+
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            instructorId: instrId,
+            notification: {
+              title: 'Test Slot Available!',
+              body: pushBody,
+              tag: 'test-slot-match',
+              data: { url: '/instructor/test-requests' },
+            },
+          }),
+        });
+        console.log(`Push notification sent to instructor ${instrId}`);
+      } catch (pushErr) {
+        console.error(`Failed to send push to ${instrId}:`, pushErr);
       }
     }
 
