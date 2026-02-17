@@ -1025,46 +1025,6 @@ export default function InstructorSettings() {
                 <InstructorDetailsEditor instructorId={instructorId} defaultTab="gps" />
               </SettingsTile>
 
-              {/* Hardware GPS Tracking Section */}
-              <SettingsTile 
-                id="gps-device" 
-                icon={Navigation} 
-                title="Vehicle GPS Device" 
-                description="Quartix hardware tracker"
-                iconColor="text-amber-600"
-                iconBg="bg-amber-100 dark:bg-amber-900/30"
-              >
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Your Quartix tracker provides reliable GPS tracking during lessons. 
-                    Professionally installed and works automatically.
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => navigate('/instructor/settings/tracking')}
-                      className="w-full justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Device Setup
-                      </span>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => navigate('/instructor/tracking')}
-                      className="w-full justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Navigation className="h-4 w-4" />
-                        Start Tracking Session
-                      </span>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                </div>
-              </SettingsTile>
 
               {/* Saved Routes Section */}
               <SettingsTile 
