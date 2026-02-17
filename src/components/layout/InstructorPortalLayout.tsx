@@ -84,6 +84,7 @@ import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
+import planIcon from "@/assets/plan-icon.png";
 
 const sidebarGroups = [
   {
@@ -925,8 +926,34 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               })}
             </nav>
 
-            {/* User info & logout at bottom */}
-            <div className="border-t p-2">
+            {/* Your Plan & User info at bottom */}
+            <div className="border-t p-2 space-y-1">
+              {/* Your Plan button */}
+              {!sidebarCollapsed ? (
+                <Link
+                  to="/instructor/plans"
+                  className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-accent transition-colors group"
+                >
+                  <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                    <img src={planIcon} alt="Plan" className="h-7 w-7 object-contain" />
+                  </div>
+                  <span className="flex-1 text-[13px] font-medium truncate">Your Plan</span>
+                  <PlanBadge planSlug={subscription?.plan_slug} size="sm" />
+                </Link>
+              ) : (
+                <Link
+                  to="/instructor/plans"
+                  title="Your Plan"
+                  className="w-full flex justify-center p-2 rounded-md hover:bg-accent transition-colors"
+                >
+                  <img src={planIcon} alt="Plan" className="h-5 w-5 object-contain" />
+                </Link>
+              )}
+
+              {/* Separator */}
+              <div className="border-t my-1" />
+
+              {/* User info & sign out */}
               {!sidebarCollapsed ? (
                 <div className="flex items-center gap-2.5 px-2 py-1.5">
                   <Avatar className="h-7 w-7">
