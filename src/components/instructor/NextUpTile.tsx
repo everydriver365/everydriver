@@ -12,7 +12,7 @@ import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Button } from "@/components/ui/button";
-import nextUpIcon from "@/assets/next_up_white.png";
+import nextUpIcon from "@/assets/next_pupil.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
