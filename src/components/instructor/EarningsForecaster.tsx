@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, addMonths, startOfWeek, endOfWeek, subMonths, parseISO } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface EarningsForecasterProps {
@@ -151,15 +151,12 @@ export function EarningsForecaster({ instructorId }: EarningsForecasterProps) {
         <CardDescription>3-month projection based on bookings &amp; history</CardDescription>
       </CardHeader>
 
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
+      {expanded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
             <CardContent className="space-y-4 pt-0">
               {/* Key metrics */}
               <div className="grid grid-cols-3 gap-3">
@@ -215,7 +212,6 @@ export function EarningsForecaster({ instructorId }: EarningsForecasterProps) {
             </CardContent>
           </motion.div>
         )}
-      </AnimatePresence>
     </Card>
   );
 }
