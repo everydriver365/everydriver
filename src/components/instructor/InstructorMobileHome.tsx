@@ -449,10 +449,6 @@ export function InstructorMobileHome({
         onComplete={() => setShowConfetti(false)} 
       />
 
-      {/* Weather Widget */}
-      {currentWeather?.temperature != null && (
-        <WeatherWidget weather={currentWeather} className="mt-4" />
-      )}
 
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
