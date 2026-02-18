@@ -145,23 +145,23 @@ export function MobileHomepage() {
           style={{ maxHeight: '55vh' }}
         />
         
-        {/* Earlier Test Guaranteed Badge - overlapping hero and card */}
-        <img 
-          src={earlyTestBadge} 
-          alt="Earlier Test Guaranteed" 
-          className="absolute bottom-0 left-4 z-20 w-20 h-20 translate-y-1/2 object-contain"
-        />
-        
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="bg-primary rounded-2xl p-5 pt-4 shadow-xl">
-            <div className="text-center mb-3">
-              <h3 className="text-sm font-bold text-primary-foreground uppercase tracking-wider">
-                EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
-              </h3>
-              <p className="text-xs text-primary-foreground/80 mt-1">
-                Search, Compare and Book Direct
-              </p>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <img 
+                src={earlyTestBadge} 
+                alt="Earlier Test Guaranteed" 
+                className="w-14 h-14 object-contain"
+              />
+              <div className="text-center">
+                <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
+                  EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
+                </h3>
+                <p className="text-xs text-primary-foreground/80 mt-0.5">
+                  Search, Compare and Book Direct
+                </p>
+              </div>
             </div>
             <form onSubmit={handleSearch} className="flex items-center gap-0 bg-white rounded-xl overflow-hidden shadow-sm">
               <div className="flex-1 relative">
