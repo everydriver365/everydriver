@@ -94,6 +94,73 @@ async function fetchDriverMap(session: GeotabSession): Promise<Map<string, strin
   return driverMap;
 }
 
+// Reverse geocode to get road name using Nominatim
+async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { headers: { "User-Agent": "EveryDriverApp/1.0" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.address?.road || data.address?.pedestrian || data.address?.footway || data.display_name?.split(",")[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+// Get speed limit from Overpass API with UK road-type fallback
+async function getSpeedLimit(lat: number, lng: number): Promise<number | null> {
+  try {
+    const radius = 30;
+    // Query for maxspeed OR highway type for fallback
+    const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"];out body 1;`;
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      body: `data=${encodeURIComponent(query)}`,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const way = data.elements?.[0];
+    if (!way?.tags) return null;
+
+    // If explicit maxspeed tag exists, use it
+    if (way.tags.maxspeed) {
+      const raw = way.tags.maxspeed;
+      const num = parseInt(raw);
+      if (!isNaN(num)) {
+        // UK roads use mph; convert to km/h
+        if (raw.toLowerCase().includes("mph")) {
+          return Math.round(num * 1.60934);
+        }
+        return num;
+      }
+    }
+
+    // Fallback: infer from UK road classification (National Speed Limit defaults)
+    const hwType = way.tags.highway;
+    const ukDefaultsMph: Record<string, number> = {
+      motorway: 70,
+      trunk: 60,
+      primary: 60,
+      secondary: 60,
+      tertiary: 30,
+      residential: 30,
+      unclassified: 60,
+      living_street: 20,
+      service: 20,
+    };
+    const fallbackMph = ukDefaultsMph[hwType];
+    if (fallbackMph) {
+      return Math.round(fallbackMph * 1.60934);
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -183,6 +250,23 @@ Deno.serve(async (req) => {
       }
       if (!device) continue;
 
+      // Fetch road name and speed limit in parallel (non-blocking)
+      let roadName: string | null = null;
+      let speedLimitKmh: number | null = null;
+      
+      if (status.latitude && status.longitude) {
+        try {
+          const [rn, sl] = await Promise.all([
+            reverseGeocode(status.latitude, status.longitude),
+            getSpeedLimit(status.latitude, status.longitude),
+          ]);
+          roadName = rn;
+          speedLimitKmh = sl;
+        } catch (e) {
+          console.log("[GeotabPoller] Geocode/speed limit lookup failed (non-critical):", e);
+        }
+      }
+
       await supabase
         .from("gps_devices")
         .update({
@@ -192,6 +276,8 @@ Deno.serve(async (req) => {
           last_heading: status.bearing ?? null,
           last_ignition_status: status.isDeviceCommunicating ?? null,
           last_seen_at: new Date().toISOString(),
+          last_road_name: roadName,
+          last_speed_limit_kmh: speedLimitKmh,
         })
         .eq("id", device.id);
 
