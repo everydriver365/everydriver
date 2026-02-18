@@ -152,7 +152,7 @@ export function MobileHomepage() {
               <img 
                 src={earlyTestBadge} 
                 alt="Earlier Test Guaranteed" 
-                className="w-20 h-20 object-contain"
+                className="w-14 h-14 object-contain"
               />
               <div className="text-center">
                 <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
