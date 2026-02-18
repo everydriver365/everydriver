@@ -146,16 +146,15 @@ export function MobileHomepage() {
           style={{ maxHeight: '55vh' }}
         />
 
-        {/* Badge overlapping hero and card */}
-        <img 
-          src={earlierTestGuaranteedBadge} 
-          alt="Earlier Test Guaranteed" 
-          className="absolute bottom-0 left-4 w-24 translate-y-1/3 z-20"
-        />
-        
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
-          <div className="bg-primary rounded-2xl p-5 pl-28 pt-4 shadow-xl">
+          <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
+            {/* Badge overlapping left edge */}
+            <img 
+              src={earlierTestGuaranteedBadge} 
+              alt="Earlier Test Guaranteed" 
+              className="absolute -top-10 -left-3 w-28 z-20 drop-shadow-lg"
+            />
             <div className="text-center mb-3">
               <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
                 EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
