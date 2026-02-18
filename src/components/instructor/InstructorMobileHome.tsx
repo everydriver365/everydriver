@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
+import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 
@@ -618,6 +619,13 @@ export function InstructorMobileHome({
             </div>
           </div>
       ) : null}
+
+      {/* Earnings Forecast Widget */}
+      {instructorId && (
+        <div className="mt-3">
+          <EarningsForecaster instructorId={instructorId} />
+        </div>
+      )}
 
       {/* Road Alerts from National Highways */}
       <RoadAlertsRow alerts={alerts} className="mt-2" />
