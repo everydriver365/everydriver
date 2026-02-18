@@ -616,9 +616,9 @@ export function InstructorMobileHome({
           </div>
       ) : null}
 
-      {/* Earnings Forecast Widget */}
+      {/* Earnings Forecast Widget - under Plan Ahead */}
       {instructorId && (
-        <div className="mt-3">
+        <div className="mt-2">
           <EarningsForecaster instructorId={instructorId} />
         </div>
       )}
