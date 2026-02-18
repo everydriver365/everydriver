@@ -152,7 +152,7 @@ export function MobileHomepage() {
             <img 
               src={earlierTestGuaranteedBadge} 
               alt="Earlier Test Guaranteed" 
-              className="absolute -top-10 -left-3 w-28 z-20 drop-shadow-lg"
+              className="absolute -top-14 -left-4 w-36 z-20 drop-shadow-lg"
             />
             <div className="text-center mb-3">
               <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
@@ -306,7 +306,7 @@ export function MobileHomepage() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
           <div className="p-4 flex items-center gap-4">
-            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-16 h-16 drop-shadow-lg object-contain shrink-0" />
+            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-24 h-24 drop-shadow-lg object-contain shrink-0" />
             <div className="flex-1">
               <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
               <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
