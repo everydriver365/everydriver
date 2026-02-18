@@ -149,13 +149,13 @@ export default function Benefits() {
                 <Accordion type="single" collapsible>
                   <AccordionItem 
                     value={feature.id} 
-                    className="bg-[#e9f4f9] border rounded-xl overflow-hidden"
+                    className="bg-card border overflow-hidden"
                   >
                     {/* Horizontal layout: Image left, content right */}
-                    <div className="flex items-stretch">
+                    <div className="flex items-center min-h-[80px]">
                       {/* Left: Image */}
                       {feature.image_url && (
-                        <div className="w-20 flex-shrink-0 overflow-hidden">
+                        <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
                           <img 
                             src={feature.image_url} 
                             alt={feature.title} 
@@ -164,9 +164,9 @@ export default function Benefits() {
                         </div>
                       )}
                       {/* Right: Text Content */}
-                      <div className="flex-1 p-3 flex flex-col justify-center">
-                        <h3 className="font-bold text-foreground text-sm leading-tight">{feature.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
+                      <div className="flex-1 px-4 py-3">
+                        <h3 className="font-bold text-foreground text-sm leading-snug">{feature.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{feature.description}</p>
                       </div>
                     </div>
                     
