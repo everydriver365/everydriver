@@ -1,18 +1,32 @@
 
+# Redesign Mobile Hero Section
 
-# Add Earnings Forecast Widget to Instructor Home Screen
+Update the learner mobile homepage hero to match the reference design with the following changes:
 
-## What changes
+## Visual Changes
 
-Add the existing `EarningsForecaster` component (currently only visible on the Pay page) to the instructor mobile home screen, positioned in the "Plan Ahead" section alongside the Tomorrow Peek card.
+1. **"Earlier Test Guaranteed" badge** -- Position the existing `earlyTestBadge` image overlapping the bottom-left corner of the hero image (partially over the image, partially over the navy card below).
 
-## Technical details
+2. **Navy search card redesign** -- Replace the current "Search, Compare & Book Direct 24/7" card with:
+   - "EARLIER TEST **GUARANTEED**" as the main headline, with "GUARANTEED" in gold/amber color
+   - "Search, Compare and Book Direct" as the subtitle in white
+   - Both lines centered
 
-**File to modify:** `src/components/instructor/InstructorMobileHome.tsx`
+3. **Search bar update** -- Change the search form layout to:
+   - Postcode input (with MapPin icon inside)
+   - A separate location/crosshair button (square, light gray)
+   - A separate search button (square, light gray)
+   - All three in a horizontal row with rounded corners and a white background container
 
-1. Import the existing `EarningsForecaster` component at the top of the file
-2. Add it in the "PLAN AHEAD" section (around line 584), just after the Tomorrow Peek card and before the Road Alerts row
-3. Only render when `instructorId` is available (same guard pattern used for other widgets)
+## Technical Details
 
-No new files, no database changes, no new components needed -- just wiring up the existing widget in a new location.
+**File:** `src/components/MobileHomepage.tsx`
 
+- Lines ~139-174 (hero + search card section) will be restructured
+- The `earlyTestBadge` import (line 23) is already available
+- The badge will be positioned with `absolute` at the bottom-left of the hero image container, using negative bottom offset to overlap the card
+- The search card background stays `bg-primary` (navy) with updated text hierarchy
+- Search form will use a white rounded container with the input and two icon buttons side by side
+- The "GUARANTEED" text will use `text-amber-400 font-black` styling
+
+No new assets or dependencies needed -- all existing imports are sufficient.
