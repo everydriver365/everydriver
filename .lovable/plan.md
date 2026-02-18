@@ -1,76 +1,62 @@
 
+# OSRM Road-Snapped Interpolation for Live Map Markers
 
-# Fix Geotab Rate Limiting and Keep the Live Map Working
+## What Changes
+Instead of moving markers in a straight line between GPS updates (which cuts corners on curves), the system will fetch the actual road geometry from OSRM when each new GPS fix arrives, then animate the marker along that road path over the 10-second interval.
 
-## What's Happening Now
-The tracker is being called every 5 seconds, but Geotab only allows **10 API calls per minute**. Each call currently makes 5-6 separate requests to Geotab, totalling ~70 calls/minute. Most are rejected, so the map data goes stale and updates unreliably.
+## How It Works
 
-## The Fix (3 Changes)
+1. **When a new GPS position arrives** (every ~10 seconds), call the OSRM `route` API with the previous position and the new position
+2. OSRM returns the **actual road geometry** (a list of lat/lng points along the road) between those two locations
+3. The animation loop walks the marker along those road points over time, instead of extrapolating in a straight line
 
-### 1. Slow the cron back to every 10 seconds
-- Unschedule the current `geotab-poller-5s` cron job (jobid 10)
-- Create a new `geotab-poller-10s` cron job at **10-second intervals** (6 invocations/minute)
+This means on curves, roundabouts, and bends, the marker follows the road shape.
 
-### 2. Batch all Geotab calls into one request
-Geotab supports `ExecuteMultiMethod` -- a single HTTP call that runs multiple API methods at once. Each invocation will make **1 API call instead of 5**, combining:
-- `Get Device` (device list)
-- `Get DeviceStatusInfo` (position, speed, heading)
-- `GetPostedRoadSpeedsForDevice` (speed limit)
+## Changes
 
-This brings total usage to **~7 calls/minute** (6 batched polls + occasional auth), well under the 10/min limit.
+### 1. Rewrite `src/hooks/useInterpolatedPosition.ts`
 
-### 3. Remove broken calls and throttle non-essential ones
-- **Remove `fetchDriverMap`** from every poll -- it fails every single time with a cast error and wastes an API call
-- **Run media sync only every 6th invocation** (~once per minute) -- dashcam clips don't need 10-second freshness
-- **Cache the device list** for 5 minutes instead of fetching from Geotab every poll
+- When a new real position arrives and differs from the previous one, fire an OSRM `route` request: `https://router.project-osrm.org/route/v1/driving/{prevLng},{prevLat};{newLng},{newLat}?overview=full&geometries=geojson`
+- Store the returned road geometry as an array of waypoints
+- Calculate the total path length in km
+- The animation loop (200ms interval) computes how far along the path the marker should be based on elapsed time and speed, then finds the correct waypoint position
+- Falls back to the old bearing-based extrapolation if the OSRM call fails or if there's no previous position
 
-## What This Means for Your Live Map
+### 2. Update `src/components/instructor/FleetLiveMap.tsx` interpolation loop
 
-| What | Before (broken) | After (fixed) |
-|------|-----------------|---------------|
-| Update frequency | Unreliable (rate limited) | Every 10 seconds, reliably |
-| Speed data | Sometimes missing | Always present |
-| Speed limit | Sometimes missing | Always present |
-| Road name | Sometimes missing | Always present |
-| Map movement | Stuttery/stale | Smooth 10-second updates |
+- Same approach for the fleet map's per-device interpolation: store a road geometry per device
+- When a device update arrives via realtime, fetch the OSRM route from old position to new position
+- Walk markers along the road geometry in the 200ms animation interval
+- Fallback to bearing-based movement if OSRM fails
 
-The live map on your phone uses real-time database subscriptions, so it updates within ~1 second of the server writing new data. The 10-second interval is the server fetch delay, not what you see on screen.
+### 3. Update `src/components/instructor/tracking/MiniLiveMap.tsx`
+
+- No code changes needed here -- it already consumes `useInterpolatedPosition`, so it gets road-snapping automatically
+
+## Rate Limiting Consideration
+
+OSRM's public demo server (`router.project-osrm.org`) is free but has usage limits. With one vehicle updating every 10 seconds, that's only ~6 OSRM calls per minute -- well within acceptable usage. For multiple fleet vehicles, the calls scale linearly but remain modest.
+
+## Fallback Behavior
+
+If an OSRM request fails (network issue, rate limit), the hook falls back to the existing straight-line bearing interpolation. The user sees slightly less accurate movement on curves but never a frozen marker.
 
 ## Technical Details
 
-### File: `supabase/functions/geotab-poller/index.ts`
-
-**Add `ExecuteMultiMethod` helper:**
+**OSRM Route Response Structure:**
 ```text
-Replaces individual geotabCall() calls for Device, DeviceStatusInfo,
-and PostedRoadSpeedsForDevice with a single batched HTTP request.
+{
+  "routes": [{
+    "geometry": {
+      "coordinates": [[lng, lat], [lng, lat], ...],
+      "type": "LineString"
+    }
+  }]
+}
 ```
 
-**Add device list caching:**
-```text
-Store the serial-to-internal-ID mapping with a 5-minute TTL.
-Only re-fetch from Geotab when the cache expires.
-```
-
-**Remove `fetchDriverMap` from hot path:**
-```text
-Delete the call on line 311 that runs every poll and always fails.
-Only fetch drivers during media sync (once per minute).
-```
-
-**Throttle media sync:**
-```text
-Add a timestamp check so media/dashcam sync only runs
-every ~60 seconds instead of every 10 seconds.
-```
-
-**Fix distance calculation:**
-```text
-Line 286: change (speed * 5) / 3600 back to (speed * 10) / 3600
-to match the 10-second interval.
-```
-
-### Database: Cron job
-- Unschedule job 10 (`geotab-poller-5s`)
-- Create new job at `10 seconds` interval
-
+**Path walking algorithm:**
+- Pre-compute cumulative distances along the OSRM geometry
+- Each animation tick: `progressKm = (speedKmh / 3600) * elapsedSeconds`
+- Binary search the cumulative distance array to find which segment the marker is on
+- Linearly interpolate within that segment for sub-segment smoothness
