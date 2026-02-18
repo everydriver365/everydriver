@@ -4,19 +4,29 @@ import "leaflet/dist/leaflet.css";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
+import { useInterpolatedPosition } from "@/hooks/useInterpolatedPosition";
 
 interface MiniLiveMapProps {
   latitude: number | null;
   longitude: number | null;
   heading: number | null;
+  speedKmh?: number | null;
   lastSeenAt: string | null;
   isActive: boolean;
 }
 
-export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
+export function MiniLiveMap({ latitude, longitude, heading, speedKmh, lastSeenAt, isActive }: MiniLiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+
+  // Interpolate position between GPS updates for smooth animation
+  const interpolated = useInterpolatedPosition({
+    latitude, longitude, heading, speedKmh: speedKmh ?? null,
+  });
+
+  const displayLat = interpolated?.latitude ?? latitude;
+  const displayLng = interpolated?.longitude ?? longitude;
 
   // Status logic
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
@@ -62,7 +72,7 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
   // Update marker + center
   useEffect(() => {
     const map = mapInstance.current;
-    if (!map || latitude === null || longitude === null) return;
+    if (!map || displayLat === null || displayLng === null) return;
 
     const rotation = heading ?? 0;
     const bgColor = isActive ? "#3b82f6" : "#9ca3af";
@@ -85,16 +95,16 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
     });
 
     if (!markerRef.current) {
-      markerRef.current = L.marker([latitude, longitude], { icon }).addTo(map);
+      markerRef.current = L.marker([displayLat, displayLng], { icon }).addTo(map);
     } else {
-      markerRef.current.setLatLng([latitude, longitude]);
+      markerRef.current.setLatLng([displayLat, displayLng]);
       markerRef.current.setIcon(icon);
     }
 
-    map.setView([latitude, longitude], map.getZoom(), { animate: true });
-  }, [latitude, longitude, heading, isActive]);
+    map.setView([displayLat, displayLng], map.getZoom(), { animate: true });
+  }, [displayLat, displayLng, heading, isActive]);
 
-  const hasPosition = latitude !== null && longitude !== null;
+  const hasPosition = displayLat !== null && displayLng !== null;
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
