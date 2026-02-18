@@ -34,6 +34,51 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// ========== OSRM Road Matching ==========
+async function matchToRoad(points: GPSPoint[]): Promise<GPSPoint[]> {
+  if (points.length < 2) return points;
+  
+  // OSRM match API - batch up to 100 points at a time
+  const batchSize = 100;
+  const allMatched: GPSPoint[] = [];
+  
+  for (let i = 0; i < points.length; i += batchSize - 1) {
+    const batch = points.slice(i, i + batchSize);
+    if (batch.length < 2) {
+      allMatched.push(...batch);
+      continue;
+    }
+    
+    const coords = batch.map(p => `${p.lng},${p.lat}`).join(";");
+    const radiuses = batch.map(() => "25").join(";");
+    
+    try {
+      const res = await fetch(
+        `https://router.project-osrm.org/match/v1/driving/${coords}?overview=full&geometries=geojson&radiuses=${radiuses}`
+      );
+      if (!res.ok) {
+        allMatched.push(...batch);
+        continue;
+      }
+      const data = await res.json();
+      if (data.code === "Ok" && data.matchings?.[0]?.geometry?.coordinates) {
+        const matchedCoords = data.matchings[0].geometry.coordinates;
+        const matchedPoints: GPSPoint[] = matchedCoords.map((c: number[]) => ({
+          lat: c[1],
+          lng: c[0],
+        }));
+        allMatched.push(...matchedPoints);
+      } else {
+        allMatched.push(...batch);
+      }
+    } catch {
+      allMatched.push(...batch);
+    }
+  }
+  
+  return allMatched;
+}
+
 // ========== Component ==========
 export default function LiveTrackingMap({
   latitude,
@@ -51,7 +96,10 @@ export default function LiveTrackingMap({
   const markerRef = useRef<L.Marker | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null);
   const routePointsRef = useRef<GPSPoint[]>([]);
+  const matchedPointsRef = useRef<GPSPoint[]>([]);
   const lastPolyPointRef = useRef<GPSPoint | null>(null);
+  const matchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingMatchRef = useRef(false);
 
   const [userDragged, setUserDragged] = useState(false);
 
@@ -95,13 +143,42 @@ export default function LiveTrackingMap({
     };
   }, []);
 
+  // ========== Road-match and update polyline ==========
+  const triggerRoadMatch = useCallback(async () => {
+    if (pendingMatchRef.current) return;
+    const points = routePointsRef.current;
+    if (points.length < 2) return;
+    
+    pendingMatchRef.current = true;
+    try {
+      const matched = await matchToRoad(points);
+      matchedPointsRef.current = matched;
+      renderPolyline(matched);
+    } catch {
+      // Fallback to raw points
+      renderPolyline(points);
+    } finally {
+      pendingMatchRef.current = false;
+    }
+  }, []);
+
+  const scheduleRoadMatch = useCallback(() => {
+    if (matchDebounceRef.current) clearTimeout(matchDebounceRef.current);
+    // Debounce road matching to every 5 seconds to avoid hammering OSRM
+    matchDebounceRef.current = setTimeout(() => {
+      triggerRoadMatch();
+    }, 5000);
+  }, [triggerRoadMatch]);
+
   // ========== Load Route History on session start ==========
   useEffect(() => {
     if (!sessionId) {
       routePointsRef.current = [];
+      matchedPointsRef.current = [];
       lastPolyPointRef.current = null;
       polylineRef.current?.remove();
       polylineRef.current = null;
+      if (matchDebounceRef.current) clearTimeout(matchDebounceRef.current);
       return;
     }
 
@@ -135,12 +212,13 @@ export default function LiveTrackingMap({
 
         routePointsRef.current = points;
         lastPolyPointRef.current = points[points.length - 1] || null;
-        updatePolyline();
+        // Road-match the history immediately
+        triggerRoadMatch();
       }
     };
 
     loadHistory();
-  }, [sessionId]);
+  }, [sessionId, triggerRoadMatch]);
 
   // ========== SINGLE DATA FLOW: props change -> marker + polyline ==========
   useEffect(() => {
@@ -203,28 +281,30 @@ export default function LiveTrackingMap({
         const newPoint: GPSPoint = { lat: latitude, lng: longitude };
         routePointsRef.current.push(newPoint);
         lastPolyPointRef.current = newPoint;
-        updatePolyline();
+        // Show raw point immediately, then schedule road-match
+        renderPolyline(routePointsRef.current);
+        scheduleRoadMatch();
       }
     }
-  }, [latitude, longitude, heading, isConnected, userDragged, sessionId]);
+  }, [latitude, longitude, heading, isConnected, userDragged, sessionId, scheduleRoadMatch]);
 
-  // ========== Polyline updater ==========
-  const updatePolyline = useCallback(() => {
+  // ========== Polyline renderer ==========
+  const renderPolyline = useCallback((points: GPSPoint[]) => {
     const map = mapInstance.current;
     if (!map) return;
-    const points = routePointsRef.current;
     if (points.length < 2) return;
 
+    const latlngs = points.map(p => [p.lat, p.lng] as L.LatLngExpression);
     if (polylineRef.current) {
-      polylineRef.current.setLatLngs(points.map(p => [p.lat, p.lng] as L.LatLngExpression));
+      polylineRef.current.setLatLngs(latlngs);
     } else {
-      polylineRef.current = L.polyline(
-        points.map(p => [p.lat, p.lng] as L.LatLngExpression),
-        { color: "#3b82f6", weight: 5, opacity: 0.8 }
-      ).addTo(map);
+      polylineRef.current = L.polyline(latlngs, {
+        color: "#3b82f6",
+        weight: 5,
+        opacity: 0.8,
+      }).addTo(map);
     }
   }, []);
-
   // ========== Re-center Handler ==========
   const handleRecenter = useCallback(() => {
     setUserDragged(false);
