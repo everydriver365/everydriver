@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
-import earlyTestBadge from "@/assets/early-test-guarantee.png";
+import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 
 const steps = [
   {

@@ -58,7 +58,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
-import earlyTestBadge from "@/assets/early-test-guarantee.png";
+import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
