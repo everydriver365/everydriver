@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
@@ -67,33 +67,16 @@ export interface MileageLogEntry {
 export function useVehicleHealth() {
   const { instructor } = useInstructorAuth();
   const pollerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const movingRef = useRef(false);
 
-  // Trigger the GPSgate poller edge function to fetch fresh data from GPSgate
-  useEffect(() => {
-    if (!instructor?.id) return;
-
-    const triggerPoller = async () => {
-      try {
-        await supabase.functions.invoke("gpsgate-poller", {
-          method: "POST",
-        });
-      } catch (err) {
-        console.error("Failed to trigger GPSgate poller:", err);
-      }
-    };
-
-    // Trigger immediately when hook mounts
-    triggerPoller();
-
-    // Then poll every 30 seconds while the page is open
-    pollerIntervalRef.current = setInterval(triggerPoller, 30000);
-
-    return () => {
-      if (pollerIntervalRef.current) {
-        clearInterval(pollerIntervalRef.current);
-      }
-    };
-  }, [instructor?.id]);
+  // Adaptive poller: trigger GPS backend function faster when moving
+  const triggerPoller = useCallback(async () => {
+    try {
+      await supabase.functions.invoke("gpsgate-poller", { method: "POST" });
+    } catch (err) {
+      console.error("Failed to trigger GPSgate poller:", err);
+    }
+  }, []);
 
   // Fetch devices with vehicle info
   const devicesQuery = useQuery({
@@ -158,10 +141,41 @@ export function useVehicleHealth() {
       });
     },
     enabled: !!instructor?.id,
-    refetchInterval: 5000, // Poll every 5 seconds for near real-time
+    // Poll every 3s when moving, 10s when idle
+    refetchInterval: movingRef.current ? 3000 : 10000,
   });
 
-  // Fetch all vehicles
+  // Update moving state and adaptive poller interval
+  const devices = devicesQuery.data || [];
+  const isMoving = devices.some(d => 
+    d.is_connected && (
+      (d.last_speed_kmh != null && d.last_speed_kmh > 0) || 
+      d.last_ignition_status === true
+    )
+  );
+
+  useEffect(() => {
+    movingRef.current = isMoving;
+    if (!instructor?.id) return;
+
+    const intervalMs = isMoving ? 10000 : 30000; // 10s moving, 30s idle
+
+    // Clear previous interval
+    if (pollerIntervalRef.current) {
+      clearInterval(pollerIntervalRef.current);
+    }
+
+    triggerPoller();
+    pollerIntervalRef.current = setInterval(triggerPoller, intervalMs);
+
+    return () => {
+      if (pollerIntervalRef.current) {
+        clearInterval(pollerIntervalRef.current);
+      }
+    };
+  }, [instructor?.id, isMoving, triggerPoller]);
+
+
   const vehiclesQuery = useQuery({
     queryKey: ["vehicle-health-fleet", instructor?.id],
     queryFn: async (): Promise<InstructorVehicle[]> => {
