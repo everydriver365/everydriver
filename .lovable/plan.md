@@ -1,32 +1,43 @@
 
-# Redesign Mobile Hero Section
 
-Update the learner mobile homepage hero to match the reference design with the following changes:
+## Add Geotab Device for Kenneth Dufosse
 
-## Visual Changes
+### Overview
+Insert a new GPS device record for Kenneth linking his Geotab unit (ID: `GAUU4BSZ9SK8`) to his instructor profile. No code changes are needed -- the existing geotab-poller will automatically pick up this device and start syncing position data.
 
-1. **"Earlier Test Guaranteed" badge** -- Position the existing `earlyTestBadge` image overlapping the bottom-left corner of the hero image (partially over the image, partially over the navy card below).
+### What Will Happen
 
-2. **Navy search card redesign** -- Replace the current "Search, Compare & Book Direct 24/7" card with:
-   - "EARLIER TEST **GUARANTEED**" as the main headline, with "GUARANTEED" in gold/amber color
-   - "Search, Compare and Book Direct" as the subtitle in white
-   - Both lines centered
+1. **Insert a new row** into the `gps_devices` table with:
+   - Instructor: Ken D (ID: `c9843b58-6edb-4b97-8238-65d725e30aea`)
+   - Tracking provider: `geotab`
+   - Geotab device ID: `GAUU4BSZ9SK8`
+   - Device identifier: `geotab-GAUU4BSZ9SK8`
+   - Device name: "Kenneth's Geotab"
+   - Active: yes
 
-3. **Search bar update** -- Change the search form layout to:
-   - Postcode input (with MapPin icon inside)
-   - A separate location/crosshair button (square, light gray)
-   - A separate search button (square, light gray)
-   - All three in a horizontal row with rounded corners and a white background container
+2. **Automatic sync begins** -- the existing `geotab-poller` edge function (running every 10 seconds via cron) will detect this device and start fetching live position, speed, heading, ignition status, and dashcam media from the Geotab API.
 
-## Technical Details
+3. **No code changes required** -- all infrastructure (poller, UI, realtime subscriptions) already supports Geotab devices.
 
-**File:** `src/components/MobileHomepage.tsx`
+### Technical Details
 
-- Lines ~139-174 (hero + search card section) will be restructured
-- The `earlyTestBadge` import (line 23) is already available
-- The badge will be positioned with `absolute` at the bottom-left of the hero image container, using negative bottom offset to overlap the card
-- The search card background stays `bg-primary` (navy) with updated text hierarchy
-- Search form will use a white rounded container with the input and two icon buttons side by side
-- The "GUARANTEED" text will use `text-amber-400 font-black` styling
+Single SQL INSERT into `gps_devices`:
 
-No new assets or dependencies needed -- all existing imports are sufficient.
+```sql
+INSERT INTO gps_devices (
+  instructor_id,
+  tracking_provider,
+  geotab_device_id,
+  device_identifier,
+  device_name,
+  is_active
+) VALUES (
+  'c9843b58-6edb-4b97-8238-65d725e30aea',
+  'geotab',
+  'GAUU4BSZ9SK8',
+  'geotab-GAUU4BSZ9SK8',
+  'Kenneth''s Geotab',
+  true
+);
+```
+
