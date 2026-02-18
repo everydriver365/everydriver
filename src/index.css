@@ -345,11 +345,9 @@
   border-radius: 0 !important;
 }
 
-/* Learner app (Drive365): remove all border radius from tiles/cards on mobile */
-@media (max-width: 767px) {
-  .learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
-    border-radius: 0 !important;
-  }
+/* Learner app (Drive365): remove all border radius from tiles/cards */
+.learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
+  border-radius: 0 !important;
 }
 
 /* Global safe-area chrome: fill status bar / notch area with primary navy */
