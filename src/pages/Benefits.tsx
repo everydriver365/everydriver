@@ -47,7 +47,7 @@ export default function Benefits() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="learner-app min-h-screen bg-background pb-20">
       {/* Header with hamburger */}
       <div className="sticky top-0 z-50 bg-primary">
         <div className="px-4 flex items-center justify-between h-16">
