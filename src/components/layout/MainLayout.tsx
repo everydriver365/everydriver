@@ -10,7 +10,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, hideFooter = false }: MainLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
+    <div className="learner-app flex min-h-screen flex-col overflow-x-hidden">
       <Header />
       <main className="flex-1 pb-20 md:pb-0 overflow-x-hidden">{children}</main>
       {!hideFooter && <Footer />}
