@@ -1,0 +1,207 @@
+import { useState } from "react";
+import { CalendarIcon, MapPin, Clock, CheckCircle2, Shield } from "lucide-react";
+import { format } from "date-fns";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+
+export function EarlierTestRequestTile() {
+  const [open, setOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [postcode, setPostcode] = useState("");
+  const [preferredCentre, setPreferredCentre] = useState("");
+  const [preferredDate, setPreferredDate] = useState<Date | undefined>();
+  const [preferredDateEnd, setPreferredDateEnd] = useState<Date | undefined>();
+  const [preferredTime, setPreferredTime] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !postcode.trim() || !preferredDate) {
+      toast({ title: "Please fill in required fields", description: "Name, postcode and preferred date are required.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("learner_test_requests" as any).insert({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        postcode: postcode.trim(),
+        preferred_centre: preferredCentre.trim() || null,
+        preferred_date: format(preferredDate, "yyyy-MM-dd"),
+        preferred_date_end: preferredDateEnd ? format(preferredDateEnd, "yyyy-MM-dd") : null,
+        preferred_time: preferredTime || null,
+        notes: notes.trim() || null,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+      toast({ title: "Request submitted!", description: "We'll be in touch shortly with your earlier test date." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setName(""); setEmail(""); setPhone(""); setPostcode("");
+    setPreferredCentre(""); setPreferredDate(undefined);
+    setPreferredDateEnd(undefined); setPreferredTime(""); setNotes("");
+    setSubmitted(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0 }}
+    >
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setTimeout(resetForm, 300); }}>
+        <div className="bg-gradient-to-r from-amber-500 to-amber-600 border-2 border-amber-400 overflow-hidden relative">
+          <div className="flex flex-row items-center min-h-[100px]">
+            {/* Badge image */}
+            <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center p-2">
+              <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-full h-full object-contain" />
+            </div>
+            {/* Content */}
+            <div className="flex-1 min-w-0 px-3 py-3">
+              <h3 className="font-bold text-white text-base leading-snug">Earlier Test Guaranteed</h3>
+              <p className="text-xs text-white/90 mt-1 leading-relaxed">
+                We guarantee an earlier test date within 30 miles or your £62 back!
+              </p>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="secondary" className="mt-2 h-8 text-xs font-semibold">
+                  <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                  Request Earlier Test
+                </Button>
+              </DialogTrigger>
+            </div>
+          </div>
+        </div>
+
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-amber-500" />
+              Request an Earlier Test Date
+            </DialogTitle>
+          </DialogHeader>
+
+          {submitted ? (
+            <div className="text-center py-8 space-y-4">
+              <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
+              <h3 className="text-lg font-bold">Request Submitted!</h3>
+              <p className="text-sm text-muted-foreground">
+                We've received your request and will find you an earlier test date. We'll be in touch shortly.
+              </p>
+              <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <Label>Your Name *</Label>
+                <Input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
+              </div>
+
+              {/* Contact */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Email</Label>
+                  <Input type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Phone</Label>
+                  <Input type="tel" placeholder="07..." value={phone} onChange={e => setPhone(e.target.value)} />
+                </div>
+              </div>
+
+              {/* Postcode */}
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" /> Postcode *
+                </Label>
+                <Input placeholder="e.g. SW1A 1AA" value={postcode} onChange={e => setPostcode(e.target.value)} />
+              </div>
+
+              {/* Preferred centre */}
+              <div className="space-y-1.5">
+                <Label>Preferred Test Centre</Label>
+                <Input placeholder="e.g. Hendon, Wood Green..." value={preferredCentre} onChange={e => setPreferredCentre(e.target.value)} />
+              </div>
+
+              {/* Date range */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Earliest Date *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal text-xs", !preferredDate && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                        {preferredDate ? format(preferredDate, "dd/MM/yyyy") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={preferredDate} onSelect={setPreferredDate} className="p-3 pointer-events-auto" disabled={(date) => date < new Date()} />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Latest Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal text-xs", !preferredDateEnd && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                        {preferredDateEnd ? format(preferredDateEnd, "dd/MM/yyyy") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={preferredDateEnd} onSelect={setPreferredDateEnd} className="p-3 pointer-events-auto" disabled={(date) => date < (preferredDate || new Date())} />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {/* Preferred time */}
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" /> Preferred Time
+                </Label>
+                <Input type="time" value={preferredTime} onChange={e => setPreferredTime(e.target.value)} />
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-1.5">
+                <Label>Any additional notes</Label>
+                <Textarea placeholder="e.g. I can only do mornings, automatic car needed..." value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
+              </div>
+
+              {/* Guarantee info */}
+              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-xs text-amber-800 dark:text-amber-200">
+                <p className="font-semibold">🛡️ Our Guarantee</p>
+                <p className="mt-1">We'll find you an earlier test within 30 miles of your postcode, or we'll refund £62.</p>
+              </div>
+
+              <Button onClick={handleSubmit} disabled={submitting} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                {submitting ? "Submitting..." : "Submit Request"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
+}
