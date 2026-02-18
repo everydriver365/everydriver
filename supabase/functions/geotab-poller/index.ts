@@ -281,6 +281,40 @@ Deno.serve(async (req) => {
         })
         .eq("id", device.id);
 
+      // If device has an active session, record GPS point for route history
+      const { data: deviceRow } = await supabase
+        .from("gps_devices")
+        .select("current_session_id")
+        .eq("id", device.id)
+        .single();
+
+      if (deviceRow?.current_session_id && status.latitude && status.longitude) {
+        await supabase
+          .from("telematics_gps_points")
+          .insert({
+            telematics_id: deviceRow.current_session_id,
+            latitude: status.latitude,
+            longitude: status.longitude,
+            speed_kmh: status.speed ?? null,
+            heading: status.bearing ?? null,
+            road_name: roadName,
+            speed_limit_kmh: speedLimitKmh,
+            recorded_at: new Date().toISOString(),
+          });
+        
+        // Increment distance if we have a previous point
+        if (status.speed > 0) {
+          // Approximate distance: speed (km/h) * interval (10s) / 3600
+          const distKm = (status.speed * 10) / 3600;
+          if (distKm > 0.001) {
+            await supabase.rpc("increment_total_distance", {
+              p_id: deviceRow.current_session_id,
+              p_distance: distKm,
+            });
+          }
+        }
+      }
+
       // Update live_pupil_positions if there's an active session
       await supabase
         .from("live_pupil_positions")

@@ -24,13 +24,19 @@ export function GlanceableTrackingMode({
   isConnected,
 }: GlanceableTrackingModeProps) {
   const lastSpeedingState = useRef(false);
+  const lastHapticTime = useRef(0);
   
   const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
   
-  // Haptic feedback when speeding state changes
+  // Haptic feedback when speeding state changes (debounced to prevent constant buzzing)
   useEffect(() => {
     if (isSpeeding && !lastSpeedingState.current) {
-      haptics.error();
+      const now = Date.now();
+      // Only trigger haptic if at least 10 seconds since last one
+      if (now - lastHapticTime.current > 10000) {
+        haptics.error();
+        lastHapticTime.current = now;
+      }
     }
     lastSpeedingState.current = isSpeeding;
   }, [isSpeeding]);

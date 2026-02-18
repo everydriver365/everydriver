@@ -223,7 +223,8 @@ export default function InstructorLiveSession() {
         if (snapshot !== lastSeenRef.current) {
           lastSeenRef.current = snapshot;
           setDevice(typedDevice);
-          if (typedDevice.last_speed_limit_kmh !== undefined) {
+          // Only update speed limit if we got a real value (prevent flickering)
+          if (typedDevice.last_speed_limit_kmh !== undefined && typedDevice.last_speed_limit_kmh !== null) {
             setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
           }
         }
@@ -265,7 +266,8 @@ export default function InstructorLiveSession() {
           if (snapshot !== lastSeenRef.current) {
             lastSeenRef.current = snapshot;
             setDevice(newDevice);
-            if (newDevice.last_speed_limit_kmh !== undefined) {
+            // Only update speed limit if we got a real value (prevent flickering)
+            if (newDevice.last_speed_limit_kmh !== undefined && newDevice.last_speed_limit_kmh !== null) {
               setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
             }
           }
