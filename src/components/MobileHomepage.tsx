@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
-import earlyTestBadge from "@/assets/early-test-guarantee.png";
 import earlierTestGuaranteedBadge from "@/assets/earlier-test-guaranteed-badge.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
@@ -307,7 +306,7 @@ export function MobileHomepage() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
           <div className="p-4 flex items-center gap-4">
-            <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-16 h-16 drop-shadow-lg object-contain shrink-0" />
+            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-16 h-16 drop-shadow-lg object-contain shrink-0" />
             <div className="flex-1">
               <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
               <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
