@@ -145,33 +145,57 @@ export function MobileHomepage() {
           style={{ maxHeight: '55vh' }}
         />
         
+        {/* Earlier Test Guaranteed Badge - overlapping hero and card */}
+        <img 
+          src={earlyTestBadge} 
+          alt="Earlier Test Guaranteed" 
+          className="absolute bottom-0 left-4 z-20 w-20 h-20 translate-y-1/2 object-contain"
+        />
+        
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
-          <div className="bg-primary rounded-2xl p-4 shadow-xl">
-            <h3 className="font-semibold text-sm text-primary-foreground text-center mb-3 uppercase tracking-wide">
-              Search, Compare & Book Direct 24/7
-            </h3>
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="flex-1">
+          <div className="bg-primary rounded-2xl p-5 pt-4 shadow-xl">
+            <div className="text-center mb-3">
+              <h3 className="text-sm font-bold text-primary-foreground uppercase tracking-wider">
+                EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
+              </h3>
+              <p className="text-xs text-primary-foreground/80 mt-1">
+                Search, Compare and Book Direct
+              </p>
+            </div>
+            <form onSubmit={handleSearch} className="flex items-center gap-0 bg-white rounded-xl overflow-hidden shadow-sm">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                 <PostcodeAutocomplete 
                   value={postcode} 
                   onChange={setPostcode} 
                   onSelect={pc => navigate(`/courses?postcode=${pc}`)} 
-                  placeholder={hero.search_placeholder || "Enter postcode..."} 
-                  inputClassName="h-12 text-sm bg-white border-0 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm" 
-                  showGeolocation={true} 
+                  placeholder="Enter postcode..." 
+                  inputClassName="h-11 text-sm bg-transparent border-0 rounded-none pl-9 pr-2 text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0" 
+                  showGeolocation={false} 
                 />
               </div>
-              <Button type="submit" className="h-12 w-12 rounded-xl font-semibold bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm p-0">
-                <Search className="h-5 w-5" />
-              </Button>
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                disabled={isLocating}
+                className="h-11 w-11 flex items-center justify-center bg-muted/20 border-l border-border/30 text-muted hover:bg-muted/30 transition-colors"
+              >
+                <MapPin className="h-4 w-4" />
+              </button>
+              <button
+                type="submit"
+                className="h-11 w-11 flex items-center justify-center bg-muted/20 border-l border-border/30 text-muted hover:bg-muted/30 transition-colors"
+              >
+                <Search className="h-4 w-4" />
+              </button>
             </form>
           </div>
         </div>
       </div>
       
       {/* Spacer for overlapping search card */}
-      <div className="h-[4.25rem]" />
+      <div className="h-[5rem]" />
       
       {/* Course Category Tiles */}
       <div className="px-4 space-y-3">
