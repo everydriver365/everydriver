@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { CalendarIcon, MapPin, Clock, CheckCircle2, Shield } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { CalendarIcon, MapPin, Clock, CheckCircle2, Shield, Search, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+
+interface TestCentre {
+  id: string;
+  name: string;
+  postcode: string | null;
+}
 
 export function EarlierTestRequestTile() {
   const [open, setOpen] = useState(false);
@@ -23,10 +30,36 @@ export function EarlierTestRequestTile() {
   const [phone, setPhone] = useState("");
   const [postcode, setPostcode] = useState("");
   const [preferredCentre, setPreferredCentre] = useState("");
+  const [centrePickerOpen, setCentrePickerOpen] = useState(false);
+  const [centreSearch, setCentreSearch] = useState("");
+  const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
   const [preferredDate, setPreferredDate] = useState<Date | undefined>();
   const [preferredDateEnd, setPreferredDateEnd] = useState<Date | undefined>();
   const [preferredTime, setPreferredTime] = useState("");
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const fetchCentres = async () => {
+      const { data } = await supabase
+        .from("test_centres")
+        .select("id, name, postcode")
+        .order("name");
+      if (data) setTestCentres(data);
+    };
+    fetchCentres();
+  }, []);
+
+  const filteredCentres = useMemo(() => {
+    if (!centreSearch) return testCentres.slice(0, 50);
+    const s = centreSearch.toLowerCase();
+    return testCentres.filter(
+      (c) => c.name.toLowerCase().includes(s) || c.postcode?.toLowerCase().includes(s)
+    ).slice(0, 50);
+  }, [testCentres, centreSearch]);
+
+  const selectedCentreName = useMemo(() => {
+    return testCentres.find((c) => c.name === preferredCentre)?.name || preferredCentre;
+  }, [testCentres, preferredCentre]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !postcode.trim() || !preferredDate) {
@@ -58,7 +91,7 @@ export function EarlierTestRequestTile() {
 
   const resetForm = () => {
     setName(""); setEmail(""); setPhone(""); setPostcode("");
-    setPreferredCentre(""); setPreferredDate(undefined);
+    setPreferredCentre(""); setCentreSearch(""); setPreferredDate(undefined);
     setPreferredDateEnd(undefined); setPreferredTime(""); setNotes("");
     setSubmitted(false);
   };
@@ -92,7 +125,7 @@ export function EarlierTestRequestTile() {
           </div>
         </div>
 
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-amber-500" />
@@ -110,7 +143,7 @@ export function EarlierTestRequestTile() {
               <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-x-hidden">
               {/* Name */}
               <div className="space-y-1.5">
                 <Label>Your Name *</Label>
@@ -137,10 +170,53 @@ export function EarlierTestRequestTile() {
                 <Input placeholder="e.g. SW1A 1AA" value={postcode} onChange={e => setPostcode(e.target.value)} />
               </div>
 
-              {/* Preferred centre */}
+              {/* Preferred centre - searchable */}
               <div className="space-y-1.5">
                 <Label>Preferred Test Centre</Label>
-                <Input placeholder="e.g. Hendon, Wood Green..." value={preferredCentre} onChange={e => setPreferredCentre(e.target.value)} />
+                <Popover open={centrePickerOpen} onOpenChange={setCentrePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn("w-full justify-between text-xs font-normal", !preferredCentre && "text-muted-foreground")}
+                    >
+                      {preferredCentre || "Search test centres..."}
+                      <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[calc(100vw-4rem)] max-w-[400px] p-0 z-[60]" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Search by name or postcode..."
+                        value={centreSearch}
+                        onValueChange={setCentreSearch}
+                      />
+                      <CommandList className="max-h-[200px]">
+                        <CommandEmpty>No centres found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredCentres.map((centre) => (
+                            <CommandItem
+                              key={centre.id}
+                              value={centre.name}
+                              onSelect={() => {
+                                setPreferredCentre(centre.name);
+                                setCentrePickerOpen(false);
+                                setCentreSearch("");
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check className={cn("mr-2 h-3.5 w-3.5", preferredCentre === centre.name ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium text-xs truncate">{centre.name}</span>
+                                {centre.postcode && <span className="text-[10px] text-muted-foreground">{centre.postcode}</span>}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Date range */}
