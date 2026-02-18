@@ -125,18 +125,62 @@ Deno.serve(async (req) => {
     const geotabDeviceIds = devices.map((d) => d.geotab_device_id);
 
     // --- Fetch device status (position, speed, heading, ignition) ---
+    // First, resolve serial numbers to Geotab internal IDs
+    // Geotab devices use internal IDs like "b1234" not serial numbers
+    let geotabDevices: any[] = [];
+    try {
+      geotabDevices = await geotabCall(session, "Get", {
+        typeName: "Device",
+      });
+      console.log("[GeotabPoller] Found", geotabDevices?.length, "Geotab devices:", 
+        geotabDevices?.map((d: any) => ({ id: d.id, serial: d.serialNumber, name: d.name })));
+    } catch (e) {
+      console.error("[GeotabPoller] Device list fetch failed:", e);
+    }
+
+    // Build a map: serialNumber -> geotab internal ID
+    const serialToInternalId = new Map<string, string>();
+    const internalIdToSerial = new Map<string, string>();
+    for (const gd of geotabDevices || []) {
+      if (gd.serialNumber) {
+        serialToInternalId.set(gd.serialNumber, gd.id);
+        internalIdToSerial.set(gd.id, gd.serialNumber);
+      }
+    }
+
+    // Resolve our device IDs - they might be serial numbers
+    const resolvedGeotabIds: string[] = [];
+    for (const did of geotabDeviceIds) {
+      const internalId = serialToInternalId.get(did);
+      if (internalId) {
+        resolvedGeotabIds.push(internalId);
+        console.log(`[GeotabPoller] Resolved serial ${did} -> internal ID ${internalId}`);
+      } else {
+        resolvedGeotabIds.push(did); // assume it's already an internal ID
+      }
+    }
+
     const statusResults = await geotabCall(session, "Get", {
       typeName: "DeviceStatusInfo",
       search: {
         deviceSearch: {
-          id: geotabDeviceIds.length === 1 ? geotabDeviceIds[0] : undefined,
+          id: resolvedGeotabIds.length === 1 ? resolvedGeotabIds[0] : undefined,
         },
       },
     });
 
+    console.log("[GeotabPoller] DeviceStatusInfo results:", statusResults?.length, 
+      "device IDs:", statusResults?.map((s: any) => s.device?.id));
+
     // Update positions with heading and ignition
+    // Match by internal ID, mapping back to our device via serial number
     for (const status of statusResults || []) {
-      const device = deviceMap.get(status.device?.id);
+      // Try direct match first, then serial number match
+      let device = deviceMap.get(status.device?.id);
+      if (!device) {
+        const serial = internalIdToSerial.get(status.device?.id);
+        if (serial) device = deviceMap.get(serial);
+      }
       if (!device) continue;
 
       await supabase
