@@ -5,12 +5,25 @@ import {
   Wind, Sun,
 } from "lucide-react";
 
+const weatherIconColors: Record<string, string> = {
+  Sun: "text-amber-500",
+  CloudSun: "text-yellow-500",
+  Cloud: "text-slate-400",
+  CloudRain: "text-blue-500",
+  CloudDrizzle: "text-blue-400",
+  CloudFog: "text-slate-500",
+  CloudLightning: "text-violet-500",
+  Snowflake: "text-sky-400",
+  Wind: "text-teal-500",
+};
+
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
   const map: Record<string, React.ElementType> = {
     Sun, CloudSun, Cloud, CloudRain, CloudDrizzle, CloudFog, CloudLightning, Snowflake, Wind,
   };
   const C = map[icon] || Cloud;
-  return <C className={className} />;
+  const color = weatherIconColors[icon] || "text-slate-400";
+  return <C className={`${color} ${className ?? ""}`} />;
 };
 
 interface ReadyToTeachTileProps {
@@ -78,7 +91,7 @@ export function ReadyToTeachTile({
             </span>
           </div>
           <div className="flex items-center gap-2 mt-0.5">
-            <WeatherIcon icon={weatherIcon} className="h-3.5 w-3.5 text-amber-400" />
+            <WeatherIcon icon={weatherIcon} className="h-3.5 w-3.5" />
             <span className="text-xs text-muted-foreground">
               {temperature ?? "--"}°C{weatherDesc ? ` • ${weatherDesc}` : ""}
             </span>
