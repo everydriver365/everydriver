@@ -170,8 +170,8 @@ export default function Benefits() {
                       </div>
                     </div>
                     
-                    <AccordionTrigger className="hover:no-underline py-2 px-4 border-t border-border/30">
-                      <span className="text-xs text-muted-foreground">Tap to learn more</span>
+                    <AccordionTrigger className="hover:no-underline py-2 px-4 border-t border-border/30 bg-gradient-to-r from-primary/5 to-primary/10">
+                      <span className="text-xs text-primary/70">Tap to learn more</span>
                     </AccordionTrigger>
                     <AccordionContent className="pb-4 px-4 pt-0">
                       <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
