@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { CalendarIcon, MapPin, Clock, CheckCircle2, Shield, Search, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, CheckCircle2, Shield, Check, ChevronsUpDown, LogIn } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,10 +22,24 @@ interface TestCentre {
   postcode: string | null;
 }
 
+interface PupilSession {
+  pupilId: string;
+  instructorId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  postcode: string | null;
+}
+
 export function EarlierTestRequestTile() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pupilSession, setPupilSession] = useState<PupilSession | null>(null);
+  const [loadingSession, setLoadingSession] = useState(false);
+
+  // Form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -38,6 +53,47 @@ export function EarlierTestRequestTile() {
   const [preferredTime, setPreferredTime] = useState("");
   const [notes, setNotes] = useState("");
 
+  // Check pupil session on dialog open
+  useEffect(() => {
+    if (!open) return;
+    const verifiedEmail = sessionStorage.getItem("pupil_email_verified");
+    if (!verifiedEmail) {
+      setPupilSession(null);
+      return;
+    }
+
+    setLoadingSession(true);
+    const fetchPupil = async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, email, phone, postcode, instructor_id")
+        .eq("email", verifiedEmail)
+        .maybeSingle();
+
+      if (data) {
+        const session: PupilSession = {
+          pupilId: data.id,
+          instructorId: data.instructor_id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          postcode: data.postcode,
+        };
+        setPupilSession(session);
+        // Auto-fill form
+        setName(data.name || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+        setPostcode(data.postcode || "");
+      } else {
+        setPupilSession(null);
+      }
+      setLoadingSession(false);
+    };
+    fetchPupil();
+  }, [open]);
+
+  // Fetch test centres
   useEffect(() => {
     const fetchCentres = async () => {
       const { data } = await supabase
@@ -57,22 +113,24 @@ export function EarlierTestRequestTile() {
     ).slice(0, 50);
   }, [testCentres, centreSearch]);
 
-  const selectedCentreName = useMemo(() => {
-    return testCentres.find((c) => c.name === preferredCentre)?.name || preferredCentre;
-  }, [testCentres, preferredCentre]);
-
   const handleSubmit = async () => {
-    if (!name.trim() || !postcode.trim() || !preferredDate) {
-      toast({ title: "Please fill in required fields", description: "Name, postcode and preferred date are required.", variant: "destructive" });
+    if (!preferredDate) {
+      toast({ title: "Please select a date", description: "Preferred date is required.", variant: "destructive" });
+      return;
+    }
+    if (!pupilSession) {
+      toast({ title: "Please log in", description: "You need to be logged in to submit a request.", variant: "destructive" });
       return;
     }
     setSubmitting(true);
     try {
       const { error } = await supabase.from("learner_test_requests" as any).insert({
-        name: name.trim(),
+        pupil_id: pupilSession.pupilId,
+        instructor_id: pupilSession.instructorId,
+        name: name.trim() || pupilSession.name,
         email: email.trim() || null,
         phone: phone.trim() || null,
-        postcode: postcode.trim(),
+        postcode: postcode.trim() || null,
         preferred_centre: preferredCentre.trim() || null,
         preferred_date: format(preferredDate, "yyyy-MM-dd"),
         preferred_date_end: preferredDateEnd ? format(preferredDateEnd, "yyyy-MM-dd") : null,
@@ -93,8 +151,10 @@ export function EarlierTestRequestTile() {
     setName(""); setEmail(""); setPhone(""); setPostcode("");
     setPreferredCentre(""); setCentreSearch(""); setPreferredDate(undefined);
     setPreferredDateEnd(undefined); setPreferredTime(""); setNotes("");
-    setSubmitted(false);
+    setSubmitted(false); setPupilSession(null);
   };
+
+  const isLoggedIn = !!pupilSession;
 
   return (
     <motion.div
@@ -105,11 +165,9 @@ export function EarlierTestRequestTile() {
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setTimeout(resetForm, 300); }}>
         <div className="bg-gradient-to-r from-amber-500 to-amber-600 border-2 border-amber-400 overflow-hidden relative">
           <div className="flex flex-row items-center min-h-[100px]">
-            {/* Badge image */}
             <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center p-2">
               <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-full h-full object-contain" />
             </div>
-            {/* Content */}
             <div className="flex-1 min-w-0 px-3 py-3">
               <h3 className="font-bold text-white text-base leading-snug">Earlier Test Guaranteed</h3>
               <p className="text-xs text-white/90 mt-1 leading-relaxed">
@@ -133,20 +191,49 @@ export function EarlierTestRequestTile() {
             </DialogTitle>
           </DialogHeader>
 
-          {submitted ? (
+          {loadingSession ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : !isLoggedIn ? (
+            /* Login required screen */
+            <div className="text-center py-8 space-y-4">
+              <LogIn className="h-12 w-12 text-muted-foreground mx-auto" />
+              <h3 className="text-lg font-bold">Sign in to continue</h3>
+              <p className="text-sm text-muted-foreground">
+                Please log in to your pupil account so we can link this request to your instructor and records.
+              </p>
+              <Button
+                onClick={() => {
+                  setOpen(false);
+                  navigate("/pupil/login");
+                }}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            </div>
+          ) : submitted ? (
             <div className="text-center py-8 space-y-4">
               <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
               <h3 className="text-lg font-bold">Request Submitted!</h3>
               <p className="text-sm text-muted-foreground">
-                We've received your request and will find you an earlier test date. We'll be in touch shortly.
+                We've received your request and will find you an earlier test date. Your instructor has been notified.
               </p>
               <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
             </div>
           ) : (
             <div className="space-y-4 overflow-x-hidden">
+              {/* Logged in as badge */}
+              <div className="bg-secondary rounded-lg p-3 text-xs flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <span>Logged in as <strong>{pupilSession?.name}</strong></span>
+              </div>
+
               {/* Name */}
               <div className="space-y-1.5">
-                <Label>Your Name *</Label>
+                <Label>Your Name</Label>
                 <Input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
               </div>
 
@@ -165,7 +252,7 @@ export function EarlierTestRequestTile() {
               {/* Postcode */}
               <div className="space-y-1.5">
                 <Label className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" /> Postcode *
+                  <MapPin className="h-3.5 w-3.5" /> Postcode
                 </Label>
                 <Input placeholder="e.g. SW1A 1AA" value={postcode} onChange={e => setPostcode(e.target.value)} />
               </div>
