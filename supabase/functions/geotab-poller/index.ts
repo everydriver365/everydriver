@@ -37,12 +37,21 @@ async function authenticate(): Promise<GeotabSession> {
   });
 
   const data = await res.json();
+  console.log("[GeotabPoller] Auth response path:", JSON.stringify(data.result?.path), "credentials keys:", data.result?.credentials ? Object.keys(data.result.credentials) : "none");
   if (data.error) throw new Error(`Geotab auth failed: ${data.error.message}`);
 
   const { credentials, path } = data.result;
+  
+  // "ThisServer" means use the same server we authenticated against (my.geotab.com)
+  const resolvedPath = (!path || path.toLowerCase() === "thisserver") 
+    ? "my.geotab.com" 
+    : path;
+
+  console.log("[GeotabPoller] Using server:", resolvedPath);
+
   cachedSession = {
     sessionId: credentials.sessionId,
-    serverUrl: `https://${path}/apiv1`,
+    serverUrl: `https://${resolvedPath}/apiv1`,
     expiresAt: Date.now() + 20 * 60 * 1000,
   };
 
