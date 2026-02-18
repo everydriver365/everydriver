@@ -1,30 +1,18 @@
 
-# Remove Border Radius from All Tiles on Learner App (Drive365)
+
+# Add Earnings Forecast Widget to Instructor Home Screen
 
 ## What changes
 
-Add a global CSS override -- identical to the existing instructor portal pattern -- that removes border radius from all tiles, cards, and containers on the learner-facing pages. Avatars, badges, and pill-shaped elements (like rounded-full) will be excluded so they keep their circular/pill shape.
+Add the existing `EarningsForecaster` component (currently only visible on the Pay page) to the instructor mobile home screen, positioned in the "Plan Ahead" section alongside the Tomorrow Peek card.
 
-## How it works
+## Technical details
 
-The instructor portal already does this with a single CSS rule in `src/index.css`:
+**File to modify:** `src/components/instructor/InstructorMobileHome.tsx`
 
-```css
-.instructor-portal *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
-  border-radius: 0 !important;
-}
-```
+1. Import the existing `EarningsForecaster` component at the top of the file
+2. Add it in the "PLAN AHEAD" section (around line 584), just after the Tomorrow Peek card and before the Road Alerts row
+3. Only render when `instructorId` is available (same guard pattern used for other widgets)
 
-We replicate the same approach for the learner app:
+No new files, no database changes, no new components needed -- just wiring up the existing widget in a new location.
 
-1. **Add a CSS class** `learner-app` to the `MainLayout` wrapper div (the `<div>` on line 13 of `src/components/layout/MainLayout.tsx`)
-2. **Add a matching CSS rule** in `src/index.css` that strips border-radius from all descendants, excluding rounded-full elements (avatars, dot indicators, badges)
-
-## Files to modify
-
-| File | Change |
-|---|---|
-| `src/components/layout/MainLayout.tsx` | Add `learner-app` class to the outer wrapper div |
-| `src/index.css` | Add `.learner-app *:not(.rounded-full)...` CSS override rule (mirrors the instructor-portal rule) |
-
-This is a two-line change that affects every learner page globally -- no need to edit individual page files.
