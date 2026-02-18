@@ -14,6 +14,14 @@ interface GeotabSession {
 
 let cachedSession: GeotabSession | null = null;
 
+// Device list cache (serial -> internal ID mapping)
+let cachedDeviceList: { data: Map<string, string>; reverse: Map<string, string>; expiresAt: number } | null = null;
+const DEVICE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Media sync throttle
+let lastMediaSyncAt = 0;
+const MEDIA_SYNC_INTERVAL = 60_000; // 60 seconds
+
 async function authenticate(): Promise<GeotabSession> {
   if (cachedSession && cachedSession.expiresAt > Date.now()) {
     return cachedSession;
@@ -37,17 +45,14 @@ async function authenticate(): Promise<GeotabSession> {
   });
 
   const data = await res.json();
-  console.log("[GeotabPoller] Auth response path:", JSON.stringify(data.result?.path), "credentials keys:", data.result?.credentials ? Object.keys(data.result.credentials) : "none");
   if (data.error) throw new Error(`Geotab auth failed: ${data.error.message}`);
 
   const { credentials, path } = data.result;
-  
-  // "ThisServer" means use the same server we authenticated against (my.geotab.com)
-  const resolvedPath = (!path || path.toLowerCase() === "thisserver") 
-    ? "my.geotab.com" 
+  const resolvedPath = (!path || path.toLowerCase() === "thisserver")
+    ? "my.geotab.com"
     : path;
 
-  console.log("[GeotabPoller] Using server:", resolvedPath);
+  console.log("[GeotabPoller] Authenticated, server:", resolvedPath);
 
   cachedSession = {
     sessionId: credentials.sessionId,
@@ -58,6 +63,7 @@ async function authenticate(): Promise<GeotabSession> {
   return cachedSession;
 }
 
+// Single Geotab API call (used only for non-batched calls like auth, GetFeed)
 async function geotabCall(session: GeotabSession, method: string, params: Record<string, unknown>) {
   const res = await fetch(session.serverUrl, {
     method: "POST",
@@ -80,18 +86,66 @@ async function geotabCall(session: GeotabSession, method: string, params: Record
   return data.result;
 }
 
-// Fetch driver names in bulk
-async function fetchDriverMap(session: GeotabSession): Promise<Map<string, string>> {
-  const driverMap = new Map<string, string>();
-  try {
-    const drivers = await geotabCall(session, "Get", { typeName: "Driver" });
-    for (const d of drivers || []) {
-      if (d.id && d.name) driverMap.set(d.id, d.name);
-    }
-  } catch (e) {
-    console.log("Driver fetch failed (non-critical):", e);
+// ExecuteMultiMethod — batch multiple Geotab calls into ONE HTTP request
+async function geotabMultiCall(
+  session: GeotabSession,
+  calls: Array<{ method: string; params: Record<string, unknown> }>
+): Promise<any[]> {
+  const credentials = {
+    sessionId: session.sessionId,
+    database: Deno.env.get("GEOTAB_DATABASE"),
+    userName: Deno.env.get("GEOTAB_USERNAME"),
+  };
+
+  const res = await fetch(session.serverUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      method: "ExecuteMultiCall",
+      params: {
+        calls: calls.map((c) => ({
+          method: c.method,
+          params: { ...c.params },
+        })),
+        credentials,
+      },
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(`Geotab ExecuteMultiCall failed: ${data.error.message}`);
+  return data.result; // Array of results, one per call
+}
+
+// Get or refresh the cached device list (serial -> internal ID)
+async function getDeviceMaps(session: GeotabSession): Promise<{
+  serialToInternal: Map<string, string>;
+  internalToSerial: Map<string, string>;
+}> {
+  if (cachedDeviceList && cachedDeviceList.expiresAt > Date.now()) {
+    return { serialToInternal: cachedDeviceList.data, internalToSerial: cachedDeviceList.reverse };
   }
-  return driverMap;
+
+  // This uses 1 API call, but only every 5 minutes
+  const geotabDevices = await geotabCall(session, "Get", { typeName: "Device" });
+
+  const serialToInternal = new Map<string, string>();
+  const internalToSerial = new Map<string, string>();
+  for (const gd of geotabDevices || []) {
+    if (gd.serialNumber) {
+      serialToInternal.set(gd.serialNumber, gd.id);
+      internalToSerial.set(gd.id, gd.serialNumber);
+    }
+  }
+
+  cachedDeviceList = {
+    data: serialToInternal,
+    reverse: internalToSerial,
+    expiresAt: Date.now() + DEVICE_CACHE_TTL,
+  };
+
+  console.log("[GeotabPoller] Refreshed device cache:", serialToInternal.size, "devices");
+  return { serialToInternal, internalToSerial };
 }
 
 // Reverse geocode to get road name using Nominatim
@@ -109,33 +163,6 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// Get posted road speed from Geotab's own road speed database
-async function getGeotabSpeedLimit(session: GeotabSession, deviceInternalId: string): Promise<number | null> {
-  try {
-    const now = new Date();
-    const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
-    
-    const results = await geotabCall(session, "GetPostedRoadSpeedsForDevice", {
-      deviceSearch: { id: deviceInternalId },
-      fromDate: twoMinAgo.toISOString(),
-      toDate: now.toISOString(),
-      postedRoadSpeedOptions: "None",
-    });
-    
-    if (results && results.length > 0) {
-      // Get the most recent result
-      const latest = results[results.length - 1];
-      if (latest.maxSpeed != null && latest.maxSpeed > 0) {
-        console.log(`[GeotabPoller] Posted speed limit for ${deviceInternalId}: ${latest.maxSpeed} km/h`);
-        return latest.maxSpeed;
-      }
-    }
-    return null;
-  } catch (e) {
-    console.log("[GeotabPoller] PostedRoadSpeed lookup failed (non-critical):", e);
-    return null;
-  }
-}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -147,7 +174,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get all active Geotab devices
+    // Get all active Geotab devices from our DB
     const { data: devices, error: devErr } = await supabase
       .from("gps_devices")
       .select("id, instructor_id, geotab_device_id, device_name")
@@ -164,86 +191,87 @@ Deno.serve(async (req) => {
 
     const session = await authenticate();
     const deviceMap = new Map(devices.map((d) => [d.geotab_device_id, d]));
-    const geotabDeviceIds = devices.map((d) => d.geotab_device_id);
 
-    // --- Fetch device status (position, speed, heading, ignition) ---
-    // First, resolve serial numbers to Geotab internal IDs
-    // Geotab devices use internal IDs like "b1234" not serial numbers
-    let geotabDevices: any[] = [];
-    try {
-      geotabDevices = await geotabCall(session, "Get", {
-        typeName: "Device",
-      });
-      console.log("[GeotabPoller] Found", geotabDevices?.length, "Geotab devices:", 
-        geotabDevices?.map((d: any) => ({ id: d.id, serial: d.serialNumber, name: d.name })));
-    } catch (e) {
-      console.error("[GeotabPoller] Device list fetch failed:", e);
-    }
+    // Get cached device ID mappings (only hits Geotab API every 5 min)
+    const { serialToInternal, internalToSerial } = await getDeviceMaps(session);
 
-    // Build a map: serialNumber -> geotab internal ID
-    const serialToInternalId = new Map<string, string>();
-    const internalIdToSerial = new Map<string, string>();
-    for (const gd of geotabDevices || []) {
-      if (gd.serialNumber) {
-        serialToInternalId.set(gd.serialNumber, gd.id);
-        internalIdToSerial.set(gd.id, gd.serialNumber);
-      }
-    }
-
-    // Resolve our device IDs - they might be serial numbers
+    // Resolve our serial-based IDs to Geotab internal IDs
     const resolvedGeotabIds: string[] = [];
-    for (const did of geotabDeviceIds) {
-      const internalId = serialToInternalId.get(did);
-      if (internalId) {
-        resolvedGeotabIds.push(internalId);
-        console.log(`[GeotabPoller] Resolved serial ${did} -> internal ID ${internalId}`);
-      } else {
-        resolvedGeotabIds.push(did); // assume it's already an internal ID
-      }
+    for (const d of devices) {
+      const internalId = serialToInternal.get(d.geotab_device_id);
+      resolvedGeotabIds.push(internalId || d.geotab_device_id);
     }
 
-    const statusResults = await geotabCall(session, "Get", {
-      typeName: "DeviceStatusInfo",
-      search: {
-        deviceSearch: {
-          id: resolvedGeotabIds.length === 1 ? resolvedGeotabIds[0] : undefined,
+    // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed in ONE request ----
+    const now = new Date();
+    const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
+
+    const batchCalls: Array<{ method: string; params: Record<string, unknown> }> = [
+      // Call 0: DeviceStatusInfo for all devices
+      {
+        method: "Get",
+        params: {
+          typeName: "DeviceStatusInfo",
+          search: {
+            deviceSearch: resolvedGeotabIds.length === 1
+              ? { id: resolvedGeotabIds[0] }
+              : {},
+          },
         },
       },
-    });
+    ];
 
-    console.log("[GeotabPoller] DeviceStatusInfo results:", statusResults?.length, 
-      "device IDs:", statusResults?.map((s: any) => s.device?.id));
+    // Add PostedRoadSpeed calls for each device
+    for (const gid of resolvedGeotabIds) {
+      batchCalls.push({
+        method: "GetPostedRoadSpeedsForDevice",
+        params: {
+          deviceSearch: { id: gid },
+          fromDate: twoMinAgo.toISOString(),
+          toDate: now.toISOString(),
+          postedRoadSpeedOptions: "None",
+        },
+      });
+    }
 
-    // Update positions with heading and ignition
-    // Match by internal ID, mapping back to our device via serial number
-    for (const status of statusResults || []) {
-      // Try direct match first, then serial number match
+    console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods");
+    const batchResults = await geotabMultiCall(session, batchCalls);
+
+    // Parse results
+    const statusResults: any[] = batchResults[0] || [];
+    // Speed limit results: one per device, starting at index 1
+    const speedLimitMap = new Map<string, number>();
+    for (let i = 0; i < resolvedGeotabIds.length; i++) {
+      const slResults = batchResults[i + 1];
+      if (slResults && slResults.length > 0) {
+        const latest = slResults[slResults.length - 1];
+        if (latest.maxSpeed != null && latest.maxSpeed > 0) {
+          speedLimitMap.set(resolvedGeotabIds[i], latest.maxSpeed);
+        }
+      }
+    }
+
+    console.log("[GeotabPoller] Got", statusResults.length, "status results,", speedLimitMap.size, "speed limits");
+
+    // Process each device status
+    for (const status of statusResults) {
       let device = deviceMap.get(status.device?.id);
       if (!device) {
-        const serial = internalIdToSerial.get(status.device?.id);
+        const serial = internalToSerial.get(status.device?.id);
         if (serial) device = deviceMap.get(serial);
       }
       if (!device) continue;
 
-      // Fetch road name and speed limit in parallel (non-blocking)
+      const geotabInternalId = serialToInternal.get(device.geotab_device_id) || device.geotab_device_id;
+
+      // Road name from Nominatim (free, no rate limit concern)
       let roadName: string | null = null;
-      let speedLimitKmh: number | null = null;
-      
-      // Resolve the internal Geotab device ID for this device
-      const geotabInternalId = serialToInternalId.get(device.geotab_device_id) || device.geotab_device_id;
-      
       if (status.latitude && status.longitude) {
-        try {
-          const [rn, sl] = await Promise.all([
-            reverseGeocode(status.latitude, status.longitude),
-            getGeotabSpeedLimit(session, geotabInternalId),
-          ]);
-          roadName = rn;
-          speedLimitKmh = sl;
-        } catch (e) {
-          console.log("[GeotabPoller] Geocode/speed limit lookup failed (non-critical):", e);
-        }
+        roadName = await reverseGeocode(status.latitude, status.longitude);
       }
+
+      // Speed limit from batched result
+      const speedLimitKmh = speedLimitMap.get(geotabInternalId) ?? null;
 
       await supabase
         .from("gps_devices")
@@ -279,11 +307,10 @@ Deno.serve(async (req) => {
             speed_limit_kmh: speedLimitKmh,
             recorded_at: new Date().toISOString(),
           });
-        
-        // Increment distance if we have a previous point
+
+        // Increment distance: speed (km/h) * 10s interval / 3600
         if (status.speed > 0) {
-          // Approximate distance: speed (km/h) * interval (10s) / 3600
-          const distKm = (status.speed * 5) / 3600;
+          const distKm = (status.speed * 10) / 3600;
           if (distKm > 0.001) {
             await supabase.rpc("increment_total_distance", {
               p_id: deviceRow.current_session_id,
@@ -307,95 +334,115 @@ Deno.serve(async (req) => {
         .eq("is_active", true);
     }
 
-    // --- Fetch driver map for media enrichment ---
-    const driverMap = await fetchDriverMap(session);
-
-    // --- Fetch new media files (dashcam clips) ---
-    const { data: syncConfig } = await supabase
+    // ---- MEDIA SYNC (throttled to ~once per minute via DB timestamp) ----
+    let mediaInserted = 0;
+    const { data: mediaConfig } = await supabase
       .from("cron_sync_config")
-      .select("*")
+      .select("last_run_at")
       .eq("id", "geotab_media_feed")
       .maybeSingle();
+    const lastMediaRun = mediaConfig?.last_run_at ? new Date(mediaConfig.last_run_at).getTime() : 0;
+    const shouldSyncMedia = Date.now() - lastMediaRun > MEDIA_SYNC_INTERVAL;
 
-    const fromVersion = (syncConfig as any)?.last_error || null;
+    if (shouldSyncMedia) {
+      // timestamp updated via cron_sync_config upsert below
+      console.log("[GeotabPoller] Running media sync");
 
-    const mediaParams: Record<string, unknown> = {
-      typeName: "MediaFile",
-      resultsLimit: 100,
-    };
-    if (fromVersion) mediaParams.fromVersion = fromVersion;
-
-    let mediaResults: any[] = [];
-    let newVersion: string | null = null;
-
-    try {
-      const feedResult = await geotabCall(session, "GetFeed", mediaParams);
-      mediaResults = feedResult?.data || [];
-      newVersion = feedResult?.toVersion || null;
-    } catch (e) {
-      console.log("MediaFile GetFeed not available, trying Get:", e);
+      // Fetch driver map only during media sync (not every poll)
+      const driverMap = new Map<string, string>();
       try {
-        const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-        mediaResults = await geotabCall(session, "Get", {
-          typeName: "MediaFile",
-          search: { fromDate: since },
-        }) || [];
-      } catch (e2) {
-        console.log("MediaFile Get also failed:", e2);
+        const drivers = await geotabCall(session, "Get", { typeName: "Driver" });
+        for (const d of drivers || []) {
+          if (d.id && d.name) driverMap.set(d.id, d.name);
+        }
+      } catch (e) {
+        console.log("Driver fetch failed (non-critical):", e);
       }
-    }
 
-    // Store new media files with enriched metadata
-    let mediaInserted = 0;
-    for (const media of mediaResults) {
-      const device = deviceMap.get(media.device?.id);
-      if (!device) continue;
+      const { data: syncConfig } = await supabase
+        .from("cron_sync_config")
+        .select("*")
+        .eq("id", "geotab_media_feed")
+        .maybeSingle();
 
-      const driverName = media.driver?.id ? driverMap.get(media.driver.id) : null;
-      const eventTags = Array.isArray(media.tags) ? media.tags : null;
+      const fromVersion = (syncConfig as any)?.last_error || null;
 
-      const { error: insertErr } = await supabase
-        .from("dashcam_media")
-        .upsert(
-          {
-            geotab_media_file_id: media.id,
-            instructor_id: device.instructor_id,
-            device_id: device.id,
-            media_type: media.mediaType === "Image" ? "image" : "video",
-            file_name: media.name || null,
-            duration_seconds: media.duration || null,
-            latitude: media.latitude || null,
-            longitude: media.longitude || null,
-            recorded_at: media.dateTime || new Date().toISOString(),
-            is_incident: eventTags?.includes("Incident") || false,
-            status: "available",
-            // Enriched fields
-            driver_id: media.driver?.id || null,
-            driver_name: driverName || null,
-            event_tags: eventTags,
-            g_force: media.gForce ?? null,
-            camera_angle: media.cameraAngle || media.channel || null,
-            resolution: media.resolution || null,
-            file_size_bytes: media.fileSize || null,
-            processing_status: media.processingStatus || media.status || null,
-            speed_at_event_kmh: media.speed ?? null,
-            road_name: media.roadName || null,
-          },
-          { onConflict: "geotab_media_file_id" }
-        );
+      const mediaParams: Record<string, unknown> = {
+        typeName: "MediaFile",
+        resultsLimit: 100,
+      };
+      if (fromVersion) mediaParams.fromVersion = fromVersion;
 
-      if (!insertErr) mediaInserted++;
-    }
+      let mediaResults: any[] = [];
+      let newVersion: string | null = null;
 
-    // Update feed version token
-    if (newVersion) {
-      await supabase.from("cron_sync_config").upsert({
-        id: "geotab_media_feed",
-        last_error: newVersion,
-        last_run_at: new Date().toISOString(),
-        is_enabled: true,
-        interval_seconds: 10,
-      });
+      try {
+        const feedResult = await geotabCall(session, "GetFeed", mediaParams);
+        mediaResults = feedResult?.data || [];
+        newVersion = feedResult?.toVersion || null;
+      } catch (e) {
+        console.log("MediaFile GetFeed not available, trying Get:", e);
+        try {
+          const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          mediaResults = await geotabCall(session, "Get", {
+            typeName: "MediaFile",
+            search: { fromDate: since },
+          }) || [];
+        } catch (e2) {
+          console.log("MediaFile Get also failed:", e2);
+        }
+      }
+
+      for (const media of mediaResults) {
+        const mediaDevice = deviceMap.get(media.device?.id);
+        if (!mediaDevice) continue;
+
+        const driverName = media.driver?.id ? driverMap.get(media.driver.id) : null;
+        const eventTags = Array.isArray(media.tags) ? media.tags : null;
+
+        const { error: insertErr } = await supabase
+          .from("dashcam_media")
+          .upsert(
+            {
+              geotab_media_file_id: media.id,
+              instructor_id: mediaDevice.instructor_id,
+              device_id: mediaDevice.id,
+              media_type: media.mediaType === "Image" ? "image" : "video",
+              file_name: media.name || null,
+              duration_seconds: media.duration || null,
+              latitude: media.latitude || null,
+              longitude: media.longitude || null,
+              recorded_at: media.dateTime || new Date().toISOString(),
+              is_incident: eventTags?.includes("Incident") || false,
+              status: "available",
+              driver_id: media.driver?.id || null,
+              driver_name: driverName || null,
+              event_tags: eventTags,
+              g_force: media.gForce ?? null,
+              camera_angle: media.cameraAngle || media.channel || null,
+              resolution: media.resolution || null,
+              file_size_bytes: media.fileSize || null,
+              processing_status: media.processingStatus || media.status || null,
+              speed_at_event_kmh: media.speed ?? null,
+              road_name: media.roadName || null,
+            },
+            { onConflict: "geotab_media_file_id" }
+          );
+
+        if (!insertErr) mediaInserted++;
+      }
+
+      if (newVersion) {
+        await supabase.from("cron_sync_config").upsert({
+          id: "geotab_media_feed",
+          last_error: newVersion,
+          last_run_at: new Date().toISOString(),
+          is_enabled: true,
+          interval_seconds: 10,
+        });
+      }
+    } else {
+      console.log("[GeotabPoller] Skipping media sync (last run", Math.round((Date.now() - lastMediaSyncAt) / 1000), "s ago)");
     }
 
     return new Response(
@@ -404,11 +451,13 @@ Deno.serve(async (req) => {
         devices: devices.length,
         positionsUpdated: statusResults?.length || 0,
         mediaInserted,
+        mediaSynced: shouldSyncMedia,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("geotab-poller error:", err);
+    cachedSession = null; // Clear session on error to force re-auth
     return new Response(
       JSON.stringify({ ok: false, error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
