@@ -337,7 +337,7 @@ export default function Index() {
             >
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
               <div className="p-5 flex items-center gap-5">
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 drop-shadow-lg object-contain shrink-0" />
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-28 h-28 drop-shadow-lg object-contain shrink-0" />
                 <div className="flex-1">
                   <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
                   <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
@@ -393,7 +393,7 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-24 h-24 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -448,7 +448,7 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-24 h-24 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
