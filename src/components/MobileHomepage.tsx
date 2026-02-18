@@ -306,7 +306,7 @@ export function MobileHomepage() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
           <div className="p-4 flex items-center gap-4">
-            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-24 h-24 drop-shadow-lg object-contain shrink-0" />
+            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-36 h-36 drop-shadow-lg object-contain shrink-0" />
             <div className="flex-1">
               <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
               <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
