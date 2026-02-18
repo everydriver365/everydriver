@@ -152,7 +152,7 @@ export default function Benefits() {
                     className="bg-card border overflow-hidden"
                   >
                     {/* Horizontal layout: Image left, content right */}
-                    <div className="flex items-center min-h-[80px]">
+                    <div className="flex flex-row items-center min-h-[80px]">
                       {/* Left: Image */}
                       {feature.image_url && (
                         <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
@@ -164,7 +164,7 @@ export default function Benefits() {
                         </div>
                       )}
                       {/* Right: Text Content */}
-                      <div className="flex-1 px-4 py-3">
+                      <div className="flex-1 min-w-0 px-3 py-3">
                         <h3 className="font-bold text-foreground text-sm leading-snug">{feature.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{feature.description}</p>
                       </div>
