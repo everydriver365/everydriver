@@ -138,24 +138,7 @@ async function getSpeedLimit(lat: number, lng: number): Promise<number | null> {
       }
     }
 
-    // Fallback: infer from UK road classification (National Speed Limit defaults)
-    const hwType = way.tags.highway;
-    const ukDefaultsMph: Record<string, number> = {
-      motorway: 70,
-      trunk: 60,
-      primary: 60,
-      secondary: 60,
-      tertiary: 30,
-      residential: 30,
-      unclassified: 60,
-      living_street: 20,
-      service: 20,
-    };
-    const fallbackMph = ukDefaultsMph[hwType];
-    if (fallbackMph) {
-      return Math.round(fallbackMph * 1.60934);
-    }
-
+    // No fallback — only return explicitly tagged speed limits
     return null;
   } catch {
     return null;
