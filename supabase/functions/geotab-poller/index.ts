@@ -109,38 +109,30 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// Get speed limit from Overpass API with UK road-type fallback
-async function getSpeedLimit(lat: number, lng: number): Promise<number | null> {
+// Get posted road speed from Geotab's own road speed database
+async function getGeotabSpeedLimit(session: GeotabSession, deviceInternalId: string): Promise<number | null> {
   try {
-    const radius = 30;
-    // Query for maxspeed OR highway type for fallback
-    const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"];out body 1;`;
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: `data=${encodeURIComponent(query)}`,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    const now = new Date();
+    const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
+    
+    const results = await geotabCall(session, "GetPostedRoadSpeedsForDevice", {
+      deviceSearch: { id: deviceInternalId },
+      fromDate: twoMinAgo.toISOString(),
+      toDate: now.toISOString(),
+      postedRoadSpeedOptions: "None",
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const way = data.elements?.[0];
-    if (!way?.tags) return null;
-
-    // If explicit maxspeed tag exists, use it
-    if (way.tags.maxspeed) {
-      const raw = way.tags.maxspeed;
-      const num = parseInt(raw);
-      if (!isNaN(num)) {
-        // UK roads use mph; convert to km/h
-        if (raw.toLowerCase().includes("mph")) {
-          return Math.round(num * 1.60934);
-        }
-        return num;
+    
+    if (results && results.length > 0) {
+      // Get the most recent result
+      const latest = results[results.length - 1];
+      if (latest.maxSpeed != null && latest.maxSpeed > 0) {
+        console.log(`[GeotabPoller] Posted speed limit for ${deviceInternalId}: ${latest.maxSpeed} km/h`);
+        return latest.maxSpeed;
       }
     }
-
-    // No fallback — only return explicitly tagged speed limits
     return null;
-  } catch {
+  } catch (e) {
+    console.log("[GeotabPoller] PostedRoadSpeed lookup failed (non-critical):", e);
     return null;
   }
 }
@@ -237,11 +229,14 @@ Deno.serve(async (req) => {
       let roadName: string | null = null;
       let speedLimitKmh: number | null = null;
       
+      // Resolve the internal Geotab device ID for this device
+      const geotabInternalId = serialToInternalId.get(device.geotab_device_id) || device.geotab_device_id;
+      
       if (status.latitude && status.longitude) {
         try {
           const [rn, sl] = await Promise.all([
             reverseGeocode(status.latitude, status.longitude),
-            getSpeedLimit(status.latitude, status.longitude),
+            getGeotabSpeedLimit(session, geotabInternalId),
           ]);
           roadName = rn;
           speedLimitKmh = sl;
