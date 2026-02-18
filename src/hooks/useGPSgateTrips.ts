@@ -57,7 +57,7 @@ export function useGPSgateTrips(instructorId?: string): UseGPSgateTripsResult {
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke("quartix-trips", {
+      const { data, error: invokeError } = await supabase.functions.invoke("geotab-poller", {
         body: {
           instructorId,
           fromDate: fromDate?.toISOString() || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),

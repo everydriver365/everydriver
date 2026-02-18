@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-// GPSgate removed - Quartix only
+// Geotab only
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
@@ -49,8 +49,7 @@ interface GPSDevice {
   last_latitude: number | null;
   last_longitude: number | null;
   current_session_id: string | null;
-  quartix_vehicle_id?: string | null;
-  quartix_driver_id?: string | null;
+  geotab_device_id?: string | null;
 }
 
 export default function InstructorGPSSetup() {
@@ -60,7 +59,7 @@ export default function InstructorGPSSetup() {
   
   const [devices, setDevices] = useState<GPSDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deviceName, setDeviceName] = useState("Quartix Tracker");
+  const [deviceName, setDeviceName] = useState("GPS Tracker");
   const [deviceId, setDeviceId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -147,7 +146,7 @@ export default function InstructorGPSSetup() {
       if (error) throw error;
 
       setDevices([data, ...devices]);
-      setDeviceName("Quartix Tracker");
+      setDeviceName("GPS Tracker");
       setDeviceId("");
       
       toast({
@@ -241,12 +240,12 @@ export default function InstructorGPSSetup() {
     <InstructorPortalLayout>
      <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
       <div className="space-y-6 max-w-2xl mx-auto">
-        {/* Quartix Tracker Connection */}
+        {/* GPS Tracker Connection */}
 
         {/* Live connection status when tracker is active */}
         {position.isActive && (
           <GPSConnectionStatusCard
-            deviceName="Quartix Tracker"
+            deviceName="GPS Tracker"
             isConnected={position.isActive}
             lastSeenLabel={position.lastSeenAt ? formatDistanceToNow(new Date(position.lastSeenAt), { addSuffix: true }) : "Never"}
             speedKmh={position.speedKmh}
@@ -266,7 +265,7 @@ export default function InstructorGPSSetup() {
             <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] py-8 text-center text-muted-foreground">
               <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No devices configured yet</p>
-              <p className="text-sm">Your Quartix tracker will appear here automatically</p>
+              <p className="text-sm">Your GPS tracker will appear here automatically</p>
             </div>
           ) : (
             devices.map((device) => (

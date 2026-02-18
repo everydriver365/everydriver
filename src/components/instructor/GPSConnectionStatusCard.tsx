@@ -91,7 +91,7 @@ export function GPSConnectionStatusCard({
             </div>
             <div>
               <h3 className={`font-semibold ${colors.textColor}`}>
-                Quartix Tracker
+                GPS Tracker
               </h3>
               <p className="text-xs text-muted-foreground">
                 {deviceName || "Vehicle Tracker"}
