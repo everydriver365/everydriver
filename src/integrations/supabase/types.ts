@@ -5364,6 +5364,54 @@ export type Database = {
           },
         ]
       }
+      learner_test_requests: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          postcode: string
+          preferred_centre: string | null
+          preferred_date: string
+          preferred_date_end: string | null
+          preferred_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          postcode: string
+          preferred_centre?: string | null
+          preferred_date: string
+          preferred_date_end?: string | null
+          preferred_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          postcode?: string
+          preferred_centre?: string | null
+          preferred_date?: string
+          preferred_date_end?: string | null
+          preferred_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_cancellation_requests: {
         Row: {
           charge_amount: number | null
