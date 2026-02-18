@@ -15,7 +15,7 @@ import drive365Logo from "@/assets/drive365-logo.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
-import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
+import intensiveCoursesIcon from "@/assets/intensive-course-tile.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
