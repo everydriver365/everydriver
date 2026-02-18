@@ -725,7 +725,7 @@ export default function Index() {
               {/* Stats */}
               <div className="mb-8 flex flex-wrap gap-6">
                 {stats.slice(0, 3).map((stat, index) => (
-                  <div key={index} className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
+                  <div key={index} className="rounded-xl border bg-card px-6 py-4 text-center shadow-lg">
                     <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>

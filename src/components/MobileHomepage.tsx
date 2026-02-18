@@ -326,7 +326,7 @@ export function MobileHomepage() {
           className="bg-card border border-border/50 rounded-2xl p-4 shadow-lg"
         >
           <p className="text-xs text-muted-foreground text-center mb-3">Pay your way with</p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-6">
             <img src={logoKlarna} alt="Klarna" className="h-5 object-contain" />
             <img src={logoClearpay} alt="Clearpay" className="h-4 object-contain" />
             <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-5 object-contain" />
