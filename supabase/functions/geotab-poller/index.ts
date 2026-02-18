@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
         // Increment distance if we have a previous point
         if (status.speed > 0) {
           // Approximate distance: speed (km/h) * interval (10s) / 3600
-          const distKm = (status.speed * 10) / 3600;
+          const distKm = (status.speed * 5) / 3600;
           if (distKm > 0.001) {
             await supabase.rpc("increment_total_distance", {
               p_id: deviceRow.current_session_id,
