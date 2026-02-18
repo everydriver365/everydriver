@@ -915,12 +915,13 @@ export default function InstructorLiveSession() {
 
            {/* Mini Live Map Preview */}
            <MiniLiveMap
-             latitude={device.last_latitude}
-             longitude={device.last_longitude}
-             heading={device.last_heading}
-             lastSeenAt={device.last_seen_at}
-             isActive={isConnected}
-           />
+              latitude={device.last_latitude}
+              longitude={device.last_longitude}
+              heading={device.last_heading}
+              speedKmh={device.last_speed_kmh}
+              lastSeenAt={device.last_seen_at}
+              isActive={isConnected}
+            />
            {/* Session Start Panel */}
            <SessionStartPanel
               pupils={pupils}

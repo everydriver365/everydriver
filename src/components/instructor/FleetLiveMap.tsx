@@ -3,8 +3,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Navigation } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface GpsDevice {
@@ -27,6 +27,19 @@ interface FleetLiveMapProps {
 
 const DEFAULT_LAT = 52.48;
 const DEFAULT_LNG = -1.89;
+const EARTH_RADIUS_KM = 6371;
+const DEG_TO_RAD = Math.PI / 180;
+const RAD_TO_DEG = 180 / Math.PI;
+
+function moveAlongBearing(lat: number, lng: number, bearingDeg: number, distKm: number): [number, number] {
+  const lat1 = lat * DEG_TO_RAD;
+  const lng1 = lng * DEG_TO_RAD;
+  const brng = bearingDeg * DEG_TO_RAD;
+  const d = distKm / EARTH_RADIUS_KM;
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng));
+  const lng2 = lng1 + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
+  return [lat2 * RAD_TO_DEG, lng2 * RAD_TO_DEG];
+}
 
 function getVehicleStatus(device: GpsDevice): "moving" | "idle" | "parked" {
   if (!device.last_seen_at) return "parked";
@@ -98,13 +111,20 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const devicesRef = useRef<GpsDevice[]>([]);
+  const deviceTimestamps = useRef<Map<string, number>>(new Map());
 
   const fetchDevices = useCallback(async () => {
     const { data } = await supabase
       .from("gps_devices")
       .select("id, device_name, last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, last_ignition_status, is_active")
       .eq("instructor_id", instructorId);
-    if (data) setDevices(data);
+    if (data) {
+      const now = Date.now();
+      data.forEach(d => deviceTimestamps.current.set(d.id, now));
+      devicesRef.current = data;
+      setDevices(data);
+    }
     setLoading(false);
   }, [instructorId]);
 
@@ -167,7 +187,13 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
         table: "gps_devices",
         filter: `instructor_id=eq.${instructorId}`,
       }, (payload) => {
-        setDevices(prev => prev.map(d => d.id === (payload.new as GpsDevice).id ? { ...d, ...payload.new } as GpsDevice : d));
+        const updated = payload.new as GpsDevice;
+        deviceTimestamps.current.set(updated.id, Date.now());
+        setDevices(prev => {
+          const next = prev.map(d => d.id === updated.id ? { ...d, ...updated } as GpsDevice : d);
+          devicesRef.current = next;
+          return next;
+        });
       })
       .subscribe();
 
@@ -222,6 +248,33 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
   }, [devices]);
+
+  // Interpolation loop — smoothly move markers between GPS updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const map = mapInstance.current;
+      if (!map) return;
+
+      devicesRef.current.forEach(device => {
+        const marker = markersRef.current.get(device.id);
+        if (!marker || !device.last_latitude || !device.last_longitude) return;
+
+        const speed = device.last_speed_kmh ?? 0;
+        if (speed < 3) return; // Not moving
+
+        const anchorTs = deviceTimestamps.current.get(device.id);
+        if (!anchorTs) return;
+
+        const elapsed = Math.min((Date.now() - anchorTs) / 1000, 15);
+        const distKm = (speed / 3600) * elapsed;
+        const heading = device.last_heading ?? 0;
+        const [lat, lng] = moveAlongBearing(device.last_latitude, device.last_longitude, heading, distKm);
+        marker.setLatLng([lat, lng]);
+      });
+    }, 200); // ~5 fps
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-3">
