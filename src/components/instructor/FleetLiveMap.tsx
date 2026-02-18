@@ -6,6 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  fetchOsrmRoute, buildPathData, positionAlongPath, haversineKm, moveAlongBearing,
+  type PathData,
+} from "@/hooks/useInterpolatedPosition";
 
 interface GpsDevice {
   id: string;
@@ -30,16 +34,6 @@ const DEFAULT_LNG = -1.89;
 const EARTH_RADIUS_KM = 6371;
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
-
-function moveAlongBearing(lat: number, lng: number, bearingDeg: number, distKm: number): [number, number] {
-  const lat1 = lat * DEG_TO_RAD;
-  const lng1 = lng * DEG_TO_RAD;
-  const brng = bearingDeg * DEG_TO_RAD;
-  const d = distKm / EARTH_RADIUS_KM;
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng));
-  const lng2 = lng1 + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
-  return [lat2 * RAD_TO_DEG, lng2 * RAD_TO_DEG];
-}
 
 function getVehicleStatus(device: GpsDevice): "moving" | "idle" | "parked" {
   if (!device.last_seen_at) return "parked";
@@ -112,16 +106,36 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const devicesRef = useRef<GpsDevice[]>([]);
+  const devicePaths = useRef<Map<string, PathData>>(new Map());
+  const prevPositions = useRef<Map<string, { lat: number; lng: number }>>(new Map());
   const deviceTimestamps = useRef<Map<string, number>>(new Map());
 
-  const fetchDevices = useCallback(async () => {
+  const fetchDevicesAndRoutes = useCallback(async () => {
     const { data } = await supabase
       .from("gps_devices")
       .select("id, device_name, last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, last_ignition_status, is_active")
       .eq("instructor_id", instructorId);
     if (data) {
       const now = Date.now();
-      data.forEach(d => deviceTimestamps.current.set(d.id, now));
+      data.forEach(d => {
+        deviceTimestamps.current.set(d.id, now);
+        if (d.last_latitude && d.last_longitude) {
+          const prev = prevPositions.current.get(d.id);
+          const speed = d.last_speed_kmh ?? 0;
+          if (prev && speed >= 3) {
+            const dist = haversineKm(prev.lat, prev.lng, d.last_latitude, d.last_longitude);
+            if (dist > 0.005 && dist < 5) {
+              fetchOsrmRoute(prev.lat, prev.lng, d.last_latitude, d.last_longitude).then(route => {
+                if (route) devicePaths.current.set(d.id, buildPathData(route));
+                else devicePaths.current.delete(d.id);
+              });
+            } else {
+              devicePaths.current.delete(d.id);
+            }
+          }
+          prevPositions.current.set(d.id, { lat: d.last_latitude, lng: d.last_longitude });
+        }
+      });
       devicesRef.current = data;
       setDevices(data);
     }
@@ -176,8 +190,8 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
 
   // Fetch + poll + realtime
   useEffect(() => {
-    fetchDevices();
-    const interval = setInterval(fetchDevices, 10000);
+    fetchDevicesAndRoutes();
+    const interval = setInterval(fetchDevicesAndRoutes, 10000);
 
     const channel = supabase
       .channel(`fleet-live-${instructorId}`)
@@ -189,6 +203,25 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       }, (payload) => {
         const updated = payload.new as GpsDevice;
         deviceTimestamps.current.set(updated.id, Date.now());
+
+        // Fetch OSRM route for this device
+        if (updated.last_latitude && updated.last_longitude) {
+          const prev = prevPositions.current.get(updated.id);
+          const speed = updated.last_speed_kmh ?? 0;
+          if (prev && speed >= 3) {
+            const dist = haversineKm(prev.lat, prev.lng, updated.last_latitude, updated.last_longitude);
+            if (dist > 0.005 && dist < 5) {
+              fetchOsrmRoute(prev.lat, prev.lng, updated.last_latitude, updated.last_longitude).then(route => {
+                if (route) devicePaths.current.set(updated.id, buildPathData(route));
+                else devicePaths.current.delete(updated.id);
+              });
+            } else {
+              devicePaths.current.delete(updated.id);
+            }
+          }
+          prevPositions.current.set(updated.id, { lat: updated.last_latitude, lng: updated.last_longitude });
+        }
+
         setDevices(prev => {
           const next = prev.map(d => d.id === updated.id ? { ...d, ...updated } as GpsDevice : d);
           devicesRef.current = next;
@@ -201,7 +234,7 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [instructorId, fetchDevices]);
+  }, [instructorId, fetchDevicesAndRoutes]);
 
   // Update markers
   useEffect(() => {
@@ -249,7 +282,7 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
     }
   }, [devices]);
 
-  // Interpolation loop — smoothly move markers between GPS updates
+  // Interpolation loop — walk along OSRM road geometry or fallback to bearing
   useEffect(() => {
     const interval = setInterval(() => {
       const map = mapInstance.current;
@@ -260,18 +293,25 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
         if (!marker || !device.last_latitude || !device.last_longitude) return;
 
         const speed = device.last_speed_kmh ?? 0;
-        if (speed < 3) return; // Not moving
+        if (speed < 3) return;
 
         const anchorTs = deviceTimestamps.current.get(device.id);
         if (!anchorTs) return;
 
         const elapsed = Math.min((Date.now() - anchorTs) / 1000, 15);
         const distKm = (speed / 3600) * elapsed;
-        const heading = device.last_heading ?? 0;
-        const [lat, lng] = moveAlongBearing(device.last_latitude, device.last_longitude, heading, distKm);
-        marker.setLatLng([lat, lng]);
+
+        const path = devicePaths.current.get(device.id);
+        if (path) {
+          const [lat, lng] = positionAlongPath(path, distKm);
+          marker.setLatLng([lat, lng]);
+        } else {
+          const heading = device.last_heading ?? 0;
+          const [lat, lng] = moveAlongBearing(device.last_latitude, device.last_longitude, heading, distKm);
+          marker.setLatLng([lat, lng]);
+        }
       });
-    }, 200); // ~5 fps
+    }, 200);
 
     return () => clearInterval(interval);
   }, []);
