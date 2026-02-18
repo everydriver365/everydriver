@@ -136,7 +136,7 @@ export function DriverTimesheets({ instructorId }: DriverTimesheetsProps) {
             <CalendarDays className="h-10 w-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No timesheet data yet</p>
             <p className="text-xs mt-1">
-              Timesheets are automatically generated from your Quartix trips
+              Timesheets are automatically generated from your GPS trips
             </p>
           </CardContent>
         </Card>

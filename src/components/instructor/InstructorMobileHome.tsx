@@ -192,7 +192,7 @@ export function InstructorMobileHome({
     manualReconnect: manualGPSReconnect 
   } = useGPSConnectionStatus(instructorId || null);
   
-  // Server-side quartix-sync handles polling automatically via pg_cron
+  // Server-side geotab-poller handles polling automatically via pg_cron
   const isGPSReconnecting = false;
   const gpsRetryCount = 0;
   const triggerManualReconnect = manualGPSReconnect;

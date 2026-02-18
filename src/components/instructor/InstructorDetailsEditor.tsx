@@ -46,9 +46,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [quartixVehicleId, setQuartixVehicleId] = useState("");
-  const [quartixDriverId, setQuartixDriverId] = useState("");
-  const [quartixDeviceName, setQuartixDeviceName] = useState("");
   const [gpsStatus, setGpsStatus] = useState<{
     isConnected: boolean;
     lastSeenAt: string | null;
@@ -94,60 +91,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   };
 
   const fetchTrackingConfig = async () => {
-    try {
-      const { data: device } = await supabase
-        .from("gps_devices")
-        .select("quartix_vehicle_id, quartix_driver_id, device_name")
-        .eq("instructor_id", instructorId)
-        .maybeSingle();
-
-      if (device) {
-        setQuartixVehicleId((device as any).quartix_vehicle_id || "");
-        setQuartixDriverId((device as any).quartix_driver_id || "");
-        setQuartixDeviceName((device as any).device_name || "");
-      }
-    } catch (err) {
-      console.error("Error fetching tracking config:", err);
-    }
-  };
-
-  const saveQuartixIds = async () => {
-    try {
-      const { data: device } = await supabase
-        .from("gps_devices")
-        .select("id")
-        .eq("instructor_id", instructorId)
-        .maybeSingle();
-
-      if (device) {
-        await supabase
-          .from("gps_devices")
-           .update({
-            quartix_vehicle_id: quartixVehicleId || null,
-            quartix_driver_id: quartixDriverId || null,
-            device_name: quartixDeviceName || "Quartix Tracker",
-            tracking_provider: "quartix",
-          } as any)
-          .eq("id", device.id);
-      } else {
-        // Create a new device record for Quartix
-        await supabase
-          .from("gps_devices")
-          .insert({
-            instructor_id: instructorId,
-            device_identifier: `quartix-${quartixVehicleId}`,
-            device_name: quartixDeviceName || "Quartix Tracker",
-            quartix_vehicle_id: quartixVehicleId || null,
-            quartix_driver_id: quartixDriverId || null,
-            tracking_provider: "quartix",
-            is_active: true,
-          } as any);
-      }
-      toast.success("Quartix settings saved");
-    } catch (err) {
-      console.error("Error saving Quartix IDs:", err);
-      toast.error("Failed to save Quartix settings");
-    }
+    // GPS config is managed via admin panel - no instructor-level config needed
   };
 
   const fetchGpsStatus = useCallback(async () => {
@@ -186,18 +130,15 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const testConnection = async () => {
     setTestingConnection(true);
     try {
-      const { data, error } = await supabase.functions.invoke("quartix-poller");
+      const { data, error } = await supabase.functions.invoke("geotab-poller");
       
       if (error) throw error;
       await fetchGpsStatus();
       
-      if (data?.success) {
-        const parts = [];
-        if (data.processed > 0) parts.push(`${data.processed} devices updated`);
-        if (parts.length === 0) parts.push("No updates - check your tracker is online");
-        toast.success(`GPS poll complete: ${parts.join(", ")}`);
+      if (data?.ok) {
+        toast.success(`GPS poll complete: ${data.positionsUpdated || 0} positions updated`);
       } else {
-        toast.info("Poll completed - check your Quartix credentials");
+        toast.info("Poll completed - check tracker status");
       }
     } catch (err) {
       console.error("Test connection error:", err);
@@ -237,7 +178,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
   if (!details) return null;
 
-  // If defaultTab is gps, show Quartix-only GPS content
+  // If defaultTab is gps, show GPS-only content
   if (defaultTab === "gps") {
     return (
       <div className="space-y-4">
@@ -493,40 +434,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         </Button>
       </TabsContent>
 
-      {/* GPS Tracking Tab - Quartix Only */}
+      {/* GPS Tracking Tab */}
       <TabsContent value="gps" className="space-y-4 mt-4">
-        <div className="space-y-2">
-          <Label>Tracker Name</Label>
-          <Input
-            placeholder="e.g., Toyota Yaris - Roller Skate"
-            value={quartixDeviceName}
-            onChange={(e) => setQuartixDeviceName(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">A friendly name for this instructor's tracker</p>
-        </div>
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Satellite className="h-4 w-4" />
-            Quartix Vehicle ID
-          </Label>
-          <Input
-            placeholder="Enter the Quartix vehicle ID"
-            value={quartixVehicleId}
-            onChange={(e) => setQuartixVehicleId(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Quartix Driver ID (optional)</Label>
-          <Input
-            placeholder="Enter the Quartix driver ID"
-            value={quartixDriverId}
-            onChange={(e) => setQuartixDriverId(e.target.value)}
-          />
-        </div>
-        <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-          Save Quartix Settings
-        </Button>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -560,10 +469,9 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           Test Connection
         </Button>
 
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Save GPS Settings
-        </Button>
+        <p className="text-xs text-muted-foreground text-center">
+          GPS trackers are managed via the admin panel
+        </p>
       </TabsContent>
     </Tabs>
   );

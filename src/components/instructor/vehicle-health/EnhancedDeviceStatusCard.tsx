@@ -22,14 +22,14 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const roadName = device.last_road_name;
   
   // Calculate odometer in miles (uses generic odometer field)
-  const odometerMiles = null; // Will be populated by Quartix poller
+  const odometerMiles = null; // Will be populated by GPS poller
   
   // Calculate today's distance
   const today = new Date().toISOString().split("T")[0];
-  const todayDistanceMiles = null; // Will be populated by Quartix poller
+  const todayDistanceMiles = null; // Will be populated by GPS poller
   
   // Format engine hours
-  const engineHoursFormatted = null; // Will be populated by Quartix poller
+  const engineHoursFormatted = null; // Will be populated by GPS poller
 
   const getBatteryColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";

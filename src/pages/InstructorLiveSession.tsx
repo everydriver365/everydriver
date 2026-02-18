@@ -25,7 +25,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
 import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
-import { QuartixLiveButton } from "@/components/instructor/tracking/QuartixLiveButton";
+
 
 interface GPSDevice {
   id: string;
@@ -99,7 +99,7 @@ export default function InstructorLiveSession() {
   const isSessionActive = !!device?.current_session_id;
 
   // Connection status derived from last_seen_at (no client polling needed)
-  // Server-side quartix-sync runs every 15s via pg_cron
+  // Server-side geotab-poller runs via pg_cron
   const isReconnecting = false;
   const retryCount = 0;
   const manualReconnect = useCallback(() => {
@@ -711,7 +711,7 @@ export default function InstructorLiveSession() {
   const secondsSinceTrack = trackTime
     ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
     : 9999;
-  // Quartix hardwired trackers only report on events (ignition, movement).
+  // Hardwired trackers only report on events (ignition, movement).
   // When parked with ignition off, the tracker goes silent — that's NOT "offline".
   // Connected: fresh data within 60s (active) or ignition off within 24h (parked).
   const ignitionOff = device?.last_ignition_status === false;

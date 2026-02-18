@@ -44,9 +44,9 @@ const dismissReminder = (lessonId: string) => {
   }
 };
 
-// Tracker app link removed - Quartix only
+// Tracker uses hardware - no app to open
 const openTrackerApp = () => {
-  // No-op - Quartix uses hardware trackers, no app to open
+  // No-op - hardware trackers, no app to open
 };
 
 export function TrackerReminderBanner({ 
