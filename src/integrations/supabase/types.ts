@@ -5369,14 +5369,16 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
-          name: string
+          instructor_id: string | null
+          name: string | null
           notes: string | null
           phone: string | null
-          postcode: string
+          postcode: string | null
           preferred_centre: string | null
           preferred_date: string
           preferred_date_end: string | null
           preferred_time: string | null
+          pupil_id: string | null
           status: string
           updated_at: string
         }
@@ -5384,14 +5386,16 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
-          name: string
+          instructor_id?: string | null
+          name?: string | null
           notes?: string | null
           phone?: string | null
-          postcode: string
+          postcode?: string | null
           preferred_centre?: string | null
           preferred_date: string
           preferred_date_end?: string | null
           preferred_time?: string | null
+          pupil_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -5399,18 +5403,42 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
-          name?: string
+          instructor_id?: string | null
+          name?: string | null
           notes?: string | null
           phone?: string | null
-          postcode?: string
+          postcode?: string | null
           preferred_centre?: string | null
           preferred_date?: string
           preferred_date_end?: string | null
           preferred_time?: string | null
+          pupil_id?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "learner_test_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_test_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_test_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lesson_cancellation_requests: {
         Row: {
