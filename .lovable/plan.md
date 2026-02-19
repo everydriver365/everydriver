@@ -1,39 +1,45 @@
 
 
-# Simplify GPS Status: Timestamp-Only Approach
+# Replace All Address Inputs with Google Address Lookup
 
-## Problem
+## Summary
 
-The current approach relies on the `is_active` database flag (set by the Geotab poller from `isDeviceCommunicating`). This flag may not behave reliably -- Geotab can report `isDeviceCommunicating: true` even when the device hasn't sent fresh position data in a long time, and vice versa.
+Three files still use non-Google address entry. This plan replaces them all with the existing `GoogleAddressAutocomplete` component, which uses the Google Places API via the `google-places-autocomplete` and `google-places-details` edge functions already deployed.
 
-## New Logic
+## What Changes
 
-Remove the `is_active` dependency entirely. Determine connection status purely from the `last_seen_at` timestamp (which now reflects the device's actual reported time from Geotab, not server time):
+### 1. AddLessonSheet.tsx (Instructor Add Lesson)
 
-- **Connected ("active")**: `last_seen_at` is within 60 seconds
-- **Connected ("recent")**: `last_seen_at` is within 5 minutes
-- **Stationary**: `last_heartbeat_at` is within 2 minutes AND `last_seen_at` is within 30 minutes (poller is running but position hasn't changed)
-- **Offline**: everything else (timestamp is stale)
+Currently uses HERE API (`address-lookup` edge function) with a two-step flow: type postcode, then pick from a dropdown. This will be replaced with `GoogleAddressAutocomplete` for both:
+- **Existing pupil pickup address** (lines ~420-458) -- replace the PostcodeAutocomplete + address dropdown with a single `GoogleAddressAutocomplete` field
+- **New pupil address** (lines ~529-567) -- same replacement
 
-## Technical Changes
+Remove: `address-lookup` invocations, `addressOptions` state, `loadingAddresses`, `fetchAddresses`, `handleAddressSelect` logic, and the `PostcodeAutocomplete` import (if no longer used).
 
-**File: `src/hooks/useGPSConnectionStatus.ts`**
+### 2. BespokeBookingModal.tsx (Admin Bespoke Booking)
 
-1. Remove the `isDeviceActive` state variable
-2. Remove `is_active` from the `getStatus()` function signature -- no longer a factor
-3. Simplify `getStatus()` to only use `last_seen_at` and `last_heartbeat_at` timestamps
-4. Remove `is_active` tracking from the realtime subscription handler
-5. Keep `is_active` in the Supabase query (no harm), but don't use it for status determination
+Currently uses HERE API for both postcode lookup and address autocomplete. Replace:
+- **Address field** (lines ~337-375) -- swap the manual `<Input>` with HERE autocomplete for a `GoogleAddressAutocomplete` that auto-fills the postcode field when an address is selected
+- **Postcode lookup button** (lines ~378-388) -- remove the manual lookup button; the postcode auto-populates from the Google address selection
 
-The status function becomes:
+Remove: `lookupPostcode`, `handleAddressAutocomplete`, `selectAddress`, `addressSuggestions`, `showSuggestions`, `debounceRef`, and the HERE function invocations.
 
-```
-getStatus(trackTime, heartbeat):
-  if no trackTime -> "offline"
-  if trackTime < 60s ago -> "active"
-  if trackTime < 300s ago -> "recent"
-  if heartbeat < 120s ago AND trackTime < 1800s ago -> "stationary"
-  else -> "offline"
-```
+### 3. StepLocation.tsx (Instructor Onboarding)
 
-This is essentially the same logic that existed before the `is_active` changes, but now it works correctly because `last_seen_at` reflects the actual device-reported time (not server time), thanks to the poller fix we already deployed.
+Currently a plain `<Input>` for postcode. Replace with `PostcodeAutocomplete` component (which uses postcodes.io and is the correct tool for postcode-only entry with suggestions). This is a postcode field, not a full address, so `PostcodeAutocomplete` is the right fit.
+
+## Technical Details
+
+- **No new edge functions needed** -- `google-places-autocomplete` and `google-places-details` are already deployed with the `GOOGLE_PLACES_API_KEY` secret configured
+- **No new dependencies** -- `GoogleAddressAutocomplete` component already exists at `src/components/admin/GoogleAddressAutocomplete.tsx`
+- **Postcode auto-fill** -- The `GoogleAddressAutocomplete` component supports `onPostcodeChange` callback which will be used to auto-populate postcode fields when an address is selected
+- The `address-lookup` edge function (HERE API) can remain deployed for now since it may be used elsewhere, but these three files will no longer call it
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| `src/components/instructor/AddLessonSheet.tsx` | Replace HERE address lookup with `GoogleAddressAutocomplete` for both pickup and new pupil address fields |
+| `src/components/admin/BespokeBookingModal.tsx` | Replace HERE address + postcode lookup with `GoogleAddressAutocomplete` |
+| `src/pages/instructor-app/onboarding/steps/StepLocation.tsx` | Replace plain Input with `PostcodeAutocomplete` for postcode suggestions |
+
