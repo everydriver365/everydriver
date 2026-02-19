@@ -1,52 +1,58 @@
 
-# Fix: Geotab Device Lockout Loop
+# Fix: "No Recent GPS Updates" False Alarm on Tracking Page
 
-## Root Cause
+## Problem
 
-The previous fix made the poller SET `is_active` based on Geotab's `isDeviceCommunicating` flag (line 294). But the poller also READS `is_active` as a filter (line 182):
+Your Geotab device IS connected and working. The database shows:
+- `last_seen_at`: updating every ~20-40 seconds
+- `last_heartbeat_at`: updating every ~10 seconds (poller is healthy)
+- `last_ignition_status`: true
+
+But the tracking page shows "Offline / No recent GPS updates" because during an active session, it requires `last_seen_at` to be within **30 seconds**. Geotab devices can easily have 30-40 second gaps between position updates, especially when stationary.
+
+This is the same issue we already fixed in the Vehicle Health Hub -- the tracking page was never updated to use `last_heartbeat_at`.
+
+## Fix
+
+### 1. Add `last_heartbeat_at` to the device data model
+
+In `src/pages/InstructorLiveSession.tsx`, add `last_heartbeat_at` to the `GPSDevice` interface and to the device fetch query.
+
+### 2. Update the connectivity check (lines 711-722)
+
+Replace the simple `secondsSinceTrack < 30` check with the same logic used in `useVehicleHealth`:
 
 ```
-.eq("is_active", true)
+Active session connected if:
+  - last_seen_at < 60 seconds ago (actively reporting)
+  - OR last_heartbeat_at < 120 seconds AND last_seen_at < 30 minutes (stationary but poller healthy)
 ```
 
-This creates a self-reinforcing lockout:
-1. Geotab briefly reports `isDeviceCommunicating: false`
-2. Poller sets `is_active = false` in the database
-3. Next poll cycle, the device is filtered OUT because `is_active = false`
-4. Device never gets polled again, stays permanently "offline"
+This matches the proven pattern from the Vehicle Health Hub and eliminates false "offline" alerts for stationary vehicles.
 
-Your device is stuck in this state right now: `is_active: false`, `last_seen_at: 2026-02-18 20:37:59` (over 11 hours stale), even though the poller heartbeat is current (08:14).
+## Technical Details
 
-## Fix (2 changes)
+**File:** `src/pages/InstructorLiveSession.tsx`
 
-### 1. Poller: Remove `is_active` filter (line 182)
+**Changes:**
+1. Add `last_heartbeat_at: string | null` to the `GPSDevice` interface (line ~35)
+2. Add `last_heartbeat_at` to the device SELECT query
+3. Update lines 711-722 to calculate `secondsSinceHeartbeat` and use it in the `isConnected` check:
 
-The poller should query ALL Geotab devices regardless of `is_active`, since `is_active` is an OUTPUT of the poller, not a precondition. Remove:
+```typescript
+const trackTime = device?.last_seen_at;
+const heartbeatTime = device?.last_heartbeat_at;
+const secondsSinceTrack = trackTime
+  ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
+  : 9999;
+const secondsSinceHeartbeat = heartbeatTime
+  ? Math.floor((Date.now() - new Date(heartbeatTime).getTime()) / 1000)
+  : 9999;
 
-```
-.eq("is_active", true)
-```
-
-This ensures a device that was temporarily marked inactive will be picked up again on the next poll.
-
-### 2. Poller: Stop writing `is_active` from Geotab flag (line 294)
-
-Since `is_active` is unreliable from Geotab and causes lockouts, stop setting it in the update payload. The frontend already determines status purely from timestamps -- `is_active` in the DB is no longer used for anything meaningful.
-
-Remove this line from the update:
-```
-is_active: isCommunicating,
+const ignitionOff = device?.last_ignition_status === false;
+const isConnected = isSessionActive
+  ? secondsSinceTrack < 60 || (secondsSinceHeartbeat < 120 && secondsSinceTrack < 1800)
+  : secondsSinceTrack < 300 || (ignitionOff && secondsSinceTrack < 86400);
 ```
 
-Also remove the now-unused `isCommunicating` variable (line 278).
-
-### 3. Immediate data fix
-
-Reset the stuck device's `is_active` back to `true` so it starts being polled again immediately (via a one-time migration).
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `supabase/functions/geotab-poller/index.ts` | Remove `.eq("is_active", true)` filter (line 182) and remove `is_active: isCommunicating` from update payload (line 294) |
-| Database migration | `UPDATE gps_devices SET is_active = true WHERE tracking_provider = 'geotab'` to unstick the current device |
+This gives a 60-second window for active reports (up from 30s) and falls back to the heartbeat check for stationary vehicles, matching the rest of the app.
