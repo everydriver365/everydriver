@@ -1,56 +1,42 @@
 
 
-# Fix: Confused / Tangled Blue Track Line
+# Speed Up Live Map Updates
 
-## Problem
+## Current Bottleneck
 
-Two systems fight over the polyline:
-- **Instant append** adds raw (noisy) GPS points every time the device updates
-- **Snap-to-road** replaces the entire polyline path every 5 seconds with clean road-snapped coordinates
+The map marker and polyline can only update when new data arrives in the database. Right now:
 
-After each snap-to-road replacement, the instant append doesn't know where the snapped path ended, so it appends the next raw point at a mismatched position -- creating zigzags, loops, and tangles.
+- The **Geotab poller** (which fetches GPS data from your tracker) is triggered every **30 seconds** when moving, or **60 seconds** when idle — and only from the Vehicle Health page, not the live tracking page itself
+- The **snap-to-road** polyline refresh runs every **5 seconds**, which is fine
+- **Realtime subscription** delivers updates instantly once data hits the database
 
-Additionally, raw GPS points have inherent jitter (several meters of error), which creates a messy appearance even without the snap conflict.
+So the real delay is: your tracker data only gets pulled every 30-60 seconds. The live tracking page doesn't even trigger the poller on its own.
 
-## Solution
+## Changes
 
-Separate the polyline into two layers:
+### 1. Trigger the GPS poller directly from the live tracking map (every 10 seconds)
 
-1. **Snapped polyline** (main blue line) -- only updated by the 5-second snap-to-road cycle. This is the clean, road-aligned route.
-2. **Raw tail polyline** (thin blue line) -- extends from the last snapped point to the current marker position. This gives instant visual feedback without corrupting the main line.
+Add a `useEffect` in `GoogleLiveTrackingMap.tsx` that calls the `geotab-poller` backend function every **10 seconds** while the map is open. This means new GPS coordinates arrive 3-6x faster than today.
 
-When snap-to-road runs, it absorbs the raw tail into the snapped line and resets the tail.
+### 2. Speed up the snap-to-road cycle from 5s to 3s
 
-## Technical Changes
+Reduce the polyline snap-to-road interval from 5 seconds to 3 seconds so the clean road-aligned line catches up faster after new data arrives.
+
+### 3. Reduce the front-end device data polling (bonus)
+
+The `useVehicleHealth` hook polls the database every 10-30s. On the live tracking page, the Realtime subscription already handles instant updates, so this is fine as-is. The key improvement is pulling data from the tracker more often (change 1).
+
+## Technical Details
 
 ### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-**Add a second polyline for the raw tail (Effect #2, map init)**
-- Create `tailPolylineRef` alongside the existing `polylineRef`
-- Style it slightly thinner or with lower opacity so the transition is seamless
+**Add poller trigger effect (new effect, after effect #4):**
+- Call `supabase.functions.invoke("geotab-poller")` every 10 seconds while the component is mounted and a device is active
+- Only trigger when `device?.id` exists and `isConnected` is true
+- Clean up interval on unmount
 
-**Update Effect #3 (instant marker update)**
-- Instead of appending to the main polyline, append only to the tail polyline
-- Reset `lastAppendedRef` properly
+**Reduce snap-to-road interval (Effect #5, line 375):**
+- Change `setInterval(tick, 5000)` to `setInterval(tick, 3000)`
 
-**Update Effect #5 (5-second snap-to-road tick)**
-- After `setPath()` on the main polyline, clear the tail polyline
-- Set the tail's starting point to the last point of the snapped path
-- Update `lastAppendedRef` to match the last snapped point so the tail continues cleanly
+### No other files changed. No database or backend changes needed.
 
-**Add distance filtering**
-- Increase the minimum distance threshold from ~3m to ~5m to filter out GPS jitter
-- Skip points that are clearly erroneous (huge jumps > 500m in a single update)
-
-### Summary of changes
-
-```text
-polylineRef      = snapped route (updated every 5s by snap-to-road)
-tailPolylineRef  = raw extension (updated instantly, cleared after each snap cycle)
-
-Flow:
-  Device update -> append to tail polyline (instant)
-  5s tick       -> snap all points -> replace main polyline -> clear tail
-```
-
-No new files, no backend changes. All changes in `GoogleLiveTrackingMap.tsx`.
