@@ -100,6 +100,7 @@ export function useVehicleHealth() {
           last_latitude,
           last_longitude,
           last_seen_at,
+          last_heartbeat_at,
           gpsgate_odometer_m,
           gpsgate_engine_hours_s,
           daily_start_odometer_m,
@@ -129,9 +130,13 @@ export function useVehicleHealth() {
 
       return (devices || []).map(d => {
         const lastSeen = d.last_seen_at ? new Date(d.last_seen_at) : null;
-        const isConnected = lastSeen 
-          ? (Date.now() - lastSeen.getTime()) < 30000 
-          : false;
+        const heartbeat = (d as any).last_heartbeat_at ? new Date((d as any).last_heartbeat_at) : null;
+        const now = Date.now();
+        const seenAgoMs = lastSeen ? now - lastSeen.getTime() : Infinity;
+        const heartbeatAgoMs = heartbeat ? now - heartbeat.getTime() : Infinity;
+        
+        // Connected if: device reported recently (<60s) OR poller heartbeat is fresh (<120s) and device seen within 30min
+        const isConnected = seenAgoMs < 60000 || (heartbeatAgoMs < 120000 && seenAgoMs < 1800000);
 
         return {
           ...d,
