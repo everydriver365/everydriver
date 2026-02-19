@@ -1,52 +1,56 @@
 
 
-# Arrow Marker, Auto-Follow, and Screen Wake Lock
+# Fix: Confused / Tangled Blue Track Line
 
-## What Will Change
+## Problem
 
-### 1. Directional Arrow Marker
-Replace the plain circle marker with a forward-pointing arrow that rotates to match the vehicle's heading direction.
+Two systems fight over the polyline:
+- **Instant append** adds raw (noisy) GPS points every time the device updates
+- **Snap-to-road** replaces the entire polyline path every 5 seconds with clean road-snapped coordinates
 
-- Change the marker icon from `SymbolPath.CIRCLE` to `SymbolPath.FORWARD_CLOSED_ARROW`
-- Add `rotation` property set to the device's `last_heading` value
-- Scale up slightly for better visibility on mobile
-- Keep the existing colour coding (green = connected, red = overspeed, grey = offline)
+After each snap-to-road replacement, the instant append doesn't know where the snapped path ended, so it appends the next raw point at a mismatched position -- creating zigzags, loops, and tangles.
 
-### 2. Map Auto-Follows the Car
-The map currently stops following after the user drags it. Improve this so:
+Additionally, raw GPS points have inherent jitter (several meters of error), which creates a messy appearance even without the snap conflict.
 
-- Auto-follow resets after 10 seconds of no interaction (instead of requiring a manual button tap)
-- The "Center" button remains for instant re-centering
+## Solution
 
-### 3. Screen Stays On (Wake Lock)
-Add a Wake Lock request directly inside `GoogleLiveTrackingMap` so the screen stays on whenever the map is visible -- not just during active sessions. This covers the case where an instructor is watching tracking without starting a formal session.
+Separate the polyline into two layers:
 
-## Technical Details
+1. **Snapped polyline** (main blue line) -- only updated by the 5-second snap-to-road cycle. This is the clean, road-aligned route.
+2. **Raw tail polyline** (thin blue line) -- extends from the last snapped point to the current marker position. This gives instant visual feedback without corrupting the main line.
+
+When snap-to-road runs, it absorbs the raw tail into the snapped line and resets the tail.
+
+## Technical Changes
 
 ### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-**Arrow Marker (Effect #3, ~line 227)**
-- Add `last_heading` to the `DeviceRow` type (it's already in the database, just not selected)
-- Update the device query (Effect #1, ~line 141) to include `last_heading` in the select
-- Change marker icon from:
-  ```text
-  path: SymbolPath.CIRCLE, scale: 8
-  ```
-  to:
-  ```text
-  path: SymbolPath.FORWARD_CLOSED_ARROW, scale: 6, rotation: device.last_heading
-  ```
+**Add a second polyline for the raw tail (Effect #2, map init)**
+- Create `tailPolylineRef` alongside the existing `polylineRef`
+- Style it slightly thinner or with lower opacity so the transition is seamless
 
-**Auto-Follow Timer**
-- When `userDragged` is set to `true`, start a 10-second timeout
-- After 10 seconds, reset `userDragged` to `false` so the map resumes following
-- Clear the timeout if the user drags again or unmounts
+**Update Effect #3 (instant marker update)**
+- Instead of appending to the main polyline, append only to the tail polyline
+- Reset `lastAppendedRef` properly
 
-**Wake Lock**
-- Add a `useEffect` that requests `navigator.wakeLock.request('screen')` when the component mounts
-- Re-acquire on `visibilitychange` (when user switches back to the tab)
-- Release on unmount
-- This is independent of session state -- the map being visible is enough reason to keep the screen on
+**Update Effect #5 (5-second snap-to-road tick)**
+- After `setPath()` on the main polyline, clear the tail polyline
+- Set the tail's starting point to the last point of the snapped path
+- Update `lastAppendedRef` to match the last snapped point so the tail continues cleanly
 
-### No New Files or Backend Changes
-All changes are in `GoogleLiveTrackingMap.tsx` only. No database changes, no new dependencies.
+**Add distance filtering**
+- Increase the minimum distance threshold from ~3m to ~5m to filter out GPS jitter
+- Skip points that are clearly erroneous (huge jumps > 500m in a single update)
+
+### Summary of changes
+
+```text
+polylineRef      = snapped route (updated every 5s by snap-to-road)
+tailPolylineRef  = raw extension (updated instantly, cleared after each snap cycle)
+
+Flow:
+  Device update -> append to tail polyline (instant)
+  5s tick       -> snap all points -> replace main polyline -> clear tail
+```
+
+No new files, no backend changes. All changes in `GoogleLiveTrackingMap.tsx`.
