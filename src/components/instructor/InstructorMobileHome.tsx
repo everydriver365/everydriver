@@ -88,6 +88,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
+import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 
 // WeatherIcon component and getWeatherIconColor helper
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -142,13 +143,7 @@ interface InstructorMobileHomeProps {
   onPaymentClick: () => void;
 }
 
-const getGreeting = (firstName: string) => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return `Good morning, ${firstName}!`;
-  if (hour >= 12 && hour < 17) return `Good afternoon, ${firstName}!`;
-  if (hour >= 17 && hour < 21) return `Good evening, ${firstName}!`;
-  return `Ready to teach, ${firstName}?`;
-};
+// getGreeting is now handled by useTimeOfDay hook
 
 export function InstructorMobileHome({ 
   instructor, 
@@ -223,6 +218,15 @@ export function InstructorMobileHome({
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const maxLessons = 6;
   const currentLessons = todayOverview?.lessonCount || todaysLessonCount || 0;
+
+  // Time-aware layout config
+  const hasActiveLesson = !!(nextLesson && nextLesson.minutesUntil <= 0);
+  const timeConfig = useTimeOfDay(
+    firstName,
+    todayOverview?.lessonCount || 0,
+    todayOverview?.expectedEarnings || 0,
+    hasActiveLesson
+  );
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -309,8 +313,8 @@ export function InstructorMobileHome({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
-          {/* Gradient header with greeting */}
-          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-4 text-white">
+          {/* Time-aware gradient header */}
+          <div className={`relative bg-gradient-to-br ${timeConfig.headerGradient} px-4 py-4 text-white`}>
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -325,9 +329,11 @@ export function InstructorMobileHome({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold truncate">{getGreeting(firstName)}</h2>
+                  <h2 className="text-base font-bold truncate">{timeConfig.greeting}</h2>
+                  <span className="text-sm">{timeConfig.heroEmoji}</span>
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-white/80 text-[11px] mt-0.5 truncate">{timeConfig.contextLine}</p>
+                <div className="flex items-center gap-2 mt-1">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     isGPSConnected
                       ? "bg-emerald-500/30 text-emerald-100"
@@ -340,27 +346,50 @@ export function InstructorMobileHome({
                     <span className="text-white/70 text-xs flex items-center gap-1">
                       <WeatherIcon icon={currentWeather.icon || "Cloud"} className="h-3.5 w-3.5 text-white/70" />
                       {currentWeather.temperature}°C
-                      {currentWeather.description ? ` • ${currentWeather.description}` : ""}
                     </span>
                   )}
                 </div>
               </div>
             </div>
+            {/* Phase label badge */}
+            <div className="absolute top-3 right-3">
+              <span className="text-[9px] font-semibold uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-full">
+                {timeConfig.heroLabel}
+              </span>
+            </div>
           </div>
 
-          {/* Stats grid — compact 4-col */}
+          {/* Stats grid — time-aware ordering */}
           <div className="px-4 py-3 bg-card">
             <div className="grid grid-cols-4 gap-2">
-              <div className="flex flex-col items-center p-2 rounded-xl bg-primary/10">
-                <BookOpen className="h-3.5 w-3.5 text-primary mb-1" />
-                <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
-                <p className="text-[9px] text-muted-foreground mt-0.5">Lessons</p>
-              </div>
-              <div className="flex flex-col items-center p-2 rounded-xl bg-emerald-500/10">
-                <PoundSterling className="h-3.5 w-3.5 text-emerald-500 mb-1" />
-                <p className="text-sm font-bold text-foreground leading-none">£{todayOverview?.expectedEarnings || 0}</p>
-                <p className="text-[9px] text-muted-foreground mt-0.5">Expected</p>
-              </div>
+              {/* In evening/night, lead with earnings; otherwise lead with lessons */}
+              {(timeConfig.primaryFocus === "earnings" || timeConfig.primaryFocus === "tomorrow") ? (
+                <>
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                    <PoundSterling className="h-3.5 w-3.5 text-emerald-500 mb-1" />
+                    <p className="text-sm font-bold text-foreground leading-none">£{todayOverview?.expectedEarnings || 0}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Earned</p>
+                  </div>
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-primary/10">
+                    <BookOpen className="h-3.5 w-3.5 text-primary mb-1" />
+                    <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Lessons</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-primary/10">
+                    <BookOpen className="h-3.5 w-3.5 text-primary mb-1" />
+                    <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Lessons</p>
+                  </div>
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-emerald-500/10">
+                    <PoundSterling className="h-3.5 w-3.5 text-emerald-500 mb-1" />
+                    <p className="text-sm font-bold text-foreground leading-none">£{todayOverview?.expectedEarnings || 0}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Expected</p>
+                  </div>
+                </>
+              )}
               <div className="flex flex-col items-center p-2 rounded-xl bg-violet-500/10">
                 <Target className="h-3.5 w-3.5 text-violet-500 mb-1" />
                 <p className="text-sm font-bold text-foreground leading-none">{Math.min(weeklyGoals?.progressPercent || 0, 100)}%</p>
@@ -400,7 +429,7 @@ export function InstructorMobileHome({
         </motion.div>
       </div>
 
-      {/* ===== SCROLLABLE BOTTOM PANE ===== */}
+      {/* ===== SCROLLABLE BOTTOM PANE (time-aware ordering) ===== */}
       <div className="flex-1 pt-4">
         {/* Celebration Confetti */}
         <CelebrationConfetti
@@ -408,7 +437,7 @@ export function InstructorMobileHome({
           onComplete={() => setShowConfetti(false)} 
         />
 
-        {/* Weather/Traffic Alerts */}
+        {/* Alerts always show first regardless of time */}
         {alerts.length > 0 && (
           <div className="px-4">
             <DrivingAlertsStrip 
@@ -418,13 +447,9 @@ export function InstructorMobileHome({
             />
           </div>
         )}
-
-        {/* Check Engine Warning */}
         <div className="px-4">
           <CheckEngineBanner />
         </div>
-
-        {/* Tracker Reminder */}
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <div className="px-4">
             <TrackerReminderBanner 
@@ -432,6 +457,56 @@ export function InstructorMobileHome({
               minutesUntil={nextLesson.minutesUntil}
             />
           </div>
+        )}
+
+        {/* ---- EVENING/NIGHT: Earnings & Tomorrow first ---- */}
+        {(timeConfig.primaryFocus === "earnings" || timeConfig.primaryFocus === "tomorrow") && (
+          <>
+            {/* Earnings summary — promoted to top in evening */}
+            {instructorId && (
+              <div className="px-4 mt-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">
+                  {timeConfig.primaryFocus === "earnings" ? "TODAY'S EARNINGS" : "PLAN TOMORROW"}
+                </p>
+                <EarningsForecaster instructorId={instructorId} />
+              </div>
+            )}
+
+            {/* Tomorrow Peek — promoted in night mode */}
+            <div className="px-4 mt-4">
+              {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
+                <TomorrowPeekCard
+                  lessonCount={tomorrowPreview.lessonCount}
+                  totalHours={tomorrowPreview.totalHours}
+                  expectedEarnings={tomorrowPreview.expectedEarnings}
+                  firstLessonTime={tomorrowPreview.firstLessonTime}
+                  lessons={tomorrowPreview.lessons}
+                  instructorId={instructorId}
+                />
+              ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
+                <div
+                  className="bg-card rounded-none shadow-sm overflow-hidden cursor-pointer"
+                  onClick={() => navigate("/instructor/gaps")}
+                >
+                  <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+                      <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+                    </div>
+                    <div className="relative flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+                        <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-sm">Plan Ahead</h3>
+                        <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </>
         )}
 
         {/* Messages tile */}
@@ -541,49 +616,52 @@ export function InstructorMobileHome({
             <PlanWidget />
           </div>
 
-          {/* PLAN AHEAD section */}
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
+          {/* PLAN AHEAD — only shown in default position for morning/midday/afternoon */}
+          {timeConfig.primaryFocus !== "earnings" && timeConfig.primaryFocus !== "tomorrow" && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
 
-          {/* Tomorrow Peek Card */}
-          {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
-              <TomorrowPeekCard
-                lessonCount={tomorrowPreview.lessonCount}
-                totalHours={tomorrowPreview.totalHours}
-                expectedEarnings={tomorrowPreview.expectedEarnings}
-                firstLessonTime={tomorrowPreview.firstLessonTime}
-                lessons={tomorrowPreview.lessons}
-                instructorId={instructorId}
-              />
-          ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
-              <div
-                className="bg-card rounded-none shadow-sm overflow-hidden cursor-pointer"
-                onClick={() => navigate("/instructor/gaps")}
-              >
-                <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-                  <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-                    <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-                  </div>
-                  <div className="relative flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
-                        <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">Plan Ahead</h3>
-                        <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
+              {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
+                <TomorrowPeekCard
+                  lessonCount={tomorrowPreview.lessonCount}
+                  totalHours={tomorrowPreview.totalHours}
+                  expectedEarnings={tomorrowPreview.expectedEarnings}
+                  firstLessonTime={tomorrowPreview.firstLessonTime}
+                  lessons={tomorrowPreview.lessons}
+                  instructorId={instructorId}
+                />
+              ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
+                <div
+                  className="bg-card rounded-none shadow-sm overflow-hidden cursor-pointer"
+                  onClick={() => navigate("/instructor/gaps")}
+                >
+                  <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+                      <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+                    </div>
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+                          <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">Plan Ahead</h3>
+                          <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-          ) : null}
+              ) : null}
 
-          {/* Earnings Forecast Widget */}
-          {instructorId && (
-            <div className="mt-2">
-              <EarningsForecaster instructorId={instructorId} />
-            </div>
+              {/* Earnings Forecast — default position for daytime */}
+              {instructorId && (
+                <div className="mt-2">
+                  <EarningsForecaster instructorId={instructorId} />
+                </div>
+              )}
+            </>
           )}
 
           {/* Road Alerts from National Highways */}
