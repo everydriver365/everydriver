@@ -372,13 +372,30 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     }
 
     tick();
-    const timer = window.setInterval(tick, 5000);
+    const timer = window.setInterval(tick, 3000);
 
     return () => {
       cancelled = true;
       window.clearInterval(timer);
     };
   }, [device?.current_session_id, mapsLoaded]);
+
+  // 5b) Trigger geotab-poller every 10s while map is open and device is active
+  useEffect(() => {
+    if (!device?.id || !isConnected) return;
+
+    const triggerPoller = async () => {
+      try {
+        await supabase.functions.invoke("geotab-poller", { method: "POST" });
+      } catch (err) {
+        console.error("Live map poller trigger failed:", err);
+      }
+    };
+
+    triggerPoller();
+    const timer = setInterval(triggerPoller, 10000);
+    return () => clearInterval(timer);
+  }, [device?.id, isConnected]);
 
   // Auto-follow reset: resume following 10s after user drags
   const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
