@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import {
-  fetchOsrmRoute, buildPathData, positionAlongPath, haversineKm, moveAlongBearing,
-  type PathData,
-} from "@/hooks/useInterpolatedPosition";
+import { loadGoogleMaps, fetchGoogleMapsKey, kmhToMph } from "@/lib/googleMapsLoader";
+import { haversineKm, moveAlongBearing } from "@/hooks/useInterpolatedPosition";
 
 interface GpsDevice {
   id: string;
@@ -29,16 +24,12 @@ interface FleetLiveMapProps {
   isVisible?: boolean;
 }
 
-const DEFAULT_LAT = 52.48;
-const DEFAULT_LNG = -1.89;
-const EARTH_RADIUS_KM = 6371;
-const DEG_TO_RAD = Math.PI / 180;
-const RAD_TO_DEG = 180 / Math.PI;
+const DEFAULT_CENTER = { lat: 52.48, lng: -1.89 };
 
 function getVehicleStatus(device: GpsDevice): "moving" | "idle" | "parked" {
   if (!device.last_seen_at) return "parked";
   const age = Date.now() - new Date(device.last_seen_at).getTime();
-  if (age > 300000) return "parked"; // >5 min
+  if (age > 300000) return "parked";
   if ((device.last_speed_kmh ?? 0) > 3) return "moving";
   if (device.last_ignition_status) return "idle";
   return "parked";
@@ -50,25 +41,7 @@ function statusColor(status: "moving" | "idle" | "parked") {
   return "#9ca3af";
 }
 
-function kmhToMph(kmh: number | null) {
-  if (!kmh) return 0;
-  return Math.round(kmh * 0.621371);
-}
-
-function buildMarkerHtml(device: GpsDevice) {
-  const status = getVehicleStatus(device);
-  const color = statusColor(status);
-  return `<div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
-    <div style="position:absolute;width:40px;height:40px;border-radius:50%;background:${color};box-shadow:0 3px 12px rgba(0,0,0,0.25);"></div>
-    <div style="position:relative;width:22px;height:22px;z-index:1;">
-      <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-      </svg>
-    </div>
-  </div>`;
-}
-
-function buildPopupHtml(device: GpsDevice) {
+function buildInfoContent(device: GpsDevice) {
   const status = getVehicleStatus(device);
   const mph = kmhToMph(device.last_speed_kmh);
   const name = device.device_name || "Vehicle";
@@ -100,98 +73,66 @@ function buildPopupHtml(device: GpsDevice) {
 }
 
 export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const mapDivRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<Map<string, any>>(new Map());
+  const infoWindowsRef = useRef<Map<string, any>>(new Map());
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapsReady, setMapsReady] = useState(false);
   const devicesRef = useRef<GpsDevice[]>([]);
-  const devicePaths = useRef<Map<string, PathData>>(new Map());
-  const prevPositions = useRef<Map<string, { lat: number; lng: number }>>(new Map());
   const deviceTimestamps = useRef<Map<string, number>>(new Map());
 
-  const fetchDevicesAndRoutes = useCallback(async () => {
+  // Init Google Map
+  useEffect(() => {
+    if (!isVisible || !mapDivRef.current || mapRef.current) return;
+    let cancelled = false;
+
+    async function init() {
+      try {
+        const apiKey = await fetchGoogleMapsKey();
+        if (!apiKey || cancelled) return;
+        await loadGoogleMaps(apiKey);
+        if (cancelled || !mapDivRef.current) return;
+
+        const w = window as any;
+        const map = new w.google.maps.Map(mapDivRef.current, {
+          center: DEFAULT_CENTER,
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true,
+        });
+        mapRef.current = map;
+        setMapsReady(true);
+      } catch {
+        // fail silently
+      }
+    }
+
+    init();
+    return () => { cancelled = true; };
+  }, [isVisible]);
+
+  // Fetch devices
+  const fetchDevices = useCallback(async () => {
     const { data } = await supabase
       .from("gps_devices")
       .select("id, device_name, last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, last_ignition_status, is_active")
       .eq("instructor_id", instructorId);
     if (data) {
       const now = Date.now();
-      data.forEach(d => {
-        deviceTimestamps.current.set(d.id, now);
-        if (d.last_latitude && d.last_longitude) {
-          const prev = prevPositions.current.get(d.id);
-          const speed = d.last_speed_kmh ?? 0;
-          if (prev && speed >= 3) {
-            const dist = haversineKm(prev.lat, prev.lng, d.last_latitude, d.last_longitude);
-            if (dist > 0.005 && dist < 5) {
-              fetchOsrmRoute(prev.lat, prev.lng, d.last_latitude, d.last_longitude).then(route => {
-                if (route) devicePaths.current.set(d.id, buildPathData(route));
-                else devicePaths.current.delete(d.id);
-              });
-            } else {
-              devicePaths.current.delete(d.id);
-            }
-          }
-          prevPositions.current.set(d.id, { lat: d.last_latitude, lng: d.last_longitude });
-        }
-      });
+      data.forEach(d => deviceTimestamps.current.set(d.id, now));
       devicesRef.current = data;
       setDevices(data);
     }
     setLoading(false);
   }, [instructorId]);
 
-  // Init map when isVisible becomes true (deterministic, no IntersectionObserver)
+  // Poll + realtime
   useEffect(() => {
-    if (!isVisible || !mapRef.current) return;
-    const container = mapRef.current;
-
-    if (mapInstance.current) {
-      // Already initialized — just fix tile rendering after tab switch
-      requestAnimationFrame(() => {
-        mapInstance.current?.invalidateSize();
-      });
-      return;
-    }
-
-    // Delay init to ensure container has layout dimensions after display:none removal
-    const raf = requestAnimationFrame(() => {
-      const map = L.map(container, {
-        center: [DEFAULT_LAT, DEFAULT_LNG],
-        zoom: 13,
-        zoomControl: true,
-        attributionControl: false,
-      });
-      mapInstance.current = map;
-      L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(map);
-      map.zoomControl?.setPosition("topright");
-      setTimeout(() => map.invalidateSize(), 100);
-      setTimeout(() => map.invalidateSize(), 400);
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, [isVisible]);
-
-  // ResizeObserver for container resizes + cleanup on unmount
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const container = mapRef.current;
-    const ro = new ResizeObserver(() => mapInstance.current?.invalidateSize());
-    ro.observe(container);
-
-    return () => {
-      ro.disconnect();
-      mapInstance.current?.remove();
-      mapInstance.current = null;
-      markersRef.current.clear();
-    };
-  }, []);
-
-  // Fetch + poll + realtime
-  useEffect(() => {
-    fetchDevicesAndRoutes();
-    const interval = setInterval(fetchDevicesAndRoutes, 10000);
+    fetchDevices();
+    const interval = setInterval(fetchDevices, 10000);
 
     const channel = supabase
       .channel(`fleet-live-${instructorId}`)
@@ -203,25 +144,6 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       }, (payload) => {
         const updated = payload.new as GpsDevice;
         deviceTimestamps.current.set(updated.id, Date.now());
-
-        // Fetch OSRM route for this device
-        if (updated.last_latitude && updated.last_longitude) {
-          const prev = prevPositions.current.get(updated.id);
-          const speed = updated.last_speed_kmh ?? 0;
-          if (prev && speed >= 3) {
-            const dist = haversineKm(prev.lat, prev.lng, updated.last_latitude, updated.last_longitude);
-            if (dist > 0.005 && dist < 5) {
-              fetchOsrmRoute(prev.lat, prev.lng, updated.last_latitude, updated.last_longitude).then(route => {
-                if (route) devicePaths.current.set(updated.id, buildPathData(route));
-                else devicePaths.current.delete(updated.id);
-              });
-            } else {
-              devicePaths.current.delete(updated.id);
-            }
-          }
-          prevPositions.current.set(updated.id, { lat: updated.last_latitude, lng: updated.last_longitude });
-        }
-
         setDevices(prev => {
           const next = prev.map(d => d.id === updated.id ? { ...d, ...updated } as GpsDevice : d);
           devicesRef.current = next;
@@ -234,60 +156,74 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [instructorId, fetchDevicesAndRoutes]);
+  }, [instructorId, fetchDevices]);
 
-  // Update markers
+  // Update markers on Google Map
   useEffect(() => {
-    const map = mapInstance.current;
-    if (!map) return;
+    const map = mapRef.current;
+    if (!map || !mapsReady) return;
+    const w = window as any;
 
     const validDevices = devices.filter(d => d.last_latitude && d.last_longitude);
 
     // Remove stale markers
     markersRef.current.forEach((marker, id) => {
       if (!validDevices.find(d => d.id === id)) {
-        marker.remove();
+        marker.setMap(null);
         markersRef.current.delete(id);
+        infoWindowsRef.current.get(id)?.close();
+        infoWindowsRef.current.delete(id);
       }
     });
 
     // Upsert markers
     validDevices.forEach(device => {
-      const lat = device.last_latitude!;
-      const lng = device.last_longitude!;
-      const icon = L.divIcon({
-        html: buildMarkerHtml(device),
-        className: "fleet-live-marker",
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
-      });
+      const pos = { lat: device.last_latitude!, lng: device.last_longitude! };
+      const status = getVehicleStatus(device);
+      const color = statusColor(status);
+      const icon = {
+        path: w.google.maps.SymbolPath.CIRCLE,
+        scale: 12,
+        fillOpacity: 1,
+        fillColor: color,
+        strokeColor: "white",
+        strokeWeight: 3,
+      };
 
       const existing = markersRef.current.get(device.id);
       if (existing) {
-        existing.setLatLng([lat, lng]);
+        existing.setPosition(pos);
         existing.setIcon(icon);
-        existing.setPopupContent(buildPopupHtml(device));
+        const iw = infoWindowsRef.current.get(device.id);
+        if (iw) iw.setContent(buildInfoContent(device));
       } else {
-        const marker = L.marker([lat, lng], { icon })
-          .addTo(map)
-          .bindPopup(buildPopupHtml(device));
+        const marker = new w.google.maps.Marker({ position: pos, map, icon });
+        const infoWindow = new w.google.maps.InfoWindow({ content: buildInfoContent(device) });
+        marker.addListener("click", () => {
+          // Close all other info windows
+          infoWindowsRef.current.forEach(iw => iw.close());
+          infoWindow.open(map, marker);
+        });
         markersRef.current.set(device.id, marker);
+        infoWindowsRef.current.set(device.id, infoWindow);
       }
     });
 
     // Fit bounds
     if (validDevices.length > 0) {
-      const bounds = L.latLngBounds(validDevices.map(d => [d.last_latitude!, d.last_longitude!]));
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      const bounds = new w.google.maps.LatLngBounds();
+      validDevices.forEach(d => bounds.extend({ lat: d.last_latitude!, lng: d.last_longitude! }));
+      map.fitBounds(bounds, 40);
+      // Don't zoom too far in for a single device
+      const listener = w.google.maps.event.addListenerOnce(map, "idle", () => {
+        if (map.getZoom() > 15) map.setZoom(15);
+      });
     }
-  }, [devices]);
+  }, [devices, mapsReady]);
 
-  // Interpolation loop — walk along OSRM road geometry or fallback to bearing
+  // Interpolation loop — bearing-based smooth movement
   useEffect(() => {
     const interval = setInterval(() => {
-      const map = mapInstance.current;
-      if (!map) return;
-
       devicesRef.current.forEach(device => {
         const marker = markersRef.current.get(device.id);
         if (!marker || !device.last_latitude || !device.last_longitude) return;
@@ -300,16 +236,9 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
 
         const elapsed = Math.min((Date.now() - anchorTs) / 1000, 15);
         const distKm = (speed / 3600) * elapsed;
-
-        const path = devicePaths.current.get(device.id);
-        if (path) {
-          const [lat, lng] = positionAlongPath(path, distKm);
-          marker.setLatLng([lat, lng]);
-        } else {
-          const heading = device.last_heading ?? 0;
-          const [lat, lng] = moveAlongBearing(device.last_latitude, device.last_longitude, heading, distKm);
-          marker.setLatLng([lat, lng]);
-        }
+        const heading = device.last_heading ?? 0;
+        const [lat, lng] = moveAlongBearing(device.last_latitude, device.last_longitude, heading, distKm);
+        marker.setPosition({ lat, lng });
       });
     }, 200);
 
@@ -325,7 +254,7 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
         <span className="ml-auto text-[10px]">Auto-refreshes every 10s</span>
       </div>
       <Card className="overflow-hidden relative">
-        <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
+        <div ref={mapDivRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
 
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
@@ -340,7 +269,6 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
           </div>
         )}
       </Card>
-      <style>{`.fleet-live-marker{background:transparent!important;border:none!important;}`}</style>
     </div>
   );
 }
