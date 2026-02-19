@@ -100,7 +100,7 @@ export function TomorrowPeekCard({
                 </span>
               )}
               <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="h-4 w-4 text-white/60" />
+                <ChevronDown className="h-4 w-4 text-white/70" />
               </motion.div>
             </div>
           </div>
