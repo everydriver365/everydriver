@@ -59,7 +59,8 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const polylineRef = useRef<any>(null);
+  const polylineRef = useRef<any>(null);      // snapped route (updated every 5s)
+  const tailPolylineRef = useRef<any>(null);  // raw tail (updated instantly, cleared after snap)
 
   const [device, setDevice] = useState<DeviceRow | null>(null);
   const [status, setStatus] = useState("Connecting…");
@@ -211,6 +212,15 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
           strokeWeight: 5,
         });
 
+        tailPolylineRef.current = new w.google.maps.Polyline({
+          map,
+          path: [],
+          geodesic: true,
+          strokeColor: "#3b82f6",
+          strokeOpacity: 0.6,
+          strokeWeight: 4,
+        });
+
     map.addListener("dragstart", () => setUserDragged(true));
     map.addListener("mousedown", () => setUserDragged(true));
 
@@ -254,12 +264,16 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       strokeWeight: 3,
     });
 
-    // Instantly extend the blue polyline so it keeps up with the marker
-    if (polylineRef.current) {
+    // Append to the TAIL polyline only (never the main snapped one)
+    if (tailPolylineRef.current) {
       const prev = lastAppendedRef.current;
-      const shouldAppend = !prev || Math.abs(prev.lat - lat) > 0.00003 || Math.abs(prev.lng - lng) > 0.00003; // ~3m
-      if (shouldAppend) {
-        polylineRef.current.getPath().push(new w.google.maps.LatLng(lat, lng));
+      const dLat = prev ? Math.abs(prev.lat - lat) : Infinity;
+      const dLng = prev ? Math.abs(prev.lng - lng) : Infinity;
+      const approxMeters = Math.max(dLat, dLng) * 111_000;
+      // Skip jitter (<5m) and erroneous jumps (>500m)
+      const shouldAppend = approxMeters > 5 && approxMeters < 500;
+      if (!prev || shouldAppend) {
+        tailPolylineRef.current.getPath().push(new w.google.maps.LatLng(lat, lng));
         lastAppendedRef.current = { lat, lng };
       }
     }
@@ -342,6 +356,16 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
 
         const w = window as any;
         polylineRef.current.setPath(line.map((p) => new w.google.maps.LatLng(p.lat, p.lng)));
+
+        // Clear the tail and reset its start to the last snapped point
+        if (tailPolylineRef.current) {
+          tailPolylineRef.current.setPath([]);
+          if (line.length > 0) {
+            const lastSnapped = line[line.length - 1];
+            tailPolylineRef.current.getPath().push(new w.google.maps.LatLng(lastSnapped.lat, lastSnapped.lng));
+            lastAppendedRef.current = { lat: lastSnapped.lat, lng: lastSnapped.lng };
+          }
+        }
       } catch (e: any) {
         if (!cancelled) setNote(e?.message ?? "Route update failed");
       }
