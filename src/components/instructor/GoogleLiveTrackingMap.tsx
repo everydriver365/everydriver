@@ -12,6 +12,7 @@ type DeviceRow = {
   is_active: boolean;
   last_latitude: number | null;
   last_longitude: number | null;
+  last_heading: number | null;
   last_speed_kmh: number | null;
   last_speed_limit_kmh: number | null;
   last_road_name: string | null;
@@ -141,7 +142,7 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       const { data, error } = await supabase
         .from("gps_devices")
         .select(
-          "id,is_active,last_latitude,last_longitude,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id"
+          "id,is_active,last_latitude,last_longitude,last_heading,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id"
         )
         .eq("is_active", true)
         .single();
@@ -210,9 +211,10 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
           strokeWeight: 5,
         });
 
-        map.addListener("dragstart", () => setUserDragged(true));
+    map.addListener("dragstart", () => setUserDragged(true));
+    map.addListener("mousedown", () => setUserDragged(true));
 
-        setMapsLoaded(true);
+    setMapsLoaded(true);
         setStatus("Live");
       } catch (e: any) {
         if (!cancelled) setStatus(e?.message ?? "Map init failed");
@@ -242,14 +244,15 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
 
     const w = window as any;
     marker.setIcon({
-      path: w.google.maps.SymbolPath.CIRCLE,
-      scale: 8,
+      path: w.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+      scale: 6,
+      rotation: device?.last_heading ?? 0,
       fillOpacity: 1,
       fillColor: markerColor,
       strokeColor: "white",
       strokeWeight: 3,
     });
-  }, [device?.last_latitude, device?.last_longitude, markerColor, userDragged]);
+  }, [device?.last_latitude, device?.last_longitude, device?.last_heading, markerColor, userDragged]);
 
   // 4) Subscribe to realtime updates for this device row
   useEffect(() => {
@@ -341,6 +344,44 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       window.clearInterval(timer);
     };
   }, [device?.current_session_id, mapsLoaded]);
+
+  // Auto-follow reset: resume following 10s after user drags
+  const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!userDragged) {
+      if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
+      return;
+    }
+    dragTimerRef.current = setTimeout(() => setUserDragged(false), 10000);
+    return () => { if (dragTimerRef.current) clearTimeout(dragTimerRef.current); };
+  }, [userDragged]);
+
+  // Wake Lock: keep screen on while map is visible
+  useEffect(() => {
+    let wakeLock: any = null;
+    let released = false;
+
+    async function acquire() {
+      try {
+        if ("wakeLock" in navigator && !released) {
+          wakeLock = await (navigator as any).wakeLock.request("screen");
+        }
+      } catch { /* non-critical */ }
+    }
+
+    acquire();
+
+    const onVisChange = () => {
+      if (document.visibilityState === "visible") acquire();
+    };
+    document.addEventListener("visibilitychange", onVisChange);
+
+    return () => {
+      released = true;
+      document.removeEventListener("visibilitychange", onVisChange);
+      wakeLock?.release?.().catch(() => {});
+    };
+  }, []);
 
   // Re-center handler
   const handleRecenter = useCallback(() => {
