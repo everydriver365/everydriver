@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
@@ -12,6 +12,7 @@ import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
+import { useGoogleCalendarSync } from "@/hooks/useGoogleCalendarSync";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,6 +47,13 @@ export default function InstructorSchedule() {
 
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
+  const { isSyncing, syncAllLessons, importBusyTimes } = useGoogleCalendarSync(instructorId || '');
+
+  const handleSync = async () => {
+    await Promise.all([syncAllLessons(), importBusyTimes()]);
+    calendar.refetch();
+    toast.success("Calendar synced");
+  };
 
   useEffect(() => {
     if (viewMode === 'schedule') {
@@ -126,6 +134,17 @@ export default function InstructorSchedule() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={handleSync}
+              disabled={isSyncing}
+              title="Sync Google Calendar"
+            >
+              <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5 h-8">
