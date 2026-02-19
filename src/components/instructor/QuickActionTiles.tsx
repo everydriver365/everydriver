@@ -288,13 +288,13 @@ export function QuickActionTiles({
   // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-3">
-        <div className="bg-card rounded-none p-4 h-16 animate-pulse shadow-sm" />
-        <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card rounded-none p-4 h-20 animate-pulse shadow-sm" />
-          ))}
-        </div>
+      <div className="grid grid-cols-3 gap-y-5 gap-x-2 px-2">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="flex flex-col items-center gap-1.5">
+            <div className="w-14 h-14 rounded-2xl bg-muted animate-pulse" />
+            <div className="w-10 h-2 rounded bg-muted animate-pulse" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -425,115 +425,61 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode
-        <>
-          {/* First tile - full width with enhanced info */}
-          {localTiles[0] && (
-            <motion.div
-              key={localTiles[0].id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-card rounded-none shadow-sm active:shadow-none transition-all">
-                  <div className="bg-gradient-to-r from-primary to-primary/80 px-4 py-1.5">
-                    <span className="text-white text-[10px] font-semibold uppercase tracking-wider">Top Action</span>
-                  </div>
-                  <div className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-xl ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.3)]`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
-                      {(() => {
-                        const Icon = getIcon(localTiles[0].icon);
-                        const isSchedule = isScheduleAction(localTiles[0]);
-                        const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
-                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
-                        const showBadge = firstTileBadgeCount > 0;
-                        return (
-                          <>
-                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="w-full h-full object-cover" style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined} /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
-                          </>
-                        );
-                      })()}
-                    </div>
-                    {(() => {
-                      const firstTileBadgeCount = getBadgeCount(localTiles[0]);
-                      const showBadge = firstTileBadgeCount > 0;
-                      const isSchedule = isScheduleAction(localTiles[0]);
-                      const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
-                      return (
-                        <>
-                          {showBadge && (
-                            <span className="absolute top-2 right-2 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                              {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
-                            </span>
-                          )}
-                          {showLessonBadge && !showBadge && (
-                            <span className="absolute top-2 right-2 min-w-[20px] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                              {todayOverview.lessonCount}
-                            </span>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <div className="relative flex-1 min-w-0">
-                      <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
-                       {/* Simple subtitle */}
-                       <p className="text-primary/70 text-xs font-medium mt-0.5">
-                         {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
-                           ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
-                           : 'Tap to view'
-                         }
-                       </p>
-                    </div>
-                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center relative shrink-0">
-                      <ChevronRight className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  </div>
-                  
+        // Normal view mode - 3-column phone home screen grid
+        <div className="grid grid-cols-3 gap-y-5 gap-x-2 px-2">
+          {localTiles.map((action, index) => {
+            const Icon = getIcon(action.icon);
+            const badgeCount = getBadgeCount(action);
+            const showBadge = badgeCount > 0;
+            const style = tileStyles[index % tileStyles.length];
+            const isSchedule = isScheduleAction(action);
+            const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0 && !showBadge;
 
-
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          )}
-
-          {/* 2-column grid for remaining actions - compact oblong tiles */}
-          <div className="grid grid-cols-2 gap-2">
-            {localTiles.slice(1).map((action, index) => {
-              const Icon = getIcon(action.icon);
-              const badgeCount = getBadgeCount(action);
-              const showBadge = badgeCount > 0;
-              const style = tileStyles[(index + 1) % tileStyles.length];
-              
-              return (
-                <Link key={action.id} to={action.route} className="block">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + index * 0.03 }}
-                    whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-sm hover:shadow-md active:shadow-none transition-shadow`}
+            return (
+              <Link key={action.id} to={action.route} className="block">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.05 + index * 0.03 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  {/* Icon container */}
+                  <div
+                    className={`relative ${largeIconTiles.has(action.id) ? 'w-[60px] h-[60px]' : 'w-14 h-14'} rounded-2xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shadow-sm`}
+                    style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
-                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-primary/30 shadow-[0_0_8px_hsl(var(--primary)/0.2)]`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
-                      {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
-                    </div>
+                    {customIconImages[action.id] ? (
+                      <img
+                        src={customIconImages[action.id]}
+                        alt={action.title}
+                        className="w-full h-full object-cover"
+                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                      />
+                    ) : (
+                      <Icon className={`h-6 w-6 ${style.iconColor}`} />
+                    )}
+                    {/* Badge */}
                     {showBadge && (
-                      <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
-                    <span className="font-medium text-foreground text-sm leading-tight">
-                      {action.title}
-                    </span>
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </div>
-        </>
+                    {showLessonBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
+                        {todayOverview!.lessonCount}
+                      </span>
+                    )}
+                  </div>
+                  {/* Label */}
+                  <span className="text-[11px] font-medium text-foreground text-center leading-tight line-clamp-2 max-w-[72px]">
+                    {action.title}
+                  </span>
+                </motion.div>
+              </Link>
+            );
+          })}
+        </div>
       )}
     </div>
   );
