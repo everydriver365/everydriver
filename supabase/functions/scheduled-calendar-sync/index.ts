@@ -8,6 +8,16 @@ const corsHeaders = {
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 
+function googleColorIdToHex(colorId?: string): string | null {
+  if (!colorId) return null;
+  const map: Record<string, string> = {
+    '1': '#7986cb', '2': '#33b679', '3': '#8e24aa', '4': '#e67c73',
+    '5': '#f6bf26', '6': '#f4511e', '7': '#039be5', '8': '#616161',
+    '9': '#3f51b5', '10': '#0b8043', '11': '#d50000',
+  };
+  return map[colorId] || null;
+}
+
 interface TokenData {
   instructor_id: string;
   access_token: string;
