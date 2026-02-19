@@ -1,45 +1,52 @@
 
+# Fix: Geotab Device Lockout Loop
 
-# Replace All Address Inputs with Google Address Lookup
+## Root Cause
 
-## Summary
+The previous fix made the poller SET `is_active` based on Geotab's `isDeviceCommunicating` flag (line 294). But the poller also READS `is_active` as a filter (line 182):
 
-Three files still use non-Google address entry. This plan replaces them all with the existing `GoogleAddressAutocomplete` component, which uses the Google Places API via the `google-places-autocomplete` and `google-places-details` edge functions already deployed.
+```
+.eq("is_active", true)
+```
 
-## What Changes
+This creates a self-reinforcing lockout:
+1. Geotab briefly reports `isDeviceCommunicating: false`
+2. Poller sets `is_active = false` in the database
+3. Next poll cycle, the device is filtered OUT because `is_active = false`
+4. Device never gets polled again, stays permanently "offline"
 
-### 1. AddLessonSheet.tsx (Instructor Add Lesson)
+Your device is stuck in this state right now: `is_active: false`, `last_seen_at: 2026-02-18 20:37:59` (over 11 hours stale), even though the poller heartbeat is current (08:14).
 
-Currently uses HERE API (`address-lookup` edge function) with a two-step flow: type postcode, then pick from a dropdown. This will be replaced with `GoogleAddressAutocomplete` for both:
-- **Existing pupil pickup address** (lines ~420-458) -- replace the PostcodeAutocomplete + address dropdown with a single `GoogleAddressAutocomplete` field
-- **New pupil address** (lines ~529-567) -- same replacement
+## Fix (2 changes)
 
-Remove: `address-lookup` invocations, `addressOptions` state, `loadingAddresses`, `fetchAddresses`, `handleAddressSelect` logic, and the `PostcodeAutocomplete` import (if no longer used).
+### 1. Poller: Remove `is_active` filter (line 182)
 
-### 2. BespokeBookingModal.tsx (Admin Bespoke Booking)
+The poller should query ALL Geotab devices regardless of `is_active`, since `is_active` is an OUTPUT of the poller, not a precondition. Remove:
 
-Currently uses HERE API for both postcode lookup and address autocomplete. Replace:
-- **Address field** (lines ~337-375) -- swap the manual `<Input>` with HERE autocomplete for a `GoogleAddressAutocomplete` that auto-fills the postcode field when an address is selected
-- **Postcode lookup button** (lines ~378-388) -- remove the manual lookup button; the postcode auto-populates from the Google address selection
+```
+.eq("is_active", true)
+```
 
-Remove: `lookupPostcode`, `handleAddressAutocomplete`, `selectAddress`, `addressSuggestions`, `showSuggestions`, `debounceRef`, and the HERE function invocations.
+This ensures a device that was temporarily marked inactive will be picked up again on the next poll.
 
-### 3. StepLocation.tsx (Instructor Onboarding)
+### 2. Poller: Stop writing `is_active` from Geotab flag (line 294)
 
-Currently a plain `<Input>` for postcode. Replace with `PostcodeAutocomplete` component (which uses postcodes.io and is the correct tool for postcode-only entry with suggestions). This is a postcode field, not a full address, so `PostcodeAutocomplete` is the right fit.
+Since `is_active` is unreliable from Geotab and causes lockouts, stop setting it in the update payload. The frontend already determines status purely from timestamps -- `is_active` in the DB is no longer used for anything meaningful.
 
-## Technical Details
+Remove this line from the update:
+```
+is_active: isCommunicating,
+```
 
-- **No new edge functions needed** -- `google-places-autocomplete` and `google-places-details` are already deployed with the `GOOGLE_PLACES_API_KEY` secret configured
-- **No new dependencies** -- `GoogleAddressAutocomplete` component already exists at `src/components/admin/GoogleAddressAutocomplete.tsx`
-- **Postcode auto-fill** -- The `GoogleAddressAutocomplete` component supports `onPostcodeChange` callback which will be used to auto-populate postcode fields when an address is selected
-- The `address-lookup` edge function (HERE API) can remain deployed for now since it may be used elsewhere, but these three files will no longer call it
+Also remove the now-unused `isCommunicating` variable (line 278).
+
+### 3. Immediate data fix
+
+Reset the stuck device's `is_active` back to `true` so it starts being polled again immediately (via a one-time migration).
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/AddLessonSheet.tsx` | Replace HERE address lookup with `GoogleAddressAutocomplete` for both pickup and new pupil address fields |
-| `src/components/admin/BespokeBookingModal.tsx` | Replace HERE address + postcode lookup with `GoogleAddressAutocomplete` |
-| `src/pages/instructor-app/onboarding/steps/StepLocation.tsx` | Replace plain Input with `PostcodeAutocomplete` for postcode suggestions |
-
+| `supabase/functions/geotab-poller/index.ts` | Remove `.eq("is_active", true)` filter (line 182) and remove `is_active: isCommunicating` from update payload (line 294) |
+| Database migration | `UPDATE gps_devices SET is_active = true WHERE tracking_provider = 'geotab'` to unstick the current device |
