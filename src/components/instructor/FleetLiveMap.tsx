@@ -82,6 +82,7 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
   const [mapsReady, setMapsReady] = useState(false);
   const devicesRef = useRef<GpsDevice[]>([]);
   const deviceTimestamps = useRef<Map<string, number>>(new Map());
+  const hasFittedBounds = useRef(false);
 
   // Init Google Map
   useEffect(() => {
@@ -209,13 +210,13 @@ export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapPr
       }
     });
 
-    // Fit bounds
-    if (validDevices.length > 0) {
+    // Fit bounds only on first load
+    if (validDevices.length > 0 && !hasFittedBounds.current) {
+      hasFittedBounds.current = true;
       const bounds = new w.google.maps.LatLngBounds();
       validDevices.forEach(d => bounds.extend({ lat: d.last_latitude!, lng: d.last_longitude! }));
       map.fitBounds(bounds, 40);
-      // Don't zoom too far in for a single device
-      const listener = w.google.maps.event.addListenerOnce(map, "idle", () => {
+      w.google.maps.event.addListenerOnce(map, "idle", () => {
         if (map.getZoom() > 15) map.setZoom(15);
       });
     }
