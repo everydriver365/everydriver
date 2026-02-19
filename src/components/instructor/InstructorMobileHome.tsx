@@ -55,6 +55,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+import { CheckEngineBanner } from "@/components/instructor/CheckEngineBanner";
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
@@ -459,6 +460,9 @@ export function InstructorMobileHome({
           className="mt-4"
         />
       )}
+
+      {/* Check Engine Warning - show if active fault codes */}
+      <CheckEngineBanner />
 
       {/* Tracker Reminder - show when offline and lesson soon */}
       {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
