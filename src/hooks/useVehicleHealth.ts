@@ -22,6 +22,15 @@ export interface GPSDeviceHealth {
   gpsgate_engine_hours_s: number | null;
   daily_start_odometer_m: number | null;
   daily_start_date: string | null;
+  // Engine diagnostics from Geotab
+  last_fuel_percent: number | null;
+  last_battery_voltage: number | null;
+  last_coolant_temp_c: number | null;
+  last_engine_hours: number | null;
+  last_ecu_odometer_km: number | null;
+  last_tire_pressure_json: Record<string, number> | null;
+  last_fault_codes: Array<{ code: string; description: string; severity: string; source: string }> | null;
+  last_diagnostics_at: string | null;
   vehicle?: {
     id: string;
     registration: string;
@@ -104,7 +113,15 @@ export function useVehicleHealth() {
           gpsgate_odometer_m,
           gpsgate_engine_hours_s,
           daily_start_odometer_m,
-          daily_start_date
+          daily_start_date,
+          last_fuel_percent,
+          last_battery_voltage,
+          last_coolant_temp_c,
+          last_engine_hours,
+          last_ecu_odometer_km,
+          last_tire_pressure_json,
+          last_fault_codes,
+          last_diagnostics_at
         `)
         .eq("instructor_id", instructor.id);
 
@@ -141,6 +158,8 @@ export function useVehicleHealth() {
         return {
           ...d,
           is_connected: isConnected,
+          last_tire_pressure_json: d.last_tire_pressure_json as Record<string, number> | null,
+          last_fault_codes: d.last_fault_codes as Array<{ code: string; description: string; severity: string; source: string }> | null,
           vehicle: d.vehicle_id ? vehiclesMap[d.vehicle_id] || null : null,
         };
       });

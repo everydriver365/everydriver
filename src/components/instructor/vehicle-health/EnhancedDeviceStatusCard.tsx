@@ -1,4 +1,4 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,15 +21,52 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const speedLimitKmh = device.last_speed_limit_kmh;
   const roadName = device.last_road_name;
   
-  // Calculate odometer in miles (uses generic odometer field)
-  const odometerMiles = null; // Will be populated by GPS poller
+  // ECU odometer in miles
+  const odometerMiles = device.last_ecu_odometer_km != null
+    ? Math.round(kmToMiles(device.last_ecu_odometer_km))
+    : null;
   
-  // Calculate today's distance
+  // Today's distance from daily start odometer
   const today = new Date().toISOString().split("T")[0];
-  const todayDistanceMiles = null; // Will be populated by GPS poller
+  const todayDistanceMiles = (device.daily_start_date === today && device.daily_start_odometer_m != null && device.gpsgate_odometer_m != null)
+    ? Math.round(kmToMiles((device.gpsgate_odometer_m - device.daily_start_odometer_m) / 1000) * 10) / 10
+    : null;
   
   // Format engine hours
-  const engineHoursFormatted = null; // Will be populated by GPS poller
+  const engineHoursFormatted = device.last_engine_hours != null
+    ? `${Math.floor(device.last_engine_hours)}h ${Math.round((device.last_engine_hours % 1) * 60)}m`
+    : null;
+
+  // Fuel level
+  const fuelPercent = device.last_fuel_percent;
+  const getFuelColor = (level: number | null) => {
+    if (level === null) return "text-muted-foreground";
+    if (level <= 15) return "text-destructive";
+    if (level <= 30) return "text-orange-500";
+    return "text-primary";
+  };
+
+  // Battery voltage (12V system)
+  const batteryVoltage = device.last_battery_voltage;
+  const getVoltageColor = (v: number | null) => {
+    if (v === null) return "text-muted-foreground";
+    if (v < 12.0) return "text-destructive";
+    if (v < 12.4) return "text-orange-500";
+    return "text-primary";
+  };
+
+  // Coolant temp
+  const coolantTemp = device.last_coolant_temp_c;
+  const getCoolantColor = (t: number | null) => {
+    if (t === null) return "text-muted-foreground";
+    if (t > 105) return "text-destructive";
+    if (t > 95) return "text-orange-500";
+    return "text-primary";
+  };
+
+  // Fault codes
+  const faultCodes = device.last_fault_codes;
+  const hasFaults = faultCodes && faultCodes.length > 0;
 
   const getBatteryColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";
@@ -46,13 +83,13 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   };
 
   const BatteryIcon = getBatteryIcon(batteryLevel);
-
   const isSpeeding = speedKmh !== null && speedLimitKmh !== null && speedKmh > speedLimitKmh;
 
   return (
     <Card className={cn(
       "overflow-hidden transition-all",
-      isOnline && "ring-1 ring-primary/20"
+      isOnline && "ring-1 ring-primary/20",
+      hasFaults && "ring-1 ring-destructive/30"
     )}>
       <CardContent className="p-3 sm:p-4 space-y-3">
         {/* Device header */}
@@ -90,7 +127,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
           )}
         </div>
 
-        {/* Live speed panel - only show if device is online */}
+        {/* Live speed panel */}
         {isOnline && speedKmh !== null && (
           <div className={cn(
             "p-3 rounded-lg border",
@@ -130,9 +167,8 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
           </div>
         )}
 
-        {/* Stats row */}
+        {/* Stats row - Battery & Ignition */}
         <div className="grid grid-cols-2 gap-2">
-          {/* Battery indicator */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
@@ -156,7 +192,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
             )}
           </div>
 
-          {/* Ignition status */}
           <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50">
             <Key className={cn(
               "h-4 w-4",
@@ -170,6 +205,65 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
             </span>
           </div>
         </div>
+
+        {/* Engine Diagnostics row */}
+        {(fuelPercent != null || batteryVoltage != null || coolantTemp != null) && (
+          <div className="grid grid-cols-3 gap-2">
+            {/* Fuel Level */}
+            {fuelPercent != null && (
+              <div className="p-2 rounded-lg bg-muted/50 space-y-1">
+                <div className="flex items-center gap-1 text-xs">
+                  <Fuel className={cn("h-3.5 w-3.5", getFuelColor(fuelPercent))} />
+                  <span className="text-muted-foreground">Fuel</span>
+                </div>
+                <p className={cn("text-sm font-bold", getFuelColor(fuelPercent))}>
+                  {Math.round(fuelPercent)}%
+                </p>
+                <Progress 
+                  value={fuelPercent} 
+                  className={cn(
+                    "h-1",
+                    fuelPercent <= 15 ? "[&>div]:bg-destructive" :
+                    fuelPercent <= 30 ? "[&>div]:bg-orange-500" :
+                    "[&>div]:bg-primary"
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Battery Voltage */}
+            {batteryVoltage != null && (
+              <div className="p-2 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-1 text-xs">
+                  <Zap className={cn("h-3.5 w-3.5", getVoltageColor(batteryVoltage))} />
+                  <span className="text-muted-foreground">12V</span>
+                </div>
+                <p className={cn("text-sm font-bold", getVoltageColor(batteryVoltage))}>
+                  {batteryVoltage.toFixed(1)}V
+                </p>
+                {batteryVoltage < 12.0 && (
+                  <p className="text-[10px] text-destructive mt-0.5">Low!</p>
+                )}
+              </div>
+            )}
+
+            {/* Coolant Temperature */}
+            {coolantTemp != null && (
+              <div className="p-2 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-1 text-xs">
+                  <Thermometer className={cn("h-3.5 w-3.5", getCoolantColor(coolantTemp))} />
+                  <span className="text-muted-foreground">Coolant</span>
+                </div>
+                <p className={cn("text-sm font-bold", getCoolantColor(coolantTemp))}>
+                  {Math.round(coolantTemp)}°C
+                </p>
+                {coolantTemp > 105 && (
+                  <p className="text-[10px] text-destructive mt-0.5">Overheat!</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Odometer & Engine Hours row */}
         {(odometerMiles !== null || engineHoursFormatted !== null) && (
@@ -191,6 +285,62 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
                 <span className="font-medium">{engineHoursFormatted}</span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tire Pressure */}
+        {device.last_tire_pressure_json && Object.keys(device.last_tire_pressure_json).length > 0 && (
+          <div className="p-2 rounded-lg bg-muted/50 text-xs">
+            <p className="font-medium text-muted-foreground mb-1">Tire Pressure (kPa)</p>
+            <div className="grid grid-cols-2 gap-1">
+              {device.last_tire_pressure_json.frontLeft != null && (
+                <span>FL: <strong>{Math.round(device.last_tire_pressure_json.frontLeft)}</strong></span>
+              )}
+              {device.last_tire_pressure_json.frontRight != null && (
+                <span>FR: <strong>{Math.round(device.last_tire_pressure_json.frontRight)}</strong></span>
+              )}
+              {device.last_tire_pressure_json.rearLeft != null && (
+                <span>RL: <strong>{Math.round(device.last_tire_pressure_json.rearLeft)}</strong></span>
+              )}
+              {device.last_tire_pressure_json.rearRight != null && (
+                <span>RR: <strong>{Math.round(device.last_tire_pressure_json.rearRight)}</strong></span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Active Fault Codes */}
+        {hasFaults && (
+          <div className="p-2 rounded-lg bg-destructive/5 border border-destructive/20 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <span className="text-xs font-medium text-destructive">
+                {faultCodes!.length} Active Fault{faultCodes!.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="space-y-1">
+              {faultCodes!.slice(0, 5).map((fault, i) => (
+                <div key={i} className="flex items-start gap-1.5 text-[11px]">
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-[9px] px-1 py-0 shrink-0 mt-0.5",
+                      fault.severity?.toLowerCase().includes("red") || fault.severity?.toLowerCase().includes("critical")
+                        ? "border-destructive text-destructive"
+                        : fault.severity?.toLowerCase().includes("amber") || fault.severity?.toLowerCase().includes("warning")
+                        ? "border-orange-500 text-orange-500"
+                        : "border-muted-foreground text-muted-foreground"
+                    )}
+                  >
+                    {fault.source}
+                  </Badge>
+                  <span className="text-muted-foreground leading-tight">{fault.description}</span>
+                </div>
+              ))}
+              {faultCodes!.length > 5 && (
+                <p className="text-[10px] text-muted-foreground">+{faultCodes!.length - 5} more</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -222,6 +372,9 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {device.last_seen_at && (
           <p className="text-xs text-muted-foreground text-center">
             Last update: {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
+            {device.last_diagnostics_at && (
+              <span className="ml-1">• Diag: {formatDistanceToNow(new Date(device.last_diagnostics_at), { addSuffix: true })}</span>
+            )}
           </p>
         )}
       </CardContent>
