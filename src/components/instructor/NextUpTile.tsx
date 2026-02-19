@@ -12,7 +12,7 @@ import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Button } from "@/components/ui/button";
-import nextUpIcon from "@/assets/next_pupil.png";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -177,14 +177,8 @@ export function NextUpTile({
         <div className="bg-card rounded-none shadow-sm overflow-hidden">
           {/* Gradient header with NEXT UP badge */}
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            </div>
             <div className="relative flex items-center justify-between">
-              <span className="inline-flex items-center">
-                <img src={nextUpIcon} alt="Next Up" className="h-12 object-contain" />
-              </span>
+              <span className="text-sm font-bold tracking-wide uppercase">Next Up</span>
               <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
                 isUrgent
                   ? "bg-amber-400/30 text-white animate-pulse"
