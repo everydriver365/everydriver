@@ -201,9 +201,23 @@ Deno.serve(async (req) => {
       resolvedGeotabIds.push(internalId || d.geotab_device_id);
     }
 
-    // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed in ONE request ----
+    // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed + StatusData + FaultData in ONE request ----
     const now = new Date();
     const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Diagnostic IDs we want from Geotab StatusData
+    const diagnosticIds = [
+      "DiagnosticFuelLevelId",
+      "DiagnosticStateOfChargeId",            // 12V battery voltage
+      "DiagnosticEngineCoolantTemperatureId",
+      "DiagnosticEngineHoursAdjustmentId",
+      "DiagnosticOdometerAdjustmentId",
+      "DiagnosticTirePressureFrontLeftId",
+      "DiagnosticTirePressureFrontRightId",
+      "DiagnosticTirePressureRearLeftId",
+      "DiagnosticTirePressureRearRightId",
+    ];
 
     const batchCalls: Array<{ method: string; params: Record<string, unknown> }> = [
       // Call 0: DeviceStatusInfo for all devices
@@ -220,7 +234,7 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add PostedRoadSpeed calls for each device
+    // Add PostedRoadSpeed calls for each device (calls 1..N)
     for (const gid of resolvedGeotabIds) {
       batchCalls.push({
         method: "GetPostedRoadSpeedsForDevice",
@@ -233,15 +247,48 @@ Deno.serve(async (req) => {
       });
     }
 
+    const speedLimitCallCount = resolvedGeotabIds.length;
+
+    // Add StatusData calls for each device (calls N+1..2N)
+    for (const gid of resolvedGeotabIds) {
+      batchCalls.push({
+        method: "Get",
+        params: {
+          typeName: "StatusData",
+          search: {
+            deviceSearch: { id: gid },
+            diagnosticSearch: { id: diagnosticIds[0] }, // Will get all if we use separate calls
+            fromDate: twoMinAgo.toISOString(),
+            toDate: now.toISOString(),
+          },
+          resultsLimit: 50,
+        },
+      });
+    }
+
+    // Add FaultData call for all devices (single call at end)
+    batchCalls.push({
+      method: "Get",
+      params: {
+        typeName: "FaultData",
+        search: {
+          fromDate: twentyFourHoursAgo.toISOString(),
+          toDate: now.toISOString(),
+        },
+        resultsLimit: 200,
+      },
+    });
+
     console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods");
     const batchResults = await geotabMultiCall(session, batchCalls);
 
     // Parse results
     const statusResults: any[] = batchResults[0] || [];
+
     // Speed limit results: one per device, starting at index 1
     const speedLimitMap = new Map<string, number>();
-    for (let i = 0; i < resolvedGeotabIds.length; i++) {
-      const slResults = batchResults[i + 1];
+    for (let i = 0; i < speedLimitCallCount; i++) {
+      const slResults = batchResults[1 + i];
       if (slResults && slResults.length > 0) {
         const latest = slResults[slResults.length - 1];
         if (latest.maxSpeed != null && latest.maxSpeed > 0) {
@@ -250,7 +297,39 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log("[GeotabPoller] Got", statusResults.length, "status results,", speedLimitMap.size, "speed limits");
+    // StatusData results: one per device, starting after speed limit calls
+    const statusDataOffset = 1 + speedLimitCallCount;
+    const deviceDiagnostics = new Map<string, Record<string, number>>();
+    for (let i = 0; i < resolvedGeotabIds.length; i++) {
+      const sdResults: any[] = batchResults[statusDataOffset + i] || [];
+      const diags: Record<string, number> = {};
+      for (const sd of sdResults) {
+        if (sd.diagnostic?.id && sd.data != null) {
+          // Keep latest value per diagnostic
+          diags[sd.diagnostic.id] = sd.data;
+        }
+      }
+      if (Object.keys(diags).length > 0) {
+        deviceDiagnostics.set(resolvedGeotabIds[i], diags);
+      }
+    }
+
+    // FaultData results: last call
+    const faultResults: any[] = batchResults[batchResults.length - 1] || [];
+    const deviceFaults = new Map<string, any[]>();
+    for (const fault of faultResults) {
+      const faultDeviceId = fault.device?.id;
+      if (!faultDeviceId) continue;
+      if (!deviceFaults.has(faultDeviceId)) deviceFaults.set(faultDeviceId, []);
+      deviceFaults.get(faultDeviceId)!.push({
+        code: fault.code || fault.id,
+        description: fault.name || fault.diagnostic?.name || "Unknown fault",
+        severity: fault.failureModeId?.name || fault.severity || "Unknown",
+        source: fault.controller?.name || fault.source || "ECU",
+      });
+    }
+
+    console.log("[GeotabPoller] Got", statusResults.length, "status results,", speedLimitMap.size, "speed limits,", deviceDiagnostics.size, "diagnostic sets,", deviceFaults.size, "devices with faults");
 
     // Process each device status
     for (const status of statusResults) {
@@ -275,6 +354,48 @@ Deno.serve(async (req) => {
       // Use device-reported time, not server time
       const geotabSeenAt = status.dateTime || null;
 
+      // Get diagnostics for this device
+      const diags = deviceDiagnostics.get(geotabInternalId) || {};
+      const faults = deviceFaults.get(geotabInternalId) || null;
+
+      // Build diagnostics update
+      const diagnosticsUpdate: Record<string, unknown> = {};
+      if (diags["DiagnosticFuelLevelId"] != null) {
+        diagnosticsUpdate.last_fuel_percent = Math.round(diags["DiagnosticFuelLevelId"] * 100) / 100;
+      }
+      if (diags["DiagnosticStateOfChargeId"] != null) {
+        diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100;
+      }
+      if (diags["DiagnosticEngineCoolantTemperatureId"] != null) {
+        diagnosticsUpdate.last_coolant_temp_c = Math.round(diags["DiagnosticEngineCoolantTemperatureId"] * 10) / 10;
+      }
+      if (diags["DiagnosticEngineHoursAdjustmentId"] != null) {
+        // Geotab returns engine hours in seconds
+        diagnosticsUpdate.last_engine_hours = Math.round((diags["DiagnosticEngineHoursAdjustmentId"] / 3600) * 10) / 10;
+      }
+      if (diags["DiagnosticOdometerAdjustmentId"] != null) {
+        // Geotab returns odometer in meters
+        diagnosticsUpdate.last_ecu_odometer_km = Math.round((diags["DiagnosticOdometerAdjustmentId"] / 1000) * 10) / 10;
+      }
+
+      // Tire pressure (collect all available)
+      const tirePressure: Record<string, number> = {};
+      if (diags["DiagnosticTirePressureFrontLeftId"] != null) tirePressure.frontLeft = diags["DiagnosticTirePressureFrontLeftId"];
+      if (diags["DiagnosticTirePressureFrontRightId"] != null) tirePressure.frontRight = diags["DiagnosticTirePressureFrontRightId"];
+      if (diags["DiagnosticTirePressureRearLeftId"] != null) tirePressure.rearLeft = diags["DiagnosticTirePressureRearLeftId"];
+      if (diags["DiagnosticTirePressureRearRightId"] != null) tirePressure.rearRight = diags["DiagnosticTirePressureRearRightId"];
+      if (Object.keys(tirePressure).length > 0) {
+        diagnosticsUpdate.last_tire_pressure_json = tirePressure;
+      }
+
+      if (faults && faults.length > 0) {
+        diagnosticsUpdate.last_fault_codes = faults;
+      }
+
+      if (Object.keys(diagnosticsUpdate).length > 0) {
+        diagnosticsUpdate.last_diagnostics_at = new Date().toISOString();
+      }
+
       await supabase
         .from("gps_devices")
         .update({
@@ -289,6 +410,7 @@ Deno.serve(async (req) => {
           last_heartbeat_at: new Date().toISOString(),
           last_road_name: roadName,
           last_speed_limit_kmh: speedLimitKmh,
+          ...diagnosticsUpdate,
         })
         .eq("id", device.id);
 

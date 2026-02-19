@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BatteryLow, BatteryMedium, BatteryFull, Battery, Key, Wifi, WifiOff, ChevronRight, ChevronDown, Car } from "lucide-react";
+import { BatteryLow, BatteryMedium, BatteryFull, Battery, Key, Wifi, WifiOff, ChevronDown, Fuel } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
-import { formatDistanceToNow } from "date-fns";
 import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 
 interface VehicleHealthStripProps {
@@ -118,18 +117,32 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
                 </div>
               </div>
 
-              {/* Last Seen */}
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10">
-                <Car className="h-4 w-4 text-amber-500" />
-                <div>
-                  <p className="text-xs font-bold text-amber-500 leading-none">
-                    {device.last_seen_at
-                      ? formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: false })
-                      : "—"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Seen</p>
+              {/* Fuel Level or Last Seen */}
+              {device.last_fuel_percent != null ? (
+                <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
+                  device.last_fuel_percent <= 15 ? "bg-red-500/10" : device.last_fuel_percent <= 30 ? "bg-amber-500/10" : "bg-primary/10"
+                )}>
+                  <Fuel className={cn("h-4 w-4",
+                    device.last_fuel_percent <= 15 ? "text-destructive" : device.last_fuel_percent <= 30 ? "text-orange-500" : "text-primary"
+                  )} />
+                  <div>
+                    <p className={cn("text-sm font-bold leading-none",
+                      device.last_fuel_percent <= 15 ? "text-destructive" : device.last_fuel_percent <= 30 ? "text-orange-500" : "text-primary"
+                    )}>
+                      {Math.round(device.last_fuel_percent)}%
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Fuel</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/50">
+                  <Fuel className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground leading-none">—</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Fuel</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Link>
