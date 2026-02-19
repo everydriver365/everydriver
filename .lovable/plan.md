@@ -1,71 +1,131 @@
 
 
-# Add Geotab Engine Diagnostics to Vehicle Health
+# Geotab Hub: Centralised Geotab Section for Instructors and Admin
 
-## What You'll Get
+## What We're Building
 
-The Vehicle Health tab will show real engine data from your Geotab device:
+A dedicated **Geotab Hub** section that consolidates all Geotab-powered features into one organised area, accessible to both instructors (who have a Geotab device assigned) and admins (who manage all devices). This brings together route history, trip reports, dashcam footage, vehicle diagnostics, and live tracking under a single "Geotab" navigation entry.
 
-- **Fuel Level** (%) with visual gauge
-- **Battery Voltage** (12V system) with low-voltage warning
-- **Engine Coolant Temperature** with overheat warning
-- **Engine Hours** (total runtime)
-- **ECU Odometer** (accurate mileage from the car's computer, not GPS estimates)
-- **Tire Pressure** (if your vehicle supports it)
-- **Active Fault Codes** (check engine light / DTCs) with severity and description
+## Current State
 
-## How It Works
+The app already has most of the individual Geotab features built but scattered across different pages:
+- **Live Map** -- inside Fleet Dashboard tab
+- **Trip Replay** -- standalone page at `/instructor/trip-replay`
+- **Dashcam Gallery** -- standalone page at `/instructor/dashcam`
+- **Vehicle Health** (fuel, battery, faults) -- at `/instructor/vehicle-health`
+- **Route Heatmap** -- inside Fleet Dashboard tab
+- **Geofences & Alerts** -- inside Fleet Dashboard tab
+- **Mileage Tracking** -- inside Fleet Dashboard tab
+- **Admin Tracker Management** -- inside Admin Portal "GPS Trackers" section
 
-Geotab exposes this data through two APIs: `StatusData` (gauges/sensors) and `FaultData` (engine warnings). We'll batch these into the existing `ExecuteMultiCall` so it costs zero extra API calls against the rate limit.
+What's missing is a unified Geotab section and a few key features: **Trip History Log** (list of all trips with summary data), **Report Generation** from trip data, and an admin-level Geotab overview across all instructors.
 
-## Implementation
+## Plan
 
-### 1. Database: Add columns to `gps_devices`
+### 1. New Instructor Page: `/instructor/geotab`
 
-New columns on the existing table:
-- `last_fuel_percent` (numeric) -- fuel tank level
-- `last_battery_voltage` (numeric) -- 12V battery
-- `last_coolant_temp_c` (numeric) -- engine coolant celsius
-- `last_engine_hours` (numeric) -- total engine hours
-- `last_ecu_odometer_km` (numeric) -- ECU-reported odometer
-- `last_tire_pressure_json` (jsonb) -- per-tire readings if available
-- `last_fault_codes` (jsonb) -- array of active DTCs: `[{code, description, severity, source}]`
-- `last_diagnostics_at` (timestamptz) -- when diagnostics were last updated
+A tabbed page with all Geotab features consolidated:
 
-### 2. Geotab Poller: Fetch StatusData + FaultData
+| Tab | Content | Status |
+|-----|---------|--------|
+| **Overview** | Device status cards, fuel/battery/fault summary | Reuses `EnhancedDeviceStatusCard` + `CheckEngineBanner` |
+| **Live Map** | Real-time vehicle position | Reuses `FleetLiveMap` |
+| **Trips** | Sortable trip history list with distance, duration, scores | **NEW** -- calls `geotab-poller` Trip API |
+| **Routes** | Trip replay with animated playback | Links to existing `/instructor/trip-replay` |
+| **Dashcam** | Video/image gallery with filters | Reuses existing `DashcamGallery` content |
+| **Reports** | Generate PDF driving reports per trip/date range | Reuses existing `generate-route-report` + `generate-driving-report` edge functions |
+| **Diagnostics** | Fuel, battery, coolant trends + fault code history | Reuses `BatteryHistoryChart` + fault display |
+| **Geofences** | Zone editor and alert history | Reuses `GeofenceEditor` + `GeofenceAlertsList` |
 
-Add two more calls to the existing `ExecuteMultiCall` batch:
+Access is gated: only instructors with a Geotab device assigned (via admin) see the section in their navigation. Others see a "Not Available" card explaining it needs to be set up by their admin.
 
-- **StatusData** with `DiagnosticSearch` filters for: `DiagnosticFuelLevelId`, `DiagnosticStateOfChargeId` (battery voltage), `DiagnosticEngineCoolantTemperatureId`, `DiagnosticEngineHoursAdjustmentId`, `DiagnosticOdometerAdjustmentId`, `DiagnosticTirePressureFrontLeftId` (and other tires)
-- **FaultData** with `search.fromDate` set to last 24 hours to catch active faults
+### 2. New Admin Section: "Geotab Fleet" in Admin Portal
 
-Write the parsed values into the new `gps_devices` columns.
+A new section in the admin sidebar under "System Settings" that provides a cross-instructor Geotab overview:
 
-### 3. Frontend: Update data model and UI
+| Sub-section | Content |
+|-------------|---------|
+| **All Devices** | Existing tracker manager with enhanced status columns (last seen, fuel %, faults) |
+| **Fleet Overview** | Aggregated stats: total devices, online/offline counts, devices with active faults |
+| **Trip History** | View trips across all instructors with instructor filter dropdown |
+| **Dashcam** | View dashcam footage across all instructors with instructor filter |
+| **Reports** | Generate fleet-wide reports (total mileage, fault summaries, trip counts per instructor) |
 
-**`useVehicleHealth.ts`**: Add new fields to `GPSDeviceHealth` interface and SELECT query.
+### 3. New Edge Function: `geotab-trips`
 
-**`EnhancedDeviceStatusCard.tsx`**: Replace the placeholder `null` values with real data:
-- Fuel level gauge with color coding (red < 15%, amber < 30%)
-- Battery voltage display (warning below 12.0V)
-- Coolant temperature (warning above 100C)
-- ECU odometer in miles with today's distance calculation
-- Engine hours formatted as "XXXh XXm"
-- Active fault codes section with severity badges (red/amber/info)
+Fetches trip data from the Geotab API `Get<Trip>` for a given device and date range:
 
-**`VehicleHealthStrip.tsx`** (dashboard widget): Add fuel level to the 4-metric grid, replacing the generic "Last Seen" tile when fuel data is available.
+- Input: `instructorId`, `fromDate`, `toDate`
+- Authenticates with Geotab using existing credentials
+- Fetches `Trip` objects for the instructor's devices
+- Returns: array of trips with start/end time, distance (km), duration, idle time, start/end coordinates
+- No database storage needed initially -- fetched on demand (with client-side caching via React Query)
 
-### 4. Files Modified
+### 4. New Component: `GeotabTripHistory`
+
+A table/list component showing:
+- Date/time of trip
+- Start and end addresses (reverse geocoded)
+- Distance (miles)
+- Duration
+- Max speed
+- Link to replay the trip route
+
+### 5. Navigation Updates
+
+**Instructor side:**
+- Add "Geotab" entry to the instructor navigation menu (with a satellite/tracker icon)
+- Only visible when instructor has an active Geotab device
+
+**Admin side:**
+- Add "Geotab Fleet" entry under System Settings in admin sidebar
+- Always visible for admins
+
+## Technical Details
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/pages/InstructorGeotabHub.tsx` | Main Geotab hub page with tabs |
+| `src/components/instructor/geotab/GeotabTripHistory.tsx` | Trip history list component |
+| `src/components/instructor/geotab/GeotabOverviewTab.tsx` | Overview tab with device status summary |
+| `src/components/instructor/geotab/GeotabReportsTab.tsx` | Report generation tab |
+| `src/components/admin/AdminGeotabFleet.tsx` | Admin fleet-wide Geotab view |
+| `supabase/functions/geotab-trips/index.ts` | Edge function to fetch Trip data from Geotab API |
+| `src/hooks/useGeotabTrips.ts` | React Query hook for trip data |
+
+### Files to Modify
 
 | File | Change |
 |------|--------|
-| New migration SQL | Add 8 diagnostic columns to `gps_devices` |
-| `supabase/functions/geotab-poller/index.ts` | Add StatusData + FaultData to ExecuteMultiCall batch, write results to DB |
-| `src/hooks/useVehicleHealth.ts` | Add new fields to interface and query |
-| `src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx` | Display fuel, voltage, coolant, odometer, engine hours, fault codes |
-| `src/components/instructor/VehicleHealthStrip.tsx` | Show fuel level in dashboard strip |
+| `src/App.tsx` | Add route `/instructor/geotab` |
+| `src/pages/AdminPortal.tsx` | Add "Geotab Fleet" section with `AdminGeotabFleet` component |
+| `src/components/layout/InstructorPortalLayout.tsx` (or nav config) | Add Geotab nav item, conditionally shown |
+| `supabase/config.toml` | Not modified (auto-managed), but new edge function will auto-deploy |
 
-### 5. Rate Limit Impact
+### Geotab Trip API Call Structure
 
-The poller currently makes 1 HTTP request per poll (ExecuteMultiCall with N+1 methods). Adding StatusData and FaultData adds just 2 more methods to the same batch call -- still 1 HTTP request total, well within the 10 calls/minute limit.
+```text
+Method: "Get"
+TypeName: "Trip"
+Params:
+  deviceSearch: { id: <geotab_internal_id> }
+  fromDate: <ISO string>
+  toDate: <ISO string>
+
+Returns per trip:
+  - id, dateTime (start), nextTripStartTime
+  - distance (metres), drivingDuration (seconds)
+  - idlingDuration (seconds)
+  - maximumSpeed (km/h), averageSpeed (km/h)
+  - startPoint { x, y }, stopPoint { x, y }
+  - stopDuration
+```
+
+### Access Control
+
+- Instructor Geotab Hub: requires authenticated instructor with at least one `gps_devices` row where `tracking_provider = 'geotab'`
+- Admin Geotab Fleet: requires admin role (existing `has_role` check)
+- `geotab-trips` edge function: validates auth token, checks instructor ownership of devices
 
