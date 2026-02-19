@@ -16,7 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
-import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
+import LiveTrackingMap from "@/components/instructor/GoogleLiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
