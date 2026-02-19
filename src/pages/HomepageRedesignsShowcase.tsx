@@ -7,6 +7,12 @@ import {
   CircleDot, Fuel, CheckCircle, AlertTriangle, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Design11, Design12, Design13, Design14, Design15,
+  Design16, Design17, Design18, Design19, Design20,
+  Design21, Design22, Design23, Design24, Design25,
+  Design26, Design27, Design28, Design29, Design30,
+} from "./HomepageRedesignsExtra";
 
 // Phone frame wrapper
 function PhoneFrame({ title, description, children, number }: {
@@ -777,7 +783,7 @@ export default function HomepageRedesignsShowcase() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-black tracking-tight text-foreground">Homepage Redesign Concepts</h1>
           <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
-            10 layout concepts for the instructor mobile homepage. All retain the same features: 
+            30 layout concepts for the instructor mobile homepage. All retain the same features: 
             next lesson, schedule, messages, stats, quick actions, plan ahead, earnings forecast, weather &amp; alerts.
           </p>
         </div>
@@ -811,6 +817,66 @@ export default function HomepageRedesignsShowcase() {
           </PhoneFrame>
           <PhoneFrame number={10} title="Compact Dashboard" description="Dense, info-rich layout. Inline stat strip, tight schedule list, 8-icon grid.">
             <Design10 />
+          </PhoneFrame>
+          <PhoneFrame number={11} title="Pill Dashboard" description="Scrollable pill stats at top, hero next-lesson card, 8-icon action grid.">
+            <Design11 />
+          </PhoneFrame>
+          <PhoneFrame number={12} title="Newspaper" description="Editorial layout with serif fonts, two-column grid, headline-style sections.">
+            <Design12 />
+          </PhoneFrame>
+          <PhoneFrame number={13} title="Neon Dark" description="Dark mode with cyan/purple neon accents. Glowing gradients, futuristic feel.">
+            <Design13 />
+          </PhoneFrame>
+          <PhoneFrame number={14} title="Bubble Cards" description="Chat-like message bubbles for info. Conversational, friendly, informal.">
+            <Design14 />
+          </PhoneFrame>
+          <PhoneFrame number={15} title="Dashboard Panels" description="Indigo/purple gradient header. Clean white panels below. Corporate polish.">
+            <Design15 />
+          </PhoneFrame>
+          <PhoneFrame number={16} title="Kanban Lanes" description="Horizontal scrolling lanes: Done / Now / Later. Task-board feel.">
+            <Design16 />
+          </PhoneFrame>
+          <PhoneFrame number={17} title="Gradient Sections" description="Emerald/teal gradient header with rounded bottom. Fresh, energetic.">
+            <Design17 />
+          </PhoneFrame>
+          <PhoneFrame number={18} title="Single Column Focus" description="Left-aligned, border-accent, divider-separated. Calm, focused reading.">
+            <Design18 />
+          </PhoneFrame>
+          <PhoneFrame number={19} title="Status Bar" description="Persistent status ticker at top. Notification-first design.">
+            <Design19 />
+          </PhoneFrame>
+          <PhoneFrame number={20} title="Widgets (iOS)" description="iOS-style widget cards with colored icon badges. Native Apple feel.">
+            <Design20 />
+          </PhoneFrame>
+          <PhoneFrame number={21} title="Card Carousel" description="Swipeable hero cards with avatar initials in schedule list.">
+            <Design21 />
+          </PhoneFrame>
+          <PhoneFrame number={22} title="Progress Ring" description="Central SVG progress ring for goal tracking. Data visualization focus.">
+            <Design22 />
+          </PhoneFrame>
+          <PhoneFrame number={23} title="Sidebar Tabs" description="Vertical icon sidebar navigation. Desktop-like feel on mobile.">
+            <Design23 />
+          </PhoneFrame>
+          <PhoneFrame number={24} title="Stacked Layers" description="Overlapping cards with z-index layering. Depth and dimension.">
+            <Design24 />
+          </PhoneFrame>
+          <PhoneFrame number={25} title="Activity Rings" description="Apple Watch-style triple activity rings. Fitness tracker aesthetic.">
+            <Design25 />
+          </PhoneFrame>
+          <PhoneFrame number={26} title="Map Header" description="Map-style hero with location pin. Geographic, contextual design.">
+            <Design26 />
+          </PhoneFrame>
+          <PhoneFrame number={27} title="Accordion Sections" description="Collapsible bordered sections with emoji headers. Organized, tidy.">
+            <Design27 />
+          </PhoneFrame>
+          <PhoneFrame number={28} title="Big Type" description="Oversized typography, minimal UI chrome. Content-first editorial.">
+            <Design28 />
+          </PhoneFrame>
+          <PhoneFrame number={29} title="Streak/Gamified" description="XP bars, streaks, quests. Gamification layer for engagement.">
+            <Design29 />
+          </PhoneFrame>
+          <PhoneFrame number={30} title="Duo-tone Split" description="Dark top / light bottom split. Bold color contrast, red accents.">
+            <Design30 />
           </PhoneFrame>
         </div>
       </div>
