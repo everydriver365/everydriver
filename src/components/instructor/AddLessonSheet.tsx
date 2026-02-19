@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,17 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
-import { PostcodeAutocomplete } from '@/components/PostcodeAutocomplete';
-
-interface AddressOption {
-  label: string;
-  street: string;
-  houseNumber: string;
-  district: string;
-  city: string;
-  county: string;
-  postcode: string;
-}
+import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -61,8 +51,6 @@ export function AddLessonSheet({
   const [lessonDuration, setLessonDuration] = useState('1');
   const [pickupAddress, setPickupAddress] = useState('');
   const [pickupPostcode, setPickupPostcode] = useState('');
-  const [addressOptions, setAddressOptions] = useState<AddressOption[]>([]);
-  const [loadingAddresses, setLoadingAddresses] = useState(false);
 
   // Recurring lesson options
   const [isRecurring, setIsRecurring] = useState(false);
@@ -102,7 +90,6 @@ export function AddLessonSheet({
     setSelectedPupil('');
     setPickupAddress('');
     setPickupPostcode('');
-    setAddressOptions([]);
     setNewPupilName('');
     setNewPupilPhone('');
     setNewPupilAddress('');
@@ -114,62 +101,16 @@ export function AddLessonSheet({
     setPlannedCompetencies([]);
   };
 
-  // Fetch addresses for a given postcode
-  const fetchAddresses = useCallback(async (postcode: string) => {
-    if (!postcode) return;
-    setLoadingAddresses(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('address-lookup', {
-        body: { postcode },
-      });
-      if (error) throw error;
-      const addresses: AddressOption[] = data?.addresses || [];
-      setAddressOptions(addresses);
-    } catch (err) {
-      console.error('Address lookup error:', err);
-      setAddressOptions([]);
-    } finally {
-      setLoadingAddresses(false);
-    }
-  }, []);
-
   // Auto-fill pickup address when selecting an existing pupil
   useEffect(() => {
     if (selectedPupil) {
       const pupil = pupils.find(p => p.id === selectedPupil);
       if (pupil) {
-        const addr = [pupil.address, pupil.postcode].filter(Boolean).join(', ');
-        setPickupAddress(addr);
+        setPickupAddress(pupil.address || '');
         setPickupPostcode(pupil.postcode || '');
-        if (pupil.postcode) {
-          fetchAddresses(pupil.postcode);
-        }
       }
     }
-  }, [selectedPupil, pupils, fetchAddresses]);
-
-  // Handle postcode selection for existing pupil pickup
-  const handlePickupPostcodeSelect = (postcode: string) => {
-    setPickupPostcode(postcode);
-    setPickupAddress('');
-    fetchAddresses(postcode);
-  };
-
-  // Handle address selection from dropdown
-  const handleAddressSelect = (addressLabel: string) => {
-    setPickupAddress(addressLabel);
-  };
-
-  // Handle postcode selection for new pupil
-  const handleNewPupilPostcodeSelect = (postcode: string) => {
-    setNewPupilPostcode(postcode);
-    setNewPupilAddress('');
-    fetchAddresses(postcode);
-  };
-
-  const handleNewPupilAddressSelect = (addressLabel: string) => {
-    setNewPupilAddress(addressLabel);
-  };
+  }, [selectedPupil, pupils]);
 
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) {
@@ -184,7 +125,6 @@ export function AddLessonSheet({
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const lessons = [];
 
-      // Create parent lesson first (or single lesson if not recurring)
       const parentLesson = {
         instructor_id: instructorId,
         pupil_id: selectedPupil,
@@ -199,7 +139,6 @@ export function AddLessonSheet({
       };
       lessons.push(parentLesson);
 
-      // Create additional recurring lessons
       if (isRecurring) {
         for (let i = 1; i < weeks; i++) {
           const recurringDate = addWeeks(lessonDate, i);
@@ -247,7 +186,6 @@ export function AddLessonSheet({
 
     setLoading(true);
     try {
-      // First create the new pupil
       const { data: newPupil, error: pupilError } = await supabase
         .from('pupils')
         .insert({
@@ -262,7 +200,6 @@ export function AddLessonSheet({
 
       if (pupilError) throw pupilError;
 
-      // Then create the lesson(s)
       const durationHours = parseFloat(lessonDuration);
       const durationMinutes = durationHours * 60;
       const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
@@ -418,43 +355,13 @@ export function AddLessonSheet({
               </div>
 
               <div className="space-y-2">
-                <Label>Pickup Postcode</Label>
-                <PostcodeAutocomplete
-                  value={pickupPostcode}
-                  onChange={setPickupPostcode}
-                  onSelect={(postcode) => handlePickupPostcodeSelect(postcode)}
-                  placeholder="Start typing postcode..."
-                  showGeolocation={false}
+                <Label>Pickup Address</Label>
+                <GoogleAddressAutocomplete
+                  value={pickupAddress}
+                  onChange={setPickupAddress}
+                  onPostcodeChange={setPickupPostcode}
+                  placeholder="Start typing an address..."
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Pickup Address (optional)</Label>
-                {loadingAddresses ? (
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading addresses...
-                  </div>
-                ) : addressOptions.length > 0 ? (
-                  <Select value={pickupAddress} onValueChange={handleAddressSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an address" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {addressOptions.map((addr, i) => (
-                        <SelectItem key={i} value={addr.label}>
-                          {addr.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    placeholder="Enter pickup location"
-                    value={pickupAddress}
-                    onChange={(e) => setPickupAddress(e.target.value)}
-                  />
-                )}
               </div>
 
               {/* Recurring Lesson Options */}
@@ -527,43 +434,13 @@ export function AddLessonSheet({
               </div>
 
               <div className="space-y-2">
-                <Label>Postcode</Label>
-                <PostcodeAutocomplete
-                  value={newPupilPostcode}
-                  onChange={setNewPupilPostcode}
-                  onSelect={(postcode) => handleNewPupilPostcodeSelect(postcode)}
-                  placeholder="Start typing postcode..."
-                  showGeolocation={false}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label>Address</Label>
-                {loadingAddresses ? (
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading addresses...
-                  </div>
-                ) : addressOptions.length > 0 ? (
-                  <Select value={newPupilAddress} onValueChange={handleNewPupilAddressSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an address" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {addressOptions.map((addr, i) => (
-                        <SelectItem key={i} value={addr.label}>
-                          {addr.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    placeholder="Street address"
-                    value={newPupilAddress}
-                    onChange={(e) => setNewPupilAddress(e.target.value)}
-                  />
-                )}
+                <GoogleAddressAutocomplete
+                  value={newPupilAddress}
+                  onChange={setNewPupilAddress}
+                  onPostcodeChange={setNewPupilPostcode}
+                  placeholder="Start typing an address..."
+                />
               </div>
 
               <div className="space-y-2">
