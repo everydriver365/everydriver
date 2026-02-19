@@ -135,7 +135,7 @@ export function useInstructorCalendar(instructorId: string) {
       while (true) {
         const { data: extPage, error: extPageError } = await supabase
           .from('instructor_calendar_events')
-          .select('id, external_event_id, title, start_time, end_time, is_busy')
+          .select('id, external_event_id, title, start_time, end_time, is_busy, color')
           .eq('instructor_id', instructorId)
           .gte('start_time', start.toISOString())
           .lte('end_time', end.toISOString())

@@ -286,11 +286,12 @@ async function fetchGoogleEvents(
       .filter((item: { start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string } }) => 
         (item.start?.dateTime || item.start?.date) && (item.end?.dateTime || item.end?.date)
       )
-      .map((item: { id: string; summary?: string; start: { dateTime?: string; date?: string }; end: { dateTime?: string; date?: string } }) => ({
+      .map((item: { id: string; summary?: string; colorId?: string; start: { dateTime?: string; date?: string }; end: { dateTime?: string; date?: string } }) => ({
         id: item.id,
         summary: item.summary || "Busy",
         start: item.start.dateTime || `${item.start.date}T00:00:00`,
         end: item.end.dateTime || `${item.end.date}T23:59:59`,
+        color: googleColorIdToHex(item.colorId),
       }));
 
     allEvents.push(...pageEvents);
@@ -611,6 +612,7 @@ Deno.serve(async (req) => {
         start_time: event.start,
         end_time: event.end,
         is_busy: true,
+        color: event.color || null,
       }));
 
       if (eventsToInsert.length > 0) {
@@ -722,6 +724,7 @@ Deno.serve(async (req) => {
         start_time: event.start,
         end_time: event.end,
         is_busy: true,
+        color: event.color || null,
       }));
 
       if (eventsToInsert.length > 0) {

@@ -3103,6 +3103,7 @@ export type Database = {
       }
       instructor_calendar_events: {
         Row: {
+          color: string | null
           end_time: string
           external_event_id: string
           id: string
@@ -3113,6 +3114,7 @@ export type Database = {
           title: string | null
         }
         Insert: {
+          color?: string | null
           end_time: string
           external_event_id: string
           id?: string
@@ -3123,6 +3125,7 @@ export type Database = {
           title?: string | null
         }
         Update: {
+          color?: string | null
           end_time?: string
           external_event_id?: string
           id?: string

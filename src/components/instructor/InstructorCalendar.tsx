@@ -84,7 +84,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
         const isPaid = event.data?.payment_status === 'paid';
         return isPaid ? colors.lesson : colors.lesson_unpaid;
       case 'external':
-        return colors.external;
+        return event.data?.color || colors.external;
       case 'block':
         const blockType = event.data?.block_type || 'personal';
         switch (blockType) {
