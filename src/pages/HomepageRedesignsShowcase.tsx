@@ -19,6 +19,12 @@ import {
   Design41, Design42, Design43, Design44, Design45,
   Design46, Design47, Design48, Design49, Design50,
 } from "./HomepageRedesignsExtra2";
+import {
+  Design51, Design52, Design53, Design54, Design55,
+  Design56, Design57, Design58, Design59, Design60,
+  Design61, Design62, Design63, Design64, Design65,
+  Design66, Design67, Design68, Design69, Design70,
+} from "./HomepageRedesignsExtra3";
 
 // Phone frame wrapper
 function PhoneFrame({ title, description, children, number }: {
@@ -789,7 +795,7 @@ export default function HomepageRedesignsShowcase() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-black tracking-tight text-foreground">Homepage Redesign Concepts</h1>
           <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
-            50 layout concepts for the instructor mobile homepage. All retain the same features: 
+            70 layout concepts for the instructor mobile homepage. All retain the same features: 
             next lesson, schedule, messages, stats, quick actions, plan ahead, earnings forecast, weather &amp; alerts.
           </p>
         </div>
@@ -943,6 +949,66 @@ export default function HomepageRedesignsShowcase() {
           </PhoneFrame>
           <PhoneFrame number={50} title="Brutalist" description="Yellow background, thick black borders, uppercase everything.">
             <Design50 />
+          </PhoneFrame>
+          <PhoneFrame number={51} title="Layered Panels" description="Deep indigo background with gradient hero card and layered panels.">
+            <Design51 />
+          </PhoneFrame>
+          <PhoneFrame number={52} title="Floating Bubbles" description="Dark background with blurred color orbs and frosted glass cards.">
+            <Design52 />
+          </PhoneFrame>
+          <PhoneFrame number={53} title="Accordion Stack" description="Light background with expandable sections for each content area.">
+            <Design53 />
+          </PhoneFrame>
+          <PhoneFrame number={54} title="Gradient Ribbon" description="Wide gradient header ribbon with floating white cards below.">
+            <Design54 />
+          </PhoneFrame>
+          <PhoneFrame number={55} title="Compact Rows" description="Tight row-based layout with individual cards per schedule item.">
+            <Design55 />
+          </PhoneFrame>
+          <PhoneFrame number={56} title="Gradient Cards" description="Dark mode with colorful gradient cards for each data section.">
+            <Design56 />
+          </PhoneFrame>
+          <PhoneFrame number={57} title="Pill Stats" description="Scrollable colored pill badges for stats, clean cards below.">
+            <Design57 />
+          </PhoneFrame>
+          <PhoneFrame number={58} title="Sidebar Ticker" description="Persistent left sidebar with stats, scrollable main area.">
+            <Design58 />
+          </PhoneFrame>
+          <PhoneFrame number={59} title="Outlined Minimal" description="White background, thick outlined hero card, clean borders.">
+            <Design59 />
+          </PhoneFrame>
+          <PhoneFrame number={60} title="Map Hero" description="Map-style hero header with grid pattern and navigate CTA.">
+            <Design60 />
+          </PhoneFrame>
+          <PhoneFrame number={61} title="Progress Ring" description="Large SVG ring chart for weekly goal as hero element.">
+            <Design61 />
+          </PhoneFrame>
+          <PhoneFrame number={62} title="Stacked Cards" description="Dark glass-morphism stacked cards with color-coded accents.">
+            <Design62 />
+          </PhoneFrame>
+          <PhoneFrame number={63} title="Duotone Header" description="Navy header with inline stats, white body with shadow cards.">
+            <Design63 />
+          </PhoneFrame>
+          <PhoneFrame number={64} title="Color Block Rows" description="Full-width colored bands for each section. Bold and direct.">
+            <Design64 />
+          </PhoneFrame>
+          <PhoneFrame number={65} title="Tabbed Compact" description="Tab navigation for Overview/Schedule/Actions sections.">
+            <Design65 />
+          </PhoneFrame>
+          <PhoneFrame number={66} title="Circular Icons" description="Large circular colored icons for quick actions at top.">
+            <Design66 />
+          </PhoneFrame>
+          <PhoneFrame number={67} title="Split Metric" description="Two-column colored hero with earnings and goal side by side.">
+            <Design67 />
+          </PhoneFrame>
+          <PhoneFrame number={68} title="Neon Accents" description="Near-black background with neon-colored borders and accents.">
+            <Design68 />
+          </PhoneFrame>
+          <PhoneFrame number={69} title="Horizontal Scroll" description="Swipeable colored stat cards at top, clean cards below.">
+            <Design69 />
+          </PhoneFrame>
+          <PhoneFrame number={70} title="Big Typography" description="Oversized earnings number as hero, minimal divider-based layout.">
+            <Design70 />
           </PhoneFrame>
         </div>
       </div>
