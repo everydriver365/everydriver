@@ -39,6 +39,9 @@ export async function fetchGoogleMapsKey(): Promise<string> {
 export async function callSnapToRoad(
   points: Array<{ lat: number; lng: number }>
 ): Promise<Array<{ lat: number; lng: number }>> {
+  if (!points || points.length < 2) {
+    return points || [];
+  }
   const { data: session } = await supabase.auth.getSession();
   const jwt = session?.session?.access_token ?? null;
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
