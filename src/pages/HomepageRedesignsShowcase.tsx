@@ -13,6 +13,12 @@ import {
   Design21, Design22, Design23, Design24, Design25,
   Design26, Design27, Design28, Design29, Design30,
 } from "./HomepageRedesignsExtra";
+import {
+  Design31, Design32, Design33, Design34, Design35,
+  Design36, Design37, Design38, Design39, Design40,
+  Design41, Design42, Design43, Design44, Design45,
+  Design46, Design47, Design48, Design49, Design50,
+} from "./HomepageRedesignsExtra2";
 
 // Phone frame wrapper
 function PhoneFrame({ title, description, children, number }: {
@@ -783,7 +789,7 @@ export default function HomepageRedesignsShowcase() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-black tracking-tight text-foreground">Homepage Redesign Concepts</h1>
           <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
-            30 layout concepts for the instructor mobile homepage. All retain the same features: 
+            50 layout concepts for the instructor mobile homepage. All retain the same features: 
             next lesson, schedule, messages, stats, quick actions, plan ahead, earnings forecast, weather &amp; alerts.
           </p>
         </div>
@@ -877,6 +883,66 @@ export default function HomepageRedesignsShowcase() {
           </PhoneFrame>
           <PhoneFrame number={30} title="Duo-tone Split" description="Dark top / light bottom split. Bold color contrast, red accents.">
             <Design30 />
+          </PhoneFrame>
+          <PhoneFrame number={31} title="Warm Sunrise" description="Orange/amber gradient palette. Warm, inviting morning feel.">
+            <Design31 />
+          </PhoneFrame>
+          <PhoneFrame number={32} title="Monochrome Minimal" description="Black & white only. Border-separated sections, zero color.">
+            <Design32 />
+          </PhoneFrame>
+          <PhoneFrame number={33} title="Rounded Pastel" description="Soft violet/pink/sky pastels. Extra-rounded corners, gentle feel.">
+            <Design33 />
+          </PhoneFrame>
+          <PhoneFrame number={34} title="Metro Tiles" description="Windows Phone-inspired colored tiles. Bold, geometric grid.">
+            <Design34 />
+          </PhoneFrame>
+          <PhoneFrame number={35} title="Neumorphic" description="Soft shadows creating embossed/debossed 3D effect.">
+            <Design35 />
+          </PhoneFrame>
+          <PhoneFrame number={36} title="Ticket/Coupon" description="Lesson cards styled as tear-off tickets with status bars.">
+            <Design36 />
+          </PhoneFrame>
+          <PhoneFrame number={37} title="Full-Width Sections" description="Rose/pink hero gradient. Full-width bordered sections below.">
+            <Design37 />
+          </PhoneFrame>
+          <PhoneFrame number={38} title="Clock Face" description="Large circular clock showing next lesson time as hero element.">
+            <Design38 />
+          </PhoneFrame>
+          <PhoneFrame number={39} title="Gradient Mesh" description="Purple-to-violet mesh gradient with frosted glass cards.">
+            <Design39 />
+          </PhoneFrame>
+          <PhoneFrame number={40} title="Retro Terminal" description="Green-on-black terminal aesthetic. Monospace font, command style.">
+            <Design40 />
+          </PhoneFrame>
+          <PhoneFrame number={41} title="Magazine Cover" description="Large hero image area with editorial layout below.">
+            <Design41 />
+          </PhoneFrame>
+          <PhoneFrame number={42} title="Sidebar Stats" description="Persistent left stat rail with scrollable main content area.">
+            <Design42 />
+          </PhoneFrame>
+          <PhoneFrame number={43} title="Emoji Dashboard" description="Emoji-led sections. Playful, fun, instantly recognizable.">
+            <Design43 />
+          </PhoneFrame>
+          <PhoneFrame number={44} title="Bottom Sheet" description="Key stats on primary bg, draggable sheet overlay for content.">
+            <Design44 />
+          </PhoneFrame>
+          <PhoneFrame number={45} title="Dot Grid" description="Subtle dot pattern background with translucent card overlays.">
+            <Design45 />
+          </PhoneFrame>
+          <PhoneFrame number={46} title="Floating Orbs" description="Dark mode with blurred color orbs. Ambient, atmospheric.">
+            <Design46 />
+          </PhoneFrame>
+          <PhoneFrame number={47} title="Staggered Grid" description="Two-column masonry with offset rows. Dynamic, Pinterest-style.">
+            <Design47 />
+          </PhoneFrame>
+          <PhoneFrame number={48} title="Spotlight" description="Dark with radial spotlight on hero metric. Dramatic focus.">
+            <Design48 />
+          </PhoneFrame>
+          <PhoneFrame number={49} title="Horizontal Cards" description="Horizontal swipeable colored stat cards at top.">
+            <Design49 />
+          </PhoneFrame>
+          <PhoneFrame number={50} title="Brutalist" description="Yellow background, thick black borders, uppercase everything.">
+            <Design50 />
           </PhoneFrame>
         </div>
       </div>
