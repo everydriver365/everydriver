@@ -225,7 +225,8 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     return () => { cancelled = true; };
   }, [device?.last_latitude, device?.last_longitude]);
 
-  // 3) Update marker whenever device changes
+  // 3) Update marker + extend polyline instantly whenever device changes
+  const lastAppendedRef = useRef<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     const marker = markerRef.current;
@@ -252,6 +253,16 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       strokeColor: "white",
       strokeWeight: 3,
     });
+
+    // Instantly extend the blue polyline so it keeps up with the marker
+    if (polylineRef.current) {
+      const prev = lastAppendedRef.current;
+      const shouldAppend = !prev || Math.abs(prev.lat - lat) > 0.00003 || Math.abs(prev.lng - lng) > 0.00003; // ~3m
+      if (shouldAppend) {
+        polylineRef.current.getPath().push(new w.google.maps.LatLng(lat, lng));
+        lastAppendedRef.current = { lat, lng };
+      }
+    }
   }, [device?.last_latitude, device?.last_longitude, device?.last_heading, markerColor, userDragged]);
 
   // 4) Subscribe to realtime updates for this device row
