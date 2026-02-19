@@ -273,6 +273,10 @@ Deno.serve(async (req) => {
       // Speed limit from batched result
       const speedLimitKmh = speedLimitMap.get(geotabInternalId) ?? null;
 
+      // Use device-reported time, not server time
+      const geotabSeenAt = status.dateTime || null;
+      const isCommunicating = status.isDeviceCommunicating !== false;
+
       await supabase
         .from("gps_devices")
         .update({
@@ -281,9 +285,13 @@ Deno.serve(async (req) => {
           last_speed_kmh: status.speed,
           last_heading: status.bearing ?? null,
           last_ignition_status: status.isDeviceCommunicating ?? null,
-          last_seen_at: new Date().toISOString(),
+          last_seen_at: geotabSeenAt
+            ? new Date(geotabSeenAt).toISOString()
+            : null,
+          last_heartbeat_at: new Date().toISOString(),
           last_road_name: roadName,
           last_speed_limit_kmh: speedLimitKmh,
+          is_active: isCommunicating,
         })
         .eq("id", device.id);
 
