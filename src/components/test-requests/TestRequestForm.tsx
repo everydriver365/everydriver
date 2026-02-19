@@ -146,6 +146,8 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
       }
 
       queryClient.invalidateQueries({ queryKey: ["test-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["test-requests-board"] });
+      queryClient.invalidateQueries({ queryKey: ["matched-slots"] });
       onSuccess?.();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
