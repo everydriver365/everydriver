@@ -1,42 +1,44 @@
 
 
-# Speed Up Live Map Updates
+# Add Speed Badge on Map Next to Arrow Marker
 
-## Current Bottleneck
+## What This Does
 
-The map marker and polyline can only update when new data arrives in the database. Right now:
+Adds a floating speed badge directly on the map, positioned next to the vehicle arrow marker. The badge will show the current speed (e.g., "34 mph") and change color based on status: green when driving normally, red when overspeeding, and grey when offline.
 
-- The **Geotab poller** (which fetches GPS data from your tracker) is triggered every **30 seconds** when moving, or **60 seconds** when idle — and only from the Vehicle Health page, not the live tracking page itself
-- The **snap-to-road** polyline refresh runs every **5 seconds**, which is fine
-- **Realtime subscription** delivers updates instantly once data hits the database
+## Approach
 
-So the real delay is: your tracker data only gets pulled every 30-60 seconds. The live tracking page doesn't even trigger the poller on its own.
-
-## Changes
-
-### 1. Trigger the GPS poller directly from the live tracking map (every 10 seconds)
-
-Add a `useEffect` in `GoogleLiveTrackingMap.tsx` that calls the `geotab-poller` backend function every **10 seconds** while the map is open. This means new GPS coordinates arrive 3-6x faster than today.
-
-### 2. Speed up the snap-to-road cycle from 5s to 3s
-
-Reduce the polyline snap-to-road interval from 5 seconds to 3 seconds so the clean road-aligned line catches up faster after new data arrives.
-
-### 3. Reduce the front-end device data polling (bonus)
-
-The `useVehicleHealth` hook polls the database every 10-30s. On the live tracking page, the Realtime subscription already handles instant updates, so this is fine as-is. The key improvement is pulling data from the tracker more often (change 1).
+Use a Google Maps **OverlayView** to render a small DOM-based speed label that tracks the marker position on the map canvas. This is more reliable than marker labels and allows full styling control.
 
 ## Technical Details
 
 ### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-**Add poller trigger effect (new effect, after effect #4):**
-- Call `supabase.functions.invoke("geotab-poller")` every 10 seconds while the component is mounted and a device is active
-- Only trigger when `device?.id` exists and `isConnected` is true
-- Clean up interval on unmount
+**1. Create a custom OverlayView class (inside the map init effect)**
 
-**Reduce snap-to-road interval (Effect #5, line 375):**
-- Change `setInterval(tick, 5000)` to `setInterval(tick, 3000)`
+After the map is created, define a custom overlay class that:
+- Draws a styled `<div>` with the speed text (e.g., "34 mph")
+- Positions it offset slightly above-right of the marker
+- Updates position whenever `draw()` is called (on pan/zoom)
 
-### No other files changed. No database or backend changes needed.
+Store the overlay instance in a new `speedOverlayRef`.
+
+**2. Update the overlay in Effect #3 (marker update effect)**
+
+When the marker position updates, also update the overlay's:
+- Position (same lat/lng as the marker)
+- Speed text (using existing `speedText` value)
+- Background color (using existing `markerColor` logic: green/red/grey)
+- Visibility (hide when speed is "--")
+
+**3. Cleanup on unmount**
+
+Remove the overlay from the map when the component unmounts.
+
+### Visual Design
+
+- Small rounded pill badge: white text on colored background
+- Offset ~20px above the arrow marker so it doesn't overlap
+- Font size ~11px, bold, with a subtle shadow for readability over the map
+- Colors match the arrow: green (normal), red (overspeeding), grey (offline)
 
