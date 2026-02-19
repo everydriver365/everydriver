@@ -32,7 +32,7 @@ function getEventColor(event: CalendarEvent, colors: CalendarColors): string {
     return isPaid ? colors.lesson : colors.lesson_unpaid;
   }
   if (event.type === 'external') {
-    return colors.external;
+    return event.data?.color || colors.external;
   }
   if (event.type === 'block') {
     const blockType = event.data?.block_type || 'personal';
