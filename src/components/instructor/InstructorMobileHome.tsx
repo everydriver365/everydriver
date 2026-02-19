@@ -17,7 +17,7 @@ import {
   LayoutGrid,
   Sun,
   BookOpen,
-  ChevronRight,
+  
   CheckCircle,
   Calendar,
   Mail,
@@ -614,7 +614,7 @@ export function InstructorMobileHome({
                     <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-white/60" />
+                
               </div>
             </div>
           </div>
