@@ -33,6 +33,7 @@ interface GPSDevice {
   device_name: string;
   is_active: boolean;
   last_seen_at: string | null;
+  last_heartbeat_at: string | null;
   last_speed_kmh: number | null;
   last_latitude: number | null;
   last_longitude: number | null;
@@ -708,17 +709,19 @@ export default function InstructorLiveSession() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Use last_seen_at as primary indicator of device activity
+  // Use last_seen_at + last_heartbeat_at for robust connectivity detection
   const trackTime = device?.last_seen_at;
+  const heartbeatTime = device?.last_heartbeat_at;
   const secondsSinceTrack = trackTime
     ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
     : 9999;
-  // Hardwired trackers only report on events (ignition, movement).
-  // When parked with ignition off, the tracker goes silent — that's NOT "offline".
-  // Connected: fresh data within 60s (active) or ignition off within 24h (parked).
+  const secondsSinceHeartbeat = heartbeatTime
+    ? Math.floor((Date.now() - new Date(heartbeatTime).getTime()) / 1000)
+    : 9999;
+  // Connected: device reported recently (<60s) OR poller heartbeat fresh (<120s) and device seen within 30min
   const ignitionOff = device?.last_ignition_status === false;
   const isConnected = isSessionActive
-    ? secondsSinceTrack < 30
+    ? secondsSinceTrack < 60 || (secondsSinceHeartbeat < 120 && secondsSinceTrack < 1800)
     : secondsSinceTrack < 300 || (ignitionOff && secondsSinceTrack < 86400);
   const isParked = !isSessionActive && ignitionOff && secondsSinceTrack >= 300 && secondsSinceTrack < 86400;
 
