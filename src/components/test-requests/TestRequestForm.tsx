@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -57,7 +57,7 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
   const [testTime, setTestTime] = useState(editData?.test_time?.slice(0, 5) || "");
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(editData?.date_range_end ? parseISO(editData.date_range_end) : undefined);
   const [timeRangeEnd, setTimeRangeEnd] = useState(editData?.time_range_end?.slice(0, 5) || "");
-  const [willingToPayFee, setWillingToPayFee] = useState(editData?.willing_to_pay_swap_fee || false);
+  
   const [notes, setNotes] = useState(editData?.notes || "");
   const [selectedPupilId, setSelectedPupilId] = useState<string>(editData?.pupil_id || "");
   const [pupils, setPupils] = useState<PupilOption[]>([]);
@@ -123,7 +123,7 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
         test_time: testTime,
         date_range_end: dateRangeEnd ? format(dateRangeEnd, "yyyy-MM-dd") : null,
         time_range_end: timeRangeEnd || null,
-        willing_to_pay_swap_fee: willingToPayFee,
+        willing_to_pay_swap_fee: false,
         notes: notes || null,
       };
 
@@ -277,14 +277,6 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
         </div>
       )}
 
-      {/* Swap Fee Toggle */}
-      <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-        <div>
-          <p className="text-sm font-medium">Happy to pay £150 swap fee?</p>
-          <p className="text-xs text-muted-foreground">This helps prioritise your request</p>
-        </div>
-        <Switch checked={willingToPayFee} onCheckedChange={setWillingToPayFee} />
-      </div>
 
       {/* Notes */}
       <div className="space-y-2">
