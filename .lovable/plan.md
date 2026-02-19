@@ -1,44 +1,66 @@
 
 
-# Add Speed Badge on Map Next to Arrow Marker
+# Sat-Nav Experience for Live Tracking
 
-## What This Does
+## Overview
 
-Adds a floating speed badge directly on the map, positioned next to the vehicle arrow marker. The badge will show the current speed (e.g., "34 mph") and change color based on status: green when driving normally, red when overspeeding, and grey when offline.
+Transform the live tracking map into a day-nav-like experience with these enhancements:
 
-## Approach
+## Changes
 
-Use a Google Maps **OverlayView** to render a small DOM-based speed label that tracks the marker position on the map canvas. This is more reliable than marker labels and allows full styling control.
+### 1. Speed Badge Overlay (approved earlier, not yet built)
+- Add a floating speed badge on the map next to the arrow marker using a Google Maps `OverlayView`
+- Shows current speed in mph, color-matched to the marker (green/red/grey)
+- Positioned slightly above-right of the arrow so it follows the vehicle
+
+### 2. Auto-Rotate Map to Heading (North-Up to Track-Up)
+- Add a "Track Up" toggle button on the map
+- When enabled, the map rotates so the vehicle always faces upward (like a sat-nav)
+- Uses `map.setHeading(device.last_heading)` on each position update
+- Toggle between Track-Up and North-Up modes with a compass icon button
+
+### 3. Auto-Zoom Based on Speed
+- When moving fast (>40 mph), zoom out slightly (zoom 14) for better road awareness
+- When moving slowly or stationary, zoom in (zoom 16-17) for detail
+- Smooth transitions using `map.setZoom()` with debouncing to avoid constant changes
+- Only applies when auto-follow is active (not when user has dragged)
+
+### 4. Larger Bottom Info Panel (Sat-Nav Style)
+- Redesign the bottom card to be more prominent with larger speed text
+- Add the speed limit roundel (already exists as `SpeedLimitRoundel` component) displayed as an overlay on the map
+- Show the road name more prominently, like a sat-nav road banner at the top
+
+### 5. Dark Map Style for Night Mode
+- Detect system dark mode preference
+- Apply Google Maps dark style JSON when in dark mode for a proper night-driving look
 
 ## Technical Details
 
 ### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-**1. Create a custom OverlayView class (inside the map init effect)**
+**Speed Badge Overlay:**
+- Define a `SpeedOverlay` class extending `google.maps.OverlayView` inside the map init effect
+- Store in `speedOverlayRef`, update position/text/color in Effect #3
 
-After the map is created, define a custom overlay class that:
-- Draws a styled `<div>` with the speed text (e.g., "34 mph")
-- Positions it offset slightly above-right of the marker
-- Updates position whenever `draw()` is called (on pan/zoom)
+**Track-Up Mode:**
+- Add `trackUp` state (default: false)
+- In Effect #3, when `trackUp` is true: `map.setHeading(device.last_heading ?? 0)`
+- Add compass toggle button in the header bar
+- Reset heading to 0 when switching back to North-Up
+- Enable `map.setTilt(45)` in track-up mode for a 3D perspective feel
 
-Store the overlay instance in a new `speedOverlayRef`.
+**Auto-Zoom:**
+- Add logic in Effect #3: calculate target zoom from speed, apply with debounce
+- Only when `!userDragged`
 
-**2. Update the overlay in Effect #3 (marker update effect)**
+**Sat-Nav Bottom Panel:**
+- Enlarge the speed display with the current speed as the hero element
+- Add `SpeedLimitRoundel` component next to the speed
+- Move road name to a top banner strip below the header
 
-When the marker position updates, also update the overlay's:
-- Position (same lat/lng as the marker)
-- Speed text (using existing `speedText` value)
-- Background color (using existing `markerColor` logic: green/red/grey)
-- Visibility (hide when speed is "--")
+**Dark Map Styling:**
+- Use `next-themes` (already installed) to detect theme
+- Apply a dark style array to the map via `map.setOptions({ styles: darkStyles })`
 
-**3. Cleanup on unmount**
-
-Remove the overlay from the map when the component unmounts.
-
-### Visual Design
-
-- Small rounded pill badge: white text on colored background
-- Offset ~20px above the arrow marker so it doesn't overlap
-- Font size ~11px, bold, with a subtle shadow for readability over the map
-- Colors match the arrow: green (normal), red (overspeeding), grey (offline)
+### No database or backend changes required.
 
