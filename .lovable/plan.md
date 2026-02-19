@@ -1,71 +1,79 @@
 
 
-# Add Geotab Engine Diagnostics to Vehicle Health
+# Fix Fault Code Display and Add Reset Capability
 
-## What You'll Get
+## Problem
+The fault codes show "9 active faults" but each one displays as "Unknown fault" with generic codes (b1, b2, etc.) because the Geotab FaultData API returns nested objects that aren't being parsed correctly. Also, there's no way to dismiss/reset faults.
 
-The Vehicle Health tab will show real engine data from your Geotab device:
+## Root Cause
+The poller extracts fault data like this:
+```
+code: fault.code || fault.id          --> gets internal IDs like "b1"
+description: fault.name || ...        --> fault.name doesn't exist, falls through to "Unknown fault"
+severity: fault.failureModeId?.name   --> failureModeId is an object ref, .name isn't populated
+source: fault.controller?.name        --> controller is a minimal object, .name isn't populated
+```
 
-- **Fuel Level** (%) with visual gauge
-- **Battery Voltage** (12V system) with low-voltage warning
-- **Engine Coolant Temperature** with overheat warning
-- **Engine Hours** (total runtime)
-- **ECU Odometer** (accurate mileage from the car's computer, not GPS estimates)
-- **Tire Pressure** (if your vehicle supports it)
-- **Active Fault Codes** (check engine light / DTCs) with severity and description
+Geotab's FaultData returns objects with **reference IDs** for `diagnostic`, `failureMode`, and `controller` -- the names aren't included in the Get response unless you separately fetch them. The actual DTC code must be derived from the `diagnostic.code` and `controller.id`.
 
-## How It Works
+## Solution
 
-Geotab exposes this data through two APIs: `StatusData` (gauges/sensors) and `FaultData` (engine warnings). We'll batch these into the existing `ExecuteMultiCall` so it costs zero extra API calls against the rate limit.
+### 1. Poller: Better fault code extraction
 
-## Implementation
+Update the FaultData parsing in `geotab-poller/index.ts` to:
+- Derive the OBD-II DTC prefix (P/B/C/U) from the controller ID
+- Build the full DTC code from the diagnostic code (e.g. "P0301")
+- Use `fault.diagnostic?.name` for description (Geotab often populates this)
+- Use `fault.faultLampState` and `fault.severity` for severity level
+- Use `fault.faultState` for active/inactive status
+- Filter to only include active faults (state = "Active" or "Pending")
+- Add the `fault.dateTime` so users know when it was detected
 
-### 1. Database: Add columns to `gps_devices`
+### 2. Poller: Clear faults when none are active
 
-New columns on the existing table:
-- `last_fuel_percent` (numeric) -- fuel tank level
-- `last_battery_voltage` (numeric) -- 12V battery
-- `last_coolant_temp_c` (numeric) -- engine coolant celsius
-- `last_engine_hours` (numeric) -- total engine hours
-- `last_ecu_odometer_km` (numeric) -- ECU-reported odometer
-- `last_tire_pressure_json` (jsonb) -- per-tire readings if available
-- `last_fault_codes` (jsonb) -- array of active DTCs: `[{code, description, severity, source}]`
-- `last_diagnostics_at` (timestamptz) -- when diagnostics were last updated
+Currently, faults are only written when present -- they're never cleared. Add logic to set `last_fault_codes` to an empty array `[]` when no faults are found for a device, so stale faults don't persist forever.
 
-### 2. Geotab Poller: Fetch StatusData + FaultData
+### 3. Frontend: Show DTC code prominently
 
-Add two more calls to the existing `ExecuteMultiCall` batch:
+Update both `EnhancedDeviceStatusCard` and `CheckEngineBanner` to:
+- Display the DTC code (e.g. "P0301") as a bold label
+- Show the description next to it
+- Show when the fault was first detected
+- Add a "Clear All" button that resets `last_fault_codes` to `[]` in the database (manual acknowledgement, not an ECU reset)
 
-- **StatusData** with `DiagnosticSearch` filters for: `DiagnosticFuelLevelId`, `DiagnosticStateOfChargeId` (battery voltage), `DiagnosticEngineCoolantTemperatureId`, `DiagnosticEngineHoursAdjustmentId`, `DiagnosticOdometerAdjustmentId`, `DiagnosticTirePressureFrontLeftId` (and other tires)
-- **FaultData** with `search.fromDate` set to last 24 hours to catch active faults
+### 4. Frontend: Add manual fault reset
 
-Write the parsed values into the new `gps_devices` columns.
+Add a "Clear Faults" button on the Vehicle Health page that:
+- Clears the `last_fault_codes` column to `[]` for the device
+- Shows a toast confirming faults were cleared
+- Includes a note that this only clears the display -- if the car still has active faults, they'll reappear on the next poll cycle
 
-### 3. Frontend: Update data model and UI
+## Technical Details
 
-**`useVehicleHealth.ts`**: Add new fields to `GPSDeviceHealth` interface and SELECT query.
-
-**`EnhancedDeviceStatusCard.tsx`**: Replace the placeholder `null` values with real data:
-- Fuel level gauge with color coding (red < 15%, amber < 30%)
-- Battery voltage display (warning below 12.0V)
-- Coolant temperature (warning above 100C)
-- ECU odometer in miles with today's distance calculation
-- Engine hours formatted as "XXXh XXm"
-- Active fault codes section with severity badges (red/amber/info)
-
-**`VehicleHealthStrip.tsx`** (dashboard widget): Add fuel level to the 4-metric grid, replacing the generic "Last Seen" tile when fuel data is available.
-
-### 4. Files Modified
+### Files Modified
 
 | File | Change |
 |------|--------|
-| New migration SQL | Add 8 diagnostic columns to `gps_devices` |
-| `supabase/functions/geotab-poller/index.ts` | Add StatusData + FaultData to ExecuteMultiCall batch, write results to DB |
-| `src/hooks/useVehicleHealth.ts` | Add new fields to interface and query |
-| `src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx` | Display fuel, voltage, coolant, odometer, engine hours, fault codes |
-| `src/components/instructor/VehicleHealthStrip.tsx` | Show fuel level in dashboard strip |
+| `supabase/functions/geotab-poller/index.ts` | Fix FaultData parsing: derive DTC codes, use correct nested fields, clear stale faults |
+| `src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx` | Show DTC code prominently, add "Clear Faults" button |
+| `src/components/instructor/CheckEngineBanner.tsx` | Show DTC code in expanded fault list |
+| `src/hooks/useVehicleHealth.ts` | Add `clearFaultCodes(deviceId)` function |
 
-### 5. Rate Limit Impact
+### Geotab FaultData field mapping (corrected)
 
-The poller currently makes 1 HTTP request per poll (ExecuteMultiCall with N+1 methods). Adding StatusData and FaultData adds just 2 more methods to the same batch call -- still 1 HTTP request total, well within the 10 calls/minute limit.
+```text
+DTC Code    = prefix(fault.controller?.id) + hex(fault.diagnostic?.code)
+Description = fault.diagnostic?.name || "Unknown"
+Severity    = fault.severity || fault.faultLampState || "Unknown"  
+Source       = fault.controller?.name || fault.diagnostic?.source || "ECU"
+Detected At = fault.dateTime
+Active       = fault.faultState !== "Inactive"
+```
+
+### DTC Prefix Logic
+- ControllerObdPowertrainId / ControllerObdWwhPowertrainId = "P"
+- ControllerObdBodyId / ControllerObdWwhBodyId = "B"  
+- ControllerObdChassisId / ControllerObdWwhChassisId = "C"
+- ControllerObdNetworkId / ControllerObdWwhNetworkId = "U"
+- Fallback = "DTC"
 
