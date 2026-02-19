@@ -72,25 +72,6 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   const rawPointsRef = useRef<Array<{ lat: number; lng: number; t: string }>>([]);
   const lastFetchedAtRef = useRef<string | null>(null);
 
-  const overspeed = useMemo(() => {
-    const s = device?.last_speed_kmh ?? null;
-    const lim = device?.last_speed_limit_kmh ?? null;
-    if (s == null || lim == null) return false;
-    return s > lim + 2;
-  }, [device?.last_speed_kmh, device?.last_speed_limit_kmh]);
-
-  const speedText = useMemo(() => {
-    const s = device?.last_speed_kmh ?? null;
-    if (s == null) return "—";
-    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
-  }, [device?.last_speed_kmh, unit]);
-
-  const limitText = useMemo(() => {
-    const s = device?.last_speed_limit_kmh ?? null;
-    if (s == null) return "—";
-    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
-  }, [device?.last_speed_limit_kmh, unit]);
-
   // Tick every 1 second so connection state auto-updates
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -103,6 +84,29 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     : 0;
   const ageSeconds = lastSeenMs ? (now - lastSeenMs) / 1000 : Infinity;
   const isConnected = ageSeconds <= CONNECTION_THRESHOLD_SECONDS;
+
+  // Safe speed display: blank when offline
+  const overspeed = useMemo(() => {
+    if (!isConnected) return false;
+    const s = device?.last_speed_kmh ?? null;
+    const lim = device?.last_speed_limit_kmh ?? null;
+    if (s == null || lim == null) return false;
+    return s > lim + 2;
+  }, [isConnected, device?.last_speed_kmh, device?.last_speed_limit_kmh]);
+
+  const speedText = useMemo(() => {
+    if (!isConnected) return "—";
+    const s = device?.last_speed_kmh ?? null;
+    if (s == null) return "—";
+    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
+  }, [isConnected, device?.last_speed_kmh, unit]);
+
+  const limitText = useMemo(() => {
+    if (!isConnected) return "—";
+    const s = device?.last_speed_limit_kmh ?? null;
+    if (s == null) return "—";
+    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
+  }, [isConnected, device?.last_speed_limit_kmh, unit]);
 
   const markerColor = !isConnected
     ? "#9ca3af"
