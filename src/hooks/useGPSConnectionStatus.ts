@@ -18,29 +18,20 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   const [lastHeartbeatAt, setLastHeartbeatAt] = useState<string | null>(null);
   const [lastTrackTime, setLastTrackTime] = useState<string | null>(null);
   const [deviceName, setDeviceName] = useState<string | null>(null);
-  const [isDeviceActive, setIsDeviceActive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getStatus = useCallback((trackTime: string | null, heartbeat: string | null, deviceActive: boolean): "active" | "recent" | "stationary" | "offline" => {
-    if (!deviceActive) return "offline";
+  const getStatus = useCallback((trackTime: string | null, heartbeat: string | null): "active" | "recent" | "stationary" | "offline" => {
+    if (!trackTime) return "offline";
     
     const now = new Date();
+    const trackDate = new Date(trackTime);
+    const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
     
-    // Primary: last_seen_at — when we last got data from the tracking provider
-    if (trackTime) {
-      const trackDate = new Date(trackTime);
-      const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
-      
-      if (trackDiffSeconds < 60) return "active";
-      if (trackDiffSeconds < 300) return "recent";
-    }
+    if (trackDiffSeconds < 60) return "active";
+    if (trackDiffSeconds < 300) return "recent";
 
-    if (heartbeat && trackTime) {
-      const heartbeatDate = new Date(heartbeat);
-      const heartbeatDiffSeconds = (now.getTime() - heartbeatDate.getTime()) / 1000;
-      const trackDate = new Date(trackTime);
-      const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
-      
+    if (heartbeat) {
+      const heartbeatDiffSeconds = (now.getTime() - new Date(heartbeat).getTime()) / 1000;
       if (heartbeatDiffSeconds < 120 && trackDiffSeconds < 1800) {
         return "stationary";
       }
@@ -66,9 +57,6 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
 
       if (data) {
         setDeviceName(data.device_name || data.device_identifier || null);
-        setIsDeviceActive(data.is_active === true);
-      } else {
-        setIsDeviceActive(false);
       }
       return {
         lastSeenAt: data?.last_seen_at || null,
@@ -119,9 +107,6 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
             device_identifier?: string;
             is_active?: boolean;
           };
-          if (newData.is_active !== undefined) {
-            setIsDeviceActive(newData.is_active === true);
-          }
           if (newData.last_seen_at) {
             setLastSeenAt(newData.last_seen_at);
             setLastTrackTime(newData.last_seen_at);
@@ -141,7 +126,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     };
   }, [instructorId, checkConnection]);
 
-  const status = getStatus(lastTrackTime, lastHeartbeatAt, isDeviceActive);
+  const status = getStatus(lastTrackTime, lastHeartbeatAt);
   const isConnected = status === "active" || status === "recent" || status === "stationary";
   const isStationary = status === "stationary";
 
