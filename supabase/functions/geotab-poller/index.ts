@@ -417,9 +417,27 @@ Deno.serve(async (req) => {
       // If device has an active session, record GPS point for route history
       const { data: deviceRow } = await supabase
         .from("gps_devices")
-        .select("current_session_id")
+        .select("current_session_id, session_start_ecu_odometer_km, daily_start_ecu_odometer_km, daily_start_date")
         .eq("id", device.id)
         .single();
+
+      // --- ECU odometer-based daily tracking ---
+      const currentEcuKm = diagnosticsUpdate.last_ecu_odometer_km as number | undefined
+        ?? (diags["DiagnosticOdometerAdjustmentId"] != null ? Math.round((diags["DiagnosticOdometerAdjustmentId"] / 1000) * 10) / 10 : undefined);
+      const todayStr = new Date().toISOString().split("T")[0];
+
+      if (currentEcuKm != null) {
+        // Reset daily start if new day or not set
+        if (!deviceRow?.daily_start_date || deviceRow.daily_start_date !== todayStr) {
+          await supabase
+            .from("gps_devices")
+            .update({
+              daily_start_ecu_odometer_km: currentEcuKm,
+              daily_start_date: todayStr,
+            })
+            .eq("id", device.id);
+        }
+      }
 
       if (deviceRow?.current_session_id && status.latitude && status.longitude) {
         await supabase
@@ -435,8 +453,18 @@ Deno.serve(async (req) => {
             recorded_at: new Date().toISOString(),
           });
 
-        // Increment distance: speed (km/h) * 10s interval / 3600
-        if (status.speed > 0) {
+        // Use ECU odometer delta for accurate session distance (falls back to speed-based estimate)
+        if (currentEcuKm != null && deviceRow.session_start_ecu_odometer_km != null) {
+          const sessionDistKm = currentEcuKm - deviceRow.session_start_ecu_odometer_km;
+          if (sessionDistKm >= 0) {
+            // Set total distance directly from ECU (not incremental)
+            await supabase
+              .from("lesson_telematics")
+              .update({ total_distance_km: sessionDistKm })
+              .eq("id", deviceRow.current_session_id);
+          }
+        } else if (status.speed > 0) {
+          // Fallback: speed-based estimate when ECU data unavailable
           const distKm = (status.speed * 10) / 3600;
           if (distKm > 0.001) {
             await supabase.rpc("increment_total_distance", {
@@ -444,6 +472,14 @@ Deno.serve(async (req) => {
               p_distance: distKm,
             });
           }
+        }
+
+        // Set session start ECU odometer if not yet set
+        if (currentEcuKm != null && deviceRow.session_start_ecu_odometer_km == null) {
+          await supabase
+            .from("gps_devices")
+            .update({ session_start_ecu_odometer_km: currentEcuKm })
+            .eq("id", device.id);
         }
       }
 

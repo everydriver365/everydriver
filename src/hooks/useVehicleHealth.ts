@@ -22,6 +22,8 @@ export interface GPSDeviceHealth {
   gpsgate_engine_hours_s: number | null;
   daily_start_odometer_m: number | null;
   daily_start_date: string | null;
+  daily_start_ecu_odometer_km: number | null;
+  session_start_ecu_odometer_km: number | null;
   // Engine diagnostics from Geotab
   last_fuel_percent: number | null;
   last_battery_voltage: number | null;
@@ -114,6 +116,8 @@ export function useVehicleHealth() {
           gpsgate_engine_hours_s,
           daily_start_odometer_m,
           daily_start_date,
+          daily_start_ecu_odometer_km,
+          session_start_ecu_odometer_km,
           last_fuel_percent,
           last_battery_voltage,
           last_coolant_temp_c,

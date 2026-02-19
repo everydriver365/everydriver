@@ -26,10 +26,14 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
     ? Math.round(kmToMiles(device.last_ecu_odometer_km))
     : null;
   
-  // Today's distance from daily start odometer
+  // Today's distance from ECU odometer (accurate), falling back to GPS odometer
   const today = new Date().toISOString().split("T")[0];
-  const todayDistanceMiles = (device.daily_start_date === today && device.daily_start_odometer_m != null && device.gpsgate_odometer_m != null)
-    ? Math.round(kmToMiles((device.gpsgate_odometer_m - device.daily_start_odometer_m) / 1000) * 10) / 10
+  const todayDistanceMiles = device.daily_start_date === today
+    ? (device.daily_start_ecu_odometer_km != null && device.last_ecu_odometer_km != null)
+      ? Math.round(kmToMiles(device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km) * 10) / 10
+      : (device.daily_start_odometer_m != null && device.gpsgate_odometer_m != null)
+        ? Math.round(kmToMiles((device.gpsgate_odometer_m - device.daily_start_odometer_m) / 1000) * 10) / 10
+        : null
     : null;
   
   // Format engine hours
