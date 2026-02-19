@@ -3,8 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crosshair } from "lucide-react";
+import { Crosshair, Compass, Navigation } from "lucide-react";
 import { loadGoogleMaps, fetchGoogleMapsKey, callSnapToRoad } from "@/lib/googleMapsLoader";
+import { darkMapStyle } from "@/lib/googleMapsDarkStyle";
+import { useTheme } from "@/context/ThemeContext";
+import SpeedLimitRoundel from "@/components/instructor/SpeedLimitRoundel";
 
 // ========== Types ==========
 type DeviceRow = {
@@ -31,36 +34,24 @@ function kmhToMph(kmh: number) {
   return kmh * 0.621371;
 }
 
-function formatAgo(iso: string | null) {
-  if (!iso) return "—";
-  const t = new Date(iso).getTime();
-  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
-}
-
-// ========== InfoCard ==========
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex-1 min-w-0 text-center">
-      <p className="text-xs text-muted-foreground truncate">{label}</p>
-      <p className="text-sm font-semibold text-foreground truncate">{value}</p>
-    </div>
-  );
-}
-
 const CONNECTION_THRESHOLD_SECONDS = 30;
+
+// Speed-based zoom: fast = zoomed out, slow = zoomed in
+function getTargetZoom(speedMph: number): number {
+  if (speedMph > 50) return 14;
+  if (speedMph > 30) return 15;
+  if (speedMph > 10) return 16;
+  return 17;
+}
 
 // ========== Component ==========
 export default function LiveGoogleTrackingMap({ className = "" }: { className?: string }) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const polylineRef = useRef<any>(null);      // snapped route (updated every 5s)
-  const tailPolylineRef = useRef<any>(null);  // raw tail (updated instantly, cleared after snap)
+  const polylineRef = useRef<any>(null);
+  const tailPolylineRef = useRef<any>(null);
+  const speedOverlayRef = useRef<any>(null);
 
   const [device, setDevice] = useState<DeviceRow | null>(null);
   const [status, setStatus] = useState("Connecting…");
@@ -69,25 +60,27 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   const [userDragged, setUserDragged] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [trackUp, setTrackUp] = useState(false);
 
-  // Rolling raw points for route
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark" || resolvedTheme === "oled";
+
   const rawPointsRef = useRef<Array<{ lat: number; lng: number; t: string }>>([]);
   const lastFetchedAtRef = useRef<string | null>(null);
+  const lastZoomRef = useRef<number>(16);
+  const zoomDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Tick every 1 second so connection state auto-updates
+  // Tick every 1 second
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Derive connection state from `now` and device
-  const lastSeenMs = device?.last_seen_at
-    ? new Date(device.last_seen_at).getTime()
-    : 0;
+  // Derive connection state
+  const lastSeenMs = device?.last_seen_at ? new Date(device.last_seen_at).getTime() : 0;
   const ageSeconds = lastSeenMs ? (now - lastSeenMs) / 1000 : Infinity;
   const isConnected = ageSeconds <= CONNECTION_THRESHOLD_SECONDS;
 
-  // Safe speed display: blank when offline
   const overspeed = useMemo(() => {
     if (!isConnected) return false;
     const s = device?.last_speed_kmh ?? null;
@@ -96,19 +89,21 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     return s > lim + 2;
   }, [isConnected, device?.last_speed_kmh, device?.last_speed_limit_kmh]);
 
+  const currentSpeedMph = useMemo(() => {
+    if (!isConnected) return 0;
+    const s = device?.last_speed_kmh ?? null;
+    if (s == null) return 0;
+    return Math.round(kmhToMph(s));
+  }, [isConnected, device?.last_speed_kmh]);
+
   const speedText = useMemo(() => {
     if (!isConnected) return "—";
     const s = device?.last_speed_kmh ?? null;
     if (s == null) return "—";
-    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
+    return unit === "mph" ? `${Math.round(kmhToMph(s))}` : `${Math.round(s)}`;
   }, [isConnected, device?.last_speed_kmh, unit]);
 
-  const limitText = useMemo(() => {
-    if (!isConnected) return "—";
-    const s = device?.last_speed_limit_kmh ?? null;
-    if (s == null) return "—";
-    return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
-  }, [isConnected, device?.last_speed_limit_kmh, unit]);
+  const speedUnit = unit === "mph" ? "mph" : "km/h";
 
   const markerColor = !isConnected
     ? "#9ca3af"
@@ -129,36 +124,21 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   // 1) Load user's active device row
   useEffect(() => {
     let cancelled = false;
-
     async function load() {
       setStatus("Loading your tracker…");
       setNote(null);
-
       const { data: auth } = await supabase.auth.getUser();
-      if (!auth?.user) {
-        setStatus("Please log in to see tracking.");
-        return;
-      }
-
+      if (!auth?.user) { setStatus("Please log in to see tracking."); return; }
       const { data, error } = await supabase
         .from("gps_devices")
-        .select(
-          "id,is_active,last_latitude,last_longitude,last_heading,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id"
-        )
+        .select("id,is_active,last_latitude,last_longitude,last_heading,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id")
         .eq("is_active", true)
         .single();
-
       if (cancelled) return;
-
-      if (error) {
-        setStatus(`Could not load tracker: ${error.message}`);
-        return;
-      }
-
+      if (error) { setStatus(`Could not load tracker: ${error.message}`); return; }
       setDevice(data as DeviceRow);
       setStatus("Live");
     }
-
     load();
     return () => { cancelled = true; };
   }, []);
@@ -166,26 +146,19 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   // 2) Init Google Map once
   useEffect(() => {
     let cancelled = false;
-
     async function init() {
       if (!mapDivRef.current || mapRef.current) return;
-
       try {
         const apiKey = await fetchGoogleMapsKey();
-        if (!apiKey) {
-          setStatus("Google Maps API key not configured");
-          return;
-        }
+        if (!apiKey) { setStatus("Google Maps API key not configured"); return; }
         if (cancelled) return;
-
         await loadGoogleMaps(apiKey);
         if (cancelled || !mapDivRef.current) return;
 
         const w = window as any;
-        const center =
-          device?.last_latitude != null && device?.last_longitude != null
-            ? { lat: device.last_latitude, lng: device.last_longitude }
-            : { lat: 51.5072, lng: -0.1276 };
+        const center = device?.last_latitude != null && device?.last_longitude != null
+          ? { lat: device.last_latitude, lng: device.last_longitude }
+          : { lat: 51.5072, lng: -0.1276 };
 
         const map = new w.google.maps.Map(mapDivRef.current, {
           center,
@@ -193,6 +166,7 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
+          styles: isDark ? darkMapStyle : [],
         });
 
         mapRef.current = map;
@@ -204,38 +178,100 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
         });
 
         polylineRef.current = new w.google.maps.Polyline({
-          map,
-          path: [],
-          geodesic: true,
-          strokeColor: "#3b82f6",
-          strokeOpacity: 0.9,
-          strokeWeight: 5,
+          map, path: [], geodesic: true, strokeColor: "#3b82f6", strokeOpacity: 0.9, strokeWeight: 5,
         });
 
         tailPolylineRef.current = new w.google.maps.Polyline({
-          map,
-          path: [],
-          geodesic: true,
-          strokeColor: "#3b82f6",
-          strokeOpacity: 0.6,
-          strokeWeight: 4,
+          map, path: [], geodesic: true, strokeColor: "#3b82f6", strokeOpacity: 0.6, strokeWeight: 4,
         });
 
-    map.addListener("dragstart", () => setUserDragged(true));
-    map.addListener("mousedown", () => setUserDragged(true));
+        // Speed badge overlay
+        class SpeedBadgeOverlay extends w.google.maps.OverlayView {
+          private div: HTMLDivElement | null = null;
+          private position: any = null;
+          private text: string = "";
+          private color: string = "#22c55e";
+          private visible: boolean = true;
 
-    setMapsLoaded(true);
+          constructor(map: any, pos: any) {
+            super();
+            this.position = pos;
+            this.setMap(map);
+          }
+
+          onAdd() {
+            this.div = document.createElement("div");
+            Object.assign(this.div.style, {
+              position: "absolute",
+              whiteSpace: "nowrap",
+              fontFamily: "system-ui, -apple-system, sans-serif",
+              fontSize: "12px",
+              fontWeight: "700",
+              color: "#fff",
+              padding: "3px 8px",
+              borderRadius: "12px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              pointerEvents: "none",
+              transition: "background-color 0.3s ease",
+              transform: "translate(-50%, -100%)",
+            });
+            const panes = this.getPanes();
+            panes?.overlayLayer?.appendChild(this.div);
+          }
+
+          draw() {
+            if (!this.div || !this.position) return;
+            const proj = this.getProjection();
+            if (!proj) return;
+            const point = proj.fromLatLngToDivPixel(this.position);
+            if (point) {
+              this.div.style.left = `${point.x}px`;
+              this.div.style.top = `${point.y - 24}px`;
+            }
+          }
+
+          onRemove() {
+            this.div?.parentNode?.removeChild(this.div);
+            this.div = null;
+          }
+
+          update(pos: any, text: string, color: string, vis: boolean) {
+            this.position = pos;
+            this.text = text;
+            this.color = color;
+            this.visible = vis;
+            if (this.div) {
+              this.div.textContent = text;
+              this.div.style.backgroundColor = color;
+              this.div.style.display = vis ? "block" : "none";
+            }
+            this.draw();
+          }
+        }
+
+        const overlay = new SpeedBadgeOverlay(map, new w.google.maps.LatLng(center.lat, center.lng));
+        speedOverlayRef.current = overlay;
+
+        map.addListener("dragstart", () => setUserDragged(true));
+        map.addListener("mousedown", () => setUserDragged(true));
+
+        setMapsLoaded(true);
         setStatus("Live");
       } catch (e: any) {
         if (!cancelled) setStatus(e?.message ?? "Map init failed");
       }
     }
-
     init();
     return () => { cancelled = true; };
   }, [device?.last_latitude, device?.last_longitude]);
 
-  // 3) Update marker + extend polyline instantly whenever device changes
+  // Apply dark/light style when theme changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.setOptions({ styles: isDark ? darkMapStyle : [] });
+  }, [isDark]);
+
+  // 3) Update marker + overlay + track-up + auto-zoom
   const lastAppendedRef = useRef<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     const map = mapRef.current;
@@ -246,14 +282,30 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     const lng = device?.last_longitude;
     if (lat == null || lng == null) return;
 
-    const pos = { lat, lng };
+    const w = window as any;
+    const pos = new w.google.maps.LatLng(lat, lng);
     marker.setPosition(pos);
+
+    // Track-up mode: rotate map to heading
+    if (trackUp) {
+      map.setHeading(device?.last_heading ?? 0);
+      map.setTilt(45);
+    }
 
     if (!userDragged) {
       map.panTo(pos);
+
+      // Auto-zoom based on speed (debounced)
+      const targetZoom = getTargetZoom(currentSpeedMph);
+      if (targetZoom !== lastZoomRef.current) {
+        if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
+        zoomDebounceRef.current = setTimeout(() => {
+          map.setZoom(targetZoom);
+          lastZoomRef.current = targetZoom;
+        }, 2000);
+      }
     }
 
-    const w = window as any;
     marker.setIcon({
       path: w.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
       scale: 6,
@@ -264,85 +316,65 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       strokeWeight: 3,
     });
 
-    // Append to the TAIL polyline only (never the main snapped one)
+    // Update speed badge overlay
+    if (speedOverlayRef.current) {
+      const badgeText = speedText !== "—" ? `${speedText} ${speedUnit}` : "";
+      speedOverlayRef.current.update(pos, badgeText, markerColor, speedText !== "—");
+    }
+
+    // Append to tail polyline
     if (tailPolylineRef.current) {
       const prev = lastAppendedRef.current;
       const dLat = prev ? Math.abs(prev.lat - lat) : Infinity;
       const dLng = prev ? Math.abs(prev.lng - lng) : Infinity;
       const approxMeters = Math.max(dLat, dLng) * 111_000;
-      // Skip jitter (<5m) and erroneous jumps (>500m)
       const shouldAppend = approxMeters > 5 && approxMeters < 500;
       if (!prev || shouldAppend) {
         tailPolylineRef.current.getPath().push(new w.google.maps.LatLng(lat, lng));
         lastAppendedRef.current = { lat, lng };
       }
     }
-  }, [device?.last_latitude, device?.last_longitude, device?.last_heading, markerColor, userDragged]);
+  }, [device?.last_latitude, device?.last_longitude, device?.last_heading, markerColor, userDragged, trackUp, currentSpeedMph, speedText, speedUnit]);
 
-  // 4) Subscribe to realtime updates for this device row
+  // 4) Subscribe to realtime updates
   useEffect(() => {
     if (!device?.id) return;
-
     const channel = supabase
       .channel(`gps_device_live_${device.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "gps_devices", filter: `id=eq.${device.id}` },
-        (payload) => {
-          setDevice((prev) => ({ ...(prev ?? ({} as any)), ...(payload.new as any) }));
-          setStatus("Live");
-        }
+      .on("postgres_changes", { event: "*", schema: "public", table: "gps_devices", filter: `id=eq.${device.id}` },
+        (payload) => { setDevice((prev) => ({ ...(prev ?? ({} as any)), ...(payload.new as any) })); setStatus("Live"); }
       )
-      .subscribe((s) => {
-        if (s === "SUBSCRIBED") setStatus("Live");
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      .subscribe((s) => { if (s === "SUBSCRIBED") setStatus("Live"); });
+    return () => { supabase.removeChannel(channel); };
   }, [device?.id]);
 
-  // 5) Every 5 seconds: fetch new route points, snap to road, draw polyline
+  // 5) Every 3s: fetch new route points, snap to road, draw polyline
   useEffect(() => {
     if (!device?.current_session_id || !mapsLoaded || !polylineRef.current) return;
-
     let cancelled = false;
-
     rawPointsRef.current = [];
     lastFetchedAtRef.current = null;
 
     async function tick() {
       try {
         setNote(null);
-
-        let query = supabase
-          .from("telematics_gps_points")
-          .select("latitude,longitude,recorded_at")
-          .eq("telematics_id", device!.current_session_id!)
-          .order("recorded_at", { ascending: true })
-          .limit(250);
-
+        let query = supabase.from("telematics_gps_points").select("latitude,longitude,recorded_at")
+          .eq("telematics_id", device!.current_session_id!).order("recorded_at", { ascending: true }).limit(250);
         const lastFetchedAt = lastFetchedAtRef.current;
         if (lastFetchedAt) query = query.gt("recorded_at", lastFetchedAt);
-
         const { data, error } = await query;
         if (cancelled) return;
         if (error) throw error;
-
         const newPts = ((data as PointRow[]) || [])
           .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
           .map((p) => ({ lat: p.latitude, lng: p.longitude, t: p.recorded_at }));
-
         if (newPts.length) {
           lastFetchedAtRef.current = newPts[newPts.length - 1].t;
           rawPointsRef.current = [...rawPointsRef.current, ...newPts].slice(-300);
         }
-
         if (rawPointsRef.current.length < 2) return;
-
         const recent = rawPointsRef.current.slice(-120);
         const sampled = recent.filter((_, idx) => idx % 2 === 0).slice(-100);
-
         let line: Array<{ lat: number; lng: number }>;
         try {
           line = await callSnapToRoad(sampled.map((p) => ({ lat: p.lat, lng: p.lng })));
@@ -351,13 +383,9 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
           line = sampled.map((p) => ({ lat: p.lat, lng: p.lng }));
           setNote("Road-snapping not available yet (showing straight line).");
         }
-
         if (cancelled) return;
-
         const w = window as any;
         polylineRef.current.setPath(line.map((p) => new w.google.maps.LatLng(p.lat, p.lng)));
-
-        // Clear the tail and reset its start to the last snapped point
         if (tailPolylineRef.current) {
           tailPolylineRef.current.setPath([]);
           if (line.length > 0) {
@@ -370,69 +398,54 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
         if (!cancelled) setNote(e?.message ?? "Route update failed");
       }
     }
-
     tick();
     const timer = window.setInterval(tick, 3000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
+    return () => { cancelled = true; window.clearInterval(timer); };
   }, [device?.current_session_id, mapsLoaded]);
 
-  // 5b) Trigger geotab-poller every 10s while map is open and device is active
+  // 5b) Trigger poller every 10s
   useEffect(() => {
     if (!device?.id || !isConnected) return;
-
     const triggerPoller = async () => {
-      try {
-        await supabase.functions.invoke("geotab-poller", { method: "POST" });
-      } catch (err) {
-        console.error("Live map poller trigger failed:", err);
-      }
+      try { await supabase.functions.invoke("geotab-poller", { method: "POST" }); }
+      catch (err) { console.error("Live map poller trigger failed:", err); }
     };
-
     triggerPoller();
     const timer = setInterval(triggerPoller, 10000);
     return () => clearInterval(timer);
   }, [device?.id, isConnected]);
 
-  // Auto-follow reset: resume following 10s after user drags
+  // Auto-follow reset after 10s
   const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (!userDragged) {
-      if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
-      return;
-    }
+    if (!userDragged) { if (dragTimerRef.current) clearTimeout(dragTimerRef.current); return; }
     dragTimerRef.current = setTimeout(() => setUserDragged(false), 10000);
     return () => { if (dragTimerRef.current) clearTimeout(dragTimerRef.current); };
   }, [userDragged]);
 
-  // Wake Lock: keep screen on while map is visible
+  // Wake Lock
   useEffect(() => {
     let wakeLock: any = null;
     let released = false;
-
     async function acquire() {
-      try {
-        if ("wakeLock" in navigator && !released) {
-          wakeLock = await (navigator as any).wakeLock.request("screen");
-        }
-      } catch { /* non-critical */ }
+      try { if ("wakeLock" in navigator && !released) { wakeLock = await (navigator as any).wakeLock.request("screen"); } } catch {}
     }
-
     acquire();
-
-    const onVisChange = () => {
-      if (document.visibilityState === "visible") acquire();
-    };
+    const onVisChange = () => { if (document.visibilityState === "visible") acquire(); };
     document.addEventListener("visibilitychange", onVisChange);
+    return () => { released = true; document.removeEventListener("visibilitychange", onVisChange); wakeLock?.release?.().catch(() => {}); };
+  }, []);
 
-    return () => {
-      released = true;
-      document.removeEventListener("visibilitychange", onVisChange);
-      wakeLock?.release?.().catch(() => {});
-    };
+  // Track-up toggle handler
+  const handleToggleTrackUp = useCallback(() => {
+    setTrackUp((prev) => {
+      const next = !prev;
+      if (!next && mapRef.current) {
+        mapRef.current.setHeading(0);
+        mapRef.current.setTilt(0);
+      }
+      return next;
+    });
   }, []);
 
   // Re-center handler
@@ -453,10 +466,7 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
           <h2 className="text-sm font-semibold text-foreground bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md border">
             Live Tracking
           </h2>
-          <Badge
-            variant={isConnected ? "default" : "secondary"}
-            className="text-xs"
-          >
+          <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
             {connectionLabel}
           </Badge>
           {overspeed && (
@@ -467,13 +477,19 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Track-Up toggle */}
+          <Button
+            variant={trackUp ? "default" : "secondary"}
+            size="sm"
+            className="shadow-lg"
+            onClick={handleToggleTrackUp}
+            title={trackUp ? "Switch to North-Up" : "Switch to Track-Up"}
+          >
+            {trackUp ? <Navigation className="h-4 w-4" /> : <Compass className="h-4 w-4" />}
+          </Button>
+
           {userDragged && device?.last_latitude != null && device?.last_longitude != null && (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="shadow-lg"
-              onClick={handleRecenter}
-            >
+            <Button variant="secondary" size="sm" className="shadow-lg" onClick={handleRecenter}>
               <Crosshair className="h-4 w-4 mr-1" />
               Center
             </Button>
@@ -487,15 +503,65 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
         </div>
       </div>
 
-      {/* Info cards at bottom */}
+      {/* Road name banner */}
+      {device?.last_road_name && isConnected && (
+        <div className="absolute top-16 left-4 right-4 z-20">
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md border text-center">
+            <p className="text-sm font-semibold text-foreground truncate">{device.last_road_name}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Sat-nav bottom panel */}
       <div className="absolute bottom-4 left-4 right-4 z-20">
-        <Card className="backdrop-blur-sm bg-background/95 shadow-lg">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-3">
-              <InfoCard label="Speed" value={speedText} />
-              <InfoCard label="Limit" value={limitText} />
-              <InfoCard label="Road" value={device?.last_road_name || "—"} />
-              <InfoCard label="Updated" value={agoText} />
+        <Card className="backdrop-blur-sm bg-background/95 shadow-lg border-2">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {/* Speed hero */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <p
+                    className="font-bold tabular-nums leading-none"
+                    style={{
+                      fontSize: "3rem",
+                      color: markerColor,
+                    }}
+                  >
+                    {speedText}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">{speedUnit}</p>
+                </div>
+
+                {/* Speed limit roundel */}
+                <SpeedLimitRoundel
+                  speedLimit={device?.last_speed_limit_kmh ?? null}
+                  isExceeding={overspeed}
+                  size="md"
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="w-px h-14 bg-border flex-shrink-0" />
+
+              {/* Info */}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <Badge variant={isConnected ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                    {connectionLabel}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Updated</span>
+                  <span className="text-xs font-medium text-foreground">{agoText}</span>
+                </div>
+                {trackUp && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Heading</span>
+                    <span className="text-xs font-medium text-foreground">{device?.last_heading != null ? `${Math.round(device.last_heading)}°` : "—"}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -503,7 +569,7 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
 
       {/* Note banner */}
       {note && (
-        <div className="absolute top-16 left-4 z-20 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md border max-w-xs">
+        <div className="absolute top-[6.5rem] left-4 z-20 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md border max-w-xs">
           <p className="text-xs text-muted-foreground">{note}</p>
         </div>
       )}
