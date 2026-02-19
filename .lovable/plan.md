@@ -1,50 +1,52 @@
 
 
-# Fix: Blue Track Line Lagging Behind Car Marker
+# Arrow Marker, Auto-Follow, and Screen Wake Lock
 
-## Problem
+## What Will Change
 
-The car marker updates instantly via Realtime subscription, but the blue track line only updates every **5 seconds** because each update cycle:
+### 1. Directional Arrow Marker
+Replace the plain circle marker with a forward-pointing arrow that rotates to match the vehicle's heading direction.
 
-1. Queries the database for new GPS points
-2. Calls the `snap-to-road` edge function (Google Roads API round-trip)
-3. Only then re-renders the polyline
+- Change the marker icon from `SymbolPath.CIRCLE` to `SymbolPath.FORWARD_CLOSED_ARROW`
+- Add `rotation` property set to the device's `last_heading` value
+- Scale up slightly for better visibility on mobile
+- Keep the existing colour coding (green = connected, red = overspeed, grey = offline)
 
-This creates a visible gap where the marker has moved ahead but the track line hasn't caught up.
+### 2. Map Auto-Follows the Car
+The map currently stops following after the user drags it. Improve this so:
 
-## Solution
+- Auto-follow resets after 10 seconds of no interaction (instead of requiring a manual button tap)
+- The "Center" button remains for instant re-centering
 
-**Immediately extend the polyline with raw GPS coordinates** whenever the device position updates via Realtime, then periodically snap the full route to roads in the background. This gives the user instant visual feedback while still getting clean road-snapped lines.
+### 3. Screen Stays On (Wake Lock)
+Add a Wake Lock request directly inside `GoogleLiveTrackingMap` so the screen stays on whenever the map is visible -- not just during active sessions. This covers the case where an instructor is watching tracking without starting a formal session.
 
-### Changes to `src/components/instructor/GoogleLiveTrackingMap.tsx`
+## Technical Details
 
-1. **Instant polyline extension on marker update (Effect #3)**
-   - When the device position changes (via Realtime), immediately append the new lat/lng to the polyline path
-   - This makes the blue line follow the marker with zero delay
-   - Use a simple distance filter (>3m) to avoid jitter
+### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-2. **Reduce snap-to-road tick to background cleanup only**
-   - Keep the 5-second snap-to-road cycle but treat it as a "polish" step that replaces the raw tail with snapped coordinates
-   - The polyline is already visually up-to-date from step 1, so the snap just smooths it onto roads
+**Arrow Marker (Effect #3, ~line 227)**
+- Add `last_heading` to the `DeviceRow` type (it's already in the database, just not selected)
+- Update the device query (Effect #1, ~line 141) to include `last_heading` in the select
+- Change marker icon from:
+  ```text
+  path: SymbolPath.CIRCLE, scale: 8
+  ```
+  to:
+  ```text
+  path: SymbolPath.FORWARD_CLOSED_ARROW, scale: 6, rotation: device.last_heading
+  ```
 
-### Technical Detail
+**Auto-Follow Timer**
+- When `userDragged` is set to `true`, start a 10-second timeout
+- After 10 seconds, reset `userDragged` to `false` so the map resumes following
+- Clear the timeout if the user drags again or unmounts
 
-In Effect #3 (marker update, ~line 227), after updating the marker position, append the new position to the Google Maps Polyline path directly:
+**Wake Lock**
+- Add a `useEffect` that requests `navigator.wakeLock.request('screen')` when the component mounts
+- Re-acquire on `visibilitychange` (when user switches back to the tab)
+- Release on unmount
+- This is independent of session state -- the map being visible is enough reason to keep the screen on
 
-```text
-// Pseudocode for the change:
-- When device lat/lng changes via Realtime
-- Calculate distance from last polyline point
-- If > 3m, append new LatLng to polyline.getPath()
-- This happens instantly, no network call needed
-```
-
-In Effect #5 (the 5-second tick, ~line 278), the snap-to-road cycle continues as before but now it's just smoothing an already-current polyline rather than being the only source of updates.
-
-### Why This Works
-
-- The marker and polyline now update from the **same trigger** (Realtime device update)
-- No additional API calls -- the raw point extension is purely client-side
-- Road-snapping still runs in the background to keep the line looking clean on roads
-- Net result: the blue line stays within 1 GPS update of the marker at all times
-
+### No New Files or Backend Changes
+All changes are in `GoogleLiveTrackingMap.tsx` only. No database changes, no new dependencies.
