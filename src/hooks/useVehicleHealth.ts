@@ -169,8 +169,8 @@ export function useVehicleHealth() {
       });
     },
     enabled: !!instructor?.id,
-    // Poll every 3s when moving, 10s when idle
-    refetchInterval: movingRef.current ? 3000 : 10000,
+    // Poll every 10s when moving, 30s when idle
+    refetchInterval: movingRef.current ? 10000 : 30000,
   });
 
   // Update moving state and adaptive poller interval
@@ -186,7 +186,7 @@ export function useVehicleHealth() {
     movingRef.current = isMoving;
     if (!instructor?.id) return;
 
-    const intervalMs = isMoving ? 10000 : 30000; // 10s moving, 30s idle
+    const intervalMs = isMoving ? 30000 : 60000; // 30s moving, 60s idle
 
     // Clear previous interval
     if (pollerIntervalRef.current) {
