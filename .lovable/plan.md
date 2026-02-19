@@ -1,62 +1,65 @@
 
-# OSRM Road-Snapped Interpolation for Live Map Markers
 
-## What Changes
-Instead of moving markers in a straight line between GPS updates (which cuts corners on curves), the system will fetch the actual road geometry from OSRM when each new GPS fix arrives, then animate the marker along that road path over the 10-second interval.
+# Force Google Maps Everywhere -- Replace All Leaflet/OSRM with Google Maps + Roads API
 
-## How It Works
-
-1. **When a new GPS position arrives** (every ~10 seconds), call the OSRM `route` API with the previous position and the new position
-2. OSRM returns the **actual road geometry** (a list of lat/lng points along the road) between those two locations
-3. The animation loop walks the marker along those road points over time, instead of extrapolating in a straight line
-
-This means on curves, roundabouts, and bends, the marker follows the road shape.
+## Overview
+Replace **MiniLiveMap** (Leaflet) and **FleetLiveMap** (Leaflet + OSRM) with Google Maps JavaScript API. All map rendering will use Google Maps. All road-snapping will go through the existing `snap-to-road` edge function (Google Roads API). No Leaflet, no OpenStreetMap, no OSRM anywhere in tracking.
 
 ## Changes
 
-### 1. Rewrite `src/hooks/useInterpolatedPosition.ts`
+### 1. Rewrite `src/components/instructor/tracking/MiniLiveMap.tsx`
+Replace Leaflet with Google Maps:
+- Fetch API key from `get-google-maps-key` edge function (same pattern as `GoogleLiveTrackingMap`)
+- Render a Google Map in the 200px container
+- Show a colored circle marker (blue if active, gray if not)
+- Keep the Live/Last seen badge overlay
+- Remove all Leaflet imports and `useInterpolatedPosition` hook usage (interpolation is not needed for a small preview map)
 
-- When a new real position arrives and differs from the previous one, fire an OSRM `route` request: `https://router.project-osrm.org/route/v1/driving/{prevLng},{prevLat};{newLng},{newLat}?overview=full&geometries=geojson`
-- Store the returned road geometry as an array of waypoints
-- Calculate the total path length in km
-- The animation loop (200ms interval) computes how far along the path the marker should be based on elapsed time and speed, then finds the correct waypoint position
-- Falls back to the old bearing-based extrapolation if the OSRM call fails or if there's no previous position
+### 2. Rewrite `src/components/instructor/FleetLiveMap.tsx`
+Replace Leaflet + OSRM with Google Maps + snap-to-road:
+- Fetch API key from `get-google-maps-key` edge function
+- Render Google Map with all fleet device markers
+- Markers: colored circles (green=moving, amber=idle, gray=parked) using `google.maps.SymbolPath.CIRCLE`
+- InfoWindows replacing Leaflet popups (vehicle name, speed in mph, road name, ignition status, last seen, Navigate link)
+- Realtime subscription on `gps_devices` table for instant marker updates
+- Every 10 seconds: poll `gps_devices` for all instructor devices
+- Interpolation loop (200ms): walk markers between positions using bearing-based movement (no OSRM, since fleet doesn't need route polylines -- just smooth marker movement)
+- Auto-fit bounds to show all devices
+- Remove all Leaflet imports and OSRM references
 
-### 2. Update `src/components/instructor/FleetLiveMap.tsx` interpolation loop
+### 3. Update `src/hooks/useInterpolatedPosition.ts`
+- Remove all OSRM (`fetchOsrmRoute`) code and exports
+- Keep only bearing-based utilities (`haversineKm`, `moveAlongBearing`) since they're lightweight math functions
+- Or remove the hook entirely if MiniLiveMap no longer uses it (FleetLiveMap will have its own inline interpolation)
 
-- Same approach for the fleet map's per-device interpolation: store a road geometry per device
-- When a device update arrives via realtime, fetch the OSRM route from old position to new position
-- Walk markers along the road geometry in the 200ms animation interval
-- Fallback to bearing-based movement if OSRM fails
+### 4. No changes needed to:
+- `GoogleLiveTrackingMap.tsx` -- already uses Google Maps
+- `snap-to-road` edge function -- already uses Google Roads API
+- `get-google-maps-key` edge function -- already serves the API key
+- `InstructorLiveSession.tsx` -- already imports `GoogleLiveTrackingMap`
+- `InstructorFleetDashboard.tsx` -- import stays the same (`FleetLiveMap`)
 
-### 3. Update `src/components/instructor/tracking/MiniLiveMap.tsx`
-
-- No code changes needed here -- it already consumes `useInterpolatedPosition`, so it gets road-snapping automatically
-
-## Rate Limiting Consideration
-
-OSRM's public demo server (`router.project-osrm.org`) is free but has usage limits. With one vehicle updating every 10 seconds, that's only ~6 OSRM calls per minute -- well within acceptable usage. For multiple fleet vehicles, the calls scale linearly but remain modest.
-
-## Fallback Behavior
-
-If an OSRM request fails (network issue, rate limit), the hook falls back to the existing straight-line bearing interpolation. The user sees slightly less accurate movement on curves but never a frozen marker.
+## What Gets Removed
+- All `leaflet` and `react-leaflet` imports from MiniLiveMap and FleetLiveMap
+- All OSRM calls (`router.project-osrm.org`)
+- `mapConfig.ts` usage in these two components (tile URLs, attribution)
+- `useInterpolatedPosition` hook (or stripped to just math utilities)
 
 ## Technical Details
 
-**OSRM Route Response Structure:**
-```text
-{
-  "routes": [{
-    "geometry": {
-      "coordinates": [[lng, lat], [lng, lat], ...],
-      "type": "LineString"
-    }
-  }]
-}
-```
+**Shared Google Maps loader**: Both new components will reuse the same `loadGoogleMaps()` and `fetchGoogleMapsKey()` pattern already in `GoogleLiveTrackingMap.tsx`. These will be extracted to a shared utility file `src/lib/googleMapsLoader.ts` to avoid duplication.
 
-**Path walking algorithm:**
-- Pre-compute cumulative distances along the OSRM geometry
-- Each animation tick: `progressKm = (speedKmh / 3600) * elapsedSeconds`
-- Binary search the cumulative distance array to find which segment the marker is on
-- Linearly interpolate within that segment for sub-segment smoothness
+**MiniLiveMap specifics**:
+- Small 200px map, no controls, no dragging (same as current)
+- Single marker with heading rotation
+- Auto-centers on position changes
+
+**FleetLiveMap specifics**:
+- Full interactive map with zoom controls
+- Multiple markers with InfoWindows
+- `fitBounds` to show all devices
+- Realtime subscription for live updates
+- 200ms interpolation loop for smooth marker movement between GPS updates (bearing-based, no external API calls)
+
+**API key flow**: `get-google-maps-key` edge function returns `GOOGLE_PLACES_API_KEY` -- this key must have Maps JavaScript API enabled in Google Cloud Console.
+
