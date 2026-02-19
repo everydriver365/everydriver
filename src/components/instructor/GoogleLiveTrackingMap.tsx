@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Crosshair } from "lucide-react";
+import { loadGoogleMaps, fetchGoogleMapsKey, callSnapToRoad } from "@/lib/googleMapsLoader";
 
 // ========== Types ==========
 interface LiveMapProps {
@@ -21,87 +22,6 @@ type PointRow = {
   longitude: number;
   recorded_at: string;
 };
-
-// ========== Helpers ==========
-function kmhToMph(kmh: number) {
-  return kmh * 0.621371;
-}
-
-function formatAgo(iso: string | null) {
-  if (!iso) return "—";
-  const t = new Date(iso).getTime();
-  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
-}
-
-// ========== Google Maps loader ==========
-function loadGoogleMaps(apiKey: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const w = window as any;
-    if (w.google?.maps) return resolve();
-
-    const existing = document.querySelector('script[data-google-maps="1"]') as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Google Maps script failed to load")));
-      return;
-    }
-
-    const s = document.createElement("script");
-    s.dataset.googleMaps = "1";
-    s.async = true;
-    s.defer = true;
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}`;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Google Maps script failed to load"));
-    document.head.appendChild(s);
-  });
-}
-
-// ========== Snap-to-road via edge function ==========
-async function callSnapToRoad(
-  points: Array<{ lat: number; lng: number }>
-): Promise<Array<{ lat: number; lng: number }>> {
-  const { data: session } = await supabase.auth.getSession();
-  const jwt = session?.session?.access_token ?? null;
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const url = `https://${projectId}.supabase.co/functions/v1/snap-to-road`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: anonKey,
-      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-    },
-    body: JSON.stringify({ points, interpolate: true }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data?.ok) throw new Error(data?.error || "Snap-to-road failed");
-
-  return (data.snapped || [])
-    .filter((p: any) => Number.isFinite(p?.lat) && Number.isFinite(p?.lng))
-    .map((p: any) => ({ lat: p.lat, lng: p.lng }));
-}
-
-// ========== Fetch Google Maps API key from edge function ==========
-async function fetchGoogleMapsKey(): Promise<string> {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const url = `https://${projectId}.supabase.co/functions/v1/get-google-maps-key`;
-
-  const res = await fetch(url, {
-    headers: { apikey: anonKey },
-  });
-  const data = await res.json();
-  return data?.key || "";
-}
 
 // ========== Component ==========
 export default function GoogleLiveTrackingMap({
@@ -302,7 +222,6 @@ export default function GoogleLiveTrackingMap({
   const handleRecenter = useCallback(() => {
     setUserDragged(false);
     if (mapRef.current && latitude != null && longitude != null) {
-      mapRef.current.setView?.({ lat: latitude, lng: longitude });
       mapRef.current.panTo?.({ lat: latitude, lng: longitude });
     }
   }, [latitude, longitude]);
@@ -324,7 +243,7 @@ export default function GoogleLiveTrackingMap({
         </Button>
       )}
 
-      {/* Speed display panel — same design as existing LiveTrackingMap */}
+      {/* Speed display panel */}
       {sessionId && (isConnected || latitude !== null) && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
           <div className={`backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border ${
@@ -375,3 +294,4 @@ export default function GoogleLiveTrackingMap({
     </div>
   );
 }
+

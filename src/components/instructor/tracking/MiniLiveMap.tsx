@@ -1,10 +1,7 @@
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
-import { useInterpolatedPosition } from "@/hooks/useInterpolatedPosition";
+import { loadGoogleMaps, fetchGoogleMapsKey } from "@/lib/googleMapsLoader";
 
 interface MiniLiveMapProps {
   latitude: number | null;
@@ -15,103 +12,97 @@ interface MiniLiveMapProps {
   isActive: boolean;
 }
 
-export function MiniLiveMap({ latitude, longitude, heading, speedKmh, lastSeenAt, isActive }: MiniLiveMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
+  const mapDivRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const [ready, setReady] = useState(false);
 
-  // Interpolate position between GPS updates for smooth animation
-  const interpolated = useInterpolatedPosition({
-    latitude, longitude, heading, speedKmh: speedKmh ?? null,
-  });
-
-  const displayLat = interpolated?.latitude ?? latitude;
-  const displayLng = interpolated?.longitude ?? longitude;
-
-  // Status logic
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
     : null;
 
-  // Init map
+  // Init Google Map
   useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
+    let cancelled = false;
 
-    const lat = latitude ?? 54.5;
-    const lng = longitude ?? -3.5;
+    async function init() {
+      if (!mapDivRef.current || mapRef.current) return;
+      try {
+        const apiKey = await fetchGoogleMapsKey();
+        if (!apiKey || cancelled) return;
+        await loadGoogleMaps(apiKey);
+        if (cancelled || !mapDivRef.current) return;
 
-    mapInstance.current = L.map(mapRef.current, {
-      center: [lat, lng],
-      zoom: 15,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-    });
+        const w = window as any;
+        const center = latitude != null && longitude != null
+          ? { lat: latitude, lng: longitude }
+          : { lat: 54.5, lng: -3.5 };
 
-    L.tileLayer(getMapTileUrl(), {
-      maxZoom: 19,
-      attribution: getMapAttribution(),
-    }).addTo(mapInstance.current);
+        const map = new w.google.maps.Map(mapDivRef.current, {
+          center,
+          zoom: 15,
+          disableDefaultUI: true,
+          gestureHandling: "none",
+          clickableIcons: false,
+          keyboardShortcuts: false,
+        });
+        mapRef.current = map;
 
-    const resizeObserver = new ResizeObserver(() => {
-      mapInstance.current?.invalidateSize();
-    });
-    resizeObserver.observe(mapRef.current);
+        markerRef.current = new w.google.maps.Marker({
+          position: center,
+          map,
+          icon: {
+            path: w.google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillOpacity: 1,
+            fillColor: isActive ? "#3b82f6" : "#9ca3af",
+            strokeColor: "white",
+            strokeWeight: 3,
+            rotation: heading ?? 0,
+          },
+        });
 
-    return () => {
-      resizeObserver.disconnect();
-      mapInstance.current?.remove();
-      mapInstance.current = null;
-    };
-  }, []);
-
-  // Update marker + center
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map || displayLat === null || displayLng === null) return;
-
-    const rotation = heading ?? 0;
-    const bgColor = isActive ? "#3b82f6" : "#9ca3af";
-    const iconHtml = `
-      <div style="position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
-        <div style="position:absolute;width:32px;height:32px;border-radius:50%;background:${bgColor};box-shadow:0 2px 8px rgba(0,0,0,0.25);"></div>
-        <div style="position:relative;width:18px;height:18px;transform:rotate(${rotation}deg);z-index:1;">
-          <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-          </svg>
-        </div>
-      </div>
-    `;
-
-    const icon = L.divIcon({
-      html: iconHtml,
-      className: "mini-map-marker",
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-    });
-
-    if (!markerRef.current) {
-      markerRef.current = L.marker([displayLat, displayLng], { icon }).addTo(map);
-    } else {
-      markerRef.current.setLatLng([displayLat, displayLng]);
-      markerRef.current.setIcon(icon);
+        setReady(true);
+      } catch {
+        // silently fail
+      }
     }
 
-    map.setView([displayLat, displayLng], map.getZoom(), { animate: true });
-  }, [displayLat, displayLng, heading, isActive]);
+    init();
+    return () => { cancelled = true; };
+  }, []);
 
-  const hasPosition = displayLat !== null && displayLng !== null;
+  // Update marker position + icon
+  useEffect(() => {
+    const map = mapRef.current;
+    const marker = markerRef.current;
+    if (!map || !marker || latitude == null || longitude == null) return;
+
+    const w = window as any;
+    const pos = { lat: latitude, lng: longitude };
+    marker.setPosition(pos);
+    marker.setIcon({
+      path: w.google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillOpacity: 1,
+      fillColor: isActive ? "#3b82f6" : "#9ca3af",
+      strokeColor: "white",
+      strokeWeight: 3,
+      rotation: heading ?? 0,
+    });
+    map.panTo(pos);
+  }, [latitude, longitude, heading, isActive]);
+
+  const hasPosition = latitude !== null && longitude !== null;
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
       <div className="relative h-[200px]">
-        {hasPosition ? (
+        {hasPosition || ready ? (
           <>
-            <div ref={mapRef} className="absolute inset-0" />
+            <div ref={mapDivRef} className="absolute inset-0" />
             {/* Status badge */}
             <div className="absolute top-3 left-3 z-10">
               {isLive ? (
@@ -135,9 +126,6 @@ export function MiniLiveMap({ latitude, longitude, heading, speedKmh, lastSeenAt
           </div>
         )}
       </div>
-      <style>{`
-        .mini-map-marker { background: transparent !important; border: none !important; }
-      `}</style>
     </div>
   );
 }
