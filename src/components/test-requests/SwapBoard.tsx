@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, MapPin, Calendar, Clock, PoundSterling } from "lucide-react";
+import { Loader2, MapPin, Calendar, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,11 +61,6 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
                     <div className="space-y-1.5 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge>Have Test</Badge>
-                        {req.willing_to_pay_swap_fee && (
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
-                            <PoundSterling className="h-3 w-3 mr-0.5" />£150
-                          </Badge>
-                        )}
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
                         {req.test_centre_name && (
@@ -100,11 +95,6 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
                     <div className="space-y-1.5 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="secondary">Want Test</Badge>
-                        {req.willing_to_pay_swap_fee && (
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
-                            <PoundSterling className="h-3 w-3 mr-0.5" />£150
-                          </Badge>
-                        )}
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
                         {req.test_centre_name && (
