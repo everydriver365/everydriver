@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { Loader2, MapPin, Calendar, Clock, PoundSterling, Trash2, Pencil } from "lucide-react";
+import { Loader2, MapPin, Calendar, Clock, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,12 +83,6 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
                   <Badge variant={req.status === "active" ? "outline" : req.status === "matched" ? "default" : "secondary"}>
                     {req.status}
                   </Badge>
-                  {req.willing_to_pay_swap_fee && (
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
-                      <PoundSterling className="h-3 w-3 mr-0.5" />
-                      £150
-                    </Badge>
-                  )}
                 </div>
                 {req.status === "active" && (
                   <div className="flex items-center gap-1">
