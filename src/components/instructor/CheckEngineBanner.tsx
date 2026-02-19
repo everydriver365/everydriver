@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 
 const DISMISSED_KEY = "check_engine_dismissed_at";
 
@@ -88,7 +87,7 @@ export function CheckEngineBanner() {
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[9px] px-1.5 py-0 shrink-0 mt-0.5 font-mono",
+                  "text-[9px] px-1.5 py-0 shrink-0 mt-0.5",
                   fault.severity?.toLowerCase().includes("red") ||
                     fault.severity?.toLowerCase().includes("critical")
                     ? "border-destructive text-destructive"
@@ -98,20 +97,13 @@ export function CheckEngineBanner() {
                     : "border-muted-foreground text-muted-foreground"
                 )}
               >
-                {fault.code || fault.source}
+                {fault.source}
               </Badge>
               <div className="flex-1 min-w-0">
                 <p className="text-foreground leading-tight">{fault.description}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {fault.registration && (
-                    <span className="text-muted-foreground">{fault.registration}</span>
-                  )}
-                  {(fault as any).detectedAt && (
-                    <span className="text-muted-foreground">
-                      Detected {formatDistanceToNow(new Date((fault as any).detectedAt), { addSuffix: true })}
-                    </span>
-                  )}
-                </div>
+                {fault.registration && (
+                  <p className="text-muted-foreground mt-0.5">{fault.registration}</p>
+                )}
               </div>
             </div>
           ))}

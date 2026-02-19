@@ -23,12 +23,12 @@ import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 
 export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, clearFaultCodes, refetch } = useVehicleHealth();
+  const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   const [activeTab, setActiveTab] = useState("compliance");
@@ -85,6 +85,10 @@ export default function InstructorVehicleHealth() {
           </div>
         </div>
 
+        {/* Mobile GPS Tracking Banner */}
+        {instructor?.id && (
+          <MobileTrackingSettingsBanner instructorId={instructor.id} />
+        )}
 
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -215,7 +219,6 @@ export default function InstructorVehicleHealth() {
               isLoading={isLoading}
               onLinkClick={(device) => setLinkingDevice(device)}
               onNavigateToSettings={() => navigate("/instructor/settings/tracking")}
-              onClearFaults={clearFaultCodes}
             />
           </TabsContent>
 

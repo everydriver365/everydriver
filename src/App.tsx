@@ -58,7 +58,6 @@ import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
 import MobileHomeRedesignDemo2 from "./pages/MobileHomeRedesignDemo2";
 import MobileHomeIOSDemo from "./pages/MobileHomeIOSDemo";
 import HeaderRedesignDemo from "./pages/HeaderRedesignDemo";
-import HomepageRedesignsShowcase from "./pages/HomepageRedesignsShowcase";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -221,7 +220,6 @@ const App = () => (
               <Route path="/mobile-home-redesign-2" element={<MobileHomeRedesignDemo2 />} />
               <Route path="/mobile-home-ios-demo" element={<MobileHomeIOSDemo />} />
               <Route path="/header-redesign-demo" element={<HeaderRedesignDemo />} />
-              <Route path="/homepage-redesigns" element={<HomepageRedesignsShowcase />} />
 
               {/* Instructor Portal (Authenticated) */}
               <Route path="/instructor/login" element={<InstructorPortalLogin />} />

@@ -1,72 +1,71 @@
 
 
-# Quick Actions Section Redesign - Design Options
+# Add Geotab Engine Diagnostics to Vehicle Health
 
-Here are 5 distinct layout concepts for the quick actions area, all keeping the same tiles, icons, colours, badge counts, drag-to-reorder, and routing logic.
+## What You'll Get
 
----
+The Vehicle Health tab will show real engine data from your Geotab device:
 
-## Option A: Horizontal Scroll Carousel
+- **Fuel Level** (%) with visual gauge
+- **Battery Voltage** (12V system) with low-voltage warning
+- **Engine Coolant Temperature** with overheat warning
+- **Engine Hours** (total runtime)
+- **ECU Odometer** (accurate mileage from the car's computer, not GPS estimates)
+- **Tire Pressure** (if your vehicle supports it)
+- **Active Fault Codes** (check engine light / DTCs) with severity and description
 
-A single horizontally scrollable row of compact square tiles (like an iOS app drawer). Each tile is ~64px square with the icon centred and the label below.
+## How It Works
 
-- Keeps the "Top Action" banner tile above
-- Remaining tiles sit in one horizontal scroll strip with snap points
-- Small dot indicators show how many pages of tiles exist
-- Pros: saves vertical space, feels native/mobile-first
-- Cons: tiles off-screen are less discoverable
+Geotab exposes this data through two APIs: `StatusData` (gauges/sensors) and `FaultData` (engine warnings). We'll batch these into the existing `ExecuteMultiCall` so it costs zero extra API calls against the rate limit.
 
-## Option B: 3-Column Compact Grid (Phone Home Screen)
+## Implementation
 
-Replace the 2-column layout with a tighter 3-column grid -- each cell is a rounded square icon with a small label underneath (like an iPhone home screen).
+### 1. Database: Add columns to `gps_devices`
 
-- Remove the full-width "Top Action" hero -- treat all tiles equally in the grid
-- 3 tiles per row, ~56px icons, label below in 10px text
-- Badge counts sit as red dots on the icon corner
-- Pros: more tiles visible without scrolling, familiar pattern
-- Cons: labels may truncate on narrow screens
+New columns on the existing table:
+- `last_fuel_percent` (numeric) -- fuel tank level
+- `last_battery_voltage` (numeric) -- 12V battery
+- `last_coolant_temp_c` (numeric) -- engine coolant celsius
+- `last_engine_hours` (numeric) -- total engine hours
+- `last_ecu_odometer_km` (numeric) -- ECU-reported odometer
+- `last_tire_pressure_json` (jsonb) -- per-tire readings if available
+- `last_fault_codes` (jsonb) -- array of active DTCs: `[{code, description, severity, source}]`
+- `last_diagnostics_at` (timestamptz) -- when diagnostics were last updated
 
-## Option C: Segmented Tabs with Categories
+### 2. Geotab Poller: Fetch StatusData + FaultData
 
-Group tiles into 2-3 tab categories (e.g. "Core", "Money", "Tools") using a pill-style tab bar above the grid.
+Add two more calls to the existing `ExecuteMultiCall` batch:
 
-- Each tab shows a 2x2 or 2x3 grid of relevant tiles
-- Active tab is highlighted with primary colour
-- Keeps the current tile styling (icon + label side by side)
-- Pros: reduces visual overload, logical grouping
-- Cons: extra tap to switch categories
+- **StatusData** with `DiagnosticSearch` filters for: `DiagnosticFuelLevelId`, `DiagnosticStateOfChargeId` (battery voltage), `DiagnosticEngineCoolantTemperatureId`, `DiagnosticEngineHoursAdjustmentId`, `DiagnosticOdometerAdjustmentId`, `DiagnosticTirePressureFrontLeftId` (and other tires)
+- **FaultData** with `search.fromDate` set to last 24 hours to catch active faults
 
-## Option D: Collapsible Accordion Sections
+Write the parsed values into the new `gps_devices` columns.
 
-Split tiles into named sections ("Teaching", "Finance", "Vehicle") that can expand/collapse.
+### 3. Frontend: Update data model and UI
 
-- Each section header is a slim bar with section name and chevron
-- Tiles inside each section use the existing 2-column layout
-- First section auto-expanded, rest collapsed
-- Pros: clean, scannable, user controls density
-- Cons: more taps to reach tiles in collapsed sections
+**`useVehicleHealth.ts`**: Add new fields to `GPSDeviceHealth` interface and SELECT query.
 
-## Option E: Floating Action Chips (Scrollable Pill Bar)
+**`EnhancedDeviceStatusCard.tsx`**: Replace the placeholder `null` values with real data:
+- Fuel level gauge with color coding (red < 15%, amber < 30%)
+- Battery voltage display (warning below 12.0V)
+- Coolant temperature (warning above 100C)
+- ECU odometer in miles with today's distance calculation
+- Engine hours formatted as "XXXh XXm"
+- Active fault codes section with severity badges (red/amber/info)
 
-A horizontally scrollable row of pill-shaped chips (icon + label inline), like quick-filter chips in Google Maps.
+**`VehicleHealthStrip.tsx`** (dashboard widget): Add fuel level to the 4-metric grid, replacing the generic "Last Seen" tile when fuel data is available.
 
-- Each pill is ~120px wide, rounded-full, with icon on left and label on right
-- Badges appear as small red dots on the pill
-- No full-width hero tile -- all tiles are equal
-- Pros: modern, touch-friendly, very compact
-- Cons: limited to single row, requires scrolling for all tiles
+### 4. Files Modified
 
----
+| File | Change |
+|------|--------|
+| New migration SQL | Add 8 diagnostic columns to `gps_devices` |
+| `supabase/functions/geotab-poller/index.ts` | Add StatusData + FaultData to ExecuteMultiCall batch, write results to DB |
+| `src/hooks/useVehicleHealth.ts` | Add new fields to interface and query |
+| `src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx` | Display fuel, voltage, coolant, odometer, engine hours, fault codes |
+| `src/components/instructor/VehicleHealthStrip.tsx` | Show fuel level in dashboard strip |
 
-## Technical Details
+### 5. Rate Limit Impact
 
-All options will:
-- Retain the existing `QuickActionTiles` component structure
-- Keep drag-to-reorder (edit mode) functionality intact
-- Preserve custom icon images, badge counts, and swipe actions
-- Use the same `useInstructorTilePreferences` hook for ordering/visibility
-- Maintain square corners (`rounded-none`) per the portal visual identity
-- Work within the existing framer-motion animation system
-
-Implementation involves modifying only `src/components/instructor/QuickActionTiles.tsx` -- no database or routing changes needed.
+The poller currently makes 1 HTTP request per poll (ExecuteMultiCall with N+1 methods). Adding StatusData and FaultData adds just 2 more methods to the same batch call -- still 1 HTTP request total, well within the 10 calls/minute limit.
 

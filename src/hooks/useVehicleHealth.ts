@@ -289,17 +289,6 @@ export function useVehicleHealth() {
     vehiclesQuery.refetch();
   }
 
-  // Clear fault codes for a specific device (manual acknowledgment)
-  async function clearFaultCodes(deviceId: string) {
-    const { error } = await supabase
-      .from("gps_devices")
-      .update({ last_fault_codes: [] })
-      .eq("id", deviceId);
-
-    if (error) throw error;
-    devicesQuery.refetch();
-  }
-
   return {
     devices: devicesQuery.data || [],
     vehicles: vehiclesQuery.data || [],
@@ -307,7 +296,6 @@ export function useVehicleHealth() {
     isLoading: devicesQuery.isLoading || vehiclesQuery.isLoading,
     isError: devicesQuery.isError || vehiclesQuery.isError,
     linkDeviceToVehicle,
-    clearFaultCodes,
     refetch: () => {
       devicesQuery.refetch();
       vehiclesQuery.refetch();

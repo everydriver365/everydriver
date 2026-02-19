@@ -14,15 +14,13 @@ interface LiveTelemetryTabProps {
   isLoading: boolean;
   onLinkClick: (device: GPSDeviceHealth) => void;
   onNavigateToSettings: () => void;
-  onClearFaults?: (deviceId: string) => Promise<void>;
 }
 
 export function LiveTelemetryTab({ 
   devices, 
   isLoading, 
   onLinkClick, 
-  onNavigateToSettings,
-  onClearFaults,
+  onNavigateToSettings 
 }: LiveTelemetryTabProps) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     devices[0]?.id || null
@@ -81,7 +79,6 @@ export function LiveTelemetryTab({
               key={device.id}
               device={device}
               onLinkClick={() => onLinkClick(device)}
-              onClearFaults={onClearFaults}
             />
           ))}
         </TabsContent>

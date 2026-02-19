@@ -213,7 +213,6 @@ Deno.serve(async (req) => {
       "DiagnosticEngineCoolantTemperatureId",
       "DiagnosticEngineHoursAdjustmentId",
       "DiagnosticOdometerAdjustmentId",
-      "DiagnosticIgnitionId",                  // Ignition on/off (1 = on, 0 = off)
       "DiagnosticTirePressureFrontLeftId",
       "DiagnosticTirePressureFrontRightId",
       "DiagnosticTirePressureRearLeftId",
@@ -318,52 +317,15 @@ Deno.serve(async (req) => {
     // FaultData results: last call
     const faultResults: any[] = batchResults[batchResults.length - 1] || [];
     const deviceFaults = new Map<string, any[]>();
-
-    // DTC prefix mapping from Geotab controller IDs
-    const controllerPrefixMap: Record<string, string> = {
-      ControllerObdPowertrainId: "P",
-      ControllerObdWwhPowertrainId: "P",
-      ControllerObdBodyId: "B",
-      ControllerObdWwhBodyId: "B",
-      ControllerObdChassisId: "C",
-      ControllerObdWwhChassisId: "C",
-      ControllerObdNetworkId: "U",
-      ControllerObdWwhNetworkId: "U",
-    };
-
     for (const fault of faultResults) {
       const faultDeviceId = fault.device?.id;
       if (!faultDeviceId) continue;
-
-      // Skip inactive/cleared faults
-      const faultState = fault.faultState || "";
-      if (faultState === "Inactive" || faultState === "Cleared") continue;
-
-      // Derive proper DTC code from controller + diagnostic
-      const controllerId = fault.controller?.id || "";
-      const prefix = controllerPrefixMap[controllerId] || "DTC";
-      const diagCode = fault.diagnostic?.code;
-      let dtcCode: string;
-      if (diagCode != null && typeof diagCode === "number") {
-        dtcCode = prefix + diagCode.toString(16).toUpperCase().padStart(4, "0");
-      } else if (diagCode != null) {
-        dtcCode = prefix + String(diagCode);
-      } else {
-        dtcCode = fault.code || fault.id || "Unknown";
-      }
-
-      const description = fault.diagnostic?.name || fault.name || "Unknown fault";
-      const severity = fault.severity || fault.faultLampState || "Unknown";
-      const source = fault.controller?.name || fault.diagnostic?.source || "ECU";
-      const detectedAt = fault.dateTime || null;
-
       if (!deviceFaults.has(faultDeviceId)) deviceFaults.set(faultDeviceId, []);
       deviceFaults.get(faultDeviceId)!.push({
-        code: dtcCode,
-        description,
-        severity,
-        source,
-        detectedAt,
+        code: fault.code || fault.id,
+        description: fault.name || fault.diagnostic?.name || "Unknown fault",
+        severity: fault.failureModeId?.name || fault.severity || "Unknown",
+        source: fault.controller?.name || fault.source || "ECU",
       });
     }
 
@@ -394,6 +356,7 @@ Deno.serve(async (req) => {
 
       // Get diagnostics for this device
       const diags = deviceDiagnostics.get(geotabInternalId) || {};
+      const faults = deviceFaults.get(geotabInternalId) || null;
 
       // Build diagnostics update
       const diagnosticsUpdate: Record<string, unknown> = {};
@@ -425,9 +388,9 @@ Deno.serve(async (req) => {
         diagnosticsUpdate.last_tire_pressure_json = tirePressure;
       }
 
-      // Always update fault codes — set to empty array when no active faults to clear stale data
-      const faults = deviceFaults.get(geotabInternalId) || [];
-      diagnosticsUpdate.last_fault_codes = faults;
+      if (faults && faults.length > 0) {
+        diagnosticsUpdate.last_fault_codes = faults;
+      }
 
       if (Object.keys(diagnosticsUpdate).length > 0) {
         diagnosticsUpdate.last_diagnostics_at = new Date().toISOString();
@@ -440,7 +403,7 @@ Deno.serve(async (req) => {
           last_longitude: status.longitude,
           last_speed_kmh: status.speed,
           last_heading: status.bearing ?? null,
-          last_ignition_status: diags["DiagnosticIgnitionId"] != null ? diags["DiagnosticIgnitionId"] >= 1 : (status.isDeviceCommunicating ?? null),
+          last_ignition_status: status.isDeviceCommunicating ?? null,
           last_seen_at: geotabSeenAt
             ? new Date(geotabSeenAt).toISOString()
             : null,

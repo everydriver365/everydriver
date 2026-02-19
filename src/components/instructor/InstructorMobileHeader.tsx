@@ -77,7 +77,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="bg-gradient-to-b from-primary via-primary to-primary/75 text-primary-foreground relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground relative overflow-hidden">
         {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-primary-foreground/5" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary-foreground/[0.03]" />

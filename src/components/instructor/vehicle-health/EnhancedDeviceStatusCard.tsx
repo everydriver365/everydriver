@@ -1,4 +1,4 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap, Trash2 } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,15 +7,13 @@ import { cn } from "@/lib/utils";
 import { GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 import { formatMph, kmToMiles } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
 
 interface EnhancedDeviceStatusCardProps {
   device: GPSDeviceHealth;
   onLinkClick: () => void;
-  onClearFaults?: (deviceId: string) => Promise<void>;
 }
 
-export function EnhancedDeviceStatusCard({ device, onLinkClick, onClearFaults }: EnhancedDeviceStatusCardProps) {
+export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDeviceStatusCardProps) {
   const batteryLevel = device.last_battery_percent;
   const isIgnitionOn = device.last_ignition_status === true;
   const isOnline = device.is_connected;
@@ -318,31 +316,11 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick, onClearFaults }:
         {/* Active Fault Codes */}
         {hasFaults && (
           <div className="p-2 rounded-lg bg-destructive/5 border border-destructive/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <span className="text-xs font-medium text-destructive">
-                  {faultCodes!.length} Active Fault{faultCodes!.length > 1 ? "s" : ""}
-                </span>
-              </div>
-              {onClearFaults && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive"
-                  onClick={async () => {
-                    try {
-                      await onClearFaults(device.id);
-                      toast({ title: "Faults cleared", description: "Display cleared. Active faults will reappear on next poll." });
-                    } catch {
-                      toast({ title: "Error", description: "Failed to clear faults", variant: "destructive" });
-                    }
-                  }}
-                >
-                  <Trash2 className="h-3 w-3 mr-1" />
-                  Clear
-                </Button>
-              )}
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <span className="text-xs font-medium text-destructive">
+                {faultCodes!.length} Active Fault{faultCodes!.length > 1 ? "s" : ""}
+              </span>
             </div>
             <div className="space-y-1">
               {faultCodes!.slice(0, 5).map((fault, i) => (
@@ -350,7 +328,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick, onClearFaults }:
                   <Badge 
                     variant="outline" 
                     className={cn(
-                      "text-[9px] px-1 py-0 shrink-0 mt-0.5 font-mono font-bold",
+                      "text-[9px] px-1 py-0 shrink-0 mt-0.5",
                       fault.severity?.toLowerCase().includes("red") || fault.severity?.toLowerCase().includes("critical")
                         ? "border-destructive text-destructive"
                         : fault.severity?.toLowerCase().includes("amber") || fault.severity?.toLowerCase().includes("warning")
@@ -358,16 +336,9 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick, onClearFaults }:
                         : "border-muted-foreground text-muted-foreground"
                     )}
                   >
-                    {fault.code}
+                    {fault.source}
                   </Badge>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-muted-foreground leading-tight">{fault.description}</span>
-                    {(fault as any).detectedAt && (
-                      <span className="text-muted-foreground/60 ml-1">
-                        • {formatDistanceToNow(new Date((fault as any).detectedAt), { addSuffix: true })}
-                      </span>
-                    )}
-                  </div>
+                  <span className="text-muted-foreground leading-tight">{fault.description}</span>
                 </div>
               ))}
               {faultCodes!.length > 5 && (
