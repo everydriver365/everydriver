@@ -19,10 +19,10 @@ export interface CalendarColors {
 export const DEFAULT_CALENDAR_COLORS: CalendarColors = {
   lesson: '#10b981',
   lesson_unpaid: '#ef4444',
-  block_personal: '#3b82f6',
+  block_personal: '#1e3a5f',
   block_break: '#f59e0b',
   block_meeting: '#8b5cf6',
-  external: '#6b7280',
+  external: '#1e3a5f',
 };
 
 interface CalendarColorSettingsProps {
