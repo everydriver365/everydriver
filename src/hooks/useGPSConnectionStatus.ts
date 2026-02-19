@@ -18,9 +18,12 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   const [lastHeartbeatAt, setLastHeartbeatAt] = useState<string | null>(null);
   const [lastTrackTime, setLastTrackTime] = useState<string | null>(null);
   const [deviceName, setDeviceName] = useState<string | null>(null);
+  const [isDeviceActive, setIsDeviceActive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getStatus = useCallback((trackTime: string | null, heartbeat: string | null): "active" | "recent" | "stationary" | "offline" => {
+  const getStatus = useCallback((trackTime: string | null, heartbeat: string | null, deviceActive: boolean): "active" | "recent" | "stationary" | "offline" => {
+    if (!deviceActive) return "offline";
+    
     const now = new Date();
     
     // Primary: last_seen_at — when we last got data from the tracking provider
@@ -55,7 +58,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     try {
       const { data } = await supabase
         .from("gps_devices")
-        .select("last_seen_at, last_heartbeat_at, device_name, device_identifier")
+        .select("last_seen_at, last_heartbeat_at, device_name, device_identifier, is_active")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })
         .limit(1)
@@ -63,11 +66,14 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
 
       if (data) {
         setDeviceName(data.device_name || data.device_identifier || null);
+        setIsDeviceActive(data.is_active === true);
+      } else {
+        setIsDeviceActive(false);
       }
       return {
         lastSeenAt: data?.last_seen_at || null,
         lastHeartbeatAt: data?.last_heartbeat_at || null,
-        lastTrackTime: data?.last_seen_at || null, // Use last_seen_at as track time now
+        lastTrackTime: data?.last_seen_at || null,
       };
     } catch (err) {
       console.error("Error checking GPS connection:", err);
@@ -110,8 +116,12 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
             last_seen_at?: string; 
             last_heartbeat_at?: string;
             device_name?: string; 
-            device_identifier?: string 
+            device_identifier?: string;
+            is_active?: boolean;
           };
+          if (newData.is_active !== undefined) {
+            setIsDeviceActive(newData.is_active === true);
+          }
           if (newData.last_seen_at) {
             setLastSeenAt(newData.last_seen_at);
             setLastTrackTime(newData.last_seen_at);
@@ -131,7 +141,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     };
   }, [instructorId, checkConnection]);
 
-  const status = getStatus(lastTrackTime, lastHeartbeatAt);
+  const status = getStatus(lastTrackTime, lastHeartbeatAt, isDeviceActive);
   const isConnected = status === "active" || status === "recent" || status === "stationary";
   const isStationary = status === "stationary";
 
