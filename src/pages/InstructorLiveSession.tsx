@@ -803,18 +803,8 @@ export default function InstructorLiveSession() {
             </div>
           )}
 
-          {/* Live Map */}
-          <LiveTrackingMap
-            latitude={device.last_latitude}
-            longitude={device.last_longitude}
-            heading={device.last_heading}
-            speedKmh={device.last_speed_kmh}
-            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-            isConnected={isConnected}
-            sessionId={device.current_session_id}
-            roadName={device.last_road_name}
-            className="absolute inset-0"
-          />
+          {/* Live Map — self-contained, fetches its own device data */}
+          <LiveTrackingMap className="absolute inset-0" />
 
            {/* Floating Session Timer Card */}
            <FloatingSessionTimer
