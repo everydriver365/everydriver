@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,17 +32,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, CheckCircle, ArrowRight, ArrowLeft, Search } from "lucide-react";
-
-interface AddressSuggestion {
-  label: string;
-  street: string;
-  houseNumber: string;
-  district: string;
-  city: string;
-  county: string;
-  postcode: string;
-}
+import { Loader2, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 
 const formSchema = z.object({
   customerName: z.string().trim().min(1, "Name is required").max(200),
@@ -73,10 +64,6 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("not_paid");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -115,8 +102,6 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
     setPaymentMethod("not_paid");
     setIsSubmitting(false);
     setIsComplete(false);
-    setAddressSuggestions([]);
-    setShowSuggestions(false);
     form.reset();
   };
 
@@ -128,77 +113,6 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
   const goToStep2 = async () => {
     const valid = await form.trigger();
     if (valid) setStep(2);
-  };
-
-  const lookupPostcode = async () => {
-    const postcode = form.getValues("postcode").trim();
-    if (!postcode) {
-      toast.error("Enter a postcode first");
-      return;
-    }
-    setIsLookingUp(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("address-lookup", {
-        body: { postcode },
-      });
-      if (error) throw error;
-      const addresses = data?.addresses || [];
-      if (addresses.length > 0) {
-        setAddressSuggestions(addresses);
-        setShowSuggestions(true);
-        // Also normalise the postcode from the first result
-        if (addresses[0].postcode) {
-          form.setValue("postcode", addresses[0].postcode, { shouldValidate: true });
-        }
-      } else {
-        // Fallback to postcodes.io for area info
-        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-        const json = await res.json();
-        if (json.status === 200 && json.result) {
-          form.setValue("postcode", json.result.postcode, { shouldValidate: true });
-          toast.info("No specific addresses found — please type the full address");
-        } else {
-          toast.error("Postcode not found");
-        }
-      }
-    } catch {
-      toast.error("Postcode lookup failed");
-    } finally {
-      setIsLookingUp(false);
-    }
-  };
-
-  const handleAddressAutocomplete = useCallback((query: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (query.length < 3) {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("address-lookup", {
-          body: { query },
-        });
-        if (error) throw error;
-        const addresses = data?.addresses || [];
-        setAddressSuggestions(addresses);
-        setShowSuggestions(addresses.length > 0);
-      } catch {
-        // Silently fail autocomplete
-      }
-    }, 300);
-  }, []);
-
-  const selectAddress = (addr: AddressSuggestion) => {
-    const parts = [addr.houseNumber, addr.street, addr.district, addr.city, addr.county]
-      .filter(Boolean);
-    form.setValue("address", parts.join(", "), { shouldValidate: true });
-    if (addr.postcode) {
-      form.setValue("postcode", addr.postcode, { shouldValidate: true });
-    }
-    setShowSuggestions(false);
-    setAddressSuggestions([]);
   };
 
   const goToStep3 = () => {
@@ -215,7 +129,6 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
       const values = form.getValues();
 
       if (assignmentType === "job_offer") {
-        // Create a course enquiry (Job Offer)
         const { error } = await supabase.from("course_enquiries").insert({
           name: values.customerName,
           address: values.address,
@@ -233,7 +146,6 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
         if (error) throw error;
         toast.success("Job offer created and will be sent to matching instructors!");
       } else {
-        // Direct assignment: create pupil + lesson
         const { data: pupil, error: pupilError } = await supabase
           .from("pupils")
           .insert({
@@ -335,41 +247,18 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                   )} />
 
                   <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem className="relative">
+                    <FormItem>
                       <FormLabel>Full Address</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Start typing address or use postcode lookup..."
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleAddressAutocomplete(e.target.value);
+                        <GoogleAddressAutocomplete
+                          value={field.value}
+                          onChange={(val) => field.onChange(val)}
+                          onPostcodeChange={(postcode) => {
+                            form.setValue("postcode", postcode, { shouldValidate: true });
                           }}
-                          onFocus={() => {
-                            if (addressSuggestions.length > 0) setShowSuggestions(true);
-                          }}
-                          onBlur={() => {
-                            // Delay to allow click on suggestion
-                            setTimeout(() => setShowSuggestions(false), 200);
-                          }}
-                          autoComplete="off"
+                          placeholder="Start typing an address..."
                         />
                       </FormControl>
-                      {showSuggestions && addressSuggestions.length > 0 && (
-                        <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
-                          {addressSuggestions.map((addr, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors border-b last:border-b-0 border-border"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => selectAddress(addr)}
-                            >
-                              {addr.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -378,12 +267,7 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                     <FormField control={form.control} name="postcode" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Postcode</FormLabel>
-                        <div className="flex gap-2">
-                          <FormControl><Input placeholder="e.g. B1 1AA" {...field} /></FormControl>
-                          <Button type="button" variant="outline" size="icon" onClick={lookupPostcode} disabled={isLookingUp} title="Lookup postcode">
-                            {isLookingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                          </Button>
-                        </div>
+                        <FormControl><Input placeholder="Auto-filled from address" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -445,7 +329,7 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                     <FormField control={form.control} name="totalCost" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Total Cost (£)</FormLabel>
-                        <FormControl><Input type="number" min={0} step={0.01} {...field} /></FormControl>
+                        <FormControl><Input type="number" min={0} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -453,57 +337,52 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
 
                   <FormField control={form.control} name="notes" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (optional)</FormLabel>
-                      <FormControl><Textarea rows={2} placeholder="Any additional info..." {...field} /></FormControl>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl><Textarea placeholder="Any additional info..." rows={2} {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
 
-                  <div className="flex justify-end pt-2">
-                    <Button type="button" onClick={goToStep2}>
-                      Next: Assignment <ArrowRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button type="button" className="w-full" onClick={goToStep2}>
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </Form>
             )}
 
-            {/* Step 2: Assignment */}
             {step === 2 && (
               <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">How should this booking be assigned?</Label>
-                  <RadioGroup value={assignmentType} onValueChange={(v) => setAssignmentType(v as AssignmentType)} className="mt-2 space-y-3">
-                    <div className="flex items-start gap-3 rounded-lg border p-3">
-                      <RadioGroupItem value="job_offer" id="assign-job" className="mt-0.5" />
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">How should this booking be handled?</Label>
+                  <RadioGroup value={assignmentType} onValueChange={(v) => setAssignmentType(v as AssignmentType)}>
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setAssignmentType("job_offer")}>
+                      <RadioGroupItem value="job_offer" id="job-offer" className="mt-0.5" />
                       <div>
-                        <Label htmlFor="assign-job" className="font-medium cursor-pointer">Send as Job Offer</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Send to all instructors covering {form.getValues("postcode") || "the pupil's area"}
-                        </p>
+                        <Label htmlFor="job-offer" className="font-medium cursor-pointer">Send as Job Offer</Label>
+                        <p className="text-sm text-muted-foreground mt-0.5">Instructors in the area can accept this booking</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 rounded-lg border p-3">
-                      <RadioGroupItem value="instructor" id="assign-direct" className="mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setAssignmentType("instructor")}>
+                      <RadioGroupItem value="instructor" id="direct-assign" className="mt-0.5" />
                       <div>
-                        <Label htmlFor="assign-direct" className="font-medium cursor-pointer">Assign to specific instructor</Label>
-                        <p className="text-sm text-muted-foreground">Pick an instructor from the list below</p>
+                        <Label htmlFor="direct-assign" className="font-medium cursor-pointer">Assign to Instructor</Label>
+                        <p className="text-sm text-muted-foreground mt-0.5">Directly assign to a specific instructor</p>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
 
                 {assignmentType === "instructor" && (
-                  <div>
+                  <div className="space-y-2">
                     <Label>Select Instructor</Label>
                     <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Choose an instructor..." />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an instructor" />
                       </SelectTrigger>
                       <SelectContent>
                         {instructors.map((inst) => (
                           <SelectItem key={inst.id} value={inst.id}>
-                            {inst.name} — {inst.home_postcode}
+                            {inst.name} {inst.home_postcode ? `(${inst.home_postcode})` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -511,61 +390,57 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                   </div>
                 )}
 
-                <div className="flex justify-between pt-2">
-                  <Button variant="outline" onClick={() => setStep(1)}>
-                    <ArrowLeft className="mr-1 h-4 w-4" /> Back
-                  </Button>
-                  <Button onClick={goToStep3}>
-                    Next: Confirm <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Confirm */}
-            {step === 3 && (
-              <div className="space-y-4">
                 {assignmentType === "instructor" && (
-                  <div>
+                  <div className="space-y-2">
                     <Label>Payment Status</Label>
                     <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="not_paid">Not yet paid</SelectItem>
-                        <SelectItem value="cash">Cash</SelectItem>
-                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                        <SelectItem value="not_paid">Not Paid</SelectItem>
+                        <SelectItem value="cash">Paid — Cash</SelectItem>
+                        <SelectItem value="bank_transfer">Paid — Bank Transfer</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 )}
 
-                <div className="rounded-lg border bg-muted/50 p-4 text-sm space-y-1">
-                  <p><strong>Name:</strong> {form.getValues("customerName")}</p>
-                  <p><strong>Address:</strong> {form.getValues("address")}</p>
-                  <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
-                  <p><strong>Transmission:</strong> {form.getValues("transmission") === "manual" ? "Manual" : "Automatic"}</p>
-                  {form.getValues("customerEmail") && <p><strong>Email:</strong> {form.getValues("customerEmail")}</p>}
-                  {form.getValues("customerPhone") && <p><strong>Phone:</strong> {form.getValues("customerPhone")}</p>}
-                  <hr className="my-2 border-border" />
-                  <p><strong>Course:</strong> {form.getValues("courseTitle")}</p>
-                  <p><strong>Hours:</strong> {form.getValues("courseHours")}</p>
-                  <p><strong>Cost:</strong> £{Number(form.getValues("totalCost")).toFixed(2)}</p>
-                  <hr className="my-2 border-border" />
-                  <p>
-                    <strong>Assignment:</strong>{" "}
-                    {assignmentType === "job_offer"
-                      ? "Job Offer (sent to matching instructors)"
-                      : selectedInstructor?.name || "—"}
-                  </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                  </Button>
+                  <Button className="flex-1" onClick={goToStep3}>
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border p-4 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Pupil</span><span className="font-medium">{form.getValues("customerName")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Address</span><span className="font-medium text-right max-w-[60%]">{form.getValues("address")}, {form.getValues("postcode")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Course</span><span className="font-medium">{form.getValues("courseTitle")} ({form.getValues("courseHours")}hrs)</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Cost</span><span className="font-medium">£{form.getValues("totalCost")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Transmission</span><span className="font-medium capitalize">{form.getValues("transmission")}</span></div>
+                  <hr className="border-border" />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Assignment</span>
+                    <span className="font-medium">{assignmentType === "job_offer" ? "Job Offer" : selectedInstructor?.name || "—"}</span>
+                  </div>
+                  {assignmentType === "instructor" && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Payment</span><span className="font-medium capitalize">{paymentMethod.replace("_", " ")}</span></div>
+                  )}
                 </div>
 
-                <div className="flex justify-between pt-2">
-                  <Button variant="outline" onClick={() => setStep(2)}>
-                    <ArrowLeft className="mr-1 h-4 w-4" /> Back
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
-                  <Button onClick={handleSubmit} disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {assignmentType === "job_offer" ? "Create Job Offer" : "Complete Booking"}
+                  <Button className="flex-1" onClick={handleSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : "Confirm Booking"}
                   </Button>
                 </div>
               </div>

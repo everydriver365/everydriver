@@ -1,9 +1,9 @@
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { MapPin, Navigation } from "lucide-react";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 
 interface StepLocationProps {
   data: {
@@ -37,12 +37,13 @@ export function StepLocation({
             <MapPin className="h-4 w-4" />
             Your Base Postcode *
           </Label>
-          <Input
-            id="postcode"
+          <PostcodeAutocomplete
             value={data.home_postcode}
-            onChange={(e) => onUpdate({ home_postcode: e.target.value.toUpperCase() })}
+            onChange={(val) => onUpdate({ home_postcode: val.toUpperCase() })}
+            onSelect={(postcode) => onUpdate({ home_postcode: postcode })}
             placeholder="e.g. SW1A 1AA"
-            className="text-center text-lg font-medium"
+            inputClassName="text-center text-lg font-medium"
+            showGeolocation
           />
           <p className="text-xs text-muted-foreground text-center">
             This is where you'll be based for lesson pickups
