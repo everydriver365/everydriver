@@ -28,7 +28,7 @@ import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrac
 export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
+  const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, clearFaultCodes, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   const [activeTab, setActiveTab] = useState("compliance");
@@ -219,6 +219,7 @@ export default function InstructorVehicleHealth() {
               isLoading={isLoading}
               onLinkClick={(device) => setLinkingDevice(device)}
               onNavigateToSettings={() => navigate("/instructor/settings/tracking")}
+              onClearFaults={clearFaultCodes}
             />
           </TabsContent>
 
