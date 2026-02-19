@@ -51,6 +51,8 @@ function InfoCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+const CONNECTION_THRESHOLD_SECONDS = 30;
+
 // ========== Component ==========
 export default function LiveGoogleTrackingMap({ className = "" }: { className?: string }) {
   const mapDivRef = useRef<HTMLDivElement>(null);
@@ -64,7 +66,7 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
   const [note, setNote] = useState<string | null>(null);
   const [userDragged, setUserDragged] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [agoText, setAgoText] = useState("—");
+  const [now, setNow] = useState(Date.now());
 
   // Rolling raw points for route
   const rawPointsRef = useRef<Array<{ lat: number; lng: number; t: string }>>([]);
@@ -89,13 +91,34 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
     return unit === "mph" ? `${Math.round(kmhToMph(s))} mph` : `${Math.round(s)} km/h`;
   }, [device?.last_speed_limit_kmh, unit]);
 
-  // Update "ago" text every second
+  // Tick every 1 second so connection state auto-updates
   useEffect(() => {
-    const tick = () => setAgoText(formatAgo(device?.last_seen_at ?? null));
-    tick();
-    const timer = setInterval(tick, 1000);
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [device?.last_seen_at]);
+  }, []);
+
+  // Derive connection state from `now` and device
+  const lastSeenMs = device?.last_seen_at
+    ? new Date(device.last_seen_at).getTime()
+    : 0;
+  const ageSeconds = lastSeenMs ? (now - lastSeenMs) / 1000 : Infinity;
+  const isConnected = ageSeconds <= CONNECTION_THRESHOLD_SECONDS;
+
+  const markerColor = !isConnected
+    ? "#9ca3af"
+    : overspeed
+    ? "#ef4444"
+    : "#22c55e";
+
+  const connectionLabel = isConnected ? "Connected" : "Offline";
+
+  const agoText = lastSeenMs > 0
+    ? ageSeconds < 60
+      ? `${Math.floor(ageSeconds)}s ago`
+      : ageSeconds < 3600
+      ? `${Math.floor(ageSeconds / 60)}m ago`
+      : `${Math.floor(ageSeconds / 3600)}h ago`
+    : "—";
 
   // 1) Load user's active device row
   useEffect(() => {
@@ -218,11 +241,11 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       path: w.google.maps.SymbolPath.CIRCLE,
       scale: 8,
       fillOpacity: 1,
-      fillColor: overspeed ? "#ef4444" : "#22c55e",
+      fillColor: markerColor,
       strokeColor: "white",
       strokeWeight: 3,
     });
-  }, [device?.last_latitude, device?.last_longitude, overspeed, userDragged]);
+  }, [device?.last_latitude, device?.last_longitude, markerColor, userDragged]);
 
   // 4) Subscribe to realtime updates for this device row
   useEffect(() => {
@@ -334,10 +357,10 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
             Live Tracking
           </h2>
           <Badge
-            variant={status === "Live" ? "default" : "secondary"}
+            variant={isConnected ? "default" : "secondary"}
             className="text-xs"
           >
-            {status}
+            {connectionLabel}
           </Badge>
           {overspeed && (
             <Badge variant="destructive" className="text-xs animate-pulse">
