@@ -191,7 +191,8 @@ Deno.serve(async (req) => {
       });
 
       for (const trip of trips || []) {
-        const distanceKm = (trip.distance || 0) / 1000;
+        // Geotab Trip API: distance is already in km
+        const distanceKm = trip.distance || 0;
         const drivingSeconds = trip.drivingDuration
           ? parseDuration(trip.drivingDuration)
           : 0;
@@ -202,11 +203,13 @@ Deno.serve(async (req) => {
           ? parseDuration(trip.stopDuration)
           : 0;
 
+        // Geotab uses "start" for trip start time, "stop" for drive-end,
+        // "nextTripStart" for session end
         allTrips.push({
           id: trip.id,
           deviceName: device.device_name || device.geotab_device_id,
-          startTime: trip.dateTime,
-          endTime: trip.nextTripStartTime || null,
+          startTime: trip.start || trip.dateTime || null,
+          endTime: trip.nextTripStart || trip.stop || null,
           distanceKm: Math.round(distanceKm * 100) / 100,
           durationMinutes: Math.round(drivingSeconds / 60),
           idleMinutes: Math.round(idleSeconds / 60),
