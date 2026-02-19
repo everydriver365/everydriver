@@ -1,74 +1,50 @@
 
-# Trip Investigation and Report Generation
 
-## Overview
+# Fix: Blue Track Line Lagging Behind Car Marker
 
-Add the ability to click on any trip in the Trips tab to open a detailed investigation view, and generate per-trip reports covering distance, speed behaviour, idle time, and driving patterns.
+## Problem
 
-## Current State
+The car marker updates instantly via Realtime subscription, but the blue track line only updates every **5 seconds** because each update cycle:
 
-- The Trips tab shows a sortable table of trips with date, time, distance, duration, max speed, and idle time
-- Clicking the play button navigates to `/instructor/trip-replay` but only works when `startLat`/`startLng` are available (currently most trips have `null` start coordinates)
-- The Reports tab only generates a basic CSV export of all trips in a date range
-- There is no way to drill into a single trip's details or generate a per-trip behaviour report
+1. Queries the database for new GPS points
+2. Calls the `snap-to-road` edge function (Google Roads API round-trip)
+3. Only then re-renders the polyline
 
-## What Will Change
+This creates a visible gap where the marker has moved ahead but the track line hasn't caught up.
 
-### 1. Trip Detail Sheet (click any row)
+## Solution
 
-Clicking a trip row in the table will open a slide-up bottom sheet (using the existing `vaul` Drawer) showing:
+**Immediately extend the polyline with raw GPS coordinates** whenever the device position updates via Realtime, then periodically snap the full route to roads in the background. This gives the user instant visual feedback while still getting clean road-snapped lines.
 
-| Section | Content |
-|---------|---------|
-| **Header** | Date, time range, device name |
-| **Summary Cards** | Distance (mi), Duration, Avg Speed (mph), Max Speed (mph), Idle Time, Stop Time |
-| **Behaviour Score** | A simple calculated score based on max speed vs avg speed ratio, idle percentage, and stop time -- displayed as a colour-coded badge (Green/Amber/Red) |
-| **Speed Analysis** | Bar showing avg vs max speed with context ("Max speed was 2.1x average -- indicates sharp acceleration periods") |
-| **Idle Analysis** | Percentage of trip spent idling with commentary |
-| **Actions** | "Replay Trip" button, "Generate PDF Report" button, "Download CSV" button |
+### Changes to `src/components/instructor/GoogleLiveTrackingMap.tsx`
 
-### 2. Per-Trip PDF Report
+1. **Instant polyline extension on marker update (Effect #3)**
+   - When the device position changes (via Realtime), immediately append the new lat/lng to the polyline path
+   - This makes the blue line follow the marker with zero delay
+   - Use a simple distance filter (>3m) to avoid jitter
 
-A downloadable PDF (using the existing `jspdf` dependency) containing:
-- Trip summary (date, distance, duration, speeds)
-- Driver behaviour assessment (speed consistency, idle ratio, stop frequency)
-- A simple scoring rubric
-- Branding header with "EveryDriver" logo text
+2. **Reduce snap-to-road tick to background cleanup only**
+   - Keep the 5-second snap-to-road cycle but treat it as a "polish" step that replaces the raw tail with snapped coordinates
+   - The polyline is already visually up-to-date from step 1, so the snap just smooths it onto roads
 
-### 3. Enhanced Trip Row
+### Technical Detail
 
-Each trip row becomes clickable (full row, not just the play button). The play button remains for quick replay access.
+In Effect #3 (marker update, ~line 227), after updating the marker position, append the new position to the Google Maps Polyline path directly:
 
-## Technical Details
+```text
+// Pseudocode for the change:
+- When device lat/lng changes via Realtime
+- Calculate distance from last polyline point
+- If > 3m, append new LatLng to polyline.getPath()
+- This happens instantly, no network call needed
+```
 
-### Files to Create
+In Effect #5 (the 5-second tick, ~line 278), the snap-to-road cycle continues as before but now it's just smoothing an already-current polyline rather than being the only source of updates.
 
-| File | Purpose |
-|------|---------|
-| `src/components/instructor/geotab/TripDetailSheet.tsx` | Drawer/sheet showing trip investigation with behaviour analysis and report generation |
+### Why This Works
 
-### Files to Modify
+- The marker and polyline now update from the **same trigger** (Realtime device update)
+- No additional API calls -- the raw point extension is purely client-side
+- Road-snapping still runs in the background to keep the line looking clean on roads
+- Net result: the blue line stays within 1 GPS update of the marker at all times
 
-| File | Change |
-|------|--------|
-| `src/components/instructor/geotab/GeotabTripHistory.tsx` | Make entire row clickable to open `TripDetailSheet`; add selected trip state |
-
-### Behaviour Score Calculation
-
-The score will be computed client-side from existing trip data (no new API calls needed):
-
-- **Speed consistency**: `avgSpeed / maxSpeed` ratio -- higher is better (steady driving)
-- **Idle ratio**: `idleMinutes / durationMinutes` -- lower is better
-- **Overall**: Weighted combination mapped to Green (70-100), Amber (40-69), Red (0-39)
-
-Trips with zero distance or zero duration will show "Insufficient data" instead of a score.
-
-### PDF Generation
-
-Uses the already-installed `jspdf` package to create a single-page PDF with:
-- Header with date and vehicle name
-- Summary table (distance, duration, speeds, idle)
-- Behaviour assessment text
-- Score badge
-
-No new edge functions or API calls are required -- all data is already available from the trip object.
