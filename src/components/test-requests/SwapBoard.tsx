@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
 import { Loader2, MapPin, Calendar, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +67,7 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
                         {req.test_centre_name && (
                           <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{req.test_centre_name}</span>
                         )}
-                        <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{req.test_date}</span>
+                        <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(parseISO(req.test_date), "dd/MM/yyyy")}</span>
                         <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{req.test_time?.slice(0, 5)}</span>
                       </div>
                     </div>
@@ -102,7 +103,7 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
                         )}
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5" />
-                          {req.test_date}{req.date_range_end && ` – ${req.date_range_end}`}
+                          {format(parseISO(req.test_date), "dd/MM/yyyy")}{req.date_range_end && ` – ${format(parseISO(req.date_range_end), "dd/MM/yyyy")}`}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
