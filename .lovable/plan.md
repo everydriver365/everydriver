@@ -1,22 +1,11 @@
 
-# Safe Speed Display -- Blank Values When Offline
+# Fix: Available Tab Not Updating After Adding a Test Request
 
-## What changes
-When the device is offline (`isConnected = false`), speed and limit should show "—" instead of stale values, and overspeed should be `false`.
+## Problem
+When you add a new test request, only the "My Requests" tab refreshes. The "Swap Board" and "Available" tabs stay stale because they use different data query keys that are not being refreshed.
 
-## Technical changes in `src/components/instructor/GoogleLiveTrackingMap.tsx`
+## Solution
+Update the form submission to also refresh the data used by the other tabs.
 
-**Move `overspeed`, `speedText`, and `limitText` below the `isConnected` derivation (line 105)** so they can reference it, and update their logic:
-
-1. **`overspeed`** (currently lines 75-80): Move after line 105. Change to require `isConnected` as a precondition:
-   - `isConnected && speed != null && limit != null && speed > limit + 2`
-
-2. **`speedText`** (currently lines 82-86): Move after line 105. Blank when `!isConnected`:
-   - `!isConnected || speed == null` --> "—"
-
-3. **`limitText`** (currently lines 88-92): Move after line 105. Blank when `!isConnected`:
-   - `!isConnected || limit == null` --> "—"
-
-4. **`markerColor`** (line 107-111): Already uses `overspeed` which will now be `false` when offline, so grey will apply correctly -- no change needed.
-
-This is a reorder + minor logic tweak within a single file. No database or backend changes.
+## Technical Detail
+In `src/components/test-requests/TestRequestForm.tsx`, after a successful save, add cache invalidations for the "Swap Board" query (`test-requests-board`) and the "Available" tab's matched slots query (`matched-slots`). This is a one-line addition -- broadening the invalidation to cover all three tabs.
