@@ -2172,6 +2172,7 @@ export type Database = {
           current_pupil_id: string | null
           current_session_id: string | null
           daily_start_date: string | null
+          daily_start_ecu_odometer_km: number | null
           daily_start_odometer_m: number | null
           device_identifier: string
           device_name: string | null
@@ -2207,6 +2208,7 @@ export type Database = {
           last_traccar_position_id: number | null
           quartix_driver_id: string | null
           quartix_vehicle_id: string | null
+          session_start_ecu_odometer_km: number | null
           tracking_provider: string
           updated_at: string | null
           vehicle_id: string | null
@@ -2216,6 +2218,7 @@ export type Database = {
           current_pupil_id?: string | null
           current_session_id?: string | null
           daily_start_date?: string | null
+          daily_start_ecu_odometer_km?: number | null
           daily_start_odometer_m?: number | null
           device_identifier: string
           device_name?: string | null
@@ -2251,6 +2254,7 @@ export type Database = {
           last_traccar_position_id?: number | null
           quartix_driver_id?: string | null
           quartix_vehicle_id?: string | null
+          session_start_ecu_odometer_km?: number | null
           tracking_provider?: string
           updated_at?: string | null
           vehicle_id?: string | null
@@ -2260,6 +2264,7 @@ export type Database = {
           current_pupil_id?: string | null
           current_session_id?: string | null
           daily_start_date?: string | null
+          daily_start_ecu_odometer_km?: number | null
           daily_start_odometer_m?: number | null
           device_identifier?: string
           device_name?: string | null
@@ -2295,6 +2300,7 @@ export type Database = {
           last_traccar_position_id?: number | null
           quartix_driver_id?: string | null
           quartix_vehicle_id?: string | null
+          session_start_ecu_odometer_km?: number | null
           tracking_provider?: string
           updated_at?: string | null
           vehicle_id?: string | null
