@@ -213,6 +213,7 @@ Deno.serve(async (req) => {
       "DiagnosticEngineCoolantTemperatureId",
       "DiagnosticEngineHoursAdjustmentId",
       "DiagnosticOdometerAdjustmentId",
+      "DiagnosticIgnitionId",                  // Ignition on/off (1 = on, 0 = off)
       "DiagnosticTirePressureFrontLeftId",
       "DiagnosticTirePressureFrontRightId",
       "DiagnosticTirePressureRearLeftId",
@@ -439,7 +440,7 @@ Deno.serve(async (req) => {
           last_longitude: status.longitude,
           last_speed_kmh: status.speed,
           last_heading: status.bearing ?? null,
-          last_ignition_status: status.isDeviceCommunicating ?? null,
+          last_ignition_status: diags["DiagnosticIgnitionId"] != null ? diags["DiagnosticIgnitionId"] >= 1 : (status.isDeviceCommunicating ?? null),
           last_seen_at: geotabSeenAt
             ? new Date(geotabSeenAt).toISOString()
             : null,
