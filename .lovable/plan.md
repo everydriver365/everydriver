@@ -1,25 +1,44 @@
 
-
-# Fix: "Online" Status Showing When No Device Is Connected
+# Fix: Use Device-Reported Time and Sync `is_active` from Geotab
 
 ## Problem
-The GPS connection status indicator on the instructor home page shows "Online" even when no device should be actively connected. This happens because the status hook (`useGPSConnectionStatus`) only checks `last_seen_at` timestamps to determine connectivity -- it does not check the `is_active` flag on the device record.
+Two issues in the Geotab poller cause the "connected" status to never go offline:
 
-Since the background poller updates `last_seen_at` frequently, the timestamp is always recent, making the device appear perpetually "Online."
+1. **`last_seen_at` uses server time** (line 284: `new Date().toISOString()`), so every poll cycle refreshes the timestamp even if the device hasn't reported new data in hours.
+2. **`is_active` is never updated by the poller** -- Geotab returns `isDeviceCommunicating` but we store it in `last_ignition_status` and never use it to flip `is_active`.
 
 ## Solution
-Update `useGPSConnectionStatus` to also query the `is_active` field from `gps_devices`, and factor it into the connection status logic. A device should only be considered connected if `is_active` is `true` AND the timestamps are recent.
 
-## Technical Detail
+**File: `supabase/functions/geotab-poller/index.ts`** (lines 276-288)
 
-**File: `src/hooks/useGPSConnectionStatus.ts`**
+Replace the device update block to:
 
-1. Add `is_active` to the Supabase select query (line ~58).
-2. Add a new `isActive` state variable to track the device's active flag.
-3. Update `getStatus()` to return `"offline"` immediately when `isActive` is `false`.
-4. Update the realtime subscription handler to also track changes to `is_active`.
+1. **Use the device's actual reported time** from the Geotab `DeviceStatusInfo` response (`dateTime` field) instead of `new Date()`.
+2. **Set `is_active` based on `isDeviceCommunicating`** -- when Geotab says the device isn't communicating, flip `is_active` to `false`, which the frontend hook already respects.
+3. **Update `last_heartbeat_at` with server time** -- this distinguishes "we polled successfully" from "the device reported a position".
 
-This ensures:
-- If no device exists for the instructor: shows "Offline" (already works, query returns null).
-- If a device exists but `is_active = false`: shows "Offline" (new behavior).
-- If a device exists, `is_active = true`, and timestamps are recent: shows "Online" (existing behavior preserved).
+Updated update payload:
+```
+const geotabSeenAt = status.dateTime || null;
+const isCommunicating = status.isDeviceCommunicating !== false;
+
+.update({
+  last_latitude: status.latitude,
+  last_longitude: status.longitude,
+  last_speed_kmh: status.speed,
+  last_heading: status.bearing ?? null,
+  last_ignition_status: status.isDeviceCommunicating ?? null,
+  last_seen_at: geotabSeenAt
+    ? new Date(geotabSeenAt).toISOString()
+    : null,
+  last_heartbeat_at: new Date().toISOString(),
+  last_road_name: roadName,
+  last_speed_limit_kmh: speedLimitKmh,
+  is_active: isCommunicating,
+})
+```
+
+This single change means:
+- When a device is truly offline, Geotab reports `isDeviceCommunicating: false`, the poller sets `is_active = false`, and the frontend hook (already fixed) shows "Offline".
+- `last_seen_at` reflects when the device last actually reported a position, not when our server last polled.
+- `last_heartbeat_at` tracks poller health separately.
