@@ -21,6 +21,17 @@ function kmhToMph(kmh: number): number {
   return kmh * 0.621371;
 }
 
+function safeDate(val: string | number | null | undefined): Date | null {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatSafe(val: string | number | null | undefined, fmt: string, fallback = "—"): string {
+  const d = safeDate(val);
+  return d ? format(d, fmt) : fallback;
+}
+
 export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
   const [fromDate, setFromDate] = useState<Date>(
     new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -159,11 +170,11 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
               {sortedTrips.map((trip) => (
                 <TableRow key={trip.id}>
                   <TableCell className="font-medium text-xs">
-                    {format(new Date(trip.startTime), "dd MMM yyyy")}
+                    {formatSafe(trip.startTime, "dd MMM yyyy")}
                   </TableCell>
                   <TableCell className="text-xs">
-                    {format(new Date(trip.startTime), "HH:mm")}
-                    {trip.endTime && ` – ${format(new Date(trip.endTime), "HH:mm")}`}
+                    {formatSafe(trip.startTime, "HH:mm")}
+                    {trip.endTime && ` – ${formatSafe(trip.endTime, "HH:mm")}`}
                   </TableCell>
                   <TableCell className="text-xs font-semibold">
                     {kmToMiles(trip.distanceKm).toFixed(1)} mi
