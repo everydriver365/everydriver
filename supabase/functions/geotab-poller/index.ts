@@ -179,7 +179,6 @@ Deno.serve(async (req) => {
       .from("gps_devices")
       .select("id, instructor_id, geotab_device_id, device_name")
       .eq("tracking_provider", "geotab")
-      .eq("is_active", true)
       .not("geotab_device_id", "is", null);
 
     if (devErr) throw devErr;
@@ -275,7 +274,6 @@ Deno.serve(async (req) => {
 
       // Use device-reported time, not server time
       const geotabSeenAt = status.dateTime || null;
-      const isCommunicating = status.isDeviceCommunicating !== false;
 
       await supabase
         .from("gps_devices")
@@ -291,7 +289,6 @@ Deno.serve(async (req) => {
           last_heartbeat_at: new Date().toISOString(),
           last_road_name: roadName,
           last_speed_limit_kmh: speedLimitKmh,
-          is_active: isCommunicating,
         })
         .eq("id", device.id);
 
