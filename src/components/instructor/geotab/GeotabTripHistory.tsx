@@ -2,12 +2,13 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useGeotabTrips, GeotabTrip } from "@/hooks/useGeotabTrips";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, Route, Gauge, MapPin, ArrowUpDown, Play } from "lucide-react";
+import { Calendar, Clock, Route, Gauge, ArrowUpDown, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { TripDetailSheet } from "./TripDetailSheet";
 
 interface GeotabTripHistoryProps {
   instructorId: string;
@@ -39,6 +40,7 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
   const [toDate, setToDate] = useState<Date>(new Date());
   const [sortField, setSortField] = useState<keyof GeotabTrip>("startTime");
   const [sortAsc, setSortAsc] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<GeotabTrip | null>(null);
 
   const { data, isLoading, error } = useGeotabTrips(instructorId, fromDate, toDate);
   const navigate = useNavigate();
@@ -168,7 +170,7 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
             </TableHeader>
             <TableBody>
               {sortedTrips.map((trip) => (
-                <TableRow key={trip.id}>
+                <TableRow key={trip.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedTrip(trip)}>
                   <TableCell className="font-medium text-xs">
                     {formatSafe(trip.startTime, "dd MMM yyyy")}
                   </TableCell>
@@ -196,9 +198,10 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                         variant="ghost"
                         size="sm"
                         className="h-7 w-7 p-0"
-                        onClick={() =>
-                          navigate(`/instructor/trip-replay?lat=${trip.startLat}&lng=${trip.startLng}&date=${trip.startTime}`)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/instructor/trip-replay?lat=${trip.startLat}&lng=${trip.startLng}&date=${trip.startTime}`);
+                        }}
                       >
                         <Play className="h-3.5 w-3.5" />
                       </Button>
@@ -210,6 +213,12 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
           </Table>
         </div>
       )}
+
+      <TripDetailSheet
+        trip={selectedTrip}
+        open={!!selectedTrip}
+        onOpenChange={(open) => { if (!open) setSelectedTrip(null); }}
+      />
     </div>
   );
 }
