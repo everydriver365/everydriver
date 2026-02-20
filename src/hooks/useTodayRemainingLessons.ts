@@ -9,6 +9,10 @@ export interface TodayLesson {
   startTime: string;
   durationMinutes: number;
   pickupPostcode: string | null;
+  pickupLocation: string | null;
+  lessonType: string;
+  paymentStatus: string;
+  amountDue: number | null;
   status: string;
 }
 
@@ -23,8 +27,8 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id, start_time, duration_minutes, pickup_postcode, status,
-          pupils!inner (name, postcode)
+          id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
+          pupils!inner (name, postcode, address)
         `)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
@@ -48,6 +52,10 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           startTime: l.start_time,
           durationMinutes: l.duration_minutes || 60,
           pickupPostcode: l.pickup_postcode || pupil?.postcode || null,
+          pickupLocation: l.pickup_location || pupil?.address || null,
+          lessonType: l.lesson_type || "Standard",
+          paymentStatus: l.payment_status || "unpaid",
+          amountDue: l.amount_due ?? null,
           status: l.status || "scheduled",
         };
       });
