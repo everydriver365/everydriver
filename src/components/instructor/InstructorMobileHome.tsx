@@ -388,36 +388,9 @@ export function InstructorMobileHome({
                 return "Hello";
               })()}{firstName ? `, ${firstName}` : ""}
             </h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-white/80 text-[15px] drop-shadow-sm">
-                {format(new Date(), "EEEE d MMMM")}
-              </p>
-              {currentWeather && (
-                <span className="flex items-center gap-1 text-white/70 text-[13px] drop-shadow-sm">
-                  <span className="text-white/40">·</span>
-                  {(() => {
-                    const WeatherIcon = currentWeather.icon === "Sun" ? Sun
-                      : currentWeather.icon === "CloudSun" ? CloudSun
-                      : currentWeather.icon === "Cloud" ? Cloud
-                      : currentWeather.icon === "CloudRain" ? CloudRain
-                      : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
-                      : currentWeather.icon === "CloudLightning" ? CloudLightning
-                      : currentWeather.icon === "CloudFog" ? CloudFog
-                      : currentWeather.icon === "Snowflake" ? Snowflake
-                      : currentWeather.icon === "Wind" ? Wind
-                      : CloudSun;
-                    return <WeatherIcon className="h-3.5 w-3.5" />;
-                  })()}
-                  {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
-                </span>
-              )}
-            </div>
-            {displayLocation && (
-              <p className="text-white/50 text-[11px] mt-0.5 drop-shadow-sm flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5" />
-                {displayLocation}
-              </p>
-            )}
+            <p className="text-white/80 text-[15px] mt-0.5 drop-shadow-sm">
+              {format(new Date(), "EEEE d MMMM")}
+            </p>
           </div>
         </div>
 
@@ -432,7 +405,34 @@ export function InstructorMobileHome({
               className="w-full bg-gradient-to-r from-primary via-primary to-primary/90 p-4 flex items-center gap-4 text-left"
             >
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
+                  {currentWeather && (
+                    <span className="flex items-center gap-1 text-white/70 text-[11px]">
+                      {(() => {
+                        const WeatherIcon = currentWeather.icon === "Sun" ? Sun
+                          : currentWeather.icon === "CloudSun" ? CloudSun
+                          : currentWeather.icon === "Cloud" ? Cloud
+                          : currentWeather.icon === "CloudRain" ? CloudRain
+                          : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
+                          : currentWeather.icon === "CloudLightning" ? CloudLightning
+                          : currentWeather.icon === "CloudFog" ? CloudFog
+                          : currentWeather.icon === "Snowflake" ? Snowflake
+                          : currentWeather.icon === "Wind" ? Wind
+                          : CloudSun;
+                        return <WeatherIcon className="h-3.5 w-3.5" />;
+                      })()}
+                      {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
+                      {displayLocation && (
+                        <>
+                          <span className="text-white/40 mx-0.5">·</span>
+                          <MapPin className="h-2.5 w-2.5" />
+                          <span className="max-w-[100px] truncate">{displayLocation}</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
                   {todayOverview?.lessonCount
                     ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
