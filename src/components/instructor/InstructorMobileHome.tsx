@@ -398,7 +398,7 @@ export function InstructorMobileHome({
         <div className="px-4 -mt-8 relative z-10">
           <motion.div
             whileTap={{ scale: 0.97 }}
-            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
+            className="w-full rounded-none shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
           >
             <button
               onClick={() => navigate("/instructor/schedule")}
