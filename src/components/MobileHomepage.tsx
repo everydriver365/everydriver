@@ -14,7 +14,6 @@ import drive365Logo from "@/assets/drive365-logo.png";
 
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
-import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import intensiveCoursesIcon from "@/assets/intensive-course-tile.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -352,7 +351,6 @@ export function MobileHomepage() {
           <div className="flex items-center justify-center gap-6">
             <img src={logoKlarna} alt="Klarna" className="h-5 object-contain" />
             <img src={logoClearpay} alt="Clearpay" className="h-4 object-contain" />
-            <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-5 object-contain" />
           </div>
         </motion.div>
       </div>
