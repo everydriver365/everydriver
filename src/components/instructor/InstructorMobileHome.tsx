@@ -459,6 +459,44 @@ export function InstructorMobileHome({
                 <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
               </button>
             )}
+            {/* Weather warning line */}
+            {currentWeather && currentWeather.temperature != null && currentWeather.temperature <= 2 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white text-left active:bg-sky-700 transition-colors"
+              >
+                <Snowflake className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[12px] font-medium flex-1">
+                  Ice risk — {currentWeather.temperature}°C{currentWeather.description ? ` · ${currentWeather.description}` : ""}
+                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
+              </button>
+            )}
+            {currentWeather && currentWeather.temperature != null && currentWeather.temperature > 2 && (currentWeather.icon === "CloudRain" || currentWeather.icon === "CloudLightning" || currentWeather.icon === "CloudDrizzle") && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-primary/80 text-white text-left active:bg-primary/90 transition-colors"
+              >
+                <WeatherIcon icon={currentWeather.icon} className="h-3.5 w-3.5 shrink-0 text-white" />
+                <span className="text-[12px] font-medium flex-1">
+                  Weather alert — {currentWeather.temperature}°C · {currentWeather.description || "Rain expected"}
+                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
+              </button>
+            )}
+            {/* Road closure / traffic alerts line */}
+            {alerts.length > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white text-left active:bg-amber-700 transition-colors"
+              >
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[12px] font-medium flex-1">
+                  {alerts.length} road alert{alerts.length > 1 ? "s" : ""} nearby — tap to view
+                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
+              </button>
+            )}
           </motion.div>
         </div>
       </motion.div>
