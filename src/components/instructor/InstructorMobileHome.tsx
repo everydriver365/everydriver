@@ -408,7 +408,7 @@ export function InstructorMobileHome({
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
                   {currentWeather && (
-                    <span className="flex items-center gap-1 text-emerald-400 text-[11px]">
+                    <span className="flex items-center gap-1 text-amber-300 text-[11px]">
                       {(() => {
                         const WeatherIcon = currentWeather.icon === "Sun" ? Sun
                           : currentWeather.icon === "CloudSun" ? CloudSun
@@ -420,7 +420,16 @@ export function InstructorMobileHome({
                           : currentWeather.icon === "Snowflake" ? Snowflake
                           : currentWeather.icon === "Wind" ? Wind
                           : CloudSun;
-                        return <WeatherIcon className="h-3.5 w-3.5" />;
+                        const iconColor = currentWeather.icon === "Sun" ? "text-yellow-400"
+                          : currentWeather.icon === "CloudSun" ? "text-amber-400"
+                          : currentWeather.icon === "CloudRain" ? "text-blue-400"
+                          : currentWeather.icon === "CloudDrizzle" ? "text-sky-400"
+                          : currentWeather.icon === "CloudLightning" ? "text-violet-400"
+                          : currentWeather.icon === "Snowflake" ? "text-cyan-300"
+                          : currentWeather.icon === "Wind" ? "text-teal-300"
+                          : currentWeather.icon === "CloudFog" ? "text-gray-300"
+                          : "text-amber-300";
+                        return <WeatherIcon className={`h-3.5 w-3.5 ${iconColor}`} />;
                       })()}
                       {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
                       {displayLocation && (
