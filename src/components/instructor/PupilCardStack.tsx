@@ -612,7 +612,7 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border border-l-[4px] border-l-primary rounded-none overflow-hidden mx-1"
+        className="bg-card border border-border rounded-xl overflow-hidden"
       >
         {/* Collapsed Card */}
         <button
