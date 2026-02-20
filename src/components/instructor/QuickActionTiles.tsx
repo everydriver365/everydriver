@@ -315,18 +315,18 @@ export function QuickActionTiles({
      { bg: 'bg-card', iconBg: 'bg-violet-500/12', iconColor: 'text-violet-600' },
   ];
 
-  // Tile gradient backgrounds — each tile gets a unique color
+  // Tile gradient backgrounds — refined navy-blue palette with subtle variation per tile
   const tileGradients = [
-    'bg-gradient-to-br from-[hsl(218,54%,17%)] via-[hsl(218,58%,24%)] to-[hsl(220,50%,32%)]',   // navy
-    'bg-gradient-to-br from-[hsl(142,60%,32%)] via-[hsl(152,55%,38%)] to-[hsl(162,50%,44%)]',   // emerald
-    'bg-gradient-to-br from-[hsl(250,50%,38%)] via-[hsl(258,48%,46%)] to-[hsl(268,45%,52%)]',   // violet
-    'bg-gradient-to-br from-[hsl(200,70%,35%)] via-[hsl(205,65%,42%)] to-[hsl(210,60%,50%)]',   // ocean blue
-    'bg-gradient-to-br from-[hsl(340,55%,40%)] via-[hsl(348,50%,48%)] to-[hsl(355,48%,55%)]',   // rose
-    'bg-gradient-to-br from-[hsl(28,75%,42%)] via-[hsl(32,70%,48%)] to-[hsl(38,65%,54%)]',      // amber
-    'bg-gradient-to-br from-[hsl(175,55%,30%)] via-[hsl(180,50%,36%)] to-[hsl(185,48%,42%)]',   // teal
-    'bg-gradient-to-br from-[hsl(265,45%,35%)] via-[hsl(275,42%,42%)] to-[hsl(285,40%,50%)]',   // purple
-    'bg-gradient-to-br from-[hsl(15,65%,40%)] via-[hsl(20,60%,46%)] to-[hsl(25,55%,52%)]',      // burnt orange
-    'bg-gradient-to-br from-[hsl(195,65%,30%)] via-[hsl(200,60%,38%)] to-[hsl(208,55%,45%)]',   // steel blue
+    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(218,48%,26%)]',
+    'bg-gradient-to-br from-[hsl(215,50%,20%)] to-[hsl(220,46%,30%)]',
+    'bg-gradient-to-br from-[hsl(222,52%,18%)] to-[hsl(218,44%,28%)]',
+    'bg-gradient-to-br from-[hsl(210,48%,22%)] to-[hsl(215,45%,32%)]',
+    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(212,46%,29%)]',
+    'bg-gradient-to-br from-[hsl(220,50%,19%)] to-[hsl(218,42%,27%)]',
+    'bg-gradient-to-br from-[hsl(216,52%,21%)] to-[hsl(222,44%,30%)]',
+    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(216,48%,25%)]',
+    'bg-gradient-to-br from-[hsl(214,50%,20%)] to-[hsl(220,45%,28%)]',
+    'bg-gradient-to-br from-[hsl(218,52%,18%)] to-[hsl(214,46%,27%)]',
   ];
 
   return (
