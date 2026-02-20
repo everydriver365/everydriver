@@ -716,7 +716,7 @@ export function PupilCardStack({
                 ) : (
                 <div className="pb-4">
                   {/* Profile Hero Card */}
-                  <div className="bg-card rounded-none border border-border border-l-4 border-l-primary mx-4 mt-4 p-6 flex flex-col items-center">
+                  <div className="bg-card rounded-xl border border-border mx-4 mt-4 p-6 flex flex-col items-center">
                     <Avatar className={cn("h-20 w-20 mb-3", getAvatarRingColor())}>
                       <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
                       <AvatarFallback className="text-white text-2xl font-semibold" style={{ backgroundColor: '#2C3E50' }}>
@@ -738,7 +738,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Stats Row */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border">
                     <div className="grid grid-cols-3 divide-x divide-border py-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-foreground">{pupil.lessons_completed || 0}</div>
@@ -762,7 +762,7 @@ export function PupilCardStack({
                     const testDate = new Date(pupil.test_date);
                     const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                     return (
-                      <div className="mx-4 mt-3 bg-card rounded-none border-l-4 border-l-primary border border-border p-4">
+                      <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4">
                         <div className="flex items-center gap-2 mb-1">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="font-semibold text-foreground">Driving Test</span>
@@ -782,7 +782,7 @@ export function PupilCardStack({
                     const isOverdue = daysUntilDue < 0;
                     const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
                     return (
-                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-none p-4 border border-l-4 border-l-primary", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
+                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-xl p-4 border", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
                         <AlertCircle className="h-4 w-4 shrink-0" />
                         <span>{isOverdue ? "OVERDUE: " : ""}£{Math.abs(pupil.account_balance || 0)} due {dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
@@ -790,7 +790,7 @@ export function PupilCardStack({
                   })()}
 
                   {/* Details Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4 space-y-3">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
                     <h3 className="font-semibold text-foreground">Details</h3>
                     {pupil.phone && (
                       <div className="flex items-center gap-3 text-sm">
@@ -827,7 +827,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Notes Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4 space-y-2">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-foreground">Notes</h3>
                       {!isAddingNote && (
@@ -867,7 +867,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Lesson History Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4 space-y-3">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
                     <h3 className="font-semibold text-foreground">
                       Lesson History {recentLessons.length > 0 && <span className="text-muted-foreground font-normal">({recentLessons.length})</span>}
                     </h3>
@@ -937,7 +937,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Driving Sessions Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4 space-y-3">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Route className="h-4 w-4 text-muted-foreground" />
                       <h3 className="font-semibold text-foreground">
@@ -1009,7 +1009,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Tools Grid */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4">
+                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4">
                     <div className="grid grid-cols-4 gap-x-4 gap-y-4">
                       <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}>
                         <div className="w-14 h-14 rounded-none bg-muted/50 flex items-center justify-center"><History className="h-6 w-6 text-primary" /></div>

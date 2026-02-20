@@ -315,19 +315,7 @@ export function QuickActionTiles({
      { bg: 'bg-card', iconBg: 'bg-violet-500/12', iconColor: 'text-violet-600' },
   ];
 
-  // Left border accent colors matching the Today's Schedule tile style
-  const tileBorderColors = [
-    'border-l-primary',
-    'border-l-amber-500',
-    'border-l-emerald-500',
-    'border-l-sky-500',
-    'border-l-rose-500',
-    'border-l-violet-500',
-    'border-l-primary',
-    'border-l-amber-500',
-    'border-l-emerald-500',
-    'border-l-sky-500',
-  ];
+  // Border colors removed - using standard border only
 
   return (
     <div className="space-y-3">
@@ -463,8 +451,7 @@ export function QuickActionTiles({
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "ios-tile relative rounded-xl px-3.5 py-3 shadow-sm border border-border/60 border-l-4 bg-card flex items-center gap-3",
-                    tileBorderColors[index % tileBorderColors.length]
+                    "ios-tile relative rounded-xl px-3.5 py-3 shadow-sm border border-border/60 bg-card flex items-center gap-3"
                   )}
                 >
                   {/* Icon */}
