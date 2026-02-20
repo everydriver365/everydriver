@@ -413,10 +413,33 @@ export function InstructorMobileHome({
                   </div>
                 )}
               </div>
-              <div className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shrink-0">
-                <span className="text-2xl font-black text-white leading-none">{todayOverview?.lessonCount || 0}</span>
-                <span className="text-[8px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
-              </div>
+              {(() => {
+                const total = maxLessons;
+                const done = todayOverview?.lessonCount || 0;
+                const pct = Math.min(done / total, 1);
+                const r = 28;
+                const circ = 2 * Math.PI * r;
+                const offset = circ * (1 - pct);
+                return (
+                  <div className="relative w-16 h-16 shrink-0">
+                    <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
+                      <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+                      <motion.circle
+                        cx="32" cy="32" r={r} fill="none"
+                        stroke="white" strokeWidth="4" strokeLinecap="round"
+                        strokeDasharray={circ}
+                        initial={{ strokeDashoffset: circ }}
+                        animate={{ strokeDashoffset: offset }}
+                        transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-black text-white leading-none">{done}</span>
+                      <span className="text-[8px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </motion.button>
         </div>
