@@ -30,7 +30,7 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="bg-card rounded-[22px] border border-border/50 p-4 space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+    <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
         {icon}
       </div>
@@ -163,7 +163,7 @@ export function CleanHomeView({
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="bg-card rounded-full p-3 text-center flex flex-col items-center justify-center gap-1 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.06)] aspect-square border border-border/50"
+              className="bg-card rounded-[28px] p-3 text-center flex flex-col items-center justify-center gap-1 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.06)] aspect-square border border-border/50"
             >
               <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${item.bg}`}>
                 <item.icon className={`h-6 w-6 ${item.color}`} strokeWidth={1.6} />
