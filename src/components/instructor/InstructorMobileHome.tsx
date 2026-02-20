@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
-import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
+
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 
@@ -717,7 +717,6 @@ export function InstructorMobileHome({
           <VehicleHealthStrip instructorId={authInstructor.id} />
         )}
         <UnifiedAgendaTile instructorId={instructor?.id} />
-        <PlanWidget />
         
       </div>
 
@@ -760,12 +759,6 @@ export function InstructorMobileHome({
           </div>
       ) : null}
 
-      {/* Earnings Forecast Widget - under Plan Ahead */}
-      {instructorId && (
-        <div className="mt-2">
-          <EarningsForecaster instructorId={instructorId} />
-        </div>
-      )}
 
       {/* Road Alerts from National Highways */}
       <RoadAlertsRow alerts={alerts} className="mt-2" />
@@ -778,6 +771,10 @@ export function InstructorMobileHome({
           />
       )}
 
+      {/* Your Plan — at the bottom */}
+      <div className="mt-3">
+        <PlanWidget />
+      </div>
 
       {/* Floating Session Bar - shows during active tracking */}
       <FloatingSessionBar instructorId={instructorId} />
