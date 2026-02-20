@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,11 +27,15 @@ import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrac
 
 export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { instructor } = useInstructorAuth();
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
-  const [activeTab, setActiveTab] = useState("compliance");
+  const [activeTab, setActiveTab] = useState(() => {
+    return location.hash === "#faults" ? "live" : "compliance";
+  });
+  
   const [linkingDevice, setLinkingDevice] = useState<GPSDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<VehicleToEdit | null>(null);
