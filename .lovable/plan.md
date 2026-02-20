@@ -1,27 +1,57 @@
 
+# 20 No-Hero Mobile Homepage Designs — Demo Page
 
-# Add "Open Geotab Live Map" Button to Tracking Page
+## Overview
 
-## What This Does
+Create a new demo page at `/instructor-nohero-demo` that showcases 20 different mobile instructor homepage layouts, all without a hero image. Each design is rendered in a phone-sized preview frame so you can scroll through and compare them side by side.
 
-Adds a small floating button on the live tracking page (`InstructorLiveSession.tsx`) that opens Geotab's own built-in live map in a new browser tab. This lets you compare your custom sat-nav view side-by-side with Geotab's native map for testing and debugging purposes.
+## Data Used
 
-## Changes
+Each design variant will use the same mock data already established in `InstructorMobileDemo.tsx`:
+- Next lesson details (pupil name, time, postcode, ETA)
+- Today's stats (lessons, hours, earnings)
+- Weekly progress (hours vs goal, progress bar)
+- Quick action icon grid (4-column, using existing custom icon images)
+- Badge counts (messages, jobs)
 
-### File: `src/pages/InstructorLiveSession.tsx`
+## The 20 Design Concepts
 
-- Add an "Open Geotab Map" button to the floating controls area (near the existing header/controls)
-- The button opens `https://my.geotab.com` in a new tab using `window.open()`
-- Styled as a small icon button with a tooltip, using the `ExternalLink` icon from lucide-react
-- Only shown when the instructor has a Geotab device (uses existing device data to check `tracking_provider === "geotab"`)
+1. **Stats Bar + Grid** — Three stat pills at top (lessons / hours / earnings), then straight into 4-col icon grid
+2. **Greeting Card** — "Good morning, Kenneth" card with today's date, inline stats row, then grid below
+3. **Progress Ring** — Large circular progress ring (weekly hours) centered at top, stats below, then grid
+4. **Next Lesson Hero** — Next lesson card is the hero (full-width, prominent pupil avatar, time, location), grid below
+5. **Compact Dashboard** — Two-row stat cards (2x2 grid: lessons, hours, earnings, weekly %), then icon grid
+6. **Timeline Strip** — Vertical timeline of today's lessons at top (compact), then icon grid
+7. **Gradient Banner** — Coloured gradient strip with greeting + weekly summary text, no image, grid below
+8. **Earnings Focus** — Big earnings number centred ("£240 today"), small supporting stats, then grid
+9. **Map Peek** — Small inline map snippet (static placeholder) showing next pickup location, then grid
+10. **Minimal Clean** — Just the greeting, a thin progress bar, and the icon grid — nothing else
+11. **Card Stack** — Stacked cards: Next Lesson card, Weekly Progress card, then grid
+12. **Split Stats** — Left half: big hour count, right half: big earnings count, full-width progress bar, grid
+13. **Tabbed Sections** — Tabs at top (Today / Week / Month) with stats switching, grid always visible below
+14. **Weather + Stats** — Weather condition banner (icon + temp + driving tip), stats row, grid
+15. **Agenda List** — Today's lessons as a compact list (time + name), then grid
+16. **Gamified** — XP-style progress bar, streak counter, achievement badges, then grid
+17. **Pill Navigation** — Horizontally scrollable pill buttons (Today, Pupils, Money, etc.) at top, grid below
+18. **Quote + Stats** — Motivational quote banner, then stats strip, then grid
+19. **Big Avatar** — Large instructor profile circle at top with name + greeting, stats row, grid
+20. **Notification Centre** — Stacked notification cards (unread messages, pending jobs, upcoming lesson), then grid
 
-### Visual Placement
+## Technical Details
 
-- Small floating button positioned in the top-right area of the map, near existing controls
-- Uses a ghost/outline variant so it doesn't compete with the main UI
-- Labeled "Geotab Live" with an external link icon
+### New file: `src/pages/InstructorNoHeroDemo.tsx`
 
-### No backend or database changes needed
+- Single page component rendering 20 phone mockup frames in a responsive grid (2-3 columns on desktop, 1 on mobile)
+- Each frame is a `div` with `w-[375px] h-[700px] overflow-y-auto rounded-3xl border shadow` to simulate a phone screen
+- All designs use mock data (no live queries needed for the demo)
+- Reuses existing icon image imports and the `customIconImages` mapping
+- Each variant is a small self-contained component (e.g. `DesignVariant1`, `DesignVariant2`, etc.) within the file
+- Uses Tailwind for all styling, framer-motion for subtle animations
 
-The button simply opens a URL in a new tab. The user will need to be logged into their Geotab account in their browser for the map to load.
+### Route addition in `src/App.tsx`
 
+- Import the new page and add route: `/instructor-nohero-demo`
+
+### No database or backend changes required
+
+This is purely a frontend demo page for visual comparison.
