@@ -459,30 +459,29 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            Pupils
-          </h1>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setIsAddOpen(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            Add Pupil
-          </Button>
+      <div className="space-y-4 pb-6">
+        {/* Page Header — centered title */}
+        <div className="flex items-center justify-center">
+          <h1 className="text-lg font-bold text-foreground">Pupils</h1>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search pupils..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 bg-card border"
-          />
+        {/* Search + Add Row */}
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search pupils..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-12 rounded-xl bg-card border"
+            />
+          </div>
+          <Button
+            onClick={() => setIsAddOpen(true)}
+            className="h-12 w-12 p-0 rounded-xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Pupils List */}
