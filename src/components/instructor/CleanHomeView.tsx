@@ -9,6 +9,7 @@ import {
   AlertCircle,
   MapPin,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -145,6 +146,33 @@ export function CleanHomeView({
           value={`£${paymentSummary?.totalDebt?.toFixed(2) || "0.00"}`}
           label="Outstanding"
         />
+      </div>
+
+      {/* ── Quick Access ── */}
+      <div className="px-5 mt-8">
+        <h2 className="text-xl font-bold text-foreground mb-4">Quick Access</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Users, label: "Pupils", sub: String(activePupilCount || 0), color: "text-primary", bg: "bg-primary/10", path: "/instructor/pupils" },
+            { icon: Clock, label: "Schedule", sub: `${todayOverview?.lessonCount || 0} today`, color: "text-amber-500", bg: "bg-amber-500/10", path: "/instructor/diary" },
+            { icon: MapPin, label: "Live Map", sub: "Track", color: "text-emerald-500", bg: "bg-emerald-500/10", path: "/instructor/live-map" },
+            { icon: PoundSterling, label: "Payments", sub: `£${paymentSummary?.totalDebt?.toFixed(2) || "0.00"} due`, color: "text-blue-500", bg: "bg-blue-500/10", path: "/instructor/pupils" },
+            { icon: AlertCircle, label: "Tests", sub: "Upcoming", color: "text-amber-500", bg: "bg-amber-500/10", path: "/instructor/tests" },
+            { icon: Settings, label: "Settings", sub: "Admin", color: "text-muted-foreground", bg: "bg-muted", path: "/instructor/settings" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className="bg-card rounded-2xl border border-border p-4 text-left active:scale-[0.97] transition-transform space-y-2"
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.bg}`}>
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+              </div>
+              <p className="text-sm font-semibold text-foreground">{item.label}</p>
+              <p className="text-xs text-muted-foreground">{item.sub}</p>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Today's Schedule ── */}
