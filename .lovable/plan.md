@@ -1,47 +1,158 @@
 
-# 20 More iOS-Style Instructor Homepage Designs — Demo Page 3
+# Implementing the Lock Screen iOS Design as the Instructor Homepage
 
 ## Overview
 
-Create a new demo page at `/instructor-ios-demo-3` showcasing 20 fresh iOS-inspired mobile homepage layouts. Uses the same carousel + thumbnail navigation pattern established in the previous demo pages, with all the same mock data and icon assets.
+Adapt the Lock Screen aesthetic (Design 3 from the iOS Demo 3) as a new layout option for the instructor mobile homepage, while retaining **every** existing feature and data hook. The Lock Screen demo currently only shows a clock, 3 static notification cards, and 2 quick action circles — we need to expand it to house all 20+ widgets and data sources the current homepage uses.
 
-## The 20 New Design Concepts
+## Current Functionality to Retain
 
-1. **Spotlight Search** — iOS Spotlight-style search bar at top, recent/suggested actions below, then icon grid
-2. **Widget Board** — Three differently-sized iOS widget tiles (small, medium, large) arranged in a masonry layout
-3. **Lock Screen** — iOS lock screen aesthetic: time display, inline notifications stack, quick actions at bottom
-4. **Focus Mode** — "Driving Focus" banner showing only driving-relevant info (next pupil, route, fuel), simplified grid
-5. **App Library** — Auto-categorised icon groups (Teaching, Finance, Vehicle, Admin) with mini 2x2 previews per category
-6. **Stacked Notifications** — Grouped notification cards (like iOS Notification Centre) with lesson/payment/message groups
-7. **Today View** — iOS Today screen with date header, weather widget, schedule widget, stats widget stacked vertically
-8. **Siri Suggestions** — "Suggested for you" section with context-aware shortcuts, followed by full grid
-9. **Health Dashboard** — Apple Health-inspired layout: large summary ring, category cards for hours/earnings/pupils
-10. **Maps Card** — Apple Maps-style card at top with next pickup preview, ETA pill, and action buttons row
-11. **Wallet Pass** — Next lesson styled as an Apple Wallet pass/card with barcode aesthetic, stats below
-12. **Journal Entry** — Apple Journal-inspired daily recap card with photo placeholder, stats, and reflections prompt
-13. **Action Button Menu** — iOS 17 Action Button radial menu at top for quick actions, content below
-14. **Standby Mode** — Landscape-inspired dual-panel: clock + next lesson on one side, stats on the other (portrait adapted)
-15. **Photo Memories** — "Memories" style header with gradient text overlay, pupil stats as a photo grid below
-16. **Contact Card** — Next pupil displayed as an iOS contact card (large monogram, phone/message buttons), grid below
-17. **Live Activities Bar** — Persistent live activity bar at top (next lesson countdown), content below
-18. **Shortcuts Automation** — iOS Shortcuts-style cards showing automated workflows (log hours, send reminders), then grid
-19. **Screen Time** — Screen Time-inspired bar chart for daily teaching hours, category breakdown, then grid
-20. **Apple Music Now Playing** — Music player-inspired layout: large "album art" (pupil avatar), progress bar (lesson progress), controls row
+The existing `InstructorMobileHome` component includes all of the following, which must be preserved:
 
-## Technical Details
+1. **Data hooks** (15+): today overview, next lesson, unread messages, pending jobs, driving alerts, GPS status, weekly goals, streak, tomorrow preview, gap suggestions, today's remaining lessons, last week comparison, urgent alerts, weather, offline sync
+2. **Greeting + profile** (avatar, name, online/offline status, weather)
+3. **Stats grid** (lessons, earnings, weekly %, next lesson time)
+4. **Job Offers tile** (with badge count)
+5. **Messages tile** (with unread count)
+6. **Test Requests tile**
+7. **Driving alerts strip** (weather/traffic)
+8. **Check Engine banner**
+9. **Tracker reminder banner**
+10. **Next Up lesson card** (with navigation, call, balance info)
+11. **Today Mini Timeline** (remaining lessons)
+12. **Today Route Preview** (map)
+13. **Quick Action Tiles** (16 icons, reorderable, with edit mode)
+14. **Vehicle Health strip**
+15. **Unified Agenda tile** (tasks + reminders)
+16. **Plan widget**
+17. **Tomorrow Peek card**
+18. **Earnings Forecast**
+19. **Road Alerts row**
+20. **Setup Checklist** (for new instructors)
+21. **Floating Session bar** (active tracking)
+22. **Radial FAB** (scroll-triggered)
+23. **Pull to refresh**
+24. **Celebration confetti**
+25. **Urgent alert overlay**
 
-### New file: `src/pages/InstructorIOSDemo3.tsx`
+## Proposed Lock Screen Layout Design
 
-- Follows exact same structure as `InstructorIOSDemo2.tsx`: carousel with arrow navigation, thumbnail gallery, phone frame
-- Reuses same mock data object, icon imports, helper components (Card, Row, SectionLabel, IconGrid, Ring, StatPill)
-- Same iOS colour constants (BG #f2f2f7, CARD #ffffff, system blue/green/orange/red/purple/teal/indigo/pink)
-- Each design is a self-contained component (`Design1` through `Design20`)
-- Uses framer-motion for transitions between variants
+The Lock Screen aesthetic features a dark gradient background, large clock, and frosted-glass notification cards. Here's how we map all features into this visual language:
 
-### Route addition in `src/App.tsx`
+### Section-by-section layout (top to bottom)
 
-- Add lazy import and route: `/instructor-ios-demo-3`
+```text
++------------------------------------------+
+| [Header bar - existing InstructorMobile  |
+|  Header component, unchanged]            |
++------------------------------------------+
+| Dark gradient background (#1a1a2e ->     |
+| #16213e -> #0f3460)                      |
+|                                          |
+|  Date (e.g. "Thursday, 20 February")     |
+|  Time (72px thin font, live clock)       |
+|  Weather pill (temp + icon + location)   |
+|  GPS status dot                          |
+|                                          |
+| --- Urgent Alert Overlay (if any) ---    |
+|                                          |
+| [Frosted notification stack]             |
+|  - Driving alerts (weather/traffic)      |
+|  - Check Engine banner                   |
+|  - Tracker reminder                      |
+|                                          |
+| [Next Lesson "notification"]             |
+|  Frosted glass card showing:             |
+|  - Pupil name, time, postcode            |
+|  - Duration, balance, call/navigate btns |
+|  (Taps through to full NextUpTile)       |
+|                                          |
+| [Stats notification card]                |
+|  - 2x2 grid: lessons, earnings,          |
+|    weekly %, streak                      |
+|                                          |
+| [Messages notification card]             |
+|  - Unread count, tap to navigate         |
+|                                          |
+| [Job Offers notification card]           |
+|  - Pending count, tap to navigate        |
+|                                          |
+| [Test Requests notification card]        |
+|                                          |
+| --- YOUR DAY section label ---           |
+|                                          |
+| [Today Mini Timeline]                    |
+|  (frosted glass container)               |
+|                                          |
+| [Today Route Preview]                    |
+|  (frosted glass container)               |
+|                                          |
+| --- QUICK ACTIONS section ---            |
+|                                          |
+| [Quick Action Tiles grid]                |
+|  4-col grid, icons with white labels     |
+|  (same reorderable tiles, just white     |
+|   text and frosted icon backgrounds)     |
+|                                          |
+| --- MORE section ---                     |
+|                                          |
+| [Vehicle Health strip]                   |
+| [Unified Agenda tile]                    |
+| [Plan widget]                            |
+|                                          |
+| --- PLAN AHEAD section ---              |
+|                                          |
+| [Tomorrow Peek card]                     |
+| [Earnings Forecast]                      |
+| [Road Alerts row]                        |
+| [Setup Checklist]                        |
+|                                          |
+| [Floating Session Bar]                   |
++------------------------------------------+
+```
 
-### No database or backend changes
+### Key visual adaptations
 
-Purely a frontend demo page.
+- **Background**: Replace white/wallpaper with dark gradient
+- **Cards**: All existing card components wrapped in frosted-glass containers (`backdrop-blur-xl`, `bg-white/10-15`, `rounded-[14px]`)
+- **Text**: All labels switch to white/white-alpha
+- **Section labels**: Uppercase, `text-white/50`, matching iOS lock screen grouping
+- **Existing components** (NextUpTile, QuickActionTiles, TodayMiniTimeline, etc.) are rendered inside styled wrappers — their internal logic is untouched
+
+## Technical Plan
+
+### 1. New component: `src/components/instructor/LockScreenHomeView.tsx`
+
+- Accepts the same props as the current inline layout in `InstructorMobileHome`
+- Renders the dark gradient background with clock header
+- Wraps each existing component (NextUpTile, QuickActionTiles, TestRequestsTile, etc.) in frosted-glass card containers
+- Uses all the same hooks and data that `InstructorMobileHome` already fetches (passed as props or accessed from context)
+
+### 2. Update `src/components/instructor/InstructorMobileHome.tsx`
+
+- Add a third layout option alongside existing `"schedule"` (App Style) and default
+- When `layoutStyle === "lockscreen"`, render `LockScreenHomeView` instead
+- Pass all existing data (nextLesson, todayOverview, weeklyGoals, alerts, etc.) as props
+
+### 3. Update `src/hooks/useInstructorAppearance.ts`
+
+- Extend the `layoutStyle` type to include `"lockscreen"` as a valid option
+- This allows instructors to select the Lock Screen layout from Settings
+
+### 4. Update Settings UI
+
+- Add "Lock Screen" as a third layout option in the instructor appearance/settings page where "Default" and "App Style" are already selectable
+
+### No database or backend changes required
+
+The layout preference is already stored in the instructor's settings — we're just adding a new valid value.
+
+## What stays exactly the same
+
+- All data fetching hooks (no changes)
+- InstructorMobileHeader (no changes)
+- Bottom navigation (no changes)
+- All tile/widget components internally (NextUpTile, QuickActionTiles, etc.)
+- Pull to refresh, confetti, urgent alerts, floating session bar
+- Tile reordering and edit mode
+- All navigation routes and click handlers
