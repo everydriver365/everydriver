@@ -35,7 +35,7 @@ import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
-import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
+
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
@@ -389,7 +389,6 @@ export function CleanHomeView({
         <div className="mt-2 space-y-3">
           {authInstructor?.id && <VehicleHealthStrip instructorId={authInstructor.id} />}
           <UnifiedAgendaTile instructorId={instructor?.id} />
-          <PlanWidget />
         </div>
 
         {/* ── Plan Ahead ── */}
@@ -417,15 +416,14 @@ export function CleanHomeView({
           </button>
         ) : null}
 
-        {instructorId && (
-          <div className="mt-3">
-            <EarningsForecaster instructorId={instructorId} />
-          </div>
-        )}
-
         <RoadAlertsRow alerts={alerts} className="mt-3" />
 
         {instructorId && <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />}
+
+        {/* Your Plan — at the bottom */}
+        <div className="mt-3">
+          <PlanWidget />
+        </div>
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />
