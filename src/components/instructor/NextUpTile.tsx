@@ -209,13 +209,13 @@ export function NextUpTile({
           <div className="px-4 pb-4">
             {/* Info badges row */}
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 border border-primary/10 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-primary/5 border border-primary/10 text-xs font-medium text-foreground">
                 <Clock className="h-3.5 w-3.5 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-none bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                 {formatDuration()} lesson
               </span>
-              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold ${
+              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-none text-[11px] font-semibold ${
                 effectiveBalance < 0
                   ? "bg-destructive/10 border border-destructive/30 text-destructive"
                   : "bg-primary/5 border border-primary/20 text-primary"

@@ -125,14 +125,14 @@ export function AppStyleHomeView({
               >
                 <div
                   className={cn(
-                    "relative w-[60px] h-[60px] rounded-[16px] flex items-center justify-center overflow-hidden",
+                    "relative w-[60px] h-[60px] rounded-none flex items-center justify-center overflow-hidden",
                   )}
                 >
                   {hasCustomIcon ? (
                     <img
                       src={customIconImages[action.id]}
                       alt={action.title}
-                      className="w-full h-full object-cover rounded-[16px]"
+                      className="w-full h-full object-cover rounded-none"
                     />
                   ) : (
                     <FallbackIcon className="h-7 w-7 text-primary" />

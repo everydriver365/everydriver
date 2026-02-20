@@ -158,7 +158,7 @@ export function ExpandableLessonCard({
   const isRecurring = !!lesson.recurrence_rule;
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden rounded-none">
       {/* Delete background */}
       {onDelete && (
         <motion.div 
@@ -180,7 +180,7 @@ export function ExpandableLessonCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "rounded-lg border overflow-hidden relative",
+          "rounded-none border overflow-hidden relative",
           colorPreset.bg,
           colorPreset.border,
           isDragging && "cursor-grabbing"
