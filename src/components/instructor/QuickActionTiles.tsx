@@ -425,25 +425,24 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — iOS grouped card style
-        <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-border/60">
+        // Normal view mode — iOS 3x3 grid style
+        <div className="grid grid-cols-3 gap-4">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
             const showBadge = badgeCount > 0;
-            const isSchedule = isScheduleAction(action);
-            const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0 && !showBadge;
 
             return (
               <Link key={action.id} to={action.route} className="block">
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.05 + index * 0.03 }}
-                  className="px-4 py-3 flex items-center gap-3 active:bg-muted/50 transition-colors"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.03 + index * 0.025 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center gap-1.5 pt-1"
                 >
                   <div
-                    className={`relative ${largeIconTiles.has(action.id) ? 'w-11 h-11' : 'w-10 h-10'} rounded-[10px] ${customIconImages[action.id] ? '' : tileStyles[index % tileStyles.length].iconBg} flex items-center justify-center shrink-0 overflow-hidden`}
+                    className={`relative w-[60px] h-[60px] rounded-[16px] ${customIconImages[action.id] ? '' : tileStyles[index % tileStyles.length].iconBg} flex items-center justify-center overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -454,28 +453,17 @@ export function QuickActionTiles({
                         style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                       />
                     ) : (
-                      <Icon className={`h-5 w-5 ${tileStyles[index % tileStyles.length].iconColor}`} />
+                      <Icon className={`h-7 w-7 ${tileStyles[index % tileStyles.length].iconColor}`} />
+                    )}
+                    {showBadge && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-foreground truncate">{action.title}</p>
-                    {isSchedule && todayOverview && todayOverview.lessonCount > 0 && (
-                      <p className="text-[11px] text-muted-foreground">
-                        {todayOverview.lessonCount} lesson{todayOverview.lessonCount !== 1 ? 's' : ''} today
-                      </p>
-                    )}
-                  </div>
-                  {showBadge && (
-                    <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
-                      {badgeCount > 9 ? "9+" : badgeCount}
-                    </span>
-                  )}
-                  {showLessonBadge && (
-                    <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center">
-                      {todayOverview.lessonCount}
-                    </span>
-                  )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+                  <p className="text-[11px] font-medium text-foreground leading-tight text-center line-clamp-1 max-w-[72px]">
+                    {action.title}
+                  </p>
                 </motion.div>
               </Link>
             );
