@@ -1,59 +1,74 @@
 
-
-## Fix Battery Indicator
+## Show Fault Code Meanings
 
 ### Problem
-The battery indicator always shows "--" because the Geotab poller never writes to `last_battery_percent` or the `gps_battery_history` table. The car's 12V battery data IS being fetched from Geotab (via `DiagnosticStateOfChargeId`) and stored in `last_battery_voltage`, but the UI reads from the wrong column.
+Currently, fault codes from Geotab are stored with raw values like `"b9"` and `"Unknown fault"` as the description. The Geotab API returns minimal metadata, so we need to properly format the DTC codes and provide human-readable descriptions.
 
 ### Solution
 
-**1. Map Geotab battery data to the correct fields in the poller**
+**1. Improve fault code formatting in the poller** (`supabase/functions/geotab-poller/index.ts`)
 
-In `supabase/functions/geotab-poller/index.ts`:
-- Use `DiagnosticStateOfChargeId` (State of Charge %) to populate `last_battery_percent` as well (it's a percentage, not voltage)
-- Also fetch the actual 12V battery voltage using `DiagnosticBatteryVoltageId` for `last_battery_voltage`
-- After updating `gps_devices`, insert a row into `gps_battery_history` with the current battery percent for historical tracking
+Update the FaultData processing (lines 330-340) to:
+- Map the Geotab `controller.name` to the standard OBD-II prefix: **P** (Powertrain), **B** (Body), **C** (Chassis), **U** (Network/Communication)
+- Format the raw code as a proper 4-digit hex DTC (e.g., raw `"b9"` becomes `"P00B9"`)
+- Add a lookup table of ~60 common OBD-II fault codes with plain-English descriptions (e.g., `P0301` = "Cylinder 1 misfire detected")
+- Fall back to the Geotab-provided name if the code isn't in our lookup table, and only show "Unknown fault" as a last resort
 
-**2. Add `DiagnosticBatteryVoltageId` to the Geotab diagnostic fetch**
+**2. Update the UI to display code + meaning together**
 
-The poller currently fetches several diagnostics but may not include the true battery voltage diagnostic. We'll add it to the diagnostics list so we get both:
-- State of Charge (%) -> `last_battery_percent`
-- Battery Voltage (V) -> `last_battery_voltage`
-
-**3. Write battery history records**
-
-After each poll, if `last_battery_percent` has a value, insert a record into `gps_battery_history` so the Battery History chart has data to display.
+In both `CheckEngineBanner.tsx` and `EnhancedDeviceStatusCard.tsx`:
+- The fault code badge already shows (added previously) -- no change needed there
+- The description text already renders `fault.description` -- once the poller writes better descriptions, these will show automatically
 
 ### Technical Details
 
 **Edge function change** (`supabase/functions/geotab-poller/index.ts`):
 
-```
-// In the diagnostics mapping section:
-if (diags["DiagnosticStateOfChargeId"] != null) {
-  // State of Charge is a percentage (0-100), not voltage
-  diagnosticsUpdate.last_battery_percent = Math.round(diags["DiagnosticStateOfChargeId"]);
-  diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100;
+Add a DTC lookup map and formatting helper before the fault processing loop:
+
+```typescript
+// Common OBD-II DTC descriptions
+const DTC_DESCRIPTIONS: Record<string, string> = {
+  "P0100": "Mass air flow sensor circuit malfunction",
+  "P0101": "Mass air flow sensor range/performance",
+  "P0171": "System too lean (Bank 1)",
+  "P0172": "System too rich (Bank 1)",
+  "P0300": "Random/multiple cylinder misfire",
+  "P0301": "Cylinder 1 misfire detected",
+  "P0420": "Catalyst system efficiency below threshold",
+  "P0442": "Evaporative emission system leak (small)",
+  "P0455": "Evaporative emission system leak (large)",
+  "P0500": "Vehicle speed sensor malfunction",
+  // ... ~50 more common codes
+};
+
+function formatDTC(rawCode: string, controllerName: string): string {
+  const prefix = controllerName?.toLowerCase().includes("body") ? "B"
+    : controllerName?.toLowerCase().includes("chassis") ? "C"
+    : controllerName?.toLowerCase().includes("network") ? "U"
+    : "P"; // default Powertrain
+  const hex = parseInt(rawCode, 16);
+  if (isNaN(hex)) return rawCode.toUpperCase();
+  return prefix + hex.toString(16).toUpperCase().padStart(4, "0");
 }
-
-// Add true 12V voltage if available
-if (diags["DiagnosticBatteryVoltageId"] != null) {
-  diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticBatteryVoltageId"] * 100) / 100;
-}
 ```
 
-After the device update, insert battery history:
-```
-// Write battery history if we have a percent value
-const batteryPct = diagnosticsUpdate.last_battery_percent;
-if (batteryPct != null) {
-  await supabase.from("gps_battery_history").insert({
-    device_id: device.id,
-    battery_percent: batteryPct,
-  });
-}
+Then update the fault mapping:
+
+```typescript
+const dtcCode = formatDTC(fault.code || fault.id, fault.controller?.name);
+deviceFaults.get(faultDeviceId)!.push({
+  code: dtcCode,
+  description: DTC_DESCRIPTIONS[dtcCode] 
+    || fault.name 
+    || fault.diagnostic?.name 
+    || "Unrecognised fault - consult mechanic",
+  severity: fault.failureModeId?.name || fault.severity || "Unknown",
+  source: fault.controller?.name || fault.source || "ECU",
+});
 ```
 
-Also ensure `DiagnosticBatteryVoltageId` is included in the list of diagnostics requested from the Geotab API.
+**No UI changes needed** -- both `CheckEngineBanner` and `EnhancedDeviceStatusCard` already render `fault.code` as a badge and `fault.description` as text. Once the poller writes properly formatted codes and descriptions, the UI will display them automatically.
 
-**No UI changes needed** -- the existing components already read `last_battery_percent` and query `gps_battery_history` correctly. Once data flows, everything will work.
+### Files to modify
+- `supabase/functions/geotab-poller/index.ts` -- Add DTC formatter, lookup table, and update fault processing
