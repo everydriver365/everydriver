@@ -52,7 +52,6 @@ import testimonialEmilyFallback from "@/assets/testimonial-emily.jpg";
 import testimonialPriyaFallback from "@/assets/testimonial-priya.jpg";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoKlarna from "@/assets/logo-klarna.png";
-import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import logoAdiCode from "@/assets/logo-adi-code.jpg";
 import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
@@ -191,7 +190,6 @@ export default function Index() {
                 <div className="flex items-center gap-2">
                   <span className="rounded-md bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
                   <span className="rounded-md bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
-                  <span className="rounded-md bg-[#ffd700] px-2 py-1 text-xs font-bold text-black">iDeal</span>
                   <span className="text-sm text-muted-foreground">0% Finance</span>
                 </div>
               </div>
@@ -1366,12 +1364,6 @@ export default function Index() {
               className="h-7 object-contain rounded-md"
             />
 
-            {/* iDeal 4 Finance */}
-            <img 
-              src={logoIdeal4Finance} 
-              alt="iDeal 4 Finance" 
-              className="h-7 object-contain rounded-md"
-            />
           </div>
         </div>
       </section>

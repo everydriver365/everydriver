@@ -15,7 +15,7 @@ import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
 const everyDriverLogo = "/everydriver-logo-v2.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
-import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
+
 
 const MobileHomeDemo = () => {
   const { features: includedFeatures, loading: featuresLoading } = useIncludedFeatures();
@@ -1125,7 +1125,6 @@ const MobileHomeDemo = () => {
                     <div className="flex items-center justify-center gap-6">
                       <img src={logoKlarna} alt="Klarna" className="h-10 object-contain" />
                       <img src={logoClearpay} alt="Clearpay" className="h-8 object-contain" />
-                      <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-10 object-contain" />
                     </div>
                   </motion.div>
                 </div>
@@ -2081,7 +2080,6 @@ const MobileHomeDemo = () => {
                   <div className="flex items-center justify-center gap-6">
                     <img src={logoKlarna} alt="Klarna" className="h-5 opacity-60" />
                     <img src={logoClearpay} alt="Clearpay" className="h-5 opacity-60" />
-                    <img src={logoIdeal4Finance} alt="Finance" className="h-5 opacity-60" />
                   </div>
                 </div>
               </div>

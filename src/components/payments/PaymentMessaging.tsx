@@ -5,20 +5,18 @@ interface PaymentMessagingProps {
   amount: number;
   showKlarna?: boolean;
   showClearpay?: boolean;
-  showIdeal?: boolean;
   layout?: "inline" | "stacked";
   className?: string;
 }
 
 /**
  * Combined payment messaging component
- * Shows Klarna, Clearpay, and/or iDeal finance options with calculated instalments
+ * Shows Klarna and/or Clearpay finance options with calculated instalments
  */
 export function PaymentMessaging({
   amount,
   showKlarna = true,
   showClearpay = true,
-  showIdeal = true,
   layout = "inline",
   className = ""
 }: PaymentMessagingProps) {
@@ -48,16 +46,6 @@ export function PaymentMessaging({
             </span>
           </div>
         )}
-        {showIdeal && (
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
-              iDeal
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Finance available
-            </span>
-          </div>
-        )}
       </div>
     );
   }
@@ -69,13 +57,6 @@ export function PaymentMessaging({
       )}
       {showClearpay && (
         <ClearpayInstalmentBadge amount={amount} />
-      )}
-      {showIdeal && (
-        <div className="flex items-center gap-1.5">
-          <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
-            iDeal
-          </span>
-        </div>
       )}
     </div>
   );
@@ -107,9 +88,6 @@ export function CompactPaymentBadges({
         title={`£${amount} in 4 monthly payments of £${clearpayInstalment}`}
       >
         clearpay £{clearpayInstalment}/mo × 4
-      </span>
-      <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
-        iDeal
       </span>
     </div>
   );

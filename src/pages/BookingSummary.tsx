@@ -23,7 +23,7 @@ import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
-import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
+
 
 interface Instructor {
   id: string;
@@ -1121,7 +1121,7 @@ export default function BookingSummary() {
             <div className="hidden sm:block bg-white text-primary rounded-xl px-4 py-3 shadow-lg">
               <span className="text-2xl font-bold">£{totalPrice + upsellTotal}</span>
               <div className="mt-1 border-t border-primary/10 pt-1">
-                <PaymentMessaging amount={totalPrice + upsellTotal} layout="stacked" showIdeal={false} className="text-primary" />
+                <PaymentMessaging amount={totalPrice + upsellTotal} layout="stacked" className="text-primary" />
               </div>
             </div>
           </div>
@@ -1669,30 +1669,6 @@ export default function BookingSummary() {
           )}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {/* Ideal4Finance - Provisional Booking */}
-            <button
-              onClick={handleBookingSubmit}
-              disabled={!canSubmit || isSubmitting}
-              className="w-full rounded-lg border-2 border-orange-400 p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-950/50 dark:hover:to-amber-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <img 
-                  src={ideal4FinanceLogo} 
-                  alt="Ideal4Finance" 
-                  className="h-6 object-contain"
-                />
-                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                  {isSubmitting ? "Processing..." : "Finance Available"}
-                </span>
-              </div>
-              <div className="font-semibold text-sm text-orange-900 dark:text-orange-100">
-                {isSubmitting ? "Creating Booking..." : "Provisional Booking"}
-              </div>
-              <div className="text-xs text-orange-700/80 dark:text-orange-300/80">
-                Reserve your slots now, arrange finance after
-              </div>
-            </button>
-
             {/* NPI Card Payment - With Deposit Option */}
             <div className="w-full rounded-lg border-2 border-primary p-4 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 relative">
               <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">

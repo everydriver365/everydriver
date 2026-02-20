@@ -29,7 +29,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
-import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
+
 
 interface Instructor {
   id: string;
@@ -777,21 +777,6 @@ export function MobileBookingView({
             </div>
 
             {/* Finance Option */}
-            <button
-              onClick={onBookingSubmit}
-              disabled={!canSubmit || isSubmitting || isWalletProcessing}
-              className="w-full rounded-lg border-2 border-orange-400 p-3 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50 transition-colors text-left disabled:opacity-50"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <img src={ideal4FinanceLogo} alt="Ideal4Finance" className="h-5 mb-1" />
-                  <p className="font-semibold text-xs text-orange-900 dark:text-orange-100">
-                    {isSubmitting ? "Creating..." : "Provisional Booking"}
-                  </p>
-                </div>
-                <span className="text-xs text-orange-700 dark:text-orange-300">Finance Available</span>
-              </div>
-            </button>
           </div>
 
           {/* Embedded Card Checkout */}
