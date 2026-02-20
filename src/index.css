@@ -341,6 +341,17 @@
 }
 
 /* Instructor portal: iOS-style rounded corners for all tiles/cards */
+.instructor-portal .bg-card,
+.instructor-portal [class*="shadow-sm"],
+.instructor-portal [class*="shadow-md"],
+.instructor-portal [class*="overflow-hidden"]:not(img):not(video):not(.rounded-full) {
+  border-radius: 20px !important;
+}
+/* Keep inputs and inner elements with appropriate radius */
+.instructor-portal input,
+.instructor-portal textarea {
+  border-radius: 10px !important;
+}
 
 /* Learner app (Drive365): remove all border radius from tiles/cards */
 .learner-app *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
