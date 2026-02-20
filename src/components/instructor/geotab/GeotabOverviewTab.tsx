@@ -1,6 +1,6 @@
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
-import { CheckEngineBanner } from "@/components/instructor/CheckEngineBanner";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
@@ -34,7 +34,7 @@ export function GeotabOverviewTab() {
 
   return (
     <div className="space-y-4">
-      {devicesWithFaults.length > 0 && <CheckEngineBanner />}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {devices.map((device) => (
           <EnhancedDeviceStatusCard

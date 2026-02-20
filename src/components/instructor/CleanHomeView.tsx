@@ -39,7 +39,7 @@ import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
-import { CheckEngineBanner } from "@/components/instructor/CheckEngineBanner";
+
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
@@ -220,7 +220,7 @@ export function CleanHomeView({
         {alerts.length > 0 && (
           <DrivingAlertsStrip alerts={alerts} onDismiss={dismissAlert} location={alertsLocation} className="mt-3" />
         )}
-        <CheckEngineBanner />
+        
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner lessonId={nextLesson.lessonId} minutesUntil={nextLesson.minutesUntil} />
         )}
