@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Play,
@@ -351,89 +352,60 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* Greeting Card */}
-      <div className="mx-4 mt-4">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="bg-card rounded-none shadow-sm overflow-hidden"
-        >
-          {/* Gradient header */}
-          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-4 text-white">
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            </div>
-            <div className="relative flex items-center gap-3">
-              {instructor?.profile_image_url ? (
-                <img src={instructor.profile_image_url} alt={firstName} className="h-11 w-11 rounded-full object-cover ring-2 ring-white/30" />
-              ) : (
-                <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-                  {firstName[0]}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold truncate">{getGreeting(firstName)}</h2>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    isGPSConnected
-                      ? "bg-emerald-500/30 text-emerald-100"
-                      : "bg-white/20 text-white/70"
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? "bg-emerald-400 animate-pulse" : "bg-white/50"}`} />
-                    {isGPSConnected ? "Online" : "Offline"}
-                  </span>
-                  {currentWeather?.temperature != null && (
-                    <span className="text-white/70 text-xs flex items-center gap-1">
-                      <WeatherIcon icon={currentWeather.icon || "Cloud"} className="h-3.5 w-3.5 text-white/70" />
-                      {currentWeather.temperature}°C
-                      {currentWeather.description ? ` • ${currentWeather.description}` : ""}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+      {/* Hero Image + Greeting + Today's Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative"
+      >
+        {/* Hero Image */}
+        <div className="relative h-[220px] overflow-hidden">
+          <img
+            src={content?.hero_image_url || instructorHeroImg}
+            alt="Instructor hero"
+            className="w-full h-full object-cover"
+          />
+          {/* Gradient overlay at bottom for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          {/* Greeting text overlaid at bottom of image */}
+          <div className="absolute bottom-10 left-5 right-5 text-white">
+            <h1 className="text-[26px] font-bold leading-tight drop-shadow-sm">
+              {(() => {
+                const h = new Date().getHours();
+                if (h >= 5 && h < 12) return "Good Morning";
+                if (h >= 12 && h < 17) return "Good Afternoon";
+                if (h >= 17 && h < 21) return "Good Evening";
+                return "Hello";
+              })()}
+            </h1>
+            <p className="text-white/80 text-[15px] mt-0.5 drop-shadow-sm">
+              {format(new Date(), "EEEE d MMMM")}
+            </p>
           </div>
-          {/* Stats grid */}
-          <div className="p-4">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-primary/10">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Lessons</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-500/10">
-                <PoundSterling className="h-4 w-4 text-emerald-500" />
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">£{todayOverview?.expectedEarnings || 0}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Expected</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-violet-500/10">
-                <Target className="h-4 w-4 text-violet-500" />
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">{Math.min(weeklyGoals?.progressPercent || 0, 100)}%</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Weekly</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-500/10">
-                <Timer className="h-4 w-4 text-amber-500" />
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">
-                    {nextLesson?.startTime ? `${nextLesson.startTime.substring(0, 5)}${nextLesson.pickupPostcode ? ` • ${nextLesson.pickupPostcode}` : ""}` : "--"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{nextLesson?.pupilName || "Next up"}</p>
-                </div>
-              </div>
+        </div>
+
+        {/* Today's Overview card — overlapping the hero */}
+        <div className="px-4 -mt-6 relative z-10">
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="w-full bg-card rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] p-4 flex items-center gap-4 active:scale-[0.98] transition-transform"
+          >
+            <div className="flex-1 text-left">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Today's Overview</p>
+              <p className="text-[14px] text-foreground mt-1">
+                {todayOverview?.lessonCount
+                  ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
+                  : "No lessons scheduled today."}
+              </p>
             </div>
-          </div>
-        </motion.div>
-      </div>
+            <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full border-2 border-primary shrink-0">
+              <span className="text-xl font-bold text-primary leading-none">{todayOverview?.lessonCount || 0}</span>
+              <span className="text-[8px] font-bold text-primary uppercase leading-none mt-0.5">Today</span>
+            </div>
+          </button>
+        </div>
+      </motion.div>
       {/* Job Offers — gradient style */}
       <div className="px-4 flex flex-col gap-2 mt-3">
         {pendingJobsCount > 0 && (
