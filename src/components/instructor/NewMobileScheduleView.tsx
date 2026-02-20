@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, isToday } from "date-fns";
-import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling } from "lucide-react";
+import { format, isToday, parseISO } from "date-fns";
+import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,8 +64,18 @@ const lessonTypeColors: Record<string, { border: string; badge: string }> = {
   pass_plus: { border: "border-l-indigo-400", badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400" },
 };
 
+interface ExternalEvent {
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  color: string | null;
+  is_all_day: boolean;
+}
+
 export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewProps) {
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -77,6 +87,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
   useEffect(() => {
     fetchLessons();
+    fetchExternalEvents();
   }, [instructorId, selectedDate]);
 
   const fetchLessons = async () => {
@@ -110,6 +121,44 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       toast({ title: "Error", description: "Failed to load schedule", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExternalEvents = async () => {
+    try {
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const dayStart = `${dateStr}T00:00:00`;
+      const dayEnd = `${dateStr}T23:59:59`;
+
+      const { data, error } = await supabase
+        .from("instructor_calendar_events")
+        .select("id, title, start_time, end_time, color")
+        .eq("instructor_id", instructorId)
+        .lte("start_time", dayEnd)
+        .gte("end_time", dayStart);
+
+      if (error) throw error;
+
+      const events: ExternalEvent[] = (data || []).map((evt: any) => {
+        const start = parseISO(evt.start_time);
+        const end = parseISO(evt.end_time);
+        // Detect all-day events (starts at midnight, ends at 23:59)
+        const startHour = start.getHours() + start.getMinutes();
+        const endHour = end.getHours();
+        const isAllDay = startHour === 0 && (endHour === 23 || endHour === 0);
+        return {
+          id: evt.id,
+          title: evt.title || "Busy",
+          start_time: evt.start_time,
+          end_time: evt.end_time,
+          color: evt.color,
+          is_all_day: isAllDay,
+        };
+      });
+
+      setExternalEvents(events);
+    } catch (error) {
+      console.error("Error fetching external events:", error);
     }
   };
 
@@ -168,6 +217,10 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   );
   const { getTravelTime } = useLessonTravelTimes(lessonsForTravel);
 
+  // Split external events into all-day and timed
+  const allDayEvents = externalEvents.filter(e => e.is_all_day);
+  const timedExternalEvents = externalEvents.filter(e => !e.is_all_day);
+
   // Summary calculations
   const lessonCount = lessons.length;
   const totalScheduled = lessons.reduce((sum, l) => sum + (l.amount_due || 0), 0);
@@ -220,7 +273,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : lessons.length === 0 ? (
+      ) : lessons.length === 0 && externalEvents.length === 0 ? (
         <div className="bg-card rounded-xl border border-border flex flex-col items-center justify-center py-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground font-medium">No lessons scheduled</p>
@@ -299,6 +352,48 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
               );
             })}
           </AnimatePresence>
+        </div>
+      )}
+
+      {/* All-day external events */}
+      {allDayEvents.length > 0 && (
+        <div className="space-y-2">
+          {allDayEvents.map((evt) => (
+            <div
+              key={evt.id}
+              className="bg-muted/50 rounded-xl border border-border px-4 py-2.5 flex items-center gap-2"
+            >
+              <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-sm text-muted-foreground truncate">{evt.title}</span>
+              <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0">All day</Badge>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Timed external events */}
+      {timedExternalEvents.length > 0 && (
+        <div className="space-y-2">
+          {timedExternalEvents.map((evt) => {
+            const startDt = parseISO(evt.start_time);
+            const endDt = parseISO(evt.end_time);
+            return (
+              <div
+                key={evt.id}
+                className="bg-card rounded-xl border border-border p-4 space-y-1.5"
+                style={evt.color ? { borderLeftWidth: 4, borderLeftColor: evt.color } : undefined}
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                  <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">Calendar</Badge>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{format(startDt, "HH:mm")} - {format(endDt, "HH:mm")}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
