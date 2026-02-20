@@ -15,6 +15,7 @@ import {
   Snowflake,
   Wind,
   AlertTriangle,
+  X,
   LayoutGrid,
   Sun,
   BookOpen,
@@ -232,6 +233,11 @@ export function InstructorMobileHome({
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructorId);
   const { devices: vehicleDevices } = useVehicleHealth();
   const engineFaultCount = vehicleDevices.flatMap(d => d.last_fault_codes || []).length;
+  const [engineFaultsDismissed, setEngineFaultsDismissed] = useState(() => {
+    const ts = localStorage.getItem("engine_faults_dismissed_at");
+    if (!ts) return false;
+    return Date.now() - parseInt(ts) < 24 * 60 * 60 * 1000;
+  });
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -447,17 +453,29 @@ export function InstructorMobileHome({
               })()}
             </button>
             {/* Engine fault warning line */}
-            {engineFaultCount > 0 && (
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate("/instructor/vehicle-health"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-destructive/90 text-white text-left active:bg-destructive transition-colors"
-              >
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-[12px] font-medium flex-1">
-                  {engineFaultCount} engine fault{engineFaultCount > 1 ? "s" : ""} detected — tap to view
-                </span>
-                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
-              </button>
+            {engineFaultCount > 0 && !engineFaultsDismissed && (
+              <div className="w-full flex items-center bg-destructive/90 text-white">
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate("/instructor/vehicle-health#faults"); }}
+                  className="flex-1 flex items-center gap-2 px-4 py-2.5 text-left active:bg-destructive transition-colors"
+                >
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-[12px] font-medium flex-1">
+                    {engineFaultCount} engine fault{engineFaultCount > 1 ? "s" : ""} detected — tap to view
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    localStorage.setItem("engine_faults_dismissed_at", Date.now().toString());
+                    setEngineFaultsDismissed(true);
+                  }}
+                  className="px-3 py-2.5 hover:bg-white/10 active:bg-white/20 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5 text-white/70" />
+                </button>
+              </div>
             )}
             {/* Weather warning line */}
             {currentWeather && currentWeather.temperature != null && currentWeather.temperature <= 2 && (
