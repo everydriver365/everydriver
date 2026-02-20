@@ -315,6 +315,20 @@ export function QuickActionTiles({
      { bg: 'bg-card', iconBg: 'bg-violet-500/12', iconColor: 'text-violet-600' },
   ];
 
+  // Tile gradient backgrounds — each tile gets a unique color
+  const tileGradients = [
+    'bg-gradient-to-br from-[hsl(218,54%,17%)] via-[hsl(218,58%,24%)] to-[hsl(220,50%,32%)]',   // navy
+    'bg-gradient-to-br from-[hsl(142,60%,32%)] via-[hsl(152,55%,38%)] to-[hsl(162,50%,44%)]',   // emerald
+    'bg-gradient-to-br from-[hsl(250,50%,38%)] via-[hsl(258,48%,46%)] to-[hsl(268,45%,52%)]',   // violet
+    'bg-gradient-to-br from-[hsl(200,70%,35%)] via-[hsl(205,65%,42%)] to-[hsl(210,60%,50%)]',   // ocean blue
+    'bg-gradient-to-br from-[hsl(340,55%,40%)] via-[hsl(348,50%,48%)] to-[hsl(355,48%,55%)]',   // rose
+    'bg-gradient-to-br from-[hsl(28,75%,42%)] via-[hsl(32,70%,48%)] to-[hsl(38,65%,54%)]',      // amber
+    'bg-gradient-to-br from-[hsl(175,55%,30%)] via-[hsl(180,50%,36%)] to-[hsl(185,48%,42%)]',   // teal
+    'bg-gradient-to-br from-[hsl(265,45%,35%)] via-[hsl(275,42%,42%)] to-[hsl(285,40%,50%)]',   // purple
+    'bg-gradient-to-br from-[hsl(15,65%,40%)] via-[hsl(20,60%,46%)] to-[hsl(25,55%,52%)]',      // burnt orange
+    'bg-gradient-to-br from-[hsl(195,65%,30%)] via-[hsl(200,60%,38%)] to-[hsl(208,55%,45%)]',   // steel blue
+  ];
+
   return (
     <div className="space-y-3">
       {/* Header with Done button only shown in edit mode */}
@@ -448,7 +462,7 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative bg-gradient-to-r from-primary via-[hsl(218,60%,28%)] to-[hsl(218,50%,35%)] rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex items-center gap-3"
+                  className={cn("ios-tile relative rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.18)] flex items-center gap-3", tileGradients[index % tileGradients.length])}
                 >
                   {/* Icon */}
                   <div
