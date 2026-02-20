@@ -69,6 +69,7 @@ import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
+import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -316,6 +317,29 @@ export function InstructorMobileHome({
           heroImageUrl={personalHeroUrl || content?.hero_image_url}
           wallpaperColor={wallpaperColor}
           profileImageUrl={instructor?.profile_image_url}
+        />
+      ) : layoutStyle === "lockscreen" ? (
+        <LockScreenHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+          todayOverview={todayOverview}
+          nextLesson={nextLesson}
+          weeklyGoals={weeklyGoals}
+          streak={streak}
+          pendingJobsCount={pendingJobsCount}
+          pupilMsgCount={pupilMsgCount}
+          alerts={alerts}
+          dismissAlert={dismissAlert}
+          alertsLocation={alertsLocation}
+          currentWeather={currentWeather}
+          isGPSConnected={isGPSConnected}
+          todayLessons={todayLessons}
+          tomorrowPreview={tomorrowPreview}
+          content={content}
+          contentLoading={contentLoading}
+          isTileEditMode={isTileEditMode}
+          onTileEditModeChange={setIsTileEditMode}
+          authInstructorId={authInstructor?.id}
         />
       ) : (
       <>

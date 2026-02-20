@@ -3,7 +3,7 @@ import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppea
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, X, LayoutGrid, Calendar, Check } from "lucide-react";
+import { Camera, Loader2, X, LayoutGrid, Calendar, Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
@@ -31,43 +31,58 @@ function PhonePreview({
 }: {
   bg: string;
   heroSrc: string;
-  variant: "dashboard" | "schedule";
+  variant: "dashboard" | "schedule" | "lockscreen";
 }) {
   return (
     <div
       className="w-full aspect-[9/16] rounded-xl border border-border/60 overflow-hidden shadow-inner"
-      style={{ backgroundColor: bg }}
+      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : bg }}
     >
-      {/* hero strip */}
-      <div className="h-[30%] w-full overflow-hidden">
-        <img src={heroSrc} alt="" className="w-full h-full object-cover" />
-      </div>
-      {/* body */}
-      <div className="p-1.5 space-y-1">
-        {variant === "dashboard" ? (
-          <>
-            {/* card overlay */}
-            <div className="rounded bg-card/90 h-5 w-full" />
-            {/* tiles grid */}
-            <div className="grid grid-cols-3 gap-0.5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded bg-card/80 aspect-square" />
-              ))}
-            </div>
-            <div className="rounded bg-card/60 h-3 w-full" />
-          </>
-        ) : (
-          <>
-            {/* schedule lines */}
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-1">
-                <div className="w-3 h-1.5 rounded-sm bg-primary/30" />
-                <div className="flex-1 h-2.5 rounded bg-card/80" />
-              </div>
+      {variant === "lockscreen" ? (
+        <>
+          {/* lock screen preview */}
+          <div className="h-[15%]" />
+          <div className="px-2 text-center">
+            <div className="h-1.5 w-10 mx-auto rounded bg-white/30 mb-0.5" />
+            <div className="h-4 w-16 mx-auto rounded bg-white/20 mb-1" />
+          </div>
+          <div className="px-1.5 space-y-0.5 mt-1">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-lg bg-white/10 h-4 w-full" />
             ))}
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* hero strip */}
+          <div className="h-[30%] w-full overflow-hidden">
+            <img src={heroSrc} alt="" className="w-full h-full object-cover" />
+          </div>
+          {/* body */}
+          <div className="p-1.5 space-y-1">
+            {variant === "dashboard" ? (
+              <>
+                <div className="rounded bg-card/90 h-5 w-full" />
+                <div className="grid grid-cols-3 gap-0.5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="rounded bg-card/80 aspect-square" />
+                  ))}
+                </div>
+                <div className="rounded bg-card/60 h-3 w-full" />
+              </>
+            ) : (
+              <>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <div className="w-3 h-1.5 rounded-sm bg-primary/30" />
+                    <div className="flex-1 h-2.5 rounded bg-card/80" />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -129,7 +144,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
       {/* ── Layout Style Picker ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Home Layout</Label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {/* Dashboard option */}
           <button
             onClick={() => handleLayoutChange("dashboard")}
@@ -140,7 +155,6 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
                 : "border-border hover:border-primary/40"
             )}
           >
-            {/* mini preview inside the button */}
             <div className="w-full max-w-[80px]">
               <PhonePreview bg={currentBg} heroSrc={currentHero} variant="dashboard" />
             </div>
@@ -173,6 +187,30 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               iOS-style launcher grid
             </span>
             {layoutStyle === "schedule" && (
+              <div className="absolute top-2 right-2">
+                <Check className="h-4 w-4 text-primary" />
+              </div>
+            )}
+          </button>
+
+          {/* Lock Screen option */}
+          <button
+            onClick={() => handleLayoutChange("lockscreen")}
+            className={cn(
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
+              layoutStyle === "lockscreen"
+                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                : "border-border hover:border-primary/40"
+            )}
+          >
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="lockscreen" />
+            </div>
+            <span className="text-xs font-medium mt-1">Lock Screen</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Dark + frosted glass
+            </span>
+            {layoutStyle === "lockscreen" && (
               <div className="absolute top-2 right-2">
                 <Check className="h-4 w-4 text-primary" />
               </div>
