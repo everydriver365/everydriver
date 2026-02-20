@@ -386,24 +386,39 @@ export function InstructorMobileHome({
         </div>
 
         {/* Today's Overview card — overlapping the hero */}
-        <div className="px-4 -mt-6 relative z-10">
-          <button
+        <div className="px-4 -mt-8 relative z-10">
+          <motion.button
             onClick={() => navigate("/instructor/schedule")}
-            className="w-full bg-card rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] p-4 flex items-center gap-4 active:scale-[0.98] transition-transform"
+            whileTap={{ scale: 0.97 }}
+            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden active:shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-shadow"
           >
-            <div className="flex-1 text-left">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Today's Overview</p>
-              <p className="text-[14px] text-foreground mt-1">
-                {todayOverview?.lessonCount
-                  ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
-                  : "No lessons scheduled today."}
-              </p>
+            <div className="bg-gradient-to-r from-primary via-primary to-primary/90 p-4 flex items-center gap-4">
+              <div className="flex-1 text-left">
+                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
+                <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
+                  {todayOverview?.lessonCount
+                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
+                    : "No lessons scheduled today."}
+                </p>
+                {todayOverview && todayOverview.lessonCount > 0 && (
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-white/70 text-[12px] flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {todayOverview.totalHours}h
+                    </span>
+                    <span className="text-white/70 text-[12px] flex items-center gap-1">
+                      <PoundSterling className="h-3 w-3" />
+                      £{todayOverview.expectedEarnings}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shrink-0">
+                <span className="text-2xl font-black text-white leading-none">{todayOverview?.lessonCount || 0}</span>
+                <span className="text-[8px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
+              </div>
             </div>
-            <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full border-2 border-primary shrink-0">
-              <span className="text-xl font-bold text-primary leading-none">{todayOverview?.lessonCount || 0}</span>
-              <span className="text-[8px] font-bold text-primary uppercase leading-none mt-0.5">Today</span>
-            </div>
-          </button>
+          </motion.button>
         </div>
       </motion.div>
       {/* Job Offers — gradient style */}
