@@ -52,6 +52,7 @@ import DesignDemo from "./pages/DesignDemo";
 import InstructorHeroDemo from "./pages/InstructorHeroDemo";
 import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
 import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
+import InstructorNoHeroDemo from "./pages/InstructorNoHeroDemo";
 import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
 import HomepageRedesignDemo from "./pages/HomepageRedesignDemo";
 import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
@@ -309,6 +310,7 @@ const App = () => (
                <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
               <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
               <Route path="/tile-design-demo" element={<TileDesignDemo />} />
+              <Route path="/instructor-nohero-demo" element={<InstructorNoHeroDemo />} />
               
 
 
