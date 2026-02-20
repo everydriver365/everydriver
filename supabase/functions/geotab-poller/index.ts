@@ -324,6 +324,98 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Common OBD-II DTC descriptions
+    const DTC_DESCRIPTIONS: Record<string, string> = {
+      "P0100": "Mass air flow sensor circuit malfunction",
+      "P0101": "Mass air flow sensor range/performance",
+      "P0102": "Mass air flow sensor circuit low input",
+      "P0103": "Mass air flow sensor circuit high input",
+      "P0106": "MAP/barometric pressure sensor range/performance",
+      "P0107": "MAP/barometric pressure sensor circuit low",
+      "P0108": "MAP/barometric pressure sensor circuit high",
+      "P0110": "Intake air temperature sensor circuit malfunction",
+      "P0115": "Engine coolant temperature sensor circuit malfunction",
+      "P0120": "Throttle position sensor circuit malfunction",
+      "P0121": "Throttle position sensor range/performance",
+      "P0125": "Insufficient coolant temperature for closed-loop fuel",
+      "P0128": "Coolant thermostat below regulating temperature",
+      "P0130": "O2 sensor circuit malfunction (Bank 1, Sensor 1)",
+      "P0131": "O2 sensor circuit low voltage (Bank 1, Sensor 1)",
+      "P0133": "O2 sensor slow response (Bank 1, Sensor 1)",
+      "P0135": "O2 sensor heater circuit malfunction (Bank 1, Sensor 1)",
+      "P0141": "O2 sensor heater circuit malfunction (Bank 1, Sensor 2)",
+      "P0171": "System too lean (Bank 1)",
+      "P0172": "System too rich (Bank 1)",
+      "P0174": "System too lean (Bank 2)",
+      "P0175": "System too rich (Bank 2)",
+      "P0191": "Fuel rail pressure sensor range/performance",
+      "P0200": "Injector circuit malfunction",
+      "P0217": "Engine over-temperature condition",
+      "P0230": "Fuel pump primary circuit malfunction",
+      "P0300": "Random/multiple cylinder misfire detected",
+      "P0301": "Cylinder 1 misfire detected",
+      "P0302": "Cylinder 2 misfire detected",
+      "P0303": "Cylinder 3 misfire detected",
+      "P0304": "Cylinder 4 misfire detected",
+      "P0325": "Knock sensor circuit malfunction (Bank 1)",
+      "P0335": "Crankshaft position sensor circuit malfunction",
+      "P0340": "Camshaft position sensor circuit malfunction",
+      "P0400": "Exhaust gas recirculation flow malfunction",
+      "P0401": "EGR flow insufficient detected",
+      "P0420": "Catalyst system efficiency below threshold (Bank 1)",
+      "P0430": "Catalyst system efficiency below threshold (Bank 2)",
+      "P0440": "Evaporative emission system malfunction",
+      "P0441": "Evaporative emission system incorrect purge flow",
+      "P0442": "Evaporative emission system leak (small)",
+      "P0443": "Evaporative emission system purge valve circuit",
+      "P0446": "Evaporative emission system vent control malfunction",
+      "P0455": "Evaporative emission system leak (large)",
+      "P0456": "Evaporative emission system leak (very small)",
+      "P0500": "Vehicle speed sensor malfunction",
+      "P0505": "Idle air control system malfunction",
+      "P0507": "Idle air control system RPM higher than expected",
+      "P0562": "System voltage low",
+      "P0563": "System voltage high",
+      "P0600": "Serial communication link malfunction",
+      "P0700": "Transmission control system malfunction",
+      "P0705": "Transmission range sensor circuit malfunction",
+      "P0715": "Input/turbine speed sensor circuit malfunction",
+      "P0720": "Output speed sensor circuit malfunction",
+      "P0741": "Torque converter clutch solenoid performance",
+      "P0750": "Shift solenoid A malfunction",
+      "P1000": "OBD-II monitor testing not complete",
+      "P2096": "Post catalyst fuel trim too lean (Bank 1)",
+      "P2097": "Post catalyst fuel trim too rich (Bank 1)",
+      "P2135": "Throttle position sensor voltage correlation",
+      "P2187": "System too lean at idle (Bank 1)",
+      "P2188": "System too rich at idle (Bank 1)",
+      "B0001": "Driver frontal stage 1 deployment control",
+      "B0002": "Driver frontal stage 2 deployment control",
+      "B0100": "Passenger frontal stage 1 deployment control",
+      "C0035": "Left front wheel speed sensor circuit",
+      "C0040": "Right front wheel speed sensor circuit",
+      "C0045": "Left rear wheel speed sensor circuit",
+      "C0050": "Right rear wheel speed sensor circuit",
+      "C0300": "Rear speed sensor malfunction",
+      "U0001": "High speed CAN communication bus",
+      "U0100": "Lost communication with ECM/PCM",
+      "U0101": "Lost communication with TCM",
+      "U0121": "Lost communication with ABS",
+      "U0140": "Lost communication with body control module",
+      "U0155": "Lost communication with instrument cluster",
+    };
+
+    function formatDTC(rawCode: string, controllerName: string): string {
+      const cn = (controllerName || "").toLowerCase();
+      const prefix = cn.includes("body") ? "B"
+        : cn.includes("chassis") ? "C"
+        : cn.includes("network") || cn.includes("communication") ? "U"
+        : "P";
+      const hex = parseInt(rawCode, 16);
+      if (isNaN(hex)) return rawCode.toUpperCase();
+      return prefix + hex.toString(16).toUpperCase().padStart(4, "0");
+    }
+
     // FaultData results: last call
     const faultResults: any[] = batchResults[batchResults.length - 1] || [];
     const deviceFaults = new Map<string, any[]>();
@@ -331,9 +423,13 @@ Deno.serve(async (req) => {
       const faultDeviceId = fault.device?.id;
       if (!faultDeviceId) continue;
       if (!deviceFaults.has(faultDeviceId)) deviceFaults.set(faultDeviceId, []);
+      const dtcCode = formatDTC(fault.code || fault.id, fault.controller?.name);
       deviceFaults.get(faultDeviceId)!.push({
-        code: fault.code || fault.id,
-        description: fault.name || fault.diagnostic?.name || "Unknown fault",
+        code: dtcCode,
+        description: DTC_DESCRIPTIONS[dtcCode]
+          || fault.name
+          || fault.diagnostic?.name
+          || "Unrecognised fault – consult mechanic",
         severity: fault.failureModeId?.name || fault.severity || "Unknown",
         source: fault.controller?.name || fault.source || "ECU",
       });
