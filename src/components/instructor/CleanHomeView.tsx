@@ -163,13 +163,13 @@ export function CleanHomeView({
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="bg-card rounded-[22px] p-3.5 text-center flex flex-col items-center gap-1.5 active:scale-[0.95] active:bg-muted/50 transition-all shadow-sm aspect-square justify-center"
+              className="bg-card rounded-[24px] p-3 text-center flex flex-col items-center justify-center gap-1 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] aspect-square"
             >
-              <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center ${item.bg}`}>
-                <item.icon className={`h-5 w-5 ${item.color}`} strokeWidth={1.8} />
+              <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${item.bg}`}>
+                <item.icon className={`h-6 w-6 ${item.color}`} strokeWidth={1.6} />
               </div>
-              <p className="text-xs font-semibold text-foreground leading-tight mt-0.5">{item.label}</p>
-              <p className="text-[10px] text-muted-foreground leading-none">{item.sub}</p>
+              <p className="text-[11px] font-semibold text-foreground leading-tight mt-1">{item.label}</p>
+              <p className="text-[9px] text-muted-foreground leading-none">{item.sub}</p>
             </button>
           ))}
         </div>
