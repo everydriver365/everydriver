@@ -8,7 +8,7 @@ import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
-import { PostcodeMapPreview } from "./PostcodeMapPreview";
+
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Button } from "@/components/ui/button";
@@ -175,48 +175,34 @@ export function NextUpTile({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="bg-card rounded-none shadow-sm overflow-hidden">
-          {/* Gradient header with NEXT UP badge */}
+          {/* Gradient header with avatar, name, and countdown */}
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-            <div className="relative flex items-center justify-between">
-              <span className="text-sm font-bold tracking-wide uppercase">Next Up</span>
-              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
-                isUrgent
-                  ? "bg-amber-400/30 text-white animate-pulse"
-                  : "bg-white/20 text-white"
-              }`}>
-                <Timer className="h-3 w-3" /> {getCountdownText()}
-              </span>
-            </div>
-          </div>
-
-          {/* Map */}
-          <div className="relative">
-            {pickupPostcode && (
-              <PostcodeMapPreview
-                postcode={pickupPostcode}
-                onClick={handleNavigate}
-              />
-            )}
-          </div>
-
-          {/* Avatar overlapping map, name below */}
-          <div className="relative px-4">
-            <div className="-mt-8 mb-2">
-              <div className="ring-4 ring-card rounded-full shrink-0 inline-block">
+            <div className="relative flex items-center gap-3">
+              <div className="ring-2 ring-white/30 rounded-full shrink-0">
                 <PupilAvatar
                   name={pupilName}
                   imageUrl={pupilProfileImage}
-                  size="lg"
+                  size="md"
                 />
               </div>
-            </div>
-            <div className="mb-3">
-              <button onClick={handleViewPupil} className="font-bold text-foreground text-base truncate hover:text-primary transition-colors text-left">
-                {pupilName}
-              </button>
-              {displayLocation && (
-                <p className="text-xs text-muted-foreground truncate">{displayLocation}</p>
-              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Next Up</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                    isUrgent
+                      ? "bg-amber-400/30 text-white animate-pulse"
+                      : "bg-white/20 text-white"
+                  }`}>
+                    <Timer className="h-3 w-3" /> {getCountdownText()}
+                  </span>
+                </div>
+                <button onClick={handleViewPupil} className="font-bold text-white text-[15px] truncate hover:text-white/80 transition-colors text-left block w-full">
+                  {pupilName}
+                </button>
+                {displayLocation && (
+                  <p className="text-white/60 text-xs truncate mt-0.5">{displayLocation}</p>
+                )}
+              </div>
             </div>
           </div>
 
