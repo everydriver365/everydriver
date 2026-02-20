@@ -386,11 +386,38 @@ export function InstructorMobileHome({
                 if (h >= 12 && h < 17) return "Good Afternoon";
                 if (h >= 17 && h < 21) return "Good Evening";
                 return "Hello";
-              })()}
+              })()}{firstName ? `, ${firstName}` : ""}
             </h1>
-            <p className="text-white/80 text-[15px] mt-0.5 drop-shadow-sm">
-              {format(new Date(), "EEEE d MMMM")}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-white/80 text-[15px] drop-shadow-sm">
+                {format(new Date(), "EEEE d MMMM")}
+              </p>
+              {currentWeather && (
+                <span className="flex items-center gap-1 text-white/70 text-[13px] drop-shadow-sm">
+                  <span className="text-white/40">·</span>
+                  {(() => {
+                    const WeatherIcon = currentWeather.icon === "Sun" ? Sun
+                      : currentWeather.icon === "CloudSun" ? CloudSun
+                      : currentWeather.icon === "Cloud" ? Cloud
+                      : currentWeather.icon === "CloudRain" ? CloudRain
+                      : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
+                      : currentWeather.icon === "CloudLightning" ? CloudLightning
+                      : currentWeather.icon === "CloudFog" ? CloudFog
+                      : currentWeather.icon === "Snowflake" ? Snowflake
+                      : currentWeather.icon === "Wind" ? Wind
+                      : CloudSun;
+                    return <WeatherIcon className="h-3.5 w-3.5" />;
+                  })()}
+                  {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
+                </span>
+              )}
+            </div>
+            {displayLocation && (
+              <p className="text-white/50 text-[11px] mt-0.5 drop-shadow-sm flex items-center gap-1">
+                <MapPin className="h-2.5 w-2.5" />
+                {displayLocation}
+              </p>
+            )}
           </div>
         </div>
 
