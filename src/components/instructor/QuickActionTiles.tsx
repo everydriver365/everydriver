@@ -432,53 +432,55 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — rounded card grid with icon top-left, text below
+        // Normal view mode — matching other dashboard tiles style
         <div className="grid grid-cols-2 gap-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
             const showBadge = badgeCount > 0;
-            const style = tileStyles[index % tileStyles.length];
             const subtitle = getSubtitle(action);
+            const isFullWidth = isScheduleAction(action);
 
             return (
-              <Link key={action.id} to={action.route} className={cn("block", isScheduleAction(action) && "col-span-2")}>
+              <Link key={action.id} to={action.route} className={cn("block", isFullWidth && "col-span-2")}>
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative bg-gradient-to-r from-primary via-[hsl(218,60%,28%)] to-[hsl(218,50%,35%)] rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex items-center gap-3"
+                  whileTap={{ scale: 0.98 }}
+                  className="ios-tile bg-card shadow-sm overflow-hidden active:scale-[0.99] transition-all"
                 >
-                  {/* Icon */}
-                  <div
-                    className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : 'bg-white/20'} flex items-center justify-center overflow-hidden shrink-0`}
-                    style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
-                  >
-                    {customIconImages[action.id] ? (
-                      <img
-                        src={customIconImages[action.id]}
-                        alt={action.title}
-                        className="w-full h-full object-cover"
-                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
-                      />
-                    ) : (
-                      <Icon className="h-4 w-4 text-white" strokeWidth={1.8} />
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    {/* Icon */}
+                    <div
+                      className={`w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : 'bg-primary/10'} flex items-center justify-center overflow-hidden shrink-0`}
+                      style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                    >
+                      {customIconImages[action.id] ? (
+                        <img
+                          src={customIconImages[action.id]}
+                          alt={action.title}
+                          className="w-full h-full object-cover"
+                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '12px' }}
+                        />
+                      ) : (
+                        <Icon className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                      )}
+                    </div>
+                    {/* Title & subtitle */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                      {subtitle && (
+                        <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                      )}
+                    </div>
+                    {/* Badge */}
+                    {showBadge && (
+                      <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm shrink-0">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
                     )}
                   </div>
-                  {/* Title & subtitle */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-white leading-tight truncate">{action.title}</p>
-                    {subtitle && (
-                      <p className="text-[11px] text-white/60 leading-tight mt-0.5">{subtitle}</p>
-                    )}
-                  </div>
-                  {/* Badge */}
-                  {showBadge && (
-                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm shrink-0">
-                      {badgeCount > 9 ? "9+" : badgeCount}
-                    </span>
-                  )}
                 </motion.div>
               </Link>
             );
