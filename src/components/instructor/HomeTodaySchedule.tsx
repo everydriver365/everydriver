@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, CalendarX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { format, parse } from "date-fns";
 
@@ -44,9 +45,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         {hasLessons ? (
           <Link to="/instructor/schedule" className="block">
             <div className="flex items-start gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30">
-                <Calendar className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-              </div>
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                  {overview.firstPupilName ? overview.firstPupilName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold text-foreground">

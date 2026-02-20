@@ -9,6 +9,7 @@ interface TodayOverview {
   firstPickupLocation: string | null;
   firstPickupPostcode: string | null;
   firstLessonTime: string | null;
+  firstPupilName: string | null;
   nextLessonTime: string | null;
   nextPupilName: string | null;
 }
@@ -28,6 +29,7 @@ export function useTodayOverview(instructorId: string | undefined) {
           firstPickupLocation: null,
           firstPickupPostcode: null,
           firstLessonTime: null,
+          firstPupilName: null,
           nextLessonTime: null,
           nextPupilName: null,
         };
@@ -79,6 +81,7 @@ export function useTodayOverview(instructorId: string | undefined) {
         (firstLesson?.pupils as any)?.postcode || null;
       const firstPickupPostcode = rawPostcode && rawPostcode.toLowerCase() !== 'n/a' ? rawPostcode : null;
       const firstLessonTime = firstLesson?.start_time || null;
+      const firstPupilName = (firstLesson?.pupils as any)?.name || null;
 
       // Find next upcoming lesson (after current time)
       const upcomingLessons = lessons?.filter(l => l.start_time && l.start_time > currentTime) || [];
@@ -93,6 +96,7 @@ export function useTodayOverview(instructorId: string | undefined) {
         firstPickupLocation,
         firstPickupPostcode,
         firstLessonTime,
+        firstPupilName,
         nextLessonTime,
         nextPupilName,
       };
