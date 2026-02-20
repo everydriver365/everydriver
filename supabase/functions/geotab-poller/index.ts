@@ -204,12 +204,14 @@ Deno.serve(async (req) => {
     // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed + StatusData + FaultData in ONE request ----
     const now = new Date();
     const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
+    const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     // Diagnostic IDs we want from Geotab StatusData
     const diagnosticIds = [
       "DiagnosticFuelLevelId",
-      "DiagnosticStateOfChargeId",            // 12V battery voltage
+      "DiagnosticStateOfChargeId",            // State of Charge (%)
+      "DiagnosticBatteryVoltageId",            // 12V battery voltage (V)
       "DiagnosticEngineCoolantTemperatureId",
       "DiagnosticEngineHoursAdjustmentId",
       "DiagnosticOdometerAdjustmentId",
@@ -249,21 +251,23 @@ Deno.serve(async (req) => {
 
     const speedLimitCallCount = resolvedGeotabIds.length;
 
-    // Add StatusData calls for each device (calls N+1..2N)
+    // Add StatusData calls — one per diagnostic per device for reliable ID mapping
     for (const gid of resolvedGeotabIds) {
-      batchCalls.push({
-        method: "Get",
-        params: {
-          typeName: "StatusData",
-          search: {
-            deviceSearch: { id: gid },
-            diagnosticSearch: { id: diagnosticIds[0] }, // Will get all if we use separate calls
-            fromDate: twoMinAgo.toISOString(),
-            toDate: now.toISOString(),
+      for (const diagId of diagnosticIds) {
+        batchCalls.push({
+          method: "Get",
+          params: {
+            typeName: "StatusData",
+            search: {
+              deviceSearch: { id: gid },
+              diagnosticSearch: { id: diagId },
+              fromDate: thirtyMinAgo.toISOString(),
+              toDate: now.toISOString(),
+            },
+            resultsLimit: 5,
           },
-          resultsLimit: 50,
-        },
-      });
+        });
+      }
     }
 
     // Add FaultData call for all devices (single call at end)
@@ -297,19 +301,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // StatusData results: one per device, starting after speed limit calls
+    // StatusData results: diagnosticIds.length calls per device, starting after speed limit calls
     const statusDataOffset = 1 + speedLimitCallCount;
     const deviceDiagnostics = new Map<string, Record<string, number>>();
     for (let i = 0; i < resolvedGeotabIds.length; i++) {
-      const sdResults: any[] = batchResults[statusDataOffset + i] || [];
       const diags: Record<string, number> = {};
-      for (const sd of sdResults) {
-        if (sd.diagnostic?.id && sd.data != null) {
-          // Keep latest value per diagnostic
-          diags[sd.diagnostic.id] = sd.data;
+      for (let j = 0; j < diagnosticIds.length; j++) {
+        const callIdx = statusDataOffset + i * diagnosticIds.length + j;
+        const sdResults: any[] = batchResults[callIdx] || [];
+        if (sdResults.length > 0) {
+          // Use the last (most recent) value
+          const latest = sdResults[sdResults.length - 1];
+          if (latest.data != null) {
+            diags[diagnosticIds[j]] = latest.data;
+          }
         }
       }
       if (Object.keys(diags).length > 0) {
+        console.log("[GeotabPoller] Diagnostics for device", resolvedGeotabIds[i], ":", JSON.stringify(diags));
         deviceDiagnostics.set(resolvedGeotabIds[i], diags);
       }
     }
@@ -364,7 +373,13 @@ Deno.serve(async (req) => {
         diagnosticsUpdate.last_fuel_percent = Math.round(diags["DiagnosticFuelLevelId"] * 100) / 100;
       }
       if (diags["DiagnosticStateOfChargeId"] != null) {
+        // State of Charge is a percentage (0-100)
+        diagnosticsUpdate.last_battery_percent = Math.round(diags["DiagnosticStateOfChargeId"]);
         diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100;
+      }
+      // Use true 12V battery voltage if available
+      if (diags["DiagnosticBatteryVoltageId"] != null) {
+        diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticBatteryVoltageId"] * 100) / 100;
       }
       if (diags["DiagnosticEngineCoolantTemperatureId"] != null) {
         diagnosticsUpdate.last_coolant_temp_c = Math.round(diags["DiagnosticEngineCoolantTemperatureId"] * 10) / 10;
@@ -413,6 +428,17 @@ Deno.serve(async (req) => {
           ...diagnosticsUpdate,
         })
         .eq("id", device.id);
+
+      // Write battery history if we have a percent value
+      const batteryPct = diagnosticsUpdate.last_battery_percent as number | undefined;
+      if (batteryPct != null) {
+        const { error: battHistErr } = await supabase.from("gps_battery_history").insert({
+          device_id: device.id,
+          instructor_id: device.instructor_id,
+          battery_percent: batteryPct,
+        });
+        if (battHistErr) console.error("[GeotabPoller] Battery history insert error:", battHistErr.message);
+      }
 
       // If device has an active session, record GPS point for route history
       const { data: deviceRow } = await supabase
