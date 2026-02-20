@@ -1,74 +1,75 @@
 
-## Show Fault Code Meanings
 
-### Problem
-Currently, fault codes from Geotab are stored with raw values like `"b9"` and `"Unknown fault"` as the description. The Geotab API returns minimal metadata, so we need to properly format the DTC codes and provide human-readable descriptions.
+## Remove Border Radius from All Tiles on Instructor Mobile App
 
-### Solution
+This change will remove rounded corners from all card/tile elements across the instructor mobile app and add a left-side accent border (primary color) to maintain visual hierarchy.
 
-**1. Improve fault code formatting in the poller** (`supabase/functions/geotab-poller/index.ts`)
+### Scope of Changes
 
-Update the FaultData processing (lines 330-340) to:
-- Map the Geotab `controller.name` to the standard OBD-II prefix: **P** (Powertrain), **B** (Body), **C** (Chassis), **U** (Network/Communication)
-- Format the raw code as a proper 4-digit hex DTC (e.g., raw `"b9"` becomes `"P00B9"`)
-- Add a lookup table of ~60 common OBD-II fault codes with plain-English descriptions (e.g., `P0301` = "Cylinder 1 misfire detected")
-- Fall back to the Geotab-provided name if the code isn't in our lookup table, and only show "Unknown fault" as a last resort
+The following files contain tiles/cards that need updating:
 
-**2. Update the UI to display code + meaning together**
+**1. PupilCardStack.tsx** (Pupil list + expanded profile)
+- Collapsed card: already has `rounded-none` + `border-l-primary` (done previously)
+- Expanded profile sections: `rounded-2xl` and `rounded-[20px]` on ~10 inner cards (hero, stats, test date, details, notes, lesson history, driving sessions, payments, tools grid, status/admin)
+- Tools grid icon backgrounds: `rounded-2xl` on the 14x14 icon containers
+- Balance badge: `rounded-lg`
+- Payment due warning: `rounded-2xl`
 
-In both `CheckEngineBanner.tsx` and `EnhancedDeviceStatusCard.tsx`:
-- The fault code badge already shows (added previously) -- no change needed there
-- The description text already renders `fault.description` -- once the poller writes better descriptions, these will show automatically
+**2. NewMobileScheduleView.tsx** (Schedule lesson cards)
+- Lesson cards via `renderCustomCollapsed`: `rounded-[20px]` container
+- Empty state card: `rounded-[20px]`
+- Add button: `rounded-xl`
+
+**3. ExpandableLessonCard.tsx** (Wrapper for schedule cards)
+- Outer container: `rounded-lg`
+- Inner card: `rounded-lg`
+
+**4. HomeMoneyOverview.tsx** (Home page money tiles)
+- Loading skeleton: `rounded-xl`
+- Money cards: `rounded-xl`
+
+**5. HomeTodaySchedule.tsx** (Home page schedule tile)
+- Loading skeleton: `rounded-2xl`
+- Main card: `rounded-2xl`
+
+**6. AppStyleHomeView.tsx** (Home grid tile icons)
+- Icon containers: `rounded-[16px]`
+- Icon images: `rounded-[16px]`
+
+**7. InstructorMobileHome.tsx** (Home page hero overview card)
+- Today's Overview card: `rounded-2xl`
+
+**8. TodayOverviewStrip.tsx** (Today at a glance strip)
+- Strip container: `rounded-xl`
+
+**9. ScheduleDayTabs.tsx** (Day selector pills)
+- Day number circles: `rounded-xl`
+
+**10. NextUpTile.tsx** (Next lesson tile on home)
+- Info badges: `rounded-xl`
+- Action buttons: `rounded-xl`
+
+**11. VerticalTimelineView.tsx** (Timeline lesson cards)
+- Lesson cards: `rounded-xl`
+- Travel time info: `rounded-lg`
+
+**12. NextLessonCard.tsx** (Swipeable next lesson card)
+- Card containers: `rounded-xl`
+
+### What Will Change
+
+For each tile/card element listed above:
+- Replace `rounded-xl`, `rounded-2xl`, `rounded-[20px]`, `rounded-[16px]`, `rounded-lg` with `rounded-none`
+- Add `border-l-4 border-l-primary` accent where it doesn't already exist (on main container cards only, not on small badges/buttons)
+
+### What Will NOT Change
+- Buttons will keep their rounding (action buttons like Call, Email, Navigate) as these are interactive elements, not tiles
+- Small badges/pills (lesson type badges, status pills) keep their rounding
+- Avatars keep their circular shape
+- Sheet/dialog components keep their rounding
+- The day selector pills in ScheduleDayTabs keep their shape (these are interactive selectors, not content tiles)
 
 ### Technical Details
 
-**Edge function change** (`supabase/functions/geotab-poller/index.ts`):
+All changes are CSS class swaps in Tailwind. No logic, state, or functionality changes. Approximately 12 files will be modified with straightforward `rounded-*` to `rounded-none` replacements on card containers, plus adding `border-l-4 border-l-primary` to cards that don't already have it.
 
-Add a DTC lookup map and formatting helper before the fault processing loop:
-
-```typescript
-// Common OBD-II DTC descriptions
-const DTC_DESCRIPTIONS: Record<string, string> = {
-  "P0100": "Mass air flow sensor circuit malfunction",
-  "P0101": "Mass air flow sensor range/performance",
-  "P0171": "System too lean (Bank 1)",
-  "P0172": "System too rich (Bank 1)",
-  "P0300": "Random/multiple cylinder misfire",
-  "P0301": "Cylinder 1 misfire detected",
-  "P0420": "Catalyst system efficiency below threshold",
-  "P0442": "Evaporative emission system leak (small)",
-  "P0455": "Evaporative emission system leak (large)",
-  "P0500": "Vehicle speed sensor malfunction",
-  // ... ~50 more common codes
-};
-
-function formatDTC(rawCode: string, controllerName: string): string {
-  const prefix = controllerName?.toLowerCase().includes("body") ? "B"
-    : controllerName?.toLowerCase().includes("chassis") ? "C"
-    : controllerName?.toLowerCase().includes("network") ? "U"
-    : "P"; // default Powertrain
-  const hex = parseInt(rawCode, 16);
-  if (isNaN(hex)) return rawCode.toUpperCase();
-  return prefix + hex.toString(16).toUpperCase().padStart(4, "0");
-}
-```
-
-Then update the fault mapping:
-
-```typescript
-const dtcCode = formatDTC(fault.code || fault.id, fault.controller?.name);
-deviceFaults.get(faultDeviceId)!.push({
-  code: dtcCode,
-  description: DTC_DESCRIPTIONS[dtcCode] 
-    || fault.name 
-    || fault.diagnostic?.name 
-    || "Unrecognised fault - consult mechanic",
-  severity: fault.failureModeId?.name || fault.severity || "Unknown",
-  source: fault.controller?.name || fault.source || "ECU",
-});
-```
-
-**No UI changes needed** -- both `CheckEngineBanner` and `EnhancedDeviceStatusCard` already render `fault.code` as a badge and `fault.description` as text. Once the poller writes properly formatted codes and descriptions, the UI will display them automatically.
-
-### Files to modify
-- `supabase/functions/geotab-poller/index.ts` -- Add DTC formatter, lookup table, and update fault processing
