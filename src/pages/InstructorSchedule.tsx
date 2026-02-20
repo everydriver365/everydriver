@@ -174,13 +174,6 @@ export default function InstructorSchedule() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              size="sm"
-              className="h-8 w-8 p-0 bg-primary hover:bg-primary/90 text-white"
-              onClick={() => setFabLessonSheetOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
