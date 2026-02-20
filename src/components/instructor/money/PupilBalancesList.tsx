@@ -71,7 +71,7 @@ export function PupilBalancesList({ pupils, limit = 5 }: PupilBalancesListProps)
             <Link
               to={`/instructor/pupils?pupil=${pupil.id}`}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-xl",
+                "flex items-center gap-3 p-3 rounded-none",
                 "bg-card/50 hover:bg-card/80 transition-colors",
                 "border border-border/50"
               )}
