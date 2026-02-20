@@ -72,6 +72,7 @@ interface ExpandableLessonCardProps {
   cardColor?: string;
   onColorChange?: (color: string) => void;
   onDelete?: (lesson: ScheduledLesson) => void;
+  renderCustomCollapsed?: React.ReactNode;
 }
 
 const colorPresets = [
@@ -96,7 +97,8 @@ export function ExpandableLessonCard({
   sendingMessage,
   cardColor = "bg-card",
   onColorChange,
-  onDelete
+  onDelete,
+  renderCustomCollapsed
 }: ExpandableLessonCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -218,31 +220,32 @@ export function ExpandableLessonCard({
           </Popover>
         )}
 
-        {/* Main Card - Compact Layout */}
+        {/* Main Card - Collapsed View */}
         <button
           onClick={() => !isDragging && setIsExpanded(!isExpanded)}
-          className="w-full text-left px-3 py-2 flex gap-3 items-center"
+          className="w-full text-left"
         >
-          {/* Time - Clear and readable */}
-          <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>
-
-          {/* Content Column */}
-          <div className="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
-            <h3 className="font-medium text-sm text-foreground truncate">
-              {lesson.pupil?.name || "Unknown"}
-            </h3>
-            {isRecurring && (
-              <Repeat className="h-3 w-3 text-primary shrink-0" />
-            )}
-            <span className="text-xs text-muted-foreground shrink-0">{lesson.duration_minutes}m</span>
-            {getPaymentBadge()}
-          </div>
-
-          {/* Expand Indicator */}
-          <ChevronDown className={cn(
-            "h-4 w-4 text-muted-foreground shrink-0 transition-transform",
-            isExpanded && "rotate-180"
-          )} />
+          {renderCustomCollapsed ? (
+            renderCustomCollapsed
+          ) : (
+            <div className="px-3 py-2 flex gap-3 items-center">
+              <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>
+              <div className="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
+                <h3 className="font-medium text-sm text-foreground truncate">
+                  {lesson.pupil?.name || "Unknown"}
+                </h3>
+                {isRecurring && (
+                  <Repeat className="h-3 w-3 text-primary shrink-0" />
+                )}
+                <span className="text-xs text-muted-foreground shrink-0">{lesson.duration_minutes}m</span>
+                {getPaymentBadge()}
+              </div>
+              <ChevronDown className={cn(
+                "h-4 w-4 text-muted-foreground shrink-0 transition-transform",
+                isExpanded && "rotate-180"
+              )} />
+            </div>
+          )}
         </button>
 
         {/* Expanded Content */}
