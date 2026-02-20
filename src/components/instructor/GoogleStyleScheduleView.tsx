@@ -382,16 +382,6 @@ export function GoogleStyleScheduleView({
               <Palette className="h-4 w-4" />
             </Button>
           )}
-          {onAddEvent && (
-            <Button
-              size="sm"
-              onClick={() => onAddEvent()}
-              className="h-8 px-3"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline ml-1">Add</span>
-            </Button>
-          )}
         </div>
       </div>
       
