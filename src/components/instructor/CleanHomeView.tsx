@@ -30,7 +30,7 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+    <div className="bg-card rounded-[22px] border border-border/50 p-4 space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
         {icon}
       </div>
