@@ -119,7 +119,7 @@ export default function InstructorPay() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
+          className="rounded-none border border-border border-l-4 border-l-primary p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -151,7 +151,7 @@ export default function InstructorPay() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-card rounded-xl border p-3 text-center"
+            className="bg-card rounded-none border border-border border-l-4 border-l-primary p-3 text-center"
           >
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-1">
               <Calendar className="h-4 w-4 text-primary" />
@@ -163,7 +163,7 @@ export default function InstructorPay() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-card rounded-xl border p-3 text-center"
+            className="bg-card rounded-none border border-border border-l-4 border-l-primary p-3 text-center"
           >
             <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-1">
               <History className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -175,7 +175,7 @@ export default function InstructorPay() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-card rounded-xl border p-3 text-center"
+            className="bg-card rounded-none border border-border border-l-4 border-l-primary p-3 text-center"
           >
             <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-1">
               <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
@@ -190,7 +190,7 @@ export default function InstructorPay() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="bg-card rounded-xl border p-4"
+          className="bg-card rounded-none border border-border border-l-4 border-l-primary p-4"
         >
           <WeeklyComparisonBar 
             thisWeek={earnings?.thisWeek || 0} 
@@ -205,7 +205,7 @@ export default function InstructorPay() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
+              className="bg-card rounded-none border border-border border-l-4 border-l-primary p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -224,7 +224,7 @@ export default function InstructorPay() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
+              className="bg-card rounded-none border border-border border-l-4 border-l-primary p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -245,7 +245,7 @@ export default function InstructorPay() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card rounded-xl border"
+          className="bg-card rounded-none border border-border border-l-4 border-l-primary"
         >
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -275,7 +275,7 @@ export default function InstructorPay() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="bg-card rounded-xl border"
+          className="bg-card rounded-none border border-border border-l-4 border-l-primary"
         >
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold text-sm flex items-center gap-2">
