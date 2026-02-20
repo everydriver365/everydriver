@@ -62,6 +62,7 @@ import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
 import MobileHomeRedesignDemo2 from "./pages/MobileHomeRedesignDemo2";
 import MobileHomeIOSDemo from "./pages/MobileHomeIOSDemo";
 import HeaderRedesignDemo from "./pages/HeaderRedesignDemo";
+import IOSHomeLayoutsDemo from "./pages/IOSHomeLayoutsDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -317,6 +318,7 @@ const App = () => (
               <Route path="/instructor-nohero-ios-demo" element={<InstructorNoHeroIOSDemo />} />
               <Route path="/instructor-ios-demo-2" element={<InstructorIOSDemo2 />} />
               <Route path="/instructor-ios-demo-3" element={<InstructorIOSDemo3 />} />
+              <Route path="/ios-home-layouts-demo" element={<IOSHomeLayoutsDemo />} />
               
 
 
