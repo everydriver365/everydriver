@@ -70,6 +70,7 @@ import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
 import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";
+import { CleanHomeView } from "@/components/instructor/CleanHomeView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -340,6 +341,13 @@ export function InstructorMobileHome({
           isTileEditMode={isTileEditMode}
           onTileEditModeChange={setIsTileEditMode}
           authInstructorId={authInstructor?.id}
+        />
+      ) : layoutStyle === "clean" ? (
+        <CleanHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+          todayOverview={todayOverview}
+          todayLessons={todayLessons}
         />
       ) : (
       <>
