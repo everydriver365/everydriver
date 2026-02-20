@@ -1,57 +1,47 @@
 
-# 20 No-Hero Mobile Homepage Designs — Demo Page
+# 20 More iOS-Style Instructor Homepage Designs — Demo Page 3
 
 ## Overview
 
-Create a new demo page at `/instructor-nohero-demo` that showcases 20 different mobile instructor homepage layouts, all without a hero image. Each design is rendered in a phone-sized preview frame so you can scroll through and compare them side by side.
+Create a new demo page at `/instructor-ios-demo-3` showcasing 20 fresh iOS-inspired mobile homepage layouts. Uses the same carousel + thumbnail navigation pattern established in the previous demo pages, with all the same mock data and icon assets.
 
-## Data Used
+## The 20 New Design Concepts
 
-Each design variant will use the same mock data already established in `InstructorMobileDemo.tsx`:
-- Next lesson details (pupil name, time, postcode, ETA)
-- Today's stats (lessons, hours, earnings)
-- Weekly progress (hours vs goal, progress bar)
-- Quick action icon grid (4-column, using existing custom icon images)
-- Badge counts (messages, jobs)
-
-## The 20 Design Concepts
-
-1. **Stats Bar + Grid** — Three stat pills at top (lessons / hours / earnings), then straight into 4-col icon grid
-2. **Greeting Card** — "Good morning, Kenneth" card with today's date, inline stats row, then grid below
-3. **Progress Ring** — Large circular progress ring (weekly hours) centered at top, stats below, then grid
-4. **Next Lesson Hero** — Next lesson card is the hero (full-width, prominent pupil avatar, time, location), grid below
-5. **Compact Dashboard** — Two-row stat cards (2x2 grid: lessons, hours, earnings, weekly %), then icon grid
-6. **Timeline Strip** — Vertical timeline of today's lessons at top (compact), then icon grid
-7. **Gradient Banner** — Coloured gradient strip with greeting + weekly summary text, no image, grid below
-8. **Earnings Focus** — Big earnings number centred ("£240 today"), small supporting stats, then grid
-9. **Map Peek** — Small inline map snippet (static placeholder) showing next pickup location, then grid
-10. **Minimal Clean** — Just the greeting, a thin progress bar, and the icon grid — nothing else
-11. **Card Stack** — Stacked cards: Next Lesson card, Weekly Progress card, then grid
-12. **Split Stats** — Left half: big hour count, right half: big earnings count, full-width progress bar, grid
-13. **Tabbed Sections** — Tabs at top (Today / Week / Month) with stats switching, grid always visible below
-14. **Weather + Stats** — Weather condition banner (icon + temp + driving tip), stats row, grid
-15. **Agenda List** — Today's lessons as a compact list (time + name), then grid
-16. **Gamified** — XP-style progress bar, streak counter, achievement badges, then grid
-17. **Pill Navigation** — Horizontally scrollable pill buttons (Today, Pupils, Money, etc.) at top, grid below
-18. **Quote + Stats** — Motivational quote banner, then stats strip, then grid
-19. **Big Avatar** — Large instructor profile circle at top with name + greeting, stats row, grid
-20. **Notification Centre** — Stacked notification cards (unread messages, pending jobs, upcoming lesson), then grid
+1. **Spotlight Search** — iOS Spotlight-style search bar at top, recent/suggested actions below, then icon grid
+2. **Widget Board** — Three differently-sized iOS widget tiles (small, medium, large) arranged in a masonry layout
+3. **Lock Screen** — iOS lock screen aesthetic: time display, inline notifications stack, quick actions at bottom
+4. **Focus Mode** — "Driving Focus" banner showing only driving-relevant info (next pupil, route, fuel), simplified grid
+5. **App Library** — Auto-categorised icon groups (Teaching, Finance, Vehicle, Admin) with mini 2x2 previews per category
+6. **Stacked Notifications** — Grouped notification cards (like iOS Notification Centre) with lesson/payment/message groups
+7. **Today View** — iOS Today screen with date header, weather widget, schedule widget, stats widget stacked vertically
+8. **Siri Suggestions** — "Suggested for you" section with context-aware shortcuts, followed by full grid
+9. **Health Dashboard** — Apple Health-inspired layout: large summary ring, category cards for hours/earnings/pupils
+10. **Maps Card** — Apple Maps-style card at top with next pickup preview, ETA pill, and action buttons row
+11. **Wallet Pass** — Next lesson styled as an Apple Wallet pass/card with barcode aesthetic, stats below
+12. **Journal Entry** — Apple Journal-inspired daily recap card with photo placeholder, stats, and reflections prompt
+13. **Action Button Menu** — iOS 17 Action Button radial menu at top for quick actions, content below
+14. **Standby Mode** — Landscape-inspired dual-panel: clock + next lesson on one side, stats on the other (portrait adapted)
+15. **Photo Memories** — "Memories" style header with gradient text overlay, pupil stats as a photo grid below
+16. **Contact Card** — Next pupil displayed as an iOS contact card (large monogram, phone/message buttons), grid below
+17. **Live Activities Bar** — Persistent live activity bar at top (next lesson countdown), content below
+18. **Shortcuts Automation** — iOS Shortcuts-style cards showing automated workflows (log hours, send reminders), then grid
+19. **Screen Time** — Screen Time-inspired bar chart for daily teaching hours, category breakdown, then grid
+20. **Apple Music Now Playing** — Music player-inspired layout: large "album art" (pupil avatar), progress bar (lesson progress), controls row
 
 ## Technical Details
 
-### New file: `src/pages/InstructorNoHeroDemo.tsx`
+### New file: `src/pages/InstructorIOSDemo3.tsx`
 
-- Single page component rendering 20 phone mockup frames in a responsive grid (2-3 columns on desktop, 1 on mobile)
-- Each frame is a `div` with `w-[375px] h-[700px] overflow-y-auto rounded-3xl border shadow` to simulate a phone screen
-- All designs use mock data (no live queries needed for the demo)
-- Reuses existing icon image imports and the `customIconImages` mapping
-- Each variant is a small self-contained component (e.g. `DesignVariant1`, `DesignVariant2`, etc.) within the file
-- Uses Tailwind for all styling, framer-motion for subtle animations
+- Follows exact same structure as `InstructorIOSDemo2.tsx`: carousel with arrow navigation, thumbnail gallery, phone frame
+- Reuses same mock data object, icon imports, helper components (Card, Row, SectionLabel, IconGrid, Ring, StatPill)
+- Same iOS colour constants (BG #f2f2f7, CARD #ffffff, system blue/green/orange/red/purple/teal/indigo/pink)
+- Each design is a self-contained component (`Design1` through `Design20`)
+- Uses framer-motion for transitions between variants
 
 ### Route addition in `src/App.tsx`
 
-- Import the new page and add route: `/instructor-nohero-demo`
+- Add lazy import and route: `/instructor-ios-demo-3`
 
-### No database or backend changes required
+### No database or backend changes
 
-This is purely a frontend demo page for visual comparison.
+Purely a frontend demo page.
