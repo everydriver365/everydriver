@@ -351,18 +351,8 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* Hero Image — full bleed */}
-      <div className="w-full h-[38vh] min-h-[220px] max-h-[320px] overflow-hidden relative">
-        <img
-          src={personalHeroUrl || content?.hero_image_url || instructorHeroImg}
-          alt="Hero"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
-
-      {/* Gradient Overlap Card */}
-      <div className="relative -mt-10 mx-4">
+      {/* Greeting Card */}
+      <div className="mx-4 mt-4">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
