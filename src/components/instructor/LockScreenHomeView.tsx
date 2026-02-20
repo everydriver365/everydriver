@@ -27,7 +27,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
-import { CheckEngineBanner } from "@/components/instructor/CheckEngineBanner";
+
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
@@ -180,10 +180,6 @@ export function LockScreenHomeView({
           </FrostedCard>
         )}
 
-        {/* Check Engine */}
-        <FrostedCard className="overflow-hidden">
-          <CheckEngineBanner />
-        </FrostedCard>
 
         {/* Tracker reminder */}
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
