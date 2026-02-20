@@ -163,7 +163,7 @@ export function CleanHomeView({
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="bg-card rounded-2xl p-3.5 text-center flex flex-col items-center gap-1.5 active:scale-[0.95] active:bg-muted/50 transition-all shadow-sm"
+              className="bg-card rounded-[22px] p-3.5 text-center flex flex-col items-center gap-1.5 active:scale-[0.95] active:bg-muted/50 transition-all shadow-sm aspect-square justify-center"
             >
               <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center ${item.bg}`}>
                 <item.icon className={`h-5 w-5 ${item.color}`} strokeWidth={1.8} />
