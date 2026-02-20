@@ -126,55 +126,68 @@ export default function InstructorSchedule() {
     <InstructorPortalLayout>
       <div className="space-y-4 h-full flex flex-col">
         <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-primary" />
-            </div>
-            <h1 className="text-xl font-bold">Schedule</h1>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={handleSync}
-              disabled={isSyncing}
-              title="Sync Google Calendar"
-            >
-              <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5 h-8">
-                  {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
-                  {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
-                  {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
-                  <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
-                  <ChevronDown className="h-3 w-3 opacity-50" />
+          {isMobile ? (
+            <>
+              <div className="w-8" />
+              <h1 className="text-lg font-bold text-foreground">Schedule</h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleSync}
+                disabled={isSyncing}
+                title="Sync Google Calendar"
+              >
+                <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-primary" />
+                </div>
+                <h1 className="text-xl font-bold">Schedule</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  title="Sync Google Calendar"
+                >
+                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
-                <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
-                  <List className="h-4 w-4" />
-                  List
-                  {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
-                  <CalendarDays className="h-4 w-4" />
-                  Schedule
-                  {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Calendar
-                  {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-          </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                      {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
+                      {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
+                      {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
+                      <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
+                    <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
+                      <List className="h-4 w-4" /> List
+                      {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
+                      <CalendarDays className="h-4 w-4" /> Schedule
+                      {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
+                      <Calendar className="h-4 w-4" /> Calendar
+                      {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </>
+          )}
         </div>
 
 

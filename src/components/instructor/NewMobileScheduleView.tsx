@@ -1,20 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday } from "date-fns";
-import { Calendar, Loader2, AlertCircle, Plus, List, GitBranch } from "lucide-react";
+import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ScheduleDayTabs } from "./ScheduleDayTabs";
@@ -23,40 +12,7 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
-import { VerticalTimelineView } from "./VerticalTimelineView";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
-
-// Decorative tyre track SVG pattern
-function TyreTrackPattern() {
-  return (
-    <svg
-      className="absolute right-0 top-0 h-full w-32 md:w-48 opacity-[0.05] pointer-events-none text-primary"
-      viewBox="0 0 200 600"
-      preserveAspectRatio="xMaxYMid slice"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Left track */}
-      <g>
-        {Array.from({ length: 20 }).map((_, i) => (
-          <g key={`left-${i}`} transform={`translate(40, ${i * 30})`}>
-            <polygon points="0,0 25,8 25,18 0,10" />
-            <polygon points="30,0 55,8 55,18 30,10" />
-          </g>
-        ))}
-      </g>
-      {/* Right track */}
-      <g>
-        {Array.from({ length: 20 }).map((_, i) => (
-          <g key={`right-${i}`} transform={`translate(110, ${i * 30 + 15})`}>
-            <polygon points="0,0 25,8 25,18 0,10" />
-            <polygon points="30,0 55,8 55,18 30,10" />
-          </g>
-        ))}
-      </g>
-    </svg>
-  );
-}
 
 interface ScheduledLesson {
   id: string;
@@ -71,7 +27,6 @@ interface ScheduledLesson {
   prepaid_hours_used: number;
   amount_due: number;
   notes: string | null;
-  card_color?: string;
   pupil: {
     id: string;
     name: string;
@@ -87,6 +42,28 @@ interface NewMobileScheduleViewProps {
   instructorId: string;
 }
 
+const courseTypeLabels: Record<string, string> = {
+  standard: "Standard",
+  test_prep: "Test Prep",
+  mock_test: "Mock Test",
+  motorway: "Motorway",
+  refresher: "Refresher",
+  intensive: "Intensive",
+  first_lesson: "First Lesson",
+  pass_plus: "Pass Plus",
+};
+
+const lessonTypeColors: Record<string, { border: string; badge: string }> = {
+  test_prep: { border: "border-l-amber-400", badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" },
+  standard: { border: "border-l-blue-400", badge: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" },
+  intensive: { border: "border-l-purple-400", badge: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400" },
+  motorway: { border: "border-l-emerald-400", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" },
+  mock_test: { border: "border-l-rose-400", badge: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400" },
+  refresher: { border: "border-l-cyan-400", badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400" },
+  first_lesson: { border: "border-l-green-400", badge: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400" },
+  pass_plus: { border: "border-l-indigo-400", badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400" },
+};
+
 export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewProps) {
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +74,6 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
-  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
 
   useEffect(() => {
     fetchLessons();
@@ -111,27 +87,10 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id,
-          lesson_date,
-          start_time,
-          duration_minutes,
-          lesson_type,
-          pickup_location,
-          pickup_postcode,
-          status,
-          payment_status,
-          prepaid_hours_used,
-          amount_due,
-          notes,
-          pupil:pupils(
-            id,
-            name,
-            phone,
-            address,
-            postcode,
-            prepaid_hours,
-            account_balance
-          )
+          id, lesson_date, start_time, duration_minutes, lesson_type,
+          pickup_location, pickup_postcode, status, payment_status,
+          prepaid_hours_used, amount_due, notes,
+          pupil:pupils(id, name, phone, address, postcode, prepaid_hours, account_balance)
         `)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", dateStr)
@@ -142,211 +101,142 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       
       const transformedData = (data || []).map((lesson: any) => ({
         ...lesson,
-        pupil: lesson.pupil || {
-          id: "",
-          name: "Unknown",
-          phone: null,
-          address: "",
-          postcode: "",
-          prepaid_hours: 0,
-          account_balance: 0
-        }
+        pupil: lesson.pupil || { id: "", name: "Unknown", phone: null, address: "", postcode: "", prepaid_hours: 0, account_balance: 0 }
       }));
       
       setLessons(transformedData);
     } catch (error) {
       console.error("Error fetching lessons:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load schedule",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to load schedule", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  // --- All existing handlers preserved ---
   const handleNavigate = (address: string, postcode: string) => {
     const query = encodeURIComponent(`${address}, ${postcode}`);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const url = isIOS 
-      ? `maps://maps.apple.com/?daddr=${query}`
-      : `geo:0,0?q=${query}`;
+    const url = isIOS ? `maps://maps.apple.com/?daddr=${query}` : `geo:0,0?q=${query}`;
     const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${query}`;
-    
     window.location.href = url;
-    setTimeout(() => {
-      window.open(fallbackUrl, "_blank");
-    }, 500);
+    setTimeout(() => { window.open(fallbackUrl, "_blank"); }, 500);
   };
 
   const handleCall = (phone: string | null) => {
-    if (!phone) {
-      toast({
-        title: "No phone number",
-        description: "This pupil doesn't have a phone number on file",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!phone) { toast({ title: "No phone number", description: "This pupil doesn't have a phone number on file", variant: "destructive" }); return; }
     window.location.href = `tel:${phone}`;
   };
 
   const handleText = (phone: string | null) => {
-    if (!phone) {
-      toast({
-        title: "No phone number",
-        description: "This pupil doesn't have a phone number on file",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!phone) { toast({ title: "No phone number", description: "This pupil doesn't have a phone number on file", variant: "destructive" }); return; }
     window.location.href = `sms:${phone}`;
   };
 
   const handleOnWay = async (lesson: ScheduledLesson, delayMinutes?: number) => {
-    if (!lesson.pupil?.phone) {
-      toast({
-        title: "No phone number",
-        description: "This pupil doesn't have a phone number on file",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (!lesson.pupil?.phone) { toast({ title: "No phone number", description: "This pupil doesn't have a phone number on file", variant: "destructive" }); return; }
     setSendingMessage(lesson.id);
-    
     const firstName = (lesson.pupil?.name || "").split(" ")[0];
     let message: string;
-    
-    if (delayMinutes === -1) {
-      message = `Hi ${firstName}, I'll call you as soon as I can!`;
-    } else if (delayMinutes === -2) {
-      message = `Hi ${firstName}, I'm on my way to you now!`;
-    } else if (delayMinutes) {
-      message = `Hi ${firstName}, I'm on my way! I'll be with you in about ${delayMinutes} minutes.`;
-    } else {
-      message = `Hi ${firstName}, I'm on my way to you!`;
-    }
-    
-    const encodedMessage = encodeURIComponent(message);
-    window.location.href = `sms:${lesson.pupil.phone}?body=${encodedMessage}`;
-    
+    if (delayMinutes === -1) message = `Hi ${firstName}, I'll call you as soon as I can!`;
+    else if (delayMinutes === -2) message = `Hi ${firstName}, I'm on my way to you now!`;
+    else if (delayMinutes) message = `Hi ${firstName}, I'm on my way! I'll be with you in about ${delayMinutes} minutes.`;
+    else message = `Hi ${firstName}, I'm on my way to you!`;
+    window.location.href = `sms:${lesson.pupil.phone}?body=${encodeURIComponent(message)}`;
     setSendingMessage(null);
   };
 
-  const handleCancelLesson = (lesson: ScheduledLesson) => {
-    setSelectedLesson(lesson);
-    setCancelDialogOpen(true);
-  };
-
-  const handleRescheduleLesson = (lesson: ScheduledLesson) => {
-    setSelectedLesson(lesson);
-    setRescheduleDialogOpen(true);
-  };
-
-  const handleDeleteLesson = (lesson: ScheduledLesson) => {
-    // Use the cancel flow for deletion (same result)
-    setSelectedLesson(lesson);
-    setCancelDialogOpen(true);
-  };
+  const handleCancelLesson = (lesson: ScheduledLesson) => { setSelectedLesson(lesson); setCancelDialogOpen(true); };
+  const handleRescheduleLesson = (lesson: ScheduledLesson) => { setSelectedLesson(lesson); setRescheduleDialogOpen(true); };
+  const handleDeleteLesson = (lesson: ScheduledLesson) => { setSelectedLesson(lesson); setCancelDialogOpen(true); };
 
   const handleColorChange = (lessonId: string, color: string) => {
     setLessonColors(prev => ({ ...prev, [lessonId]: color }));
-    // Optionally persist to localStorage
     const stored = JSON.parse(localStorage.getItem('lessonColors') || '{}');
     stored[lessonId] = color;
     localStorage.setItem('lessonColors', JSON.stringify(stored));
   };
 
-  // Load persisted colors on mount
   useEffect(() => {
     const stored = localStorage.getItem('lessonColors');
-    if (stored) {
-      try {
-        setLessonColors(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse lesson colors:', e);
-      }
-    }
+    if (stored) { try { setLessonColors(JSON.parse(stored)); } catch (e) { console.error(e); } }
   }, []);
 
-  const lessonCount = lessons.length;
-
-  // Memoize lessons for travel time calculation to prevent infinite loop
   const lessonsForTravel = useMemo(
-    () =>
-      lessons.map((l) => ({
-        id: l.id,
-        start_time: l.start_time,
-        duration_minutes: l.duration_minutes,
-        pickup_postcode: l.pickup_postcode,
-        pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined,
-      })),
+    () => lessons.map((l) => ({ id: l.id, start_time: l.start_time, duration_minutes: l.duration_minutes, pickup_postcode: l.pickup_postcode, pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined })),
     [lessons]
   );
-
-  // Get travel times between lessons
   const { getTravelTime } = useLessonTravelTimes(lessonsForTravel);
 
-  return (
-    <div className="relative space-y-4 overflow-hidden">
-      <TyreTrackPattern />
-      {/* Day Tabs */}
-      <ScheduleDayTabs 
-        selectedDate={selectedDate} 
-        onSelectDate={setSelectedDate} 
-      />
+  // Summary calculations
+  const lessonCount = lessons.length;
+  const totalScheduled = lessons.reduce((sum, l) => sum + (l.amount_due || 0), 0);
 
-      {/* Header with Lesson Count */}
+  const formatTime = (timeStr: string) => {
+    const [h, m] = timeStr.split(":");
+    return `${h}:${m}`;
+  };
+
+  const getEndTime = (startTime: string, durationMinutes: number) => {
+    const [h, m] = startTime.split(":").map(Number);
+    const endMin = h * 60 + m + durationMinutes;
+    return `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
+  };
+
+  const getPaymentLabel = (lesson: ScheduledLesson) => {
+    if (lesson.payment_status === "paid") return { text: "Paid", color: "text-emerald-600" };
+    return { text: "Unpaid", color: "text-amber-500" };
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Week Day Tabs */}
+      <ScheduleDayTabs selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+
+      {/* Divider */}
+      <div className="border-t border-border" />
+
+      {/* Summary Row */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">
-            {format(selectedDate, "EEEE")}
-          </h2>
-          <span className="text-sm text-muted-foreground">
+          <h2 className="text-lg font-bold text-foreground">
             {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
-          </span>
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            £{totalScheduled} scheduled
+          </p>
         </div>
+        <Button
+          onClick={() => setAddLessonOpen(true)}
+          className="rounded-xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90 text-white gap-1.5 h-10 px-5"
+        >
+          <Plus className="h-4 w-4" />
+          Add
+        </Button>
       </div>
 
-      {/* Lessons View - List or Timeline */}
+      {/* Lesson Cards */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : lessons.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground font-medium">No lessons scheduled</p>
-            <p className="text-sm text-muted-foreground/70">
-              {isToday(selectedDate) ? "Enjoy your day off!" : `No lessons on ${format(selectedDate, "EEEE")}`}
-            </p>
-          </CardContent>
-        </Card>
-      ) : viewMode === "timeline" ? (
-        <VerticalTimelineView
-          lessons={lessons.map(l => ({
-            ...l,
-            pupil: {
-              ...l.pupil,
-              profile_image_url: null,
-              test_date: null,
-            }
-          }))}
-          onLessonClick={(lesson) => {
-            // Could expand or show details
-          }}
-        />
+        <div className="bg-card rounded-[20px] border border-border flex flex-col items-center justify-center py-12 text-center">
+          <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground font-medium">No lessons scheduled</p>
+          <p className="text-sm text-muted-foreground/70">
+            {isToday(selectedDate) ? "Enjoy your day off!" : `No lessons on ${format(selectedDate, "EEEE")}`}
+          </p>
+        </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-3">
           <AnimatePresence mode="popLayout">
             {lessons.map((lesson, index) => {
+              const colors = lessonTypeColors[lesson.lesson_type] || { border: "border-l-border", badge: "bg-muted text-muted-foreground" };
+              const payment = getPaymentLabel(lesson);
+              const pickupAddress = lesson.pickup_location || lesson.pupil?.address || "No address";
               const nextLesson = lessons[index + 1];
-              const travelTime = nextLesson
-                ? getTravelTime(lesson.id, nextLesson.id)
-                : null;
+              const travelTime = nextLesson ? getTravelTime(lesson.id, nextLesson.id) : null;
 
               return (
                 <div key={lesson.id}>
@@ -362,8 +252,40 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     cardColor={lessonColors[lesson.id] || "bg-card"}
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
                     onDelete={handleDeleteLesson}
+                    renderCustomCollapsed={
+                      <div className={`bg-card rounded-[20px] border border-border border-l-4 ${colors.border} p-4 space-y-2`}>
+                        {/* Header: Name + Badge */}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-base font-bold text-foreground">{lesson.pupil?.name || "Unknown"}</h3>
+                          <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
+                            {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
+                          </Badge>
+                        </div>
+                        {/* Time */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{formatTime(lesson.start_time)} - {getEndTime(lesson.start_time, lesson.duration_minutes)}</span>
+                        </div>
+                        {/* Location */}
+                        {pickupAddress !== "No address" && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span className="truncate">{pickupAddress}</span>
+                          </div>
+                        )}
+                        {/* Price + Payment Status */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <PoundSterling className="h-3.5 w-3.5" />
+                            <span>£{lesson.amount_due || 0}</span>
+                          </div>
+                          <span className={`text-xs font-semibold ${payment.color}`}>
+                            {payment.text}
+                          </span>
+                        </div>
+                      </div>
+                    }
                   />
-                  {/* Travel time indicator to next lesson */}
                   {travelTime && (
                     <TravelTimeIndicator
                       durationMinutes={travelTime.durationMinutes}
@@ -384,10 +306,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       {selectedLesson && (
         <CancelLessonDialog
           open={cancelDialogOpen}
-          onOpenChange={(open) => {
-            setCancelDialogOpen(open);
-            if (!open) setSelectedLesson(null);
-          }}
+          onOpenChange={(open) => { setCancelDialogOpen(open); if (!open) setSelectedLesson(null); }}
           lessonId={selectedLesson.id}
           pupilId={selectedLesson.pupil?.id || ""}
           pupilName={selectedLesson.pupil?.name || "Unknown"}
@@ -405,10 +324,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       {selectedLesson && (
         <RescheduleLessonSheet
           open={rescheduleDialogOpen}
-          onOpenChange={(open) => {
-            setRescheduleDialogOpen(open);
-            if (!open) setSelectedLesson(null);
-          }}
+          onOpenChange={(open) => { setRescheduleDialogOpen(open); if (!open) setSelectedLesson(null); }}
           lessonId={selectedLesson.id}
           instructorId={instructorId}
           pupilName={selectedLesson.pupil?.name || "Unknown"}
