@@ -285,16 +285,20 @@ export function QuickActionTiles({
     return null;
   };
 
+  // Subtitle helper
+  const getSubtitle = (action: QuickAction): string | null => {
+    if (isScheduleAction(action) && todayOverview) return `${todayOverview.lessonCount} today`;
+    if (isPupilsAction(action) && todayOverview) return `${todayOverview.lessonCount}`;
+    return null;
+  };
+
   // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-3">
-        <div className="bg-card rounded-2xl p-4 h-16 animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.08)]" />
-        <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card rounded-2xl p-4 h-20 animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.08)]" />
-          ))}
-        </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="bg-card rounded-2xl p-4 h-[110px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
+        ))}
       </div>
     );
   }
@@ -303,9 +307,12 @@ export function QuickActionTiles({
 
   // Different accent colors for visual variety
   const tileStyles = [
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
+     { bg: 'bg-card', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+     { bg: 'bg-card', iconBg: 'bg-amber-500/12', iconColor: 'text-amber-600' },
+     { bg: 'bg-card', iconBg: 'bg-emerald-500/12', iconColor: 'text-emerald-600' },
+     { bg: 'bg-card', iconBg: 'bg-sky-500/12', iconColor: 'text-sky-600' },
+     { bg: 'bg-card', iconBg: 'bg-rose-500/12', iconColor: 'text-rose-600' },
+     { bg: 'bg-card', iconBg: 'bg-violet-500/12', iconColor: 'text-violet-600' },
   ];
 
   return (
@@ -425,24 +432,27 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — iOS 3x3 grid style
-        <div className="grid grid-cols-3 gap-4">
+        // Normal view mode — card grid matching reference
+        <div className="grid grid-cols-3 gap-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
             const showBadge = badgeCount > 0;
+            const style = tileStyles[index % tileStyles.length];
+            const subtitle = getSubtitle(action);
 
             return (
               <Link key={action.id} to={action.route} className="block">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.025 }}
-                  whileTap={{ scale: 0.92 }}
-                  className="flex flex-col items-center gap-1.5 pt-1"
+                  whileTap={{ scale: 0.96 }}
+                  className={`${style.bg} rounded-2xl p-3.5 h-[110px] flex flex-col justify-between shadow-[0_1px_3px_rgba(0,0,0,0.06)] border border-border/40 relative overflow-hidden`}
                 >
+                  {/* Icon top-left */}
                   <div
-                    className={`relative w-[60px] h-[60px] rounded-[16px] ${customIconImages[action.id] ? '' : tileStyles[index % tileStyles.length].iconBg} flex items-center justify-center overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]`}
+                    className={`relative w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -453,17 +463,24 @@ export function QuickActionTiles({
                         style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                       />
                     ) : (
-                      <Icon className={`h-7 w-7 ${tileStyles[index % tileStyles.length].iconColor}`} />
-                    )}
-                    {showBadge && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
+                      <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
                     )}
                   </div>
-                  <p className="text-[11px] font-medium text-foreground leading-tight text-center line-clamp-1 max-w-[72px]">
-                    {action.title}
-                  </p>
+
+                  {/* Badge */}
+                  {showBadge && (
+                    <span className="absolute top-2.5 right-2.5 min-w-[20px] h-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </span>
+                  )}
+
+                  {/* Title + subtitle bottom-left */}
+                  <div className="mt-auto">
+                    <p className="text-[13px] font-bold text-foreground leading-tight">{action.title}</p>
+                    {subtitle && (
+                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                    )}
+                  </div>
                 </motion.div>
               </Link>
             );
