@@ -209,6 +209,7 @@ Deno.serve(async (req) => {
 
     // Diagnostic IDs we want from Geotab StatusData
     const diagnosticIds = [
+      "DiagnosticIgnitionId",                  // Ignition on/off (1 or 0)
       "DiagnosticFuelLevelId",
       "DiagnosticStateOfChargeId",            // State of Charge (%)
       "DiagnosticBatteryVoltageId",            // 12V battery voltage (V)
@@ -369,8 +370,14 @@ Deno.serve(async (req) => {
 
       // Build diagnostics update
       const diagnosticsUpdate: Record<string, unknown> = {};
+      // Ignition: DiagnosticIgnitionId returns 1 for ON, 0 for OFF
+      if (diags["DiagnosticIgnitionId"] != null) {
+        diagnosticsUpdate.last_ignition_status = diags["DiagnosticIgnitionId"] === 1;
+      }
       if (diags["DiagnosticFuelLevelId"] != null) {
-        diagnosticsUpdate.last_fuel_percent = Math.round(diags["DiagnosticFuelLevelId"] * 100) / 100;
+        // Geotab returns fuel level as a fraction 0-1, multiply by 100 for percentage
+        const rawFuel = diags["DiagnosticFuelLevelId"];
+        diagnosticsUpdate.last_fuel_percent = Math.round((rawFuel <= 1 ? rawFuel * 100 : rawFuel) * 100) / 100;
       }
       if (diags["DiagnosticStateOfChargeId"] != null) {
         // State of Charge is a percentage (0-100)
@@ -418,7 +425,7 @@ Deno.serve(async (req) => {
           last_longitude: status.longitude,
           last_speed_kmh: status.speed,
           last_heading: status.bearing ?? null,
-          last_ignition_status: status.isDeviceCommunicating ?? null,
+          
           last_seen_at: geotabSeenAt
             ? new Date(geotabSeenAt).toISOString()
             : null,
