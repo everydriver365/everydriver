@@ -10,9 +10,6 @@ export interface TodayLesson {
   durationMinutes: number;
   pickupPostcode: string | null;
   status: string;
-  lessonType: string;
-  paymentStatus: string;
-  amountDue: number | null;
 }
 
 export function useTodayRemainingLessons(instructorId: string | undefined) {
@@ -27,7 +24,6 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
         .from("scheduled_lessons")
         .select(`
           id, start_time, duration_minutes, pickup_postcode, status,
-          lesson_type, payment_status, amount_due,
           pupils!inner (name, postcode)
         `)
         .eq("instructor_id", instructorId)
@@ -53,9 +49,6 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           durationMinutes: l.duration_minutes || 60,
           pickupPostcode: l.pickup_postcode || pupil?.postcode || null,
           status: l.status || "scheduled",
-          lessonType: l.lesson_type || "standard",
-          paymentStatus: l.payment_status || "unpaid",
-          amountDue: l.amount_due,
         };
       });
     },
