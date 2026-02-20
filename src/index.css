@@ -340,8 +340,8 @@
   z-index: 2 !important;
 }
 
-/* Instructor portal: remove all border radius from tiles/cards */
-.instructor-portal *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]) {
+/* Instructor portal: remove all border radius from tiles/cards (except quick-action tiles) */
+.instructor-portal *:not(.rounded-full):not([class*="avatar"]):not([class*="badge"]):not([class*="Avatar"]):not(.ios-tile):not(.ios-tile *) {
   border-radius: 0 !important;
 }
 
