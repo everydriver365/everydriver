@@ -99,6 +99,14 @@ export function CheckEngineBanner() {
               >
                 {fault.source}
               </Badge>
+              {fault.code && (
+                <Badge
+                  variant="outline"
+                  className="text-[9px] px-1.5 py-0 shrink-0 mt-0.5 font-mono border-foreground/30 text-foreground/70"
+                >
+                  {fault.code}
+                </Badge>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-foreground leading-tight">{fault.description}</p>
                 {fault.registration && (
