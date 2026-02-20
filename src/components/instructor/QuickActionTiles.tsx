@@ -448,7 +448,7 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative bg-card rounded-2xl p-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-border/40 flex flex-col justify-between min-h-[100px]"
+                  className="relative bg-card rounded-[20px] p-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-border/40 flex flex-col justify-between min-h-[100px]"
                 >
                   {/* Icon top-left */}
                   <div
