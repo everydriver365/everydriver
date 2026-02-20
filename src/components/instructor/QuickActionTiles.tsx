@@ -448,11 +448,11 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative bg-card rounded-[20px] p-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-border/40 flex flex-col justify-between min-h-[100px]"
+                  className="ios-tile relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] p-3.5 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex flex-col justify-between min-h-[100px]"
                 >
                   {/* Icon top-left */}
                   <div
-                    className={`w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
+                    className={`w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : 'bg-white/20'} flex items-center justify-center overflow-hidden shrink-0`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -463,7 +463,7 @@ export function QuickActionTiles({
                         style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '12px' }}
                       />
                     ) : (
-                      <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
+                      <Icon className="h-5 w-5 text-white" strokeWidth={1.8} />
                     )}
                   </div>
                   {/* Badge */}
@@ -474,9 +474,9 @@ export function QuickActionTiles({
                   )}
                   {/* Title & subtitle bottom-left */}
                   <div className="mt-2.5">
-                    <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                    <p className="text-[13px] font-semibold text-white leading-tight truncate">{action.title}</p>
                     {subtitle && (
-                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                      <p className="text-[11px] text-white/60 leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
                 </motion.div>
