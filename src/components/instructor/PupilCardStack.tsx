@@ -589,32 +589,44 @@ export function PupilCardStack({
     return "";
   };
 
+  // Avatar color palette based on name
+  const avatarColors = [
+    '#D4A843', // gold
+    '#2BA67C', // emerald
+    '#E85D75', // pink
+    '#7C6FD4', // purple
+    '#3B8DD4', // blue
+    '#E08A3A', // orange
+    '#5BBFB0', // teal
+    '#C74D4D', // red
+  ];
+  const avatarColorIndex = pupil.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % avatarColors.length;
+  const avatarBg = avatarColors[avatarColorIndex];
+
+  // Calculate total hours from lessons_completed (approximate 2h per lesson if no better data)
+  const totalHours = (pupil.lessons_completed || 0) * 2;
+
   return (
     <>
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border-b border-border overflow-hidden"
+        className="bg-card rounded-[20px] border border-border overflow-hidden mx-1"
       >
-        {/* Collapsed Card — clean list-style tile */}
+        {/* Collapsed Card */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left px-4 py-3.5 flex items-center gap-3.5"
+          className="w-full text-left px-4 py-4 flex items-center gap-3.5"
         >
           {/* Circular Avatar */}
           <div className="relative">
-            <Avatar className={cn("h-12 w-12 shrink-0", getAvatarRingColor())}>
+            <Avatar className={cn("h-14 w-14 shrink-0", getAvatarRingColor())}>
               <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-              <AvatarFallback className="text-white text-sm font-semibold" style={{ backgroundColor: '#1877F2' }}>
+              <AvatarFallback className="text-white text-base font-bold" style={{ backgroundColor: avatarBg }}>
                 {getInitials(pupil.name)}
               </AvatarFallback>
             </Avatar>
-            {/* Status dot */}
-            <div className={cn(
-              "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card",
-              statusConfig[currentStatus].color
-            )} />
             {/* Live tracking indicator */}
             {isTracking && (
               <div className="absolute -top-1 -right-1">
@@ -626,7 +638,7 @@ export function PupilCardStack({
             )}
           </div>
 
-          {/* Name + Next Lesson */}
+          {/* Name + Phone + Stats */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-[15px] text-foreground truncate">{pupil.name}</h3>
@@ -636,30 +648,27 @@ export function PupilCardStack({
                 </Badge>
               )}
             </div>
-            
-            <p className="text-[13px] text-primary mt-0.5 truncate">
-              {pupil.next_lesson
-                ? `Lesson ${format(parseISO(pupil.next_lesson), "dd MMM, HH:mm")}`
-                : `${pupil.lessons_completed || 0} lessons completed`}
+            {pupil.phone && (
+              <p className="text-[13px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                {pupil.phone}
+              </p>
+            )}
+            <p className="text-[12px] text-muted-foreground mt-0.5">
+              {pupil.lessons_completed || 0} lessons · {totalHours}h
+              {pupil.test_date && ` · Test: ${format(parseISO(pupil.test_date), "yyyy-MM-dd")}`}
             </p>
           </div>
 
-          {/* Credit / Balance indicator — driven by account_balance */}
-          <div className="text-right shrink-0">
-            {hasCredit ? (
-              <span className="text-[13px] font-semibold text-emerald-600">
-                £{balance.toFixed(0)} Credit
-              </span>
-            ) : hasDebt ? (
-              <span className="text-[13px] font-semibold text-rose-600">
-                £{Math.abs(balance).toFixed(0)} Due
-              </span>
-            ) : (
-              <span className="text-[13px] font-semibold text-muted-foreground">
-                £0
-              </span>
-            )}
-          </div>
+          {/* Balance badge */}
+          {(hasDebt || hasCredit) && (
+            <span className={cn(
+              "text-[13px] font-semibold px-2.5 py-1 rounded-lg shrink-0",
+              hasDebt ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+            )}>
+              £{Math.abs(balance).toFixed(0)}
+            </span>
+          )}
 
           {/* Chevron */}
           <motion.div
