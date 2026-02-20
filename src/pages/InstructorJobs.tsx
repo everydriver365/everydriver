@@ -224,7 +224,7 @@ export default function InstructorJobs() {
             {jobs.map((job) => (
               <Card 
                 key={job.id} 
-                className="border-l-4 border-l-accent cursor-pointer hover:bg-muted/30 transition-colors"
+                className="cursor-pointer hover:bg-muted/30 transition-colors"
                 onClick={() => setSelectedJob(job)}
               >
                 <CardContent className="p-4">

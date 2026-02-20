@@ -16,7 +16,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     return (
       <div className="space-y-2">
         <h3 className="text-base font-semibold text-foreground">Today's Schedule</h3>
-        <div className="bg-card rounded-none border-l-4 border-l-primary p-4 animate-pulse shadow-sm">
+        <div className="bg-card rounded-xl border p-4 animate-pulse shadow-sm">
           <div className="h-5 bg-muted rounded w-1/2" />
           <div className="h-4 bg-muted rounded w-3/4 mt-2" />
         </div>
@@ -40,7 +40,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     >
       <h3 className="text-base font-semibold text-foreground">Today's Schedule</h3>
       
-      <div className="bg-card rounded-none border-l-4 border-l-primary p-4 shadow-sm">
+      <div className="bg-card rounded-xl border p-4 shadow-sm">
         {hasLessons ? (
           <Link to="/instructor/schedule" className="block">
             <div className="flex items-start gap-3">

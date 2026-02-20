@@ -221,7 +221,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : lessons.length === 0 ? (
-        <div className="bg-card rounded-none border border-border border-l-4 border-l-primary flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-card rounded-xl border border-border flex flex-col items-center justify-center py-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground font-medium">No lessons scheduled</p>
           <p className="text-sm text-muted-foreground/70">
@@ -253,7 +253,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
                     onDelete={handleDeleteLesson}
                     renderCustomCollapsed={
-                      <div className={`bg-card rounded-none border border-border border-l-4 ${colors.border} p-4 space-y-2`}>
+                      <div className={`bg-card rounded-xl border border-border ${colors.border} p-4 space-y-2`}>
                         {/* Header: Name + Badge */}
                         <div className="flex items-center justify-between">
                           <h3 className="text-base font-bold text-foreground">{lesson.pupil?.name || "Unknown"}</h3>
