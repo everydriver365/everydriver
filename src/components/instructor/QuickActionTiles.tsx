@@ -315,18 +315,18 @@ export function QuickActionTiles({
      { bg: 'bg-card', iconBg: 'bg-violet-500/12', iconColor: 'text-violet-600' },
   ];
 
-  // Tile gradient backgrounds — refined navy-blue palette with subtle variation per tile
-  const tileGradients = [
-    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(218,48%,26%)]',
-    'bg-gradient-to-br from-[hsl(215,50%,20%)] to-[hsl(220,46%,30%)]',
-    'bg-gradient-to-br from-[hsl(222,52%,18%)] to-[hsl(218,44%,28%)]',
-    'bg-gradient-to-br from-[hsl(210,48%,22%)] to-[hsl(215,45%,32%)]',
-    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(212,46%,29%)]',
-    'bg-gradient-to-br from-[hsl(220,50%,19%)] to-[hsl(218,42%,27%)]',
-    'bg-gradient-to-br from-[hsl(216,52%,21%)] to-[hsl(222,44%,30%)]',
-    'bg-gradient-to-br from-[hsl(218,54%,17%)] to-[hsl(216,48%,25%)]',
-    'bg-gradient-to-br from-[hsl(214,50%,20%)] to-[hsl(220,45%,28%)]',
-    'bg-gradient-to-br from-[hsl(218,52%,18%)] to-[hsl(214,46%,27%)]',
+  // Left border accent colors matching the Today's Schedule tile style
+  const tileBorderColors = [
+    'border-l-primary',
+    'border-l-amber-500',
+    'border-l-emerald-500',
+    'border-l-sky-500',
+    'border-l-rose-500',
+    'border-l-violet-500',
+    'border-l-primary',
+    'border-l-amber-500',
+    'border-l-emerald-500',
+    'border-l-sky-500',
   ];
 
   return (
@@ -462,11 +462,14 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className={cn("ios-tile relative rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.18)] flex items-center gap-3", tileGradients[index % tileGradients.length])}
+                  className={cn(
+                    "ios-tile relative rounded-xl px-3.5 py-3 shadow-sm border border-border/60 border-l-4 bg-card flex items-center gap-3",
+                    tileBorderColors[index % tileBorderColors.length]
+                  )}
                 >
                   {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : 'bg-white/20'} flex items-center justify-center overflow-hidden shrink-0`}
+                    className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -477,14 +480,14 @@ export function QuickActionTiles({
                         style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
                       />
                     ) : (
-                      <Icon className="h-4 w-4 text-white" strokeWidth={1.8} />
+                      <Icon className={`h-4 w-4 ${style.iconColor}`} strokeWidth={1.8} />
                     )}
                   </div>
                   {/* Title & subtitle */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-white leading-tight truncate">{action.title}</p>
+                    <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
                     {subtitle && (
-                      <p className="text-[11px] text-white/60 leading-tight mt-0.5">{subtitle}</p>
+                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
                   {/* Badge */}
