@@ -433,7 +433,7 @@ export function QuickActionTiles({
         </>
       ) : (
         // Normal view mode — rounded card grid with icon top-left, text below
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
