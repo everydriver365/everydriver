@@ -559,8 +559,8 @@ export function InstructorMobileHome({
         </div>
       )}
 
-      {/* Today's Mini Timeline */}
-      {todayLessons && todayLessons.length > 1 && (
+      {/* Today's Schedule Cards */}
+      {todayLessons && todayLessons.length > 0 && (
           <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
       )}
 

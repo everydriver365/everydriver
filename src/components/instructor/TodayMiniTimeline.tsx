@@ -1,138 +1,130 @@
-import { format, parse } from "date-fns";
+import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { Calendar, Check } from "lucide-react";
+import { Clock, MapPin, PoundSterling } from "lucide-react";
+import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
+import { Badge } from "@/components/ui/badge";
 
 interface TodayMiniTimelineProps {
   lessons: TodayLesson[];
   className?: string;
 }
 
-export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimelineProps) {
-  if (lessons.length <= 1) return null;
+const lessonTypeColors: Record<string, { bg: string; text: string }> = {
+  "Standard": { bg: "bg-primary/10", text: "text-primary" },
+  "Test Prep": { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400" },
+  "Mock Test": { bg: "bg-violet-500/10", text: "text-violet-600 dark:text-violet-400" },
+  "Motorway": { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
+  "Refresher": { bg: "bg-pink-500/10", text: "text-pink-600 dark:text-pink-400" },
+  "Pass Plus": { bg: "bg-sky-500/10", text: "text-sky-600 dark:text-sky-400" },
+};
 
-  const currentTime = format(new Date(), "HH:mm:ss");
+const lessonTypeBorderColors: Record<string, string> = {
+  "Standard": "border-l-primary",
+  "Test Prep": "border-l-amber-500",
+  "Mock Test": "border-l-violet-500",
+  "Motorway": "border-l-emerald-500",
+  "Refresher": "border-l-pink-500",
+  "Pass Plus": "border-l-sky-500",
+};
+
+export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimelineProps) {
+  if (lessons.length === 0) return null;
 
   const formatTime = (time: string) => {
     try {
       const parsed = parse(time, "HH:mm:ss", new Date());
-      return format(parsed, "h:mm a");
+      return format(parsed, "HH:mm");
     } catch {
-      return time;
+      return time.substring(0, 5);
     }
   };
 
-  const isCompleted = (lesson: TodayLesson) => {
-    const endMinutes = timeToMinutes(lesson.startTime) + lesson.durationMinutes;
-    const nowMinutes = timeToMinutes(currentTime);
-    return nowMinutes >= endMinutes || lesson.status === "completed";
-  };
-
-  const isCurrent = (lesson: TodayLesson) => {
-    const startMin = timeToMinutes(lesson.startTime);
-    const endMin = startMin + lesson.durationMinutes;
-    const nowMin = timeToMinutes(currentTime);
-    return nowMin >= startMin && nowMin < endMin;
+  const getEndTime = (startTime: string, durationMinutes: number) => {
+    try {
+      const parsed = parse(startTime, "HH:mm:ss", new Date());
+      const end = addMinutes(parsed, durationMinutes);
+      return format(end, "HH:mm");
+    } catch {
+      return "";
+    }
   };
 
   return (
     <div className={className}>
-      <div className="bg-card rounded-none shadow-sm overflow-hidden">
-        {/* Gradient header */}
-        <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-          </div>
-          <div className="relative flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-white" />
-            </div>
-            <h3 className="text-xs font-bold uppercase tracking-wider">
-              Today's Schedule
-            </h3>
-          </div>
-        </div>
-        <div className="p-4">
-        <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-bold text-foreground">Today's Schedule</h3>
+        <Link to="/instructor/schedule" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          See all
+        </Link>
+      </div>
 
-          <div className="space-y-3">
-            {lessons.map((lesson, idx) => {
-              const completed = isCompleted(lesson);
-              const current = isCurrent(lesson);
+      {/* Lesson Cards */}
+      <div className="space-y-3">
+        {lessons.map((lesson, idx) => {
+          const typeColors = lessonTypeColors[lesson.lessonType] || lessonTypeColors["Standard"];
+          const borderColor = lessonTypeBorderColors[lesson.lessonType] || "border-l-primary";
+          const isPaid = lesson.paymentStatus === "paid";
 
-              return (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="flex items-center gap-3 relative"
-                >
-                  {/* Dot */}
-                  <div
-                    className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 flex-shrink-0 ${
-                      completed
-                        ? "bg-emerald-500 border-emerald-500"
-                        : current
-                        ? "bg-primary border-primary animate-pulse"
-                        : "bg-white border-border"
+          return (
+            <motion.div
+              key={lesson.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.06 }}
+              className={`bg-card rounded-xl shadow-sm border border-border/60 border-l-4 ${borderColor} overflow-hidden`}
+            >
+              <div className="p-4">
+                {/* Top row: Name + Lesson Type Badge */}
+                <div className="flex items-center justify-between mb-2.5">
+                  <h4 className="text-[15px] font-semibold text-foreground truncate">{lesson.pupilName}</h4>
+                  <Badge
+                    variant="outline"
+                    className={`${typeColors.bg} ${typeColors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0 ml-2`}
+                  >
+                    {lesson.lessonType}
+                  </Badge>
+                </div>
+
+                {/* Time */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                  <Clock className="h-3.5 w-3.5 shrink-0" />
+                  <span>{formatTime(lesson.startTime)} - {getEndTime(lesson.startTime, lesson.durationMinutes)}</span>
+                </div>
+
+                {/* Location */}
+                {(lesson.pickupLocation || lesson.pickupPostcode) && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{lesson.pickupLocation || lesson.pickupPostcode}</span>
+                  </div>
+                )}
+
+                {/* Price + Payment Status */}
+                <div className="flex items-center justify-between mt-1">
+                  {lesson.amountDue != null && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <PoundSterling className="h-3.5 w-3.5 shrink-0" />
+                      <span>£{lesson.amountDue}</span>
+                    </div>
+                  )}
+                  <Badge
+                    variant="outline"
+                    className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
+                      isPaid
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                     }`}
                   >
-                    {completed ? (
-                      <Check className="h-3 w-3 text-white" />
-                    ) : (
-                      <span
-                        className={`text-[8px] font-bold ${
-                          current ? "text-white" : "text-muted-foreground"
-                        }`}
-                      >
-                        {lesson.pupilInitials.slice(0, 2)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p
-                        className={`text-sm font-medium truncate ${
-                          completed
-                            ? "text-muted-foreground line-through"
-                            : current
-                            ? "text-foreground font-semibold"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {lesson.pupilName}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-xs flex-shrink-0 ml-2 ${
-                        completed
-                          ? "text-muted-foreground"
-                          : current
-                          ? "text-primary font-semibold"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {formatTime(lesson.startTime)}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-        </div>
+                    {isPaid ? "Paid" : "Unpaid"}
+                  </Badge>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
-}
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
 }
