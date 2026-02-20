@@ -408,7 +408,7 @@ export function InstructorMobileHome({
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
                   {currentWeather && (
-                    <span className="flex items-center gap-1 text-white/70 text-[11px]">
+                    <span className="flex items-center gap-1 text-emerald-400 text-[11px]">
                       {(() => {
                         const WeatherIcon = currentWeather.icon === "Sun" ? Sun
                           : currentWeather.icon === "CloudSun" ? CloudSun
