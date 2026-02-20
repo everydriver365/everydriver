@@ -460,28 +460,89 @@ export default function InstructorPupils() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-6">
-        {/* Page Header — centered title */}
-        <div className="flex items-center justify-center">
-          <h1 className="text-lg font-bold text-foreground">Pupils</h1>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            Pupils
+          </h1>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add Pupil
+          </Button>
         </div>
 
-        {/* Search + Add Row */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search pupils..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-12 rounded-xl bg-card border"
-            />
+        {/* Hero Stats Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/70 text-xs">Total Pupils</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold">{stats.total}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-white/70 text-xs">Active</p>
+              <p className="text-xl font-bold">{stats.active}</p>
+            </div>
           </div>
-          <Button
-            onClick={() => setIsAddOpen(true)}
-            className="h-12 w-12 p-0 rounded-xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90"
+        </motion.div>
+
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-3 gap-3">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-card rounded-xl border p-3 text-center"
           >
-            <Plus className="h-5 w-5" />
-          </Button>
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-1">
+              <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <p className="text-lg font-bold">{stats.passed}</p>
+            <p className="text-[10px] text-muted-foreground">Passed</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-card rounded-xl border p-3 text-center"
+          >
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-1">
+              <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <p className="text-lg font-bold">{stats.totalLessons}</p>
+            <p className="text-[10px] text-muted-foreground">Lessons</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-card rounded-xl border p-3 text-center"
+          >
+            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-1">
+              <Target className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            </div>
+            <p className="text-lg font-bold">{statusCounts.on_hold + statusCounts.inactive}</p>
+            <p className="text-[10px] text-muted-foreground">On Hold</p>
+          </motion.div>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search pupils..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-12 rounded-xl bg-card border"
+          />
         </div>
 
         {/* Pupils List */}
