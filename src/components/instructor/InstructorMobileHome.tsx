@@ -90,6 +90,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 // Weather icon component
@@ -229,6 +230,8 @@ export function InstructorMobileHome({
   }, [instructorId, cacheSchedules, cachePupils]);
 
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructorId);
+  const { devices: vehicleDevices } = useVehicleHealth();
+  const engineFaultCount = vehicleDevices.flatMap(d => d.last_fault_codes || []).length;
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -387,13 +390,15 @@ export function InstructorMobileHome({
 
         {/* Today's Overview card — overlapping the hero */}
         <div className="px-4 -mt-8 relative z-10">
-          <motion.button
-            onClick={() => navigate("/instructor/schedule")}
+          <motion.div
             whileTap={{ scale: 0.97 }}
-            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden active:shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-shadow"
+            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-primary via-primary to-primary/90 p-4 flex items-center gap-4">
-              <div className="flex-1 text-left">
+            <button
+              onClick={() => navigate("/instructor/schedule")}
+              className="w-full bg-gradient-to-r from-primary via-primary to-primary/90 p-4 flex items-center gap-4 text-left"
+            >
+              <div className="flex-1">
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
                 <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
                   {todayOverview?.lessonCount
@@ -440,8 +445,21 @@ export function InstructorMobileHome({
                   </div>
                 );
               })()}
-            </div>
-          </motion.button>
+            </button>
+            {/* Engine fault warning line */}
+            {engineFaultCount > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/instructor/vehicle-health"); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-destructive/90 text-white text-left active:bg-destructive transition-colors"
+              >
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[12px] font-medium flex-1">
+                  {engineFaultCount} engine fault{engineFaultCount > 1 ? "s" : ""} detected — tap to view
+                </span>
+                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
+              </button>
+            )}
+          </motion.div>
         </div>
       </motion.div>
       {/* Job Offers — gradient style */}
