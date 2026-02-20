@@ -36,7 +36,8 @@ import {
   XCircle,
   Route,
   AlertCircle,
-  Share2
+  Share2,
+  Gauge
 } from "lucide-react";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
@@ -213,17 +214,84 @@ export function PupilCardStack({
   const [savingNote, setSavingNote] = useState(false);
   const [noteLessons, setNoteLessons] = useState<ScheduledLesson[]>([]);
 
+  // Inline lesson history & driving sessions for profile view
+  interface RecentLesson {
+    id: string;
+    lesson_date: string;
+    start_time: string;
+    duration_minutes: number;
+    lesson_type: string;
+    amount_due: number | null;
+    payment_status: string;
+    status: string;
+    notes: string | null;
+  }
+  interface RecentDrivingSession {
+    id: string;
+    started_at: string;
+    ended_at: string | null;
+    total_distance_km: number | null;
+    max_speed_kmh: number | null;
+    speeding_count: number;
+    feedback_notes: string | null;
+  }
+  const [recentLessons, setRecentLessons] = useState<RecentLesson[]>([]);
+  const [recentDrivingSessions, setRecentDrivingSessions] = useState<RecentDrivingSession[]>([]);
+
   // Fetch test stats on mount
   useEffect(() => {
     fetchTestStats();
   }, [pupil.id]);
 
-  // Fetch latest feedback when card expands
+  // Fetch data when card expands
   useEffect(() => {
     if (isExpanded) {
       fetchLatestFeedback();
+      fetchRecentLessons();
+      fetchRecentDrivingSessions();
     }
   }, [isExpanded, pupil.id]);
+
+  const fetchRecentLessons = async () => {
+    try {
+      const { data } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, lesson_type, amount_due, payment_status, status, notes")
+        .eq("pupil_id", pupil.id)
+        .in("status", ["completed", "scheduled"])
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: false })
+        .limit(5);
+      if (data) setRecentLessons(data);
+    } catch (err) {
+      console.error("Error fetching recent lessons:", err);
+    }
+  };
+
+  const fetchRecentDrivingSessions = async () => {
+    try {
+      const { data: sessions } = await supabase
+        .from("lesson_telematics")
+        .select("id, started_at, ended_at, total_distance_km, max_speed_kmh")
+        .eq("pupil_id", pupil.id)
+        .not("ended_at", "is", null)
+        .order("started_at", { ascending: false })
+        .limit(5);
+
+      if (sessions) {
+        const withCounts = await Promise.all(sessions.map(async (s) => {
+          const [speedRes, feedbackRes] = await Promise.all([
+            supabase.from("driving_behavior_events").select("*", { count: "exact", head: true }).eq("telematics_id", s.id).eq("event_type", "speeding"),
+            supabase.from("lesson_history").select("notes").eq("telematics_session_id", s.id).limit(1).maybeSingle()
+          ]);
+          return { ...s, speeding_count: speedRes.count || 0, feedback_notes: feedbackRes.data?.notes || null };
+        }));
+        setRecentDrivingSessions(withCounts);
+      }
+    } catch (err) {
+      console.error("Error fetching driving sessions:", err);
+    }
+  };
 
   // Fetch available lessons and tracking sessions when adding feedback
   useEffect(() => {
@@ -750,14 +818,23 @@ export function PupilCardStack({
                   </div>
 
                   {/* Notes Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-2">
+                  <div className="mx-4 mt-3 bg-card rounded-[20px] border border-border p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-foreground">Notes</h3>
                       {!isAddingNote && (
                         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}>+ Add Note</Button>
                       )}
                     </div>
-                    {pupil.notes && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>}
+                    {pupil.notes ? (
+                      <div className="border-l-4 border-border rounded-r-lg bg-muted/30 p-3">
+                        <div className="flex items-start gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No notes yet</p>
+                    )}
                     {isAddingNote && (
                       <div className="space-y-2 pt-1">
                         <Select value={noteLessonId} onValueChange={setNoteLessonId}>
@@ -780,56 +857,129 @@ export function PupilCardStack({
                     )}
                   </div>
 
-                  {/* Lesson Feedback */}
-                  <div className="mx-4 mt-3">
-                    <SectionPanel title="Lesson Feedback" icon={<Star className="h-4 w-4 text-primary" />} headerGradient>
-                      <div className="px-4 pb-2 space-y-3">
-                        {latestFeedback?.notes && !isAddingFeedback && (
-                          <div className="bg-muted/30 rounded-xl p-3 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">{format(parseISO(latestFeedback.lesson_date), 'EEE, d MMM')}</span>
-                              {latestFeedback.rating && (
-                                <div className="flex items-center gap-0.5">
-                                  {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className={cn("h-3 w-3", star <= latestFeedback.rating! ? "fill-amber-400 text-amber-400" : "text-muted")} />))}
+                  {/* Lesson History Card */}
+                  <div className="mx-4 mt-3 bg-card rounded-[20px] border border-border p-4 space-y-3">
+                    <h3 className="font-semibold text-foreground">
+                      Lesson History {recentLessons.length > 0 && <span className="text-muted-foreground font-normal">({recentLessons.length})</span>}
+                    </h3>
+                    {recentLessons.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">No lessons recorded yet</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {recentLessons.map((lesson) => {
+                          const lessonTypeColors: Record<string, string> = {
+                            'test_prep': 'border-l-amber-500',
+                            'standard': 'border-l-blue-500',
+                            'intensive': 'border-l-purple-500',
+                            'motorway': 'border-l-emerald-500',
+                            'mock_test': 'border-l-rose-500',
+                            'refresher': 'border-l-cyan-500',
+                          };
+                          const lessonTypeBadgeColors: Record<string, string> = {
+                            'test_prep': 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+                            'standard': 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
+                            'intensive': 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400',
+                            'motorway': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
+                            'mock_test': 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400',
+                            'refresher': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
+                          };
+                          const borderColor = lessonTypeColors[lesson.lesson_type] || 'border-l-border';
+                          const badgeColor = lessonTypeBadgeColors[lesson.lesson_type] || 'bg-muted text-muted-foreground';
+                          const endTime = (() => {
+                            const [h, m] = lesson.start_time.split(':').map(Number);
+                            const endMinutes = h * 60 + m + lesson.duration_minutes;
+                            return `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+                          })();
+                          const paymentColor = lesson.payment_status === 'paid' ? 'text-emerald-600' : lesson.payment_status === 'unpaid' ? 'text-amber-600' : 'text-muted-foreground';
+
+                          return (
+                            <div key={lesson.id} className={cn("border-l-4 rounded-r-lg bg-muted/20 p-3", borderColor)}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-semibold text-sm text-foreground">{pupil.name}</span>
+                                <Badge className={cn("text-[10px] px-2 py-0 font-medium border-0", badgeColor)}>
+                                  {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>{lesson.start_time.slice(0, 5)} - {endTime}</span>
+                              </div>
+                              {lesson.amount_due != null && (
+                                <div className="flex items-center justify-between mt-1">
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <PoundSterling className="h-3 w-3" />
+                                    <span>£{lesson.amount_due}</span>
+                                  </div>
+                                  <span className={cn("text-[10px] font-medium capitalize", paymentColor)}>
+                                    {lesson.payment_status === 'paid' ? 'Paid' : lesson.payment_status === 'unpaid' ? 'Unpaid' : lesson.payment_status}
+                                  </span>
                                 </div>
                               )}
                             </div>
-                            <p className="text-sm">{latestFeedback.notes}</p>
-                          </div>
-                        )}
-                        {!isAddingFeedback ? (
-                          <Button variant="outline" size="sm" className="w-full" onClick={(e) => { e.stopPropagation(); setIsAddingFeedback(true); }}>
-                            <Send className="h-4 w-4 mr-2" /> Add Feedback
+                          );
+                        })}
+                        {recentLessons.length >= 5 && (
+                          <Button variant="ghost" size="sm" className="w-full text-xs text-primary" onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}>
+                            View all lessons
                           </Button>
-                        ) : (
-                          <div className="space-y-3">
-                            {availableLessons.length > 0 && (
-                              <Select value={selectedLessonId} onValueChange={setSelectedLessonId}>
-                                <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}><SelectValue placeholder="Link to lesson..." /></SelectTrigger>
-                                <SelectContent className="bg-background z-50">
-                                  {availableLessons.map((lesson) => (<SelectItem key={lesson.id} value={lesson.id}>{format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}</SelectItem>))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                            <div className="flex items-center gap-1 justify-center">
-                              {[1, 2, 3, 4, 5].map((star) => (<button key={star} type="button" onClick={(e) => { e.stopPropagation(); setNewRating(star); }} className="p-1"><Star className={cn("h-6 w-6", star <= newRating ? "fill-amber-400 text-amber-400" : "text-muted")} /></button>))}
-                            </div>
-                            <Textarea value={newFeedback} onChange={(e) => setNewFeedback(e.target.value)} placeholder="Enter lesson feedback..." className="min-h-[80px]" onClick={(e) => e.stopPropagation()} />
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); setIsAddingFeedback(false); setNewFeedback(""); setNewRating(0); }}>Cancel</Button>
-                              <Button size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleSaveFeedback(); }} disabled={savingFeedback}>{savingFeedback ? "Saving..." : "Save"}</Button>
-                            </div>
-                          </div>
                         )}
                       </div>
-                    </SectionPanel>
+                    )}
                   </div>
 
-                  {/* Tracking History */}
-                  <div className="mx-4 mt-3">
-                    <SectionPanel title="Tracking History" icon={<Route className="h-4 w-4 text-primary" />} headerGradient>
-                      <div className="px-4 pb-2"><PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} /></div>
-                    </SectionPanel>
+                  {/* Driving Sessions Card */}
+                  <div className="mx-4 mt-3 bg-card rounded-[20px] border border-border p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Route className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="font-semibold text-foreground">
+                        Driving Sessions {recentDrivingSessions.length > 0 && <span className="text-muted-foreground font-normal">({recentDrivingSessions.length})</span>}
+                      </h3>
+                    </div>
+                    {recentDrivingSessions.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">No driving sessions recorded yet</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {recentDrivingSessions.map((session) => {
+                          const started = new Date(session.started_at);
+                          const ended = session.ended_at ? new Date(session.ended_at) : null;
+                          const durationMin = ended ? Math.round((ended.getTime() - started.getTime()) / 60000) : 0;
+                          const maxMph = session.max_speed_kmh ? Math.round(session.max_speed_kmh * 0.621371) : null;
+                          const distKm = session.total_distance_km || 0;
+
+                          return (
+                            <div key={session.id} className="border-l-4 border-l-border rounded-r-lg bg-muted/20 p-3 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-sm text-foreground">{format(started, "EEE, d MMM yyyy")}</span>
+                                {session.speeding_count > 0 && (
+                                  <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-0 text-[10px] px-2 py-0">
+                                    {session.speeding_count} overspeed{session.speeding_count !== 1 ? 's' : ''}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {format(started, "HH:mm")} — {ended ? format(ended, "HH:mm") : "ongoing"}
+                              </p>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                {maxMph && (
+                                  <span className="flex items-center gap-1">
+                                    <Gauge className="h-3 w-3" /> Max {maxMph} mph
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> {durationMin} min
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Route className="h-3 w-3" /> {distKm.toFixed(1)} km
+                                </span>
+                              </div>
+                              {session.feedback_notes && (
+                                <p className="text-xs text-muted-foreground italic mt-1 truncate">{session.feedback_notes}</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Payments */}
