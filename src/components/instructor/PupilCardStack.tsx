@@ -637,210 +637,127 @@ export function PupilCardStack({
                     />
                   </div>
                 ) : (
-                <div>
-                {/* Quick Actions Row */}
-                <div className="flex items-center justify-around py-4 px-4 bg-muted/30">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (pupil.phone) window.open(`tel:${pupil.phone}`);
-                    }}
-                    disabled={!pupil.phone}
-                    className="flex flex-col items-center gap-1.5 disabled:opacity-40"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                      <Phone className="h-6 w-6 text-primary" />
+                <div className="pb-4">
+                  {/* Profile Hero Card */}
+                  <div className="bg-card rounded-2xl border border-border mx-4 mt-4 p-6 flex flex-col items-center">
+                    <Avatar className={cn("h-20 w-20 mb-3", getAvatarRingColor())}>
+                      <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+                      <AvatarFallback className="text-white text-2xl font-semibold" style={{ backgroundColor: '#2C3E50' }}>
+                        {getInitials(pupil.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h2 className="text-xl font-bold text-foreground">{pupil.name}</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Pupil since {format(parseISO(pupil.created_at), "EEE, d MMM yyyy")}
+                    </p>
+                    <div className="flex gap-3 mt-4">
+                      <Button variant="outline" size="sm" className="rounded-full px-5 gap-2" onClick={(e) => { e.stopPropagation(); if (pupil.phone) window.open(`tel:${pupil.phone}`); }} disabled={!pupil.phone}>
+                        <Phone className="h-4 w-4" /> Call
+                      </Button>
+                      <Button variant="outline" size="sm" className="rounded-full px-5 gap-2" onClick={(e) => { e.stopPropagation(); if (pupil.email) window.open(`mailto:${pupil.email}`); }} disabled={!pupil.email}>
+                        <Mail className="h-4 w-4" /> Email
+                      </Button>
                     </div>
-                    <span className="text-[10px] font-medium text-foreground">Call</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (pupil.phone) window.open(`sms:${pupil.phone}`);
-                    }}
-                    disabled={!pupil.phone}
-                    className="flex flex-col items-center gap-1.5 disabled:opacity-40"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                      <MessageSquare className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="text-[10px] font-medium text-foreground">Text</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigate();
-                    }}
-                    className="flex flex-col items-center gap-1.5"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                      <Navigation className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="text-[10px] font-medium text-foreground">Navigate</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onStartChat?.(pupil);
-                    }}
-                    className="flex flex-col items-center gap-1.5"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                      <Mail className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="text-[10px] font-medium text-foreground">Chat</span>
-                  </button>
-                  <SharePupilDetailsDialog 
-                    pupil={pupil} 
-                    instructorName={instructorName}
-                    trigger={
-                      <button className="flex flex-col items-center gap-1.5">
-                        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                          <Share2 className="h-6 w-6 text-primary" />
-                        </div>
-                        <span className="text-[10px] font-medium text-foreground">Share</span>
-                      </button>
-                    }
-                  />
-                </div>
+                  </div>
 
-                <div className="p-4 space-y-4">
-                  {/* Address Section - Inline Editable */}
-                  <div className="space-y-1">
-                    <InlineEditField
-                      value={pupil.address || ""}
-                      onSave={(v) => saveField("address", v)}
-                      icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
-                      placeholder="Address"
-                      emptyText="Add address"
-                    />
-                    <InlineEditField
-                      value={pupil.postcode || ""}
-                      onSave={(v) => saveField("postcode", v)}
-                      placeholder="Postcode"
-                      className="ml-6"
-                      textClassName="text-muted-foreground"
-                      emptyText="Add postcode"
-                    />
-                    <InlineEditField
-                      value={pupil.pickup_address || ""}
-                      onSave={(v) => saveField("pickup_address", v || null)}
-                      icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
-                      placeholder="Pickup address"
-                      emptyText="Add pickup address"
-                    />
-                    <InlineEditField
-                      value={pupil.pickup_postcode || ""}
-                      onSave={(v) => saveField("pickup_postcode", v || null)}
-                      placeholder="Pickup postcode"
-                      className="ml-6"
-                      textClassName="text-muted-foreground"
-                      emptyText="Add pickup postcode"
-                    />
+                  {/* Stats Row */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border">
+                    <div className="grid grid-cols-3 divide-x divide-border py-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">{pupil.lessons_completed || 0}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">Lessons</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">{pupil.prepaid_hours || 0}h</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">Hours</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={cn("text-2xl font-bold", hasDebt ? "text-rose-600" : "text-foreground")}>
+                          {pupil.account_balance ? (pupil.account_balance < 0 ? `£${Math.abs(pupil.account_balance).toFixed(2)}` : `£${Number(pupil.account_balance).toFixed(2)}`) : "£0.00"}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance"}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Test Date Card */}
+                  {pupil.test_date && (() => {
+                    const testDate = new Date(pupil.test_date);
+                    const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <div className="mx-4 mt-3 bg-card rounded-2xl border-l-4 border-l-primary border border-border p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-semibold text-foreground">Driving Test</span>
+                        </div>
+                        <p className="text-base font-bold text-foreground">{format(testDate, "EEE, d MMM yyyy")}</p>
+                        <Badge className={cn("mt-2 text-xs font-medium", daysUntilTest <= 7 ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 hover:bg-rose-100" : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 hover:bg-amber-100")}>
+                          {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
+                        </Badge>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Payment Due Warning */}
+                  {pupil.payment_type === "deposit" && hasDebt && pupil.balance_due_date && !pupil.deposit_forfeited && (() => {
+                    const dueDate = new Date(pupil.balance_due_date);
+                    const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const isOverdue = daysUntilDue < 0;
+                    const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
+                    return (
+                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-2xl p-4 border", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>{isOverdue ? "OVERDUE: " : ""}£{Math.abs(pupil.account_balance || 0)} due {dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Details Card */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
+                    <h3 className="font-semibold text-foreground">Details</h3>
+                    {pupil.phone && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-foreground">{pupil.phone}</span>
+                      </div>
+                    )}
+                    {pupil.email && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-foreground truncate">{pupil.email}</span>
+                      </div>
+                    )}
+                    <InlineEditField value={pupil.address || ""} onSave={(v) => saveField("address", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} placeholder="Address" emptyText="Add address" />
+                    {pupil.postcode && (
+                      <div className="flex items-center gap-3 text-sm ml-7">
+                        <span className="text-muted-foreground">{pupil.postcode}</span>
+                      </div>
+                    )}
+                    <InlineEditField value={pupil.pickup_address || ""} onSave={(v) => saveField("pickup_address", v || null)} icon={<Navigation className="h-4 w-4 text-muted-foreground" />} placeholder="Pickup address" emptyText="Add pickup address" />
                     {pupil.what3words && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); openWhat3Words(); }}
-                        className="flex items-center gap-2 text-sm text-primary hover:underline ml-6"
-                      >
-                        <span className="font-medium">///</span>
+                      <button onClick={(e) => { e.stopPropagation(); openWhat3Words(); }} className="flex items-center gap-3 text-sm text-primary hover:underline">
+                        <span className="font-medium text-muted-foreground">///</span>
                         <span>{pupil.what3words}</span>
                         <ExternalLink className="h-3 w-3" />
                       </button>
                     )}
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-muted/50 rounded-xl p-3 text-center">
-                      <div className="text-xl font-bold">{pupil.lessons_completed || 0}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Lessons</div>
-                    </div>
-                    <div className="bg-muted/50 rounded-xl p-3 text-center">
-                      <div className="text-xl font-bold">{pupil.prepaid_hours || 0}h</div>
-                      <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Credit</div>
-                    </div>
-                    <div className={cn(
-                      "rounded-xl p-3 text-center",
-                      hasDebt ? "bg-rose-50 dark:bg-rose-950/30" : "bg-muted/50"
-                    )}>
-                      <div className={cn("text-xl font-bold", hasDebt && "text-rose-600")}>
-                        {pupil.account_balance 
-                          ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance).toFixed(0)}` : `£${Number(pupil.account_balance).toFixed(0)}`) 
-                          : "£0"}
+                    {pupil.course_type && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-foreground">{courseTypeLabels[pupil.course_type] || pupil.course_type}</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Balance</div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-semibold">{pupil.progress || 0}%</span>
-                    </div>
-                    <Progress value={pupil.progress || 0} className="h-2" />
-                  </div>
-
-                  {/* Test Date */}
-                  {pupil.test_date && (
-                    <div className="flex items-center gap-2 text-sm bg-primary/5 rounded-xl p-3">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      <span>Test: {new Date(pupil.test_date).toLocaleDateString("en-GB", { 
-                        weekday: "short", day: "numeric", month: "short" 
-                      })}</span>
-                    </div>
-                  )}
-
-                  {/* Payment Due Warning */}
-                  {pupil.payment_type === "deposit" && hasDebt && pupil.balance_due_date && !pupil.deposit_forfeited && (
-                    (() => {
-                      const dueDate = new Date(pupil.balance_due_date);
-                      const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                      const isOverdue = daysUntilDue < 0;
-                      const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
-                      
-                      return (
-                        <div className={cn(
-                          "flex items-center gap-2 text-sm rounded-xl p-3",
-                          isOverdue ? "bg-destructive/10 text-destructive" : 
-                          isUrgent ? "bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400" : 
-                          "bg-muted/50 text-muted-foreground"
-                        )}>
-                          <AlertCircle className="h-4 w-4 shrink-0" />
-                          <span>
-                            {isOverdue ? "OVERDUE: " : ""}
-                            £{Math.abs(pupil.account_balance || 0)} due {dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                          </span>
-                        </div>
-                      );
-                    })()
-                  )}
-
-                  {/* Notes with optional lesson linking */}
-                  <div className="bg-muted/30 rounded-xl p-3 space-y-2">
+                  {/* Notes Card */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Notes</span>
-                      </div>
+                      <h3 className="font-semibold text-foreground">Notes</h3>
                       {!isAddingNote && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}
-                        >
-                          + Add Note
-                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}>+ Add Note</Button>
                       )}
                     </div>
-
-                    {/* Existing general notes */}
-                    {pupil.notes && (
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
-                    )}
-
-                    {/* Add note form */}
+                    {pupil.notes && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>}
                     {isAddingNote && (
                       <div className="space-y-2 pt-1">
                         <Select value={noteLessonId} onValueChange={setNoteLessonId}>
@@ -850,365 +767,164 @@ export function PupilCardStack({
                           <SelectContent className="bg-background z-50">
                             <SelectItem value="general">General note (no lesson)</SelectItem>
                             {noteLessons.map((lesson) => (
-                              <SelectItem key={lesson.id} value={lesson.id}>
-                                {format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}
-                              </SelectItem>
+                              <SelectItem key={lesson.id} value={lesson.id}>{format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-
-                        <Textarea
-                          value={noteText}
-                          onChange={(e) => setNoteText(e.target.value)}
-                          placeholder="Enter note..."
-                          className="min-h-[80px]"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-
+                        <Textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Enter note..." className="min-h-[80px]" onClick={(e) => e.stopPropagation()} />
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsAddingNote(false);
-                              setNoteText("");
-                              setNoteLessonId("");
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="flex-1"
-                            onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-                            disabled={savingNote || !noteText.trim()}
-                          >
-                            {savingNote ? "Saving..." : "Save"}
-                          </Button>
+                          <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); setIsAddingNote(false); setNoteText(""); setNoteLessonId(""); }}>Cancel</Button>
+                          <Button size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleSaveNote(); }} disabled={savingNote || !noteText.trim()}>{savingNote ? "Saving..." : "Save"}</Button>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Lesson Feedback Section */}
-                  <SectionPanel title="Lesson Feedback" icon={<Star className="h-4 w-4 text-primary" />} headerGradient>
-                    <div className="px-4 pb-2 space-y-3">
-                      {latestFeedback?.notes && !isAddingFeedback && (
-                        <div className="bg-muted/30 rounded-xl p-3 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              {format(parseISO(latestFeedback.lesson_date), 'EEE, d MMM')}
-                            </span>
-                            {latestFeedback.rating && (
-                              <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={cn("h-3 w-3", star <= latestFeedback.rating! ? "fill-amber-400 text-amber-400" : "text-muted")}
-                                  />
-                                ))}
-                              </div>
+                  {/* Lesson Feedback */}
+                  <div className="mx-4 mt-3">
+                    <SectionPanel title="Lesson Feedback" icon={<Star className="h-4 w-4 text-primary" />} headerGradient>
+                      <div className="px-4 pb-2 space-y-3">
+                        {latestFeedback?.notes && !isAddingFeedback && (
+                          <div className="bg-muted/30 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">{format(parseISO(latestFeedback.lesson_date), 'EEE, d MMM')}</span>
+                              {latestFeedback.rating && (
+                                <div className="flex items-center gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className={cn("h-3 w-3", star <= latestFeedback.rating! ? "fill-amber-400 text-amber-400" : "text-muted")} />))}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm">{latestFeedback.notes}</p>
+                          </div>
+                        )}
+                        {!isAddingFeedback ? (
+                          <Button variant="outline" size="sm" className="w-full" onClick={(e) => { e.stopPropagation(); setIsAddingFeedback(true); }}>
+                            <Send className="h-4 w-4 mr-2" /> Add Feedback
+                          </Button>
+                        ) : (
+                          <div className="space-y-3">
+                            {availableLessons.length > 0 && (
+                              <Select value={selectedLessonId} onValueChange={setSelectedLessonId}>
+                                <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}><SelectValue placeholder="Link to lesson..." /></SelectTrigger>
+                                <SelectContent className="bg-background z-50">
+                                  {availableLessons.map((lesson) => (<SelectItem key={lesson.id} value={lesson.id}>{format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
                             )}
+                            <div className="flex items-center gap-1 justify-center">
+                              {[1, 2, 3, 4, 5].map((star) => (<button key={star} type="button" onClick={(e) => { e.stopPropagation(); setNewRating(star); }} className="p-1"><Star className={cn("h-6 w-6", star <= newRating ? "fill-amber-400 text-amber-400" : "text-muted")} /></button>))}
+                            </div>
+                            <Textarea value={newFeedback} onChange={(e) => setNewFeedback(e.target.value)} placeholder="Enter lesson feedback..." className="min-h-[80px]" onClick={(e) => e.stopPropagation()} />
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); setIsAddingFeedback(false); setNewFeedback(""); setNewRating(0); }}>Cancel</Button>
+                              <Button size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleSaveFeedback(); }} disabled={savingFeedback}>{savingFeedback ? "Saving..." : "Save"}</Button>
+                            </div>
                           </div>
-                          <p className="text-sm">{latestFeedback.notes}</p>
-                        </div>
-                      )}
-                      
-                      {!isAddingFeedback ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsAddingFeedback(true);
-                          }}
-                        >
-                          <Send className="h-4 w-4 mr-2" />
-                          Add Feedback
-                        </Button>
-                      ) : (
-                        <div className="space-y-3">
-                          {availableLessons.length > 0 && (
-                            <Select value={selectedLessonId} onValueChange={setSelectedLessonId}>
-                              <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}>
-                                <SelectValue placeholder="Link to lesson..." />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background z-50">
-                                {availableLessons.map((lesson) => (
-                                  <SelectItem key={lesson.id} value={lesson.id}>
-                                    {format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                          
-                          <div className="flex items-center gap-1 justify-center">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setNewRating(star);
-                                }}
-                                className="p-1"
-                              >
-                                <Star className={cn("h-6 w-6", star <= newRating ? "fill-amber-400 text-amber-400" : "text-muted")} />
-                              </button>
-                            ))}
-                          </div>
-                          
-                          <Textarea
-                            value={newFeedback}
-                            onChange={(e) => setNewFeedback(e.target.value)}
-                            placeholder="Enter lesson feedback..."
-                            className="min-h-[80px]"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsAddingFeedback(false);
-                                setNewFeedback("");
-                                setNewRating(0);
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveFeedback();
-                              }}
-                              disabled={savingFeedback}
-                            >
-                              {savingFeedback ? "Saving..." : "Save"}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </SectionPanel>
-
-                  {/* Tracking History */}
-                  <SectionPanel title="Tracking History" icon={<Route className="h-4 w-4 text-primary" />} headerGradient>
-                    <div className="px-4 pb-2">
-                      <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
-                    </div>
-                  </SectionPanel>
-
-                  {/* Payments Section */}
-                  <SectionPanel title="Payments" icon={<PoundSterling className="h-4 w-4 text-primary" />} headerGradient>
-                    <div className="px-4 pb-2 space-y-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowRecordPaymentModal(true);
-                          }}
-                        >
-                          <PoundSterling className="h-4 w-4 mr-1" />
-                          Record
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowQRModal(true);
-                          }}
-                        >
-                          <QrCode className="h-4 w-4 mr-1" />
-                          QR
-                        </Button>
-                        {instructorId && instructorName && hasDebt && (
-                          <SendPaymentReminderButton
-                            pupilId={pupil.id}
-                            pupilName={pupil.name}
-                            pupilPhone={pupil.phone}
-                            pupilEmail={pupil.email}
-                            instructorId={instructorId}
-                            instructorName={instructorName}
-                            outstandingAmount={pupil.account_balance || 0}
-                          />
                         )}
                       </div>
-                      
-                      <PupilPaymentHistory
-                        pupilId={pupil.id}
-                        pupilName={pupil.name}
-                        refreshTrigger={paymentRefreshTrigger}
-                      />
-                      
-                      <PupilCreditBreakdown
-                        pupilId={pupil.id}
-                        prepaidHours={pupil.prepaid_hours || 0}
-                        depositPaid={pupil.deposit_paid || 0}
-                        paymentType={pupil.payment_type}
-                      />
-                    </div>
-                  </SectionPanel>
+                    </SectionPanel>
+                  </div>
+
+                  {/* Tracking History */}
+                  <div className="mx-4 mt-3">
+                    <SectionPanel title="Tracking History" icon={<Route className="h-4 w-4 text-primary" />} headerGradient>
+                      <div className="px-4 pb-2"><PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} /></div>
+                    </SectionPanel>
+                  </div>
+
+                  {/* Payments */}
+                  <div className="mx-4 mt-3">
+                    <SectionPanel title="Payments" icon={<PoundSterling className="h-4 w-4 text-primary" />} headerGradient>
+                      <div className="px-4 pb-2 space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowRecordPaymentModal(true); }}><PoundSterling className="h-4 w-4 mr-1" /> Record</Button>
+                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowQRModal(true); }}><QrCode className="h-4 w-4 mr-1" /> QR</Button>
+                          {instructorId && instructorName && hasDebt && (
+                            <SendPaymentReminderButton pupilId={pupil.id} pupilName={pupil.name} pupilPhone={pupil.phone} pupilEmail={pupil.email} instructorId={instructorId} instructorName={instructorName} outstandingAmount={pupil.account_balance || 0} />
+                          )}
+                        </div>
+                        <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} refreshTrigger={paymentRefreshTrigger} />
+                        <PupilCreditBreakdown pupilId={pupil.id} prepaidHours={pupil.prepaid_hours || 0} depositPaid={pupil.deposit_paid || 0} paymentType={pupil.payment_type} />
+                      </div>
+                    </SectionPanel>
+                  </div>
 
                   {/* Tools Grid */}
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-4">
-                    <button
-                      className="flex flex-col items-center gap-1.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewHistory(pupil);
-                      }}
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                        <History className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-[10px] font-medium text-foreground">Lessons</span>
-                    </button>
-                    <button
-                      className="flex flex-col items-center gap-1.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowSyllabusSheet(true);
-                      }}
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                        <GraduationCap className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-[10px] font-medium text-foreground">Syllabus</span>
-                    </button>
-                    <button
-                      className="flex flex-col items-center gap-1.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewReport(pupil);
-                      }}
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                        <Car className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-[10px] font-medium text-foreground">Report</span>
-                    </button>
-                    {onRecordTestResult && (
-                      <button
-                        className="flex flex-col items-center gap-1.5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRecordTestResult(pupil, false);
-                        }}
-                      >
-                        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
-                          <Award className="h-6 w-6 text-primary" />
-                        </div>
-                        <span className="text-[10px] font-medium text-foreground">Test</span>
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4">
+                    <div className="grid grid-cols-4 gap-x-4 gap-y-4">
+                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}>
+                        <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center"><History className="h-6 w-6 text-primary" /></div>
+                        <span className="text-[10px] font-medium text-foreground">Lessons</span>
                       </button>
-                    )}
-                  </div>
-
-                  {/* Status Dropdown */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Status:</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          {(() => {
-                            const StatusIcon = statusConfig[currentStatus].icon;
-                            return <StatusIcon className="h-4 w-4" />;
-                          })()}
-                          {statusConfig[currentStatus].label}
-                          {changingStatus && <Clock className="h-3 w-3 animate-spin" />}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-background z-50" onClick={(e) => e.stopPropagation()}>
-                        {(Object.keys(statusConfig) as PupilStatus[]).map((status) => {
-                          const config = statusConfig[status];
-                          const Icon = config.icon;
-                          return (
-                            <DropdownMenuItem
-                              key={status}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(status);
-                              }}
-                              className={status === currentStatus ? "bg-muted" : ""}
-                            >
-                              <Icon className="h-4 w-4 mr-2" />
-                              {config.label}
-                              {status === currentStatus && <Check className="h-4 w-4 ml-auto" />}
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  {/* New Pupil Checklist */}
-                  <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
-
-                  {/* T&Cs */}
-                  {onViewTerms && (
-                    <Button
-                      variant={hasSignedTerms ? "outline" : "default"}
-                      size="sm"
-                      className={cn("w-full", hasSignedTerms && "border-emerald-500 text-emerald-600")}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewTerms(pupil);
-                      }}
-                    >
-                      {hasSignedTerms ? (
-                        <>
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                          T&Cs Signed
-                        </>
-                      ) : (
-                        <>
-                          <FileSignature className="h-4 w-4 mr-2" />
-                          Sign T&Cs
-                        </>
+                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); setShowSyllabusSheet(true); }}>
+                        <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center"><GraduationCap className="h-6 w-6 text-primary" /></div>
+                        <span className="text-[10px] font-medium text-foreground">Syllabus</span>
+                      </button>
+                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onViewReport(pupil); }}>
+                        <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center"><Car className="h-6 w-6 text-primary" /></div>
+                        <span className="text-[10px] font-medium text-foreground">Report</span>
+                      </button>
+                      {onRecordTestResult && (
+                        <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onRecordTestResult(pupil, false); }}>
+                          <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center"><Award className="h-6 w-6 text-primary" /></div>
+                          <span className="text-[10px] font-medium text-foreground">Test</span>
+                        </button>
                       )}
-                    </Button>
-                  )}
+                    </div>
+                    <div className="flex items-center justify-around mt-4 pt-4 border-t border-border">
+                      <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }} className="flex flex-col items-center gap-1.5">
+                        <Navigation className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Navigate</span>
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); onStartChat?.(pupil); }} className="flex flex-col items-center gap-1.5">
+                        <MessageSquare className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Chat</span>
+                      </button>
+                      <SharePupilDetailsDialog pupil={pupil} instructorName={instructorName} trigger={
+                        <button className="flex flex-col items-center gap-1.5">
+                          <Share2 className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Share</span>
+                        </button>
+                      } />
+                    </div>
+                  </div>
 
-                  {/* Edit/Delete */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(pupil);
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(pupil);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
+                  {/* Status & Admin */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-semibold">{pupil.progress || 0}%</span>
+                      </div>
+                      <Progress value={pupil.progress || 0} className="h-2" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Status:</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="outline" size="sm" className="gap-2">
+                            {(() => { const StatusIcon = statusConfig[currentStatus].icon; return <StatusIcon className="h-4 w-4" />; })()}
+                            {statusConfig[currentStatus].label}
+                            {changingStatus && <Clock className="h-3 w-3 animate-spin" />}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-background z-50" onClick={(e) => e.stopPropagation()}>
+                          {(Object.keys(statusConfig) as PupilStatus[]).map((status) => {
+                            const config = statusConfig[status]; const Icon = config.icon;
+                            return (<DropdownMenuItem key={status} onClick={(e) => { e.stopPropagation(); handleStatusChange(status); }} className={status === currentStatus ? "bg-muted" : ""}><Icon className="h-4 w-4 mr-2" />{config.label}{status === currentStatus && <Check className="h-4 w-4 ml-auto" />}</DropdownMenuItem>);
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
+                    {onViewTerms && (
+                      <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
+                        {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+                    </div>
                   </div>
                 </div>
-              </div>
                 )}
               </div>
             </motion.div>
