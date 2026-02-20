@@ -448,7 +448,7 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex items-center gap-3"
+                  className="ios-tile relative bg-gradient-to-r from-primary via-[hsl(218,60%,28%)] to-[hsl(218,50%,35%)] rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex items-center gap-3"
                 >
                   {/* Icon */}
                   <div
