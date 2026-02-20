@@ -433,26 +433,25 @@ export function QuickActionTiles({
         </>
       ) : (
         // Normal view mode — card grid matching reference
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2.5">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
             const showBadge = badgeCount > 0;
             const style = tileStyles[index % tileStyles.length];
-            const subtitle = getSubtitle(action);
 
             return (
               <Link key={action.id} to={action.route} className="block">
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.03 + index * 0.025 }}
-                  whileTap={{ scale: 0.96 }}
-                  className={`${style.bg} rounded-2xl p-3.5 h-[110px] flex flex-col justify-between shadow-[0_1px_3px_rgba(0,0,0,0.06)] border border-border/40 relative overflow-hidden`}
+                  transition={{ delay: 0.03 + index * 0.02 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center gap-1.5"
                 >
-                  {/* Icon top-left */}
+                  {/* iOS-style rounded icon tile */}
                   <div
-                    className={`relative w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
+                    className={`relative w-[60px] h-[60px] rounded-[14px] ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-border/30`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -460,27 +459,20 @@ export function QuickActionTiles({
                         src={customIconImages[action.id]}
                         alt={action.title}
                         className="w-full h-full object-cover"
-                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '14px' }}
                       />
                     ) : (
-                      <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
+                      <Icon className={`h-6 w-6 ${style.iconColor}`} strokeWidth={1.6} />
+                    )}
+                    {/* Badge */}
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
                     )}
                   </div>
-
-                  {/* Badge */}
-                  {showBadge && (
-                    <span className="absolute top-2.5 right-2.5 min-w-[20px] h-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
-                      {badgeCount > 9 ? "9+" : badgeCount}
-                    </span>
-                  )}
-
-                  {/* Title + subtitle bottom-left */}
-                  <div className="mt-auto">
-                    <p className="text-[13px] font-bold text-foreground leading-tight">{action.title}</p>
-                    {subtitle && (
-                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
-                    )}
-                  </div>
+                  {/* Label */}
+                  <p className="text-[11px] font-medium text-foreground leading-tight text-center w-full truncate px-0.5">{action.title}</p>
                 </motion.div>
               </Link>
             );
