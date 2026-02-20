@@ -448,11 +448,11 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] p-3.5 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex flex-col justify-between min-h-[100px]"
+                  className="ios-tile relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] px-3.5 py-3 shadow-[0_2px_8px_rgba(20,37,66,0.15)] flex items-center gap-3"
                 >
-                  {/* Icon top-left */}
+                  {/* Icon */}
                   <div
-                    className={`w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : 'bg-white/20'} flex items-center justify-center overflow-hidden shrink-0`}
+                    className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : 'bg-white/20'} flex items-center justify-center overflow-hidden shrink-0`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -460,25 +460,25 @@ export function QuickActionTiles({
                         src={customIconImages[action.id]}
                         alt={action.title}
                         className="w-full h-full object-cover"
-                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '12px' }}
+                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
                       />
                     ) : (
-                      <Icon className="h-5 w-5 text-white" strokeWidth={1.8} />
+                      <Icon className="h-4 w-4 text-white" strokeWidth={1.8} />
                     )}
                   </div>
-                  {/* Badge */}
-                  {showBadge && (
-                    <span className="absolute top-2 right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
-                      {badgeCount > 9 ? "9+" : badgeCount}
-                    </span>
-                  )}
-                  {/* Title & subtitle bottom-left */}
-                  <div className="mt-2.5">
+                  {/* Title & subtitle */}
+                  <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-white leading-tight truncate">{action.title}</p>
                     {subtitle && (
                       <p className="text-[11px] text-white/60 leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
+                  {/* Badge */}
+                  {showBadge && (
+                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm shrink-0">
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </span>
+                  )}
                 </motion.div>
               </Link>
             );
