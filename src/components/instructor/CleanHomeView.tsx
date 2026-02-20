@@ -151,7 +151,7 @@ export function CleanHomeView({
       {/* ── Quick Access ── */}
       <div className="px-5 mt-8">
         <h2 className="text-xl font-bold text-foreground mb-4">Quick Access</h2>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { icon: Users, label: "Pupils", sub: String(activePupilCount || 0), color: "text-primary", bg: "bg-primary/10", path: "/instructor/pupils" },
             { icon: Clock, label: "Schedule", sub: `${todayOverview?.lessonCount || 0} today`, color: "text-amber-500", bg: "bg-amber-500/10", path: "/instructor/diary" },
@@ -163,7 +163,7 @@ export function CleanHomeView({
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="bg-card rounded-[24px] p-3 text-center flex flex-col items-center justify-center gap-1 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] aspect-square"
+              className="bg-card rounded-[28px] p-3 text-center flex flex-col items-center justify-center gap-1 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.06)] aspect-square border border-border/50"
             >
               <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${item.bg}`}>
                 <item.icon className={`h-6 w-6 ${item.color}`} strokeWidth={1.6} />
