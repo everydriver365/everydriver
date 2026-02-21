@@ -499,12 +499,9 @@ export function QuickActionTiles({
                     )}
                   </div>
 
-                  {/* Title & subtitle */}
+                  {/* Title */}
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
-                    {subtitle && (
-                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">{subtitle}</p>
-                    )}
                   </div>
                 </motion.div>
               </Link>
