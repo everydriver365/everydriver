@@ -11,6 +11,7 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -174,175 +175,166 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
-          {/* Gradient header with avatar, name, and countdown */}
-          <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-            <div className="relative flex items-center gap-3">
-              <div className="ring-2 ring-white/30 rounded-full shrink-0">
+        <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+          {/* Header — Quick Access tile style */}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full px-3.5 py-3.5 flex items-center gap-3"
+          >
+            <div className="relative shrink-0">
+              <div className="ring-2 ring-primary/20 rounded-full">
                 <PupilAvatar
                   name={pupilName}
                   imageUrl={pupilProfileImage}
                   size="md"
                 />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Next Up</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                    isUrgent
-                      ? "bg-amber-400/30 text-white animate-pulse"
-                      : "bg-white/20 text-white"
-                  }`}>
-                    <Timer className="h-3 w-3" /> {getCountdownText()}
-                  </span>
-                </div>
-                <button onClick={handleViewPupil} className="font-bold text-white text-[15px] truncate hover:text-white/80 transition-colors text-left block w-full">
-                  {pupilName}
-                </button>
-                {displayLocation && (
-                  <p className="text-white/60 text-xs truncate mt-0.5">{displayLocation}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="px-4 pb-4">
-            {/* Info badges row */}
-            <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-primary/5 border border-primary/10 text-xs font-medium text-foreground">
-                <Clock className="h-3.5 w-3.5 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-none bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                {formatDuration()} lesson
-              </span>
-              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-none text-[11px] font-semibold ${
-                effectiveBalance < 0
-                  ? "bg-destructive/10 border border-destructive/30 text-destructive"
-                  : "bg-primary/5 border border-primary/20 text-primary"
-              }`}>
-                £{Math.abs(effectiveBalance).toFixed(0)}{effectiveBalance < 0 ? " due" : ""}
-              </span>
-            </div>
-
-            {/* ETA row */}
-            {etaLoading ? (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating ETA...
-              </div>
-            ) : etaMinutes > 0 ? (
-              <div className={`flex items-center gap-1.5 text-xs font-medium mb-3 ${
-                trafficCondition === 'heavy' ? 'text-destructive'
-                : trafficCondition === 'moderate' ? 'text-amber-600'
-                : 'text-emerald-600'
-              }`}>
-                <Car className="h-3.5 w-3.5" />
-                ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
-                {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
-                  <span className="ml-0.5">{trafficCondition === 'heavy' ? '🔴' : '🟡'}</span>
-                )}
-              </div>
-            ) : null}
-
-            {/* Messages row — always visible */}
-            <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 border ${
-              hasUnread
-                ? "bg-destructive/10 border-destructive/20"
-                : "bg-muted/30 border-border/40"
-            }`}>
-              <Mail className={`h-4 w-4 shrink-0 ${hasUnread ? "text-destructive" : "text-muted-foreground"}`} />
-              <span className={`text-xs font-medium ${hasUnread ? "text-destructive" : "text-muted-foreground"}`}>
-                {hasUnread
-                  ? `${pupilUnreadCount} unread message${pupilUnreadCount !== 1 ? "s" : ""} from ${firstName}`
-                  : `No unread messages from ${firstName}`
-                }
-              </span>
-            </div>
-
-            {/* Start Lesson — visible when lesson is imminent */}
-            {minutesUntil <= 15 && (
-              <Button
-                size="sm"
-                onClick={() => navigate(`/instructor/live-map?lesson=${lessonId}`)}
-                className="w-full rounded-xl gap-2 h-9 text-sm font-semibold mb-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                <Play className="h-4 w-4" /> Start Lesson
-              </Button>
-            )}
-
-            {/* Primary actions — compact */}
-            <div className="flex items-center gap-1.5">
-              {pickupPostcode && (
-                <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1 h-8 text-xs">
-                  <Navigation className="h-3.5 w-3.5" /> Navigate
-                </Button>
+              {hasUnread && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
+                  {pupilUnreadCount}
+                </span>
               )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1 h-8 text-xs">
-                    <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuItem onClick={handleOnMyWay}>
-                    <Check className="h-4 w-4 mr-2 text-emerald-600" />
-                    On my way!
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleOnWayDelay(5)}>
-                    <Clock className="h-4 w-4 mr-2" /> I'll be 5 mins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleOnWayDelay(10)}>
-                    <Clock className="h-4 w-4 mr-2" /> I'll be 10 mins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleOnWayDelay(15)}>
-                    <Clock className="h-4 w-4 mr-2" /> I'll be 15 mins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleOnWayDelay(20)}>
-                    <Clock className="h-4 w-4 mr-2" /> I'll be 20 mins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleOnWayDelay(30)}>
-                    <Clock className="h-4 w-4 mr-2" /> I'll be 30 mins
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleCallASAP}>
-                    <Phone className="h-4 w-4 mr-2" /> I'll call you ASAP
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSendETA}>
-                    <Send className="h-4 w-4 mr-2 text-primary" />
-                    {etaText ? `Send ETA (${etaText})` : "Send current ETA"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
-                <Phone className="h-3.5 w-3.5" />
-              </Button>
-              <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
-                <MessageSquare className="h-3.5 w-3.5" />
-              </Button>
             </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-[12px] font-semibold text-foreground leading-tight truncate">{pupilName}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
+                {displayLocation && ` · ${pickupPostcode}`}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                isUrgent
+                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                <Timer className="h-3 w-3" /> {getCountdownText()}
+              </span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !expanded && "-rotate-90")} />
+            </div>
+          </button>
 
-            {/* Expand toggle */}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-center gap-1 pt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <span>{expanded ? "Less" : "More actions"}</span>
-              <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="h-3.5 w-3.5" />
-              </motion.div>
-            </button>
+          {/* Expandable content */}
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="px-4 pb-4">
+                  {/* Info badges row */}
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ${
+                      effectiveBalance < 0
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/5 text-primary"
+                    }`}>
+                      £{Math.abs(effectiveBalance).toFixed(0)}{effectiveBalance < 0 ? " due" : ""}
+                    </span>
+                  </div>
 
-            {/* Expandable extra actions */}
-            <AnimatePresence>
-              {expanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-2">
+                  {/* ETA row */}
+                  {etaLoading ? (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating ETA...
+                    </div>
+                  ) : etaMinutes > 0 ? (
+                    <div className={`flex items-center gap-1.5 text-xs font-medium mb-3 ${
+                      trafficCondition === 'heavy' ? 'text-destructive'
+                      : trafficCondition === 'moderate' ? 'text-amber-600'
+                      : 'text-emerald-600'
+                    }`}>
+                      <Car className="h-3.5 w-3.5" />
+                      ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
+                      {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
+                        <span className="ml-0.5">{trafficCondition === 'heavy' ? '🔴' : '🟡'}</span>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {/* Messages row */}
+                  <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 border ${
+                    hasUnread
+                      ? "bg-destructive/10 border-destructive/20"
+                      : "bg-muted/30 border-border/40"
+                  }`}>
+                    <Mail className={`h-4 w-4 shrink-0 ${hasUnread ? "text-destructive" : "text-muted-foreground"}`} />
+                    <span className={`text-xs font-medium ${hasUnread ? "text-destructive" : "text-muted-foreground"}`}>
+                      {hasUnread
+                        ? `${pupilUnreadCount} unread message${pupilUnreadCount !== 1 ? "s" : ""} from ${firstName}`
+                        : `No unread messages from ${firstName}`
+                      }
+                    </span>
+                  </div>
+
+                  {/* Start Lesson — visible when lesson is imminent */}
+                  {minutesUntil <= 15 && (
+                    <Button
+                      size="sm"
+                      onClick={() => navigate(`/instructor/live-map?lesson=${lessonId}`)}
+                      className="w-full rounded-xl gap-2 h-9 text-sm font-semibold mb-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Play className="h-4 w-4" /> Start Lesson
+                    </Button>
+                  )}
+
+                  {/* Primary actions */}
+                  <div className="flex items-center gap-1.5">
+                    {pickupPostcode && (
+                      <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1 h-8 text-xs">
+                        <Navigation className="h-3.5 w-3.5" /> Navigate
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1 h-8 text-xs">
+                          <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuItem onClick={handleOnMyWay}>
+                          <Check className="h-4 w-4 mr-2 text-emerald-600" />
+                          On my way!
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleOnWayDelay(5)}>
+                          <Clock className="h-4 w-4 mr-2" /> I'll be 5 mins
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOnWayDelay(10)}>
+                          <Clock className="h-4 w-4 mr-2" /> I'll be 10 mins
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOnWayDelay(15)}>
+                          <Clock className="h-4 w-4 mr-2" /> I'll be 15 mins
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOnWayDelay(20)}>
+                          <Clock className="h-4 w-4 mr-2" /> I'll be 20 mins
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOnWayDelay(30)}>
+                          <Clock className="h-4 w-4 mr-2" /> I'll be 30 mins
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleCallASAP}>
+                          <Phone className="h-4 w-4 mr-2" /> I'll call you ASAP
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleSendETA}>
+                          <Send className="h-4 w-4 mr-2 text-primary" />
+                          {etaText ? `Send ETA (${etaText})` : "Send current ETA"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
+                      <Phone className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+
+                  {/* Secondary actions */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-3">
                     <Button size="sm" variant="outline" onClick={() => setRescheduleOpen(true)} className="rounded-xl gap-1.5">
                       <CalendarClock className="h-3.5 w-3.5" /> Reschedule
                     </Button>
@@ -350,10 +342,10 @@ export function NextUpTile({
                       <X className="h-3.5 w-3.5" /> Cancel
                     </Button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
