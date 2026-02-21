@@ -183,6 +183,21 @@ export default function InstructorPupils() {
     }
   }, [location.search]);
 
+  // Auto-select pupil when navigated with ?pupil=ID
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const pupilId = params.get("pupil");
+    if (pupilId && pupils.length > 0) {
+      const pupil = pupils.find(p => p.id === pupilId);
+      if (pupil) {
+        setSelectedPupil(pupil);
+        setEditForm(pupil);
+        setIsEditOpen(true);
+        navigate("/instructor/pupils", { replace: true });
+      }
+    }
+  }, [location.search, pupils]);
+
   const requestOpenTerms = () => {
     if (selectedPupil) {
       setIsTermsModalOpen(true);
