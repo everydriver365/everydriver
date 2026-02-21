@@ -379,10 +379,10 @@ export function InstructorMobileHome({
             className="w-full h-full object-cover"
           />
           {/* Gradient overlay at bottom for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
           {/* Greeting text overlaid at bottom of image */}
           <div className="absolute bottom-10 left-5 right-5 text-white">
-            <h1 className="text-[26px] font-bold leading-tight drop-shadow-sm">
+            <h1 className="text-[28px] font-extrabold leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] tracking-tight">
               {(() => {
                 const h = new Date().getHours();
                 if (h >= 5 && h < 12) return "Good Morning";
@@ -391,7 +391,7 @@ export function InstructorMobileHome({
                 return "Hello";
               })()}{firstName ? `, ${firstName}` : ""}
             </h1>
-            <p className="text-white/80 text-[15px] mt-0.5 drop-shadow-sm">
+            <p className="text-white/90 text-[15px] mt-1 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
               {format(new Date(), "EEEE d MMMM")}
             </p>
           </div>
