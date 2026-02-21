@@ -185,7 +185,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between"
+        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5"
       >
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
