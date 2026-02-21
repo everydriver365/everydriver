@@ -1,70 +1,81 @@
 
 
-## Add `bookings.drive365.co.uk` Subdomain for Booking Access
+## Add Month Calendar View to Mobile Schedule
 
 ### What You'll Get
 
-A dedicated subdomain (`bookings.drive365.co.uk`) that serves as a standalone booking portal. When visitors land on it, they'll see the instructor search/browse page (the existing Courses page) where they can find an instructor and book directly. The existing booking pages within the main app will continue to work exactly as they do now.
+A new "Month" layout option on the mobile schedule page, togglable alongside the existing "List" view. The month view will show:
 
-### How It Works
+1. A full month grid (Mon-Sun) with the month name as a bold header
+2. Colored indicator bars/dots under each date showing lesson activity
+3. Tapping a date shows that day's events below the grid -- all-day events first, then timed lessons and external calendar events with start/end times
+4. A "Today" button to quickly jump back to the current date
 
-1. Visitor goes to `bookings.drive365.co.uk`
-2. They see the instructor search page (postcode search, filters, course cards)
-3. They pick an instructor/course and are taken to the booking flow (`/book/:instructorId`)
-4. The full booking and confirmation flow works on the subdomain
+The existing list view remains unchanged and fully functional.
 
-All other routes (instructor app, pupil portal, admin, etc.) are blocked on this subdomain -- visitors can only access the booking-related pages.
+### How the Toggle Works
 
-### DNS Setup (You Do This)
+On mobile, two small segmented buttons will appear in the sticky header bar (between the spacer and the sync icon):
+- **List** (current week-strip + card layout)
+- **Month** (new full-month grid + event list)
 
-At your domain registrar, add an **A record**:
-- **Name:** `bookings`
-- **Type:** A
-- **Value:** `185.158.133.1`
+The selection persists in localStorage so it's remembered between sessions.
 
-Then add `bookings.drive365.co.uk` as a custom domain in your Lovable project settings under Domains. SSL will be provisioned automatically.
+### Month View Layout (matching the reference image style)
 
-### What Changes in Code
+```text
++------------------------------------------+
+|  < February 2026 >                       |
+|  M    T    W    T    F    S    S          |
+|       1                                  |
+|  2    3    4   [5]   6    7    8          |
+|  --   --   --   o   --   --   --         |
+|  9   10   11   12   13   14   15         |
+|  ...                                     |
++------------------------------------------+
+|  Spring term                    all-day  |
+|  Lotty : College AM             all-day  |
+|  | National Speed Awareness   07:00      |
+|  |   us06web.zoom.us          10:00      |
+|  | WDU - 5pm - What's Driv... 17:00      |
+|  |   us02web.zoom.us          20:00      |
++------------------------------------------+
+|  [Today]                                 |
++------------------------------------------+
+```
 
-**1. `src/components/DomainRouter.tsx`** -- Add booking subdomain detection
+- Today's date gets a circular highlight
+- Selected date gets a filled circle (using the existing navy #1a3a4a)
+- Colored dots/bars under dates indicate: lessons (amber), external events (teal/calendar color)
+- Weekends (Sun) shown in red text, matching iOS convention
+- Month navigation via left/right arrows
 
-- Add `bookings.drive365.co.uk` to a new constant for the booking subdomain
-- Add a helper function `isBookingSubdomain()` that checks if the current hostname matches
-- In the routing logic, when on the booking subdomain:
-  - Root path (`/`) redirects to `/courses` (the search/browse page)
-  - Only allow `/courses`, `/book/`, and `/booking-confirmation` routes
-  - Block all other routes by redirecting back to `/courses`
+### Implementation Steps
 
-**2. `src/hooks/useDomainBranding.ts`** -- Add booking subdomain branding
+**Step 1: Create `MobileMonthCalendarView` component**
+- New file: `src/components/instructor/MobileMonthCalendarView.tsx`
+- Props: `instructorId: string`
+- Manages its own selected date and visible month state
+- Fetches lesson counts and external events for the entire visible month
+- Renders a 7-column grid for the month with event indicators
+- Below the grid, renders the selected day's events (all-day first, then timed) in a list format matching the reference -- event title on the left, time on the right, with a left-border accent for timed events
+- Includes a "Today" button at the bottom
+- Tapping a date selects it and loads that day's events
+- Tapping a lesson event opens the same expandable card / actions as the list view
+- Reuses existing data fetching patterns from `NewMobileScheduleView` and `ScheduleDayTabs`
 
-- Detect the booking subdomain and return Drive365 branding (since it's a subdomain of drive365.co.uk)
-- Set `isLearnerDomain: true` so the correct styling applies
-
-### What Will NOT Change
-
-- The existing `/book/:instructorId` route continues to work on all current domains
-- The `/courses` page remains unchanged -- it just also serves as the landing page on the booking subdomain
-- No database changes required
-- No new pages need to be created
-- All payment callbacks (Square, Klarna, etc.) will work correctly since they use `window.location.origin`
+**Step 2: Add mobile view toggle to `InstructorSchedule.tsx`**
+- In the mobile header section (between the spacer and sync button), add two small toggle buttons: List and Month icons
+- Wire the toggle to switch between `NewMobileScheduleView` and `MobileMonthCalendarView`
+- Persist choice to localStorage under the existing `instructor-schedule-view` key
+- Update the `ViewMode` type to include `'month'` as a valid option
 
 ### Technical Details
 
-The core change is roughly 20 lines added to `DomainRouter.tsx`:
-
-```text
-New constant:
-  BOOKING_SUBDOMAIN = "bookings.drive365.co.uk"
-
-New helper:
-  isBookingSubdomain() -- checks hostname
-
-Updated routing logic:
-  if (isBookingSubdomain) {
-    if path is "/" -> redirect to /courses
-    if path not in [/courses, /book/, /booking-confirmation] -> redirect to /courses
-  }
-```
-
-The `useDomainBranding.ts` hook gets a small addition to recognise the subdomain and return Drive365 branding, ensuring the header/footer show the correct logo and brand name.
+- **Files created**: `src/components/instructor/MobileMonthCalendarView.tsx`
+- **Files modified**: `src/pages/InstructorSchedule.tsx` (add toggle + render new view)
+- **No database changes** -- uses existing `scheduled_lessons` and `instructor_calendar_events` tables
+- **No new dependencies** -- uses existing `date-fns` for date arithmetic
+- **Color scheme**: Matches existing navy (#1a3a4a) for selection, amber dots for lessons, teal for external events, consistent with the current schedule page styling
+- **iOS-style aesthetic**: System grey background, rounded-xl cards for events, clean typography matching the portal visual identity
 
