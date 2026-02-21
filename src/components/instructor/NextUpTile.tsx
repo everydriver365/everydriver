@@ -175,54 +175,48 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
-          {/* Gradient header — stands out like Today's Overview */}
+        <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+          {/* Header — consistent with other dashboard tiles */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 px-4 py-3.5 text-left"
+            className="w-full px-3.5 py-3.5 flex items-center gap-3"
           >
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/[0.06]" />
-              <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.04]" />
-            </div>
-            <div className="relative flex items-center gap-3">
-              <div className="relative shrink-0">
-                <div className="ring-2 ring-white/30 rounded-full">
-                  <PupilAvatar
-                    name={pupilName}
-                    imageUrl={pupilProfileImage}
-                    size="md"
-                  />
-                </div>
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-white text-primary text-[9px] font-bold flex items-center justify-center px-1 shadow-sm">
-                    {pupilUnreadCount}
-                  </span>
-                )}
+            <div className="relative shrink-0">
+              <div className="ring-2 ring-primary/20 rounded-full">
+                <PupilAvatar
+                  name={pupilName}
+                  imageUrl={pupilProfileImage}
+                  size="md"
+                />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Next Up</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                    isUrgent
-                      ? "bg-amber-400/30 text-white animate-pulse"
-                      : "bg-white/20 text-white"
-                  }`}>
-                    <Timer className="h-3 w-3" /> {getCountdownText()}
-                  </span>
-                </div>
-                <p className="font-bold text-white text-[15px] truncate mt-0.5">{pupilName}</p>
-                <p className="text-white/60 text-xs mt-0.5">
-                  {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
-                  {displayLocation && ` · ${pickupPostcode}`}
-                </p>
-              </div>
-              <ChevronDown className={cn("h-4 w-4 text-white/50 transition-transform duration-200 shrink-0", !expanded && "-rotate-90")} />
+              {hasUnread && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1 shadow-sm z-10">
+                  {pupilUnreadCount}
+                </span>
+              )}
             </div>
+            <div className="flex-1 min-w-0 text-left">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">Next Up</p>
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                  isUrgent
+                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 animate-pulse"
+                    : "bg-muted text-muted-foreground"
+                )}>
+                  <Timer className="h-2.5 w-2.5" /> {getCountdownText()}
+                </span>
+              </div>
+              <p className="text-[13px] font-bold text-foreground truncate mt-0.5">{pupilName}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
+                {displayLocation && ` · ${pickupPostcode}`}
+              </p>
+            </div>
+            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0", !expanded && "-rotate-90")} />
           </button>
 
-          {/* Expandable content — card body */}
-          <div className="bg-card">
+          {/* Expandable content */}
           <AnimatePresence>
             {expanded && (
               <motion.div
@@ -232,36 +226,41 @@ export function NextUpTile({
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <div className="px-4 py-3 pb-4">
+                <div className="px-3.5 pb-3.5 space-y-2.5">
+                  {/* Divider */}
+                  <div className="border-t border-border/40" />
+
                   {/* Info badges row */}
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 text-xs font-medium text-foreground">
-                      <Clock className="h-3.5 w-3.5 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 text-[11px] font-medium text-foreground">
+                      <Clock className="h-3 w-3 text-primary" /> {formatTime(startTime)}
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                      {formatDuration()} lesson
+                      {formatDuration()}
                     </span>
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold ${
+                    <span className={cn(
+                      "inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold",
                       effectiveBalance < 0
                         ? "bg-destructive/10 text-destructive"
                         : "bg-primary/5 text-primary"
-                    }`}>
+                    )}>
                       £{Math.abs(effectiveBalance).toFixed(0)}{effectiveBalance < 0 ? " due" : ""}
                     </span>
                   </div>
 
                   {/* ETA row */}
                   {etaLoading ? (
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating ETA...
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Calculating ETA...
                     </div>
                   ) : etaMinutes > 0 ? (
-                    <div className={`flex items-center gap-1.5 text-xs font-medium mb-3 ${
+                    <div className={cn(
+                      "flex items-center gap-1.5 text-[11px] font-medium",
                       trafficCondition === 'heavy' ? 'text-destructive'
                       : trafficCondition === 'moderate' ? 'text-amber-600'
                       : 'text-emerald-600'
-                    }`}>
-                      <Car className="h-3.5 w-3.5" />
+                    )}>
+                      <Car className="h-3 w-3" />
                       ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
                       {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
                         <span className="ml-0.5">{trafficCondition === 'heavy' ? '🔴' : '🟡'}</span>
@@ -270,13 +269,14 @@ export function NextUpTile({
                   ) : null}
 
                   {/* Messages row */}
-                  <div className={`mb-3 flex items-center gap-2 rounded-xl px-3 py-2 border ${
+                  <div className={cn(
+                    "flex items-center gap-2 rounded-xl px-2.5 py-2 border",
                     hasUnread
-                      ? "bg-destructive/10 border-destructive/20"
+                      ? "bg-destructive/5 border-destructive/20"
                       : "bg-muted/30 border-border/40"
-                  }`}>
-                    <Mail className={`h-4 w-4 shrink-0 ${hasUnread ? "text-destructive" : "text-muted-foreground"}`} />
-                    <span className={`text-xs font-medium ${hasUnread ? "text-destructive" : "text-muted-foreground"}`}>
+                  )}>
+                    <Mail className={cn("h-3.5 w-3.5 shrink-0", hasUnread ? "text-destructive" : "text-muted-foreground")} />
+                    <span className={cn("text-[11px] font-medium", hasUnread ? "text-destructive" : "text-muted-foreground")}>
                       {hasUnread
                         ? `${pupilUnreadCount} unread message${pupilUnreadCount !== 1 ? "s" : ""} from ${firstName}`
                         : `No unread messages from ${firstName}`
@@ -289,7 +289,7 @@ export function NextUpTile({
                     <Button
                       size="sm"
                       onClick={() => navigate(`/instructor/live-map?lesson=${lessonId}`)}
-                      className="w-full rounded-xl gap-2 h-9 text-sm font-semibold mb-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="w-full rounded-xl gap-2 h-9 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       <Play className="h-4 w-4" /> Start Lesson
                     </Button>
@@ -348,7 +348,7 @@ export function NextUpTile({
                   </div>
 
                   {/* Secondary actions */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-3">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">
                     <Button size="sm" variant="outline" onClick={() => setRescheduleOpen(true)} className="rounded-xl gap-1.5">
                       <CalendarClock className="h-3.5 w-3.5" /> Reschedule
                     </Button>
@@ -360,7 +360,6 @@ export function NextUpTile({
               </motion.div>
             )}
           </AnimatePresence>
-          </div>{/* end bg-card */}
         </div>
       </motion.div>
 
