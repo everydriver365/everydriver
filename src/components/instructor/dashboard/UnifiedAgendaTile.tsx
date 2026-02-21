@@ -182,34 +182,32 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className={cn("bg-card rounded-xl border shadow-sm overflow-hidden", className)}>
-      {/* Header */}
+    <div className={cn("rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden", className)}>
+      {/* Header — matching Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-white rounded-t-xl"
+        className="w-full px-3.5 py-3.5 flex items-center gap-3"
       >
-        <div className="flex items-center gap-2.5">
-          <img src={agendaIcon} alt="Agenda" className="h-9 w-9" />
-          <div className="text-left">
-            <h3 className="text-sm font-semibold text-white">Agenda</h3>
-            <p className="text-[11px] text-white/70 leading-none mt-0.5">
-              {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""}` : "All clear"}
-            </p>
+        <div className="relative shrink-0">
+          <div className="w-11 h-11 rounded-xl overflow-hidden">
+            <img src={agendaIcon} alt="Agenda" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
           {totalItems > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm z-10">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-[12px] font-semibold text-foreground leading-tight">Agenda</p>
+        </div>
+        <div className="flex items-center gap-1.5">
           <Popover>
             <PopoverTrigger asChild>
               <span
                 role="button"
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center justify-center h-7 w-7 rounded-full text-white/80 hover:bg-white/20 transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded-full text-muted-foreground hover:bg-muted transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </span>
@@ -231,7 +229,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
               </button>
             </PopoverContent>
           </Popover>
-          <ChevronDown className={cn("h-4 w-4 text-white/60 transition-transform duration-200", !isExpanded && "-rotate-90")} />
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !isExpanded && "-rotate-90")} />
         </div>
       </button>
 
