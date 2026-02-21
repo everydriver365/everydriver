@@ -185,15 +185,15 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/15 via-primary/10 to-transparent rounded-t-xl"
+        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-white rounded-t-xl"
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <CalendarIcon className="h-4 w-4 text-primary" />
+          <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+            <CalendarIcon className="h-4 w-4 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="text-sm font-semibold text-foreground">Agenda</h3>
-            <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+            <h3 className="text-sm font-semibold text-white">Agenda</h3>
+            <p className="text-[11px] text-white/70 leading-none mt-0.5">
               {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""}` : "All clear"}
             </p>
           </div>
@@ -210,7 +210,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
               <span
                 role="button"
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center justify-center h-7 w-7 rounded-full text-muted-foreground hover:bg-muted transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded-full text-white/80 hover:bg-white/20 transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </span>
@@ -232,7 +232,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
               </button>
             </PopoverContent>
           </Popover>
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !isExpanded && "-rotate-90")} />
+          <ChevronDown className={cn("h-4 w-4 text-white/60 transition-transform duration-200", !isExpanded && "-rotate-90")} />
         </div>
       </button>
 
