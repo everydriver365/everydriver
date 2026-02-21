@@ -616,8 +616,8 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/messages")}
           className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
         >
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
-            <img src={messagesIcon} alt="Messages" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
+          <div className="w-11 h-11 flex items-center justify-center shrink-0 overflow-hidden">
+            <img src={messagesIcon} alt="Messages" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-semibold text-foreground leading-tight">In App Messages</p>
