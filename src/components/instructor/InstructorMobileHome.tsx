@@ -63,6 +63,7 @@ import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
+import scheduleIcon from "@/assets/schedule-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
 import testRequestsIcon from "@/assets/test-requests-icon.png";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
@@ -420,107 +421,60 @@ export function InstructorMobileHome({
         <div className="px-4 -mt-8 relative z-10">
           <motion.div
             whileTap={{ scale: 0.97 }}
-            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
+            className="w-full rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden"
           >
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="w-full bg-gradient-to-r from-primary via-primary to-primary/90 p-4 flex items-center gap-4 text-left"
+              className="w-full px-3.5 py-3.5 flex items-center gap-3 text-left"
             >
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
-                  {currentWeather && (
-                    <span className="flex items-center gap-1 text-amber-300 text-[11px]">
-                      {(() => {
-                        const WeatherIcon = currentWeather.icon === "Sun" ? Sun
-                          : currentWeather.icon === "CloudSun" ? CloudSun
-                          : currentWeather.icon === "Cloud" ? Cloud
-                          : currentWeather.icon === "CloudRain" ? CloudRain
-                          : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
-                          : currentWeather.icon === "CloudLightning" ? CloudLightning
-                          : currentWeather.icon === "CloudFog" ? CloudFog
-                          : currentWeather.icon === "Snowflake" ? Snowflake
-                          : currentWeather.icon === "Wind" ? Wind
-                          : CloudSun;
-                        const iconColor = currentWeather.icon === "Sun" ? "text-yellow-400"
-                          : currentWeather.icon === "CloudSun" ? "text-amber-400"
-                          : currentWeather.icon === "CloudRain" ? "text-blue-400"
-                          : currentWeather.icon === "CloudDrizzle" ? "text-sky-400"
-                          : currentWeather.icon === "CloudLightning" ? "text-violet-400"
-                          : currentWeather.icon === "Snowflake" ? "text-cyan-300"
-                          : currentWeather.icon === "Wind" ? "text-teal-300"
-                          : currentWeather.icon === "CloudFog" ? "text-gray-300"
-                          : "text-amber-300";
-                        return <WeatherIcon className={`h-3.5 w-3.5 ${iconColor}`} />;
-                      })()}
-                      {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
-                      {displayLocation && (
-                        <>
-                          <span className="text-white/40 mx-0.5">·</span>
-                          <MapPin className="h-2.5 w-2.5" />
-                          <span className="max-w-[100px] truncate">{displayLocation}</span>
-                        </>
-                      )}
-                    </span>
-                  )}
+              <div className="relative shrink-0">
+                <div className="w-11 h-11 rounded-xl overflow-hidden">
+                  <img src={scheduleIcon} alt="Today" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
                 </div>
-                <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
-                  {todayOverview?.lessonCount
-                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
-                    : "No lessons scheduled today."}
-                </p>
-                {todayOverview && todayOverview.lessonCount > 0 && (
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-white/70 text-[12px] flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {todayOverview.totalHours}h
-                    </span>
-                    <span className="text-white/70 text-[12px] flex items-center gap-1">
-                      <PoundSterling className="h-3 w-3" />
-                      £{todayOverview.expectedEarnings}
-                      {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
-                        <span className={`ml-1 text-[10px] font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
-                          {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
-                        </span>
-                      )}
-                    </span>
-                  </div>
+                {currentLessons > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1">
+                    {currentLessons}
+                  </span>
                 )}
               </div>
-              {/* Lesson Count Ring */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">Today's Overview</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {todayOverview?.lessonCount
+                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} · ${todayOverview.totalHours}h · £${todayOverview.expectedEarnings}`
+                    : "No lessons scheduled"}
+                  {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
+                    <span className={`ml-1 font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-600" : "text-destructive"}`}>
+                      {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
+                    </span>
+                  )}
+                </p>
+              </div>
               <div className="flex items-center gap-2 shrink-0">
-                {(() => {
-                  const total = maxLessons;
-                  const done = todayOverview?.lessonCount || 0;
-                  const pct = Math.min(done / total, 1);
-                  const r = 22;
-                  const circ = 2 * Math.PI * r;
-                  const offset = circ * (1 - pct);
-                  return (
-                    <div className="relative w-14 h-14 shrink-0">
-                      <svg viewBox="0 0 52 52" className="w-full h-full -rotate-90">
-                        <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
-                        <motion.circle
-                          cx="26" cy="26" r={r} fill="none"
-                          stroke="white" strokeWidth="4" strokeLinecap="round"
-                          strokeDasharray={circ}
-                          initial={{ strokeDashoffset: circ }}
-                          animate={{ strokeDashoffset: offset }}
-                          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-black text-white leading-none">{done}</span>
-                        <span className="text-[7px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                {currentWeather && currentWeather.temperature != null && (
+                  <span className="flex items-center gap-1 text-muted-foreground text-[10px]">
+                    {(() => {
+                      const WeatherIcon = currentWeather.icon === "Sun" ? Sun
+                        : currentWeather.icon === "CloudSun" ? CloudSun
+                        : currentWeather.icon === "Cloud" ? Cloud
+                        : currentWeather.icon === "CloudRain" ? CloudRain
+                        : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
+                        : currentWeather.icon === "CloudLightning" ? CloudLightning
+                        : currentWeather.icon === "CloudFog" ? CloudFog
+                        : currentWeather.icon === "Snowflake" ? Snowflake
+                        : currentWeather.icon === "Wind" ? Wind
+                        : CloudSun;
+                      return <WeatherIcon className="h-3.5 w-3.5" />;
+                    })()}
+                    {Math.round(currentWeather.temperature)}°C
+                  </span>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
             </button>
             {/* Engine fault warning line */}
             {engineFaultCount > 0 && !engineFaultsDismissed && (
-              <div className="w-full flex items-center bg-destructive/90 text-white">
+              <div className="w-full flex items-center bg-destructive/90 text-white rounded-b-2xl">
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate("/instructor/vehicle-health#faults"); }}
                   className="flex-1 flex items-center gap-2 px-4 py-2.5 text-left active:bg-destructive transition-colors"
@@ -547,7 +501,7 @@ export function InstructorMobileHome({
             {currentWeather && currentWeather.temperature != null && currentWeather.temperature <= 2 && (
               <button
                 onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white text-left active:bg-sky-700 transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white text-left active:bg-sky-700 transition-colors rounded-b-2xl"
               >
                 <Snowflake className="h-3.5 w-3.5 shrink-0" />
                 <span className="text-[12px] font-medium flex-1">
@@ -559,7 +513,7 @@ export function InstructorMobileHome({
             {currentWeather && currentWeather.temperature != null && currentWeather.temperature > 2 && (currentWeather.icon === "CloudRain" || currentWeather.icon === "CloudLightning" || currentWeather.icon === "CloudDrizzle") && (
               <button
                 onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-primary/80 text-white text-left active:bg-primary/90 transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-primary/80 text-white text-left active:bg-primary/90 transition-colors rounded-b-2xl"
               >
                 <WeatherIcon icon={currentWeather.icon} className="h-3.5 w-3.5 shrink-0 text-white" />
                 <span className="text-[12px] font-medium flex-1">
@@ -572,7 +526,7 @@ export function InstructorMobileHome({
             {alerts.length > 0 && (
               <button
                 onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white text-left active:bg-amber-700 transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white text-left active:bg-amber-700 transition-colors rounded-b-2xl"
               >
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span className="text-[12px] font-medium flex-1">
