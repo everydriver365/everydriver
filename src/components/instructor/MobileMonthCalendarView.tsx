@@ -295,11 +295,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             {timedEvents.map((evt) => (
               <div
                 key={evt.id}
-                className={cn(
-                  "rounded-xl border border-border px-4 py-2.5 flex items-center justify-between",
-                  evt.type === 'lesson' ? "bg-card border-l-4 border-l-amber-400" : "bg-card border-l-4",
-                )}
-                style={evt.type === 'external' && evt.color ? { borderLeftColor: evt.color } : evt.type === 'external' ? { borderLeftColor: 'hsl(var(--primary))' } : undefined}
+                className="rounded-xl border border-border px-4 py-2.5 flex items-center justify-between bg-card"
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
