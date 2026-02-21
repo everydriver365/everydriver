@@ -455,22 +455,24 @@ export function QuickActionTiles({
                   )}
                 >
                   {/* Icon */}
-                  <div
-                    className={`relative w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
-                    style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
-                  >
-                    {customIconImages[action.id] ? (
-                      <img
-                        src={customIconImages[action.id]}
-                        alt={action.title}
-                        className="w-full h-full object-cover"
-                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
-                      />
-                    ) : (
-                      <Icon className={`h-4 w-4 ${style.iconColor}`} strokeWidth={1.8} />
-                    )}
+                  <div className="relative shrink-0">
+                    <div
+                      className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
+                      style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                    >
+                      {customIconImages[action.id] ? (
+                        <img
+                          src={customIconImages[action.id]}
+                          alt={action.title}
+                          className="w-full h-full object-cover"
+                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
+                        />
+                      ) : (
+                        <Icon className={`h-4 w-4 ${style.iconColor}`} strokeWidth={1.8} />
+                      )}
+                    </div>
                     {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm z-10">
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
