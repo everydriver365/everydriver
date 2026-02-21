@@ -451,8 +451,7 @@ export default function BrandedPupilPortal() {
                 <div className="space-y-2">
                   {[
                     { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
-                    { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'View & manage your schedule' },
-                    { id: 'gaps' as const, icon: Clock, label: 'Book a Lesson', desc: 'See available slots' },
+                    { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage lessons' },
                     { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
                     { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },

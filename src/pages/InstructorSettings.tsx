@@ -9,6 +9,7 @@ import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettin
 import { ReferralSettingsCard } from "@/components/instructor/ReferralSettingsCard";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
+import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { DataExportManager } from "@/components/instructor/DataExportManager";
@@ -964,6 +965,17 @@ export default function InstructorSettings() {
                 iconBg="bg-rose-100 dark:bg-rose-900/30"
               >
                 <PupilAppBrandingEditor instructorId={instructorId} />
+              </SettingsTile>
+
+              <SettingsTile
+                id="pupil-self-service"
+                icon={CalendarClock} 
+                title="Pupil Self-Service Booking" 
+                description="Let pupils book, cancel & reschedule"
+                iconColor="text-emerald-600"
+                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+              >
+                <PupilBookingSettingsEditor instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>
