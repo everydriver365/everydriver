@@ -64,6 +64,7 @@ import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
+import testRequestsIcon from "@/assets/test-requests-icon.png";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
@@ -636,8 +637,8 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/test-requests")}
           className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
         >
-          <div className="w-11 h-11 rounded-xl bg-amber-500/12 flex items-center justify-center shrink-0">
-            <Award className="h-5 w-5 text-amber-600" strokeWidth={1.8} />
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+            <img src={testRequestsIcon} alt="Test Requests" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-semibold text-foreground leading-tight">Test Requests</p>
