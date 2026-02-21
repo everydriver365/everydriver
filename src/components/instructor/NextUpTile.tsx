@@ -57,7 +57,7 @@ export function NextUpTile({
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -175,46 +175,54 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
-          {/* Header — Quick Access tile style */}
+        <div className="rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
+          {/* Gradient header — stands out like Today's Overview */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="w-full px-3.5 py-3.5 flex items-center gap-3"
+            className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 px-4 py-3.5 text-left"
           >
-            <div className="relative shrink-0">
-              <div className="ring-2 ring-primary/20 rounded-full">
-                <PupilAvatar
-                  name={pupilName}
-                  imageUrl={pupilProfileImage}
-                  size="md"
-                />
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/[0.06]" />
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.04]" />
+            </div>
+            <div className="relative flex items-center gap-3">
+              <div className="relative shrink-0">
+                <div className="ring-2 ring-white/30 rounded-full">
+                  <PupilAvatar
+                    name={pupilName}
+                    imageUrl={pupilProfileImage}
+                    size="md"
+                  />
+                </div>
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-white text-primary text-[9px] font-bold flex items-center justify-center px-1 shadow-sm">
+                    {pupilUnreadCount}
+                  </span>
+                )}
               </div>
-              {hasUnread && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
-                  {pupilUnreadCount}
-                </span>
-              )}
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-[12px] font-semibold text-foreground leading-tight truncate">{pupilName}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
-                {displayLocation && ` · ${pickupPostcode}`}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                isUrgent
-                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                  : "bg-muted text-muted-foreground"
-              }`}>
-                <Timer className="h-3 w-3" /> {getCountdownText()}
-              </span>
-              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !expanded && "-rotate-90")} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Next Up</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                    isUrgent
+                      ? "bg-amber-400/30 text-white animate-pulse"
+                      : "bg-white/20 text-white"
+                  }`}>
+                    <Timer className="h-3 w-3" /> {getCountdownText()}
+                  </span>
+                </div>
+                <p className="font-bold text-white text-[15px] truncate mt-0.5">{pupilName}</p>
+                <p className="text-white/60 text-xs mt-0.5">
+                  {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
+                  {displayLocation && ` · ${pickupPostcode}`}
+                </p>
+              </div>
+              <ChevronDown className={cn("h-4 w-4 text-white/50 transition-transform duration-200 shrink-0", !expanded && "-rotate-90")} />
             </div>
           </button>
 
-          {/* Expandable content */}
+          {/* Expandable content — card body */}
+          <div className="bg-card">
           <AnimatePresence>
             {expanded && (
               <motion.div
@@ -346,6 +354,7 @@ export function NextUpTile({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>{/* end bg-card */}
         </div>
       </motion.div>
 
