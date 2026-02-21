@@ -297,8 +297,12 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
                 key={evt.id}
                 className="rounded-xl border border-border px-4 py-2.5 flex items-center justify-between bg-card"
               >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {evt.type === 'external' && evt.color ? (
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />
+                  ) : (
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  )}
                   <span className="text-sm text-foreground truncate">{evt.title}</span>
                 </div>
                 <span className="text-xs text-muted-foreground shrink-0 ml-2">
