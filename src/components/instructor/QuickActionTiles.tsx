@@ -216,6 +216,7 @@ export function QuickActionTiles({
     if (isJobOffersAction(action)) return pendingJobsCount;
     if (isMessagesAction(action)) return messagesUnreadCount;
     if (isVisitorChatsAction(action)) return visitorChatUnreadCount;
+    if (isScheduleAction(action) && todayOverview) return todayOverview.lessonCount;
     return 0;
   };
 
@@ -287,7 +288,6 @@ export function QuickActionTiles({
 
   // Subtitle helper
   const getSubtitle = (action: QuickAction): string | null => {
-    if (isScheduleAction(action) && todayOverview) return `${todayOverview.lessonCount} today`;
     if (isPupilsAction(action) && todayOverview) return `${todayOverview.lessonCount}`;
     return null;
   };
