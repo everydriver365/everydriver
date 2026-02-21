@@ -1,75 +1,70 @@
 
 
-## Remove Border Radius from All Tiles on Instructor Mobile App
+## Add `bookings.drive365.co.uk` Subdomain for Booking Access
 
-This change will remove rounded corners from all card/tile elements across the instructor mobile app and add a left-side accent border (primary color) to maintain visual hierarchy.
+### What You'll Get
 
-### Scope of Changes
+A dedicated subdomain (`bookings.drive365.co.uk`) that serves as a standalone booking portal. When visitors land on it, they'll see the instructor search/browse page (the existing Courses page) where they can find an instructor and book directly. The existing booking pages within the main app will continue to work exactly as they do now.
 
-The following files contain tiles/cards that need updating:
+### How It Works
 
-**1. PupilCardStack.tsx** (Pupil list + expanded profile)
-- Collapsed card: already has `rounded-none` + `border-l-primary` (done previously)
-- Expanded profile sections: `rounded-2xl` and `rounded-[20px]` on ~10 inner cards (hero, stats, test date, details, notes, lesson history, driving sessions, payments, tools grid, status/admin)
-- Tools grid icon backgrounds: `rounded-2xl` on the 14x14 icon containers
-- Balance badge: `rounded-lg`
-- Payment due warning: `rounded-2xl`
+1. Visitor goes to `bookings.drive365.co.uk`
+2. They see the instructor search page (postcode search, filters, course cards)
+3. They pick an instructor/course and are taken to the booking flow (`/book/:instructorId`)
+4. The full booking and confirmation flow works on the subdomain
 
-**2. NewMobileScheduleView.tsx** (Schedule lesson cards)
-- Lesson cards via `renderCustomCollapsed`: `rounded-[20px]` container
-- Empty state card: `rounded-[20px]`
-- Add button: `rounded-xl`
+All other routes (instructor app, pupil portal, admin, etc.) are blocked on this subdomain -- visitors can only access the booking-related pages.
 
-**3. ExpandableLessonCard.tsx** (Wrapper for schedule cards)
-- Outer container: `rounded-lg`
-- Inner card: `rounded-lg`
+### DNS Setup (You Do This)
 
-**4. HomeMoneyOverview.tsx** (Home page money tiles)
-- Loading skeleton: `rounded-xl`
-- Money cards: `rounded-xl`
+At your domain registrar, add an **A record**:
+- **Name:** `bookings`
+- **Type:** A
+- **Value:** `185.158.133.1`
 
-**5. HomeTodaySchedule.tsx** (Home page schedule tile)
-- Loading skeleton: `rounded-2xl`
-- Main card: `rounded-2xl`
+Then add `bookings.drive365.co.uk` as a custom domain in your Lovable project settings under Domains. SSL will be provisioned automatically.
 
-**6. AppStyleHomeView.tsx** (Home grid tile icons)
-- Icon containers: `rounded-[16px]`
-- Icon images: `rounded-[16px]`
+### What Changes in Code
 
-**7. InstructorMobileHome.tsx** (Home page hero overview card)
-- Today's Overview card: `rounded-2xl`
+**1. `src/components/DomainRouter.tsx`** -- Add booking subdomain detection
 
-**8. TodayOverviewStrip.tsx** (Today at a glance strip)
-- Strip container: `rounded-xl`
+- Add `bookings.drive365.co.uk` to a new constant for the booking subdomain
+- Add a helper function `isBookingSubdomain()` that checks if the current hostname matches
+- In the routing logic, when on the booking subdomain:
+  - Root path (`/`) redirects to `/courses` (the search/browse page)
+  - Only allow `/courses`, `/book/`, and `/booking-confirmation` routes
+  - Block all other routes by redirecting back to `/courses`
 
-**9. ScheduleDayTabs.tsx** (Day selector pills)
-- Day number circles: `rounded-xl`
+**2. `src/hooks/useDomainBranding.ts`** -- Add booking subdomain branding
 
-**10. NextUpTile.tsx** (Next lesson tile on home)
-- Info badges: `rounded-xl`
-- Action buttons: `rounded-xl`
-
-**11. VerticalTimelineView.tsx** (Timeline lesson cards)
-- Lesson cards: `rounded-xl`
-- Travel time info: `rounded-lg`
-
-**12. NextLessonCard.tsx** (Swipeable next lesson card)
-- Card containers: `rounded-xl`
-
-### What Will Change
-
-For each tile/card element listed above:
-- Replace `rounded-xl`, `rounded-2xl`, `rounded-[20px]`, `rounded-[16px]`, `rounded-lg` with `rounded-none`
-- Add `border-l-4 border-l-primary` accent where it doesn't already exist (on main container cards only, not on small badges/buttons)
+- Detect the booking subdomain and return Drive365 branding (since it's a subdomain of drive365.co.uk)
+- Set `isLearnerDomain: true` so the correct styling applies
 
 ### What Will NOT Change
-- Buttons will keep their rounding (action buttons like Call, Email, Navigate) as these are interactive elements, not tiles
-- Small badges/pills (lesson type badges, status pills) keep their rounding
-- Avatars keep their circular shape
-- Sheet/dialog components keep their rounding
-- The day selector pills in ScheduleDayTabs keep their shape (these are interactive selectors, not content tiles)
+
+- The existing `/book/:instructorId` route continues to work on all current domains
+- The `/courses` page remains unchanged -- it just also serves as the landing page on the booking subdomain
+- No database changes required
+- No new pages need to be created
+- All payment callbacks (Square, Klarna, etc.) will work correctly since they use `window.location.origin`
 
 ### Technical Details
 
-All changes are CSS class swaps in Tailwind. No logic, state, or functionality changes. Approximately 12 files will be modified with straightforward `rounded-*` to `rounded-none` replacements on card containers, plus adding `border-l-4 border-l-primary` to cards that don't already have it.
+The core change is roughly 20 lines added to `DomainRouter.tsx`:
+
+```text
+New constant:
+  BOOKING_SUBDOMAIN = "bookings.drive365.co.uk"
+
+New helper:
+  isBookingSubdomain() -- checks hostname
+
+Updated routing logic:
+  if (isBookingSubdomain) {
+    if path is "/" -> redirect to /courses
+    if path not in [/courses, /book/, /booking-confirmation] -> redirect to /courses
+  }
+```
+
+The `useDomainBranding.ts` hook gets a small addition to recognise the subdomain and return Drive365 branding, ensuring the header/footer show the correct logo and brand name.
 
