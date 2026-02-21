@@ -61,7 +61,7 @@ import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBa
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
-import instructorHeroImg from "@/assets/instructor-hero.jpeg";
+import instructorHeroImg from "@/assets/hero-learner.jpg";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import scheduleIcon from "@/assets/schedule-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";

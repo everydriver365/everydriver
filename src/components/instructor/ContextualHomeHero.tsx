@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { haptics } from "@/lib/haptics";
-import instructorHeroImg from "@/assets/instructor-hero.jpeg";
+import instructorHeroImg from "@/assets/hero-learner.jpg";
 
 interface ContextualHomeHeroProps {
   firstName: string;
