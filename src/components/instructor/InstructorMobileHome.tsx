@@ -771,26 +771,18 @@ export function InstructorMobileHome({
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
           <div
-            className="bg-card rounded-2xl shadow-sm overflow-hidden cursor-pointer"
+            className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden cursor-pointer"
             onClick={() => navigate("/instructor/gaps")}
           >
-            <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-                <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+            <div className="px-3.5 py-3.5 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
+                <img src={planAheadIcon} alt="Plan Ahead" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
               </div>
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
-                    <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">Plan Ahead</h3>
-                    <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-white/60" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">Plan Ahead</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Nothing scheduled tomorrow</p>
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
       ) : null}
