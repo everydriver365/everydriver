@@ -3079,39 +3079,54 @@ export type Database = {
       }
       instructor_booking_settings: {
         Row: {
+          allow_extra_hours_request: boolean
           allow_self_booking: boolean
+          allow_self_cancel: boolean
+          allow_self_reschedule: boolean
           allowed_durations: number[]
           booking_message: string | null
+          cancel_notice_hours: number
           created_at: string
           id: string
           instructor_id: string
           max_advance_days: number
           min_notice_hours: number
           require_approval: boolean
+          reschedule_notice_hours: number
           updated_at: string
         }
         Insert: {
+          allow_extra_hours_request?: boolean
           allow_self_booking?: boolean
+          allow_self_cancel?: boolean
+          allow_self_reschedule?: boolean
           allowed_durations?: number[]
           booking_message?: string | null
+          cancel_notice_hours?: number
           created_at?: string
           id?: string
           instructor_id: string
           max_advance_days?: number
           min_notice_hours?: number
           require_approval?: boolean
+          reschedule_notice_hours?: number
           updated_at?: string
         }
         Update: {
+          allow_extra_hours_request?: boolean
           allow_self_booking?: boolean
+          allow_self_cancel?: boolean
+          allow_self_reschedule?: boolean
           allowed_durations?: number[]
           booking_message?: string | null
+          cancel_notice_hours?: number
           created_at?: string
           id?: string
           instructor_id?: string
           max_advance_days?: number
           min_notice_hours?: number
           require_approval?: boolean
+          reschedule_notice_hours?: number
           updated_at?: string
         }
         Relationships: [
@@ -9004,6 +9019,8 @@ export type Database = {
         Row: {
           amount_due: number | null
           booking_status: string | null
+          cancellation_reason: string | null
+          cancelled_by: string | null
           created_at: string
           deleted_at: string | null
           dropoff_postcode: string | null
@@ -9017,6 +9034,7 @@ export type Database = {
           marked_no_show_at: string | null
           no_show_fee_charged: number | null
           notes: string | null
+          original_lesson_id: string | null
           payment_status: string
           pickup_location: string | null
           pickup_postcode: string | null
@@ -9036,6 +9054,8 @@ export type Database = {
         Insert: {
           amount_due?: number | null
           booking_status?: string | null
+          cancellation_reason?: string | null
+          cancelled_by?: string | null
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
@@ -9049,6 +9069,7 @@ export type Database = {
           marked_no_show_at?: string | null
           no_show_fee_charged?: number | null
           notes?: string | null
+          original_lesson_id?: string | null
           payment_status?: string
           pickup_location?: string | null
           pickup_postcode?: string | null
@@ -9068,6 +9089,8 @@ export type Database = {
         Update: {
           amount_due?: number | null
           booking_status?: string | null
+          cancellation_reason?: string | null
+          cancelled_by?: string | null
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
@@ -9081,6 +9104,7 @@ export type Database = {
           marked_no_show_at?: string | null
           no_show_fee_charged?: number | null
           notes?: string | null
+          original_lesson_id?: string | null
           payment_status?: string
           pickup_location?: string | null
           pickup_postcode?: string | null
