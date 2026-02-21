@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday, parseISO } from "date-fns";
 import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling, CalendarDays } from "lucide-react";
@@ -76,6 +77,7 @@ interface ExternalEvent {
 }
 
 export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewProps) {
+  const navigate = useNavigate();
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -345,6 +347,13 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                             {payment.text}
                           </span>
                         </div>
+                        {/* View profile link */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils?pupil=${lesson.pupil?.id}`); }}
+                          className="text-xs text-primary font-medium hover:underline text-left"
+                        >
+                          View full profile →
+                        </button>
                       </div>
                     }
                   />
