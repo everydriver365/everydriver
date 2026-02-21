@@ -709,7 +709,7 @@ export function InstructorMobileHome({
       )}
 
       {/* QUICK ACTIONS section */}
-      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Actions</p>
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
 
       {/* Quick Action Tiles */}
       <div className="pb-6">

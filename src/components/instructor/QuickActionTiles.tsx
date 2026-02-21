@@ -434,8 +434,8 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — rounded card grid with icon top-left, text below
-        <div className="grid grid-cols-2 gap-3">
+        // Normal view mode — 3-column vertical card grid
+        <div className="grid grid-cols-3 gap-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
@@ -444,20 +444,18 @@ export function QuickActionTiles({
             const subtitle = getSubtitle(action);
 
             return (
-              <Link key={action.id} to={action.route} className={cn("block", isScheduleAction(action) && "col-span-2")}>
+              <Link key={action.id} to={action.route} className="block">
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className={cn(
-                    "ios-tile relative rounded-xl px-3.5 py-3 shadow-sm border border-border/60 bg-card flex items-center gap-3"
-                  )}
+                  className="ios-tile relative rounded-2xl p-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] border border-border/60 bg-card flex flex-col items-center text-center gap-2"
                 >
                   {/* Icon */}
-                  <div className="relative shrink-0">
+                  <div className="relative">
                     <div
-                      className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
+                      className={`w-12 h-12 rounded-2xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
                       style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                     >
                       {customIconImages[action.id] ? (
@@ -465,10 +463,10 @@ export function QuickActionTiles({
                           src={customIconImages[action.id]}
                           alt={action.title}
                           className="w-full h-full object-cover"
-                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '8px' }}
+                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '12px' }}
                         />
                       ) : (
-                        <Icon className={`h-4 w-4 ${style.iconColor}`} strokeWidth={1.8} />
+                        <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
                       )}
                     </div>
                     {showBadge && (
@@ -478,10 +476,10 @@ export function QuickActionTiles({
                     )}
                   </div>
                   {/* Title & subtitle */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                  <div className="min-w-0 w-full">
+                    <p className="text-[12px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
                     {subtitle && (
-                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
                 </motion.div>
