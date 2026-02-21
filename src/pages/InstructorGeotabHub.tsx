@@ -19,6 +19,7 @@ import { FleetLiveMap } from "@/components/instructor/FleetLiveMap";
 import { GeofenceEditor } from "@/components/instructor/GeofenceEditor";
 import { GeofenceAlertsList } from "@/components/instructor/GeofenceAlertsList";
 import { GeotabDiagnosticsTab } from "@/components/instructor/geotab/GeotabDiagnosticsTab";
+import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
 
 export default function InstructorGeotabHub() {
   const { instructor, subscription } = useInstructorAuth();
@@ -177,18 +178,7 @@ export default function InstructorGeotabHub() {
           </TabsContent>
 
           <TabsContent value="dashcam" className="mt-4">
-            <Card>
-              <CardContent className="p-6 text-center space-y-3">
-                <Camera className="h-8 w-8 mx-auto text-primary" />
-                <h3 className="font-semibold">Dashcam Gallery</h3>
-                <p className="text-sm text-muted-foreground">
-                  View and filter your dashcam footage, incidents and event clips.
-                </p>
-                <Button variant="outline" onClick={() => navigate("/instructor/dashcam")}>
-                  Open Dashcam Gallery
-                </Button>
-              </CardContent>
-            </Card>
+            <DashcamGalleryView instructorId={instructor.id} />
           </TabsContent>
 
           <TabsContent value="reports" className="mt-4">
