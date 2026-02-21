@@ -12,7 +12,8 @@ import { TrackedLessons } from "@/components/instructor/TrackedLessons";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { FleetMileageTracker } from "@/components/instructor/FleetMileageTracker";
 import { FleetLiveMap } from "@/components/instructor/FleetLiveMap";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route, MapPin } from "lucide-react";
+import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route, MapPin, Camera } from "lucide-react";
+import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,7 +77,7 @@ export default function InstructorFleetDashboard() {
         ) : instructor?.id ? (
           <Tabs defaultValue="overview" onValueChange={setActiveTab}>
             <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-9 gap-1 text-[10px]">
+              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-10 gap-1 text-[10px]">
                 <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <Gauge className="h-3 w-3 shrink-0" />
                   <span className="hidden xs:inline sm:inline">Overview</span>
@@ -108,6 +109,10 @@ export default function InstructorFleetDashboard() {
                 <TabsTrigger value="movement" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <AlertTriangle className="h-3 w-3 shrink-0" />
                   <span className="hidden xs:inline sm:inline">Alerts</span>
+                </TabsTrigger>
+                <TabsTrigger value="dashcam" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Camera className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Dashcam</span>
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <Mail className="h-3 w-3 shrink-0" />
@@ -148,6 +153,9 @@ export default function InstructorFleetDashboard() {
             </TabsContent>
             <TabsContent value="movement" className="mt-4">
               <UnauthorisedMovementAlerts instructorId={instructor.id} />
+            </TabsContent>
+            <TabsContent value="dashcam" className="mt-4">
+              <DashcamGalleryView instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="reports" className="mt-4">
               <ScheduledReportsSettings instructorId={instructor.id} />

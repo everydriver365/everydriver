@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { GeotabTripHistory } from "@/components/instructor/geotab/GeotabTripHistory";
+import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
 import { Satellite, Route, Camera } from "lucide-react";
 
 interface DeviceStats {
@@ -172,9 +173,27 @@ export function AdminGeotabFleet() {
 
         <TabsContent value="dashcam" className="mt-4">
           <Card>
-            <CardContent className="p-6 text-center text-muted-foreground">
-              <Camera className="h-8 w-8 mx-auto mb-2" />
-              <p>Fleet-wide dashcam view coming soon. Use individual instructor views for now.</p>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Fleet Dashcam</CardTitle>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Instructors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Instructors</SelectItem>
+                    {instructors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DashcamGalleryView
+                instructorId={selectedInstructor !== "all" ? selectedInstructor : undefined}
+                showAllInstructors={selectedInstructor === "all"}
+              />
             </CardContent>
           </Card>
         </TabsContent>
