@@ -289,15 +289,32 @@ export function QuickActionTiles({
 
   // Subtitle helper
   const getSubtitle = (action: QuickAction): string | null => {
+    if (isJobOffersAction(action)) return "Browse available positions";
+    if (isMessagesAction(action)) return "Chat with pupils & parents";
+    if (action.id === "test-requests" || action.title.toLowerCase().includes("test")) return "Pending booking requests";
+    if (isScheduleAction(action)) return "View your day";
+    if (isPupilsAction(action)) return "Manage your learners";
+    if (action.id === "track-lesson") return "Log a lesson";
+    if (action.id === "take-payment") return "Collect payment";
+    if (action.id === "satnav") return "Navigate to pupil";
+    if (action.id === "availability") return "Manage your hours";
+    if (action.id === "find-my-car") return "Locate your vehicle";
+    if (action.id === "payments") return "View transactions";
+    if (action.id === "settings") return "App preferences";
+    if (action.id === "health-hub") return "Wellbeing resources";
+    if (action.id === "find-fuel") return "Nearest stations";
+    if (action.id === "vehicle-health") return "Vehicle checks";
+    if (action.id === "expenses") return "Track spending";
+    if (action.id === "todos") return "Your task list";
     return null;
   };
 
   // Loading skeleton
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-3">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-card rounded-2xl p-4 h-[110px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-card rounded-2xl p-4 h-[72px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
         ))}
       </div>
     );
@@ -434,14 +451,24 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — 3-column vertical card grid
-        <div className="grid grid-cols-3 gap-3">
+        // Normal view mode — vertical stacked list
+        <div className="space-y-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
-            const showBadge = badgeCount > 0;
             const style = tileStyles[index % tileStyles.length];
             const subtitle = getSubtitle(action);
+
+            // Badge color per tile style
+            const badgeColors = [
+              'bg-primary/15 text-primary',
+              'bg-amber-500/15 text-amber-600',
+              'bg-emerald-500/15 text-emerald-600',
+              'bg-sky-500/15 text-sky-600',
+              'bg-rose-500/15 text-rose-600',
+              'bg-violet-500/15 text-violet-600',
+            ];
+            const badgeStyle = badgeColors[index % badgeColors.length];
 
             return (
               <Link key={action.id} to={action.route} className="block">
@@ -449,39 +476,41 @@ export function QuickActionTiles({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ios-tile relative rounded-2xl p-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] border border-border/60 bg-card flex flex-col items-center text-center gap-2"
+                  whileTap={{ scale: 0.97 }}
+                  className="ios-tile relative rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
                 >
                   {/* Icon */}
-                  <div className="relative">
-                    <div
-                      className={`w-12 h-12 rounded-2xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
-                      style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
-                    >
-                      {customIconImages[action.id] ? (
-                        <img
-                          src={customIconImages[action.id]}
-                          alt={action.title}
-                          className="w-full h-full object-cover"
-                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '12px' }}
-                        />
-                      ) : (
-                        <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
-                      )}
-                    </div>
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm z-10">
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
+                  <div
+                    className={`w-11 h-11 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}
+                    style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                  >
+                    {customIconImages[action.id] ? (
+                      <img
+                        src={customIconImages[action.id]}
+                        alt={action.title}
+                        className="w-full h-full object-cover"
+                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '10px' }}
+                      />
+                    ) : (
+                      <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
                     )}
                   </div>
+
                   {/* Title & subtitle */}
-                  <div className="min-w-0 w-full">
-                    <p className="text-[12px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-tight truncate">{action.title}</p>
                     {subtitle && (
-                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                      <p className="text-xs text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
+
+                  {/* Badge */}
+                  <span className={cn(
+                    "min-w-[28px] h-7 px-2 rounded-full text-xs font-bold flex items-center justify-center shrink-0",
+                    badgeStyle
+                  )}>
+                    {badgeCount}
+                  </span>
                 </motion.div>
               </Link>
             );
