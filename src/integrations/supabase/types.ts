@@ -5837,6 +5837,7 @@ export type Database = {
       }
       lesson_syllabus_updates: {
         Row: {
+          comment: string | null
           competency_id: string
           created_at: string
           id: string
@@ -5846,6 +5847,7 @@ export type Database = {
           pupil_id: string
         }
         Insert: {
+          comment?: string | null
           competency_id: string
           created_at?: string
           id?: string
@@ -5855,6 +5857,7 @@ export type Database = {
           pupil_id: string
         }
         Update: {
+          comment?: string | null
           competency_id?: string
           created_at?: string
           id?: string

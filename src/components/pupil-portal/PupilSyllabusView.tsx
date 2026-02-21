@@ -21,7 +21,7 @@ interface PupilSyllabusViewProps {
 }
 
 export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSyllabusViewProps) {
-  const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
+  const [progress, setProgress] = useState<{ competency_id: string; level: number; instructor_notes?: string | null }[]>([]);
   const [recentChanges, setRecentChanges] = useState<{
     competency_id: string;
     previous_level: number;
@@ -40,7 +40,7 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
       const [progressRes, changesRes] = await Promise.all([
         supabase
           .from('pupil_syllabus_progress')
-          .select('competency_id, level')
+          .select('competency_id, level, instructor_notes')
           .eq('pupil_id', pupilId),
         supabase
           .from('lesson_syllabus_updates')
@@ -222,6 +222,11 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
                         >
                           {competency.name}
                         </span>
+                        {entry?.instructor_notes && (
+                          <span className="text-[11px] italic block mt-0.5 truncate" style={{ color: 'var(--brand-muted)' }}>
+                            "{entry.instructor_notes}"
+                          </span>
+                        )}
                       </div>
                       <Badge 
                         className={cn('text-xs flex-shrink-0', levelInfo.color, levelInfo.textColor)}

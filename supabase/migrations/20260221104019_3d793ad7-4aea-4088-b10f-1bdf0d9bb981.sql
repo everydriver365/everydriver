@@ -1,0 +1,1 @@
+ALTER TABLE lesson_syllabus_updates ADD COLUMN comment text;
