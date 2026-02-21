@@ -152,8 +152,11 @@ export function QuickActionTiles({
   const { data: nextLessonDetails } = useNextLessonDetails(instructorId);
   const { data: messagesUnreadCount = 0 } = useUnreadMessagesCount(instructorId);
   const { data: visitorChatUnreadCount = 0 } = useVisitorChatUnreadCount(instructorId);
+  // Tiles shown separately under Today's Overview — exclude from Quick Access
+  const excludedTileIds = new Set(["jobs", "messages"]);
+
   // Get tiles in user's preferred order (from DB tiles, with additionalTiles for lookup)
-  const orderedTiles = getOrderedTiles(quickActions, additionalTiles);
+  const orderedTiles = getOrderedTiles(quickActions, additionalTiles).filter(t => !excludedTileIds.has(t.id));
   
   // Available tiles to add = additional tiles not in orderedTiles + hidden DB tiles
   const hiddenDbTiles = getHiddenTiles(quickActions);
