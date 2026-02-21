@@ -421,38 +421,43 @@ export function InstructorMobileHome({
         <div className="px-4 -mt-8 relative z-10">
           <motion.div
             whileTap={{ scale: 0.97 }}
-            className="w-full rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden"
+            className="w-full rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden"
           >
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="w-full px-3.5 py-3.5 flex items-center gap-3 text-left"
+              className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 px-4 py-4 flex items-center gap-3.5 text-left"
             >
+              {/* Decorative circles */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/[0.06]" />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.04]" />
+              </div>
               <div className="relative shrink-0">
-                <div className="w-11 h-11 rounded-xl overflow-hidden">
+                <div className="w-12 h-12 rounded-xl overflow-hidden ring-2 ring-white/20">
                   <img src={scheduleIcon} alt="Today" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
                 </div>
                 {currentLessons > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center px-1 shadow-sm">
                     {currentLessons}
                   </span>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold text-foreground leading-tight">Today's Overview</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+              <div className="relative flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-white leading-tight">Today's Overview</p>
+                <p className="text-[11px] text-white/70 mt-0.5">
                   {todayOverview?.lessonCount
                     ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} · ${todayOverview.totalHours}h · £${todayOverview.expectedEarnings}`
                     : "No lessons scheduled"}
                   {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
-                    <span className={`ml-1 font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-600" : "text-destructive"}`}>
+                    <span className={`ml-1 font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
                       {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
                     </span>
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="relative flex items-center gap-2 shrink-0">
                 {currentWeather && currentWeather.temperature != null && (
-                  <span className="flex items-center gap-1 text-muted-foreground text-[10px]">
+                  <span className="flex items-center gap-1 text-white/60 text-[10px]">
                     {(() => {
                       const WeatherIcon = currentWeather.icon === "Sun" ? Sun
                         : currentWeather.icon === "CloudSun" ? CloudSun
@@ -469,7 +474,7 @@ export function InstructorMobileHome({
                     {Math.round(currentWeather.temperature)}°C
                   </span>
                 )}
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-white/50" />
               </div>
             </button>
             {/* Engine fault warning line */}
