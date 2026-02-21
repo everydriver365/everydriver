@@ -394,11 +394,31 @@ export function InstructorMobileHome({
           </div>
         </div>
 
+        {/* Sticky next-up bar */}
+        <AnimatePresence>
+          {showFAB && nextLesson && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-0 left-0 right-0 z-50 bg-primary text-white px-4 py-2 flex items-center justify-between shadow-lg"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Timer className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
+              </div>
+              <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
+                {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Today's Overview card — overlapping the hero */}
         <div className="px-4 -mt-8 relative z-10">
           <motion.div
             whileTap={{ scale: 0.97 }}
-            className="w-full rounded-none shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
+            className="w-full rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] overflow-hidden"
           >
             <button
               onClick={() => navigate("/instructor/schedule")}
@@ -456,37 +476,53 @@ export function InstructorMobileHome({
                     <span className="text-white/70 text-[12px] flex items-center gap-1">
                       <PoundSterling className="h-3 w-3" />
                       £{todayOverview.expectedEarnings}
+                      {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
+                        <span className={`ml-1 text-[10px] font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
+                          {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
+                        </span>
+                      )}
                     </span>
                   </div>
                 )}
               </div>
-              {(() => {
-                const total = maxLessons;
-                const done = todayOverview?.lessonCount || 0;
-                const pct = Math.min(done / total, 1);
-                const r = 28;
-                const circ = 2 * Math.PI * r;
-                const offset = circ * (1 - pct);
-                return (
-                  <div className="relative w-16 h-16 shrink-0">
-                    <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
-                      <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
-                      <motion.circle
-                        cx="32" cy="32" r={r} fill="none"
-                        stroke="white" strokeWidth="4" strokeLinecap="round"
-                        strokeDasharray={circ}
-                        initial={{ strokeDashoffset: circ }}
-                        animate={{ strokeDashoffset: offset }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-black text-white leading-none">{done}</span>
-                      <span className="text-[8px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
+              {/* Weekly Goal Ring + Lesson Count Ring */}
+              <div className="flex items-center gap-2 shrink-0">
+                {weeklyGoals && (
+                  <WeeklyGoalRing
+                    hoursThisWeek={weeklyGoals.hoursThisWeek}
+                    hoursGoal={weeklyGoals.hoursGoal}
+                    progressPercent={weeklyGoals.progressPercent}
+                    isAheadOfLastWeek={weeklyGoals.isAheadOfLastWeek}
+                  />
+                )}
+                {(() => {
+                  const total = maxLessons;
+                  const done = todayOverview?.lessonCount || 0;
+                  const pct = Math.min(done / total, 1);
+                  const r = 22;
+                  const circ = 2 * Math.PI * r;
+                  const offset = circ * (1 - pct);
+                  return (
+                    <div className="relative w-14 h-14 shrink-0">
+                      <svg viewBox="0 0 52 52" className="w-full h-full -rotate-90">
+                        <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+                        <motion.circle
+                          cx="26" cy="26" r={r} fill="none"
+                          stroke="white" strokeWidth="4" strokeLinecap="round"
+                          strokeDasharray={circ}
+                          initial={{ strokeDashoffset: circ }}
+                          animate={{ strokeDashoffset: offset }}
+                          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-lg font-black text-white leading-none">{done}</span>
+                        <span className="text-[7px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
+              </div>
             </button>
             {/* Engine fault warning line */}
             {engineFaultCount > 0 && !engineFaultsDismissed && (
@@ -554,32 +590,47 @@ export function InstructorMobileHome({
           </motion.div>
         </div>
       </motion.div>
-      {/* Job Offers — gradient style */}
-      <div className="px-4 flex flex-col gap-2 mt-3">
-        {pendingJobsCount > 0 && (
-          <button
-            onClick={() => navigate("/instructor/jobs")}
-            className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all"
-          >
-            <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-                <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-              </div>
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <img src={jobOffersIcon} alt="Job Offers" className="h-10 w-10 object-cover" />
-                  <div>
-                    <span className="font-semibold text-sm">Job Offers</span>
-                    <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
+      {/* Notifications — merged iOS-grouped card */}
+      <div className="px-4 mt-3">
+        {(pendingJobsCount > 0 || pupilMsgCount > 0) && (
+          <div className="bg-card rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
+            {pendingJobsCount > 0 && (
+              <button
+                onClick={() => navigate("/instructor/jobs")}
+                className="w-full flex items-center justify-between px-4 py-3 active:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <img src={jobOffersIcon} alt="Job Offers" className="h-9 w-9 object-cover" />
+                  <div className="text-left">
+                    <span className="font-semibold text-sm text-foreground">Job Offers</span>
+                    <p className="text-muted-foreground text-[11px]">{pendingJobsCount} pending</p>
                   </div>
                 </div>
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center">
                   {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                 </span>
+              </button>
+            )}
+            <button
+              onClick={() => navigate("/instructor/messages")}
+              className="w-full flex items-center justify-between px-4 py-3 active:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <img src={messagesIcon} alt="Messages" className="h-9 w-9 object-cover" />
+                <div className="text-left">
+                  <span className="font-semibold text-sm text-foreground">Messages</span>
+                  <p className="text-muted-foreground text-[11px]">
+                    {pupilMsgCount > 0 ? `${pupilMsgCount} unread` : "No new messages"}
+                  </p>
+                </div>
               </div>
-            </div>
-          </button>
+              {pupilMsgCount > 0 && (
+                <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center">
+                  {pupilMsgCount > 9 ? "9+" : pupilMsgCount}
+                </span>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -592,7 +643,6 @@ export function InstructorMobileHome({
         onComplete={() => setShowConfetti(false)} 
       />
 
-
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
         <DrivingAlertsStrip 
@@ -603,7 +653,6 @@ export function InstructorMobileHome({
         />
       )}
 
-
       {/* Tracker Reminder - show when offline and lesson soon */}
       {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner 
@@ -611,35 +660,6 @@ export function InstructorMobileHome({
             minutesUntil={nextLesson.minutesUntil}
           />
       )}
-
-      {/* Messages tile — above test requests */}
-      <button
-        onClick={() => navigate("/instructor/messages")}
-        className="w-full bg-card rounded-none shadow-sm overflow-hidden active:scale-[0.99] transition-all mt-4"
-      >
-        <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-          </div>
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <img src={messagesIcon} alt="Messages" className="h-10 w-10 object-cover" />
-              <div>
-                <span className="font-semibold text-sm">Messages</span>
-                <p className="text-white/70 text-[10px]">
-                  {pupilMsgCount > 0 ? `${pupilMsgCount} unread` : "No new messages"}
-                </p>
-              </div>
-            </div>
-            {pupilMsgCount > 0 && (
-              <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
-                {pupilMsgCount > 9 ? "9+" : pupilMsgCount}
-              </span>
-            )}
-          </div>
-        </div>
-      </button>
 
       </div>
 
@@ -652,7 +672,7 @@ export function InstructorMobileHome({
 
       {/* YOUR DAY section */}
       {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">YOUR DAY</p>
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
       )}
 
       {/* Next Lesson Card - only show when there's a lesson */}
@@ -689,11 +709,15 @@ export function InstructorMobileHome({
         className="mt-4"
       />
 
-
-
+      {/* Gap Filler Suggestions */}
+      {gapSuggestions && gapSuggestions.length > 0 && (
+        <div className="mt-4">
+          <GapFillerCard gaps={gapSuggestions} />
+        </div>
+      )}
 
       {/* QUICK ACTIONS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Actions</p>
 
       {/* Quick Action Tiles */}
       <div className="pb-6">
@@ -721,7 +745,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* PLAN AHEAD section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Plan Ahead</p>
 
       {/* Tomorrow Peek Card */}
       {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
@@ -735,7 +759,7 @@ export function InstructorMobileHome({
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
           <div
-            className="bg-card rounded-none shadow-sm overflow-hidden cursor-pointer"
+            className="bg-card rounded-2xl shadow-sm overflow-hidden cursor-pointer"
             onClick={() => navigate("/instructor/gaps")}
           >
             <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">

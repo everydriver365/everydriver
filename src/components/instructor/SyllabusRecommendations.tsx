@@ -14,6 +14,7 @@ interface ProgressEntry {
   competency_id: string;
   level: number;
   updated_at?: string;
+  instructor_notes?: string | null;
 }
 
 export function SyllabusRecommendations({ pupilId }: SyllabusRecommendationsProps) {
@@ -27,7 +28,7 @@ export function SyllabusRecommendations({ pupilId }: SyllabusRecommendationsProp
   const fetchProgress = async () => {
     const { data } = await supabase
       .from('pupil_syllabus_progress')
-      .select('competency_id, level, updated_at')
+      .select('competency_id, level, updated_at, instructor_notes')
       .eq('pupil_id', pupilId);
     setProgress(data || []);
     setLoading(false);
@@ -116,9 +117,17 @@ export function SyllabusRecommendations({ pupilId }: SyllabusRecommendationsProp
                   const level = progressMap[c.id]?.level || 0;
                   const sl = SKILL_LEVELS[level];
                   return (
-                    <Badge key={c.id} variant="outline" className="text-[10px] gap-1">
+                    <Badge 
+                      key={c.id} 
+                      variant="outline" 
+                      className="text-[10px] gap-1"
+                      title={progressMap[c.id]?.instructor_notes || undefined}
+                    >
                       {c.name}
                       {level > 0 && <span className={sl?.textColor}>L{level}</span>}
+                      {progressMap[c.id]?.instructor_notes && (
+                        <span className="text-muted-foreground/60">💬</span>
+                      )}
                     </Badge>
                   );
                 })}

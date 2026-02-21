@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CalendarClock, User, Timer, ChevronDown, Send } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CalendarClock, User, Timer, ChevronDown, Send, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -174,7 +174,7 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="bg-card rounded-none shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
           {/* Gradient header with avatar, name, and countdown */}
           <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 px-4 py-3 text-white">
             <div className="relative flex items-center gap-3">
@@ -257,6 +257,17 @@ export function NextUpTile({
                 }
               </span>
             </div>
+
+            {/* Start Lesson — visible when lesson is imminent */}
+            {minutesUntil <= 15 && (
+              <Button
+                size="sm"
+                onClick={() => navigate(`/instructor/live-map?lesson=${lessonId}`)}
+                className="w-full rounded-xl gap-2 h-9 text-sm font-semibold mb-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Play className="h-4 w-4" /> Start Lesson
+              </Button>
+            )}
 
             {/* Primary actions — compact */}
             <div className="flex items-center gap-1.5">
