@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
 import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, MessageSquare, Plus, PoundSterling, LogOut } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgen
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
+import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import edLogo from "@/assets/ed-black-white-logo.png";
@@ -181,9 +183,7 @@ export default function InstructorPortal() {
   if (authLoading) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
+        <HomeSkeleton />
       </InstructorPortalLayout>
     );
   }
@@ -232,6 +232,7 @@ export default function InstructorPortal() {
           commissionPayer={instructorData?.commission_payer}
           instructorName={instructorData?.name}
         />
+        <WelcomeTour instructorId={instructorId} hasCompletedTour={(authInstructor as any)?.has_completed_tour ?? true} />
       </InstructorPortalLayout>
     );
   }

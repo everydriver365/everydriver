@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { InstructorInbox } from "@/components/instructor/InstructorInbox";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { MessagesSkeleton } from "@/components/ui/skeletons/MessagesSkeleton";
 
 export default function InstructorMessages() {
   const { instructor, loading } = useInstructorAuth();
@@ -16,9 +17,9 @@ export default function InstructorMessages() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
+      <InstructorPortalLayout>
+        <MessagesSkeleton />
+      </InstructorPortalLayout>
     );
   }
 

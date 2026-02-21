@@ -48,6 +48,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
+import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
@@ -62,6 +63,7 @@ import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
 import { NextLessonTile } from "@/components/instructor/NextLessonTile";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
+import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 
 interface Pupil {
   id: string;
@@ -465,9 +467,7 @@ export default function InstructorPupils() {
   if (loading) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <PupilListSkeleton />
       </InstructorPortalLayout>
     );
   }
@@ -915,6 +915,14 @@ export default function InstructorPupils() {
                 Parent can use this phone to access the Parent Portal
               </p>
             </div>
+
+            {/* Lesson Packages */}
+            {selectedPupil && instructorId && (
+              <div className="border-t pt-4 mt-4">
+                <PupilPackageCard pupilId={selectedPupil.id} instructorId={instructorId} />
+              </div>
+            )}
+
             <Button onClick={handleSavePupil} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save Changes
