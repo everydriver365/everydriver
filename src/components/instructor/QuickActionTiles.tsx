@@ -467,7 +467,7 @@ export function QuickActionTiles({
             const subtitle = getSubtitle(action);
 
             return (
-              <Link key={action.id} to={action.route} className="block">
+              <Link key={action.id} to={action.route} className={cn("block", isScheduleAction(action) && "col-span-2")}>
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
