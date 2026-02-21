@@ -12,6 +12,7 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
+import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 
 interface ScheduledLesson {
@@ -35,6 +36,7 @@ interface ScheduledLesson {
     postcode: string;
     prepaid_hours: number;
     account_balance: number;
+    profile_image_url: string | null;
   };
 }
 
@@ -101,7 +103,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           id, lesson_date, start_time, duration_minutes, lesson_type,
           pickup_location, pickup_postcode, status, payment_status,
           prepaid_hours_used, amount_due, notes,
-          pupil:pupils(id, name, phone, address, postcode, prepaid_hours, account_balance)
+          pupil:pupils(id, name, phone, address, postcode, prepaid_hours, account_balance, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", dateStr)
@@ -112,7 +114,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
       
       const transformedData = (data || []).map((lesson: any) => ({
         ...lesson,
-        pupil: lesson.pupil || { id: "", name: "Unknown", phone: null, address: "", postcode: "", prepaid_hours: 0, account_balance: 0 }
+        pupil: lesson.pupil || { id: "", name: "Unknown", phone: null, address: "", postcode: "", prepaid_hours: 0, account_balance: 0, profile_image_url: null }
       }));
       
       setLessons(transformedData);
@@ -307,9 +309,16 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onDelete={handleDeleteLesson}
                     renderCustomCollapsed={
                       <div className={`bg-card rounded-xl border border-border ${colors.border} p-4 space-y-2`}>
-                        {/* Header: Name + Badge */}
+                        {/* Header: Avatar + Name + Badge */}
                         <div className="flex items-center justify-between">
-                          <h3 className="text-base font-bold text-foreground">{lesson.pupil?.name || "Unknown"}</h3>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <PupilAvatar
+                              name={lesson.pupil?.name || "Unknown"}
+                              imageUrl={lesson.pupil?.profile_image_url}
+                              size="sm"
+                            />
+                            <h3 className="text-base font-bold text-foreground truncate">{lesson.pupil?.name || "Unknown"}</h3>
+                          </div>
                           <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
                             {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
                           </Badge>
