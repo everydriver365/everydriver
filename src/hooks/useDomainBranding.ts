@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { isBookingSubdomain } from "@/components/DomainRouter";
 
 export interface DomainBranding {
   brandName: string;
@@ -41,15 +42,16 @@ export function useDomainBranding(): DomainBranding {
   return useMemo(() => {
     const onDrive365 = isDrive365Domain();
     const onEveryDriver = isEveryDriverDomain();
+    const onBooking = isBookingSubdomain();
     
-    // Drive365 = Learners
-    if (onDrive365) {
+    // Booking subdomain or Drive365 = Learners / Drive365 branding
+    if (onBooking || onDrive365) {
       return {
         brandName: "Drive365",
         logoPath: "/drive365-logo.png",
         isInstructorDomain: false,
         isLearnerDomain: true,
-        homeLink: "/",
+        homeLink: onBooking ? "/courses" : "/",
       };
     }
     

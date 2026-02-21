@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
+const BOOKING_SUBDOMAIN = "bookings.drive365.co.uk";
 
 // Routes that belong to instructors (hosted on everydriver.co.uk)
 const INSTRUCTOR_ROUTE_PREFIXES = [
@@ -95,6 +96,14 @@ export function isInstructorSubdomain(): boolean {
 }
 
 /**
+ * Checks if the current hostname is the bookings subdomain
+ */
+export function isBookingSubdomain(): boolean {
+  const hostname = window.location.hostname.toLowerCase();
+  return hostname === BOOKING_SUBDOMAIN || hostname === `www.${BOOKING_SUBDOMAIN}`;
+}
+
+/**
  * Checks if we're in local development
  */
 function isLocalhost(): boolean {
@@ -137,6 +146,25 @@ export function DomainRouter() {
     const search = location.search;
     const fullPath = pathname + search;
 
+    // Booking subdomain: only allow booking-related routes
+    if (isBookingSubdomain()) {
+      const BOOKING_ALLOWED = ["/courses", "/book/", "/booking-confirmation"];
+      const isAllowed = BOOKING_ALLOWED.some(prefix => pathname.startsWith(prefix));
+      
+      if (pathname === "/") {
+        console.log('[DomainRouter] Booking subdomain root, redirecting to /courses');
+        window.location.href = `/courses${search}`;
+        return;
+      }
+      
+      if (!isAllowed) {
+        console.log('[DomainRouter] Blocked route on booking subdomain, redirecting to /courses:', pathname);
+        window.location.href = "/courses";
+        return;
+      }
+      return;
+    }
+
     // Don't redirect from instructor subdomains (mini-websites)
     if (isInstructorSubdomain()) {
       console.log('[DomainRouter] Instructor subdomain, no redirect');
@@ -154,7 +182,6 @@ export function DomainRouter() {
     });
 
     // Drive365 = Learner site - use WHITELIST approach
-    // Only allow explicitly listed learner routes and shared routes
     if (onDrive365) {
       const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
       const isAllowedOnDrive365 = isLearnerAllowedRoute(pathname) || isShared;
