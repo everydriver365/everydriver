@@ -215,12 +215,15 @@ export function QuickActionTiles({
            action.title.toLowerCase().includes("visitor");
   };
 
+  // Only show badges on schedule, pupils, and todos
+  const shouldShowBadge = (action: QuickAction): boolean => {
+    return isScheduleAction(action) || isPupilsAction(action) || action.id === "todos";
+  };
+
   const getBadgeCount = (action: QuickAction): number => {
-    if (isJobOffersAction(action)) return pendingJobsCount;
-    if (isMessagesAction(action)) return messagesUnreadCount;
-    if (isVisitorChatsAction(action)) return visitorChatUnreadCount;
     if (isScheduleAction(action) && todayOverview) return todayOverview.lessonCount;
     if (isPupilsAction(action) && todayOverview) return todayOverview.lessonCount;
+    // todos count could be added later
     return 0;
   };
 
@@ -315,9 +318,9 @@ export function QuickActionTiles({
   // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-card rounded-2xl p-4 h-[72px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-card rounded-2xl p-4 h-[68px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
         ))}
       </div>
     );
@@ -454,24 +457,14 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — vertical stacked list
-        <div className="space-y-3">
+        // Normal view mode — 2-column grid
+        <div className="grid grid-cols-2 gap-3">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
+            const showBadge = shouldShowBadge(action) && badgeCount > 0;
             const style = tileStyles[index % tileStyles.length];
             const subtitle = getSubtitle(action);
-
-            // Badge color per tile style
-            const badgeColors = [
-              'bg-primary/15 text-primary',
-              'bg-amber-500/15 text-amber-600',
-              'bg-emerald-500/15 text-emerald-600',
-              'bg-sky-500/15 text-sky-600',
-              'bg-rose-500/15 text-rose-600',
-              'bg-violet-500/15 text-violet-600',
-            ];
-            const badgeStyle = badgeColors[index % badgeColors.length];
 
             return (
               <Link key={action.id} to={action.route} className="block">
@@ -480,40 +473,39 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="ios-tile relative rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
+                  className="ios-tile relative rounded-2xl px-3.5 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3"
                 >
                   {/* Icon */}
-                  <div
-                    className={`w-11 h-11 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}
-                    style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
-                  >
-                    {customIconImages[action.id] ? (
-                      <img
-                        src={customIconImages[action.id]}
-                        alt={action.title}
-                        className="w-full h-full object-cover"
-                        style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '10px' }}
-                      />
-                    ) : (
-                      <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
+                  <div className="relative shrink-0">
+                    <div
+                      className={`w-11 h-11 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
+                      style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
+                    >
+                      {customIconImages[action.id] ? (
+                        <img
+                          src={customIconImages[action.id]}
+                          alt={action.title}
+                          className="w-full h-full object-cover"
+                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '10px' }}
+                        />
+                      ) : (
+                        <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
+                      )}
+                    </div>
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm z-10">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
                     )}
                   </div>
 
                   {/* Title & subtitle */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                    <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
                     {subtitle && (
-                      <p className="text-xs text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">{subtitle}</p>
                     )}
                   </div>
-
-                  {/* Badge */}
-                  <span className={cn(
-                    "min-w-[28px] h-7 px-2 rounded-full text-xs font-bold flex items-center justify-center shrink-0",
-                    badgeStyle
-                  )}>
-                    {badgeCount}
-                  </span>
                 </motion.div>
               </Link>
             );
