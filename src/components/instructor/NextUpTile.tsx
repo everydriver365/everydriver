@@ -232,10 +232,16 @@ export function NextUpTile({
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-4">
+                <div className="px-4 py-3 pb-4">
                   {/* Info badges row */}
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ${
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 text-xs font-medium text-foreground">
+                      <Clock className="h-3.5 w-3.5 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                      {formatDuration()} lesson
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold ${
                       effectiveBalance < 0
                         ? "bg-destructive/10 text-destructive"
                         : "bg-primary/5 text-primary"
@@ -264,7 +270,7 @@ export function NextUpTile({
                   ) : null}
 
                   {/* Messages row */}
-                  <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 border ${
+                  <div className={`mb-3 flex items-center gap-2 rounded-xl px-3 py-2 border ${
                     hasUnread
                       ? "bg-destructive/10 border-destructive/20"
                       : "bg-muted/30 border-border/40"
