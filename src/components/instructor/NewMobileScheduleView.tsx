@@ -381,11 +381,13 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
               <div
                 key={evt.id}
                 className="bg-card rounded-xl border border-border p-4 space-y-1.5"
-                style={evt.color ? { borderLeftWidth: 4, borderLeftColor: evt.color } : undefined}
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
-                  <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">Calendar</Badge>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {evt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />}
+                    <h3 className="text-sm font-semibold text-foreground truncate">{evt.title}</h3>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 ml-2">Calendar</Badge>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5" />
