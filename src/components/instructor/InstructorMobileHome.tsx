@@ -425,56 +425,103 @@ export function InstructorMobileHome({
           >
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 px-4 py-4 flex items-center gap-3.5 text-left"
+              className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 p-4 flex items-center gap-4 text-left"
             >
               {/* Decorative circles */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/[0.06]" />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.04]" />
               </div>
-              <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-xl overflow-hidden ring-2 ring-white/20">
-                  <img src={scheduleIcon} alt="Today" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
-                </div>
-                {currentLessons > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center px-1 shadow-sm">
-                    {currentLessons}
-                  </span>
-                )}
-              </div>
-              <div className="relative flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-white leading-tight">Today's Overview</p>
-                <p className="text-[11px] text-white/70 mt-0.5">
-                  {todayOverview?.lessonCount
-                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} · ${todayOverview.totalHours}h · £${todayOverview.expectedEarnings}`
-                    : "No lessons scheduled"}
-                  {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
-                    <span className={`ml-1 font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
-                      {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
+              <div className="relative flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
+                  {currentWeather && (
+                    <span className="flex items-center gap-1 text-amber-300 text-[11px]">
+                      {(() => {
+                        const WeatherIcon = currentWeather.icon === "Sun" ? Sun
+                          : currentWeather.icon === "CloudSun" ? CloudSun
+                          : currentWeather.icon === "Cloud" ? Cloud
+                          : currentWeather.icon === "CloudRain" ? CloudRain
+                          : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
+                          : currentWeather.icon === "CloudLightning" ? CloudLightning
+                          : currentWeather.icon === "CloudFog" ? CloudFog
+                          : currentWeather.icon === "Snowflake" ? Snowflake
+                          : currentWeather.icon === "Wind" ? Wind
+                          : CloudSun;
+                        const iconColor = currentWeather.icon === "Sun" ? "text-yellow-400"
+                          : currentWeather.icon === "CloudSun" ? "text-amber-400"
+                          : currentWeather.icon === "CloudRain" ? "text-blue-400"
+                          : currentWeather.icon === "CloudDrizzle" ? "text-sky-400"
+                          : currentWeather.icon === "CloudLightning" ? "text-violet-400"
+                          : currentWeather.icon === "Snowflake" ? "text-cyan-300"
+                          : currentWeather.icon === "Wind" ? "text-teal-300"
+                          : currentWeather.icon === "CloudFog" ? "text-gray-300"
+                          : "text-amber-300";
+                        return <WeatherIcon className={`h-3.5 w-3.5 ${iconColor}`} />;
+                      })()}
+                      {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
+                      {displayLocation && (
+                        <>
+                          <span className="text-white/40 mx-0.5">·</span>
+                          <MapPin className="h-2.5 w-2.5" />
+                          <span className="max-w-[100px] truncate">{displayLocation}</span>
+                        </>
+                      )}
                     </span>
                   )}
+                </div>
+                <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
+                  {todayOverview?.lessonCount
+                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
+                    : "No lessons scheduled today."}
                 </p>
-              </div>
-              <div className="relative flex items-center gap-2 shrink-0">
-                {currentWeather && currentWeather.temperature != null && (
-                  <span className="flex items-center gap-1 text-white/60 text-[10px]">
-                    {(() => {
-                      const WeatherIcon = currentWeather.icon === "Sun" ? Sun
-                        : currentWeather.icon === "CloudSun" ? CloudSun
-                        : currentWeather.icon === "Cloud" ? Cloud
-                        : currentWeather.icon === "CloudRain" ? CloudRain
-                        : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
-                        : currentWeather.icon === "CloudLightning" ? CloudLightning
-                        : currentWeather.icon === "CloudFog" ? CloudFog
-                        : currentWeather.icon === "Snowflake" ? Snowflake
-                        : currentWeather.icon === "Wind" ? Wind
-                        : CloudSun;
-                      return <WeatherIcon className="h-3.5 w-3.5" />;
-                    })()}
-                    {Math.round(currentWeather.temperature)}°C
-                  </span>
+                {todayOverview && todayOverview.lessonCount > 0 && (
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-white/70 text-[12px] flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {todayOverview.totalHours}h
+                    </span>
+                    <span className="text-white/70 text-[12px] flex items-center gap-1">
+                      <PoundSterling className="h-3 w-3" />
+                      £{todayOverview.expectedEarnings}
+                      {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
+                        <span className={`ml-1 text-[10px] font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
+                          {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 )}
-                <ChevronRight className="h-4 w-4 text-white/50" />
+              </div>
+              {/* Lesson Count Ring */}
+              <div className="relative flex items-center gap-2 shrink-0">
+                {(() => {
+                  const total = maxLessons;
+                  const done = todayOverview?.lessonCount || 0;
+                  const pct = Math.min(done / total, 1);
+                  const r = 22;
+                  const circ = 2 * Math.PI * r;
+                  const offset = circ * (1 - pct);
+                  return (
+                    <div className="relative w-14 h-14 shrink-0">
+                      <svg viewBox="0 0 52 52" className="w-full h-full -rotate-90">
+                        <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+                        <motion.circle
+                          cx="26" cy="26" r={r} fill="none"
+                          stroke="white" strokeWidth="4" strokeLinecap="round"
+                          strokeDasharray={circ}
+                          initial={{ strokeDashoffset: circ }}
+                          animate={{ strokeDashoffset: offset }}
+                          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-lg font-black text-white leading-none">{done}</span>
+                        <span className="text-[7px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </button>
             {/* Engine fault warning line */}
