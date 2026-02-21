@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
+import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
 import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
@@ -116,9 +117,7 @@ export default function InstructorSchedule() {
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <ScheduleSkeleton />
       </InstructorPortalLayout>
     );
   }

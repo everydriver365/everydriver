@@ -5014,6 +5014,7 @@ export type Database = {
           google_token_expires_at: string | null
           gpsgate_user_id: number | null
           gpsgate_username: string | null
+          has_completed_tour: boolean
           hero_image_url: string | null
           hero_overlay_color: string | null
           hero_overlay_opacity: number | null
@@ -5123,6 +5124,7 @@ export type Database = {
           google_token_expires_at?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null
+          has_completed_tour?: boolean
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
@@ -5232,6 +5234,7 @@ export type Database = {
           google_token_expires_at?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null
+          has_completed_tour?: boolean
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
@@ -5700,6 +5703,119 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          instructor_id: string
+          is_active: boolean
+          name: string
+          price: number
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          name: string
+          price: number
+          total_hours: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_packages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_packages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_reminders_log: {
+        Row: {
+          channel: string
+          error: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id: string | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          channel: string
+          error?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          error?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          pupil_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_reminders_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_log_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_log_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]
@@ -7581,6 +7697,77 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
+      }
+      pupil_packages: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          hours_purchased: number
+          hours_remaining: number
+          id: string
+          instructor_id: string
+          package_id: string
+          pupil_id: string
+          purchased_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          hours_purchased: number
+          hours_remaining: number
+          id?: string
+          instructor_id: string
+          package_id: string
+          pupil_id: string
+          purchased_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          hours_purchased?: number
+          hours_remaining?: number
+          id?: string
+          instructor_id?: string
+          package_id?: string
+          pupil_id?: string
+          purchased_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_packages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_packages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_packages_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pupil_push_subscriptions: {
         Row: {

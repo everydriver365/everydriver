@@ -28,6 +28,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
+import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
 
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
@@ -873,6 +874,18 @@ export default function InstructorSettings() {
                 iconBg="bg-orange-100 dark:bg-orange-900/30"
               >
                 <InstructorDiscountCodesManager instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Lesson Packages */}
+              <SettingsTile 
+                id="lesson-packages" 
+                icon={BookOpen} 
+                title="Lesson Packages" 
+                description="Pre-paid block booking packages"
+                iconColor="text-violet-600"
+                iconBg="bg-violet-100 dark:bg-violet-900/30"
+              >
+                <LessonPackageManager instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>

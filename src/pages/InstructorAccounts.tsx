@@ -8,8 +8,9 @@ import { ExpenseCategoryChart } from "@/components/instructor/ExpenseCategoryCha
 import { TaxYearReport } from "@/components/instructor/TaxYearReport";
 import { LessonMileageTracker } from "@/components/instructor/LessonMileageTracker";
 import { XeroExport } from "@/components/instructor/XeroExport";
+import { AnnualBusinessReport } from "@/components/instructor/AnnualBusinessReport";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, TrendingUp, PieChart, FileText, Car, FileSpreadsheet } from "lucide-react";
+import { Settings, TrendingUp, PieChart, FileText, Car, FileSpreadsheet, BarChart3 } from "lucide-react";
 
 export default function InstructorAccounts() {
   const { instructor } = useInstructorAuth();
@@ -62,7 +63,7 @@ export default function InstructorAccounts() {
     <InstructorPortalLayout>
       <div className="container max-w-5xl mx-auto py-6 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 mb-6">
             <TabsTrigger value="earnings" className="gap-1.5 text-xs md:text-sm">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Earnings</span>
@@ -86,6 +87,10 @@ export default function InstructorAccounts() {
             <TabsTrigger value="settings" className="gap-1.5 text-xs md:text-sm">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="annual" className="gap-1.5 text-xs md:text-sm">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Annual</span>
             </TabsTrigger>
           </TabsList>
 
@@ -203,6 +208,18 @@ export default function InstructorAccounts() {
 
           <TabsContent value="settings">
             <AccountSettings instructorId={instructor.id} />
+          </TabsContent>
+
+          <TabsContent value="annual">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">Annual Business Report</h2>
+                <p className="text-muted-foreground">
+                  Comprehensive overview of your business performance
+                </p>
+              </div>
+              <AnnualBusinessReport instructorId={instructor.id} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
