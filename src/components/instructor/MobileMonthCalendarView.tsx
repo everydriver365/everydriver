@@ -1,0 +1,330 @@
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isSunday } from "date-fns";
+import { ChevronLeft, ChevronRight, CalendarDays, Clock, Loader2, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+
+interface MobileMonthCalendarViewProps {
+  instructorId: string;
+}
+
+interface DayEvents {
+  lessons: Array<{
+    id: string;
+    lesson_date: string;
+    start_time: string;
+    duration_minutes: number;
+    lesson_type: string;
+    status: string;
+    pupil: { name: string } | null;
+  }>;
+  external: Array<{
+    id: string;
+    title: string;
+    start_time: string;
+    end_time: string;
+    color: string | null;
+    is_all_day: boolean;
+  }>;
+}
+
+export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarViewProps) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [lessonDots, setLessonDots] = useState<Record<string, number>>({});
+  const [externalDots, setExternalDots] = useState<Record<string, boolean>>({});
+  const [dayEvents, setDayEvents] = useState<DayEvents>({ lessons: [], external: [] });
+  const [loading, setLoading] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+  // Build grid of days
+  const calendarDays = useMemo(() => {
+    const days: Date[] = [];
+    let day = calendarStart;
+    while (day <= calendarEnd) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [calendarStart.getTime(), calendarEnd.getTime()]);
+
+  // Fetch dots for the visible month range
+  const fetchDots = useCallback(async () => {
+    setLoading(true);
+    const from = format(calendarStart, "yyyy-MM-dd");
+    const to = format(calendarEnd, "yyyy-MM-dd");
+
+    try {
+      const [lessonsRes, externalRes] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select("lesson_date")
+          .eq("instructor_id", instructorId)
+          .neq("status", "cancelled")
+          .gte("lesson_date", from)
+          .lte("lesson_date", to),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time")
+          .eq("instructor_id", instructorId)
+          .gte("start_time", `${from}T00:00:00`)
+          .lte("start_time", `${to}T23:59:59`),
+      ]);
+
+      if (lessonsRes.data) {
+        const counts: Record<string, number> = {};
+        lessonsRes.data.forEach((r) => {
+          counts[r.lesson_date] = (counts[r.lesson_date] || 0) + 1;
+        });
+        setLessonDots(counts);
+      }
+
+      if (externalRes.data) {
+        const ext: Record<string, boolean> = {};
+        externalRes.data.forEach((r) => {
+          const dateKey = format(parseISO(r.start_time), "yyyy-MM-dd");
+          ext[dateKey] = true;
+        });
+        setExternalDots(ext);
+      }
+    } catch (e) {
+      console.error("Failed to fetch calendar dots:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [instructorId, calendarStart.getTime(), calendarEnd.getTime()]);
+
+  useEffect(() => { fetchDots(); }, [fetchDots]);
+
+  // Fetch events for selected date
+  const fetchDayEvents = useCallback(async () => {
+    setEventsLoading(true);
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const dayStart = `${dateStr}T00:00:00`;
+    const dayEnd = `${dateStr}T23:59:59`;
+
+    try {
+      const [lessonsRes, externalRes] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, duration_minutes, lesson_type, status, pupil:pupils(name)")
+          .eq("instructor_id", instructorId)
+          .eq("lesson_date", dateStr)
+          .neq("status", "cancelled")
+          .order("start_time", { ascending: true }),
+        supabase
+          .from("instructor_calendar_events")
+          .select("id, title, start_time, end_time, color")
+          .eq("instructor_id", instructorId)
+          .lte("start_time", dayEnd)
+          .gte("end_time", dayStart),
+      ]);
+
+      const lessons = (lessonsRes.data || []).map((l: any) => ({
+        ...l,
+        pupil: l.pupil || null,
+      }));
+
+      const external = (externalRes.data || []).map((evt: any) => {
+        const start = parseISO(evt.start_time);
+        const end = parseISO(evt.end_time);
+        const startMin = start.getHours() + start.getMinutes();
+        const endHour = end.getHours();
+        const isAllDay = startMin === 0 && (endHour === 23 || endHour === 0);
+        return { ...evt, is_all_day: isAllDay };
+      });
+
+      setDayEvents({ lessons, external });
+    } catch (e) {
+      console.error("Failed to fetch day events:", e);
+    } finally {
+      setEventsLoading(false);
+    }
+  }, [instructorId, selectedDate]);
+
+  useEffect(() => { fetchDayEvents(); }, [fetchDayEvents]);
+
+  const goToToday = () => {
+    const today = new Date();
+    setCurrentMonth(today);
+    setSelectedDate(today);
+  };
+
+  const formatTime = (timeStr: string) => {
+    const [h, m] = timeStr.split(":");
+    return `${h}:${m}`;
+  };
+
+  const getEndTime = (startTime: string, dur: number) => {
+    const [h, m] = startTime.split(":").map(Number);
+    const end = h * 60 + m + dur;
+    return `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+  };
+
+  const allDayEvents = dayEvents.external.filter(e => e.is_all_day);
+  const timedEvents = [
+    ...dayEvents.lessons.map(l => ({
+      id: l.id,
+      type: 'lesson' as const,
+      title: l.pupil?.name || "Lesson",
+      time: formatTime(l.start_time),
+      endTime: getEndTime(l.start_time, l.duration_minutes),
+      sortKey: l.start_time,
+      color: null as string | null,
+    })),
+    ...dayEvents.external.filter(e => !e.is_all_day).map(e => ({
+      id: e.id,
+      type: 'external' as const,
+      title: e.title,
+      time: format(parseISO(e.start_time), "HH:mm"),
+      endTime: format(parseISO(e.end_time), "HH:mm"),
+      sortKey: format(parseISO(e.start_time), "HH:mm"),
+      color: e.color,
+    })),
+  ].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+  const weekDayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Month Header */}
+      <div className="flex items-center justify-between px-2 py-3">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <h2 className="text-base font-bold text-foreground">
+          {format(currentMonth, "MMMM yyyy")}
+        </h2>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Weekday Headers */}
+      <div className="grid grid-cols-7 px-2">
+        {weekDayHeaders.map((d, i) => (
+          <div key={i} className={cn(
+            "text-center text-xs font-medium py-1",
+            i === 6 ? "text-destructive" : "text-muted-foreground"
+          )}>
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 px-2 gap-y-0.5">
+        {calendarDays.map((day) => {
+          const dateKey = format(day, "yyyy-MM-dd");
+          const inMonth = isSameMonth(day, currentMonth);
+          const selected = isSameDay(day, selectedDate);
+          const today = isToday(day);
+          const hasLessons = lessonDots[dateKey] > 0;
+          const hasExternal = externalDots[dateKey];
+          const sunday = isSunday(day);
+
+          return (
+            <button
+              key={dateKey}
+              onClick={() => setSelectedDate(day)}
+              className={cn(
+                "flex flex-col items-center justify-center py-1.5 rounded-full transition-colors relative",
+                "min-h-[44px]",
+                !inMonth && "opacity-30",
+                selected && "bg-[#1a3a4a] text-white",
+                !selected && today && "ring-2 ring-[#1a3a4a]/40",
+                !selected && sunday && "text-destructive",
+                !selected && !sunday && "text-foreground",
+              )}
+            >
+              <span className="text-sm font-medium leading-none">{format(day, "d")}</span>
+              {/* Dot indicators */}
+              <div className="flex gap-0.5 mt-1 h-1.5">
+                {hasLessons && (
+                  <span className={cn("w-1.5 h-1.5 rounded-full", selected ? "bg-white/70" : "bg-amber-500")} />
+                )}
+                {hasExternal && (
+                  <span className={cn("w-1.5 h-1.5 rounded-full", selected ? "bg-white/50" : "bg-teal-500")} />
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-border mt-2" />
+
+      {/* Selected Day Events */}
+      <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+          {format(selectedDate, "EEEE, d MMMM")}
+        </p>
+
+        {eventsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : allDayEvents.length === 0 && timedEvents.length === 0 ? (
+          <div className="flex flex-col items-center py-8 text-center">
+            <Calendar className="h-8 w-8 text-muted-foreground/40 mb-2" />
+            <p className="text-sm text-muted-foreground">No events</p>
+          </div>
+        ) : (
+          <>
+            {/* All-day events */}
+            {allDayEvents.map((evt) => (
+              <div
+                key={evt.id}
+                className="bg-muted/50 rounded-xl border border-border px-4 py-2.5 flex items-center gap-2"
+              >
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="text-sm text-foreground truncate flex-1">{evt.title}</span>
+                <span className="text-xs text-muted-foreground shrink-0">all-day</span>
+              </div>
+            ))}
+
+            {/* Timed events */}
+            {timedEvents.map((evt) => (
+              <div
+                key={evt.id}
+                className={cn(
+                  "rounded-xl border border-border px-4 py-2.5 flex items-center justify-between",
+                  evt.type === 'lesson' ? "bg-card border-l-4 border-l-amber-400" : "bg-card border-l-4",
+                )}
+                style={evt.type === 'external' && evt.color ? { borderLeftColor: evt.color } : evt.type === 'external' ? { borderLeftColor: 'hsl(var(--primary))' } : undefined}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-sm text-foreground truncate">{evt.title}</span>
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                  {evt.time}
+                </span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      {/* Today Button */}
+      <div className="px-4 py-3 border-t border-border">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full rounded-xl"
+          onClick={goToToday}
+        >
+          Today
+        </Button>
+      </div>
+    </div>
+  );
+}

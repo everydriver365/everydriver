@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
+import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
@@ -25,7 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type ViewMode = 'list' | 'calendar' | 'schedule';
+type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
 
 export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
@@ -35,7 +36,7 @@ export default function InstructorSchedule() {
   // Default to list on mobile, calendar on desktop
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('instructor-schedule-view');
-    if (saved && ['list', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
+    if (saved && ['list', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
     return isMobile ? 'list' : 'calendar';
   });
 
@@ -128,7 +129,33 @@ export default function InstructorSchedule() {
         <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
           {isMobile ? (
             <>
-              <div className="w-8" />
+              {/* Mobile toggle: List / Month */}
+              <div className="flex bg-muted/50 p-0.5 rounded-lg border border-border">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    viewMode === 'list'
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <List className="h-3.5 w-3.5" />
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode('month')}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    viewMode === 'month'
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <CalendarRange className="h-3.5 w-3.5" />
+                  Month
+                </button>
+              </div>
               <h1 className="text-lg font-bold text-foreground">Schedule</h1>
               <Button
                 variant="ghost"
@@ -193,6 +220,8 @@ export default function InstructorSchedule() {
 
         {viewMode === 'list' ? (
           <NewMobileScheduleView instructorId={instructorId} />
+        ) : viewMode === 'month' ? (
+          <MobileMonthCalendarView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
           <div className="h-[calc(100vh-12rem)] overflow-hidden">
             <GoogleStyleScheduleView
