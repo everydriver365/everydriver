@@ -501,7 +501,7 @@ export function QuickActionTiles({
 
                   {/* Title */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{action.title}</p>
+                    <p className="text-[12px] font-semibold text-foreground leading-tight line-clamp-2">{action.title}</p>
                   </div>
                 </motion.div>
               </Link>
