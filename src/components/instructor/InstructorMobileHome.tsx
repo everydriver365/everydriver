@@ -25,6 +25,7 @@ import {
   Mail,
   Target,
   Timer,
+  Award,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -582,48 +583,70 @@ export function InstructorMobileHome({
           </motion.div>
         </div>
       </motion.div>
-      {/* Notifications — merged iOS-grouped card */}
-      <div className="px-4 mt-3">
-        {(pendingJobsCount > 0 || pupilMsgCount > 0) && (
-          <div className="bg-card rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
-            {pendingJobsCount > 0 && (
-              <button
-                onClick={() => navigate("/instructor/jobs")}
-                className="w-full flex items-center justify-between px-4 py-3 active:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <img src={jobOffersIcon} alt="Job Offers" className="h-9 w-9 object-cover" />
-                  <div className="text-left">
-                    <span className="font-semibold text-sm text-foreground">Job Offers</span>
-                    <p className="text-muted-foreground text-[11px]">{pendingJobsCount} pending</p>
-                  </div>
-                </div>
-                <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center">
-                  {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                </span>
-              </button>
-            )}
-            <button
-              onClick={() => navigate("/instructor/messages")}
-              className="w-full flex items-center justify-between px-4 py-3 active:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <img src={messagesIcon} alt="Messages" className="h-9 w-9 object-cover" />
-                <div className="text-left">
-                  <span className="font-semibold text-sm text-foreground">Messages</span>
-                  <p className="text-muted-foreground text-[11px]">
-                    {pupilMsgCount > 0 ? `${pupilMsgCount} unread` : "No new messages"}
-                  </p>
-                </div>
-              </div>
-              {pupilMsgCount > 0 && (
-                <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center">
-                  {pupilMsgCount > 9 ? "9+" : pupilMsgCount}
-                </span>
-              )}
-            </button>
+      {/* Notifications — reference-image style vertical list */}
+      <div className="px-4 mt-3 space-y-3">
+        {/* Job Offers */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate("/instructor/jobs")}
+          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
+        >
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0 overflow-hidden">
+            <img src={jobOffersIcon} alt="Job Offers" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
-        )}
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-semibold text-foreground leading-tight">Job Offers</p>
+            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Browse available positions</p>
+          </div>
+          <span className="min-w-[28px] h-7 px-2 rounded-full bg-emerald-500/15 text-emerald-600 text-xs font-bold flex items-center justify-center shrink-0">
+            {pendingJobsCount}
+          </span>
+        </motion.button>
+
+        {/* In App Messages */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.07 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate("/instructor/messages")}
+          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
+        >
+          <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+            <img src={messagesIcon} alt="Messages" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-semibold text-foreground leading-tight">In App Messages</p>
+            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Chat with pupils & parents</p>
+          </div>
+          <span className="min-w-[28px] h-7 px-2 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+            {pupilMsgCount}
+          </span>
+        </motion.button>
+
+        {/* Test Requests */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.09 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate("/instructor/test-requests")}
+          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
+        >
+          <div className="w-11 h-11 rounded-xl bg-amber-500/12 flex items-center justify-center shrink-0">
+            <Award className="h-5 w-5 text-amber-600" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-semibold text-foreground leading-tight">Test Requests</p>
+            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Pending booking requests</p>
+          </div>
+          <span className="min-w-[28px] h-7 px-2 rounded-full bg-amber-500/15 text-amber-600 text-xs font-bold flex items-center justify-center shrink-0">
+            {testSwapCount}
+          </span>
+        </motion.button>
       </div>
 
       {/* Content with horizontal padding */}
@@ -655,10 +678,6 @@ export function InstructorMobileHome({
 
       </div>
 
-      {/* Test Requests Tile */}
-      {authInstructor?.id && (
-        <TestRequestsTile instructorId={authInstructor.id} />
-      )}
 
       <div className="px-4">
 
