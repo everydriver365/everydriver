@@ -485,16 +485,8 @@ export function InstructorMobileHome({
                   </div>
                 )}
               </div>
-              {/* Weekly Goal Ring + Lesson Count Ring */}
+              {/* Lesson Count Ring */}
               <div className="flex items-center gap-2 shrink-0">
-                {weeklyGoals && (
-                  <WeeklyGoalRing
-                    hoursThisWeek={weeklyGoals.hoursThisWeek}
-                    hoursGoal={weeklyGoals.hoursGoal}
-                    progressPercent={weeklyGoals.progressPercent}
-                    isAheadOfLastWeek={weeklyGoals.isAheadOfLastWeek}
-                  />
-                )}
                 {(() => {
                   const total = maxLessons;
                   const done = todayOverview?.lessonCount || 0;
