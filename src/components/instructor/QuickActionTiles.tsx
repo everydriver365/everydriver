@@ -456,7 +456,7 @@ export function QuickActionTiles({
                 >
                   {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
+                    className={`relative w-8 h-8 rounded-lg ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden shrink-0`}
                     style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                   >
                     {customIconImages[action.id] ? (
@@ -469,6 +469,11 @@ export function QuickActionTiles({
                     ) : (
                       <Icon className={`h-4 w-4 ${style.iconColor}`} strokeWidth={1.8} />
                     )}
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
+                    )}
                   </div>
                   {/* Title & subtitle */}
                   <div className="flex-1 min-w-0">
@@ -477,12 +482,6 @@ export function QuickActionTiles({
                       <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
                     )}
                   </div>
-                  {/* Badge */}
-                  {showBadge && (
-                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm shrink-0">
-                      {badgeCount > 9 ? "9+" : badgeCount}
-                    </span>
-                  )}
                 </motion.div>
               </Link>
             );
