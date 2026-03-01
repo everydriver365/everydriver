@@ -1,22 +1,26 @@
 
+Root cause identified: the rounding is not coming from `HomepageHero` anymore. It is being re-applied globally by this CSS rule in `src/index.css`:
 
-## Fix: Remove top border radius from hero banner
+- `.instructor-portal [class*="overflow-hidden"] ... { border-radius: 20px !important; }`
 
-The Tailwind classes `rounded-b-[20px] rounded-t-none` may not override correctly due to CSS specificity with arbitrary values. The fix is to use an inline `borderRadius` style instead.
+Because your hero banner uses `overflow-hidden`, that global `!important` forces top corners to stay rounded.
 
-### Change in `src/components/instructor/HomepageHero.tsx` (line 41-42)
+Plan to fix:
 
-Replace:
-```tsx
-className="relative h-[160px] overflow-hidden rounded-b-[20px] rounded-t-none"
-style={{ paddingTop: "env(safe-area-inset-top)" }}
-```
+1. Add an explicit opt-out class to the hero container in `src/components/instructor/HomepageHero.tsx`
+- Example class on hero wrapper: `hero-banner-no-top-radius`
 
-With:
-```tsx
-className="relative h-[160px] overflow-hidden"
-style={{ paddingTop: "env(safe-area-inset-top)", borderRadius: "0 0 20px 20px" }}
-```
+2. Update `src/index.css` so the global instructor rounding rule excludes this class
+- Change selector to include `:not(.hero-banner-no-top-radius)`
 
-This uses an explicit inline `borderRadius` with `0 0 20px 20px` (top-left, top-right, bottom-right, bottom-left) to guarantee zero radius on top and 20px on bottom, bypassing any Tailwind specificity issues.
+3. Add a dedicated override rule for safety (also `!important`) so nothing can re-round it
+- `.instructor-portal .hero-banner-no-top-radius { border-radius: 0 0 20px 20px !important; }`
+- Keep `overflow-hidden` so the image still clips to the bottom corners.
 
+4. Verify on `/instructor` with current mobile header
+- Confirm top-left and top-right of hero are square
+- Confirm bottom corners remain 20px rounded
+- Confirm no regressions on other instructor cards/tiles
+
+Technical note:
+This is a CSS specificity conflict (`!important` global utility rule overriding component-level radius), so the fix must be done in the global stylesheet, not only inside the component.
