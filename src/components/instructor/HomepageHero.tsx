@@ -59,7 +59,7 @@ export function HomepageHero({
           <h1 className="text-[28px] font-bold text-white leading-tight drop-shadow-md">
             {getGreeting()}
           </h1>
-          <p className="text-[14px] text-white/70 mt-0.5">
+          <p className="text-[14px] text-white/70 -mt-0.5">
             {format(new Date(), "EEEE d MMMM")}
           </p>
         </div>
