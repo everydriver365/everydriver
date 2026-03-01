@@ -63,12 +63,24 @@ export function NextUpTile({
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
 
-  const { isRunningLate, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
+  // TEMP MOCK: Force running late alert for demo
+  const _lateDetection = useRunningLateDetection({
     etaMinutes,
     minutesUntil,
     pupilName,
     pupilPhone,
   });
+  const isRunningLate = true;
+  const lateByMinutes = 12;
+  const arrivalTimeText = format(new Date(Date.now() + 42 * 60000), "HH:mm");
+  const suggestedMessage = `Hi ${pupilName.split(" ")[0]}, I'm running about 12 mins late. My ETA is ${arrivalTimeText}. Sorry for the delay!`;
+  const sendLateETA = () => {
+    if (pupilPhone) {
+      const a = document.createElement("a");
+      a.href = `sms:${pupilPhone}?body=${encodeURIComponent(suggestedMessage)}`;
+      a.click();
+    }
+  };
 
   // Haptic feedback when late alert first appears
   useEffect(() => {
