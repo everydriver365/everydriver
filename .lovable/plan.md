@@ -1,34 +1,37 @@
 
 
-## Plan: Redesign NextUpTile with Premium Gradient Design
+## Plan: Auto-Detect Running Late + Alert with ETA Message + Voice Command
 
-Replace the current `NextUpTile` component with the exact design specification provided. The existing logic (hooks, handlers, dialogs) will be preserved while completely restyling the UI.
+### How it works
 
-### What changes
+When the instructor has a lesson coming up, the system compares the **live traffic ETA** (already fetched by `useTrafficETA`) against the **time remaining until the lesson starts**. If the ETA exceeds the time remaining (i.e., they won't make it on time), an alert banner appears on the Next Up tile offering to send the pupil a message with the calculated ETA arrival time. This also integrates with voice commands.
 
-**File: `src/components/instructor/NextUpTile.tsx`** — Full restyle of the component:
+### Changes
 
-1. **Container**: Replace white card with blue gradient background (`rgb(38,64,140)` → `rgb(31,89,166)` → `rgb(26,115,179)`), 22px border-radius, box-shadow.
+**1. New hook: `src/hooks/useRunningLateDetection.ts`**
+- Accepts `etaMinutes`, `minutesUntil`, `pupilName`, `pupilPhone`, and `pickupPostcode`.
+- Returns `{ isRunningLate, lateByMinutes, suggestedMessage }`.
+- Logic: `isRunningLate = etaMinutes > 0 && etaMinutes > minutesUntil` (with a 2-min buffer to avoid false positives).
+- `lateByMinutes = etaMinutes - minutesUntil`.
+- `suggestedMessage` = pre-formatted SMS like "Hi {name}, I'm running about {X} mins late. My ETA is {time}. Sorry for the delay!"
 
-2. **Header (always visible)**:
-   - Left: 50px circular avatar with white initials on `rgba(255,255,255,0.2)` background, red unread badge (18px).
-   - Center: "NEXT UP" label (uppercase, white 60%, bold, letter-spacing 0.5px) · countdown in cyan, auto-refreshing every 30s. Pupil name in white ~20px bold.
-   - Right: Start time in white ~22px bold monospaced. Chevron toggle at 50% opacity.
-   - Below: Row of capsule pills (date, duration, postcode) with `rgba(255,255,255,0.1)` backgrounds.
+**2. Update `src/components/instructor/NextUpTile.tsx`**
+- Import and use the new hook.
+- When `isRunningLate` is true, render an **amber/orange alert banner** between the pill badges and the expanded content:
+  - Shows: warning icon + "You may arrive ~X min late" text.
+  - A "Send ETA" button that opens the SMS app with the pre-formatted message.
+  - A dismiss button to hide the alert for this session.
+- The banner is always visible (not just when expanded), ensuring the instructor notices it.
+- Add haptic feedback when the alert first appears.
 
-3. **Expanded content** (350ms animation):
-   - Divider: 1px `rgba(255,255,255,0.1)`
-   - Info badges row: 3 equal-width vertical badges (Start, Duration, Balance/Due) on `rgba(255,255,255,0.08)`
-   - Live ETA row: Cyan car icon, "~Xmin" bold, traffic condition dot + label
-   - Unread messages row: Orange icon, conditional display
-   - Start Lesson: Green gradient button (≤15 min only)
-   - Primary actions: 4 equal buttons (Navigate, On My Way dropdown, Call, SMS) on `rgba(255,255,255,0.12)`
-   - Secondary actions: Reschedule + Cancel Lesson buttons
+**3. Update `src/components/instructor/VoiceControlButton.tsx`**
+- Add a new `onSendLateETA` prop and a `isRunningLate` prop.
+- Add voice command patterns: `["running late", "send eta", "tell them I'm late", "send late message"]`.
+- When triggered: calls `onSendLateETA()` which sends the pre-formatted SMS, and speaks confirmation "Late message sent".
 
-4. **Existing logic preserved**: All hooks (`useTrafficETA`, `usePupilUnreadCount`), SMS handlers, navigation, cancel/reschedule dialogs remain unchanged.
+**4. Wire up in `src/components/instructor/InstructorMobileHome.tsx`**
+- Pass the running-late state and send-ETA handler from `NextUpTile`'s context to `VoiceControlButton` (if it's rendered on the home page). If `VoiceControlButton` isn't currently on the home page, add it as a floating button.
 
-5. **Countdown auto-refresh**: Add a `useEffect` with 30-second `setInterval` to force re-render the countdown timer.
-
-### No other files change
-The component interface (`NextUpTileProps`) stays identical. `InstructorMobileHome.tsx` continues rendering `<NextUpTile>` with the same props.
+### No database changes required
+All logic uses existing `useTrafficETA` data and native SMS via `sms:` links.
 
