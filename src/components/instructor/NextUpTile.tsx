@@ -113,7 +113,7 @@ export function NextUpTile({
     }
   };
 
-  const pillStyle = "inline-flex items-center gap-1 px-2 py-[5px] rounded-full text-[10px] font-medium";
+  const pillStyle = "inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold";
 
   return (
     <>
@@ -181,16 +181,17 @@ export function NextUpTile({
           </div>
 
           {/* Pill badges row */}
-          <div className="flex items-center gap-[14px] flex-wrap">
-            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
-              <Calendar className="h-[9px] w-[9px]" /> {getDateLabel()}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+              <Calendar className="h-[11px] w-[11px]" /> {getDateLabel()}
             </span>
-            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
-              <Clock className="h-[9px] w-[9px]" /> {formatDuration()}
+            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+              <Clock className="h-[11px] w-[11px]" /> {formatDuration()}
             </span>
-            {pickupPostcode && (
-              <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
-                <MapPin className="h-[9px] w-[9px]" /> {pickupPostcode}
+            {(pickupLocation || pickupPostcode) && (
+              <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+                <MapPin className="h-[11px] w-[11px]" />
+                <span className="truncate max-w-[180px]">{pickupLocation || pickupPostcode}</span>
               </span>
             )}
           </div>
