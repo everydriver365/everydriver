@@ -38,7 +38,7 @@ export function HomepageHero({
     <div className="relative">
       {/* Hero Banner */}
       <div
-        className="relative h-[160px] overflow-hidden rounded-b-[20px]"
+        className="relative h-[160px] overflow-hidden rounded-b-[20px] rounded-t-none"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <img
