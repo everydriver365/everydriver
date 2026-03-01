@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Mail, CheckCircle, Calendar } from "lucide-react";
+import { Mail, CheckCircle } from "lucide-react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
 import testRequestsIcon from "@/assets/test-requests-icon.png";
+import fillGapsIcon from "@/assets/fill-gaps-icon.png";
 
 interface ActivityTile {
   title: string;
@@ -78,7 +79,13 @@ export function ActivityTilesGrid({
       subtitle: "Open slots",
       count: gapSlotsCount,
       accent: "#FF2D55",
-      icon: <Calendar size={20} strokeWidth={1.8} style={{ color: "#FF2D55" }} />,
+      icon: (
+        <img
+          src={fillGapsIcon}
+          alt="Fill Gaps"
+          className="w-full h-full object-cover rounded-[10px]"
+        />
+      ),
       route: "/instructor/gaps",
     },
   ];
