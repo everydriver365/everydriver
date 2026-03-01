@@ -4,7 +4,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, X, LayoutGrid, Calendar, Check, Lock, Sun, Moon, Monitor } from "lucide-react";
+import { Camera, Loader2, X, LayoutGrid, Calendar, Check, Lock, Sun, Moon, Monitor, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
@@ -37,7 +37,7 @@ function PhonePreview({
   return (
     <div
       className="w-full aspect-[9/16] rounded-xl border border-border/60 overflow-hidden shadow-inner"
-      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" ? "#F2F2F7" : bg }}
+      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : bg }}
     >
       {variant === "lockscreen" ? (
         <>
@@ -82,6 +82,28 @@ function PhonePreview({
             <div className="mt-2 space-y-1">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="rounded-lg bg-card h-5 border-l-2 border-l-primary/40 border border-border/40" />
+              ))}
+            </div>
+          </div>
+        </>
+      ) : variant === "compact" ? (
+        <>
+          <div className="p-2 pt-3">
+            <div className="h-2 w-14 rounded bg-foreground/20 mb-0.5" />
+            <div className="h-1 w-10 rounded bg-foreground/10 mb-2" />
+            <div className="grid grid-cols-4 gap-0.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded bg-card aspect-square border border-border/40" />
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-0.5 mt-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded bg-card h-5 border border-border/40" />
+              ))}
+            </div>
+            <div className="mt-1 space-y-0.5">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="rounded bg-card h-4 border border-border/40" />
               ))}
             </div>
           </div>
@@ -319,6 +341,30 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               Native iOS app style
             </span>
             {layoutStyle === "ios-native" && (
+              <div className="absolute top-2 right-2">
+                <Check className="h-4 w-4 text-primary" />
+              </div>
+            )}
+          </button>
+
+          {/* Compact option */}
+          <button
+            onClick={() => handleLayoutChange("compact")}
+            className={cn(
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
+              layoutStyle === "compact"
+                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                : "border-border hover:border-primary/40"
+            )}
+          >
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="compact" />
+            </div>
+            <span className="text-xs font-medium mt-1">Compact</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              No hero, stats header
+            </span>
+            {layoutStyle === "compact" && (
               <div className="absolute top-2 right-2">
                 <Check className="h-4 w-4 text-primary" />
               </div>
