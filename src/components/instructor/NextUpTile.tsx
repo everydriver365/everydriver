@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CalendarClock, User, Timer, ChevronDown, Send, Play } from "lucide-react";
+import {
+  Clock, Phone, MessageSquare, X, Navigation, Car, Loader2,
+  ChevronDown, ChevronUp, Send, Play, MapPin, Calendar,
+  Hourglass, PoundSterling, MessageCircle,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { PupilAvatar } from "./PupilAvatar";
-import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 import {
   DropdownMenu,
@@ -39,45 +39,43 @@ interface NextUpTileProps {
   instructorId?: string;
 }
 
+function getInitials(name: string): string {
+  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
 export function NextUpTile({
-  lessonId,
-  pupilId,
-  pupilName,
-  pupilProfileImage,
-  pupilPhone,
-  lessonDate,
-  pickupPostcode,
-  pickupLocation,
-  startTime,
-  minutesUntil,
-  accountBalance,
-  prepaidHours,
-  durationMinutes = 60,
-  instructorId,
+  lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
+  lessonDate, pickupPostcode, pickupLocation, startTime,
+  minutesUntil, accountBalance, prepaidHours, durationMinutes = 60, instructorId,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
 
-  const formatTime = (time: string) => {
+  // Auto-refresh countdown every 30s
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  const formatTime24 = (time: string) => {
     try {
       const parsed = parse(time, "HH:mm:ss", new Date());
-      return format(parsed, "h:mm a");
-    } catch {
-      return time;
-    }
+      return format(parsed, "HH:mm");
+    } catch { return time.slice(0, 5); }
   };
 
   const getDateLabel = () => {
     const date = parseISO(lessonDate);
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
-    return format(date, "EEE d MMM");
+    return format(date, "EEE");
   };
 
   const getCountdownText = () => {
@@ -85,285 +83,296 @@ export function NextUpTile({
     if (minutesUntil < 60) return `in ${minutesUntil} min`;
     const hours = Math.floor(minutesUntil / 60);
     const mins = minutesUntil % 60;
-    if (hours >= 24) {
-      const days = Math.floor(hours / 24);
-      return `in ${days}d`;
-    }
+    if (hours >= 24) return `in ${Math.floor(hours / 24)}d`;
     return mins > 0 ? `in ${hours}h ${mins}m` : `in ${hours}h`;
   };
 
-  const formatDuration = () => {
-    const h = durationMinutes / 60;
-    return `${h}h`;
-  };
+  const formatDuration = () => `${durationMinutes / 60}h`;
 
   const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
+  const firstName = pupilName.split(" ")[0];
+  const hasUnread = pupilUnreadCount > 0;
 
   const handleNavigate = () => {
-    if (pickupPostcode) {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupPostcode)}`,
-        "_blank"
-      );
+    if (pickupPostcode) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupPostcode)}`, "_blank");
+  };
+  const handleCall = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `tel:${pupilPhone}`; a.click(); } };
+  const handleMessage = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}`; a.click(); } };
+  const sendSMS = (msg: string) => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`; a.click(); } };
+  const handleSendETA = () => sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
+  const handleCancelled = () => { queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }); queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }); };
+  const getEndTime = () => { try { const p = parse(startTime, "HH:mm:ss", new Date()); return format(new Date(p.getTime() + durationMinutes * 60000), "HH:mm:ss"); } catch { return undefined; } };
+
+  const getTrafficDot = () => {
+    switch (trafficCondition?.toLowerCase()) {
+      case "heavy": return "bg-red-500";
+      case "moderate": return "bg-yellow-400";
+      case "light": return "bg-green-400";
+      case "clear": return "bg-green-400";
+      default: return "bg-gray-400";
     }
   };
 
-  const handleCall = () => {
-    if (pupilPhone) {
-      const link = document.createElement("a");
-      link.href = `tel:${pupilPhone}`;
-      link.click();
-    }
-  };
-
-  const handleMessage = () => {
-    if (pupilPhone) {
-      const link = document.createElement("a");
-      link.href = `sms:${pupilPhone}`;
-      link.click();
-    }
-  };
-
-  const sendSMS = (message: string) => {
-    if (pupilPhone) {
-      const encoded = encodeURIComponent(message);
-      const link = document.createElement("a");
-      link.href = `sms:${pupilPhone}?body=${encoded}`;
-      link.click();
-    }
-  };
-
-  const firstName = pupilName.split(" ")[0];
-
-  const handleOnMyWay = () => sendSMS(`Hi ${firstName}, I'm on my way to you!`);
-  const handleOnWayDelay = (mins: number) => sendSMS(`Hi ${firstName}, I'm on my way! I'll be with you in about ${mins} minutes.`);
-  const handleCallASAP = () => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`);
-  const handleSendETA = () => {
-    if (etaText) {
-      sendSMS(`Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.`);
-    } else {
-      sendSMS(`Hi ${firstName}, I'm on my way to you now!`);
-    }
-  };
-
-  const handleViewPupil = () => {
-    navigate(`/instructor/pupils`);
-  };
-
-  const handleCancelled = () => {
-    queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
-    queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
-  };
-
-  const getEndTime = () => {
-    try {
-      const parsed = parse(startTime, "HH:mm:ss", new Date());
-      const end = new Date(parsed.getTime() + durationMinutes * 60 * 1000);
-      return format(end, "HH:mm:ss");
-    } catch {
-      return undefined;
-    }
-  };
-
-  const displayLocation = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
-  const isUrgent = minutesUntil <= 30;
-  const hasUnread = pupilUnreadCount > 0;
+  const pillStyle = "inline-flex items-center gap-1 px-2 py-[5px] rounded-full text-[10px] font-medium";
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
+        style={{
+          background: "linear-gradient(135deg, rgb(38,64,140) 0%, rgb(31,89,166) 50%, rgb(26,115,179) 100%)",
+          borderRadius: 22,
+          boxShadow: "0 6px 12px rgba(0,0,0,0.15)",
+        }}
+        className="w-full overflow-hidden"
       >
-        <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
-          {/* Header — consistent with other dashboard tiles */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="w-full px-3.5 py-3.5 flex items-center gap-3"
-          >
+        {/* === HEADER (always visible) === */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full px-4 pt-4 pb-3 flex flex-col gap-2.5"
+        >
+          {/* Main row: avatar + info + time */}
+          <div className="flex items-center gap-3">
+            {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="ring-2 ring-primary/20 rounded-full">
-                <PupilAvatar
-                  name={pupilName}
-                  imageUrl={pupilProfileImage}
-                  size="md"
-                />
+              <div
+                className="w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold text-lg"
+                style={{ background: "rgba(255,255,255,0.2)" }}
+              >
+                {pupilProfileImage ? (
+                  <img src={pupilProfileImage} alt={pupilName} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  getInitials(pupilName)
+                )}
               </div>
               {hasUnread && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1 shadow-sm z-10">
+                <span
+                  className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-red-500 text-white font-bold"
+                  style={{ width: 18, height: 18, fontSize: 10 }}
+                >
                   {pupilUnreadCount}
                 </span>
               )}
             </div>
+
+            {/* Center info */}
             <div className="flex-1 min-w-0 text-left">
-              <div className="flex items-center gap-1.5">
-                <p className="text-[12px] font-semibold text-foreground leading-tight">Next Up</p>
-                <span className={cn(
-                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                  isUrgent
-                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 animate-pulse"
-                    : "bg-muted text-muted-foreground"
-                )}>
-                  <Timer className="h-2.5 w-2.5" /> {getCountdownText()}
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  Next Up
+                </span>
+                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
+                <span className="text-[11px] font-bold" style={{ color: "#00E5FF" }}>
+                  {getCountdownText()}
                 </span>
               </div>
-              <p className="text-[13px] font-bold text-foreground truncate mt-0.5">{pupilName}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {getDateLabel()} · {formatTime(startTime)} · {formatDuration()}
-                {displayLocation && ` · ${pickupPostcode}`}
-              </p>
+              <p className="text-[20px] font-bold text-white truncate mt-0.5">{pupilName}</p>
             </div>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0", !expanded && "-rotate-90")} />
-          </button>
 
-          {/* Expandable content */}
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-                <div className="px-3.5 pb-3.5 space-y-2.5">
-                  {/* Divider */}
-                  <div className="border-t border-border/40" />
+            {/* Right: time + chevron */}
+            <div className="flex flex-col items-end shrink-0">
+              <span className="text-[22px] font-bold text-white" style={{ fontVariantNumeric: "tabular-nums", fontFamily: "ui-monospace, monospace" }}>
+                {formatTime24(startTime)}
+              </span>
+              {expanded
+                ? <ChevronUp className="h-4 w-4 mt-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+                : <ChevronDown className="h-4 w-4 mt-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+              }
+            </div>
+          </div>
 
-                  {/* Info badges row */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 text-[11px] font-medium text-foreground">
-                      <Clock className="h-3 w-3 text-primary" /> {formatTime(startTime)}
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                      {formatDuration()}
-                    </span>
-                    <span className={cn(
-                      "inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold",
-                      effectiveBalance < 0
-                        ? "bg-destructive/10 text-destructive"
-                        : "bg-primary/5 text-primary"
-                    )}>
-                      £{Math.abs(effectiveBalance).toFixed(0)}{effectiveBalance < 0 ? " due" : ""}
-                    </span>
+          {/* Pill badges row */}
+          <div className="flex items-center gap-[14px] flex-wrap">
+            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+              <Calendar className="h-[9px] w-[9px]" /> {getDateLabel()}
+            </span>
+            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+              <Clock className="h-[9px] w-[9px]" /> {formatDuration()}
+            </span>
+            {pickupPostcode && (
+              <span className={pillStyle} style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+                <MapPin className="h-[9px] w-[9px]" /> {pickupPostcode}
+              </span>
+            )}
+          </div>
+        </button>
+
+        {/* === EXPANDED CONTENT === */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="overflow-hidden"
+            >
+              <div className="px-[18px] pb-[18px]" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {/* Divider */}
+                <div style={{ height: 1, background: "rgba(255,255,255,0.1)" }} />
+
+                {/* 1. Info Badges Row */}
+                <div className="grid grid-cols-3 gap-[10px]">
+                  {/* Start */}
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <Clock className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+                    <span className="text-[15px] font-bold text-white">{formatTime24(startTime)}</span>
+                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Start</span>
                   </div>
-
-                  {/* ETA row */}
-                  {etaLoading ? (
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Calculating ETA...
-                    </div>
-                  ) : etaMinutes > 0 ? (
-                    <div className={cn(
-                      "flex items-center gap-1.5 text-[11px] font-medium",
-                      trafficCondition === 'heavy' ? 'text-destructive'
-                      : trafficCondition === 'moderate' ? 'text-amber-600'
-                      : 'text-emerald-600'
-                    )}>
-                      <Car className="h-3 w-3" />
-                      ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
-                      {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
-                        <span className="ml-0.5">{trafficCondition === 'heavy' ? '🔴' : '🟡'}</span>
-                      )}
-                    </div>
-                  ) : null}
-
-                  {/* Messages row */}
-                  <div className={cn(
-                    "flex items-center gap-2 rounded-xl px-2.5 py-2 border",
-                    hasUnread
-                      ? "bg-destructive/5 border-destructive/20"
-                      : "bg-muted/30 border-border/40"
-                  )}>
-                    <Mail className={cn("h-3.5 w-3.5 shrink-0", hasUnread ? "text-destructive" : "text-muted-foreground")} />
-                    <span className={cn("text-[11px] font-medium", hasUnread ? "text-destructive" : "text-muted-foreground")}>
-                      {hasUnread
-                        ? `${pupilUnreadCount} unread message${pupilUnreadCount !== 1 ? "s" : ""} from ${firstName}`
-                        : `No unread messages from ${firstName}`
-                      }
+                  {/* Duration */}
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <Hourglass className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+                    <span className="text-[15px] font-bold text-white">{formatDuration()}</span>
+                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Duration</span>
+                  </div>
+                  {/* Balance / Due */}
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <PoundSterling className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+                    <span className={`text-[15px] font-bold ${effectiveBalance < 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                      £{Math.abs(effectiveBalance).toFixed(0)}
                     </span>
-                  </div>
-
-                  {/* Start Lesson — visible when lesson is imminent */}
-                  {minutesUntil <= 15 && (
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(`/instructor/live-map?lesson=${lessonId}`)}
-                      className="w-full rounded-xl gap-2 h-9 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      <Play className="h-4 w-4" /> Start Lesson
-                    </Button>
-                  )}
-
-                  {/* Primary actions */}
-                  <div className="flex items-center gap-1.5">
-                    {pickupPostcode && (
-                      <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1 h-8 text-xs">
-                        <Navigation className="h-3.5 w-3.5" /> Navigate
-                      </Button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1 h-8 text-xs">
-                          <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-52">
-                        <DropdownMenuItem onClick={handleOnMyWay}>
-                          <Check className="h-4 w-4 mr-2 text-emerald-600" />
-                          On my way!
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleOnWayDelay(5)}>
-                          <Clock className="h-4 w-4 mr-2" /> I'll be 5 mins
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOnWayDelay(10)}>
-                          <Clock className="h-4 w-4 mr-2" /> I'll be 10 mins
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOnWayDelay(15)}>
-                          <Clock className="h-4 w-4 mr-2" /> I'll be 15 mins
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOnWayDelay(20)}>
-                          <Clock className="h-4 w-4 mr-2" /> I'll be 20 mins
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOnWayDelay(30)}>
-                          <Clock className="h-4 w-4 mr-2" /> I'll be 30 mins
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleCallASAP}>
-                          <Phone className="h-4 w-4 mr-2" /> I'll call you ASAP
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleSendETA}>
-                          <Send className="h-4 w-4 mr-2 text-primary" />
-                          {etaText ? `Send ETA (${etaText})` : "Send current ETA"}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
-                      <Phone className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-
-                  {/* Secondary actions */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">
-                    <Button size="sm" variant="outline" onClick={() => setRescheduleOpen(true)} className="rounded-xl gap-1.5">
-                      <CalendarClock className="h-3.5 w-3.5" /> Reschedule
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="rounded-xl gap-1.5 text-destructive hover:text-destructive">
-                      <X className="h-3.5 w-3.5" /> Cancel
-                    </Button>
+                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      {effectiveBalance < 0 ? "Due" : "Balance"}
+                    </span>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
 
-      {/* Cancel lesson dialog */}
+                {/* 2. Live ETA Row */}
+                {(etaLoading || etaMinutes > 0) && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <Car className="h-5 w-5 shrink-0" style={{ color: "#00E5FF" }} />
+                    {etaLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+                        <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>Calculating ETA...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Live ETA</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[15px] font-bold text-white">~{etaMinutes} min</span>
+                          {trafficCondition && (
+                            <>
+                              <span style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
+                              <span className={`w-2 h-2 rounded-full ${getTrafficDot()}`} />
+                              <span className="text-[11px] capitalize" style={{ color: "rgba(255,255,255,0.7)" }}>
+                                {trafficCondition} traffic
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Unread Messages Row */}
+                {hasUnread && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
+                    className="flex items-center gap-3 p-3 rounded-xl w-full text-left"
+                    style={{ background: "rgba(255,255,255,0.08)" }}
+                  >
+                    <MessageCircle className="h-5 w-5 shrink-0 text-orange-400" />
+                    <span className="text-[13px] font-medium text-white flex-1">
+                      {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {firstName}
+                    </span>
+                    <ChevronDown className="h-4 w-4 -rotate-90" style={{ color: "rgba(255,255,255,0.5)" }} />
+                  </button>
+                )}
+
+                {/* 4. Start Lesson Button */}
+                {minutesUntil <= 15 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/live-map?lesson=${lessonId}`); }}
+                    className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] text-white font-bold text-[15px]"
+                    style={{ background: "linear-gradient(90deg, #22c55e, rgba(34,197,94,0.8))" }}
+                  >
+                    <Navigation className="h-4 w-4" /> Start Lesson
+                  </button>
+                )}
+
+                {/* 5. Primary Actions Row */}
+                <div className="grid grid-cols-4 gap-[10px]">
+                  {/* Navigate */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.12)" }}
+                  >
+                    <Navigation className="h-5 w-5 text-blue-400" />
+                    <span className="text-[10px] font-bold text-white">Navigate</span>
+                  </button>
+
+                  {/* On My Way */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                        style={{ background: "rgba(255,255,255,0.12)" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Send className="h-5 w-5 text-white" />
+                        <span className="text-[10px] font-bold text-white">On My Way</span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-52">
+                      <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Call */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.12)" }}
+                  >
+                    <Phone className="h-5 w-5 text-emerald-400" />
+                    <span className="text-[10px] font-bold text-white">Call</span>
+                  </button>
+
+                  {/* SMS */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.12)" }}
+                  >
+                    <MessageSquare className="h-5 w-5 text-orange-400" />
+                    <span className="text-[10px] font-bold text-white">SMS</span>
+                  </button>
+                </div>
+
+                {/* 6. Secondary Actions Row */}
+                <div className="grid grid-cols-2 gap-[10px]">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
+                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+                  >
+                    <Calendar className="h-3.5 w-3.5" /> Reschedule
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
+                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
+                    style={{ background: "rgba(255,0,0,0.12)", color: "rgba(255,80,80,0.9)" }}
+                  >
+                    <X className="h-3.5 w-3.5" /> Cancel Lesson
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Dialogs */}
       {instructorId && (
         <CancelLessonDialog
           open={cancelOpen}
@@ -381,8 +390,6 @@ export function NextUpTile({
           onCancelled={handleCancelled}
         />
       )}
-
-      {/* Reschedule sheet with live availability */}
       {instructorId && (
         <RescheduleLessonSheet
           open={rescheduleOpen}
