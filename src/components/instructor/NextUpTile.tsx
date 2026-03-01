@@ -191,7 +191,9 @@ export function NextUpTile({
             {(pickupLocation || pickupPostcode) && (
               <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
                 <MapPin className="h-[11px] w-[11px]" />
-                <span className="truncate max-w-[180px]">{pickupLocation || pickupPostcode}</span>
+                <span className="truncate max-w-[200px]">
+                  {[pickupLocation, pickupPostcode].filter(Boolean).join(", ")}
+                </span>
               </span>
             )}
           </div>
