@@ -47,6 +47,7 @@ export function HomepageHero({
           borderBottomLeftRadius: "20px",
         }}
       >
+        {/* Gradient overlay adapts to dark mode */}
         <img
           src={heroImageUrl || instructorHeroImg}
           alt="Driving scene"
@@ -73,7 +74,7 @@ export function HomepageHero({
         >
           {/* Left side */}
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#0d9488" }}>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
               THIS WEEK
             </p>
             <p className="text-[18px] font-semibold text-foreground mt-0.5 leading-snug">
@@ -97,7 +98,7 @@ export function HomepageHero({
               <motion.circle
                 cx="32" cy="32" r={radius}
                 fill="none"
-                stroke="#0d9488"
+                className="stroke-teal-600 dark:stroke-teal-400"
                 strokeWidth={stroke}
                 strokeLinecap="round"
                 strokeDasharray={circumference}

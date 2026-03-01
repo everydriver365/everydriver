@@ -81,17 +81,16 @@ export function SwipeableQuickAccess() {
                       whileTap={{ scale: 0.96 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={() => navigate(tile.route)}
-                      className="h-[110px] p-4 bg-card rounded-[16px] text-left flex flex-col justify-between"
+                      className="h-[110px] p-4 bg-card rounded-[16px] text-left flex flex-col justify-between border border-border/40"
                       style={{
-                        border: "1px solid #F0F0F4",
                         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                       }}
                     >
                       <div>
-                        <p className="text-[16px] font-bold leading-tight" style={{ color: "#1C1C1E" }}>
+                        <p className="text-[16px] font-bold leading-tight text-foreground">
                           {tile.title}
                         </p>
-                        <p className="text-[13px] mt-0.5" style={{ color: "#8E8E93" }}>
+                        <p className="text-[13px] mt-0.5 text-muted-foreground">
                           {tile.subtitle}
                         </p>
                       </div>
@@ -112,12 +111,11 @@ export function SwipeableQuickAccess() {
         {pages.map((_, idx) => (
           <div
             key={idx}
-            className="transition-all duration-300 ease-in-out"
+            className={`transition-all duration-300 ease-in-out ${idx === selectedIndex ? "bg-primary" : "bg-muted-foreground/30"}`}
             style={{
               width: idx === selectedIndex ? 20 : 7,
               height: 7,
               borderRadius: 3.5,
-              backgroundColor: idx === selectedIndex ? "#142040" : "#E5E5EA",
             }}
           />
         ))}
