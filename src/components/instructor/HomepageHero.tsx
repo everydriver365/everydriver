@@ -66,7 +66,7 @@ export function HomepageHero({
       </div>
 
       {/* Overlapping "This Week" card */}
-      <div className="mt-3 mx-4 relative z-10">
+      <div className="-mt-4 mx-4 relative z-10">
         <div
           className="bg-white/80 dark:bg-card/80 backdrop-blur-xl rounded-[20px] p-4 flex items-center justify-between"
           style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
