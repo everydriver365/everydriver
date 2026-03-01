@@ -8,6 +8,7 @@ import {
   Calendar, Users, Briefcase, BookOpen, Fuel, BarChart3, Settings,
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -426,6 +427,8 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
 // ─── Main Component ───
 export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeViewProps) {
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark" || resolvedTheme === "oled";
 
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
   const { monthEarnings } = useInstructorLiveStats(instructorId);
@@ -444,7 +447,11 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
       {/* ─── 1. HEADER ─── */}
       <div
         className="w-full"
-        style={{ background: "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)" }}
+        style={{
+          background: isDark
+            ? "linear-gradient(135deg, rgb(20,31,56) 0%, rgb(26,46,82) 100%)"
+            : "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)",
+        }}
       >
         <div style={{ height: 54 }} />
         <div className="flex items-center justify-between px-5 pb-3">
@@ -457,7 +464,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
           </div>
         </div>
 
-        <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+        <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
               <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>
@@ -479,7 +486,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
       </div>
 
       {/* ─── Body ─── */}
-      <div className="flex-1 pb-24 bg-[#F2F2F7] dark:bg-black">
+      <div className="flex-1 pb-24 bg-[#F2F2F7] dark:bg-[#111111]">
         {/* ─── 2. DATE/TIME ROW ─── */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <p className="text-[15px] font-semibold text-primary">
