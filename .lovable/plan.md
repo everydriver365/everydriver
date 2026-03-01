@@ -1,26 +1,32 @@
 
-Root cause identified: the rounding is not coming from `HomepageHero` anymore. It is being re-applied globally by this CSS rule in `src/index.css`:
 
-- `.instructor-portal [class*="overflow-hidden"] ... { border-radius: 20px !important; }`
+## Plan: Integrate All Major Accountancy Packages
 
-Because your hero banner uses `overflow-hidden`, that global `!important` forces top corners to stay rounded.
+Currently the app only has a Xero CSV export component. The plan is to expand the Export tab to support CSV exports compatible with **Xero**, **QuickBooks Online**, **FreeAgent**, and **Sage Business Cloud** -- all via downloadable CSV files formatted to each platform's import specification.
 
-Plan to fix:
+### What will be built
 
-1. Add an explicit opt-out class to the hero container in `src/components/instructor/HomepageHero.tsx`
-- Example class on hero wrapper: `hero-banner-no-top-radius`
+1. **New `AccountingExport` component** replacing the current `XeroExport` -- a unified export card with a platform selector (tabs or dropdown) for Xero, QuickBooks, FreeAgent, and Sage. Each platform generates CSVs with the correct headers, date formats, and account codes:
 
-2. Update `src/index.css` so the global instructor rounding rule excludes this class
-- Change selector to include `:not(.hero-banner-no-top-radius)`
+   - **Xero**: Current format (already done) -- `*Date`, `*Amount`, `Description`, `Reference`, `Account Code`, `Tax Rate`
+   - **QuickBooks Online**: `Date`, `Description`, `Amount`, `Category`, `Ref Number`
+   - **FreeAgent**: `Dated on`, `Description`, `Gross Value`, `Category`, `Sales Tax Rate`
+   - **Sage**: `Date`, `N/C` (nominal code), `Reference`, `Details`, `Net Amount`, `Tax Code`
 
-3. Add a dedicated override rule for safety (also `!important`) so nothing can re-round it
-- `.instructor-portal .hero-banner-no-top-radius { border-radius: 0 0 20px 20px !important; }`
-- Keep `overflow-hidden` so the image still clips to the bottom corners.
+2. **Platform-specific account code mappings** for each software (e.g. Fuel = Xero 429, QBO "Car & Van Expenses", FreeAgent "Motor Expenses", Sage 7300).
 
-4. Verify on `/instructor` with current mobile header
-- Confirm top-left and top-right of hero are square
-- Confirm bottom corners remain 20px rounded
-- Confirm no regressions on other instructor cards/tiles
+3. **Income + Expense exports** for each platform, same as the current Xero export but with platform-specific formatting.
 
-Technical note:
-This is a CSS specificity conflict (`!important` global utility rule overriding component-level radius), so the fix must be done in the global stylesheet, not only inside the component.
+4. **Update the Export tab** in `InstructorAccounts.tsx` to use the new unified component instead of `XeroExport`, removing the Xero-only sidebar info and replacing with a generic "Accounting Software Export" section.
+
+5. **"Coming Soon" note** for direct OAuth API integrations remains, but now mentions all four platforms.
+
+### Files changed
+
+- **New**: `src/components/instructor/AccountingExport.tsx` -- unified export component with platform selector
+- **Edit**: `src/pages/InstructorAccounts.tsx` -- swap `XeroExport` for `AccountingExport` in the Export tab
+- **Keep**: `src/components/instructor/XeroExport.tsx` -- left as-is for backward compatibility (but no longer rendered directly)
+
+### No database or backend changes required
+This is purely client-side CSV generation using existing expense and lesson data.
+
