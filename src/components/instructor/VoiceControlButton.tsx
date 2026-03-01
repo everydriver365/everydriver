@@ -12,6 +12,8 @@ interface VoiceControlButtonProps {
   onRunningLate?: () => void;
   onNavigate?: () => void;
   onShowSpeed?: (speedKmh: number) => void;
+  onSendLateETA?: () => void;
+  isRunningLate?: boolean;
   currentSpeedKmh?: number;
   isSessionActive?: boolean;
   className?: string;
@@ -23,6 +25,8 @@ export function VoiceControlButton({
   onRunningLate,
   onNavigate,
   onShowSpeed,
+  onSendLateETA,
+  isRunningLate = false,
   currentSpeedKmh = 0,
   isSessionActive = false,
   className,
@@ -69,6 +73,19 @@ export function VoiceControlButton({
         const mph = Math.round(currentSpeedKmh * 0.621371);
         speak(`Current speed: ${mph} miles per hour`);
         onShowSpeed?.(currentSpeedKmh);
+      },
+    },
+    {
+      patterns: ["send eta", "send late message", "tell them I'm late", "send late eta"],
+      action: isRunningLate ? "Sending late ETA message" : "Not currently running late",
+      callback: () => {
+        if (isRunningLate && onSendLateETA) {
+          haptics.success();
+          onSendLateETA();
+          speak("Late message sent");
+        } else {
+          speak("You're not currently running late");
+        }
       },
     },
   ];
