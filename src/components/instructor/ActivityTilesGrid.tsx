@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Mail, CheckCircle, Calendar } from "lucide-react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
+import messagesIcon from "@/assets/messages-icon.png";
 
 interface ActivityTile {
   title: string;
@@ -48,7 +49,13 @@ export function ActivityTilesGrid({
       subtitle: "Unread",
       count: unreadMessagesCount,
       accent: "#FF9500",
-      icon: <Mail size={20} strokeWidth={1.8} style={{ color: "#FF9500" }} />,
+      icon: (
+        <img
+          src={messagesIcon}
+          alt="Messages"
+          className="w-full h-full object-cover rounded-[10px]"
+        />
+      ),
       route: "/instructor/messages",
     },
     {
