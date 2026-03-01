@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2,
   ChevronDown, ChevronUp, Send, Play, MapPin, Calendar,
-  Hourglass, PoundSterling, MessageCircle,
+  Hourglass, PoundSterling, MessageCircle, AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,8 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
+import { haptics } from "@/lib/haptics";
 
 import {
   DropdownMenu,
@@ -57,6 +59,27 @@ export function NextUpTile({
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+
+  const [lateDismissed, setLateDismissed] = useState(false);
+  const lateAlertFiredRef = useRef(false);
+
+  const { isRunningLate, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
+    etaMinutes,
+    minutesUntil,
+    pupilName,
+    pupilPhone,
+  });
+
+  // Haptic feedback when late alert first appears
+  useEffect(() => {
+    if (isRunningLate && !lateAlertFiredRef.current) {
+      lateAlertFiredRef.current = true;
+      haptics.medium();
+    }
+    if (!isRunningLate) {
+      lateAlertFiredRef.current = false;
+    }
+  }, [isRunningLate]);
 
   // Auto-refresh countdown every 30s
   useEffect(() => {
@@ -198,6 +221,47 @@ export function NextUpTile({
             )}
           </div>
         </button>
+
+        {/* === RUNNING LATE ALERT === */}
+        <AnimatePresence>
+          {isRunningLate && !lateDismissed && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div
+                className="mx-4 mb-2 flex items-center gap-2.5 p-3 rounded-xl"
+                style={{ background: "rgba(251,191,36,0.2)", border: "1px solid rgba(251,191,36,0.4)" }}
+              >
+                <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: "#FBBF24" }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-bold text-white">
+                    You may arrive ~{lateByMinutes} min late
+                  </p>
+                  <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    ETA {arrivalTimeText}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
+                  className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold"
+                  style={{ background: "#FBBF24", color: "#1a1a2e" }}
+                >
+                  Send ETA
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }}
+                  className="shrink-0"
+                >
+                  <X className="h-4 w-4" style={{ color: "rgba(255,255,255,0.5)" }} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* === EXPANDED CONTENT === */}
         <AnimatePresence>
