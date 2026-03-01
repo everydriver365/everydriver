@@ -157,7 +157,7 @@ export function NextUpTile({
             {/* Center info */}
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "rgba(255,255,255,0.6)" }}>
+                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#FBBF24" }}>
                   Next Up
                 </span>
                 <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
