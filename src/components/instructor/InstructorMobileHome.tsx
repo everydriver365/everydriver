@@ -47,6 +47,10 @@ import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
+import { HomepageHero } from "@/components/instructor/HomepageHero";
+import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
+import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
+import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
@@ -364,455 +368,144 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* Hero Image + Greeting + Today's Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative"
-      >
-        {/* Hero Image */}
-        <div className="relative h-[220px] overflow-hidden">
-          <img
-            src={content?.hero_image_url || instructorHeroImg}
-            alt="Instructor hero"
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient overlay at bottom for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
-          {/* Greeting text overlaid at bottom of image */}
-          <div className="absolute bottom-10 left-5 right-5 text-white">
-            <h1 className="text-[28px] font-extrabold leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] tracking-tight">
-              {(() => {
-                const h = new Date().getHours();
-                if (h >= 5 && h < 12) return "Good Morning";
-                if (h >= 12 && h < 17) return "Good Afternoon";
-                if (h >= 17 && h < 21) return "Good Evening";
-                return "Hello";
-              })()}{firstName ? `, ${firstName}` : ""}
-            </h1>
-            <p className="text-white/90 text-[15px] mt-1 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-              {format(new Date(), "EEEE d MMMM")}
-            </p>
-          </div>
-        </div>
-
-        {/* Sticky next-up bar */}
-        <AnimatePresence>
-          {showFAB && nextLesson && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-0 left-0 right-0 z-50 bg-primary text-white px-4 py-2 flex items-center justify-between shadow-lg"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <Timer className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
-              </div>
-              <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
-                {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Today's Overview card — overlapping the hero */}
-        <div className="px-4 -mt-8 relative z-10">
-          <motion.div
-            whileTap={{ scale: 0.97 }}
-            className="w-full rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden"
-          >
-            <button
-              onClick={() => navigate("/instructor/schedule")}
-              className="w-full relative bg-gradient-to-br from-primary via-primary/95 to-primary/85 p-4 flex items-center gap-4 text-left"
-            >
-              {/* Decorative circles */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/[0.06]" />
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.04]" />
-              </div>
-              <div className="relative flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Today's Overview</p>
-                  {currentWeather && (
-                    <span className="flex items-center gap-1 text-amber-300 text-[11px]">
-                      {(() => {
-                        const WeatherIcon = currentWeather.icon === "Sun" ? Sun
-                          : currentWeather.icon === "CloudSun" ? CloudSun
-                          : currentWeather.icon === "Cloud" ? Cloud
-                          : currentWeather.icon === "CloudRain" ? CloudRain
-                          : currentWeather.icon === "CloudDrizzle" ? CloudDrizzle
-                          : currentWeather.icon === "CloudLightning" ? CloudLightning
-                          : currentWeather.icon === "CloudFog" ? CloudFog
-                          : currentWeather.icon === "Snowflake" ? Snowflake
-                          : currentWeather.icon === "Wind" ? Wind
-                          : CloudSun;
-                        const iconColor = currentWeather.icon === "Sun" ? "text-yellow-400"
-                          : currentWeather.icon === "CloudSun" ? "text-amber-400"
-                          : currentWeather.icon === "CloudRain" ? "text-blue-400"
-                          : currentWeather.icon === "CloudDrizzle" ? "text-sky-400"
-                          : currentWeather.icon === "CloudLightning" ? "text-violet-400"
-                          : currentWeather.icon === "Snowflake" ? "text-cyan-300"
-                          : currentWeather.icon === "Wind" ? "text-teal-300"
-                          : currentWeather.icon === "CloudFog" ? "text-gray-300"
-                          : "text-amber-300";
-                        return <WeatherIcon className={`h-3.5 w-3.5 ${iconColor}`} />;
-                      })()}
-                      {currentWeather.temperature != null && `${Math.round(currentWeather.temperature)}°C`}
-                      {displayLocation && (
-                        <>
-                          <span className="text-white/40 mx-0.5">·</span>
-                          <MapPin className="h-2.5 w-2.5" />
-                          <span className="max-w-[100px] truncate">{displayLocation}</span>
-                        </>
-                      )}
-                    </span>
-                  )}
-                </div>
-                <p className="text-[15px] font-semibold text-white mt-1.5 leading-snug">
-                  {todayOverview?.lessonCount
-                    ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount > 1 ? "s" : ""} lined up today.`
-                    : "No lessons scheduled today."}
-                </p>
-                {todayOverview && todayOverview.lessonCount > 0 && (
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-white/70 text-[12px] flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {todayOverview.totalHours}h
-                    </span>
-                    <span className="text-white/70 text-[12px] flex items-center gap-1">
-                      <PoundSterling className="h-3 w-3" />
-                      £{todayOverview.expectedEarnings}
-                      {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
-                        <span className={`ml-1 text-[10px] font-bold ${lastWeekComparison.percentChange > 0 ? "text-emerald-300" : "text-red-300"}`}>
-                          {lastWeekComparison.percentChange > 0 ? "▲" : "▼"}{Math.abs(lastWeekComparison.percentChange)}%
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {/* Lesson Count Ring */}
-              <div className="relative flex items-center gap-2 shrink-0">
-                {(() => {
-                  const total = maxLessons;
-                  const done = todayOverview?.lessonCount || 0;
-                  const pct = Math.min(done / total, 1);
-                  const r = 22;
-                  const circ = 2 * Math.PI * r;
-                  const offset = circ * (1 - pct);
-                  return (
-                    <div className="relative w-14 h-14 shrink-0">
-                      <svg viewBox="0 0 52 52" className="w-full h-full -rotate-90">
-                        <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
-                        <motion.circle
-                          cx="26" cy="26" r={r} fill="none"
-                          stroke="white" strokeWidth="4" strokeLinecap="round"
-                          strokeDasharray={circ}
-                          initial={{ strokeDashoffset: circ }}
-                          animate={{ strokeDashoffset: offset }}
-                          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-black text-white leading-none">{done}</span>
-                        <span className="text-[7px] font-bold text-white/80 uppercase leading-none mt-0.5 tracking-wider">Today</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </button>
-            {/* Engine fault warning line */}
-            {engineFaultCount > 0 && !engineFaultsDismissed && (
-              <div className="w-full flex items-center bg-destructive/90 text-white rounded-b-2xl">
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigate("/instructor/vehicle-health#faults"); }}
-                  className="flex-1 flex items-center gap-2 px-4 py-2.5 text-left active:bg-destructive transition-colors"
-                >
-                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                  <span className="text-[12px] font-medium flex-1">
-                    {engineFaultCount} engine fault{engineFaultCount > 1 ? "s" : ""} detected — tap to view
-                  </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    localStorage.setItem("engine_faults_dismissed_at", Date.now().toString());
-                    setEngineFaultsDismissed(true);
-                  }}
-                  className="px-3 py-2.5 hover:bg-white/10 active:bg-white/20 transition-colors"
-                >
-                  <X className="h-3.5 w-3.5 text-white/70" />
-                </button>
-              </div>
-            )}
-            {/* Weather warning line */}
-            {currentWeather && currentWeather.temperature != null && currentWeather.temperature <= 2 && (
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-sky-600 text-white text-left active:bg-sky-700 transition-colors rounded-b-2xl"
-              >
-                <Snowflake className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-[12px] font-medium flex-1">
-                  Ice risk — {currentWeather.temperature}°C{currentWeather.description ? ` · ${currentWeather.description}` : ""}
-                </span>
-                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
-              </button>
-            )}
-            {currentWeather && currentWeather.temperature != null && currentWeather.temperature > 2 && (currentWeather.icon === "CloudRain" || currentWeather.icon === "CloudLightning" || currentWeather.icon === "CloudDrizzle") && (
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-primary/80 text-white text-left active:bg-primary/90 transition-colors rounded-b-2xl"
-              >
-                <WeatherIcon icon={currentWeather.icon} className="h-3.5 w-3.5 shrink-0 text-white" />
-                <span className="text-[12px] font-medium flex-1">
-                  Weather alert — {currentWeather.temperature}°C · {currentWeather.description || "Rain expected"}
-                </span>
-                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
-              </button>
-            )}
-            {/* Road closure / traffic alerts line */}
-            {alerts.length > 0 && (
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate("/instructor/road-alerts"); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white text-left active:bg-amber-700 transition-colors rounded-b-2xl"
-              >
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-[12px] font-medium flex-1">
-                  {alerts.length} road alert{alerts.length > 1 ? "s" : ""} nearby — tap to view
-                </span>
-                <ChevronRight className="h-3.5 w-3.5 text-white/60 shrink-0" />
-              </button>
-            )}
-          </motion.div>
-        </div>
-      </motion.div>
-      {/* Notifications — reference-image style vertical list */}
-      <div className="px-4 mt-3 space-y-3">
-        {/* Job Offers */}
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/instructor/jobs")}
-          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
-        >
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0 overflow-hidden">
-            <img src={jobOffersIcon} alt="Job Offers" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-semibold text-foreground leading-tight">Job Offers</p>
-            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Browse available positions</p>
-          </div>
-          <span className="min-w-[28px] h-7 px-2 rounded-full bg-emerald-500/15 text-emerald-600 text-xs font-bold flex items-center justify-center shrink-0">
-            {pendingJobsCount}
-          </span>
-        </motion.button>
-
-        {/* In App Messages */}
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.07 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/instructor/messages")}
-          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
-        >
-          <div className="w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden">
-            <img src={messagesIcon} alt="Messages" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-semibold text-foreground leading-tight">In App Messages</p>
-            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Chat with pupils & parents</p>
-          </div>
-          <span className="min-w-[28px] h-7 px-2 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-            {pupilMsgCount}
-          </span>
-        </motion.button>
-
-        {/* Test Requests */}
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.09 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/instructor/test-requests")}
-          className="w-full rounded-2xl px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3.5"
-        >
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
-            <img src={testRequestsIcon} alt="Test Requests" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-semibold text-foreground leading-tight">Test Requests</p>
-            <p className="text-xs text-muted-foreground leading-tight mt-0.5">Pending booking requests</p>
-          </div>
-          <span className="min-w-[28px] h-7 px-2 rounded-full bg-amber-500/15 text-amber-600 text-xs font-bold flex items-center justify-center shrink-0">
-            {testSwapCount}
-          </span>
-        </motion.button>
-      </div>
-
-      {/* Content with horizontal padding */}
-      <div className="px-4">
-
-      {/* Celebration Confetti */}
-      <CelebrationConfetti
-        trigger={showConfetti} 
-        onComplete={() => setShowConfetti(false)} 
+      {/* 1. Hero Banner */}
+      <HomepageHero
+        firstName={firstName}
+        heroImageUrl={personalHeroUrl || content?.hero_image_url}
+        weeklyLessonsScheduled={weeklyGoals?.lessonsThisWeek || 0}
+        weeklyLessonsCompleted={weeklyGoals?.lessonsThisWeek || 0}
+        weeklyLessonsTotal={Math.max(weeklyGoals?.lessonsThisWeek || 0, 6)}
       />
 
-      {/* Weather/Traffic Alerts */}
-      {alerts.length > 0 && (
-        <DrivingAlertsStrip 
-          alerts={alerts} 
-          onDismiss={dismissAlert}
-          location={alertsLocation}
+      {/* Sticky next-up bar */}
+      <AnimatePresence>
+        {showFAB && nextLesson && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Timer className="h-3.5 w-3.5 shrink-0" />
+              <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
+            </div>
+            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
+              {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 2. Activity Tiles Grid */}
+      <ActivityTilesGrid
+        pendingJobsCount={pendingJobsCount}
+        unreadMessagesCount={pupilMsgCount}
+        testRequestsCount={testSwapCount}
+        gapSlotsCount={gapSuggestions?.length || 0}
+      />
+
+      {/* 3. Conditional sections */}
+      <div className="px-4">
+        <CelebrationConfetti
+          trigger={showConfetti}
+          onComplete={() => setShowConfetti(false)}
+        />
+
+        {alerts.length > 0 && (
+          <DrivingAlertsStrip
+            alerts={alerts}
+            onDismiss={dismissAlert}
+            location={alertsLocation}
+            className="mt-4"
+          />
+        )}
+
+        {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
+          <TrackerReminderBanner
+            lessonId={nextLesson.lessonId}
+            minutesUntil={nextLesson.minutesUntil}
+          />
+        )}
+      </div>
+
+      {/* 4. Your Day */}
+      <div className="px-4">
+        {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+        )}
+
+        {nextLesson && (
+          <div className="mt-2">
+            <NextUpTile
+              lessonId={nextLesson.lessonId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
+              pupilProfileImage={nextLesson.pupilProfileImage}
+              pupilPhone={nextLesson.pupilPhone}
+              lessonDate={nextLesson.lessonDate}
+              pickupPostcode={nextLesson.pickupPostcode}
+              pickupLocation={nextLesson.pickupLocation}
+              startTime={nextLesson.startTime}
+              minutesUntil={nextLesson.minutesUntil}
+              accountBalance={nextLesson.accountBalance}
+              prepaidHours={nextLesson.prepaidHours}
+              durationMinutes={nextLesson.durationMinutes}
+              instructorId={instructorId}
+            />
+          </div>
+        )}
+
+        {todayLessons && todayLessons.length > 0 && (
+          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
+        )}
+
+        {/* 5. Today's Route Map Preview */}
+        <TodayRoutePreview
+          instructorId={instructorId}
+          onTap={() => navigate("/instructor/diary")}
           className="mt-4"
         />
-      )}
 
-      {/* Tracker Reminder - show when offline and lesson soon */}
-      {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-          <TrackerReminderBanner 
-            lessonId={nextLesson.lessonId}
-            minutesUntil={nextLesson.minutesUntil}
-          />
-      )}
-
-      </div>
-
-
-      <div className="px-4">
-
-      {/* YOUR DAY section */}
-      {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
-      )}
-
-      {/* Next Lesson Card - only show when there's a lesson */}
-      {nextLesson && (
-        <div className="mt-2">
-          <NextUpTile
-            lessonId={nextLesson.lessonId}
-            pupilId={nextLesson.pupilId}
-            pupilName={nextLesson.pupilName}
-            pupilProfileImage={nextLesson.pupilProfileImage}
-            pupilPhone={nextLesson.pupilPhone}
-            lessonDate={nextLesson.lessonDate}
-            pickupPostcode={nextLesson.pickupPostcode}
-            pickupLocation={nextLesson.pickupLocation}
-            startTime={nextLesson.startTime}
-            minutesUntil={nextLesson.minutesUntil}
-            accountBalance={nextLesson.accountBalance}
-            prepaidHours={nextLesson.prepaidHours}
-            durationMinutes={nextLesson.durationMinutes}
-            instructorId={instructorId}
-          />
-        </div>
-      )}
-
-      {/* Today's Schedule Cards */}
-      {todayLessons && todayLessons.length > 0 && (
-          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
-      )}
-
-      {/* Today's Route Map Preview */}
-      <TodayRoutePreview 
-        instructorId={instructorId}
-        onTap={() => navigate("/instructor/diary")}
-        className="mt-4"
-      />
-
-      {/* Gap Filler Suggestions */}
-      {gapSuggestions && gapSuggestions.length > 0 && (
-        <div className="mt-4">
-          <GapFillerCard gaps={gapSuggestions} />
-        </div>
-      )}
-
-      {/* QUICK ACTIONS section */}
-      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
-
-      {/* Quick Action Tiles */}
-      <div className="pb-6">
-        <QuickActionTiles
-          quickActions={content?.quick_actions || []}
-          pendingJobsCount={pendingJobsCount}
-          instructorId={instructorId}
-          loading={contentLoading}
-          isEditMode={isTileEditMode}
-          onEditModeChange={setIsTileEditMode}
-        />
-      </div>
-
-
-
-
-
-      {/* Vehicle Health & Agenda */}
-      <div className="mt-4 space-y-3">
-        {authInstructor?.id && (
-          <VehicleHealthStrip instructorId={authInstructor.id} />
-        )}
-        <UnifiedAgendaTile instructorId={instructor?.id} />
-        
-      </div>
-
-      {/* PLAN AHEAD section */}
-      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Plan Ahead</p>
-
-      {/* Tomorrow Peek Card */}
-      {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
-          <TomorrowPeekCard
-            lessonCount={tomorrowPreview.lessonCount}
-            totalHours={tomorrowPreview.totalHours}
-            expectedEarnings={tomorrowPreview.expectedEarnings}
-            firstLessonTime={tomorrowPreview.firstLessonTime}
-            lessons={tomorrowPreview.lessons}
-            instructorId={instructorId}
-          />
-      ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
-          <div
-            className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden cursor-pointer"
-            onClick={() => navigate("/instructor/gaps")}
-          >
-            <div className="px-3.5 py-3.5 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
-                <img src={planAheadIcon} alt="Plan Ahead" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold text-foreground leading-tight">Plan Ahead</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Nothing scheduled tomorrow</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
+        {/* 6. Gap Filler */}
+        {gapSuggestions && gapSuggestions.length > 0 && (
+          <div className="mt-4">
+            <GapFillerCard gaps={gapSuggestions} />
           </div>
-      ) : null}
+        )}
 
+        {/* 7. Quick Access — Swipeable Grid */}
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
+        <div className="pb-4">
+          <SwipeableQuickAccess />
+        </div>
 
-      {/* Road Alerts from National Highways */}
-      <RoadAlertsRow alerts={alerts} className="mt-2" />
+        {/* 8. Today's Lessons Full List */}
+        <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
 
-      {/* Setup Checklist for new instructors */}
-      {instructorId && (
-          <InstructorSetupChecklist 
-            instructorId={instructorId} 
+        {/* 9. Vehicle Health Strip */}
+        {authInstructor?.id && (
+          <div className="mt-4">
+            <VehicleHealthStrip instructorId={authInstructor.id} />
+          </div>
+        )}
+
+        {/* Setup Checklist for new instructors */}
+        {instructorId && (
+          <InstructorSetupChecklist
+            instructorId={instructorId}
             variant="mobile"
           />
-      )}
+        )}
 
-      {/* Your Plan — at the bottom */}
-      <div className="mt-3">
-        <PlanWidget />
+        {/* Your Plan */}
+        <div className="mt-3">
+          <PlanWidget />
+        </div>
+
+        {/* 10. Floating Session Bar */}
+        <FloatingSessionBar instructorId={instructorId} />
       </div>
-
-      {/* Floating Session Bar - shows during active tracking */}
-      <FloatingSessionBar instructorId={instructorId} />
-      </div>{/* end px-4 */}
       </>
       )}
       </div>
