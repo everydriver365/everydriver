@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarPlus, ChevronDown, Clock, Users, Check, Send, X, Zap, ArrowRight } from "lucide-react";
+import { ChevronDown, Clock, Users, Check, Send, X, Zap, ArrowRight } from "lucide-react";
+import fillGapsIcon from "@/assets/fill-gaps-icon.png";
 import { Button } from "@/components/ui/button";
 import { haptics } from "@/lib/haptics";
 import { useNavigate } from "react-router-dom";
@@ -207,8 +208,8 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
           className="w-full p-4 flex items-center gap-3 text-left active:bg-muted/50 transition-colors"
         >
           {/* Tinted icon pill */}
-          <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
-            <CalendarPlus className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+          <div className="h-8 w-8 rounded-lg overflow-hidden shrink-0">
+            <img src={fillGapsIcon} alt="Fill Gaps" className="w-full h-full object-cover" />
           </div>
           {/* Content */}
           <div className="flex-1 min-w-0">
