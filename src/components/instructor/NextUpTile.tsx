@@ -196,6 +196,11 @@ export function NextUpTile({
                 </span>
               </span>
             )}
+            {!etaLoading && etaMinutes > 0 && (
+              <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "#00E5FF" }}>
+                <Car className="h-[11px] w-[11px]" /> ~{etaMinutes} min
+              </span>
+            )}
           </div>
         </button>
 
