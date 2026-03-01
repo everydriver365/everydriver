@@ -4,6 +4,7 @@ import { Mail, CheckCircle, Calendar } from "lucide-react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
+import testRequestsIcon from "@/assets/test-requests-icon.png";
 
 interface ActivityTile {
   title: string;
@@ -63,7 +64,13 @@ export function ActivityTilesGrid({
       subtitle: "Pending",
       count: testRequestsCount,
       accent: "#5AC8FA",
-      icon: <CheckCircle size={20} strokeWidth={1.8} style={{ color: "#5AC8FA" }} />,
+      icon: (
+        <img
+          src={testRequestsIcon}
+          alt="Test Requests"
+          className="w-full h-full object-cover rounded-[10px]"
+        />
+      ),
       route: "/instructor/test-requests",
     },
     {
