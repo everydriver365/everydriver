@@ -20,10 +20,10 @@ const lessonTypeColors: Record<string, { bg: string; text: string }> = {
 };
 
 const lessonTypeBorderColors: Record<string, string> = {
-  "Standard": "border-l-primary",
-  "Test Prep": "border-l-amber-500",
-  "Mock Test": "border-l-violet-500",
-  "Motorway": "border-l-emerald-500",
+  "Standard": "border-l-[#007AFF]",
+  "Test Prep": "border-l-[#FF9500]",
+  "Mock Test": "border-l-[#AF52DE]",
+  "Motorway": "border-l-[#FF2D55]",
   "Refresher": "border-l-pink-500",
   "Pass Plus": "border-l-sky-500",
 };
