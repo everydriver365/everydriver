@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import instructorHeroImg from "@/assets/hero-learner.jpg";
+import instructorHeroImg from "@/assets/hero-instructor.jpg";
 
 interface HomepageHeroProps {
   firstName: string;
