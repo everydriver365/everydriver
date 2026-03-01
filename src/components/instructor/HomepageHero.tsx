@@ -55,7 +55,7 @@ export function HomepageHero({
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
 
         {/* Bottom-left text */}
-        <div className="absolute bottom-4 left-5 right-5">
+        <div className="absolute bottom-6 left-5 right-5">
           <h1 className="text-[28px] font-bold text-white leading-tight drop-shadow-md">
             {getGreeting()}
           </h1>
