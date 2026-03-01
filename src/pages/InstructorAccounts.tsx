@@ -7,7 +7,7 @@ import { EarningsCalculator } from "@/components/instructor/EarningsCalculator";
 import { ExpenseCategoryChart } from "@/components/instructor/ExpenseCategoryChart";
 import { TaxYearReport } from "@/components/instructor/TaxYearReport";
 import { LessonMileageTracker } from "@/components/instructor/LessonMileageTracker";
-import { XeroExport } from "@/components/instructor/XeroExport";
+import { AccountingExport } from "@/components/instructor/accounting-export/AccountingExport";
 import { AnnualBusinessReport } from "@/components/instructor/AnnualBusinessReport";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings, TrendingUp, PieChart, FileText, Car, FileSpreadsheet, BarChart3 } from "lucide-react";
@@ -172,37 +172,10 @@ export default function InstructorAccounts() {
               <div>
                 <h2 className="text-2xl font-bold">Export & Sync</h2>
                 <p className="text-muted-foreground">
-                  Export data for Xero or other accounting software
+                  Export data for your accounting software
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <XeroExport instructorId={instructor.id} />
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-muted/50 border">
-                    <h3 className="font-medium mb-2">Xero CSV Format</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Exported files use Xero-compatible column headers and account codes:
-                    </p>
-                    <ul className="text-xs space-y-1 text-muted-foreground">
-                      <li><strong>429</strong> - Motor Expenses (Fuel, Tolls)</li>
-                      <li><strong>455</strong> - Repairs & Maintenance</li>
-                      <li><strong>463</strong> - Insurance</li>
-                      <li><strong>400</strong> - General Expenses</li>
-                      <li><strong>449</strong> - Marketing</li>
-                      <li><strong>453</strong> - Office Expenses</li>
-                    </ul>
-                  </div>
-                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-                    <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">
-                      Coming Soon
-                    </h3>
-                    <p className="text-sm text-green-800 dark:text-green-200">
-                      Direct Xero API integration for automatic sync. Contact support
-                      to express interest.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <AccountingExport instructorId={instructor.id} />
             </div>
           </TabsContent>
 
