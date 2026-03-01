@@ -39,12 +39,18 @@ export function HomepageHero({
       {/* Hero Banner */}
       <div
         className="relative h-[160px] overflow-hidden"
-        style={{ paddingTop: "env(safe-area-inset-top)", borderRadius: "0 0 20px 20px" }}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: "20px",
+          borderBottomLeftRadius: "20px",
+        }}
       >
         <img
           src={heroImageUrl || instructorHeroImg}
           alt="Driving scene"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover !rounded-none"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
 
