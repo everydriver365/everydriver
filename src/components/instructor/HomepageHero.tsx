@@ -38,8 +38,8 @@ export function HomepageHero({
     <div className="relative">
       {/* Hero Banner */}
       <div
-        className="relative h-[160px] overflow-hidden rounded-b-[20px] rounded-t-none"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        className="relative h-[160px] overflow-hidden"
+        style={{ paddingTop: "env(safe-area-inset-top)", borderRadius: "0 0 20px 20px" }}
       >
         <img
           src={heroImageUrl || instructorHeroImg}
