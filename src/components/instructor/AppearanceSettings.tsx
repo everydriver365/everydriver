@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppearance";
+import { useTheme } from "@/context/ThemeContext";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, X, LayoutGrid, Calendar, Check, Lock } from "lucide-react";
+import { Camera, Loader2, X, LayoutGrid, Calendar, Check, Lock, Sun, Moon, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
@@ -162,8 +163,36 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
     }
   };
 
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="space-y-6">
+      {/* ── Theme Mode ── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Theme</Label>
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-muted/30 border border-border">
+          {([
+            { value: "system" as const, label: "System", icon: Monitor },
+            { value: "light" as const, label: "Light", icon: Sun },
+            { value: "dark" as const, label: "Dark", icon: Moon },
+          ]).map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                "flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all",
+                theme === opt.value
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <opt.icon className="h-3.5 w-3.5" />
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Live Preview ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Preview</Label>
