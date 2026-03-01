@@ -80,6 +80,7 @@ import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
 import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";
 import { CleanHomeView } from "@/components/instructor/CleanHomeView";
+import { IOSNativeHomeView } from "@/components/instructor/IOSNativeHomeView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -365,6 +366,11 @@ export function InstructorMobileHome({
           instructor={instructor}
           todayOverview={todayOverview}
           todayLessons={todayLessons}
+        />
+      ) : layoutStyle === "ios-native" ? (
+        <IOSNativeHomeView
+          instructorId={instructorId}
+          instructor={instructor}
         />
       ) : (
       <>
