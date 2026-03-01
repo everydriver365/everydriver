@@ -179,8 +179,8 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             <div className="flex items-center gap-2 mt-1.5">
               <div className="flex items-center gap-1.5 text-sm text-primary-foreground/80">
                 <MapPin className="h-3.5 w-3.5" />
-                <span className="truncate">
-                  {nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
+                <span className="truncate max-w-[180px]">
+                  {nextLesson.pupil.pickup_address || nextLesson.pupil.address || nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
                 </span>
               </div>
               <PaymentStatusBadge
