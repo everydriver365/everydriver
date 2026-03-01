@@ -7,6 +7,8 @@ interface WeeklyGoalData {
   hoursLastWeek: number;
   hoursGoal: number;
   lessonsThisWeek: number;
+  lessonsCompleted: number;
+  lessonsScheduled: number;
   earningsThisWeek: number;
   earningsLastWeek: number;
   progressPercent: number;
@@ -25,6 +27,8 @@ export function useWeeklyGoals(instructorId: string | undefined) {
           hoursLastWeek: 0,
           hoursGoal: 30,
           lessonsThisWeek: 0,
+          lessonsCompleted: 0,
+          lessonsScheduled: 0,
           earningsThisWeek: 0,
           earningsLastWeek: 0,
           progressPercent: 0,
@@ -43,7 +47,7 @@ export function useWeeklyGoals(instructorId: string | undefined) {
       // Get this week's lessons
       const { data: thisWeekLessons, error: thisWeekError } = await supabase
         .from("scheduled_lessons")
-        .select("duration_minutes, amount_due")
+        .select("duration_minutes, amount_due, status")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", format(weekStart, "yyyy-MM-dd"))
         .lte("lesson_date", format(weekEnd, "yyyy-MM-dd"))
@@ -90,11 +94,16 @@ export function useWeeklyGoals(instructorId: string | undefined) {
       const daysIntoPeriod = dayOfWeek === 0 ? 7 : dayOfWeek; // Sunday = 7
       const expectedPace = Math.round((daysIntoPeriod / 7) * 100);
       
+      const completedLessons = thisWeekLessons?.filter(l => l.status === 'completed')?.length || 0;
+      const scheduledLessons = thisWeekLessons?.filter(l => l.status === 'scheduled')?.length || 0;
+
       return {
         hoursThisWeek: Math.round(hoursThisWeek * 10) / 10,
         hoursLastWeek: Math.round(hoursLastWeek * 10) / 10,
         hoursGoal,
         lessonsThisWeek: thisWeekLessons?.length || 0,
+        lessonsCompleted: completedLessons,
+        lessonsScheduled: scheduledLessons,
         earningsThisWeek: Math.round(earningsThisWeek),
         earningsLastWeek: Math.round(earningsLastWeek),
         progressPercent: Math.min(100, progressPercent),
