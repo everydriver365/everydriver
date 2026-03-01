@@ -467,13 +467,6 @@ export function InstructorMobileHome({
           className="mt-4"
         />
 
-        {/* 6. Gap Filler */}
-        {gapSuggestions && gapSuggestions.length > 0 && (
-          <div className="mt-4">
-            <GapFillerCard gaps={gapSuggestions} />
-          </div>
-        )}
-
         {/* 7. Quick Access — Swipeable Grid */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
         <div className="pb-4">
@@ -482,6 +475,13 @@ export function InstructorMobileHome({
 
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
+
+        {/* 9. Gap Filler */}
+        {gapSuggestions && gapSuggestions.length > 0 && (
+          <div className="mt-4">
+            <GapFillerCard gaps={gapSuggestions} />
+          </div>
+        )}
 
         {/* 9. Vehicle Health Strip */}
         {authInstructor?.id && (
