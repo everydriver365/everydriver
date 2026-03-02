@@ -26,6 +26,8 @@ import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgen
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
+import { RetentionAlertsTile } from "@/components/instructor/dashboard/RetentionAlertsTile";
+import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -356,11 +358,17 @@ export default function InstructorPortal() {
           ))}
         </div>
 
+        {/* Retention Alerts */}
+        <RetentionAlertsTile instructorId={instructorId} />
+
         {/* Messages & Alerts */}
         <MessagesWidget instructorId={instructorId} />
 
         {/* Job Alerts */}
         <JobOfferAlert instructorId={instructorId} />
+
+        {/* What's New */}
+        <WhatsNewModal portalType="instructor" userId={instructorId} />
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
