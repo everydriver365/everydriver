@@ -25,6 +25,7 @@ import referralsIcon from "@/assets/referrals-icon.png";
 import cpdIcon from "@/assets/cpd-icon.png";
 import settingsIcon from "@/assets/settings-icon.png";
 import locationsIcon from "@/assets/locations-icon.png";
+import fuelIcon from "@/assets/fuel-icon.png";
 import satnavIcon from "@/assets/satnav-icon.svg";
 
 interface QuickTile {
@@ -48,7 +49,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, customIcon: fillGapsIcon, accent: "#FF2D55", route: "/instructor/gaps" },
   { title: "To Do", subtitle: "Task list", icon: ListTodo, customIcon: todoIcon, accent: "#5AC8FA", route: "/instructor/todos" },
   { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, customIcon: vehicleHealthIcon, accent: "#8E8E93", route: "/instructor/vehicle-health" },
-  { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, accent: "#34C759", route: "/instructor/fuel" },
+  { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, customIcon: fuelIcon, accent: "#34C759", route: "/instructor/fuel" },
   { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, accent: "#007AFF", route: "/instructor/test-results" },
   { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, accent: "#FF9500", route: "/instructor/test-requests" },
   { title: "Messages", subtitle: "Chat", icon: MessageSquare, accent: "#007AFF", route: "/instructor/messages" },
