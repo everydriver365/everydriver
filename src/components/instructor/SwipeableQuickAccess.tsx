@@ -12,6 +12,7 @@ import {
 import expensesIcon from "@/assets/expenses-icon.png";
 import takePaymentIcon from "@/assets/take-payment-icon.png";
 import agendaIcon from "@/assets/agenda-icon.png";
+import pupilsIcon from "@/assets/pupils-icon.png";
 
 interface QuickTile {
   title: string;
@@ -24,7 +25,7 @@ interface QuickTile {
 
 const ALL_TILES: QuickTile[] = [
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, customIcon: agendaIcon, accent: "#007AFF", route: "/instructor/schedule" },
-  { title: "Pupils", subtitle: "Manage learners", icon: Users, accent: "#34C759", route: "/instructor/pupils" },
+  { title: "Pupils", subtitle: "Manage learners", icon: Users, customIcon: pupilsIcon, accent: "#34C759", route: "/instructor/pupils" },
   { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, accent: "#FF3B30", route: "/instructor/tracking" },
   { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/payments" },
   { title: "SatNav", subtitle: "Navigation", icon: Navigation, accent: "#007AFF", route: "/instructor/satnav" },
