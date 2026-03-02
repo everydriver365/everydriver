@@ -92,12 +92,47 @@ Deno.serve(async (req) => {
       .select("id, name, profile_image_url")
       .in("id", friendIds);
 
+    // Get current/upcoming lessons for friends (within -15min to +2hr window)
+    const now = new Date();
+    const windowStart = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
+    const windowEnd = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
+    const { data: currentLessons } = await supabase
+      .from("scheduled_lessons")
+      .select("instructor_id, lesson_type, status, start_time, end_time, duration_minutes")
+      .in("instructor_id", friendIds)
+      .gte("end_time", now.toISOString())
+      .lte("start_time", windowEnd)
+      .in("status", ["scheduled", "en_route", "in_progress"])
+      .order("start_time", { ascending: true });
+
+    // Build a map of instructor_id -> current lesson info
+    const lessonMap = new Map<string, { lessonType: string; status: string; endsAt: string }>();
+    for (const lesson of currentLessons || []) {
+      if (!lessonMap.has(lesson.instructor_id)) {
+        const startTime = new Date(lesson.start_time);
+        const endTime = lesson.end_time
+          ? new Date(lesson.end_time)
+          : new Date(startTime.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
+
+        // Only include if lesson is currently active or starting very soon (within 15 min)
+        if (endTime > now && startTime <= new Date(now.getTime() + 15 * 60 * 1000)) {
+          lessonMap.set(lesson.instructor_id, {
+            lessonType: lesson.lesson_type || "Standard",
+            status: lesson.status,
+            endsAt: endTime.toISOString(),
+          });
+        }
+      }
+    }
+
     const instructorMap = new Map(
       (instructors || []).map((i) => [i.id, i])
     );
 
     const friends = (friendDevices || []).map((d) => {
       const inst = instructorMap.get(d.instructor_id);
+      const currentLesson = lessonMap.get(d.instructor_id);
       return {
         id: d.instructor_id,
         name: inst?.name || "Unknown",
@@ -113,6 +148,7 @@ Deno.serve(async (req) => {
           d.last_latitude!,
           d.last_longitude!
         ),
+        currentLesson: currentLesson || null,
       };
     });
 

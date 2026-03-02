@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { NearbyFriend } from "@/hooks/useNearbyFriends";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, Coffee, Car } from "lucide-react";
+import { format } from "date-fns";
 
 interface NearbyFriendsMapProps {
   myPosition: { lat: number; lng: number } | null;
@@ -58,23 +59,26 @@ export function NearbyFriendsMap({ myPosition, friends, onMessageFriend, isLoadi
         />
       )}
 
-      {/* Friend markers */}
-      {friends.map((friend) => (
-        <MarkerF
-          key={friend.id}
-          position={{ lat: friend.lat, lng: friend.lng }}
-          onClick={() => setSelectedFriend(friend)}
-          icon={{
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: "#34C759",
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 2,
-          }}
-          title={friend.name}
-        />
-      ))}
+      {/* Friend markers — green if free, amber if teaching */}
+      {friends.map((friend) => {
+        const isBusy = !!friend.currentLesson;
+        return (
+          <MarkerF
+            key={friend.id}
+            position={{ lat: friend.lat, lng: friend.lng }}
+            onClick={() => setSelectedFriend(friend)}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: isBusy ? "#FF9500" : "#34C759",
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 2,
+            }}
+            title={`${friend.name}${isBusy ? ` — ${friend.currentLesson!.lessonType}` : " — Free"}`}
+          />
+        );
+      })}
 
       {/* Info window */}
       {selectedFriend && (
@@ -102,6 +106,29 @@ export function NearbyFriendsMap({ myPosition, friends, onMessageFriend, isLoadi
                 </p>
               </div>
             </div>
+
+            {/* Lesson status */}
+            {selectedFriend.currentLesson ? (
+              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-lg" style={{ backgroundColor: "#FFF3E0" }}>
+                <Car className="h-3.5 w-3.5" style={{ color: "#FF9500" }} />
+                <div>
+                  <p className="text-xs font-semibold text-gray-800">
+                    {selectedFriend.currentLesson.lessonType}
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    Finishes at {format(new Date(selectedFriend.currentLesson.endsAt), "HH:mm")}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-lg" style={{ backgroundColor: "#E8F5E9" }}>
+                <Coffee className="h-3.5 w-3.5" style={{ color: "#34C759" }} />
+                <p className="text-xs font-semibold" style={{ color: "#2E7D32" }}>
+                  Free — available for a break ☕
+                </p>
+              </div>
+            )}
+
             <Button
               size="sm"
               className="w-full"
