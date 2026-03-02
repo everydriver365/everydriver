@@ -18,6 +18,8 @@ import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
 import { PupilAIInsightsCard } from "@/components/pupil-portal/PupilAIInsightsCard";
 import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
+import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
+import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 
 interface PupilData {
   id: string;
@@ -195,6 +197,9 @@ export default function PupilPortal() {
             {/* Feedback Prompt */}
             <PupilFeedbackPrompt pupilId={pupil.id} />
 
+            {/* Last Lesson Summary */}
+            <LessonSummaryCard pupilId={pupil.id} />
+
             {/* Upcoming Lessons */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
               <Card>
@@ -273,6 +278,11 @@ export default function PupilPortal() {
                 <PupilAIInsightsCard pupilId={pupil.id} instructorId={pupil.instructor.id} />
               </motion.div>
             )}
+
+            {/* Reflective Log */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <ReflectiveLog pupilId={pupil.id} />
+            </motion.div>
           </div>
 
           {/* Right Column */}

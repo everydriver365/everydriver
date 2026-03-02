@@ -31,7 +31,10 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PupilDashboardInsights } from "@/components/pupil-portal/PupilDashboardInsights";
 import { PupilAICoaching } from "@/components/pupil-portal/PupilAICoaching";
 import { PupilTestRequests } from "@/components/test-requests/PupilTestRequests";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, PenLine, CalendarPlus } from "lucide-react";
+import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
+import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
+import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 
 interface InstructorBranding {
   id: string;
@@ -58,7 +61,7 @@ interface Pupil {
   profile_image_url: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -408,6 +411,12 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                 />
 
+                {/* Feedback Prompt */}
+                <PupilFeedbackPrompt pupilId={pupil.id} />
+
+                {/* Last Lesson Summary */}
+                <LessonSummaryCard pupilId={pupil.id} />
+
                 {/* Welcome & Next Lesson Countdown */}
                 <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
@@ -452,8 +461,10 @@ export default function BrandedPupilPortal() {
                   {[
                     { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
                     { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage lessons' },
+                    { id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots & book' },
                     { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
                     { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
+                    { id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on your lessons' },
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised driving insights' },
@@ -758,6 +769,60 @@ export default function BrandedPupilPortal() {
                   pupilId={pupil.id}
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
+                />
+              </motion.div>
+            )}
+
+            {activeSection === 'reflections' && (
+              <motion.div
+                key="reflections"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="p-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setActiveSection('home')}
+                    className="mb-4"
+                    style={{ color: 'var(--brand-text)' }}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <div className="px-4">
+                  <ReflectiveLog
+                    pupilId={pupil.id}
+                    brandColour={instructor.brand_colour}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {activeSection === 'book' && (
+              <motion.div
+                key="book"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="p-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setActiveSection('home')}
+                    className="mb-4"
+                    style={{ color: 'var(--brand-text)' }}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <PupilPortalGaps 
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={instructor.brand_colour}
+                  darkMode={instructor.pupil_app_dark_mode}
                 />
               </motion.div>
             )}
