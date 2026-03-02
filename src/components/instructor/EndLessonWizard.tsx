@@ -9,6 +9,7 @@ import { StepSummary } from "./end-lesson/StepSummary";
 import { StepPayment } from "./end-lesson/StepPayment";
 import { StepSkills } from "./end-lesson/StepSkills";
 import { StepBookNext } from "./end-lesson/StepBookNext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface EndLessonWizardProps {
   open: boolean;
@@ -39,6 +40,7 @@ export function EndLessonWizard({
   currentBalance,
   onCompleted,
 }: EndLessonWizardProps) {
+  const { instructor: authInstructor } = useInstructorAuth();
   const [step, setStep] = useState<WizardStep>("summary");
   const [notes, setNotes] = useState("");
   const [lessonCost, setLessonCost] = useState(0);
@@ -117,15 +119,17 @@ export function EndLessonWizard({
       if (historyData) {
         setHistoryId(historyData.id);
 
-        // Auto-request feedback from pupil
-        try {
-          await supabase.from("lesson_feedback").insert({
-            lesson_history_id: historyData.id,
-            pupil_id: pupilId,
-            instructor_id: instructorId,
-          });
-        } catch (e) {
-          console.error("Feedback request error:", e);
+        // Auto-request feedback from pupil (if enabled)
+        if (authInstructor?.lesson_feedback_enabled !== false) {
+          try {
+            await supabase.from("lesson_feedback").insert({
+              lesson_history_id: historyData.id,
+              pupil_id: pupilId,
+              instructor_id: instructorId,
+            });
+          } catch (e) {
+            console.error("Feedback request error:", e);
+          }
         }
       }
       // 3. Award points

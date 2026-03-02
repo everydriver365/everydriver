@@ -5096,8 +5096,10 @@ export type Database = {
           booking_advance_days: number | null
           booking_mode: string | null
           brand_colour: string | null
+          broadcast_messaging_enabled: boolean | null
           buffer_minutes: number
           calendar_colors: Json | null
+          cancellation_analytics_enabled: boolean | null
           cancellation_charge_percent: number | null
           cancellation_policy_hours: number | null
           cancellation_policy_text: string | null
@@ -5122,6 +5124,7 @@ export type Database = {
           deposit_amount: number | null
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
+          drive_time_alerts_enabled: boolean | null
           email: string | null
           extra_info: string | null
           facebook_url: string | null
@@ -5143,6 +5146,7 @@ export type Database = {
           id: string
           instagram_url: string | null
           instructor_grade: string | null
+          intake_questions_enabled: boolean | null
           is_active: boolean
           is_online: boolean | null
           klarna_enabled: boolean | null
@@ -5150,6 +5154,7 @@ export type Database = {
           last_compliance_reminder_sent: string | null
           last_seen_at: string | null
           lat: number | null
+          lesson_feedback_enabled: boolean | null
           linkedin_url: string | null
           lng: number | null
           location_name: string | null
@@ -5164,10 +5169,14 @@ export type Database = {
           phone: string | null
           preferred_language: string | null
           preferred_lesson_length: number
+          pricing_rules_enabled: boolean | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
           pupil_app_enabled: boolean | null
+          pupil_self_booking_enabled: boolean | null
+          quotes_enabled: boolean | null
           radius_miles: number
+          reflective_logs_enabled: boolean | null
           school_skim_amount: number | null
           school_skim_percentage: number | null
           secondary_colour: string | null
@@ -5206,8 +5215,10 @@ export type Database = {
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
+          broadcast_messaging_enabled?: boolean | null
           buffer_minutes?: number
           calendar_colors?: Json | null
+          cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
@@ -5232,6 +5243,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -5253,6 +5265,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           instructor_grade?: string | null
+          intake_questions_enabled?: boolean | null
           is_active?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
@@ -5260,6 +5273,7 @@ export type Database = {
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
           lat?: number | null
+          lesson_feedback_enabled?: boolean | null
           linkedin_url?: string | null
           lng?: number | null
           location_name?: string | null
@@ -5274,10 +5288,14 @@ export type Database = {
           phone?: string | null
           preferred_language?: string | null
           preferred_lesson_length?: number
+          pricing_rules_enabled?: boolean | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
+          pupil_self_booking_enabled?: boolean | null
+          quotes_enabled?: boolean | null
           radius_miles?: number
+          reflective_logs_enabled?: boolean | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
@@ -5316,8 +5334,10 @@ export type Database = {
           booking_advance_days?: number | null
           booking_mode?: string | null
           brand_colour?: string | null
+          broadcast_messaging_enabled?: boolean | null
           buffer_minutes?: number
           calendar_colors?: Json | null
+          cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
@@ -5342,6 +5362,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -5363,6 +5384,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           instructor_grade?: string | null
+          intake_questions_enabled?: boolean | null
           is_active?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
@@ -5370,6 +5392,7 @@ export type Database = {
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
           lat?: number | null
+          lesson_feedback_enabled?: boolean | null
           linkedin_url?: string | null
           lng?: number | null
           location_name?: string | null
@@ -5384,10 +5407,14 @@ export type Database = {
           phone?: string | null
           preferred_language?: string | null
           preferred_lesson_length?: number
+          pricing_rules_enabled?: boolean | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
+          pupil_self_booking_enabled?: boolean | null
+          quotes_enabled?: boolean | null
           radius_miles?: number
+          reflective_logs_enabled?: boolean | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -32,6 +32,7 @@ import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSe
 import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
+import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
@@ -1110,6 +1111,17 @@ export default function InstructorSettings() {
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[6]} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Feature Toggles */}
+              <SettingsTile 
+                id="feature-toggles" 
+                icon={ToggleLeft} 
+                title="Feature Toggles" 
+                description="Enable or disable optional features"
+                iconColor="text-purple-600"
+                iconBg="bg-purple-100 dark:bg-purple-900/30"
+              >
+                <FeatureTogglesSettings instructorId={instructorId} />
+              </SettingsTile>
               {/* Appearance Section */}
               <SettingsTile 
                 id="appearance" 

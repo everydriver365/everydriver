@@ -48,7 +48,7 @@ export default function InstructorPerformance() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={`grid w-full ${instructor?.cancellation_analytics_enabled !== false ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="insights" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
               <span className="hidden sm:inline">AI</span> Insights
@@ -61,10 +61,12 @@ export default function InstructorPerformance() {
               <TrendingUp className="h-4 w-4" />
               Metrics
             </TabsTrigger>
-            <TabsTrigger value="cancellations" className="flex items-center gap-2">
-              <XCircle className="h-4 w-4" />
-              Cancellations
-            </TabsTrigger>
+            {instructor?.cancellation_analytics_enabled !== false && (
+              <TabsTrigger value="cancellations" className="flex items-center gap-2">
+                <XCircle className="h-4 w-4" />
+                Cancellations
+              </TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="insights" className="mt-4">
             <SmartInsightsPanel instructorId={instructor.id} />
@@ -75,9 +77,11 @@ export default function InstructorPerformance() {
           <TabsContent value="metrics" className="mt-4">
             <PerformanceDashboard instructorId={instructor.id} />
           </TabsContent>
-          <TabsContent value="cancellations" className="mt-4">
-            <CancellationAnalytics instructorId={instructor.id} />
-          </TabsContent>
+          {instructor?.cancellation_analytics_enabled !== false && (
+            <TabsContent value="cancellations" className="mt-4">
+              <CancellationAnalytics instructorId={instructor.id} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </InstructorPortalLayout>

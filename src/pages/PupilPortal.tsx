@@ -279,7 +279,7 @@ export default function PupilPortal() {
               </motion.div>
             )}
 
-            {/* Reflective Log */}
+            {/* Reflective Log - shown by default in non-branded portal */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <ReflectiveLog pupilId={pupil.id} />
             </motion.div>

@@ -47,6 +47,9 @@ interface InstructorBranding {
   pupil_app_dark_mode: boolean;
   pupil_app_enabled: boolean;
   profile_image_url: string | null;
+  reflective_logs_enabled: boolean | null;
+  pupil_self_booking_enabled: boolean | null;
+  lesson_feedback_enabled: boolean | null;
 }
 
 interface Pupil {
@@ -137,7 +140,7 @@ export default function BrandedPupilPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url")
+        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled")
         .eq("app_slug", slug)
         .single();
 
@@ -412,7 +415,9 @@ export default function BrandedPupilPortal() {
                 />
 
                 {/* Feedback Prompt */}
-                <PupilFeedbackPrompt pupilId={pupil.id} />
+                {instructor.lesson_feedback_enabled !== false && (
+                  <PupilFeedbackPrompt pupilId={pupil.id} />
+                )}
 
                 {/* Last Lesson Summary */}
                 <LessonSummaryCard pupilId={pupil.id} />
@@ -461,10 +466,10 @@ export default function BrandedPupilPortal() {
                   {[
                     { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
                     { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage lessons' },
-                    { id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots & book' },
+                    ...(instructor.pupil_self_booking_enabled ? [{ id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots & book' }] : []),
                     { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
                     { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
-                    { id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on your lessons' },
+                    ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on your lessons' }] : []),
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised driving insights' },
