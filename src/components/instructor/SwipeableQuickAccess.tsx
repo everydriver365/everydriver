@@ -15,6 +15,7 @@ import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import yourPlanIcon from "@/assets/your-plan-icon.png";
 import fillGapsIcon from "@/assets/fill-gaps-icon.png";
 import todoIcon from "@/assets/todo-icon.png";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 import takePaymentIcon from "@/assets/take-payment-icon.png";
 import agendaIcon from "@/assets/agenda-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
@@ -46,7 +47,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Your Plan", subtitle: "Subscription", icon: Crown, customIcon: yourPlanIcon, accent: "#AF52DE", route: "/instructor/plans" },
   { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, customIcon: fillGapsIcon, accent: "#FF2D55", route: "/instructor/gaps" },
   { title: "To Do", subtitle: "Task list", icon: ListTodo, customIcon: todoIcon, accent: "#5AC8FA", route: "/instructor/todos" },
-  { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, accent: "#8E8E93", route: "/instructor/vehicle-health" },
+  { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, customIcon: vehicleHealthIcon, accent: "#8E8E93", route: "/instructor/vehicle-health" },
   { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, accent: "#34C759", route: "/instructor/fuel" },
   { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, accent: "#007AFF", route: "/instructor/test-results" },
   { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, accent: "#FF9500", route: "/instructor/test-requests" },
