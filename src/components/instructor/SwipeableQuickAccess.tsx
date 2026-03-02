@@ -19,7 +19,7 @@ import referralsIcon from "@/assets/referrals-icon.png";
 import cpdIcon from "@/assets/cpd-icon.png";
 import settingsIcon from "@/assets/settings-icon.png";
 import locationsIcon from "@/assets/locations-icon.png";
-import satnavIcon from "@/assets/satnav-icon.png";
+import satnavIcon from "@/assets/satnav-icon.svg";
 
 interface QuickTile {
   title: string;
