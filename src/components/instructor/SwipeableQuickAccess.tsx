@@ -14,6 +14,7 @@ import takePaymentIcon from "@/assets/take-payment-icon.png";
 import agendaIcon from "@/assets/agenda-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import findMyCarIcon from "@/assets/find_car2.png";
+import availabilityIcon from "@/assets/availability-icon.png";
 
 interface QuickTile {
   title: string;
@@ -44,7 +45,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "CPD Log", subtitle: "Training hours", icon: BookOpen, accent: "#5856D6", route: "/instructor/cpd" },
   { title: "Settings", subtitle: "Preferences", icon: Settings, accent: "#8E8E93", route: "/instructor/settings" },
   { title: "Referrals", subtitle: "Earn rewards", icon: Gift, accent: "#FF2D55", route: "/instructor/referrals" },
-  { title: "Availability", subtitle: "Working hours", icon: Clock, accent: "#34C759", route: "/instructor/availability" },
+  { title: "Availability", subtitle: "Working hours", icon: Clock, customIcon: availabilityIcon, accent: "#34C759", route: "/instructor/availability" },
   { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
 ];
 
