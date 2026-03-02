@@ -1,104 +1,76 @@
 
 
-## End-of-Lesson Wizard — Streamlined Post-Lesson Flow
+## Feature Improvements Inspired by Zenbooker and BestMate/TotalDrive
 
-### Current State
+After reviewing both platforms and auditing what your app already has, here are the gaps and improvements worth building. I've grouped them by impact.
 
-Right now, ending a lesson is fragmented across multiple disconnected screens and actions:
+---
 
-1. **"Done" button** on TodayScheduleView — fires a simple confirm dialog, then runs ~5 sequential DB operations (mark complete, log history, award points, deduct balance, calculate mileage). No UI for additional actions.
-2. **PostLessonReview** — only accessible later from LessonHistory, not surfaced at end-of-lesson. Contains DVSA syllabus grid, notes, and AI lesson plan generator.
-3. **Payment recording** — requires navigating to the pupil card, opening RecordPaymentModal separately.
-4. **Booking next lesson** — no prompt at all; instructor must go to the diary or pupil card and manually schedule.
-5. **Voice notes** — only exists in RunningLateSheet; no speech-to-text for lesson notes.
-6. **GPS track saving** — happens silently in the background via telematics; no explicit "save route" prompt.
-7. **Lesson report distribution** — no mechanism to push a summary to the pupil/parent dashboard after completion.
+### Already Covered (No Action Needed)
+Your app already has: drag-and-drop diary, recurring lessons, Google Calendar sync, gap filling, discount/promo codes, cancellation fees & policies, lesson reminders, expense tracking, pupil progress/syllabus tracking, "on my way" messaging, payment recording, and the new End Lesson Wizard.
 
-### Proposed Solution: Multi-Step End-of-Lesson Wizard
+---
 
-Create a new `EndLessonWizard` bottom sheet that replaces the simple "Complete Lesson?" confirm dialog. It guides the instructor through a streamlined sequence of steps, each optional and skippable.
+### High-Impact Features to Add
 
-```text
-┌─────────────────────────────────┐
-│  End Lesson — Sarah Johnson     │
-│  ─────────────────────────────  │
-│                                 │
-│  Step 1: Quick Summary          │
-│  ┌───────────────────────────┐  │
-│  │ Duration: 2h  Miles: 14.2 │  │
-│  │ Balance: -£40 → -£80     │  │
-│  │ [🎤 Voice Note] [✏️ Type] │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  Step 2: Payment (if balance <0)│
-│  ┌───────────────────────────┐  │
-│  │ £40 due · [Cash] [Card]  │  │
-│  │ [QR Code] [Skip]         │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  Step 3: Skills Update (compact)│
-│  ┌───────────────────────────┐  │
-│  │ Quick-tap DVSA levels     │  │
-│  │ (collapsed, expandable)   │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  Step 4: Book Next Lesson       │
-│  ┌───────────────────────────┐  │
-│  │ Next available: Tue 14:00 │  │
-│  │ [Book This] [Choose Date] │  │
-│  │ [Skip]                    │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  [Complete & Send Report →]     │
-│                                 │
-└─────────────────────────────────┘
-```
+**1. Broadcast Messaging to Pupils**
+TotalDrive's standout feature — message all pupils at once or a filtered subset. Your app has admin broadcast alerts to instructors, but instructors can't bulk-message their own pupils.
+- Add a "Broadcast" button to the Messages page
+- Select all pupils, or filter by status (active, on-hold, test-booked)
+- Compose one message, sent individually to each pupil's conversation
+- ~2 new components + 1 edge function
 
-### Steps in Detail
+**2. Post-Lesson Feedback Requests (Auto-Send)**
+Zenbooker automatically sends post-job feedback requests. Your app collects reviews on the mini-website but never prompts pupils after a lesson.
+- After EndLessonWizard completes, auto-send a feedback request notification to the pupil portal
+- Pupil taps to rate (1-5 stars + optional comment)
+- Ratings feed into the instructor's review page and mini-website
+- New `lesson_feedback` table + pupil portal component + trigger in EndLessonWizard
 
-**Step 1 — Quick Summary & Notes**
-- Auto-populated duration, mileage (from GPS if active), balance change
-- Voice-to-text button using browser `SpeechRecognition` API (no external dependency) for quick dictation of lesson notes
-- Falls back to text input
-- Option to save GPS route to saved_routes
+**3. Lesson Summary / PDF Receipt for Pupils**
+TotalDrive provides lesson summaries; Zenbooker sends branded receipts. Your app generates route reports but doesn't send a post-lesson summary card to the pupil/parent.
+- After lesson completion, generate a summary card: date, duration, skills covered, notes, balance update, next lesson
+- Display in the pupil portal timeline and parent dashboard
+- Optional: "Send as PDF" button for the instructor
+- Leverages existing `lesson_history` data + new `LessonSummaryCard` component
 
-**Step 2 — Take Payment** (shown only if pupil has negative balance)
-- Inline version of RecordPaymentModal (cash/card/QR)
-- Pre-filled with lesson cost amount
-- Skip button to defer
+**4. Pupil Self-Booking from Instructor Availability**
+Zenbooker's core feature — let customers book directly from real-time availability. Your public booking system exists at `bookings.drive365.co.uk` but individual pupils can't self-book recurring slots from within the pupil portal using their instructor's live availability.
+- Add "Book a Lesson" tab to the pupil portal that shows the instructor's available slots (cross-referenced with working hours, date overrides, and existing bookings)
+- One-tap booking with optional approval mode
+- Already have the availability logic — just needs a pupil-facing UI
 
-**Step 3 — Skills Update** (compact PostLessonReview)
-- Collapsed by default showing "Tap to update skills"
-- When expanded, shows the existing DVSA competency grid
-- AI Suggest button for next lesson plan
+**5. Job Status Pipeline (En Route → Started → Complete)**
+Zenbooker tracks job lifecycle status. Your lessons jump from "scheduled" to "completed". Adding intermediate statuses improves the pupil experience.
+- Add `en_route` and `in_progress` statuses to scheduled_lessons
+- "On My Way" button updates status to `en_route` (pupil sees "Instructor is on the way")
+- "Start Lesson" updates to `in_progress`
+- EndLessonWizard updates to `completed`
+- Pupil portal shows real-time lesson status with a progress indicator
 
-**Step 4 — Book Next Lesson**
-- Shows next 3 available slots from instructor availability
-- One-tap booking
-- "Choose another date" opens the existing LessonScheduler
-- Skip to finish without booking
+---
 
-**Final Action — Complete & Send Report**
-- Runs existing `handleCompleteLesson` logic (mark complete, log history, points, balance deduction, mileage)
-- Generates a lesson summary card and saves it to `lesson_history`
-- Pushes the report to the pupil portal (visible in their dashboard timeline)
-- Pushes to parent dashboard if parent is linked
-- Shows confetti/success animation
+### Medium-Impact Improvements
 
-### Files to Create/Modify
+**6. Reflective Log / Lesson Journal (Pupil-Side)**
+TotalDrive highlights this as a key feature — pupils write their own reflection after each lesson. Your app has instructor notes but no pupil self-reflection.
+- Add a "How did it go?" prompt in the pupil portal after a lesson is marked complete
+- Free-text + optional mood/confidence rating
+- Visible to the instructor on the pupil card
 
-| File | Action |
-|------|--------|
-| `src/components/instructor/EndLessonWizard.tsx` | **Create** — main wizard component with step navigation |
-| `src/components/instructor/end-lesson/StepSummary.tsx` | **Create** — summary + voice note step |
-| `src/components/instructor/end-lesson/StepPayment.tsx` | **Create** — inline payment step |
-| `src/components/instructor/end-lesson/StepSkills.tsx` | **Create** — compact DVSA grid (wraps PostLessonReview) |
-| `src/components/instructor/end-lesson/StepBookNext.tsx` | **Create** — quick-book next lesson |
-| `src/hooks/useVoiceToText.ts` | **Create** — browser SpeechRecognition hook |
-| `src/components/instructor/TodayScheduleView.tsx` | **Modify** — replace confirm dialog with EndLessonWizard |
-| `src/components/instructor/NextUpTile.tsx` | **Modify** — add "End Lesson" action alongside "Start Lesson" |
+**7. Custom Branding on Pupil App**
+TotalDrive lets instructors brand the pupil app with their logo. Your mini-website is branded, but the pupil portal uses generic EveryDriver branding.
+- Pull instructor's logo and brand colors into the pupil portal header
+- Already have `brand_color` and `logo_url` in the instructor profile — just need to apply them
 
-### No Database Changes Required
+---
 
-All data models already exist (`lesson_history`, `payment_history`, `pupil_syllabus_progress`, `scheduled_lessons`, `saved_routes`). The wizard simply orchestrates existing operations into a single guided flow.
+### Recommended Build Order
+1. Broadcast Messaging (quick win, high daily value)
+2. Job Status Pipeline (improves pupil experience, relatively small change)
+3. Post-Lesson Feedback Requests (ties into the new EndLessonWizard)
+4. Lesson Summary Card for Pupils (completes the end-of-lesson flow)
+5. Pupil Self-Booking from Portal (bigger feature, builds on existing availability logic)
+6. Reflective Log
+7. Custom Pupil Portal Branding
 
