@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, Brain, Trophy } from "lucide-react";
+import { TrendingUp, Brain, Trophy, XCircle } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { PerformanceDashboard } from "@/components/instructor/PerformanceDashboard";
 import { SmartInsightsPanel } from "@/components/instructor/SmartInsightsPanel";
 import { PassRateDashboard } from "@/components/instructor/PassRateDashboard";
+import { CancellationAnalytics } from "@/components/instructor/CancellationAnalytics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -47,10 +48,10 @@ export default function InstructorPerformance() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="insights" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
-              AI Insights
+              <span className="hidden sm:inline">AI</span> Insights
             </TabsTrigger>
             <TabsTrigger value="passrate" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -59,6 +60,10 @@ export default function InstructorPerformance() {
             <TabsTrigger value="metrics" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Metrics
+            </TabsTrigger>
+            <TabsTrigger value="cancellations" className="flex items-center gap-2">
+              <XCircle className="h-4 w-4" />
+              Cancellations
             </TabsTrigger>
           </TabsList>
           <TabsContent value="insights" className="mt-4">
@@ -69,6 +74,9 @@ export default function InstructorPerformance() {
           </TabsContent>
           <TabsContent value="metrics" className="mt-4">
             <PerformanceDashboard instructorId={instructor.id} />
+          </TabsContent>
+          <TabsContent value="cancellations" className="mt-4">
+            <CancellationAnalytics instructorId={instructor.id} />
           </TabsContent>
         </Tabs>
       </div>

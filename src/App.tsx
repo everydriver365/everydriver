@@ -104,6 +104,7 @@ import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
 import RemoteSigning from "./pages/RemoteSigning";
+import QuoteAcceptPage from "./pages/QuoteAcceptPage";
 import InstructorDoodlepad from "./pages/InstructorDoodlepad";
 import InstructorTodos from "./pages/InstructorTodos";
 import InstructorNotes from "./pages/InstructorNotes";
@@ -197,6 +198,9 @@ const App = () => (
               
               {/* Remote Signing */}
               <Route path="/sign/:token" element={<RemoteSigning />} />
+              
+              {/* Quote Accept */}
+              <Route path="/quote/:token" element={<QuoteAcceptPage />} />
               
               {/* Calendar OAuth Callback */}
               <Route path="/calendar-callback" element={<CalendarCallback />} />

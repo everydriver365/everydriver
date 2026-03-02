@@ -33,6 +33,8 @@ import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { EndLessonWizard } from "./EndLessonWizard";
+import { TravelTimeIndicator } from "./TravelTimeIndicator";
+import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 
 interface ScheduledLesson {
   id: string;
@@ -70,6 +72,16 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
   const [cancelLesson, setCancelLesson] = useState<ScheduledLesson | null>(null);
   const [wizardLesson, setWizardLesson] = useState<ScheduledLesson | null>(null);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+
+  // Travel times between consecutive lessons
+  const travelTimeLessons = lessons.map(l => ({
+    id: l.id,
+    start_time: l.start_time,
+    duration_minutes: l.duration_minutes,
+    pickup_postcode: l.pickup_postcode,
+    pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined,
+  }));
+  const { travelTimes, getTravelTime } = useLessonTravelTimes(travelTimeLessons);
 
   useEffect(() => {
     fetchLessons();
@@ -483,13 +495,28 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            {lessons.map((lesson, index) => (
+            {lessons.map((lesson, index) => {
+              // Show travel time indicator between lessons
+              const prevLesson = index > 0 ? lessons[index - 1] : null;
+              const travelTime = prevLesson ? getTravelTime(prevLesson.id, lesson.id) : null;
+
+              return (
               <motion.div
                 key={lesson.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
+                {travelTime && (
+                  <TravelTimeIndicator
+                    durationMinutes={travelTime.durationMinutes}
+                    durationText={travelTime.durationText}
+                    gapMinutes={travelTime.gapMinutes}
+                    status={travelTime.status}
+                    isLoading={travelTime.isLoading}
+                    className="py-1.5"
+                  />
+                )}
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
                     {/* Map Preview - only for next upcoming lesson */}
@@ -653,7 +680,8 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+              );
+            })}
           </AnimatePresence>
         )}
       </CardContent>
