@@ -116,6 +116,7 @@ import SubmitReview from "./pages/mini-website/SubmitReview";
 import InstructorReviews from "./pages/InstructorReviews";
 import InstructorFleetDashboard from "./pages/InstructorFleetDashboard";
 import InstructorTestRequests from "./pages/InstructorTestRequests";
+import InstructorNearbyFriends from "./pages/InstructorNearbyFriends";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -288,6 +289,7 @@ const App = () => (
               <Route path="/instructor/dashcam" element={<DashcamGallery />} />
               <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
               <Route path="/instructor/test-requests" element={<InstructorTestRequests />} />
+              <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />

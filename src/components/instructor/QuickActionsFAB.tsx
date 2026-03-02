@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car, StickyNote } from "lucide-react";
+import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car, StickyNote, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -71,6 +71,13 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
     label: "Notes",
     route: "/instructor/notes",
     color: "bg-yellow-500 hover:bg-yellow-600",
+  },
+  {
+    id: "nearby-adis",
+    icon: UsersRound,
+    label: "Nearby ADIs",
+    route: "/instructor/nearby-friends",
+    color: "bg-indigo-500 hover:bg-indigo-600",
   },
 ];
 

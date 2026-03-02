@@ -3546,6 +3546,62 @@ export type Database = {
           },
         ]
       }
+      instructor_direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_direct_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_direct_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_discount_codes: {
         Row: {
           applies_to: string | null
@@ -3887,6 +3943,62 @@ export type Database = {
           {
             foreignKeyName: "instructor_forum_topics_last_reply_by_fkey"
             columns: ["last_reply_by"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_friends: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_friends_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_friends_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_friends_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_friends_requester_id_fkey"
+            columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "public_instructors"
             referencedColumns: ["id"]
@@ -11108,6 +11220,7 @@ export type Database = {
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil"
+      friendship_status: "pending" | "accepted" | "declined"
       service_type:
         | "oil_change"
         | "full_service"
@@ -11246,6 +11359,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["instructor", "admin", "pupil"],
+      friendship_status: ["pending", "accepted", "declined"],
       service_type: [
         "oil_change",
         "full_service",
