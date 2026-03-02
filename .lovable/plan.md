@@ -1,88 +1,77 @@
 
 
-## Live Instructor Location & ETA for Pupils (En Route Only)
+## Nearby Instructor Friends — Map & Messaging
 
-### How It Works
-When an instructor marks a lesson as "en route" (already triggers `status: 'en_route'` on `scheduled_lessons`), the pupil portal shows a live map with the instructor's position and a calculated ETA. The map disappears when the lesson status changes to `in_progress` or `completed`.
+### Overview
+Add a new "Nearby ADIs" tile to the instructor home screen that opens a dedicated page showing friends (other instructors) on a live map with the ability to send direct messages between instructors.
 
-### Infrastructure Already In Place
-- `gps_devices` table stores real-time instructor lat/lng via Geotab (updated every 10s)
-- `useInstructorLastPosition` hook subscribes to realtime GPS updates
-- `scheduled_lessons.status = 'en_route'` is already set when instructor taps "Send ETA"
-- Pupil portal already has realtime subscription for lesson status changes
-- `calculate-traffic-eta` edge function computes ETA using HERE API
-- Google Maps SDK loader already exists
+### What's Needed
 
-### New Components
+**1. Database: `instructor_friends` table**
+- Columns: `id`, `requester_id` (references instructors), `recipient_id` (references instructors), `status` (enum: pending/accepted/declined), `created_at`, `updated_at`
+- Unique constraint on (requester_id, recipient_id)
+- RLS: authenticated instructors can see/manage their own friend records
 
-**`src/components/pupil-portal/InstructorEnRouteTracker.tsx`**
-- Renders only when the next lesson has `status === 'en_route'`
-- Shows a Google Maps mini-map with the instructor's live position (arrow marker)
-- Displays ETA text (e.g. "Your instructor is ~8 mins away") calculated from instructor GPS to pupil pickup postcode
-- Auto-refreshes ETA every 30 seconds using `calculate-traffic-eta`
-- Auto-hides when lesson status changes away from `en_route`
-- Includes traffic condition indicator (clear/light/moderate/heavy)
+**2. Database: `instructor_direct_messages` table**
+- Columns: `id`, `sender_id`, `recipient_id`, `content`, `read_at`, `created_at`
+- RLS: sender or recipient can read; sender can insert
+- Enable realtime for live chat
 
-**`src/hooks/useInstructorEnRouteETA.ts`**
-- Takes `instructorId` and `pickupPostcode`
-- Reads instructor position from `gps_devices` via realtime subscription (reuses pattern from `useInstructorLastPosition`)
-- Calls `calculate-traffic-eta` edge function with instructor lat/lng as origin and pickup postcode as destination
-- Returns `{ etaMinutes, etaText, trafficCondition, instructorLat, instructorLng, isLoading }`
-- Refreshes every 30s while active
+**3. Edge Function: `get-nearby-instructors`**
+- Accepts the calling instructor's ID
+- Reads their GPS position from `gps_devices` (live lat/lng)
+- Queries all accepted friends' GPS positions
+- Returns friend name, lat/lng, heading, distance — only for friends whose GPS is active and recent (last 30 mins)
+- Security: only returns data for accepted friends
 
-### Integration Points
+**4. New Page: `/instructor/nearby-friends`**
+- Google Maps full-screen view centered on the instructor's position
+- Friend markers (avatar pins) showing each nearby friend's live location
+- Tapping a marker opens a bottom sheet with: name, distance, and "Send Message" button
+- Friend management: add friend by search (name/postcode), accept/decline requests, friend list
 
-| File | Change |
-|------|--------|
-| `src/pages/BrandedPupilPortal.tsx` | Import & render `InstructorEnRouteTracker` on home section when next lesson is `en_route` |
-| `src/pages/PupilPortal.tsx` | Same — show tracker when any upcoming lesson is `en_route` |
-| `src/components/pupil-portal/PupilPortalLessonCountdown.tsx` | Add realtime subscription for lesson status; when `en_route`, swap countdown for the tracker |
+**5. New Components**
+- `NearbyFriendsMap.tsx` — Google Maps with instructor friend markers
+- `FriendRequestSheet.tsx` — send/accept/decline friend requests
+- `InstructorDirectChat.tsx` — 1:1 chat window between instructors (reuses existing chat patterns)
+- `useNearbyFriends.ts` — hook polling `get-nearby-instructors` every 30s
+- `useInstructorFriends.ts` — hook for CRUD on friend requests
+- `useInstructorDirectMessages.ts` — hook for realtime DMs
 
-### Database Changes
-- **RLS policy on `gps_devices`**: Add a SELECT policy allowing pupils to read their instructor's device position (scoped: pupil can only see the instructor they're assigned to). This is needed because currently only instructors/admins can read `gps_devices`.
+**6. Tile Integration**
+- Add "Nearby ADIs" tile to `SwipeableQuickAccess`, `AppStyleHomeView`, `HomeQuickActions`, and `QuickActionsFAB`
+- Icon: `Users` (lucide) with a map pin accent
+- Route: `/instructor/nearby-friends`
 
-```sql
-CREATE POLICY "Pupils can view their instructor GPS position"
-ON public.gps_devices FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM public.pupils p
-    WHERE p.instructor_id = gps_devices.instructor_id
-    AND p.id = auth.uid()::text::uuid
-  )
-);
-```
+**7. Route**
+- Add `/instructor/nearby-friends` to `App.tsx`
 
-Note: Since pupils access the portal via OTP (not Supabase Auth), the GPS data will be fetched via an edge function instead, avoiding RLS complexity.
-
-**Alternative approach (preferred)**: New edge function `get-instructor-location` that:
-- Accepts `pupil_id` and `lesson_id`
-- Validates the lesson belongs to the pupil and has `status = 'en_route'`
-- Returns instructor lat/lng from `gps_devices` (only if en_route)
-- This keeps GPS data secure — pupils only get position during active en_route
-
-### New Edge Function
-
-**`supabase/functions/get-instructor-location/index.ts`**
-- Validates: lesson exists, belongs to pupil, status is `en_route`
-- Reads instructor's latest position from `gps_devices`
-- Returns `{ latitude, longitude, heading, eta_minutes, eta_text, traffic_condition }` (calls HERE API inline for ETA)
-- Returns 403 if lesson is not en_route (security gate)
+### How Location Works
+- Uses the instructor's existing `gps_devices` table (Geotab hardware) for live positions — no new GPS tracking needed
+- Only shows friends who have active GPS devices with recent updates
+- Calculates distance client-side using Haversine formula from the edge function
 
 ### Security
-- Instructor position is ONLY exposed when a lesson is actively `en_route`
-- Pupil can only see their own instructor's position
-- Position data is not stored on client — fetched fresh each poll
-- Auto-stops polling when status changes
+- GPS positions only shared between accepted friends
+- Friend requests require explicit acceptance
+- DMs only between accepted friends (enforced via RLS)
+- No location data exposed to non-friends
 
 ### Files Summary
 
 | Action | File |
 |--------|------|
-| Create | `supabase/functions/get-instructor-location/index.ts` |
-| Create | `src/hooks/useInstructorEnRouteETA.ts` |
-| Create | `src/components/pupil-portal/InstructorEnRouteTracker.tsx` |
-| Modify | `src/pages/BrandedPupilPortal.tsx` — add tracker to home |
-| Modify | `src/pages/PupilPortal.tsx` — add tracker to home |
-| Modify | `src/components/pupil-portal/PupilPortalLessonCountdown.tsx` — integrate tracker when en_route |
+| Create (migration) | `instructor_friends` + `instructor_direct_messages` tables |
+| Create | `supabase/functions/get-nearby-instructors/index.ts` |
+| Create | `src/pages/InstructorNearbyFriends.tsx` |
+| Create | `src/components/instructor/NearbyFriendsMap.tsx` |
+| Create | `src/components/instructor/FriendRequestSheet.tsx` |
+| Create | `src/components/instructor/InstructorDirectChat.tsx` |
+| Create | `src/hooks/useNearbyFriends.ts` |
+| Create | `src/hooks/useInstructorFriends.ts` |
+| Create | `src/hooks/useInstructorDirectMessages.ts` |
+| Modify | `src/App.tsx` — add route |
+| Modify | `src/components/instructor/SwipeableQuickAccess.tsx` — add tile |
+| Modify | `src/components/instructor/AppStyleHomeView.tsx` — add tile |
+| Modify | `src/components/instructor/QuickActionsFAB.tsx` — add action |
 
