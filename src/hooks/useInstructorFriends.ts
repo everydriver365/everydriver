@@ -75,12 +75,21 @@ export function useInstructorFriends(instructorId: string | undefined) {
   });
 
   const searchInstructors = async (query: string) => {
-    const { data } = await supabase
+    // Detect if query looks like a postcode (UK format)
+    const isPostcode = /^[A-Za-z]{1,2}\d/.test(query.trim());
+    
+    let builder = supabase
       .from("instructors")
-      .select("id, name, profile_image_url")
-      .neq("id", instructorId!)
-      .ilike("name", `%${query}%`)
-      .limit(10);
+      .select("id, name, profile_image_url, home_postcode")
+      .neq("id", instructorId!);
+
+    if (isPostcode) {
+      builder = builder.ilike("home_postcode", `${query.trim()}%`);
+    } else {
+      builder = builder.ilike("name", `%${query}%`);
+    }
+
+    const { data } = await builder.limit(20);
     return data || [];
   };
 
