@@ -115,11 +115,11 @@ export function SwipeableQuickAccess() {
                         </p>
                       </div>
                       <div className="self-end">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
+                        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
                           {tile.customIcon ? (
-                            <img src={tile.customIcon} alt={tile.title} className="w-6 h-6 object-contain" />
+                            <img src={tile.customIcon} alt={tile.title} className="w-8 h-8 object-contain" />
                           ) : (
-                            <Icon size={22} strokeWidth={1.6} style={{ color: tile.accent }} />
+                            <Icon size={24} strokeWidth={1.6} style={{ color: tile.accent }} />
                           )}
                         </div>
                       </div>
