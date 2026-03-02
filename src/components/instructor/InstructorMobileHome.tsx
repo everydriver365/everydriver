@@ -82,6 +82,7 @@ import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";
 import { CleanHomeView } from "@/components/instructor/CleanHomeView";
 import { IOSNativeHomeView } from "@/components/instructor/IOSNativeHomeView";
 import { CompactHomeView } from "@/components/instructor/CompactHomeView";
+import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -375,6 +376,11 @@ export function InstructorMobileHome({
         />
       ) : layoutStyle === "compact" ? (
         <CompactHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+        />
+      ) : layoutStyle === "bestmate" ? (
+        <BestMateHomeView
           instructorId={instructorId}
           instructor={instructor}
         />

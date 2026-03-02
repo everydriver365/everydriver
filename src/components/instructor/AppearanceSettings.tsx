@@ -37,7 +37,7 @@ function PhonePreview({
   return (
     <div
       className="w-full aspect-[9/16] rounded-xl border border-border/60 overflow-hidden shadow-inner"
-      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : bg }}
+      style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" || variant === "bestmate" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : bg }}
     >
       {variant === "lockscreen" ? (
         <>
@@ -52,7 +52,7 @@ function PhonePreview({
             ))}
           </div>
         </>
-      ) : variant === "ios-native" ? (
+      ) : variant === "ios-native" || variant === "bestmate" ? (
         <>
           <div className="h-[25%] w-full" style={{ background: "linear-gradient(135deg, rgb(38,64,97), rgb(51,84,122))" }}>
             <div className="p-1.5 pt-3">
@@ -61,12 +61,18 @@ function PhonePreview({
             </div>
           </div>
           <div className="p-1.5 space-y-1" style={{ backgroundColor: "#F2F2F7" }}>
-            <div className="rounded-lg h-8 w-full" style={{ background: "linear-gradient(135deg, rgb(38,64,140), rgb(26,115,179))" }} />
             <div className="grid grid-cols-3 gap-0.5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded bg-white aspect-square" />
               ))}
             </div>
+            {variant === "bestmate" && (
+              <div className="space-y-0.5 mt-0.5">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="rounded bg-white h-3 w-full" />
+                ))}
+              </div>
+            )}
           </div>
         </>
       ) : variant === "clean" ? (
@@ -365,6 +371,30 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               No hero, stats header
             </span>
             {layoutStyle === "compact" && (
+              <div className="absolute top-2 right-2">
+                <Check className="h-4 w-4 text-primary" />
+              </div>
+            )}
+          </button>
+
+          {/* BestMate option */}
+          <button
+            onClick={() => handleLayoutChange("bestmate")}
+            className={cn(
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
+              layoutStyle === "bestmate"
+                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                : "border-border hover:border-primary/40"
+            )}
+          >
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="bestmate" />
+            </div>
+            <span className="text-xs font-medium mt-1">BestMate</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Gradient header + tiles
+            </span>
+            {layoutStyle === "bestmate" && (
               <div className="absolute top-2 right-2">
                 <Check className="h-4 w-4 text-primary" />
               </div>
