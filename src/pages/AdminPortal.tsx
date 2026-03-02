@@ -75,6 +75,8 @@ import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
+import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard";
+import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -165,6 +167,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
+  leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
 };
 
 export default function AdminPortal() {
@@ -961,6 +964,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "leaderboard":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <InstructorLeaderboard />
+          </motion.div>
+        );
+
       default:
         return null;
     }
@@ -977,6 +988,7 @@ export default function AdminPortal() {
         tabCounts={tabCounts}
       >
         {renderContent()}
+        <WhatsNewModal portalType="admin" />
       </AdminLayout>
 
       {/* Instructor Form Dialog */}

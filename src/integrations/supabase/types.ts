@@ -507,6 +507,36 @@ export type Database = {
           },
         ]
       }
+      changelog: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_published: boolean
+          portal_types: string[]
+          title: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          is_published?: boolean
+          portal_types?: string[]
+          title: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_published?: boolean
+          portal_types?: string[]
+          title?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       compliance_reminders: {
         Row: {
           days_before: number

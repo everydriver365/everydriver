@@ -35,6 +35,9 @@ import { RefreshCw, PenLine, CalendarPlus } from "lucide-react";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
+import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
+import { LessonPrepChecklist } from "@/components/pupil-portal/LessonPrepChecklist";
+import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 
 interface InstructorBranding {
   id: string;
@@ -422,6 +425,13 @@ export default function BrandedPupilPortal() {
                 {/* Last Lesson Summary */}
                 <LessonSummaryCard pupilId={pupil.id} />
 
+                {/* Lesson Prep Checklist */}
+                <LessonPrepChecklist
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={instructor.brand_colour}
+                />
+
                 {/* Welcome & Next Lesson Countdown */}
                 <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
@@ -429,6 +439,15 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
+
+                {/* Achievement Badges */}
+                <AchievementBadges
+                  pupilId={pupil.id}
+                  brandColour={instructor.brand_colour}
+                />
+
+                {/* What's New */}
+                <WhatsNewModal portalType="pupil" userId={pupil.id} />
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-3">

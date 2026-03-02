@@ -58,6 +58,7 @@ const settingsCategories: SettingsCategory[] = [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
       { key: "pupil-records", title: "Pupil Records", description: "EMIS-style view of all pupils and their data." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
+      { key: "leaderboard", title: "Instructor Leaderboard", description: "Rank instructors by lessons, pass rate, reviews." },
     ],
   },
   {
