@@ -20,6 +20,7 @@ import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
+import { InstructorEnRouteTracker } from "@/components/pupil-portal/InstructorEnRouteTracker";
 
 interface PupilData {
   id: string;
@@ -196,6 +197,15 @@ export default function PupilPortal() {
           <div className="lg:col-span-2 space-y-6">
             {/* Feedback Prompt */}
             <PupilFeedbackPrompt pupilId={pupil.id} />
+
+            {/* En Route Tracker */}
+            {upcomingLessons.filter(l => l.status === "en_route").map(lesson => (
+              <InstructorEnRouteTracker
+                key={lesson.id}
+                pupilId={pupil.id}
+                lessonId={lesson.id}
+              />
+            ))}
 
             {/* Last Lesson Summary */}
             <LessonSummaryCard pupilId={pupil.id} />

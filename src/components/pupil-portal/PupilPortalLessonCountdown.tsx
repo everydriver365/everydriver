@@ -3,6 +3,7 @@ import { Clock, MapPin, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays, differenceInHours, differenceInMinutes, parseISO } from "date-fns";
+import { InstructorEnRouteTracker } from "./InstructorEnRouteTracker";
 
 interface PupilPortalLessonCountdownProps {
   pupilId: string;
@@ -18,6 +19,7 @@ interface NextLesson {
   duration_minutes: number;
   pickup_location: string | null;
   lesson_type: string;
+  status: string;
 }
 
 export function PupilPortalLessonCountdown({ 
@@ -33,6 +35,23 @@ export function PupilPortalLessonCountdown({
   useEffect(() => {
     fetchNextLesson();
   }, [pupilId]);
+
+  // Realtime subscription for lesson status changes
+  useEffect(() => {
+    if (!nextLesson) return;
+    const channel = supabase
+      .channel(`countdown-lesson-status-${nextLesson.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "scheduled_lessons", filter: `id=eq.${nextLesson.id}` },
+        (payload) => {
+          const updated = payload.new as any;
+          setNextLesson(prev => prev ? { ...prev, status: updated.status } : null);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [nextLesson?.id]);
 
   useEffect(() => {
     if (!nextLesson) return;
@@ -64,7 +83,7 @@ export function PupilPortalLessonCountdown({
       const today = format(new Date(), 'yyyy-MM-dd');
       const { data, error } = await supabase
         .from("scheduled_lessons")
-        .select("id, lesson_date, start_time, duration_minutes, pickup_location, lesson_type")
+        .select("id, lesson_date, start_time, duration_minutes, pickup_location, lesson_type, status")
         .eq("pupil_id", pupilId)
         .eq("instructor_id", instructorId)
         .neq("status", "cancelled")
@@ -125,6 +144,17 @@ export function PupilPortalLessonCountdown({
   const lessonDate = parseISO(nextLesson.lesson_date);
   const isToday = format(lessonDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
   const isTomorrow = format(lessonDate, 'yyyy-MM-dd') === format(new Date(Date.now() + 86400000), 'yyyy-MM-dd');
+
+  // Show en-route tracker instead of countdown
+  if (nextLesson.status === "en_route") {
+    return (
+      <InstructorEnRouteTracker
+        pupilId={pupilId}
+        lessonId={nextLesson.id}
+        brandColour={brandColour}
+      />
+    );
+  }
 
   return (
     <Card 
