@@ -1,93 +1,88 @@
 
 
-## Suggested Improvements Across All Portals
+## Live Instructor Location & ETA for Pupils (En Route Only)
 
-After auditing what's already built, here are the remaining high-value gaps grouped by portal.
+### How It Works
+When an instructor marks a lesson as "en route" (already triggers `status: 'en_route'` on `scheduled_lessons`), the pupil portal shows a live map with the instructor's position and a calculated ETA. The map disappears when the lesson status changes to `in_progress` or `completed`.
 
----
+### Infrastructure Already In Place
+- `gps_devices` table stores real-time instructor lat/lng via Geotab (updated every 10s)
+- `useInstructorLastPosition` hook subscribes to realtime GPS updates
+- `scheduled_lessons.status = 'en_route'` is already set when instructor taps "Send ETA"
+- Pupil portal already has realtime subscription for lesson status changes
+- `calculate-traffic-eta` edge function computes ETA using HERE API
+- Google Maps SDK loader already exists
 
-### Instructor Portal
+### New Components
 
-**1. Automated Weekly Summary Email/Notification**
-Every Sunday evening, generate a digest: lessons taught, earnings, cancellations, pupil progress milestones, upcoming week preview. Uses existing data from `useTodayOverview`, `useWeeklyGoals`, and `useLastWeekComparison`. New edge function on a cron schedule + email template.
+**`src/components/pupil-portal/InstructorEnRouteTracker.tsx`**
+- Renders only when the next lesson has `status === 'en_route'`
+- Shows a Google Maps mini-map with the instructor's live position (arrow marker)
+- Displays ETA text (e.g. "Your instructor is ~8 mins away") calculated from instructor GPS to pupil pickup postcode
+- Auto-refreshes ETA every 30 seconds using `calculate-traffic-eta`
+- Auto-hides when lesson status changes away from `en_route`
+- Includes traffic condition indicator (clear/light/moderate/heavy)
 
-**2. Lesson Notes Templates Library**
-You have `LessonNotesTemplates.tsx` but no shared/community template system. Let instructors save, reuse, and share common lesson note templates (e.g. "First lesson checklist", "Test prep debrief"). Speeds up the EndLessonWizard flow.
+**`src/hooks/useInstructorEnRouteETA.ts`**
+- Takes `instructorId` and `pickupPostcode`
+- Reads instructor position from `gps_devices` via realtime subscription (reuses pattern from `useInstructorLastPosition`)
+- Calls `calculate-traffic-eta` edge function with instructor lat/lng as origin and pickup postcode as destination
+- Returns `{ etaMinutes, etaText, trafficCondition, instructorLat, instructorLng, isLoading }`
+- Refreshes every 30s while active
 
-**3. Pupil Retention Alerts**
-Flag pupils who haven't booked in 14+ days, have declining lesson frequency, or cancelled multiple times. Show as a "Retention Risk" badge on the pupil card and a summary tile on the dashboard. Simple query against `scheduled_lessons` + last booking date.
+### Integration Points
 
-**4. Smart Scheduling Suggestions**
-When an instructor has a gap in the diary, suggest which pupils would be a good fit based on: proximity (pickup postcode near the gap location), lesson frequency patterns, and time preferences. Builds on existing `useRealGapSlots` + pupil data.
+| File | Change |
+|------|--------|
+| `src/pages/BrandedPupilPortal.tsx` | Import & render `InstructorEnRouteTracker` on home section when next lesson is `en_route` |
+| `src/pages/PupilPortal.tsx` | Same — show tracker when any upcoming lesson is `en_route` |
+| `src/components/pupil-portal/PupilPortalLessonCountdown.tsx` | Add realtime subscription for lesson status; when `en_route`, swap countdown for the tracker |
 
----
+### Database Changes
+- **RLS policy on `gps_devices`**: Add a SELECT policy allowing pupils to read their instructor's device position (scoped: pupil can only see the instructor they're assigned to). This is needed because currently only instructors/admins can read `gps_devices`.
 
-### Pupil Portal
+```sql
+CREATE POLICY "Pupils can view their instructor GPS position"
+ON public.gps_devices FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.pupils p
+    WHERE p.instructor_id = gps_devices.instructor_id
+    AND p.id = auth.uid()::text::uuid
+  )
+);
+```
 
-**5. Lesson Countdown Timer with Live Instructor Location**
-Enhance `PupilPortalLessonCountdown` to show a live map pin of the instructor when status is `en_route` (using existing GPS tracking data). Pupils see "Your instructor is X minutes away" with a moving dot on a mini-map.
+Note: Since pupils access the portal via OTP (not Supabase Auth), the GPS data will be fetched via an edge function instead, avoiding RLS complexity.
 
-**6. Achievement Badges & Milestones**
-Award badges for: first lesson, 10 lessons completed, all manoeuvres passed, theory test passed, mock test score above 90%, etc. Display in a trophy case on the dashboard. You have `PupilGamificationStats` and `PupilRewards` — this extends them with visual badges stored in a new `pupil_achievements` table.
+**Alternative approach (preferred)**: New edge function `get-instructor-location` that:
+- Accepts `pupil_id` and `lesson_id`
+- Validates the lesson belongs to the pupil and has `status = 'en_route'`
+- Returns instructor lat/lng from `gps_devices` (only if en_route)
+- This keeps GPS data secure — pupils only get position during active en_route
 
-**7. Lesson Preparation Checklist**
-Before each lesson, show a contextual checklist: "Bring provisional licence", "Wear comfortable shoes", "Review last lesson notes on [topic]". Content driven by the syllabus topics planned for the next lesson. Simple component reading from `lesson_plans` or instructor notes.
+### New Edge Function
 
----
+**`supabase/functions/get-instructor-location/index.ts`**
+- Validates: lesson exists, belongs to pupil, status is `en_route`
+- Reads instructor's latest position from `gps_devices`
+- Returns `{ latitude, longitude, heading, eta_minutes, eta_text, traffic_condition }` (calls HERE API inline for ETA)
+- Returns 403 if lesson is not en_route (security gate)
 
-### Parent Portal
+### Security
+- Instructor position is ONLY exposed when a lesson is actively `en_route`
+- Pupil can only see their own instructor's position
+- Position data is not stored on client — fetched fresh each poll
+- Auto-stops polling when status changes
 
-**8. Payment Top-Up from Parent Portal**
-Parents can currently view payment history but can't pay. Add a "Top Up Balance" button that uses the instructor's existing payment integration (Square/Stripe) to let parents add credit to their child's account directly.
+### Files Summary
 
-**9. Parent Push Notifications**
-Notify parents when: a lesson is completed, the instructor is en route, a test result is recorded, or the balance is low. Uses existing push notification infrastructure (`usePupilPushNotifications` pattern) adapted for parents.
-
-**10. Multi-Child Dashboard Comparison**
-For parents with multiple children learning to drive, show a side-by-side comparison of progress, upcoming lessons, and balances. The data structure already supports multiple children per parent phone number.
-
----
-
-### Admin Portal
-
-**11. Instructor Leaderboard**
-Rank instructors by: pass rate, lessons per week, pupil retention, review scores, revenue generated. Gamifies performance and helps identify top performers and those needing support. Dashboard widget using existing data.
-
-**12. Churn Prediction Dashboard**
-Surface instructors at risk of leaving the platform: declining lesson counts, support tickets, missed compliance deadlines, or inactivity. Aggregate from `scheduled_lessons`, `compliance` fields, and activity logs.
-
-**13. Automated Onboarding Progress Tracking**
-Track which setup steps each instructor has completed (profile, availability, first pupil, first lesson, payment setup, mini-website). Show completion percentage on the instructor card. You have `InstructorSetupChecklist` — this surfaces it admin-side.
-
-**14. Bulk Operations**
-Allow admin to bulk-update instructor settings: enable/disable features, change plans, send announcements, or update commission rates for selected instructors. Currently everything is one-at-a-time.
-
----
-
-### Cross-Portal
-
-**15. In-App Changelog / What's New**
-Show a "What's New" modal on first login after updates. Keeps all user types informed about new features. Simple `changelog` table with entries filtered by portal type (instructor/pupil/parent/admin).
-
----
-
-### Recommended Build Order
-
-| Priority | Feature | Impact | Effort |
-|----------|---------|--------|--------|
-| 1 | Pupil Retention Alerts | High | Small |
-| 2 | Payment Top-Up (Parent) | High | Medium |
-| 3 | Live Instructor Location (Pupil) | High | Small |
-| 4 | Achievement Badges | Medium | Medium |
-| 5 | Instructor Leaderboard (Admin) | Medium | Small |
-| 6 | Weekly Summary Digest | Medium | Medium |
-| 7 | Smart Scheduling Suggestions | Medium | Medium |
-| 8 | Parent Push Notifications | Medium | Small |
-| 9 | Lesson Prep Checklist | Low | Small |
-| 10 | In-App Changelog | Low | Small |
-| 11 | Bulk Admin Operations | Medium | Medium |
-| 12 | Churn Prediction | Medium | Medium |
-| 13 | Admin Onboarding Tracking | Low | Small |
-| 14 | Multi-Child Comparison | Low | Small |
-| 15 | Notes Templates Library | Low | Small |
+| Action | File |
+|--------|------|
+| Create | `supabase/functions/get-instructor-location/index.ts` |
+| Create | `src/hooks/useInstructorEnRouteETA.ts` |
+| Create | `src/components/pupil-portal/InstructorEnRouteTracker.tsx` |
+| Modify | `src/pages/BrandedPupilPortal.tsx` — add tracker to home |
+| Modify | `src/pages/PupilPortal.tsx` — add tracker to home |
+| Modify | `src/components/pupil-portal/PupilPortalLessonCountdown.tsx` — integrate tracker when en_route |
 
