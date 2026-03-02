@@ -233,6 +233,11 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
     // Update lesson status to en_route
     supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lesson.id).then(() => {});
     
+    // Send push notification to pupil
+    supabase.functions.invoke("notify-pupil", {
+      body: { pupilId: lesson.pupil.id, type: "en_route" },
+    }).catch(() => {});
+    
     const firstName = (lesson.pupil?.name || "").split(" ")[0];
     let message: string;
     

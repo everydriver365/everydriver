@@ -128,6 +128,10 @@ export function NextUpTile({
   const handleSendETA = () => {
     // Update lesson status to en_route
     supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+    // Send push notification to pupil
+    supabase.functions.invoke("notify-pupil", {
+      body: { pupilId, type: "en_route" },
+    }).catch(() => {});
     sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
   };
   const handleCancelled = () => { queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }); queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }); };

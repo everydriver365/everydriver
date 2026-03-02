@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface NotifyPupilRequest {
   pupilId: string;
-  type: "slot_offer" | "lesson_reminder" | "lesson_cancelled" | "payment_confirmed" | "waitlist_match";
+  type: "slot_offer" | "lesson_reminder" | "lesson_cancelled" | "payment_confirmed" | "waitlist_match" | "en_route";
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
@@ -74,6 +74,10 @@ serve(async (req: Request) => {
         case "waitlist_match":
           notificationTitle = "Waitlist Match Found!";
           notificationBody = "A lesson slot matching your preferences is available.";
+          break;
+        case "en_route":
+          notificationTitle = "Your instructor is on the way! 🚗";
+          notificationBody = "Get ready — your driving lesson is about to begin.";
           break;
         default:
           notificationTitle = "Notification";
