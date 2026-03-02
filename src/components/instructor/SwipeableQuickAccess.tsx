@@ -10,6 +10,7 @@ import {
   Gift, Clock, Receipt,
 } from "lucide-react";
 import expensesIcon from "@/assets/expenses-icon.png";
+import takePaymentIcon from "@/assets/take-payment-icon.png";
 
 interface QuickTile {
   title: string;
@@ -24,7 +25,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, accent: "#007AFF", route: "/instructor/schedule" },
   { title: "Pupils", subtitle: "Manage learners", icon: Users, accent: "#34C759", route: "/instructor/pupils" },
   { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, accent: "#FF3B30", route: "/instructor/tracking" },
-  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, accent: "#AF52DE", route: "/instructor/payments" },
+  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/payments" },
   { title: "SatNav", subtitle: "Navigation", icon: Navigation, accent: "#007AFF", route: "/instructor/satnav" },
   { title: "Find My Car", subtitle: "Last position", icon: Car, accent: "#FF9500", route: "/instructor/find-my-car" },
   { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, accent: "#FFCC00", route: "/instructor/diary" },
