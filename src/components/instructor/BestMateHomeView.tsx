@@ -51,19 +51,23 @@ function FeatureTile({
 }) {
   return (
     <motion.button
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-[14px] p-4 relative bg-card"
-      style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+      className="flex flex-col items-center gap-2 rounded-[20px] p-5 relative border-0 transition-all duration-200 ease-out"
+      style={{
+        backgroundColor: "#F2F3F5",
+        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+      }}
     >
       {badge && badge > 0 ? (
-        <span className="absolute top-2 right-2 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+        <span className="absolute top-2.5 right-2.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
           {badge > 99 ? "99+" : badge}
         </span>
       ) : null}
       <div
         className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
-        style={{ backgroundColor: `${color}1F` }}
+        style={{ backgroundColor: "#E6E8EC" }}
       >
         <Icon className="h-6 w-6" style={{ color }} />
       </div>
@@ -79,14 +83,19 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
 }) {
   return (
     <motion.button
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-[14px] py-3.5 shrink-0 bg-card"
-      style={{ width: 90, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+      className="flex flex-col items-center gap-2 rounded-[20px] py-4 shrink-0 border-0 transition-all duration-200 ease-out"
+      style={{
+        width: 90,
+        backgroundColor: "#F2F3F5",
+        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+      }}
     >
       <div
         className="w-12 h-12 rounded-full flex items-center justify-center"
-        style={{ backgroundColor: `${color}1F` }}
+        style={{ backgroundColor: "#E6E8EC" }}
       >
         <Icon className="h-5 w-5" style={{ color }} />
       </div>
@@ -189,7 +198,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
         {/* Feature tiles grid */}
         <div className="px-4 mb-5">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             <FeatureTile icon={Users} title="Pupils" subtitle={`${todayOverview?.lessonCount ?? 0} Active`} color="#5856D6" onClick={() => navigate("/instructor/pupils")} />
             <FeatureTile icon={Calendar} title="Bookings" subtitle={`${upcomingBookings} upcoming`} color="#007AFF" onClick={() => navigate("/instructor/diary")} />
             <FeatureTile icon={PoundSterling} title="Finances" subtitle={`£${weeklyEarnings}`} color="#34C759" onClick={() => navigate("/instructor/payments")} />
@@ -202,7 +211,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
         {/* More features scroll */}
         <div className="mb-6">
           <p className="text-[20px] font-bold text-foreground px-5 mb-3">More Features</p>
-          <div className="flex gap-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
+          <div className="flex gap-4 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
             <MoreTile icon={Fuel} title="Fuel Finder" color="#FF9500" onClick={() => navigate("/instructor/fuel")} />
             <MoreTile icon={MapPin} title="Live Tracking" color="#007AFF" onClick={() => navigate("/instructor/track")} />
             <MoreTile icon={BarChart3} title="Dashboard" color="#34C759" onClick={() => navigate("/instructor/dashboard")} />
