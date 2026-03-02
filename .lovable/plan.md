@@ -1,45 +1,34 @@
 
 
-## New "BestMate" Layout — Hybrid Homepage
+## Migrate Jotter from Leaflet to Google Maps
 
-A new layout option called **"BestMate"** that combines the gradient header style from the reference image with all existing dashboard functionality below it.
+You already have this feature built — the **Jotter** (at `/instructor/doodlepad`) lets instructors draw on a map and save annotations. It currently uses Leaflet/OpenStreetMap tiles, but the rest of your platform has been standardized on Google Maps. Here's the plan to migrate it.
 
-### What it looks like
+### What changes
 
-The reference image shows:
-- **Full-bleed gradient header** (dark blue) with instructor name, "Welcome" subtitle, and a branded icon on the right
-- **3-column stats bar** inside the header (Weekly earnings, Monthly earnings, Schedule count) with frosted/translucent background
-- **Date/time row** below header on the light background
-- **Onboarding card** (setup checklist)
-- **3-column feature tile grid** with white/card-colored tiles, subtle shadows, rounded corners, and colored circle icons with subtitles
-- **"More Features"** horizontal scroll section
-- All on a system-grouped light gray background (`#F2F2F7` / dark: `#111111`)
+1. **Replace `DoodlepadMap.tsx`** — swap out the Leaflet `MapContainer`/`TileLayer` for a vanilla Google Maps instance (same pattern used in `FleetLiveMap` and `MiniLiveMap`), loading the API key via the existing `fetchGoogleMapsKey` + `loadGoogleMaps` helpers.
 
-### Implementation plan
+2. **Replace `DoodlepadCanvas.tsx`** — remove Leaflet's `useMap` dependency. Instead, attach the HTML5 Canvas overlay to the Google Maps container div and use `google.maps.Map.getProjection()` / `fromLatLngToPoint()` for geo↔pixel conversions. Re-bindraw event handlers and live preview logic to the new coordinate system.
 
-#### 1. Add `"bestmate"` to `LayoutStyle` type
-In `src/hooks/useInstructorAppearance.ts`, extend the union type.
+3. **Remove Leaflet imports** from the doodlepad folder — no more `react-leaflet`, `leaflet`, or `leaflet.css` imports in these files.
 
-#### 2. Create `BestMateHomeView.tsx`
-New component at `src/components/instructor/BestMateHomeView.tsx`:
+4. **No database or toolbar changes** — the annotation data model (JSONB with lat/lng points), the toolbar, the save/load drawer, and undo/redo logic all remain exactly the same.
 
-- **Header section**: Full-width gradient (`rgb(38,64,97)` → `rgb(51,84,122)`, dark mode: `rgb(20,31,56)` → `rgb(26,46,82)`). Instructor name (bold, white, ~24px), "Welcome" subtitle (white/80%). Right side: Car circle icon (44px, white/90%).
-- **Stats bar**: Inside header, frosted container (`rgba(255,255,255,0.15)` bg, 14px radius). 3 equal columns — Weekly earnings, Monthly earnings, Upcoming bookings count. Uses `useInstructorLiveStats` and `useWeeklyGoals` for data.
-- **Date/time row**: Current date in blue (`#007AFF`), current time in secondary gray. Updates every minute.
-- **Setup checklist card**: Renders `InstructorSetupChecklist` in a card style matching the image (progress ring + "Complete your onboarding").
-- **Feature tiles grid**: 3-column grid replicating the image's tile styling — white card bg (`bg-card`), `rounded-[14px]`, subtle shadow, colored circle icon (50px), title (semibold), subtitle (secondary gray). Tiles: Pupils, Bookings, Finances, Messages, Job Offers, Diary — same routes and data as existing layouts.
-- **More Features scroll**: Horizontal scroll row — Fuel Finder, Live Tracking, Dashboard, Settings, Add Lesson.
-- **Below the grid**: All existing dashboard content (NextUpTile, TodayMiniTimeline, TodayRoutePreview, SwipeableQuickAccess, TodayLessonsList, GapFillerCard, VehicleHealthStrip, PlanWidget, FloatingSessionBar, DrivingAlertsStrip, TrackerReminderBanner).
+### Technical approach
 
-#### 3. Wire into `InstructorMobileHome.tsx`
-Add conditional branch: `layoutStyle === "bestmate"` renders `<BestMateHomeView />`.
+- **Map initialisation**: Create a `google.maps.Map` inside a ref'd div, with `gestureHandling: "greedy"` for smooth pan/zoom. Disable map dragging when in draw mode (same as current Leaflet approach).
+- **Canvas overlay**: Position an absolutely-placed `<canvas>` over the map div. Use `google.maps.OverlayView` or manual pixel math via `map.getProjection()` + `map.getBounds()` to convert `LatLng → pixel` and back.
+- **Event listeners**: `mousedown`/`mousemove`/`mouseup` + touch equivalents on the canvas, identical to current logic but using Google Maps projection for coordinate conversion.
+- **Redraw on pan/zoom**: Listen to `idle`/`bounds_changed` events on the map to trigger canvas redraws, replacing Leaflet's `move`/`zoom` events.
 
-#### 4. Add to `AppearanceSettings.tsx`
-Add a "BestMate" option button with phone preview thumbnail and description "Gradient header + tiles".
+### Files affected
 
-### Key details
-- All data hooks reused from existing views — no new data fetching
-- Dark mode supported via `useTheme` for conditional header gradients and `dark:` variants on tiles/background
-- Tile shading matches the reference: white cards on grouped gray background, subtle `box-shadow: 0 1px 4px rgba(0,0,0,0.06)`
-- Same touch targets, haptic feedback, and navigation as other layouts
+| File | Action |
+|------|--------|
+| `src/components/instructor/doodlepad/DoodlepadMap.tsx` | Rewrite — Google Maps instead of Leaflet |
+| `src/components/instructor/doodlepad/DoodlepadCanvas.tsx` | Rewrite — Google Maps projection instead of Leaflet |
+| `src/components/instructor/doodlepad/types.ts` | No change |
+| `src/components/instructor/doodlepad/DoodlepadToolbar.tsx` | No change |
+| `src/components/instructor/doodlepad/SavedAnnotationsDrawer.tsx` | No change |
+| `src/pages/InstructorDoodlepad.tsx` | No change |
 
