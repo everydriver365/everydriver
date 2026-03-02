@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { 
-  Calendar, 
+import {
+  Calendar,
   Navigation, 
   Phone, 
   MessageSquare, 
@@ -25,23 +25,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { EndLessonWizard } from "./EndLessonWizard";
 
 interface ScheduledLesson {
   id: string;
@@ -77,6 +68,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
   const [completingLesson, setCompletingLesson] = useState<string | null>(null);
   const [rescheduleLesson, setRescheduleLesson] = useState<ScheduledLesson | null>(null);
   const [cancelLesson, setCancelLesson] = useState<ScheduledLesson | null>(null);
+  const [wizardLesson, setWizardLesson] = useState<ScheduledLesson | null>(null);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
@@ -616,40 +608,15 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                           </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-col h-auto py-2 gap-1 w-full border-success/50 hover:bg-success/10"
-                              disabled={completingLesson === lesson.id}
-                            >
-                              {completingLesson === lesson.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              )}
-                              <span className="text-[10px] leading-none">Done</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Complete Lesson?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Mark the {lesson.duration_minutes}-minute lesson with {lesson.pupil?.name} as complete? This will log it to their lesson history.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleCompleteLesson(lesson)}
-                                className="bg-success hover:bg-success/90"
-                              >
-                                Complete Lesson
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-col h-auto py-2 gap-1 w-full border-success/50 hover:bg-success/10"
+                          onClick={() => setWizardLesson(lesson)}
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                          <span className="text-[10px] leading-none">Done</span>
+                        </Button>
 
                         {/* More Options */}
                         <DropdownMenu>
@@ -723,6 +690,26 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           onCancelled={() => {
             setCancelLesson(null);
             setLessons((prev) => prev.filter((l) => l.id !== cancelLesson.id));
+          }}
+        />
+      )}
+
+      {/* End Lesson Wizard */}
+      {wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => !open && setWizardLesson(null)}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupil?.id || ""}
+          pupilName={wizardLesson.pupil?.name || "Pupil"}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.duration_minutes}
+          lessonDate={wizardLesson.lesson_date}
+          startTime={wizardLesson.start_time}
+          currentBalance={wizardLesson.pupil?.account_balance || 0}
+          onCompleted={() => {
+            setWizardLesson(null);
+            setLessons((prev) => prev.filter((l) => l.id !== wizardLesson.id));
           }}
         />
       )}

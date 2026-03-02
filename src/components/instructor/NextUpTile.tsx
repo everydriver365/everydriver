@@ -3,13 +3,14 @@ import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-f
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2,
   ChevronDown, ChevronUp, Send, Play, MapPin, Calendar,
-  Hourglass, PoundSterling, MessageCircle, AlertTriangle,
+  Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
+import { EndLessonWizard } from "./EndLessonWizard";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
@@ -53,6 +54,7 @@ export function NextUpTile({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -358,7 +360,17 @@ export function NextUpTile({
                   </button>
                 )}
 
-                {/* 5. Primary Actions Row */}
+                {/* End Lesson Button */}
+                {minutesUntil <= 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                    className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] font-bold text-[15px]"
+                    style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> End Lesson
+                  </button>
+                )}
+
                 <div className="grid grid-cols-4 gap-[10px]">
                   {/* Navigate */}
                   <button
@@ -468,6 +480,21 @@ export function NextUpTile({
           currentTime={startTime}
           durationMinutes={durationMinutes}
           onRescheduled={handleCancelled}
+        />
+      )}
+      {instructorId && (
+        <EndLessonWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          lessonId={lessonId}
+          pupilId={pupilId}
+          pupilName={pupilName}
+          instructorId={instructorId}
+          durationMinutes={durationMinutes}
+          lessonDate={lessonDate}
+          startTime={startTime}
+          currentBalance={accountBalance}
+          onCompleted={handleCancelled}
         />
       )}
     </>
