@@ -13,6 +13,7 @@ import expensesIcon from "@/assets/expenses-icon.png";
 import trackLessonIcon from "@/assets/track-lesson-icon.png";
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import yourPlanIcon from "@/assets/your-plan-icon.png";
+import fillGapsIcon from "@/assets/fill-gaps-icon.png";
 import takePaymentIcon from "@/assets/take-payment-icon.png";
 import agendaIcon from "@/assets/agenda-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
@@ -42,7 +43,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Find My Car", subtitle: "Last position", icon: Car, customIcon: findMyCarIcon, accent: "#FF9500", route: "/instructor/find-my-car" },
   { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, customIcon: planAheadIcon, accent: "#FFCC00", route: "/instructor/diary" },
   { title: "Your Plan", subtitle: "Subscription", icon: Crown, customIcon: yourPlanIcon, accent: "#AF52DE", route: "/instructor/plans" },
-  { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, accent: "#FF2D55", route: "/instructor/gaps" },
+  { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, customIcon: fillGapsIcon, accent: "#FF2D55", route: "/instructor/gaps" },
   { title: "To Do", subtitle: "Task list", icon: ListTodo, accent: "#5AC8FA", route: "/instructor/todos" },
   { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, accent: "#8E8E93", route: "/instructor/vehicle-health" },
   { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, accent: "#34C759", route: "/instructor/fuel" },
