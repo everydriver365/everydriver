@@ -11,6 +11,11 @@ export interface NearbyFriend {
   speedKmh: number | null;
   lastSeenAt: string;
   distanceKm: number;
+  currentLesson: {
+    lessonType: string;
+    status: string;
+    endsAt: string;
+  } | null;
 }
 
 export function useNearbyFriends(instructorId: string | undefined) {
