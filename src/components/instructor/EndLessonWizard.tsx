@@ -1,0 +1,309 @@
+import { useState, useEffect } from "react";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { StepSummary } from "./end-lesson/StepSummary";
+import { StepPayment } from "./end-lesson/StepPayment";
+import { StepSkills } from "./end-lesson/StepSkills";
+import { StepBookNext } from "./end-lesson/StepBookNext";
+
+interface EndLessonWizardProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  lessonId: string;
+  pupilId: string;
+  pupilName: string;
+  instructorId: string;
+  durationMinutes: number;
+  lessonDate: string;
+  startTime: string;
+  currentBalance: number;
+  onCompleted: () => void;
+}
+
+type WizardStep = "summary" | "payment" | "skills" | "book" | "completing";
+
+export function EndLessonWizard({
+  open,
+  onOpenChange,
+  lessonId,
+  pupilId,
+  pupilName,
+  instructorId,
+  durationMinutes,
+  lessonDate,
+  startTime,
+  currentBalance,
+  onCompleted,
+}: EndLessonWizardProps) {
+  const [step, setStep] = useState<WizardStep>("summary");
+  const [notes, setNotes] = useState("");
+  const [lessonCost, setLessonCost] = useState(0);
+  const [completing, setCompleting] = useState(false);
+  const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
+
+  useEffect(() => {
+    if (open) {
+      setStep("summary");
+      setNotes("");
+      setCompleting(false);
+      setHistoryId(null);
+      fetchInstructorRate();
+    }
+  }, [open]);
+
+  const fetchInstructorRate = async () => {
+    try {
+      const { data } = await supabase
+        .from("instructors")
+        .select("hourly_rate, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer")
+        .eq("id", instructorId)
+        .single();
+
+      const rate = data?.hourly_rate || 40;
+      setLessonCost((durationMinutes / 60) * rate);
+
+      const qr = data?.commission_payer === "instructor"
+        ? data?.payment_qr_url_instructor_pays
+        : data?.payment_qr_url_pupil_pays;
+      setPaymentQrUrl(qr || null);
+    } catch (e) {
+      setLessonCost((durationMinutes / 60) * 40);
+    }
+  };
+
+  const balanceAfterLesson = currentBalance - lessonCost;
+  const needsPayment = balanceAfterLesson < 0;
+
+  const goNext = () => {
+    if (step === "summary") {
+      setStep(needsPayment ? "payment" : "skills");
+    } else if (step === "payment") {
+      setStep("skills");
+    } else if (step === "skills") {
+      setStep("book");
+    } else if (step === "book") {
+      handleComplete();
+    }
+  };
+
+  const handleComplete = async () => {
+    setStep("completing");
+    setCompleting(true);
+
+    try {
+      // 1. Mark lesson complete
+      await supabase.from("scheduled_lessons").update({ status: "completed" }).eq("id", lessonId);
+
+      // 2. Log to lesson_history
+      const { data: historyData } = await supabase
+        .from("lesson_history")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          lesson_date: lessonDate,
+          start_time: startTime,
+          duration_minutes: durationMinutes,
+          notes: notes || null,
+        })
+        .select("id")
+        .single();
+
+      if (historyData) setHistoryId(historyData.id);
+
+      // 3. Award points
+      let pointsAwarded = 10;
+      try {
+        const { data: ps } = await supabase
+          .from("site_settings")
+          .select("setting_value")
+          .eq("setting_key", "points_per_lesson")
+          .single();
+        if (ps?.setting_value) pointsAwarded = parseInt(ps.setting_value, 10) || 10;
+
+        const { data: cp } = await supabase
+          .from("pupils")
+          .select("reward_points, total_lessons_for_rewards, lessons_completed")
+          .eq("id", pupilId)
+          .single();
+
+        if (cp) {
+          await supabase
+            .from("pupils")
+            .update({
+              lessons_completed: (cp.lessons_completed || 0) + 1,
+              reward_points: (cp.reward_points || 0) + pointsAwarded,
+              total_lessons_for_rewards: (cp.total_lessons_for_rewards || 0) + 1,
+            })
+            .eq("id", pupilId);
+
+          await supabase.from("pupil_rewards_history").insert({
+            pupil_id: pupilId,
+            instructor_id: instructorId,
+            points_change: pointsAwarded,
+            reason: "Lesson completed",
+          });
+        }
+      } catch (e) {
+        console.error("Rewards error:", e);
+      }
+
+      // 4. Deduct balance
+      try {
+        const { data: fresh } = await supabase
+          .from("pupils")
+          .select("account_balance")
+          .eq("id", pupilId)
+          .single();
+
+        const newBal = (fresh?.account_balance || currentBalance) - lessonCost;
+        await supabase.from("pupils").update({ account_balance: newBal }).eq("id", pupilId);
+
+        await supabase.from("payment_history").insert({
+          pupil_id: pupilId,
+          instructor_id: instructorId,
+          amount: -lessonCost,
+          payment_method: "Lesson Charge",
+          notes: `${durationMinutes}min lesson on ${lessonDate}`,
+        });
+
+        invalidatePaymentQueries({ pupilId, instructorId });
+      } catch (e) {
+        console.error("Charge error:", e);
+      }
+
+      toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
+      onCompleted();
+      onOpenChange(false);
+    } catch (e) {
+      console.error("Error completing lesson:", e);
+      toast.error("Failed to complete lesson");
+      setStep("summary");
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const stepLabels: Record<WizardStep, string> = {
+    summary: "Quick Summary",
+    payment: "Take Payment",
+    skills: "Skills Update",
+    book: "Book Next Lesson",
+    completing: "Completing…",
+  };
+
+  const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
+  const totalSteps = needsPayment ? 4 : 3;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-2xl">
+        <SheetHeader className="pb-3">
+          <SheetTitle className="text-base">End Lesson — {pupilName}</SheetTitle>
+          <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
+          {/* Progress dots */}
+          <div className="flex items-center gap-1.5 pt-1">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${
+                  i < stepNumber ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Step {Math.min(stepNumber, totalSteps)} of {totalSteps}: {stepLabels[step]}
+          </p>
+        </SheetHeader>
+
+        <div className="py-2">
+          {step === "summary" && (
+            <>
+              <StepSummary
+                pupilName={pupilName}
+                durationMinutes={durationMinutes}
+                balanceBefore={currentBalance}
+                lessonCost={lessonCost}
+                notes={notes}
+                onNotesChange={setNotes}
+              />
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={goNext} className="flex-1">
+                  Next
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === "payment" && (
+            <StepPayment
+              pupilId={pupilId}
+              pupilName={pupilName}
+              instructorId={instructorId}
+              currentBalance={currentBalance}
+              lessonCost={lessonCost}
+              paymentQrUrl={paymentQrUrl}
+              onPaymentRecorded={goNext}
+              onSkip={goNext}
+            />
+          )}
+
+          {step === "skills" && historyId === null && (
+            <>
+              <StepSkills
+                lessonId={lessonId}
+                pupilId={pupilId}
+                instructorId={instructorId}
+                onSaved={() => {}}
+              />
+              <div className="flex gap-2 pt-4">
+                <Button variant="ghost" onClick={goNext} className="flex-1">
+                  Skip
+                </Button>
+                <Button onClick={goNext} className="flex-1">
+                  Next
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === "book" && (
+            <StepBookNext
+              pupilId={pupilId}
+              pupilName={pupilName}
+              instructorId={instructorId}
+              durationMinutes={durationMinutes}
+              onBooked={handleComplete}
+              onSkip={handleComplete}
+            />
+          )}
+
+          {step === "completing" && (
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              {completing ? (
+                <>
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Completing lesson…</p>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-10 w-10 text-success" />
+                  <p className="text-sm font-medium text-foreground">Lesson completed!</p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
