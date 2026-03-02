@@ -91,23 +91,26 @@ export function ActivityTilesGrid({
   ];
 
   return (
-    <div className="px-4 mt-4 grid grid-cols-2 gap-3">
+    <div className="px-4 mt-4 grid grid-cols-2 gap-4">
       {tiles.map((tile, idx) => (
         <motion.button
           key={tile.title}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.04 }}
-          whileTap={{ scale: 0.96 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => navigate(tile.route)}
-          className="bg-card rounded-[14px] p-[14px] text-left"
-          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+          className="rounded-[20px] p-5 text-left border-0 transition-all duration-200 ease-out"
+          style={{
+            backgroundColor: "#F2F3F5",
+            boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+          }}
         >
           {/* Top row: icon + count */}
           <div className="flex items-center justify-between">
             <div
-              className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-              style={{ backgroundColor: `${tile.accent}1F` }}
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "#E6E8EC" }}
             >
               {tile.icon}
             </div>
