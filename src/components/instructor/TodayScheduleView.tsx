@@ -216,6 +216,9 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
     setSendingMessage(lesson.id);
     
+    // Update lesson status to en_route
+    supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lesson.id).then(() => {});
+    
     const firstName = (lesson.pupil?.name || "").split(" ")[0];
     let message: string;
     

@@ -13,19 +13,17 @@ Your app already has: drag-and-drop diary, recurring lessons, Google Calendar sy
 
 ### High-Impact Features to Add
 
-**1. Broadcast Messaging to Pupils**
-TotalDrive's standout feature — message all pupils at once or a filtered subset. Your app has admin broadcast alerts to instructors, but instructors can't bulk-message their own pupils.
-- Add a "Broadcast" button to the Messages page
-- Select all pupils, or filter by status (active, on-hold, test-booked)
-- Compose one message, sent individually to each pupil's conversation
-- ~2 new components + 1 edge function
+**1. ✅ Broadcast Messaging to Pupils** — DONE
+- Added "Broadcast" button to the Messages page (BroadcastMessageSheet component)
+- Instructors can filter pupils by status (active, on-hold, inactive, passed)
+- Select all or individual pupils, compose message, send to individual conversations
+- Push notifications sent to each recipient
 
-**2. Post-Lesson Feedback Requests (Auto-Send)**
-Zenbooker automatically sends post-job feedback requests. Your app collects reviews on the mini-website but never prompts pupils after a lesson.
-- After EndLessonWizard completes, auto-send a feedback request notification to the pupil portal
-- Pupil taps to rate (1-5 stars + optional comment)
-- Ratings feed into the instructor's review page and mini-website
-- New `lesson_feedback` table + pupil portal component + trigger in EndLessonWizard
+**2. ✅ Post-Lesson Feedback Requests (Auto-Send)** — DONE
+- Created `lesson_feedback` table with RLS policies
+- After EndLessonWizard completes, auto-inserts a feedback request for the pupil
+- PupilFeedbackPrompt component shows in the pupil portal with star rating + comment
+- Submitted ratings stored for instructor review
 
 **3. Lesson Summary / PDF Receipt for Pupils**
 TotalDrive provides lesson summaries; Zenbooker sends branded receipts. Your app generates route reports but doesn't send a post-lesson summary card to the pupil/parent.
@@ -40,13 +38,12 @@ Zenbooker's core feature — let customers book directly from real-time availabi
 - One-tap booking with optional approval mode
 - Already have the availability logic — just needs a pupil-facing UI
 
-**5. Job Status Pipeline (En Route → Started → Complete)**
-Zenbooker tracks job lifecycle status. Your lessons jump from "scheduled" to "completed". Adding intermediate statuses improves the pupil experience.
-- Add `en_route` and `in_progress` statuses to scheduled_lessons
-- "On My Way" button updates status to `en_route` (pupil sees "Instructor is on the way")
-- "Start Lesson" updates to `in_progress`
-- EndLessonWizard updates to `completed`
-- Pupil portal shows real-time lesson status with a progress indicator
+**5. ✅ Job Status Pipeline (En Route → Started → Complete)** — DONE
+- "On My Way" buttons now update lesson status to `en_route`
+- "Start Lesson" buttons update status to `in_progress`
+- EndLessonWizard sets `completed`
+- Pupil portal shows real-time lesson status badges (animated pulse for active states)
+- Realtime subscription updates status live in the pupil portal
 
 ---
 
@@ -66,11 +63,10 @@ TotalDrive lets instructors brand the pupil app with their logo. Your mini-websi
 ---
 
 ### Recommended Build Order
-1. Broadcast Messaging (quick win, high daily value)
-2. Job Status Pipeline (improves pupil experience, relatively small change)
-3. Post-Lesson Feedback Requests (ties into the new EndLessonWizard)
+1. ✅ Broadcast Messaging (quick win, high daily value)
+2. ✅ Job Status Pipeline (improves pupil experience, relatively small change)
+3. ✅ Post-Lesson Feedback Requests (ties into the new EndLessonWizard)
 4. Lesson Summary Card for Pupils (completes the end-of-lesson flow)
 5. Pupil Self-Booking from Portal (bigger feature, builds on existing availability logic)
 6. Reflective Log
 7. Custom Pupil Portal Branding
-

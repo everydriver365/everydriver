@@ -16,6 +16,8 @@ import { PupilDashboardRadar } from "@/components/pupil-portal/PupilDashboardRad
 import { PupilTelematicsCard } from "@/components/pupil-portal/PupilTelematicsCard";
 import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
 import { PupilAIInsightsCard } from "@/components/pupil-portal/PupilAIInsightsCard";
+import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
+import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
 
 interface PupilData {
   id: string;
@@ -92,6 +94,25 @@ export default function PupilPortal() {
       if (lessonsRes.data) setUpcomingLessons(lessonsRes.data);
       setLoading(false);
     });
+  }, [pupilId]);
+
+  // Realtime subscription for lesson status changes (en_route, in_progress, etc.)
+  useEffect(() => {
+    if (!pupilId) return;
+    const channel = supabase
+      .channel("pupil-lesson-status")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "scheduled_lessons", filter: `pupil_id=eq.${pupilId}` },
+        (payload) => {
+          const updated = payload.new as any;
+          setUpcomingLessons(prev =>
+            prev.map(l => l.id === updated.id ? { ...l, status: updated.status } : l)
+          );
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [pupilId]);
 
   if (!pupilId) return <Navigate to="/pupil/login" replace />;
@@ -171,6 +192,9 @@ export default function PupilPortal() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Feedback Prompt */}
+            <PupilFeedbackPrompt pupilId={pupil.id} />
+
             {/* Upcoming Lessons */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
               <Card>
@@ -211,9 +235,12 @@ export default function PupilPortal() {
                               <span className="text-[10px]">{format(parseISO(lesson.lesson_date), "MMM")}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm">
-                                {isToday && <Badge className="mr-1.5 text-[10px] h-4">Today</Badge>}
+                              <div className="font-medium text-sm flex items-center gap-1.5 flex-wrap">
+                                {isToday && <Badge className="text-[10px] h-4">Today</Badge>}
                                 {lesson.duration_minutes}min Lesson
+                                {(lesson.status === "en_route" || lesson.status === "in_progress") && (
+                                  <LessonStatusBadge status={lesson.status} />
+                                )}
                               </div>
                               <div className="text-xs text-muted-foreground">{lesson.start_time}</div>
                               {lesson.pickup_location && (
