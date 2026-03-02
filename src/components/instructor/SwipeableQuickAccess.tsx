@@ -19,6 +19,7 @@ import referralsIcon from "@/assets/referrals-icon.png";
 import cpdIcon from "@/assets/cpd-icon.png";
 import settingsIcon from "@/assets/settings-icon.png";
 import locationsIcon from "@/assets/locations-icon.png";
+import satnavIcon from "@/assets/satnav-icon.png";
 
 interface QuickTile {
   title: string;
@@ -34,7 +35,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Pupils", subtitle: "Manage learners", icon: Users, customIcon: pupilsIcon, accent: "#34C759", route: "/instructor/pupils" },
   { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, accent: "#FF3B30", route: "/instructor/tracking" },
   { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/payments" },
-  { title: "SatNav", subtitle: "Navigation", icon: Navigation, accent: "#007AFF", route: "/instructor/satnav" },
+  { title: "SatNav", subtitle: "Navigation", icon: Navigation, customIcon: satnavIcon, accent: "#007AFF", route: "/instructor/satnav" },
   { title: "Find My Car", subtitle: "Last position", icon: Car, customIcon: findMyCarIcon, accent: "#FF9500", route: "/instructor/find-my-car" },
   { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, accent: "#FFCC00", route: "/instructor/diary" },
   { title: "Your Plan", subtitle: "Subscription", icon: Crown, accent: "#AF52DE", route: "/instructor/plans" },
