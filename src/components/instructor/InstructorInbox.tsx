@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { BroadcastMessageSheet } from "./BroadcastMessageSheet";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface Pupil {
   id: string;
@@ -34,6 +35,7 @@ interface InstructorInboxProps {
 }
 
 export function InstructorInbox({ instructorId }: InstructorInboxProps) {
+  const { instructor: authInstructor } = useInstructorAuth();
   const { conversations, loading, getTotalUnreadCount, getOrCreateConversation, fetchConversations } = useMessaging(instructorId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -233,10 +235,12 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
               </TabsList>
               {activeTab === "pupils" && (
                 <div className="flex gap-1.5">
-                  <Button size="sm" variant="outline" onClick={() => setShowBroadcast(true)}>
-                    <Megaphone className="h-4 w-4 mr-1" />
-                    Broadcast
-                  </Button>
+                  {authInstructor?.broadcast_messaging_enabled !== false && (
+                    <Button size="sm" variant="outline" onClick={() => setShowBroadcast(true)}>
+                      <Megaphone className="h-4 w-4 mr-1" />
+                      Broadcast
+                    </Button>
+                  )}
                   <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
                     <Plus className="h-4 w-4 mr-1" />
                     New

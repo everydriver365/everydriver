@@ -35,6 +35,7 @@ import { CancelLessonDialog } from "./CancelLessonDialog";
 import { EndLessonWizard } from "./EndLessonWizard";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface ScheduledLesson {
   id: string;
@@ -64,6 +65,7 @@ interface TodayScheduleViewProps {
 }
 
 export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
+  const { instructor: authInstructor } = useInstructorAuth();
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
@@ -507,7 +509,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                {travelTime && (
+                {travelTime && authInstructor?.drive_time_alerts_enabled && (
                   <TravelTimeIndicator
                     durationMinutes={travelTime.durationMinutes}
                     durationText={travelTime.durationText}
