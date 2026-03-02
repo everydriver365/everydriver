@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { EndLessonWizard } from "./EndLessonWizard";
+import { supabase } from "@/integrations/supabase/client";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
@@ -124,7 +125,11 @@ export function NextUpTile({
   const handleCall = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `tel:${pupilPhone}`; a.click(); } };
   const handleMessage = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}`; a.click(); } };
   const sendSMS = (msg: string) => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`; a.click(); } };
-  const handleSendETA = () => sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
+  const handleSendETA = () => {
+    // Update lesson status to en_route
+    supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+    sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
+  };
   const handleCancelled = () => { queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }); queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }); };
   const getEndTime = () => { try { const p = parse(startTime, "HH:mm:ss", new Date()); return format(new Date(p.getTime() + durationMinutes * 60000), "HH:mm:ss"); } catch { return undefined; } };
 
@@ -352,7 +357,11 @@ export function NextUpTile({
                 {/* 4. Start Lesson Button */}
                 {minutesUntil <= 15 && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/live-map?lesson=${lessonId}`); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                      navigate(`/instructor/live-map?lesson=${lessonId}`);
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] text-white font-bold text-[15px]"
                     style={{ background: "linear-gradient(90deg, #22c55e, rgba(34,197,94,0.8))" }}
                   >

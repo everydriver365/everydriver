@@ -5622,6 +5622,71 @@ export type Database = {
           },
         ]
       }
+      lesson_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          lesson_history_id: string | null
+          pupil_id: string
+          rating: number | null
+          requested_at: string
+          responded_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          lesson_history_id?: string | null
+          pupil_id: string
+          rating?: number | null
+          requested_at?: string
+          responded_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          lesson_history_id?: string | null
+          pupil_id?: string
+          rating?: number | null
+          requested_at?: string
+          responded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_feedback_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_feedback_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_feedback_lesson_history_id_fkey"
+            columns: ["lesson_history_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_feedback_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_history: {
         Row: {
           created_at: string

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, formatDistanceToNow } from "date-fns";
-import { MessageCircle, Search, User, Plus, ShieldCheck } from "lucide-react";
+import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { AdminChatWindow } from "./AdminChatWindow";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { BroadcastMessageSheet } from "./BroadcastMessageSheet";
 
 interface Pupil {
   id: string;
@@ -42,6 +43,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const [pupilSearchQuery, setPupilSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pupils");
   const [showAdminChat, setShowAdminChat] = useState(false);
+  const [showBroadcast, setShowBroadcast] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
 
   const filteredConversations = conversations.filter((conv) =>
@@ -230,10 +232,16 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                 </TabsTrigger>
               </TabsList>
               {activeTab === "pupils" && (
-                <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  New
-                </Button>
+                <div className="flex gap-1.5">
+                  <Button size="sm" variant="outline" onClick={() => setShowBroadcast(true)}>
+                    <Megaphone className="h-4 w-4 mr-1" />
+                    Broadcast
+                  </Button>
+                  <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    New
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -403,6 +411,12 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BroadcastMessageSheet
+        open={showBroadcast}
+        onOpenChange={setShowBroadcast}
+        instructorId={instructorId}
+      />
     </>
   );
 }
