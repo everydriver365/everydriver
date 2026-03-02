@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -30,6 +30,8 @@ import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
 import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
+import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
+import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
@@ -887,6 +889,30 @@ export default function InstructorSettings() {
                 iconBg="bg-violet-100 dark:bg-violet-900/30"
               >
                 <LessonPackageManager instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Intake Questions */}
+              <SettingsTile 
+                id="intake-questions" 
+                icon={ClipboardList} 
+                title="Intake Questions" 
+                description="Custom questions on booking forms"
+                iconColor="text-cyan-600"
+                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
+              >
+                <IntakeQuestionsSettings instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Pricing Rules */}
+              <SettingsTile 
+                id="pricing-rules" 
+                icon={PoundSterling} 
+                title="Price Adjustment Rules" 
+                description="Dynamic pricing by time, day & zone"
+                iconColor="text-amber-600"
+                iconBg="bg-amber-100 dark:bg-amber-900/30"
+              >
+                <PricingRulesSettings instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>

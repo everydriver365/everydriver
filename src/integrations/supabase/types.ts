@@ -259,6 +259,109 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_intake_answers: {
+        Row: {
+          answer_text: string
+          created_at: string
+          enquiry_id: string | null
+          id: string
+          pupil_id: string | null
+          question_id: string
+        }
+        Insert: {
+          answer_text: string
+          created_at?: string
+          enquiry_id?: string | null
+          id?: string
+          pupil_id?: string | null
+          question_id: string
+        }
+        Update: {
+          answer_text?: string
+          created_at?: string
+          enquiry_id?: string | null
+          id?: string
+          pupil_id?: string | null
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_intake_answers_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "course_enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_intake_answers_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_intake_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "booking_intake_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_intake_questions: {
+        Row: {
+          created_at: string
+          display_order: number
+          field_type: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          is_required: boolean
+          options: Json | null
+          question_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          field_type?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          is_required?: boolean
+          options?: Json | null
+          question_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          field_type?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          is_required?: boolean
+          options?: Json | null
+          question_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_intake_questions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_intake_questions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_upsells: {
         Row: {
           badge_text: string | null
@@ -7362,6 +7465,63 @@ export type Database = {
           },
         ]
       }
+      pricing_rules: {
+        Row: {
+          adjustment_type: string
+          adjustment_value: number
+          condition: Json
+          created_at: string
+          display_order: number
+          id: string
+          instructor_id: string
+          is_active: boolean
+          rule_name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          adjustment_type?: string
+          adjustment_value?: number
+          condition?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          rule_name: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          adjustment_type?: string
+          adjustment_value?: number
+          condition?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          rule_name?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_messages: {
         Row: {
           created_at: string
@@ -8664,6 +8824,84 @@ export type Database = {
           },
         ]
       }
+      quotes: {
+        Row: {
+          accepted_at: string | null
+          course_type: string | null
+          created_at: string
+          deposit_amount: number | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          package_details: string | null
+          phone: string | null
+          postcode: string | null
+          price: number
+          pupil_name: string
+          schedule_notes: string | null
+          status: string
+          token: string
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          course_type?: string | null
+          created_at?: string
+          deposit_amount?: number | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          instructor_id: string
+          package_details?: string | null
+          phone?: string | null
+          postcode?: string | null
+          price: number
+          pupil_name: string
+          schedule_notes?: string | null
+          status?: string
+          token?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          course_type?: string | null
+          created_at?: string
+          deposit_amount?: number | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          instructor_id?: string
+          package_details?: string | null
+          phone?: string | null
+          postcode?: string | null
+          price?: number
+          pupil_name?: string
+          schedule_notes?: string | null
+          status?: string
+          token?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_expenses: {
         Row: {
           amount: number
@@ -9104,6 +9342,7 @@ export type Database = {
           notes: string | null
           original_lesson_id: string | null
           payment_status: string
+          payment_token: string | null
           pickup_location: string | null
           pickup_postcode: string | null
           pickup_what3words: string | null
@@ -9139,6 +9378,7 @@ export type Database = {
           notes?: string | null
           original_lesson_id?: string | null
           payment_status?: string
+          payment_token?: string | null
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null
@@ -9174,6 +9414,7 @@ export type Database = {
           notes?: string | null
           original_lesson_id?: string | null
           payment_status?: string
+          payment_token?: string | null
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null

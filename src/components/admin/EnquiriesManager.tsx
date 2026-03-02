@@ -652,7 +652,7 @@ export function EnquiriesManager() {
                     </>
                   )}
                   {selectedEnquiry.status === "accepted" && (
-                    <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30 py-2 px-4">
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 py-2 px-4">
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Enquiry Accepted
                     </Badge>
