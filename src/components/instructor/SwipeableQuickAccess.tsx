@@ -62,6 +62,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Referrals", subtitle: "Earn rewards", icon: Gift, customIcon: referralsIcon, accent: "#FF2D55", route: "/instructor/referrals" },
   { title: "Availability", subtitle: "Working hours", icon: Clock, customIcon: availabilityIcon, accent: "#34C759", route: "/instructor/availability" },
   { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
+  { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, accent: "#5856D6", route: "/instructor/nearby-friends" },
 ];
 
 const TILES_PER_PAGE = 6;
