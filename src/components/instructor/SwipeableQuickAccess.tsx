@@ -9,11 +9,13 @@ import {
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt,
 } from "lucide-react";
+import expensesIcon from "@/assets/expenses-icon.png";
 
 interface QuickTile {
   title: string;
   subtitle: string;
   icon: React.ElementType;
+  customIcon?: string;
   accent: string;
   route: string;
 }
@@ -39,7 +41,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Settings", subtitle: "Preferences", icon: Settings, accent: "#8E8E93", route: "/instructor/settings" },
   { title: "Referrals", subtitle: "Earn rewards", icon: Gift, accent: "#FF2D55", route: "/instructor/referrals" },
   { title: "Availability", subtitle: "Working hours", icon: Clock, accent: "#34C759", route: "/instructor/availability" },
-  { title: "Expenses", subtitle: "Track costs", icon: Receipt, accent: "#FF9500", route: "/instructor/expenses" },
+  { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
 ];
 
 const TILES_PER_PAGE = 6;
@@ -97,7 +99,11 @@ export function SwipeableQuickAccess() {
                       </div>
                       <div className="self-end">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
-                          <Icon size={22} strokeWidth={1.6} style={{ color: tile.accent }} />
+                          {tile.customIcon ? (
+                            <img src={tile.customIcon} alt={tile.title} className="w-6 h-6 object-contain" />
+                          ) : (
+                            <Icon size={22} strokeWidth={1.6} style={{ color: tile.accent }} />
+                          )}
                         </div>
                       </div>
                     </motion.button>
