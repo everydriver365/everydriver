@@ -72,18 +72,19 @@ export function SwipeableQuickAccess() {
         <div className="flex">
           {pages.map((page, pageIdx) => (
             <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 {page.map((tile) => {
                   const Icon = tile.icon;
                   return (
                     <motion.button
                       key={tile.title}
-                      whileTap={{ scale: 0.96 }}
+                      whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={() => navigate(tile.route)}
-                      className="h-[110px] p-4 bg-card rounded-[16px] text-left flex flex-col justify-between border border-border/40"
+                      className="h-[110px] p-5 rounded-[20px] text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
                       style={{
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                        backgroundColor: "#F2F3F5",
+                        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
                       }}
                     >
                       <div>
@@ -95,7 +96,9 @@ export function SwipeableQuickAccess() {
                         </p>
                       </div>
                       <div className="self-end">
-                        <Icon size={30} strokeWidth={1.6} style={{ color: tile.accent }} />
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
+                          <Icon size={22} strokeWidth={1.6} style={{ color: tile.accent }} />
+                        </div>
                       </div>
                     </motion.button>
                   );
