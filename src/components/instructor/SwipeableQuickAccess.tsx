@@ -29,6 +29,7 @@ import fuelIcon from "@/assets/fuel-icon.png";
 import satnavIcon from "@/assets/satnav-icon.svg";
 import messagesIcon from "@/assets/messages-icon.png";
 import testResultIcon from "@/assets/test-result-icon.png";
+import testSwapIcon from "@/assets/test-swap-icon.png";
 
 interface QuickTile {
   title: string;
@@ -53,7 +54,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, customIcon: vehicleHealthIcon, accent: "#8E8E93", route: "/instructor/vehicle-health" },
   { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, customIcon: fuelIcon, accent: "#34C759", route: "/instructor/fuel" },
   { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, customIcon: testResultIcon, accent: "#007AFF", route: "/instructor/test-results" },
-  { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, accent: "#FF9500", route: "/instructor/test-requests" },
+  { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, customIcon: testSwapIcon, accent: "#FF9500", route: "/instructor/test-requests" },
   { title: "Messages", subtitle: "Chat", icon: MessageSquare, customIcon: messagesIcon, accent: "#007AFF", route: "/instructor/messages" },
   { title: "Locations", subtitle: "Saved places", icon: MapPinned, customIcon: locationsIcon, accent: "#FF3B30", route: "/instructor/locations" },
   { title: "CPD Log", subtitle: "Training hours", icon: BookOpen, customIcon: cpdIcon, accent: "#5856D6", route: "/instructor/cpd" },
