@@ -1,77 +1,80 @@
 
 
-## Nearby Instructor Friends — Map & Messaging
+## GoRoadie Feature Gap Analysis
 
-### Overview
-Add a new "Nearby ADIs" tile to the instructor home screen that opens a dedicated page showing friends (other instructors) on a live map with the ability to send direct messages between instructors.
+After reviewing GoRoadie Pro's full feature set against your codebase, here's what you already have and what's missing:
 
-### What's Needed
+### Already Implemented
+- Pupil management and overview
+- Enquiry manager
+- Lesson reminders (via notify-pupil edge function)
+- External calendar sync
+- Fill Nearby Open Slots (gap filling with SMS offers)
+- One-touch sat nav (directions in schedule)
+- Reflective logs
+- Expenses tracking and recurring expenses
+- Financial export
+- Digital payments
+- Theory test tracking (dates, pass status)
+- Companion learner app (pupil portal)
 
-**1. Database: `instructor_friends` table**
-- Columns: `id`, `requester_id` (references instructors), `recipient_id` (references instructors), `status` (enum: pending/accepted/declined), `created_at`, `updated_at`
-- Unique constraint on (requester_id, recipient_id)
-- RLS: authenticated instructors can see/manage their own friend records
+### Missing from GoRoadie -- Worth Building
 
-**2. Database: `instructor_direct_messages` table**
-- Columns: `id`, `sender_id`, `recipient_id`, `content`, `read_at`, `created_at`
-- RLS: sender or recipient can read; sender can insert
-- Enable realtime for live chat
+| # | Feature | What GoRoadie Does | Gap in Your App |
+|---|---------|-------------------|-----------------|
+| 1 | **Live Waiting List** | Pupils auto-check-in every 2 weeks to confirm they're still waiting; stale entries drop off | You have a `WaitlistManager` but no automated pupil re-confirmation or auto-expiry |
+| 2 | **Lesson Check-In** | Day before a lesson, pupil is prompted to confirm attendance; instructor gets notified | No pre-lesson confirmation flow exists |
+| 3 | **Photo-Scan Receipts** | Instructor photographs a receipt, it's auto-categorised and stored for tax | Expenses exist but no camera/photo capture for receipts |
+| 4 | **Digital Terms Agreement** | Paperless terms & conditions sent to pupils to sign before first lesson | No terms agreement feature exists |
+| 5 | **GDPR Auto-Cleanup** | Auto-flags or removes pupil records past a retention threshold | No data retention management |
+| 6 | **Theory Test Progress Sync** | Shows Theory Test 4-in-1 / Theory Test Pro app progress alongside practical | You track dates/pass status but don't show mock test scores or progress metrics |
 
-**3. Edge Function: `get-nearby-instructors`**
-- Accepts the calling instructor's ID
-- Reads their GPS position from `gps_devices` (live lat/lng)
-- Queries all accepted friends' GPS positions
-- Returns friend name, lat/lng, heading, distance — only for friends whose GPS is active and recent (last 30 mins)
-- Security: only returns data for accepted friends
+### Implementation Plan
 
-**4. New Page: `/instructor/nearby-friends`**
-- Google Maps full-screen view centered on the instructor's position
-- Friend markers (avatar pins) showing each nearby friend's live location
-- Tapping a marker opens a bottom sheet with: name, distance, and "Send Message" button
-- Friend management: add friend by search (name/postcode), accept/decline requests, friend list
+**1. Lesson Check-In (highest impact -- reduces no-shows by 80% per GoRoadie)**
+- Add `check_in_status` column to `scheduled_lessons` (null / confirmed / declined)
+- Create edge function `send-lesson-checkin` triggered day-before via cron or on lesson creation
+- Sends push notification + in-app prompt to pupil
+- Pupil portal gets a check-in card; tapping "I'll be there" updates status
+- Instructor sees check-in status on their schedule cards (green tick / amber warning)
 
-**5. New Components**
-- `NearbyFriendsMap.tsx` — Google Maps with instructor friend markers
-- `FriendRequestSheet.tsx` — send/accept/decline friend requests
-- `InstructorDirectChat.tsx` — 1:1 chat window between instructors (reuses existing chat patterns)
-- `useNearbyFriends.ts` — hook polling `get-nearby-instructors` every 30s
-- `useInstructorFriends.ts` — hook for CRUD on friend requests
-- `useInstructorDirectMessages.ts` — hook for realtime DMs
+**2. Photo-Scan Receipts**
+- New `expense_receipts` table (id, instructor_id, image_url, amount, category, date, notes)
+- Use Supabase Storage bucket for receipt images
+- Camera capture component on the Expenses page -- take photo or upload
+- AI-powered auto-extract of amount/date/category from receipt image using Lovable AI (Gemini Flash)
+- Receipts visible in expense history and included in financial export
 
-**6. Tile Integration**
-- Add "Nearby ADIs" tile to `SwipeableQuickAccess`, `AppStyleHomeView`, `HomeQuickActions`, and `QuickActionsFAB`
-- Icon: `Users` (lucide) with a map pin accent
-- Route: `/instructor/nearby-friends`
+**3. Live Waiting List Auto-Confirmation**
+- Add `last_confirmed_at` column to existing waitlist data
+- Every 2 weeks, send pupil a "Still interested?" notification
+- If no response within 7 days, auto-mark as inactive and notify instructor
+- Waiting list UI shows freshness indicator (green = recently confirmed, amber = awaiting confirmation, red = stale)
 
-**7. Route**
-- Add `/instructor/nearby-friends` to `App.tsx`
+**4. Digital Terms Agreement**
+- New `instructor_terms_templates` table (instructor_id, content, version)
+- New `pupil_terms_agreements` table (pupil_id, instructor_id, template_version, signed_at, ip_address)
+- Instructor can customise terms text in Settings
+- When a new pupil is added, they receive a link to review and digitally accept terms
+- Agreement status shown on pupil profile (signed / pending / not sent)
 
-### How Location Works
-- Uses the instructor's existing `gps_devices` table (Geotab hardware) for live positions — no new GPS tracking needed
-- Only shows friends who have active GPS devices with recent updates
-- Calculates distance client-side using Haversine formula from the edge function
+**5. GDPR Auto-Cleanup**
+- Add `data_retention_months` setting to instructor profile (default 36 months)
+- Dashboard widget showing pupils past retention threshold
+- One-click anonymise or delete with confirmation
+- Auto-notification to instructor when pupils approach threshold
 
-### Security
-- GPS positions only shared between accepted friends
-- Friend requests require explicit acceptance
-- DMs only between accepted friends (enforced via RLS)
-- No location data exposed to non-friends
+**6. Theory Test Progress Tracker**
+- Expand `theory_test_attempts` table usage to show mock test scores over time
+- Pupil portal gets a theory progress card with score trend chart
+- Instructor pupil overview shows theory readiness percentage
+- Optional: pupil can manually log mock test scores from external apps
 
-### Files Summary
-
-| Action | File |
-|--------|------|
-| Create (migration) | `instructor_friends` + `instructor_direct_messages` tables |
-| Create | `supabase/functions/get-nearby-instructors/index.ts` |
-| Create | `src/pages/InstructorNearbyFriends.tsx` |
-| Create | `src/components/instructor/NearbyFriendsMap.tsx` |
-| Create | `src/components/instructor/FriendRequestSheet.tsx` |
-| Create | `src/components/instructor/InstructorDirectChat.tsx` |
-| Create | `src/hooks/useNearbyFriends.ts` |
-| Create | `src/hooks/useInstructorFriends.ts` |
-| Create | `src/hooks/useInstructorDirectMessages.ts` |
-| Modify | `src/App.tsx` — add route |
-| Modify | `src/components/instructor/SwipeableQuickAccess.tsx` — add tile |
-| Modify | `src/components/instructor/AppStyleHomeView.tsx` — add tile |
-| Modify | `src/components/instructor/QuickActionsFAB.tsx` — add action |
+### Priority Order
+1. **Lesson Check-In** -- biggest impact on reducing cancellations
+2. **Photo-Scan Receipts** -- daily time-saver for instructors
+3. **Digital Terms Agreement** -- professional and paperless onboarding
+4. **Waiting List Auto-Confirmation** -- keeps the pipeline clean
+5. **Theory Progress Tracker** -- better pupil overview
+6. **GDPR Auto-Cleanup** -- compliance feature
 
