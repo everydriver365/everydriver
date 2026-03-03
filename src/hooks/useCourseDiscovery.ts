@@ -66,6 +66,9 @@ export interface CourseWithInstructor {
   isIntensive: boolean;
   discountedPrice: number | null;
   customFeatures: string[] | null;
+  isPremium?: boolean;
+  placementType?: string;
+  priorityScore?: number;
 }
 
 interface GeoCache {
@@ -128,6 +131,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
   const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+  const [premiumPlacements, setPremiumPlacements] = useState<{ instructor_id: string; placement_type: string; priority_score: number }[]>([]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
@@ -231,12 +235,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes, premiumRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("is_active", true),
         supabase.from("instructor_courses").select("*").eq("is_active", true),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
+        supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
@@ -254,6 +259,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
       setCourseTemplates(templatesRes.data || []);
       setWorkingHours(loadedWorkingHours);
       setDateOverrides(loadedOverrides);
+
+      // Store premium placements (filter expired)
+      const now = new Date().toISOString();
+      const activePlacements = (premiumRes.data || []).filter(
+        (p) => !p.expires_at || p.expires_at > now
+      );
+      setPremiumPlacements(activePlacements);
 
       const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedWorkingHours, loadedOverrides);
       if (firstAvailable) {
@@ -511,6 +523,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
         }
 
         if (courseData) {
+          const placement = premiumPlacements.find((p) => p.instructor_id === instructor.id);
           courses.push({
             instructor,
             hours,
@@ -524,13 +537,16 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
             isIntensive: template?.is_intensive || false,
             discountedPrice: courseData.discounted_price || null,
             customFeatures: courseData.custom_features || null,
+            isPremium: !!placement,
+            placementType: placement?.placement_type,
+            priorityScore: placement?.priority_score,
           });
         }
       }
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides, displayHours, courseTypeFilter]);
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides, displayHours, courseTypeFilter, premiumPlacements]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;
@@ -573,6 +589,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
       return true;
     })
     .sort((a, b) => {
+      // Premium instructors always come first
+      if (a.isPremium && !b.isPremium) return -1;
+      if (!a.isPremium && b.isPremium) return 1;
+      if (a.isPremium && b.isPremium) {
+        return (b.priorityScore || 0) - (a.priorityScore || 0);
+      }
+
       switch (sortBy) {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();

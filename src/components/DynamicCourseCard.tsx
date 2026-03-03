@@ -32,6 +32,8 @@ interface DynamicCourseCardProps {
   isIntensive?: boolean;
   discountedPrice?: number | null;
   customFeatures?: string[] | null;
+  isPremium?: boolean;
+  placementType?: string;
 }
 
 export function DynamicCourseCard({ 
@@ -45,7 +47,9 @@ export function DynamicCourseCard({
   features,
   isIntensive,
   discountedPrice,
-  customFeatures
+  customFeatures,
+  isPremium = false,
+  placementType
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
@@ -108,7 +112,18 @@ export function DynamicCourseCard({
         }`}
       >
         {/* Front of Card */}
-        <div className="overflow-hidden border border-border/50 bg-white shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
+        <div className={`overflow-hidden border shadow-lg [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl ${
+          isPremium 
+            ? "border-2 border-amber-400/60 shadow-amber-400/20 group-hover:shadow-amber-400/30 ring-1 ring-amber-400/30" 
+            : "border-border/50 bg-white shadow-black/10 group-hover:shadow-black/15"
+        }`}>
+          {/* Premium Featured Badge */}
+          {isPremium && (
+            <div className="absolute top-3 right-3 z-30 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white px-2.5 py-1 rounded-md shadow-lg shadow-amber-500/30">
+              <Star className="h-3 w-3 fill-current" />
+              <span className="text-xs font-bold tracking-wide">Featured</span>
+            </div>
+          )}
           {/* Badges Row */}
           <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
             {isPopular && (

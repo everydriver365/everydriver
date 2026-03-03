@@ -4408,6 +4408,57 @@ export type Database = {
           },
         ]
       }
+      instructor_premium_placements: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          is_active: boolean
+          placement_type: string
+          priority_score: number
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          placement_type?: string
+          priority_score?: number
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          placement_type?: string
+          priority_score?: number
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_premium_placements_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_premium_placements_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_referral_settings: {
         Row: {
           created_at: string | null
