@@ -10,7 +10,7 @@ import { LessonMileageTracker } from "@/components/instructor/LessonMileageTrack
 import { AccountingExport } from "@/components/instructor/accounting-export/AccountingExport";
 import { AnnualBusinessReport } from "@/components/instructor/AnnualBusinessReport";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, TrendingUp, PieChart, FileText, Car, FileSpreadsheet, BarChart3 } from "lucide-react";
+import { Settings, TrendingUp, PieChart, FileText, Car, FileSpreadsheet, BarChart3, Wallet } from "lucide-react";
 
 export default function InstructorAccounts() {
   const { instructor } = useInstructorAuth();
@@ -61,9 +61,18 @@ export default function InstructorAccounts() {
 
   return (
     <InstructorPortalLayout>
-      <div className="container max-w-5xl mx-auto py-6 px-4">
+      <div className="space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            Accounts
+          </h1>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 mb-6">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7">
             <TabsTrigger value="earnings" className="gap-1.5 text-xs md:text-sm">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Earnings</span>

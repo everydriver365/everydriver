@@ -52,37 +52,27 @@ export default function InstructorVehicleHealth() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
-        {/* Header - Compact on mobile */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
-            >
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold truncate">Vehicle Health</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                Compliance & mileage tracking
-              </p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+              <Car className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             </div>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            Vehicle Health
+          </h1>
+          <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={handleRefresh}
-              className="h-8 w-8 sm:h-9 sm:w-9"
+              className="h-8 w-8"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
               onClick={() => setShowAddVehicle(true)}
-              className="h-8 w-8 sm:h-9 sm:w-9"
+              className="h-8 w-8"
             >
               <Plus className="h-4 w-4" />
             </Button>

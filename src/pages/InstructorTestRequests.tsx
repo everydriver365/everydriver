@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus } from "lucide-react";
+import { Plus, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -13,20 +12,19 @@ import { MatchedSlotsList } from "@/components/test-requests/MatchedSlotsList";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function InstructorTestRequests() {
-  const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const [formOpen, setFormOpen] = useState(false);
 
   return (
     <InstructorPortalLayout>
-      <div className="p-4 max-w-4xl mx-auto space-y-4">
+      <div className="space-y-4 pb-24">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Test Swap</h1>
-          </div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <ArrowLeftRight className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            Test Swap
+          </h1>
           <Dialog open={formOpen} onOpenChange={setFormOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1">

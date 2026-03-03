@@ -153,20 +153,15 @@ export default function InstructorTestResults() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 pb-24">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                <Award className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-              </div>
-              Driving Test Results
-            </h1>
-            <p className="text-muted-foreground">
-              Record and track driving test outcomes with DVSA standards monitoring
-            </p>
-          </div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+              <Award className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            </div>
+            Driving Test Results
+          </h1>
           <div className="flex gap-2">
             <Select
               value={selectedPupilId}
@@ -208,37 +203,27 @@ export default function InstructorTestResults() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">Total Tests</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-emerald-600">{stats.passed}</div>
-              <p className="text-xs text-muted-foreground">Passed</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
-              <p className="text-xs text-muted-foreground">Failed</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-primary">{passRate}%</div>
-              <p className="text-xs text-muted-foreground">Pass Rate</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-[#0075c9]">{stats.mockTests}</div>
-              <p className="text-xs text-muted-foreground">Mock Tests</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="bg-card rounded-xl border p-3 text-center">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">Total</p>
+          </div>
+          <div className="bg-card rounded-xl border p-3 text-center">
+            <div className="text-2xl font-bold text-emerald-600">{stats.passed}</div>
+            <p className="text-xs text-muted-foreground">Passed</p>
+          </div>
+          <div className="bg-card rounded-xl border p-3 text-center">
+            <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
+            <p className="text-xs text-muted-foreground">Failed</p>
+          </div>
+          <div className="bg-card rounded-xl border p-3 text-center">
+            <div className="text-2xl font-bold text-primary">{passRate}%</div>
+            <p className="text-xs text-muted-foreground">Pass Rate</p>
+          </div>
+          <div className="bg-card rounded-xl border p-3 text-center">
+            <div className="text-2xl font-bold text-primary">{stats.mockTests}</div>
+            <p className="text-xs text-muted-foreground">Mock</p>
+          </div>
         </div>
 
         {/* Tabs */}

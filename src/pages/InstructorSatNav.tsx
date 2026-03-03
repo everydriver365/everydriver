@@ -230,13 +230,14 @@ export default function InstructorSatNav() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Navigation className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold">Sat Nav</h1>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">Navigate anywhere</p>
+      <div className="space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Navigation className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            Sat Nav
+          </h1>
         </div>
 
         {/* Search Card */}

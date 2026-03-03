@@ -336,15 +336,15 @@ export default function InstructorLocations() {
 
   return (
     <InstructorPortalLayout>
-      <div className="p-4 space-y-4">
+      <div className="space-y-4 pb-24">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")}>
-              <MapPin className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-semibold">Locations</h1>
-          </div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            Locations
+          </h1>
           <Button size="sm" onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Add
