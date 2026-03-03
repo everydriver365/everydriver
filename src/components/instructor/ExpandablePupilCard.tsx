@@ -37,6 +37,7 @@ import {
   Route
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
+import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
@@ -106,6 +107,9 @@ interface Pupil {
   deposit_forfeited?: boolean | null;
   status?: string;
   profile_image_url?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  emergency_contact_relation?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -1243,6 +1247,16 @@ export function ExpandablePupilCard({
                   )}
                 </div>
               )}
+
+              {/* Emergency Contact */}
+              <EmergencyContactEditor
+                pupilId={pupil.id}
+                initialData={{
+                  emergency_contact_name: pupil.emergency_contact_name,
+                  emergency_contact_phone: pupil.emergency_contact_phone,
+                  emergency_contact_relation: pupil.emergency_contact_relation,
+                }}
+              />
 
               {/* T&Cs and Signing Actions - full width stacked */}
               <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">

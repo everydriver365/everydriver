@@ -21,6 +21,7 @@ import {
   Search
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
+import PreFlightChecks from "@/components/instructor/PreFlightChecks";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 // Geotab only
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
@@ -256,6 +257,14 @@ export default function InstructorGPSSetup() {
         {/* Hardware Tracker Setup - Primary focus */}
         <HardwareTrackerSetup />
 
+        {/* Pre-Flight Checks */}
+        {instructor?.id && (
+          <PreFlightChecks 
+            instructorId={instructor.id}
+            onAllPassed={() => {}}
+            onSkip={() => {}}
+          />
+        )}
 
         {/* Devices List */}
         <div className="space-y-3">
