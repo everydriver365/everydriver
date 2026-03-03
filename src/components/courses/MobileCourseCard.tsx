@@ -39,6 +39,8 @@ interface Course {
   isIntensive?: boolean;
   discountedPrice?: number | null;
   customFeatures?: string[] | null;
+  isPremium?: boolean;
+  placementType?: string;
 }
 
 interface MobileCourseCardProps {
@@ -48,7 +50,7 @@ interface MobileCourseCardProps {
 
 export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
   const navigate = useNavigate();
-  const { instructor, hours, bookableDate, distance, isPopular, isIntensive, discountedPrice, customFeatures } = course;
+  const { instructor, hours, bookableDate, distance, isPopular, isIntensive, discountedPrice, customFeatures, isPremium } = course;
 
   const schoolSkim = instructor.school_skim_amount || 0;
   const basePrice = instructor.hourly_rate ? instructor.hourly_rate * hours : 0;
@@ -79,9 +81,18 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
       transition={{ delay: index * 0.05 }}
     >
       <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="course" className="border rounded-xl bg-white shadow-sm overflow-hidden">
+        <AccordionItem value="course" className={`border rounded-xl bg-white shadow-sm overflow-hidden ${
+          isPremium ? 'border-2 border-amber-400/50 shadow-amber-400/15 ring-1 ring-amber-400/20' : ''
+        }`}>
           <AccordionTrigger className="px-3 py-3 hover:no-underline [&[data-state=open]>div>.chevron]:rotate-180">
             <div className="flex items-center gap-3 w-full">
+              {/* Premium Badge */}
+              {isPremium && (
+                <div className="absolute -top-0.5 left-3 z-10 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-b-md shadow-sm">
+                  <Star className="h-2.5 w-2.5 fill-current" />
+                  Featured
+                </div>
+              )}
               {/* Course Image */}
               <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg">
                 <img

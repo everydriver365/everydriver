@@ -182,6 +182,8 @@ export function CourseGrid({
                   isIntensive={course.isIntensive}
                   discountedPrice={course.discountedPrice}
                   customFeatures={course.customFeatures}
+                  isPremium={course.isPremium}
+                  placementType={course.placementType}
                 />
               </motion.div>
             ))}
