@@ -2,7 +2,7 @@ import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { AlertTriangle } from "lucide-react";
 
 export function GeotabOverviewTab() {
@@ -19,12 +19,12 @@ export function GeotabOverviewTab() {
 
   if (!devices || devices.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center text-muted-foreground">
+      <InstructorCard>
+        <div className="p-6 text-center text-muted-foreground">
           <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500" />
           <p>No Geotab devices found. Contact your admin to have a device assigned.</p>
-        </CardContent>
-      </Card>
+        </div>
+      </InstructorCard>
     );
   }
 

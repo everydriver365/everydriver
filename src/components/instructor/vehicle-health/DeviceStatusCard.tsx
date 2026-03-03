@@ -1,5 +1,5 @@
 import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -34,8 +34,8 @@ export function DeviceStatusCard({ device, onLinkClick }: DeviceStatusCardProps)
   const BatteryIcon = getBatteryIcon(batteryLevel);
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+    <InstructorCard className="overflow-hidden">
+      <div className="space-y-2 sm:space-y-3">
         {/* Device header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -127,7 +127,7 @@ export function DeviceStatusCard({ device, onLinkClick }: DeviceStatusCardProps)
             Last seen: {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </InstructorCard>
   );
 }
