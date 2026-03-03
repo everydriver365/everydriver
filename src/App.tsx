@@ -148,7 +148,7 @@ const InstructorDesignDemo = lazy(() => import("./pages/instructor-app/DesignDem
 const PortalLayoutDemo = lazy(() => import("./pages/instructor-app/PortalLayoutDemo"));
 const DiaryImageDemo = lazy(() => import("./pages/DiaryImageDemo"));
 const TileDesignDemo = lazy(() => import("./pages/TileDesignDemo"));
-const LessonSummaryDemo = lazy(() => import("./pages/LessonSummaryDemo"));
+
 
 // Lazy-load ConditionalRoutes
 const ConditionalContact = lazy(() => import("./components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -338,7 +338,7 @@ const App = () => (
                 <Route path="/instructor-ios-demo-2" element={<InstructorIOSDemo2 />} />
                 <Route path="/instructor-ios-demo-3" element={<InstructorIOSDemo3 />} />
                 <Route path="/ios-home-layouts-demo" element={<IOSHomeLayoutsDemo />} />
-                <Route path="/lesson-summary-demo" element={<LessonSummaryDemo />} />
+                
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
