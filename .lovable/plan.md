@@ -1,33 +1,43 @@
 
 
-## Redesign Menu & Settings Pages to iOS Grouped-List Style
+## Lesson Completion Summary — Apple Fitness Style
 
-### Reference
-The iOS Settings screenshot shows: grouped white cards on a grey background, items within each group separated by thin hairline dividers (inset from the left to clear the icon), no gradient headers — just a plain uppercase grey section label above each group. Each row has a rounded icon on the left, label text, and a chevron or switch on the right. The cards themselves have no heavy shadows — just a clean white `bg-white` with subtle rounding (`rounded-xl`).
+### What We're Building
+When a lesson is marked complete via the `EndLessonWizard`, instead of immediately closing, show a rich **Apple Fitness-style summary sheet** (dark card aesthetic from the reference image) with telematics data from the linked GPS tracking session.
 
-### Changes
+### How It Works
 
-**1. `src/pages/InstructorMenu.tsx` — iOS grouped list redesign**
-- Remove the gradient section headers (`bg-gradient-to-r from-primary…`)
-- Replace with a small uppercase grey label above each card group (like iOS: `text-[13px] font-normal text-muted-foreground uppercase px-4 pb-1`)
-- Change the card container from `bg-card` to `bg-white dark:bg-[#1C1C1E]` with `rounded-2xl` and no heavy shadow — just a subtle one
-- Keep the existing 32px rounded-lg coloured icon containers and custom PNG icons as-is
-- Use inset dividers between rows (left-padded ~56px to clear the icon column) instead of full-width `divide-y`
-- Keep the chevron right, keep the lock/badge logic unchanged
+**Data Flow:**
+1. When the wizard's `handleComplete` runs, after marking the lesson complete, query `lesson_telematics` for a matching session (same `pupil_id` + `instructor_id`, overlapping time window around the lesson's scheduled time)
+2. If a telematics session is found, call the existing `generate-route-report` edge function with that `telematicsId` to get the full route report (roads, speeds, events, segments)
+3. Show a new `StepLessonSummary` component instead of the brief "Lesson completed!" spinner screen
 
-**2. `src/pages/InstructorSettings.tsx` — iOS grouped list redesign**
-- Same section label treatment: plain uppercase grey text above each category instead of bold `<h2>` headers
-- The `SettingsTile` component: change from `bg-[#F2F3F5]` to `bg-white dark:bg-[#1C1C1E]`, keep `rounded-2xl`, use lighter shadow
-- The quick-jump `<select>` dropdown: style it to match the iOS card aesthetic (white bg, rounded-2xl)
-- Add a new **"Visibility & Toggles"** section at the top of the settings that groups the existing visibility switch and feature toggles into a single iOS-style card with rows separated by hairline dividers — each row has an icon, label, description, and a `<Switch>`. This pulls the existing `FeatureTogglesSettings` toggles and the `is_active` visibility toggle into one grouped card so instructors can quickly see and toggle features on/off
+**New Component: `src/components/instructor/end-lesson/StepLessonSummary.tsx`**
 
-**3. `src/components/instructor/FeatureTogglesSettings.tsx` — iOS row style**
-- Remove the `rounded-lg border p-3` wrapper per toggle
-- Render as plain rows with hairline dividers between them (matching the iOS grouped list rows)
-- Keep switch, label, description, and loading spinner
+An Apple Fitness Workout Summary-style card with dark background (`bg-[#1C1C1E]`) containing:
+- **Header**: Car icon in a green circle, lesson type label, start–end time, location
+- **Details Grid** (2-column, colored values like the reference):
+  - Duration (green) | Distance in miles (cyan)
+  - Avg Speed (yellow) | Max Speed (red/pink)
+- **Roads Travelled**: List of road names with speed limits (collapsible if >5)
+- **Safety Events**: Overspeeding count, harsh braking count, harsh acceleration count
+- **Competencies Covered**: List of DVSA skills updated during the StepSkills phase (passed through state)
+- **Manoeuvres**: Any manoeuvres tagged in the lesson notes or skills step
+- A "Done" button at the bottom to close
 
-### Scope
-- 3 files modified
-- No new database changes
-- Purely visual restructuring
+**Changes to `EndLessonWizard.tsx`:**
+- Add a new wizard step `"completed"` after `"completing"`
+- In `handleComplete`, after all DB operations succeed, attempt to find a matching `lesson_telematics` session and fetch its report data
+- If telematics data exists, transition to the `"completed"` step showing `StepLessonSummary`
+- If no telematics data, show a simpler summary with just duration, cost, and notes (graceful fallback)
+
+**Changes to `StepSummary.tsx`:**
+- No changes needed — this is the pre-completion summary step
+
+### Files Modified
+1. **`src/components/instructor/end-lesson/StepLessonSummary.tsx`** — New component (Apple Fitness-style summary)
+2. **`src/components/instructor/EndLessonWizard.tsx`** — Add `"completed"` step, fetch telematics data after completion, render `StepLessonSummary`
+
+### No Database Changes
+All data already exists in `lesson_telematics`, `gps_points`, and the `generate-route-report` edge function. We just need to query and display it.
 
