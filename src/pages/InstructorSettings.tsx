@@ -247,7 +247,7 @@ export default function InstructorSettings() {
   const isOpen = (section: string) => openSections.includes(section);
   const isCategoryOpen = (categoryId: string) => openCategories.includes(categoryId);
 
-  // Settings tile component for uniform appearance with colored icons
+  // Settings tile component — iOS grouped-list style with white cards
   const SettingsTile = ({ 
     id, 
     icon: Icon, 
@@ -265,29 +265,29 @@ export default function InstructorSettings() {
     iconBg?: string;
     children: React.ReactNode;
   }) => (
-    <div className="bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-[20px] shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)] ring-1 ring-inset ring-white/60 dark:ring-white/5 overflow-hidden">
+    <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-sm overflow-hidden">
       <Collapsible open={isOpen(id)} onOpenChange={() => toggleSection(id)}>
         <CollapsibleTrigger asChild>
           <div className="p-0">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
+            <button className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={cn("h-11 w-11 rounded-full flex items-center justify-center shrink-0", iconBg)}>
-                  <Icon className={cn("h-5 w-5", iconColor)} />
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+                  <Icon className={cn("h-4 w-4", iconColor)} />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium">{title}</div>
+                  <div className="font-medium text-sm">{title}</div>
                   <div className="text-xs text-muted-foreground">{description}</div>
                 </div>
               </div>
               <ChevronRight className={cn(
-                "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                "h-4 w-4 text-muted-foreground/40 transition-transform duration-200",
                 isOpen(id) && "rotate-90"
               )} />
             </button>
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-5 pb-5 border-t border-white/20 dark:border-white/5 pt-4 relative z-10">
+          <div className="px-4 pb-4 border-t border-border/30 pt-4">
             {children}
           </div>
         </CollapsibleContent>
@@ -295,9 +295,11 @@ export default function InstructorSettings() {
     </div>
   );
 
-  // Category header component
+  // Category header component — iOS uppercase grey label
   const CategoryHeader = ({ category }: { category: SettingsCategory }) => (
-    <h2 className="text-lg font-bold tracking-tight">{category.title}</h2>
+    <div className="px-4 pb-0.5">
+      <span className="text-[13px] font-normal text-muted-foreground uppercase">{category.title}</span>
+    </div>
   );
 
   if (!instructorId) {
@@ -319,12 +321,12 @@ export default function InstructorSettings() {
           subtitle="Manage your profile and preferences"
         />
 
-        {/* Quick Jump Navigation */}
+        {/* Quick Jump Navigation — iOS card style */}
         <div className="relative">
           <select
             value={selectedCategory}
             onChange={(e) => scrollToCategory(e.target.value)}
-            className="w-full appearance-none rounded-lg border border-border bg-card px-4 py-2.5 pr-10 text-sm font-medium text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full appearance-none rounded-2xl bg-white dark:bg-[#1C1C1E] px-4 py-2.5 pr-10 text-sm font-medium text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {settingsCategories.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -333,6 +335,43 @@ export default function InstructorSettings() {
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        </div>
+
+        {/* Visibility & Toggles Section — iOS grouped card */}
+        <div>
+          <div className="px-4 pb-1.5">
+            <span className="text-[13px] font-normal text-muted-foreground uppercase">Visibility & Toggles</span>
+          </div>
+          <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-sm overflow-hidden">
+            {/* Visibility toggle row */}
+            <div className="flex items-center justify-between px-4 py-3 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                  <Eye className="h-4 w-4 text-violet-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Listed on Website</p>
+                  <p className="text-xs text-muted-foreground">Appear in course searches</p>
+                </div>
+              </div>
+              <Switch
+                checked={profile?.is_active ?? true}
+                onCheckedChange={handleVisibilityToggle}
+              />
+            </div>
+            <div className="ml-[56px] border-b border-border/40" />
+            {/* Feature toggles */}
+            <div className="px-3">
+              <FeatureTogglesSettings instructorId={instructorId} />
+            </div>
+          </div>
+          {profile && !profile.is_active && (
+            <div className="mt-2 mx-4 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                You're currently hidden from the website.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Profile & Identity Category */}
@@ -590,40 +629,6 @@ export default function InstructorSettings() {
                 </div>
               </SettingsTile>
 
-              {/* Visibility Section (moved from Courses) */}
-              <SettingsTile 
-                id="visibility" 
-                icon={Eye} 
-                title="Visibility" 
-                description="Control website listing"
-                iconColor="text-violet-600"
-                iconBg="bg-violet-100 dark:bg-violet-900/30"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="visibility-toggle" className="text-sm font-medium">
-                        Listed on website
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Your courses will appear in search results
-                      </p>
-                    </div>
-                    <Switch
-                      id="visibility-toggle"
-                      checked={profile?.is_active ?? true}
-                      onCheckedChange={handleVisibilityToggle}
-                    />
-                  </div>
-                  {profile && !profile.is_active && (
-                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                      <p className="text-sm text-amber-700 dark:text-amber-400">
-                        You're currently hidden from the website.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </SettingsTile>
           </div>
         </div>
 
@@ -1059,17 +1064,6 @@ export default function InstructorSettings() {
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[6]} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Feature Toggles */}
-              <SettingsTile 
-                id="feature-toggles" 
-                icon={ToggleLeft} 
-                title="Feature Toggles" 
-                description="Enable or disable optional features"
-                iconColor="text-purple-600"
-                iconBg="bg-purple-100 dark:bg-purple-900/30"
-              >
-                <FeatureTogglesSettings instructorId={instructorId} />
-              </SettingsTile>
               {/* Appearance Section */}
               <SettingsTile 
                 id="appearance" 

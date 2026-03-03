@@ -159,7 +159,7 @@ export default function InstructorMenu() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6 pb-24">
+      <div className="space-y-5 pb-24">
         {/* Page Title */}
         <div>
           <h1 className="text-xl font-bold">Menu</h1>
@@ -168,76 +168,75 @@ export default function InstructorMenu() {
 
         {/* Menu Sections - iOS grouped style */}
         {menuSections.map((section) => (
-          <div key={section.title} className="rounded-2xl overflow-hidden shadow-sm">
-            {/* Gradient section header */}
-            <div className="bg-gradient-to-r from-primary to-primary/70 px-4 py-2">
-              <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
+          <div key={section.title}>
+            {/* iOS-style uppercase grey section label */}
+            <div className="px-4 pb-1.5">
+              <span className="text-[13px] font-normal text-muted-foreground uppercase">{section.title}</span>
             </div>
-            <div className="bg-card divide-y divide-border/30">
-              {section.items.map((item) => {
+            {/* White grouped card */}
+            <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+              {section.items.map((item, itemIndex) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
 
                 return (
-                  <motion.button
-                    key={idx}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.03 + idx * 0.015 }}
-                    onClick={() => {
-                      if (locked) {
-                        toast.info(getUpgradeMessage(item.gateKey || ""), {
-                          description: "Contact us to upgrade your plan.",
-                        });
-                        return;
-                      }
-                      if (item.action) {
-                        item.action();
-                      } else if (item.path) {
-                        navigate(item.path);
-                      }
-                    }}
-                    className={cn(
-                      "w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left",
-                      locked && "opacity-60 cursor-not-allowed"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                          locked ? "bg-muted" : (item.iconBg || "bg-primary")
-                        )}
-                      >
-                        {locked ? (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        ) : item.customIcon ? (
-                          <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
-                        ) : (
-                          <item.icon className={cn("h-4 w-4", item.iconColor || "text-white")} />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn("font-medium text-sm truncate", locked ? "text-muted-foreground" : "text-foreground")}>
-                          {item.label}
-                        </p>
-                        {locked ? (
-                          <p className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
-                            <Lock className="h-2.5 w-2.5" /> Upgrade
-                          </p>
-                        ) : item.description ? (
-                          <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                        ) : null}
-                      </div>
-                      {locked ? (
-                        <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground shrink-0">
-                          {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
-                        </Badge>
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  <div key={idx}>
+                    <motion.button
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.03 + idx * 0.015 }}
+                      onClick={() => {
+                        if (locked) {
+                          toast.info(getUpgradeMessage(item.gateKey || ""), {
+                            description: "Contact us to upgrade your plan.",
+                          });
+                          return;
+                        }
+                        if (item.action) {
+                          item.action();
+                        } else if (item.path) {
+                          navigate(item.path);
+                        }
+                      }}
+                      className={cn(
+                        "w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left",
+                        locked && "opacity-60 cursor-not-allowed"
                       )}
-                    </div>
-                  </motion.button>
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+                            locked ? "bg-muted" : (item.iconBg || "bg-primary")
+                          )}
+                        >
+                          {locked ? (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          ) : item.customIcon ? (
+                            <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
+                          ) : (
+                            <item.icon className={cn("h-4 w-4", item.iconColor || "text-white")} />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("font-medium text-sm truncate", locked ? "text-muted-foreground" : "text-foreground")}>
+                            {item.label}
+                          </p>
+                        </div>
+                        {locked ? (
+                          <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground shrink-0">
+                            {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
+                          </Badge>
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                        )}
+                      </div>
+                    </motion.button>
+                    {/* Inset hairline divider */}
+                    {itemIndex < section.items.length - 1 && (
+                      <div className="ml-[56px] border-b border-border/40" />
+                    )}
+                  </div>
                 );
               })}
             </div>
