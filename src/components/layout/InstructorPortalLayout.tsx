@@ -223,11 +223,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
 
-  // Appearance settings for app-style layout
+  // Appearance settings — apply wallpaper color to ALL mobile pages
   const { layoutStyle, wallpaperColor } = useInstructorAppearance(instructor?.id);
   const isHomePage = location.pathname === "/instructor";
   const isAppStyle = isHomePage && layoutStyle === "schedule";
-  const appStyleBg = isAppStyle ? (wallpaperColor || "#E8F1FE") : undefined;
+  const mobileBg = wallpaperColor || "#E8F1FE";
+  const appStyleBg = isAppStyle ? mobileBg : undefined;
   const headerContrast = appStyleBg ? getContrastColor(appStyleBg) : null;
 
   const isTrackingPage = location.pathname.startsWith("/instructor/tracking") || location.pathname.startsWith("/instructor/traccar");
@@ -343,8 +344,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen overflow-x-hidden instructor-portal",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16 bg-background"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16"
         )}
+        style={!isFullscreenMode ? { backgroundColor: mobileBg } : undefined}
       >
         {!isFullscreenMode && (
           <>
