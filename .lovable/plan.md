@@ -1,43 +1,54 @@
 
 
-## Lesson Completion Summary — Apple Fitness Style
+## Codebase Cleanup — Remove Redundant Demo & Showcase Pages
 
-### What We're Building
-When a lesson is marked complete via the `EndLessonWizard`, instead of immediately closing, show a rich **Apple Fitness-style summary sheet** (dark card aesthetic from the reference image) with telematics data from the linked GPS tracking session.
+### Problem
+There are **27 demo/showcase pages** registered as routes and lazy imports in `App.tsx`. These are design exploration artifacts that add no production value but increase bundle size, clutter the router, and create maintenance overhead.
 
-### How It Works
+### Pages to Remove
 
-**Data Flow:**
-1. When the wizard's `handleComplete` runs, after marking the lesson complete, query `lesson_telematics` for a matching session (same `pupil_id` + `instructor_id`, overlapping time window around the lesson's scheduled time)
-2. If a telematics session is found, call the existing `generate-route-report` edge function with that `telematicsId` to get the full route report (roads, speeds, events, segments)
-3. Show a new `StepLessonSummary` component instead of the brief "Lesson completed!" spinner screen
+**Demo pages (files + routes + imports):**
+1. `src/pages/DesignDemo.tsx`
+2. `src/pages/HeroLayoutDemo.tsx`
+3. `src/pages/CollageDemo.tsx`
+4. `src/pages/HeroRedesignDemo.tsx`
+5. `src/pages/MobileHomeDemo.tsx`
+6. `src/pages/MobilePortalDemo.tsx`
+7. `src/pages/InstructorMobileDemo.tsx`
+8. `src/pages/InstructorTileDemo.tsx`
+9. `src/pages/InstructorHeroDemo.tsx`
+10. `src/pages/InstructorHomeDesignDemo.tsx`
+11. `src/pages/InstructorBlueStyleDemo.tsx`
+12. `src/pages/InstructorNoHeroDemo.tsx`
+13. `src/pages/InstructorNoHeroIOSDemo.tsx`
+14. `src/pages/InstructorIOSDemo2.tsx`
+15. `src/pages/InstructorIOSDemo3.tsx`
+16. `src/pages/QuickActionGradientDemo.tsx`
+17. `src/pages/HomepageRedesignDemo.tsx`
+18. `src/pages/MobileHomeRedesignDemo.tsx`
+19. `src/pages/MobileHomeRedesignDemo2.tsx`
+20. `src/pages/MobileHomeIOSDemo.tsx`
+21. `src/pages/HeaderRedesignDemo.tsx`
+22. `src/pages/IOSHomeLayoutsDemo.tsx`
+23. `src/pages/DiaryImageDemo.tsx`
+24. `src/pages/TileDesignDemo.tsx`
+25. `src/pages/instructor-app/DesignDemo.tsx`
+26. `src/pages/instructor-app/PortalLayoutDemo.tsx`
 
-**New Component: `src/components/instructor/end-lesson/StepLessonSummary.tsx`**
+**Showcase pages (also demo artifacts):**
+27. `src/pages/NextUpTileShowcase.tsx`
+28. `src/pages/TodoTileShowcase.tsx`
+29. `src/pages/PupilCardDemo.tsx`
 
-An Apple Fitness Workout Summary-style card with dark background (`bg-[#1C1C1E]`) containing:
-- **Header**: Car icon in a green circle, lesson type label, start–end time, location
-- **Details Grid** (2-column, colored values like the reference):
-  - Duration (green) | Distance in miles (cyan)
-  - Avg Speed (yellow) | Max Speed (red/pink)
-- **Roads Travelled**: List of road names with speed limits (collapsible if >5)
-- **Safety Events**: Overspeeding count, harsh braking count, harsh acceleration count
-- **Competencies Covered**: List of DVSA skills updated during the StepSkills phase (passed through state)
-- **Manoeuvres**: Any manoeuvres tagged in the lesson notes or skills step
-- A "Done" button at the bottom to close
+### Changes to `src/App.tsx`
+- Remove all 29 lazy imports (lines 76–77, 91, 124–150)
+- Remove all corresponding `<Route>` entries (lines 234–235, 239–243, 280–281, 292, 322–340)
 
-**Changes to `EndLessonWizard.tsx`:**
-- Add a new wizard step `"completed"` after `"completing"`
-- In `handleComplete`, after all DB operations succeed, attempt to find a matching `lesson_telematics` session and fetch its report data
-- If telematics data exists, transition to the `"completed"` step showing `StepLessonSummary`
-- If no telematics data, show a simpler summary with just duration, cost, and notes (graceful fallback)
+### Additional Cleanup in `src/App.tsx`
+- Remove the 4 homepage redesign demo routes that sit outside the demo block (lines 239–243): `/homepage-redesign-demo`, `/mobile-home-redesign`, `/mobile-home-redesign-2`, `/mobile-home-ios-demo`, `/header-redesign-demo`
 
-**Changes to `StepSummary.tsx`:**
-- No changes needed — this is the pre-completion summary step
-
-### Files Modified
-1. **`src/components/instructor/end-lesson/StepLessonSummary.tsx`** — New component (Apple Fitness-style summary)
-2. **`src/components/instructor/EndLessonWizard.tsx`** — Add `"completed"` step, fetch telematics data after completion, render `StepLessonSummary`
+### What Stays
+All production pages, install pages, mini-website pages, instructor portal pages, and the instructor-app SaaS pages remain untouched.
 
 ### No Database Changes
-All data already exists in `lesson_telematics`, `gps_points`, and the `generate-route-report` edge function. We just need to query and display it.
 
