@@ -5,6 +5,7 @@ import InstructorLiveSession from "./pages/InstructorLiveSession";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
@@ -41,28 +42,6 @@ import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import AdminLogin from "./pages/AdminLogin";
 import BrandedPupilPortal from "./pages/BrandedPupilPortal";
-import HeroLayoutDemo from "./pages/HeroLayoutDemo";
-import CollageDemo from "./pages/CollageDemo";
-import HeroRedesignDemo from "./pages/HeroRedesignDemo";
-import MobileHomeDemo from "./pages/MobileHomeDemo";
-import MobilePortalDemo from "./pages/MobilePortalDemo";
-import InstructorMobileDemo from "./pages/InstructorMobileDemo";
-import InstructorTileDemo from "./pages/InstructorTileDemo";
-import DesignDemo from "./pages/DesignDemo";
-import InstructorHeroDemo from "./pages/InstructorHeroDemo";
-import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
-import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
-import InstructorNoHeroDemo from "./pages/InstructorNoHeroDemo";
-import InstructorNoHeroIOSDemo from "./pages/InstructorNoHeroIOSDemo";
-import InstructorIOSDemo2 from "./pages/InstructorIOSDemo2";
-import InstructorIOSDemo3 from "./pages/InstructorIOSDemo3";
-import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
-import HomepageRedesignDemo from "./pages/HomepageRedesignDemo";
-import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
-import MobileHomeRedesignDemo2 from "./pages/MobileHomeRedesignDemo2";
-import MobileHomeIOSDemo from "./pages/MobileHomeIOSDemo";
-import HeaderRedesignDemo from "./pages/HeaderRedesignDemo";
-import IOSHomeLayoutsDemo from "./pages/IOSHomeLayoutsDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -136,18 +115,41 @@ import InstructorGeotabHub from "./pages/InstructorGeotabHub";
 import DrivingSchools from "./pages/instructor-app/DrivingSchools";
 import InstructorPayments from "./pages/instructor-app/InstructorPayments";
 import InstructorMarketing from "./pages/instructor-app/InstructorMarketing";
-import InstructorDesignDemo from "./pages/instructor-app/DesignDemo";
-import PortalLayoutDemo from "./pages/instructor-app/PortalLayoutDemo";
 import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOnboarding";
 import OnboardingPreview from "./pages/instructor-app/onboarding/OnboardingPreview";
 import InstructorPortalLogin from "./pages/InstructorPortalLogin";
 import CalendarCallback from "./pages/CalendarCallback";
-import DiaryImageDemo from "./pages/DiaryImageDemo";
-import TileDesignDemo from "./pages/TileDesignDemo";
 
 
 
 const queryClient = new QueryClient();
+
+const DesignDemo = lazy(() => import("./pages/DesignDemo"));
+const HeroLayoutDemo = lazy(() => import("./pages/HeroLayoutDemo"));
+const CollageDemo = lazy(() => import("./pages/CollageDemo"));
+const HeroRedesignDemo = lazy(() => import("./pages/HeroRedesignDemo"));
+const MobileHomeDemo = lazy(() => import("./pages/MobileHomeDemo"));
+const MobilePortalDemo = lazy(() => import("./pages/MobilePortalDemo"));
+const InstructorMobileDemo = lazy(() => import("./pages/InstructorMobileDemo"));
+const InstructorTileDemo = lazy(() => import("./pages/InstructorTileDemo"));
+const InstructorHeroDemo = lazy(() => import("./pages/InstructorHeroDemo"));
+const InstructorHomeDesignDemo = lazy(() => import("./pages/InstructorHomeDesignDemo"));
+const InstructorBlueStyleDemo = lazy(() => import("./pages/InstructorBlueStyleDemo"));
+const InstructorNoHeroDemo = lazy(() => import("./pages/InstructorNoHeroDemo"));
+const InstructorNoHeroIOSDemo = lazy(() => import("./pages/InstructorNoHeroIOSDemo"));
+const InstructorIOSDemo2 = lazy(() => import("./pages/InstructorIOSDemo2"));
+const InstructorIOSDemo3 = lazy(() => import("./pages/InstructorIOSDemo3"));
+const QuickActionGradientDemo = lazy(() => import("./pages/QuickActionGradientDemo"));
+const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
+const MobileHomeRedesignDemo = lazy(() => import("./pages/MobileHomeRedesignDemo"));
+const MobileHomeRedesignDemo2 = lazy(() => import("./pages/MobileHomeRedesignDemo2"));
+const MobileHomeIOSDemo = lazy(() => import("./pages/MobileHomeIOSDemo"));
+const HeaderRedesignDemo = lazy(() => import("./pages/HeaderRedesignDemo"));
+const IOSHomeLayoutsDemo = lazy(() => import("./pages/IOSHomeLayoutsDemo"));
+const InstructorDesignDemo = lazy(() => import("./pages/instructor-app/DesignDemo"));
+const PortalLayoutDemo = lazy(() => import("./pages/instructor-app/PortalLayoutDemo"));
+const DiaryImageDemo = lazy(() => import("./pages/DiaryImageDemo"));
+const TileDesignDemo = lazy(() => import("./pages/TileDesignDemo"));
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -160,177 +162,180 @@ const App = () => (
           <InstructorAuthProvider>
             <DomainRouter />
             <DynamicPWAMeta />
-            <Routes>
-              {/* Root route - conditional based on domain */}
-              <Route path="/" element={<ConditionalHome />} />
-              {/* Drive365 learner homepage preview (bypasses domain routing) */}
-              <Route path="/drive365" element={<Index />} />
-              {/* Learner-facing routes (EveryDriver branding) */}
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/book/:instructorId" element={<BookingSummary />} />
-              <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-              <Route path="/pupil" element={<PupilPortal />} />
-              <Route path="/pupil/login" element={<PupilLogin />} />
-              <Route path="/p/:slug" element={<BrandedPupilPortal />} />
-              <Route path="/theory" element={<Theory />} />
-              <Route path="/faqs" element={<FAQs />} />
-              <Route path="/help" element={<Help />} />
-              <Route path="/contact" element={<ConditionalContact />} />
-              <Route path="/about" element={<ConditionalAbout />} />
-              <Route path="/services" element={<ConditionalServices />} />
-              <Route path="/reviews" element={<ConditionalReviews />} />
-              <Route path="/intensives" element={<Intensives />} />
-              <Route path="/semi-intensive" element={<SemiIntensive />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/google-api-disclosure" element={<GoogleApiDisclosure />} />
-              <Route path="/benefits" element={<Benefits />} />
-              <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
-              <Route path="/i/:slug" element={<MiniWebsiteHome />} />
-              <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
-              <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
-              <Route path="/i/:slug/courses" element={<MiniWebsiteCourses />} />
-              <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
-              <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
-              <Route path="/review/:slug" element={<SubmitReview />} />
-              
-              {/* Public Availability Calendar */}
-              <Route path="/availability/:shareToken" element={<PublicAvailability />} />
-              
-              {/* Remote Signing */}
-              <Route path="/sign/:token" element={<RemoteSigning />} />
-              
-              {/* Quote Accept */}
-              <Route path="/quote/:token" element={<QuoteAcceptPage />} />
-              
-              {/* Calendar OAuth Callback */}
-              <Route path="/calendar-callback" element={<CalendarCallback />} />
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <Routes>
+                {/* Root route - conditional based on domain */}
+                <Route path="/" element={<ConditionalHome />} />
+                {/* Drive365 learner homepage preview (bypasses domain routing) */}
+                <Route path="/drive365" element={<Index />} />
+                {/* Learner-facing routes (EveryDriver branding) */}
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/book/:instructorId" element={<BookingSummary />} />
+                <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+                <Route path="/pupil" element={<PupilPortal />} />
+                <Route path="/pupil/login" element={<PupilLogin />} />
+                <Route path="/p/:slug" element={<BrandedPupilPortal />} />
+                <Route path="/theory" element={<Theory />} />
+                <Route path="/faqs" element={<FAQs />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/contact" element={<ConditionalContact />} />
+                <Route path="/about" element={<ConditionalAbout />} />
+                <Route path="/services" element={<ConditionalServices />} />
+                <Route path="/reviews" element={<ConditionalReviews />} />
+                <Route path="/intensives" element={<Intensives />} />
+                <Route path="/semi-intensive" element={<SemiIntensive />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/google-api-disclosure" element={<GoogleApiDisclosure />} />
+                <Route path="/benefits" element={<Benefits />} />
+                <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
+                <Route path="/i/:slug" element={<MiniWebsiteHome />} />
+                <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
+                <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
+                <Route path="/i/:slug/courses" element={<MiniWebsiteCourses />} />
+                <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
+                <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
+                <Route path="/review/:slug" element={<SubmitReview />} />
 
-              {/* Instructor SaaS Marketing (Drive365 branding) */}
-              <Route path="/instructor-app" element={<InstructorAppHome />} />
-              <Route path="/instructor-app/features" element={<InstructorFeatures />} />
-              <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
-              <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
-              <Route path="/instructor-app/all-features" element={<InstructorAllFeatures />} />
-              <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
-              <Route path="/instructor-app/plan/:slug" element={<InstructorPlanDetail />} />
-              <Route path="/instructor-app/about" element={<InstructorAbout />} />
-              <Route path="/instructor-app/contact" element={<InstructorContactPage />} />
-              <Route path="/instructor-app/domains" element={<InstructorDomains />} />
-              <Route path="/instructor-app/login" element={<InstructorLogin />} />
-              <Route path="/instructor-app/signup" element={<InstructorSignup />} />
-              <Route path="/instructor-app/onboarding" element={<InstructorOnboarding />} />
-              <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
-              <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
-              <Route path="/instructor-app/portal-layout-demo" element={<PortalLayoutDemo />} />
-              <Route path="/driving-schools" element={<DrivingSchools />} />
-              <Route path="/instructor-app/payments" element={<InstructorPayments />} />
-              <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
-              <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
-              <Route path="/mobile-home-redesign" element={<MobileHomeRedesignDemo />} />
-              <Route path="/mobile-home-redesign-2" element={<MobileHomeRedesignDemo2 />} />
-              <Route path="/mobile-home-ios-demo" element={<MobileHomeIOSDemo />} />
-              <Route path="/header-redesign-demo" element={<HeaderRedesignDemo />} />
+                {/* Public Availability Calendar */}
+                <Route path="/availability/:shareToken" element={<PublicAvailability />} />
 
-              {/* Instructor Portal (Authenticated) */}
-              <Route path="/instructor/login" element={<InstructorPortalLogin />} />
-              <Route path="/instructor" element={<InstructorPortal />} />
-              <Route path="/instructor/pupils" element={<InstructorPupils />} />
-              <Route path="/instructor/schedule" element={<InstructorSchedule />} />
-              <Route path="/instructor/diary" element={<InstructorDiary />} />
-              <Route path="/instructor/jobs" element={<InstructorJobs />} />
-              <Route path="/instructor/pay" element={<InstructorPay />} />
-              <Route path="/instructor/contact" element={<InstructorContact />} />
-              <Route path="/instructor/settings" element={<InstructorSettings />} />
-              <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
-              <Route path="/instructor/gaps" element={<InstructorGaps />} />
-              <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-              <Route path="/instructor/live" element={<InstructorLiveSession />} />
-              <Route path="/instructor/tracking" element={<InstructorLiveSession />} />
-              <Route path="/instructor/traccar" element={<InstructorLiveSession />} />
-              <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
-              <Route path="/instructor/settings/tracking" element={<InstructorGPSSetup />} />
-              <Route path="/instructor/settings/traccar" element={<InstructorGPSSetup />} />
-              <Route path="/instructor/satnav" element={<InstructorSatNav />} />
-              <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
-              <Route path="/instructor/accounts" element={<InstructorAccounts />} />
-              <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
-              <Route path="/instructor/messages" element={<InstructorMessages />} />
-              <Route path="/instructor/visitor-chats" element={<InstructorVisitorChats />} />
-              <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
-              <Route path="/instructor/faqs" element={<InstructorFAQs />} />
-              <Route path="/instructor/install" element={<InstallInstructor />} />
-              <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
-              <Route path="/instructor/test-results" element={<InstructorTestResults />} />
-              <Route path="/instructor/routes" element={<InstructorRoutes />} />
-              <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
-              <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
-              <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
-              <Route path="/instructor/menu" element={<InstructorMenu />} />
-              <Route path="/instructor/next-up-showcase" element={<NextUpTileShowcase />} />
-              <Route path="/instructor/todo-tile-showcase" element={<TodoTileShowcase />} />
-              <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
-              <Route path="/instructor/income" element={<InstructorIncome />} />
-              <Route path="/instructor/in-out" element={<InstructorInOut />} />
-              <Route path="/instructor/tax" element={<InstructorTax />} />
-              <Route path="/instructor/health" element={<InstructorHealth />} />
-              <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
-              <Route path="/instructor/fuel" element={<InstructorFuel />} />
-              <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
-              <Route path="/instructor/locations" element={<InstructorLocations />} />
-              <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
-              <Route path="/instructor/pupil-card-demo" element={<PupilCardDemo />} />
-              <Route path="/instructor/todos" element={<InstructorTodos />} />
-              <Route path="/instructor/notes" element={<InstructorNotes />} />
-              <Route path="/instructor/plans" element={<InstructorPlans />} />
-              <Route path="/instructor/resources" element={<InstructorResources />} />
-              <Route path="/instructor/document-templates" element={<InstructorDocumentTemplates />} />
-              <Route path="/instructor/reviews" element={<InstructorReviews />} />
-              <Route path="/instructor/dashcam" element={<DashcamGallery />} />
-              <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
-              <Route path="/instructor/test-requests" element={<InstructorTestRequests />} />
-              <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
+                {/* Remote Signing */}
+                <Route path="/sign/:token" element={<RemoteSigning />} />
 
-              {/* Other portals */}
-              <Route path="/parent" element={<ParentPortal />} />
-              
-              {/* Admin Portal (Protected) */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={
-                <ProtectedAdminRoute>
-                  <AdminPortal />
-                </ProtectedAdminRoute>
-              } />
-              
-              <Route path="/pupil/install" element={<InstallPupil />} />
-              <Route path="/parent/install" element={<InstallParent />} />
+                {/* Quote Accept */}
+                <Route path="/quote/:token" element={<QuoteAcceptPage />} />
 
-              {/* Demo routes */}
-              <Route path="/design-demo" element={<DesignDemo />} />
-              <Route path="/hero-demo" element={<HeroLayoutDemo />} />
-              <Route path="/collage-demo" element={<CollageDemo />} />
-              <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
-              <Route path="/mobile-home-demo" element={<MobileHomeDemo />} />
-              <Route path="/mobile-portal-demo" element={<MobilePortalDemo />} />
-              <Route path="/instructor-mobile-demo" element={<InstructorMobileDemo />} />
-              <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
-              <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
-              <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
-              <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
-               <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
-              <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
-              <Route path="/tile-design-demo" element={<TileDesignDemo />} />
-              <Route path="/instructor-nohero-demo" element={<InstructorNoHeroDemo />} />
-              <Route path="/instructor-nohero-ios-demo" element={<InstructorNoHeroIOSDemo />} />
-              <Route path="/instructor-ios-demo-2" element={<InstructorIOSDemo2 />} />
-              <Route path="/instructor-ios-demo-3" element={<InstructorIOSDemo3 />} />
-              <Route path="/ios-home-layouts-demo" element={<IOSHomeLayoutsDemo />} />
-              
+                {/* Calendar OAuth Callback */}
+                <Route path="/calendar-callback" element={<CalendarCallback />} />
 
+                {/* Instructor SaaS Marketing (Drive365 branding) */}
+                <Route path="/instructor-app" element={<InstructorAppHome />} />
+                <Route path="/instructor-app/features" element={<InstructorFeatures />} />
+                <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
+                <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
+                <Route path="/instructor-app/all-features" element={<InstructorAllFeatures />} />
+                <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
+                <Route path="/instructor-app/plan/:slug" element={<InstructorPlanDetail />} />
+                <Route path="/instructor-app/about" element={<InstructorAbout />} />
+                <Route path="/instructor-app/contact" element={<InstructorContactPage />} />
+                <Route path="/instructor-app/domains" element={<InstructorDomains />} />
+                <Route path="/instructor-app/login" element={<InstructorLogin />} />
+                <Route path="/instructor-app/signup" element={<InstructorSignup />} />
+                <Route path="/instructor-app/onboarding" element={<InstructorOnboarding />} />
+                <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
+                <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
+                <Route path="/instructor-app/portal-layout-demo" element={<PortalLayoutDemo />} />
+                <Route path="/driving-schools" element={<DrivingSchools />} />
+                <Route path="/instructor-app/payments" element={<InstructorPayments />} />
+                <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
+                <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
+                <Route path="/mobile-home-redesign" element={<MobileHomeRedesignDemo />} />
+                <Route path="/mobile-home-redesign-2" element={<MobileHomeRedesignDemo2 />} />
+                <Route path="/mobile-home-ios-demo" element={<MobileHomeIOSDemo />} />
+                <Route path="/header-redesign-demo" element={<HeaderRedesignDemo />} />
 
-              {/* Catch-all */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* Instructor Portal (Authenticated) */}
+                <Route path="/instructor/login" element={<InstructorPortalLogin />} />
+                <Route path="/instructor" element={<InstructorPortal />} />
+                <Route path="/instructor/pupils" element={<InstructorPupils />} />
+                <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+                <Route path="/instructor/diary" element={<InstructorDiary />} />
+                <Route path="/instructor/jobs" element={<InstructorJobs />} />
+                <Route path="/instructor/pay" element={<InstructorPay />} />
+                <Route path="/instructor/contact" element={<InstructorContact />} />
+                <Route path="/instructor/settings" element={<InstructorSettings />} />
+                <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
+                <Route path="/instructor/gaps" element={<InstructorGaps />} />
+                <Route path="/instructor/expenses" element={<InstructorExpenses />} />
+                <Route path="/instructor/live" element={<InstructorLiveSession />} />
+                <Route path="/instructor/tracking" element={<InstructorLiveSession />} />
+                <Route path="/instructor/traccar" element={<InstructorLiveSession />} />
+                <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
+                <Route path="/instructor/settings/tracking" element={<InstructorGPSSetup />} />
+                <Route path="/instructor/settings/traccar" element={<InstructorGPSSetup />} />
+                <Route path="/instructor/satnav" element={<InstructorSatNav />} />
+                <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
+                <Route path="/instructor/accounts" element={<InstructorAccounts />} />
+                <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
+                <Route path="/instructor/messages" element={<InstructorMessages />} />
+                <Route path="/instructor/visitor-chats" element={<InstructorVisitorChats />} />
+                <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
+                <Route path="/instructor/faqs" element={<InstructorFAQs />} />
+                <Route path="/instructor/install" element={<InstallInstructor />} />
+                <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
+                <Route path="/instructor/test-results" element={<InstructorTestResults />} />
+                <Route path="/instructor/routes" element={<InstructorRoutes />} />
+                <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
+                <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
+                <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
+                <Route path="/instructor/menu" element={<InstructorMenu />} />
+                <Route path="/instructor/next-up-showcase" element={<NextUpTileShowcase />} />
+                <Route path="/instructor/todo-tile-showcase" element={<TodoTileShowcase />} />
+                <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
+                <Route path="/instructor/income" element={<InstructorIncome />} />
+                <Route path="/instructor/in-out" element={<InstructorInOut />} />
+                <Route path="/instructor/tax" element={<InstructorTax />} />
+                <Route path="/instructor/health" element={<InstructorHealth />} />
+                <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
+                <Route path="/instructor/fuel" element={<InstructorFuel />} />
+                <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
+                <Route path="/instructor/locations" element={<InstructorLocations />} />
+                <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
+                <Route path="/instructor/pupil-card-demo" element={<PupilCardDemo />} />
+                <Route path="/instructor/todos" element={<InstructorTodos />} />
+                <Route path="/instructor/notes" element={<InstructorNotes />} />
+                <Route path="/instructor/plans" element={<InstructorPlans />} />
+                <Route path="/instructor/resources" element={<InstructorResources />} />
+                <Route path="/instructor/document-templates" element={<InstructorDocumentTemplates />} />
+                <Route path="/instructor/reviews" element={<InstructorReviews />} />
+                <Route path="/instructor/dashcam" element={<DashcamGallery />} />
+                <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
+                <Route path="/instructor/test-requests" element={<InstructorTestRequests />} />
+                <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
+
+                {/* Other portals */}
+                <Route path="/parent" element={<ParentPortal />} />
+
+                {/* Admin Portal (Protected) */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedAdminRoute>
+                      <AdminPortal />
+                    </ProtectedAdminRoute>
+                  }
+                />
+
+                <Route path="/pupil/install" element={<InstallPupil />} />
+                <Route path="/parent/install" element={<InstallParent />} />
+
+                {/* Demo routes */}
+                <Route path="/design-demo" element={<DesignDemo />} />
+                <Route path="/hero-demo" element={<HeroLayoutDemo />} />
+                <Route path="/collage-demo" element={<CollageDemo />} />
+                <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
+                <Route path="/mobile-home-demo" element={<MobileHomeDemo />} />
+                <Route path="/mobile-portal-demo" element={<MobilePortalDemo />} />
+                <Route path="/instructor-mobile-demo" element={<InstructorMobileDemo />} />
+                <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
+                <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
+                <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
+                <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
+                <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
+                <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
+                <Route path="/tile-design-demo" element={<TileDesignDemo />} />
+                <Route path="/instructor-nohero-demo" element={<InstructorNoHeroDemo />} />
+                <Route path="/instructor-nohero-ios-demo" element={<InstructorNoHeroIOSDemo />} />
+                <Route path="/instructor-ios-demo-2" element={<InstructorIOSDemo2 />} />
+                <Route path="/instructor-ios-demo-3" element={<InstructorIOSDemo3 />} />
+                <Route path="/ios-home-layouts-demo" element={<IOSHomeLayoutsDemo />} />
+
+                {/* Catch-all */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </InstructorAuthProvider>
         </AdminAuthProvider>
       </BrowserRouter>
