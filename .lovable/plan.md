@@ -1,28 +1,73 @@
 
 
-## Dead Links & Routing Issues Found
+## Redesign Pupil & Parent Portals to Match Instructor Mobile Design
 
-### 1. `/instructor/tests` — Dead Link (404)
-**File:** `src/components/instructor/CleanHomeView.tsx` (line 145)
-The "Tests" quick-access tile links to `/instructor/tests`, but **no such route exists** in `App.tsx`. The closest routes are `/instructor/test-results` or `/instructor/test-requests`.
-**Fix:** Change path from `/instructor/tests` to `/instructor/test-results` (the DL25A test results page).
+### Current State
+- **Pupil Portal** (`PupilPortal.tsx`): Uses `MainLayout` (learner site header/footer), standard `Card` components, desktop-oriented grid layout
+- **Branded Pupil Portal** (`BrandedPupilPortal.tsx`): Custom branded header with inline CSS vars, basic bottom nav, `Card`-based navigation menu, closer to mobile but doesn't use instructor design components
+- **Parent Portal** (`ParentPortal.tsx`): Uses `MainLayout`, desktop `Card` layout, phone/OTP auth screens with standard cards, no bottom nav on mobile
 
-### 2. `/instructor/live-map` — Dead Link (404)
-**File:** `src/components/instructor/CleanHomeView.tsx` (line 143)
-The "Live Map" quick-access tile links to `/instructor/live-map`, but **no such route exists**. The correct route is `/instructor/tracking` (which renders `InstructorLiveSession`).
-**Fix:** Change path from `/instructor/live-map` to `/instructor/tracking`.
+### Target Design (Instructor Mobile Pattern)
+- `InstructorMobileHeader` — sticky primary-colored header with avatar, decorative circles, action buttons
+- `InstructorBottomNav` — 6-tab bottom nav with wallpaper-aware contrast colors, badges
+- `InstructorCard` — #F2F3F5 bg, 20px radius, multi-layer shadows, inset ring highlight
+- `InstructorPageHeader` — 44px icon circle + title/subtitle
+- Wallpaper background color (default #E8F1FE)
+- No `MainLayout` wrapper (no learner header/footer)
 
-**File:** `src/components/instructor/NextUpTile.tsx` (line 367)
-The "Start Lesson" button navigates to `/instructor/live-map?lesson=${lessonId}` — same dead route.
-**Fix:** Change to `/instructor/tracking?lesson=${lessonId}`.
+### Plan
 
-### No Other Issues Found
-- All routes in the Menu page (`InstructorMenu.tsx`) have valid corresponding routes in `App.tsx`
-- Bottom nav links are all valid
-- Learner-side mobile nav links are all valid
-- Mini-website routes, SaaS marketing routes, and shared routes all resolve correctly
+**1. Create shared portal layout components**
+
+- **`PupilMobileHeader`** — Mirrors `InstructorMobileHeader` structure: sticky primary header with pupil avatar/name, back button support, brand color support. Shows instructor name as subtitle. Action buttons: notifications bell, dark mode toggle, logout via settings dropdown.
+- **`PupilBottomNav`** — Mirrors `InstructorBottomNav`: 5-6 tabs (Home, Lessons, Payments, Theory, More). Uses wallpaper-aware contrast colors. Active tab indicator.
+- **`ParentMobileHeader`** — Same pattern for parent: avatar with parent initials, child selector dropdown in header.
+- **`ParentBottomNav`** — Tabs: Home, Children, Messages, Settings.
+
+**2. Refactor `BrandedPupilPortal.tsx`**
+
+- Replace custom header with `PupilMobileHeader`
+- Replace inline `Card`-based nav menu with `InstructorCard`-styled tiles (grid of icon tiles like `AppStyleHomeView`)
+- Replace bottom nav with `PupilBottomNav`
+- Use wallpaper background color instead of CSS variable approach
+- Use `InstructorCard` for all content cards (stats, lesson countdown, etc.)
+- Use `InstructorPageHeader` for sub-page headers
+- Remove `MainLayout` wrapper entirely
+
+**3. Refactor `PupilPortal.tsx`**
+
+- Remove `MainLayout` wrapper
+- Add `PupilMobileHeader` and `PupilBottomNav`
+- Replace standard `Card` components with `InstructorCard`
+- Apply wallpaper background
+- Use `InstructorPageHeader` for section headers
+- Convert stats grid to use the same rounded card styling
+
+**4. Refactor `ParentPortal.tsx`**
+
+- Remove `MainLayout` wrapper from all auth states and dashboard
+- Add `ParentMobileHeader` and `ParentBottomNav`
+- Convert auth screens (phone entry, OTP) to use `InstructorCard` styling with wallpaper background
+- Convert child cards and detail view to use `InstructorCard`
+- Convert stats, feedback, progress sections to matching tile style
+- Use `InstructorPageHeader` for section titles
+
+**5. Update sub-components styling**
+
+- Ensure `PupilPortalLessonCountdown`, `PupilPortalSchedule`, `PupilPortalPayments`, etc. use `InstructorCard` instead of standard `Card` where appropriate
+- Update `ParentMessageCard`, `ParentSyllabusOverview`, `ParentPaymentHistory`, `ParentUpcomingLessons`, `ParentSafetyScores` to use `InstructorCard`
+
+### Files to Create
+- `src/components/pupil-portal/PupilMobileHeader.tsx`
+- `src/components/pupil-portal/PupilBottomNav.tsx`
+- `src/components/parent/ParentMobileHeader.tsx`
+- `src/components/parent/ParentBottomNav.tsx`
 
 ### Files to Modify
-1. `src/components/instructor/CleanHomeView.tsx` — Fix 2 dead paths (`/instructor/tests` → `/instructor/test-results`, `/instructor/live-map` → `/instructor/tracking`)
-2. `src/components/instructor/NextUpTile.tsx` — Fix 1 dead path (`/instructor/live-map` → `/instructor/tracking`)
+- `src/pages/BrandedPupilPortal.tsx` — Full layout refactor
+- `src/pages/PupilPortal.tsx` — Full layout refactor
+- `src/pages/ParentPortal.tsx` — Full layout refactor
+- Various pupil-portal and parent sub-components for card styling updates
+
+### No Database Changes
 
