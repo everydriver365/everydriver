@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
-import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
+
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettings";
@@ -11,7 +11,7 @@ import { PushNotificationSettings } from "@/components/instructor/PushNotificati
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
-import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
+
 import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
@@ -36,8 +36,7 @@ import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSe
 import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
 
 
-import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
-import { TrainingResources } from "@/components/instructor/TrainingResources";
+import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -522,119 +521,6 @@ export default function InstructorSettings() {
                     />
                   </div>
 
-                  {/* Commission Payer Toggle */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <QrCode className="h-4 w-4 text-muted-foreground" />
-                      <Label className="text-sm font-medium">Payment QR Codes</Label>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Choose who pays the £1 card payment commission, then upload the matching QR code
-                    </p>
-                    
-                    {/* Commission payer selector */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant={profile?.commission_payer !== 'instructor' ? 'default' : 'outline'}
-                        size="sm"
-                        className="flex-1"
-                        onClick={async () => {
-                          if (!instructorId) return;
-                          try {
-                            const { error } = await supabase
-                              .from("instructors")
-                              .update({ commission_payer: 'pupil' })
-                              .eq("id", instructorId);
-                            if (error) throw error;
-                            setProfile(prev => prev ? { ...prev, commission_payer: 'pupil' } : null);
-                            toast({ title: "Commission payer updated to Pupil" });
-                          } catch {
-                            toast({ title: "Error", variant: "destructive" });
-                          }
-                        }}
-                      >
-                        Pupil Pays
-                      </Button>
-                      <Button
-                        variant={profile?.commission_payer === 'instructor' ? 'default' : 'outline'}
-                        size="sm"
-                        className="flex-1"
-                        onClick={async () => {
-                          if (!instructorId) return;
-                          try {
-                            const { error } = await supabase
-                              .from("instructors")
-                              .update({ commission_payer: 'instructor' })
-                              .eq("id", instructorId);
-                            if (error) throw error;
-                            setProfile(prev => prev ? { ...prev, commission_payer: 'instructor' } : null);
-                            toast({ title: "Commission payer updated to Instructor" });
-                          } catch {
-                            toast({ title: "Error", variant: "destructive" });
-                          }
-                        }}
-                      >
-                        Instructor Pays
-                      </Button>
-                    </div>
-
-                    {/* Dual QR uploads */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer !== 'instructor' ? 'ring-2 ring-primary' : ''}`}>
-                        <Label className="text-xs font-medium">Pupil Pays Commission QR</Label>
-                        {profile?.commission_payer !== 'instructor' && (
-                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
-                        )}
-                        <CMSImageUpload
-                          value={profile?.payment_qr_url_pupil_pays || null}
-                          onChange={async (url) => {
-                            if (!instructorId) return;
-                            try {
-                              const { error } = await supabase
-                                .from("instructors")
-                                .update({ payment_qr_url_pupil_pays: url })
-                                .eq("id", instructorId);
-                              if (error) throw error;
-                              setProfile(prev => prev ? { ...prev, payment_qr_url_pupil_pays: url } : null);
-                              toast({ title: "Pupil pays QR updated" });
-                            } catch {
-                              toast({ title: "Error", variant: "destructive" });
-                            }
-                          }}
-                          bucket="instructor-images"
-                          folder={instructorId}
-                          label=""
-                        />
-                      </div>
-                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer === 'instructor' ? 'ring-2 ring-primary' : ''}`}>
-                        <Label className="text-xs font-medium">Instructor Pays Commission QR</Label>
-                        {profile?.commission_payer === 'instructor' && (
-                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
-                        )}
-                        <CMSImageUpload
-                          value={profile?.payment_qr_url_instructor_pays || null}
-                          onChange={async (url) => {
-                            if (!instructorId) return;
-                            try {
-                              const { error } = await supabase
-                                .from("instructors")
-                                .update({ payment_qr_url_instructor_pays: url })
-                                .eq("id", instructorId);
-                              if (error) throw error;
-                              setProfile(prev => prev ? { ...prev, payment_qr_url_instructor_pays: url } : null);
-                              toast({ title: "Instructor pays QR updated" });
-                            } catch {
-                              toast({ title: "Error", variant: "destructive" });
-                            }
-                          }}
-                          bucket="instructor-images"
-                          folder={instructorId}
-                          label=""
-                        />
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Welcome Video URL */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-2">
@@ -827,35 +713,83 @@ export default function InstructorSettings() {
                 <DepositSettingsEditor instructorId={instructorId} />
               </SettingsTile>
 
-              {/* Payment Summary Section */}
-              <SettingsTile 
-                id="payments" 
-                icon={PoundSterling} 
-                title="Payment Summary" 
-                description="Monthly earnings & outstanding"
-                iconColor="text-green-600"
-                iconBg="bg-green-100 dark:bg-green-900/30"
-              >
-                <PaymentSummaryWidget 
-                  instructorId={instructorId} 
-                  instructorName={profile?.name}
-                  compact={false}
-                />
-              </SettingsTile>
-
-              {/* Card Commission Settings */}
+              {/* Card Commission & QR Codes */}
               <SettingsTile 
                 id="commission" 
                 icon={CreditCard} 
-                title="Card Commission" 
-                description="Choose who pays the card fee"
+                title="Card Commission & QR Codes" 
+                description="Who pays the fee + upload QR codes"
                 iconColor="text-violet-600"
                 iconBg="bg-violet-100 dark:bg-violet-900/30"
               >
-                <CommissionPayerSettings 
-                  instructorId={instructorId} 
-                  initialPayer={profile?.commission_payer}
-                />
+                <div className="space-y-6">
+                  <CommissionPayerSettings 
+                    instructorId={instructorId} 
+                    initialPayer={profile?.commission_payer}
+                  />
+                  <div className="border-t pt-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-muted-foreground" />
+                      <Label className="text-sm font-medium">Payment QR Codes</Label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer !== 'instructor' ? 'ring-2 ring-primary' : ''}`}>
+                        <Label className="text-xs font-medium">Pupil Pays Commission QR</Label>
+                        {profile?.commission_payer !== 'instructor' && (
+                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
+                        )}
+                        <CMSImageUpload
+                          value={profile?.payment_qr_url_pupil_pays || null}
+                          onChange={async (url) => {
+                            if (!instructorId) return;
+                            try {
+                              const { error } = await supabase.from("instructors").update({ payment_qr_url_pupil_pays: url }).eq("id", instructorId);
+                              if (error) throw error;
+                              setProfile(prev => prev ? { ...prev, payment_qr_url_pupil_pays: url } : null);
+                              toast({ title: "Pupil pays QR updated" });
+                            } catch { toast({ title: "Error", variant: "destructive" }); }
+                          }}
+                          bucket="instructor-images"
+                          folder={instructorId}
+                          label=""
+                        />
+                      </div>
+                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer === 'instructor' ? 'ring-2 ring-primary' : ''}`}>
+                        <Label className="text-xs font-medium">Instructor Pays Commission QR</Label>
+                        {profile?.commission_payer === 'instructor' && (
+                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
+                        )}
+                        <CMSImageUpload
+                          value={profile?.payment_qr_url_instructor_pays || null}
+                          onChange={async (url) => {
+                            if (!instructorId) return;
+                            try {
+                              const { error } = await supabase.from("instructors").update({ payment_qr_url_instructor_pays: url }).eq("id", instructorId);
+                              if (error) throw error;
+                              setProfile(prev => prev ? { ...prev, payment_qr_url_instructor_pays: url } : null);
+                              toast({ title: "Instructor pays QR updated" });
+                            } catch { toast({ title: "Error", variant: "destructive" }); }
+                          }}
+                          bucket="instructor-images"
+                          folder={instructorId}
+                          label=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SettingsTile>
+
+              {/* Referral Programme (moved from Preferences) */}
+              <SettingsTile 
+                id="referrals" 
+                icon={Gift} 
+                title="Referral Programme" 
+                description="Configure pupil referral rewards"
+                iconColor="text-emerald-600"
+                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+              >
+                <ReferralSettingsCard instructorId={instructorId} />
               </SettingsTile>
 
               {/* BNPL Payment Options */}
@@ -996,6 +930,14 @@ export default function InstructorSettings() {
                 <PupilAppBrandingEditor instructorId={instructorId} />
               </SettingsTile>
 
+          </div>
+        </div>
+
+        {/* Scheduling Category */}
+        <div ref={el => categoryRefs.current["scheduling"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[4]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Pupil Self-Service Booking (moved from Website) */}
               <SettingsTile
                 id="pupil-self-service"
                 icon={CalendarClock} 
@@ -1006,13 +948,6 @@ export default function InstructorSettings() {
               >
                 <PupilBookingSettingsEditor instructorId={instructorId} />
               </SettingsTile>
-          </div>
-        </div>
-
-        {/* Scheduling Category */}
-        <div ref={el => categoryRefs.current["scheduling"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[4]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Working Hours Section */}
               <SettingsTile 
                 id="working-hours" 
@@ -1059,6 +994,18 @@ export default function InstructorSettings() {
                 iconBg="bg-red-100 dark:bg-red-900/30"
               >
                 <NoShowPolicySettings instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Lesson Reminders */}
+              <SettingsTile 
+                id="reminders" 
+                icon={Bell} 
+                title="Lesson Reminders" 
+                description="Automatic pupil reminders before lessons"
+                iconColor="text-sky-600"
+                iconBg="bg-sky-100 dark:bg-sky-900/30"
+              >
+                <ReminderSettings instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>
@@ -1159,38 +1106,6 @@ export default function InstructorSettings() {
               >
                 <PushNotificationSettings instructorId={instructorId} />
               </SettingsTile>
-
-              {/* Bulk SMS Section */}
-              <SettingsTile 
-                id="bulk-sms" 
-                icon={Bell} 
-                title="Bulk Messaging" 
-                description="Send SMS to all pupils"
-                iconColor="text-orange-500"
-                iconBg="bg-orange-50 dark:bg-orange-900/20"
-              >
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Send announcements, holiday notices, or reminders to multiple pupils at once.
-                  </p>
-                  <BulkSMSDialog instructorId={instructorId} />
-                </div>
-              </SettingsTile>
-
-              {/* Referral Programme */}
-              <SettingsTile 
-                id="referrals" 
-                icon={Gift} 
-                title="Referral Programme" 
-                description="Configure pupil referral rewards"
-                iconColor="text-emerald-600"
-                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
-              >
-                <ReferralSettingsCard instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Digital Terms Agreement */}
-              {/* Digital Terms - managed per-pupil in pupil profiles */}
 
               {/* GDPR Data Retention */}
               <SettingsTile 

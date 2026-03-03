@@ -32,6 +32,7 @@ import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentRe
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
+import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -63,6 +64,9 @@ interface Pupil {
   profile_image_url?: string | null;
   pickup_address?: string | null;
   pickup_postcode?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  emergency_contact_relation?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -735,6 +739,18 @@ export function DesktopPupilDetailPanel({
             <CollapsibleSection title="Tracking & Routes" icon={<Route className="h-4 w-4" />}
               open={expandedSection === "tracking"} onToggle={() => toggle("tracking")}>
               <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
+            </CollapsibleSection>
+
+            <CollapsibleSection title="Emergency Contact" icon={<Phone className="h-4 w-4 text-red-500" />}
+              open={expandedSection === "emergency"} onToggle={() => toggle("emergency")}>
+              <EmergencyContactEditor
+                pupilId={pupil.id}
+                initialData={{
+                  emergency_contact_name: pupil.emergency_contact_name,
+                  emergency_contact_phone: pupil.emergency_contact_phone,
+                  emergency_contact_relation: pupil.emergency_contact_relation,
+                }}
+              />
             </CollapsibleSection>
           </div>
 
