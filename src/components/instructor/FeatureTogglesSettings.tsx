@@ -54,31 +54,33 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
   };
 
   return (
-    <div className="space-y-1">
-      {featureToggles.map((toggle) => {
+    <div>
+      {featureToggles.map((toggle, index) => {
         const currentValue = instructor?.[toggle.key as keyof typeof instructor] as boolean | null ?? toggle.defaultValue;
         const isSaving = saving === toggle.key;
 
         return (
-          <div
-            key={toggle.key}
-            className="flex items-center justify-between rounded-lg border p-3 gap-3"
-          >
-            <div className="space-y-0.5 flex-1 min-w-0">
-              <Label htmlFor={toggle.key} className="text-sm font-medium cursor-pointer">
-                {toggle.label}
-              </Label>
-              <p className="text-xs text-muted-foreground">{toggle.description}</p>
+          <div key={toggle.key}>
+            <div className="flex items-center justify-between py-3 px-1 gap-3">
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <Label htmlFor={toggle.key} className="text-sm font-medium cursor-pointer">
+                  {toggle.label}
+                </Label>
+                <p className="text-xs text-muted-foreground">{toggle.description}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                <Switch
+                  id={toggle.key}
+                  checked={currentValue}
+                  onCheckedChange={(v) => handleToggle(toggle.key, v)}
+                  disabled={isSaving}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-              <Switch
-                id={toggle.key}
-                checked={currentValue}
-                onCheckedChange={(v) => handleToggle(toggle.key, v)}
-                disabled={isSaving}
-              />
-            </div>
+            {index < featureToggles.length - 1 && (
+              <div className="ml-1 border-b border-border/40" />
+            )}
           </div>
         );
       })}
