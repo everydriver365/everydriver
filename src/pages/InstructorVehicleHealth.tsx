@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel } from "lucide-react";
+import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel } from "lucide-react";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -53,31 +54,20 @@ export default function InstructorVehicleHealth() {
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-              <Car className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+        <InstructorPageHeader
+          lucideIcon={Car}
+          title="Vehicle Health"
+          action={
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon" onClick={handleRefresh} className="h-8 w-8">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button size="icon" onClick={() => setShowAddVehicle(true)} className="h-8 w-8">
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-            Vehicle Health
-          </h1>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRefresh}
-              className="h-8 w-8"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              onClick={() => setShowAddVehicle(true)}
-              className="h-8 w-8"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Mobile GPS Tracking Banner */}
         {instructor?.id && (

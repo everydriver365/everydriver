@@ -12,6 +12,7 @@ import {
   Building2, GraduationCap, Home, MapPinned, Loader2, Crosshair, User
 } from "lucide-react";
 import { GlassCard, GlassChip } from "@/components/ui/GlassCard";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { AddFavouriteLocationDialog } from "@/components/instructor/AddFavouriteLocationDialog";
 import { EditFavouriteLocationDialog } from "@/components/instructor/EditFavouriteLocationDialog";
 import { CoordsMapPreview } from "@/components/instructor/CoordsMapPreview";
@@ -338,18 +339,16 @@ export default function InstructorLocations() {
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            Locations
-          </h1>
-          <Button size="sm" onClick={() => setAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-        </div>
+        <InstructorPageHeader
+          lucideIcon={MapPin}
+          title="Locations"
+          action={
+            <Button size="sm" onClick={() => setAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          }
+        />
 
         {/* GPS Quick-Add Button */}
         <Button

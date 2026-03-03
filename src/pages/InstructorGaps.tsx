@@ -4,6 +4,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MapPin, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 export default function InstructorGaps() {
   const { instructor } = useInstructorAuth();
@@ -22,12 +23,10 @@ export default function InstructorGaps() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-            <MapPin className="h-4 w-4 text-pink-600 dark:text-pink-400" />
-          </div>
-          <h1 className="text-xl font-bold">Gaps & Waitlist</h1>
-        </div>
+        <InstructorPageHeader
+          lucideIcon={MapPin}
+          title="Gaps & Waitlist"
+        />
 
         <Tabs defaultValue="gaps" className="w-full">
           <TabsList className="grid w-full grid-cols-2">

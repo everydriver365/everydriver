@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -306,11 +306,11 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
+      <InstructorCard>
+        <div className="flex items-center justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </CardContent>
-      </Card>
+        </div>
+      </InstructorCard>
     );
   }
 
@@ -318,14 +318,12 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
     <div className="space-y-6">
       {/* Pending Offers Awaiting Approval */}
       {pendingOffers.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Bell className="h-5 w-5 text-amber-600" />
-              Pending Slot Offers ({pendingOffers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <InstructorCard className="bg-amber-50 dark:bg-amber-950/50">
+          <div className="flex items-center gap-2 text-lg font-semibold mb-3">
+            <Bell className="h-5 w-5 text-amber-600" />
+            Pending Slot Offers ({pendingOffers.length})
+          </div>
+          <div className="space-y-3">
             {pendingOffers.map((offer) => (
               <div
                 key={offer.id}
@@ -375,27 +373,25 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </InstructorCard>
       )}
 
       {/* Active Waitlist */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="h-5 w-5" />
-              Pupil Waitlist ({waitlist.length})
-            </CardTitle>
-            {isLive && (
-              <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
-                <Radio className="h-3 w-3 animate-pulse" />
-                Live
-              </Badge>
-            )}
+      <InstructorCard>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 text-lg font-semibold">
+            <Clock className="h-5 w-5" />
+            Pupil Waitlist ({waitlist.length})
           </div>
-        </CardHeader>
-        <CardContent>
+          {isLive && (
+            <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
+              <Radio className="h-3 w-3 animate-pulse" />
+              Live
+            </Badge>
+          )}
+        </div>
+        <div>
           {waitlist.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground py-4">
               No pupils currently on the waitlist
@@ -463,8 +459,8 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </InstructorCard>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
