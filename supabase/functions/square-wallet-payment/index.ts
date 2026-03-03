@@ -181,6 +181,29 @@ serve(async (req: Request) => {
       }
     }
 
+    // Notify instructor of payment received
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          instructorId,
+          notification: {
+            title: "💰 Payment Received",
+            body: `£${amount.toFixed(2)} received from ${pupil?.name || "a pupil"} via ${walletType === "apple" ? "Apple Pay" : "Google Pay"}`,
+            tag: `payment-received-${Date.now()}`,
+            data: { type: "payment_received", pupilId, amount },
+          },
+        }),
+      });
+      console.log("Instructor payment notification sent");
+    } catch (notifyError) {
+      console.error("Failed to notify instructor:", notifyError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

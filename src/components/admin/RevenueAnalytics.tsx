@@ -8,7 +8,7 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area
 } from "recharts";
-import { TrendingUp, BarChart3, PieChartIcon, PoundSterling, Users, UserMinus, Crown, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, BarChart3, PieChartIcon, PoundSterling, Users, UserMinus, Crown, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 const PLAN_COLORS: Record<string, string> = {
@@ -65,6 +65,77 @@ function StatCard({ title, value, subtitle, icon: Icon, trend, trendLabel }: {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function RecentTransactionsFeed() {
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("payment_history")
+        .select("id, amount, payment_method, recorded_at, pupil_id, instructor_id")
+        .order("recorded_at", { ascending: false })
+        .limit(20);
+
+      if (data && data.length > 0) {
+        // Fetch pupil and instructor names
+        const pupilIds = [...new Set(data.map((t: any) => t.pupil_id).filter(Boolean))];
+        const instrIds = [...new Set(data.map((t: any) => t.instructor_id).filter(Boolean))];
+        
+        const [pupilsRes, instrsRes] = await Promise.all([
+          pupilIds.length > 0 ? supabase.from("pupils").select("id, name").in("id", pupilIds) : { data: [] },
+          instrIds.length > 0 ? supabase.from("instructors").select("id, name").in("id", instrIds) : { data: [] },
+        ]);
+
+        const pupilMap: Record<string, string> = {};
+        (pupilsRes.data || []).forEach((p: any) => { pupilMap[p.id] = p.name; });
+        const instrMap: Record<string, string> = {};
+        (instrsRes.data || []).forEach((i: any) => { instrMap[i.id] = i.name; });
+
+        setTransactions(data.map((t: any) => ({
+          ...t,
+          pupil_name: pupilMap[t.pupil_id] || "Unknown",
+          instructor_name: instrMap[t.instructor_id] || "Unknown",
+        })));
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  if (loading) return <div className="py-4 text-center text-muted-foreground text-sm">Loading...</div>;
+  if (transactions.length === 0) return <p className="text-center text-muted-foreground py-4">No transactions yet</p>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b text-left text-muted-foreground">
+            <th className="pb-2 font-medium">Time</th>
+            <th className="pb-2 font-medium">Pupil</th>
+            <th className="pb-2 font-medium">Instructor</th>
+            <th className="pb-2 font-medium">Method</th>
+            <th className="pb-2 font-medium text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((t: any) => (
+            <tr key={t.id} className="border-b last:border-0">
+              <td className="py-2 text-muted-foreground">{format(new Date(t.recorded_at), "dd MMM HH:mm")}</td>
+              <td className="py-2">{t.pupil_name}</td>
+              <td className="py-2 text-muted-foreground">{t.instructor_name}</td>
+              <td className="py-2"><Badge variant="outline" className="text-[10px]">{t.payment_method}</Badge></td>
+              <td className={`py-2 text-right font-semibold ${Number(t.amount) >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                {Number(t.amount) >= 0 ? "+" : ""}£{Math.abs(Number(t.amount)).toFixed(2)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -442,6 +513,18 @@ export function RevenueAnalytics() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Transactions Feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CreditCard className="h-5 w-5" /> Recent Transactions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RecentTransactionsFeed />
+        </CardContent>
+      </Card>
 
       {/* Top instructors */}
       <Card>
