@@ -364,7 +364,7 @@ export function NextUpTile({
                     onClick={(e) => {
                       e.stopPropagation();
                       supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                      navigate(`/instructor/live-map?lesson=${lessonId}`);
+                      navigate(`/instructor/tracking?lesson=${lessonId}`);
                     }}
                     className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] text-white font-bold text-[15px]"
                     style={{ background: "linear-gradient(90deg, #22c55e, rgba(34,197,94,0.8))" }}

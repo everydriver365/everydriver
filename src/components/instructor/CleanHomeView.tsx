@@ -140,9 +140,9 @@ export function CleanHomeView({
   const quickAccessItems = [
     { icon: Users, label: "Pupils", sub: String(activePupilCount || 0), color: "text-primary", bg: "bg-primary/10", path: "/instructor/pupils" },
     { icon: CalendarDays, label: "Schedule", sub: `${todayOverview?.lessonCount || 0} today`, color: "text-amber-500", bg: "bg-amber-500/10", path: "/instructor/diary" },
-    { icon: MapPin, label: "Live Map", sub: "Track", color: "text-emerald-500", bg: "bg-emerald-500/10", path: "/instructor/live-map" },
+    { icon: MapPin, label: "Live Map", sub: "Track", color: "text-emerald-500", bg: "bg-emerald-500/10", path: "/instructor/tracking" },
     { icon: PoundSterling, label: "Payments", sub: `£${paymentSummary?.totalDebt?.toFixed(0) || "0"} due`, color: "text-blue-500", bg: "bg-blue-500/10", path: "/instructor/pupils" },
-    { icon: GraduationCap, label: "Tests", sub: "Upcoming", color: "text-violet-500", bg: "bg-violet-500/10", path: "/instructor/tests" },
+    { icon: GraduationCap, label: "Tests", sub: "Upcoming", color: "text-violet-500", bg: "bg-violet-500/10", path: "/instructor/test-results" },
     { icon: Settings, label: "Settings", sub: "Admin", color: "text-muted-foreground", bg: "bg-muted/60", path: "/instructor/settings" },
   ];
 
