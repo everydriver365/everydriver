@@ -45,7 +45,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
+// Card import removed — using inline InstructorCard-style tiles
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -265,13 +265,13 @@ export default function InstructorSettings() {
     iconBg?: string;
     children: React.ReactNode;
   }) => (
-    <Card className="overflow-hidden">
+    <div className="bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-[20px] shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)] ring-1 ring-inset ring-white/60 dark:ring-white/5 overflow-hidden">
       <Collapsible open={isOpen(id)} onOpenChange={() => toggleSection(id)}>
         <CollapsibleTrigger asChild>
-          <CardContent className="p-0">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+          <div className="p-0">
+            <button className="w-full flex items-center justify-between p-4 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
               <div className="flex items-center gap-3">
-                <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+                <div className={cn("h-11 w-11 rounded-full flex items-center justify-center shrink-0", iconBg)}>
                   <Icon className={cn("h-5 w-5", iconColor)} />
                 </div>
                 <div className="text-left">
@@ -284,15 +284,15 @@ export default function InstructorSettings() {
                 isOpen(id) && "rotate-90"
               )} />
             </button>
-          </CardContent>
+          </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-4 border-t pt-4 relative z-10">
+          <div className="px-5 pb-5 border-t border-white/20 dark:border-white/5 pt-4 relative z-10">
             {children}
           </div>
         </CollapsibleContent>
       </Collapsible>
-    </Card>
+    </div>
   );
 
   // Category header component

@@ -132,13 +132,13 @@ export default function InstructorSchedule() {
           {isMobile ? (
             <>
               {/* Mobile toggle: List / Month */}
-              <div className="flex bg-muted/50 p-0.5 rounded-lg border border-border">
+               <div className="flex bg-black/[0.04] dark:bg-white/[0.06] p-0.5 rounded-[12px]">
                 <button
                   onClick={() => setViewMode('list')}
                   className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
                     viewMode === 'list'
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
                       : "text-muted-foreground"
                   )}
                 >
@@ -148,9 +148,9 @@ export default function InstructorSchedule() {
                 <button
                   onClick={() => setViewMode('month')}
                   className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
                     viewMode === 'month'
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
                       : "text-muted-foreground"
                   )}
                 >

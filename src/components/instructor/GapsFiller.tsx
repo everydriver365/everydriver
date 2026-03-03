@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Calendar, MessageSquare, Percent, PoundSterling, Send, Clock, CheckCircle2, AlertCircle, Radio } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -388,25 +388,23 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   };
 
   return (
-    <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="h-5 w-5 text-purple-500" />
-            Fill Your Gaps
-          </CardTitle>
-          {isLive && (
-            <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
-              <Radio className="h-3 w-3 animate-pulse" />
-              Live
-            </Badge>
-          )}
+    <InstructorCard>
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2 text-base font-semibold">
+          <Calendar className="h-5 w-5 text-purple-500" />
+          Fill Your Gaps
         </div>
-        <p className="text-sm text-muted-foreground">
-          Text all {pupilCount} pupils with phone numbers about available slots
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        {isLive && (
+          <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
+            <Radio className="h-3 w-3 animate-pulse" />
+            Live
+          </Badge>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
+        Text all {pupilCount} pupils with phone numbers about available slots
+      </p>
+      <div className="space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
@@ -533,7 +531,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </InstructorCard>
   );
 }

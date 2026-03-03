@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, Plus, Receipt, Trash2, Upload, X, CheckCircle, Pencil, FileText, Sparkles, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -306,18 +306,14 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
-        <Card className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 border-orange-500/30">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">This Month</p>
-            <p className="text-xl font-bold text-foreground">£{totalThisMonth.toFixed(2)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-primary/10 to-cyan-500/10 border-primary/30">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Pending Xero Sync</p>
-            <p className="text-xl font-bold text-foreground">£{totalUnsynced.toFixed(2)}</p>
-          </CardContent>
-        </Card>
+        <InstructorCard>
+          <p className="text-xs text-muted-foreground">This Month</p>
+          <p className="text-xl font-bold text-foreground">£{totalThisMonth.toFixed(2)}</p>
+        </InstructorCard>
+        <InstructorCard>
+          <p className="text-xs text-muted-foreground">Pending Xero Sync</p>
+          <p className="text-xl font-bold text-foreground">£{totalUnsynced.toFixed(2)}</p>
+        </InstructorCard>
       </div>
 
       {/* Add Expense Button */}
@@ -545,21 +541,20 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : expenses.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
+          <InstructorCard>
+            <div className="py-4 text-center">
               <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
               <p className="text-muted-foreground">No expenses recorded yet</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Tap "Add Expense" to record your first expense
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </InstructorCard>
         ) : (
           expenses.map((expense) => {
             const isDoc = expense.receipt_url && /\.(pdf|doc|docx)(\?|$)/i.test(expense.receipt_url);
             return (
-              <Card key={expense.id} className="overflow-hidden">
-                <CardContent className="p-3">
+              <InstructorCard key={expense.id} noPadding className="p-3">
                   <div className="flex items-start gap-3">
                     {expense.receipt_url ? (
                       isDoc ? (
@@ -627,8 +622,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                       </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </InstructorCard>
             );
           })
         )}
