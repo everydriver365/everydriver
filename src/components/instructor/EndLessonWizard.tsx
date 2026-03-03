@@ -9,6 +9,7 @@ import { StepSummary } from "./end-lesson/StepSummary";
 import { StepPayment } from "./end-lesson/StepPayment";
 import { StepSkills } from "./end-lesson/StepSkills";
 import { StepBookNext } from "./end-lesson/StepBookNext";
+import { StepLessonSummary } from "./end-lesson/StepLessonSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface EndLessonWizardProps {
@@ -25,7 +26,7 @@ interface EndLessonWizardProps {
   onCompleted: () => void;
 }
 
-type WizardStep = "summary" | "payment" | "skills" | "book" | "completing";
+type WizardStep = "summary" | "payment" | "skills" | "book" | "completing" | "completed";
 
 export function EndLessonWizard({
   open,
@@ -47,6 +48,8 @@ export function EndLessonWizard({
   const [completing, setCompleting] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
+  const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
+  const [routeReportData, setRouteReportData] = useState<any>(null);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
@@ -55,6 +58,8 @@ export function EndLessonWizard({
       setNotes("");
       setCompleting(false);
       setHistoryId(null);
+      setUpdatedCompetencies([]);
+      setRouteReportData(null);
       fetchInstructorRate();
     }
   }, [open]);
@@ -91,6 +96,44 @@ export function EndLessonWizard({
       setStep("book");
     } else if (step === "book") {
       handleComplete();
+    }
+  };
+
+  const fetchTelematicsReport = async () => {
+    try {
+      // Find a matching telematics session for this lesson
+      const { data: sessions } = await supabase
+        .from("lesson_telematics")
+        .select("id, started_at, ended_at, total_distance_km, avg_speed_kmh, max_speed_kmh")
+        .eq("instructor_id", instructorId)
+        .eq("pupil_id", pupilId)
+        .order("started_at", { ascending: false })
+        .limit(5);
+
+      if (!sessions || sessions.length === 0) return null;
+
+      // Find session that overlaps with lesson time (within 2 hour window)
+      const lessonStart = new Date(`${lessonDate}T${startTime}`);
+      const windowStart = new Date(lessonStart.getTime() - 60 * 60 * 1000); // 1h before
+      const windowEnd = new Date(lessonStart.getTime() + (durationMinutes + 60) * 60 * 1000); // lesson + 1h after
+
+      const matchingSession = sessions.find(s => {
+        const sessionStart = new Date(s.started_at);
+        return sessionStart >= windowStart && sessionStart <= windowEnd;
+      });
+
+      if (!matchingSession) return null;
+
+      // Call generate-route-report edge function
+      const { data, error } = await supabase.functions.invoke("generate-route-report", {
+        body: { telematicsId: matchingSession.id },
+      });
+
+      if (error || !data?.success) return null;
+      return data;
+    } catch (e) {
+      console.error("Telematics fetch error:", e);
+      return null;
     }
   };
 
@@ -193,9 +236,15 @@ export function EndLessonWizard({
         console.error("Charge error:", e);
       }
 
+      // 5. Fetch telematics report data (non-blocking)
+      const report = await fetchTelematicsReport();
+      setRouteReportData(report);
+
       toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
       onCompleted();
-      onOpenChange(false);
+
+      // Show summary instead of closing
+      setStep("completed");
     } catch (e) {
       console.error("Error completing lesson:", e);
       toast.error("Failed to complete lesson");
@@ -205,12 +254,17 @@ export function EndLessonWizard({
     }
   };
 
+  const handleDone = () => {
+    onOpenChange(false);
+  };
+
   const stepLabels: Record<WizardStep, string> = {
     summary: "Quick Summary",
     payment: "Take Payment",
     skills: "Skills Update",
     book: "Book Next Lesson",
     completing: "Completing…",
+    completed: "Lesson Summary",
   };
 
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
@@ -220,22 +274,28 @@ export function EndLessonWizard({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-2xl">
         <SheetHeader className="pb-3">
-          <SheetTitle className="text-base">End Lesson — {pupilName}</SheetTitle>
+          <SheetTitle className="text-base">
+            {step === "completed" ? "Lesson Summary" : `End Lesson — ${pupilName}`}
+          </SheetTitle>
           <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
-          {/* Progress dots */}
-          <div className="flex items-center gap-1.5 pt-1">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  i < stepNumber ? "bg-primary" : "bg-muted"
-                }`}
-              />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Step {Math.min(stepNumber, totalSteps)} of {totalSteps}: {stepLabels[step]}
-          </p>
+          {/* Progress dots - hide on completed */}
+          {step !== "completed" && step !== "completing" && (
+            <>
+              <div className="flex items-center gap-1.5 pt-1">
+                {Array.from({ length: totalSteps }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 flex-1 rounded-full transition-colors ${
+                      i < stepNumber ? "bg-primary" : "bg-muted"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Step {Math.min(stepNumber, totalSteps)} of {totalSteps}: {stepLabels[step]}
+              </p>
+            </>
+          )}
         </SheetHeader>
 
         <div className="py-2">
@@ -305,18 +365,21 @@ export function EndLessonWizard({
 
           {step === "completing" && (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
-              {completing ? (
-                <>
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Completing lesson…</p>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-10 w-10 text-success" />
-                  <p className="text-sm font-medium text-foreground">Lesson completed!</p>
-                </>
-              )}
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Completing lesson…</p>
             </div>
+          )}
+
+          {step === "completed" && (
+            <StepLessonSummary
+              pupilName={pupilName}
+              durationMinutes={durationMinutes}
+              lessonDate={lessonDate}
+              startTime={startTime}
+              reportData={routeReportData}
+              competencies={updatedCompetencies}
+              onDone={handleDone}
+            />
           )}
         </div>
       </SheetContent>
