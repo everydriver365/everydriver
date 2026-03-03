@@ -39,6 +39,8 @@ import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
 import { LessonPrepChecklist } from "@/components/pupil-portal/LessonPrepChecklist";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import TheoryProgressChart from "@/components/pupil-portal/TheoryProgressChart";
+import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
+import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
 
 interface InstructorBranding {
   id: string;
@@ -412,6 +414,9 @@ export default function BrandedPupilPortal() {
                 exit={{ opacity: 0, x: -20 }}
                 className="p-4 space-y-4"
               >
+                {/* Lesson Check-In */}
+                <PupilCheckInCard pupilId={pupil.id} />
+
                 {/* Push Notification Banner */}
                 <PushNotificationBanner 
                   pupilId={pupil.id}
@@ -619,11 +624,15 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
-                <div className="px-4 pb-4">
+                <div className="px-4 pb-4 space-y-4">
                   <TheoryProgressChart
                     pupilId={pupil.id}
                     instructorId={instructor.id}
                     brandColour={instructor.brand_colour}
+                  />
+                  <TheoryMockScoreLogger
+                    pupilId={pupil.id}
+                    instructorId={instructor.id}
                   />
                 </div>
               </motion.div>

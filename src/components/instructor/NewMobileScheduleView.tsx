@@ -15,6 +15,7 @@ import { AddLessonSheet } from "./AddLessonSheet";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
+import { LessonCheckInBadge } from "./LessonCheckInBadge";
 
 interface ScheduledLesson {
   id: string;
@@ -321,9 +322,12 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                             />
                             <h3 className="text-base font-bold text-foreground truncate">{lesson.pupil?.name || "Unknown"}</h3>
                           </div>
-                          <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
-                            {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <LessonCheckInBadge status={(lesson as any).check_in_status} />
+                            <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
+                              {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
+                            </Badge>
+                          </div>
                         </div>
                         {/* Time */}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -5390,6 +5390,7 @@ export type Database = {
           google_access_token: string | null
           google_calendar_id: string | null
           google_refresh_token: string | null
+          google_review_url: string | null
           google_token_expires_at: string | null
           gpsgate_user_id: number | null
           gpsgate_username: string | null
@@ -5510,6 +5511,7 @@ export type Database = {
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
+          google_review_url?: string | null
           google_token_expires_at?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null
@@ -5630,6 +5632,7 @@ export type Database = {
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
+          google_review_url?: string | null
           google_token_expires_at?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, Send, Loader2 } from "lucide-react";
+import { Star, Send, Loader2, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+  const [googleReviewUrl, setGoogleReviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPending();
@@ -50,6 +52,20 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
     }
   };
 
+  // Fetch instructor's Google review URL
+  useEffect(() => {
+    if (!pending) return;
+    const fetchReviewUrl = async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("google_review_url" as any)
+        .eq("id", pending.instructor_id)
+        .single();
+      if ((data as any)?.google_review_url) setGoogleReviewUrl((data as any).google_review_url);
+    };
+    fetchReviewUrl();
+  }, [pending]);
+
   const handleSubmit = async () => {
     if (!pending || rating === 0) return;
     setSubmitting(true);
@@ -65,7 +81,11 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
         .eq("id", pending.id);
 
       toast.success("Thanks for your feedback! ⭐");
-      setPending(null);
+      if (rating >= 4 && googleReviewUrl) {
+        setSubmitted(true);
+      } else {
+        setPending(null);
+      }
     } catch (e) {
       toast.error("Failed to submit feedback");
     } finally {
@@ -74,6 +94,37 @@ export function PupilFeedbackPrompt({ pupilId }: PupilFeedbackPromptProps) {
   };
 
   if (loading || !pending) return null;
+
+  // Show Google Review prompt after high rating
+  if (submitted && googleReviewUrl) {
+    return (
+      <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+        <CardContent className="p-4 space-y-3 text-center">
+          <p className="text-sm font-medium text-foreground">Thanks for the great feedback! ⭐</p>
+          <p className="text-xs text-muted-foreground">
+            Would you mind leaving a quick Google review? It really helps!
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Button
+              size="sm"
+              className="gap-1.5"
+              onClick={() => window.open(googleReviewUrl, "_blank")}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Leave a Review
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPending(null)}
+            >
+              Maybe later
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-primary/20 bg-primary/5">
