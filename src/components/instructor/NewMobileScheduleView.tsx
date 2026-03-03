@@ -104,7 +104,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         .select(`
           id, lesson_date, start_time, duration_minutes, lesson_type,
           pickup_location, pickup_postcode, status, payment_status,
-          prepaid_hours_used, amount_due, notes,
+          prepaid_hours_used, amount_due, notes, check_in_status,
           pupil:pupils(id, name, phone, address, postcode, prepaid_hours, account_balance, profile_image_url)
         `)
         .eq("instructor_id", instructorId)

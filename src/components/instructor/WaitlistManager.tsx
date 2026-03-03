@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Clock, Calendar, User, Phone, Trash2, Bell, CheckCircle, XCircle, Radio } from "lucide-react";
+import { WaitlistFreshnessIndicator } from "./WaitlistFreshnessIndicator";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -412,6 +413,11 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{entry.pupil?.name}</span>
+                      <WaitlistFreshnessIndicator
+                        lastConfirmedAt={(entry as any).last_confirmed_at}
+                        createdAt={entry.created_at}
+                        autoExpired={(entry as any).auto_expired}
+                      />
                       {entry.pupil?.phone && (
                         <a
                           href={`tel:${entry.pupil.phone}`}

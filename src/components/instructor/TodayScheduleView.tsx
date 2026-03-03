@@ -36,6 +36,7 @@ import { EndLessonWizard } from "./EndLessonWizard";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { LessonCheckInBadge } from "./LessonCheckInBadge";
 
 interface ScheduledLesson {
   id: string;
@@ -108,6 +109,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           payment_status,
           prepaid_hours_used,
           amount_due,
+          check_in_status,
           pupil:pupils(
             id,
             name,
@@ -553,7 +555,10 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-semibold">{lesson.pupil?.name}</h3>
-                          <p className="text-xs text-muted-foreground">{lesson.lesson_type}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs text-muted-foreground">{lesson.lesson_type}</p>
+                            <LessonCheckInBadge status={(lesson as any).check_in_status} />
+                          </div>
                         </div>
                       </div>
 
