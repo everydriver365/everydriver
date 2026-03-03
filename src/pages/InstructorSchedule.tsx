@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
   const isMobile = useIsMobile();
+  const { wallpaperColor } = useInstructorAppearance(instructorId);
   
   // Default to list on mobile, calendar on desktop
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -126,7 +128,7 @@ export default function InstructorSchedule() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 h-full flex flex-col">
-        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
+        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
           {isMobile ? (
             <>
               {/* Mobile toggle: List / Month */}
