@@ -147,6 +147,30 @@ serve(async (req: Request) => {
               }
             }
 
+            // Notify instructor of payment received
+            try {
+              const paymentAmountDisplay = paymentAmountPounds.toFixed(2);
+              await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  instructorId: pupil.instructor_id,
+                  notification: {
+                    title: "💰 Payment Received",
+                    body: `£${paymentAmountDisplay} received from ${pupil.name || "a pupil"} via ${provider.toUpperCase()} Card`,
+                    tag: `payment-received-${Date.now()}`,
+                    data: { type: "payment_received", pupilId, amount: paymentAmountPounds },
+                  },
+                }),
+              });
+              console.log("Instructor payment notification sent");
+            } catch (notifyError) {
+              console.error("Failed to notify instructor:", notifyError);
+            }
+
             console.log("Payment recorded in history");
           }
         } catch (dbError) {
@@ -287,6 +311,28 @@ serve(async (req: Request) => {
                       .eq("id", pupilId);
 
                     console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+
+                    // Notify instructor
+                    try {
+                      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${supabaseServiceKey}`,
+                        },
+                        body: JSON.stringify({
+                          instructorId: pupil.instructor_id,
+                          notification: {
+                            title: "💰 Payment Received",
+                            body: `£${capturedAmount.toFixed(2)} received via Clearpay`,
+                            tag: `payment-received-${Date.now()}`,
+                            data: { type: "payment_received", pupilId, amount: capturedAmount },
+                          },
+                        }),
+                      });
+                    } catch (notifyErr) {
+                      console.error("Failed to notify instructor:", notifyErr);
+                    }
 
                     // Send payment receipt email
                     try {
@@ -434,6 +480,28 @@ serve(async (req: Request) => {
               } catch (emailError) {
                 console.error("Failed to send Klarna receipt email:", emailError);
               }
+            }
+
+            // Notify instructor
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  instructorId: pupil.instructor_id,
+                  notification: {
+                    title: "💰 Payment Received",
+                    body: `£${klarnaAmount.toFixed(2)} received via Klarna`,
+                    tag: `payment-received-${Date.now()}`,
+                    data: { type: "payment_received", pupilId, amount: klarnaAmount },
+                  },
+                }),
+              });
+            } catch (notifyErr) {
+              console.error("Failed to notify instructor:", notifyErr);
             }
 
             paymentSuccessful = true;

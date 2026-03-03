@@ -151,7 +151,13 @@ export default function PupilPortal() {
   const statItems = [
     { icon: Clock, label: "Hours Booked", value: `${totalScheduledHours}h`, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
     { icon: Calendar, label: "Lessons Done", value: `${pupil.lessons_completed || 0}`, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
-    { icon: CreditCard, label: "Balance", value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+    { 
+      icon: CreditCard, 
+      label: (pupil.account_balance || 0) >= 0 ? "Credit" : "Due", 
+      value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, 
+      color: (pupil.account_balance || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400", 
+      bg: (pupil.account_balance || 0) >= 0 ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30" 
+    },
     { icon: Award, label: "Progress", value: `${pupil.progress || 0}%`, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-100 dark:bg-violet-900/30" },
   ];
 

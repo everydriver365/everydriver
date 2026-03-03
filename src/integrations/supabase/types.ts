@@ -7586,6 +7586,61 @@ export type Database = {
           },
         ]
       }
+      payment_reminder_log: {
+        Row: {
+          amount_owed: number | null
+          channel: string
+          created_at: string
+          id: string
+          instructor_id: string
+          pupil_id: string
+          reminder_type: string
+          sent_at: string
+        }
+        Insert: {
+          amount_owed?: number | null
+          channel: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          reminder_type?: string
+          sent_at?: string
+        }
+        Update: {
+          amount_owed?: number | null
+          channel?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          reminder_type?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reminder_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminder_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminder_log_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_feature_descriptions: {
         Row: {
           created_at: string | null
