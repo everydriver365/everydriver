@@ -73,8 +73,6 @@ const InstructorTax = lazy(() => import("./pages/InstructorTax"));
 const InstructorVehicleHealth = lazy(() => import("./pages/InstructorVehicleHealth"));
 const InstructorTripReplay = lazy(() => import("./pages/InstructorTripReplay"));
 const InstructorFuel = lazy(() => import("./pages/InstructorFuel"));
-const NextUpTileShowcase = lazy(() => import("./pages/NextUpTileShowcase"));
-const TodoTileShowcase = lazy(() => import("./pages/TodoTileShowcase"));
 const InstructorMileageTracker = lazy(() => import("./pages/InstructorMileageTracker"));
 const InstructorLocations = lazy(() => import("./pages/InstructorLocations"));
 const InstallPupil = lazy(() => import("./pages/InstallPupil"));
@@ -88,7 +86,7 @@ const InstructorNotes = lazy(() => import("./pages/InstructorNotes"));
 const InstructorPlans = lazy(() => import("./pages/InstructorPlans"));
 const InstructorResources = lazy(() => import("./pages/InstructorResources"));
 const InstructorDocumentTemplates = lazy(() => import("./pages/InstructorDocumentTemplates"));
-const PupilCardDemo = lazy(() => import("./pages/PupilCardDemo"));
+
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
 const InstructorFleetDashboard = lazy(() => import("./pages/InstructorFleetDashboard"));
@@ -121,33 +119,6 @@ const InstructorMarketing = lazy(() => import("./pages/instructor-app/Instructor
 const InstructorOnboarding = lazy(() => import("./pages/instructor-app/onboarding/InstructorOnboarding"));
 const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/OnboardingPreview"));
 
-// Demo pages
-const DesignDemo = lazy(() => import("./pages/DesignDemo"));
-const HeroLayoutDemo = lazy(() => import("./pages/HeroLayoutDemo"));
-const CollageDemo = lazy(() => import("./pages/CollageDemo"));
-const HeroRedesignDemo = lazy(() => import("./pages/HeroRedesignDemo"));
-const MobileHomeDemo = lazy(() => import("./pages/MobileHomeDemo"));
-const MobilePortalDemo = lazy(() => import("./pages/MobilePortalDemo"));
-const InstructorMobileDemo = lazy(() => import("./pages/InstructorMobileDemo"));
-const InstructorTileDemo = lazy(() => import("./pages/InstructorTileDemo"));
-const InstructorHeroDemo = lazy(() => import("./pages/InstructorHeroDemo"));
-const InstructorHomeDesignDemo = lazy(() => import("./pages/InstructorHomeDesignDemo"));
-const InstructorBlueStyleDemo = lazy(() => import("./pages/InstructorBlueStyleDemo"));
-const InstructorNoHeroDemo = lazy(() => import("./pages/InstructorNoHeroDemo"));
-const InstructorNoHeroIOSDemo = lazy(() => import("./pages/InstructorNoHeroIOSDemo"));
-const InstructorIOSDemo2 = lazy(() => import("./pages/InstructorIOSDemo2"));
-const InstructorIOSDemo3 = lazy(() => import("./pages/InstructorIOSDemo3"));
-const QuickActionGradientDemo = lazy(() => import("./pages/QuickActionGradientDemo"));
-const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
-const MobileHomeRedesignDemo = lazy(() => import("./pages/MobileHomeRedesignDemo"));
-const MobileHomeRedesignDemo2 = lazy(() => import("./pages/MobileHomeRedesignDemo2"));
-const MobileHomeIOSDemo = lazy(() => import("./pages/MobileHomeIOSDemo"));
-const HeaderRedesignDemo = lazy(() => import("./pages/HeaderRedesignDemo"));
-const IOSHomeLayoutsDemo = lazy(() => import("./pages/IOSHomeLayoutsDemo"));
-const InstructorDesignDemo = lazy(() => import("./pages/instructor-app/DesignDemo"));
-const PortalLayoutDemo = lazy(() => import("./pages/instructor-app/PortalLayoutDemo"));
-const DiaryImageDemo = lazy(() => import("./pages/DiaryImageDemo"));
-const TileDesignDemo = lazy(() => import("./pages/TileDesignDemo"));
 
 
 // Lazy-load ConditionalRoutes
@@ -231,16 +202,9 @@ const App = () => (
                 <Route path="/instructor-app/signup" element={<InstructorSignup />} />
                 <Route path="/instructor-app/onboarding" element={<InstructorOnboarding />} />
                 <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
-                <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
-                <Route path="/instructor-app/portal-layout-demo" element={<PortalLayoutDemo />} />
                 <Route path="/driving-schools" element={<DrivingSchools />} />
                 <Route path="/instructor-app/payments" element={<InstructorPayments />} />
                 <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
-                <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
-                <Route path="/mobile-home-redesign" element={<MobileHomeRedesignDemo />} />
-                <Route path="/mobile-home-redesign-2" element={<MobileHomeRedesignDemo2 />} />
-                <Route path="/mobile-home-ios-demo" element={<MobileHomeIOSDemo />} />
-                <Route path="/header-redesign-demo" element={<HeaderRedesignDemo />} />
 
                 {/* Instructor Portal (Authenticated) */}
                 <Route path="/instructor/login" element={<InstructorPortalLogin />} />
@@ -277,8 +241,6 @@ const App = () => (
                 <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
                 <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
                 <Route path="/instructor/menu" element={<InstructorMenu />} />
-                <Route path="/instructor/next-up-showcase" element={<NextUpTileShowcase />} />
-                <Route path="/instructor/todo-tile-showcase" element={<TodoTileShowcase />} />
                 <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
                 <Route path="/instructor/income" element={<InstructorIncome />} />
                 <Route path="/instructor/in-out" element={<InstructorInOut />} />
@@ -289,7 +251,7 @@ const App = () => (
                 <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
                 <Route path="/instructor/locations" element={<InstructorLocations />} />
                 <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
-                <Route path="/instructor/pupil-card-demo" element={<PupilCardDemo />} />
+                
                 <Route path="/instructor/todos" element={<InstructorTodos />} />
                 <Route path="/instructor/notes" element={<InstructorNotes />} />
                 <Route path="/instructor/plans" element={<InstructorPlans />} />
@@ -318,27 +280,8 @@ const App = () => (
                 <Route path="/pupil/install" element={<InstallPupil />} />
                 <Route path="/parent/install" element={<InstallParent />} />
 
-                {/* Demo routes */}
-                <Route path="/design-demo" element={<DesignDemo />} />
-                <Route path="/hero-demo" element={<HeroLayoutDemo />} />
-                <Route path="/collage-demo" element={<CollageDemo />} />
-                <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
-                <Route path="/mobile-home-demo" element={<MobileHomeDemo />} />
-                <Route path="/mobile-portal-demo" element={<MobilePortalDemo />} />
-                <Route path="/instructor-mobile-demo" element={<InstructorMobileDemo />} />
-                <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
-                <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
-                <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
-                <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
-                <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
-                <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
-                <Route path="/tile-design-demo" element={<TileDesignDemo />} />
-                <Route path="/instructor-nohero-demo" element={<InstructorNoHeroDemo />} />
-                <Route path="/instructor-nohero-ios-demo" element={<InstructorNoHeroIOSDemo />} />
-                <Route path="/instructor-ios-demo-2" element={<InstructorIOSDemo2 />} />
-                <Route path="/instructor-ios-demo-3" element={<InstructorIOSDemo3 />} />
-                <Route path="/ios-home-layouts-demo" element={<IOSHomeLayoutsDemo />} />
-                
+
+
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
