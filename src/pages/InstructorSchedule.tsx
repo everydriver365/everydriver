@@ -126,7 +126,7 @@ export default function InstructorSchedule() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 h-full flex flex-col">
-        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-[#F2F2F7] dark:bg-[#111111] py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
+        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
           {isMobile ? (
             <>
               {/* Mobile toggle: List / Month */}
