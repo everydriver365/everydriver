@@ -1,39 +1,47 @@
 
 
-## Diagnosis
+## Design Consistency Audit
 
-The `lazyWithRetry` utility retries the `import()` call 3 times, but the Vite dev server returns persistent 503s for certain modules (not transient). When all retries fail, the error propagates to the `AppErrorBoundary` which shows the crash screen. The user must manually reload, but the same module often fails again.
+After reviewing the homepage (`AppStyleHomeView`, `SwipeableQuickAccess`) and several sub-pages (`InstructorSchedule`, `InstructorPupils`, `InstructorTodos`, `InstructorJobs`, `InstructorExpenses`, `InstructorSettings`), here are the inconsistencies:
 
-The core issue: after all retries exhaust, there is no graceful recovery path -- the error boundary catches it and the app is dead until a full page reload clears Vite's stuck transform pipeline.
+### Current Problems
 
-## Plan: App-wide Lazy Import Hardening
+| Element | Homepage Style | Sub-page Style |
+|---|---|---|
+| **Cards** | `#F2F3F5` bg, 20px radius, multi-layer shadow | Default `<Card>` with `rounded-xl`, thin border, minimal shadow |
+| **Icon containers** | 44px circles, `#E6E8EC` bg, custom PNGs | 32px `rounded-lg`, varied color backgrounds (`bg-purple-100`, `bg-amber-100`, etc.) |
+| **Page headers** | N/A (tiles) | Inconsistent — some have icon badges, some plain text |
+| **Shadows** | `0px 8px 20px rgba(0,0,0,0.08)` + inset highlight | `shadow-sm` or none |
+| **Interaction** | `scale(0.98)` spring tap | Default or no tap feedback |
 
-Two changes to make the app resilient:
+### Plan
 
-### 1. Upgrade `lazyWithRetry` to force-reload on final failure
+#### 1. Create shared `InstructorPageHeader` component
+A reusable header matching the homepage visual language: 44px rounded icon container with `#E6E8EC` background, consistent title/subtitle typography, and optional action button.
 
-When all 3 retries fail, instead of throwing (which crashes the app), do a single automatic page reload with a sessionStorage guard to prevent infinite reload loops.
+**File:** `src/components/instructor/InstructorPageHeader.tsx` (new)
 
-**File:** `src/utils/lazyWithRetry.ts`
+#### 2. Create `InstructorCard` wrapper component
+A styled card matching homepage aesthetics: `#F2F3F5` background (dark: `#1C1C1E`), `rounded-[20px]`, multi-layer shadow, inset highlight, optional tap animation.
 
-```typescript
-// After all retries exhausted:
-// 1. Check sessionStorage for a "reloaded" flag with the module path
-// 2. If not set: set the flag and call window.location.reload()
-// 3. If already set: clear the flag and throw (to show error boundary)
-```
+**File:** `src/components/instructor/InstructorCard.tsx` (new)
 
-This gives one automatic recovery attempt per failed module before falling back to the error screen.
+#### 3. Update key sub-pages to use new components
+Apply the new `InstructorPageHeader` and `InstructorCard` to these high-traffic pages:
 
-### 2. Add per-route error boundary via Suspense fallback improvement
+- `InstructorSchedule.tsx` — header + card wrappers
+- `InstructorPupils.tsx` — header + hero card + list cards
+- `InstructorTodos.tsx` — header + task cards
+- `InstructorJobs.tsx` — header + job cards
+- `InstructorExpenses.tsx` — header
+- `InstructorSettings.tsx` — header + settings tile cards
+- `InstructorMessages.tsx` — header (inbox component internal)
 
-**File:** `src/App.tsx`
+#### 4. Standardize icon container styling
+Replace per-page colored icon backgrounds (`bg-violet-100`, `bg-purple-100`, etc.) with the homepage's uniform `#E6E8EC` circle style, using the custom PNG icons where available (from the asset map) and Lucide fallbacks otherwise.
 
-Wrap the `<Suspense>` fallback to show a loading spinner instead of an empty div, so users see feedback during retries rather than a blank screen.
-
-### Summary
-
-- **Files changed:** 2 (`lazyWithRetry.ts`, `App.tsx`)
-- **Risk:** Very low -- only changes error recovery behavior, no functional changes
-- **Effect:** Failed module imports auto-reload once, preventing the crash screen in most cases
+### Scope
+- **8 files changed** (2 new components + 6 page updates)
+- No functional changes — purely visual consistency
+- Dark mode support maintained via semantic tokens
 
