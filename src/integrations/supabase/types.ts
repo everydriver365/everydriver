@@ -1683,6 +1683,73 @@ export type Database = {
           },
         ]
       }
+      expense_receipts: {
+        Row: {
+          created_at: string
+          expense_id: string | null
+          extracted_amount: number | null
+          extracted_category: string | null
+          extracted_date: string | null
+          extracted_vendor: string | null
+          extraction_status: string | null
+          id: string
+          image_url: string
+          instructor_id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expense_id?: string | null
+          extracted_amount?: number | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_vendor?: string | null
+          extraction_status?: string | null
+          id?: string
+          image_url: string
+          instructor_id: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expense_id?: string | null
+          extracted_amount?: number | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_vendor?: string | null
+          extraction_status?: string | null
+          id?: string
+          image_url?: string
+          instructor_id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_receipts_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_receipts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_receipts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favourite_locations: {
         Row: {
           address: string | null
@@ -4744,6 +4811,54 @@ export type Database = {
           },
         ]
       }
+      instructor_terms_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_terms_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_terms_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_test_centres: {
         Row: {
           created_at: string
@@ -5262,6 +5377,7 @@ export type Database = {
           custom_domain: string | null
           custom_domain_verified: boolean | null
           dark_mode_enabled: boolean | null
+          data_retention_months: number | null
           dbs_certificate_expiry: string | null
           deposit_amount: number | null
           deposit_deadline_days: number | null
@@ -5381,6 +5497,7 @@ export type Database = {
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
@@ -5500,6 +5617,7 @@ export type Database = {
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
@@ -6391,10 +6509,13 @@ export type Database = {
       }
       lesson_waitlist: {
         Row: {
+          auto_expired: boolean | null
+          confirmation_sent_at: string | null
           created_at: string | null
           id: string
           instructor_id: string
           is_active: boolean | null
+          last_confirmed_at: string | null
           max_duration_mins: number | null
           min_duration_mins: number | null
           notes: string | null
@@ -6404,10 +6525,13 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          auto_expired?: boolean | null
+          confirmation_sent_at?: string | null
           created_at?: string | null
           id?: string
           instructor_id: string
           is_active?: boolean | null
+          last_confirmed_at?: string | null
           max_duration_mins?: number | null
           min_duration_mins?: number | null
           notes?: string | null
@@ -6417,10 +6541,13 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          auto_expired?: boolean | null
+          confirmation_sent_at?: string | null
           created_at?: string | null
           id?: string
           instructor_id?: string
           is_active?: boolean | null
+          last_confirmed_at?: string | null
           max_duration_mins?: number | null
           min_duration_mins?: number | null
           notes?: string | null
@@ -8464,6 +8591,74 @@ export type Database = {
           },
         ]
       }
+      pupil_terms_agreements: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          ip_address: string | null
+          pupil_id: string
+          signed_at: string | null
+          status: string
+          template_id: string
+          template_version: number
+          token: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          ip_address?: string | null
+          pupil_id: string
+          signed_at?: string | null
+          status?: string
+          template_id: string
+          template_version: number
+          token?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          ip_address?: string | null
+          pupil_id?: string
+          signed_at?: string | null
+          status?: string
+          template_id?: string
+          template_version?: number
+          token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_terms_agreements_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_terms_agreements_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_terms_agreements_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_terms_agreements_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_terms_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_upsells: {
         Row: {
           amount_paid: number
@@ -9496,6 +9691,9 @@ export type Database = {
           booking_status: string | null
           cancellation_reason: string | null
           cancelled_by: string | null
+          check_in_responded_at: string | null
+          check_in_sent_at: string | null
+          check_in_status: string | null
           created_at: string
           deleted_at: string | null
           dropoff_postcode: string | null
@@ -9532,6 +9730,9 @@ export type Database = {
           booking_status?: string | null
           cancellation_reason?: string | null
           cancelled_by?: string | null
+          check_in_responded_at?: string | null
+          check_in_sent_at?: string | null
+          check_in_status?: string | null
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
@@ -9568,6 +9769,9 @@ export type Database = {
           booking_status?: string | null
           cancellation_reason?: string | null
           cancelled_by?: string | null
+          check_in_responded_at?: string | null
+          check_in_sent_at?: string | null
+          check_in_status?: string | null
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
@@ -10472,6 +10676,67 @@ export type Database = {
             columns: ["test_request_id"]
             isOneToOne: false
             referencedRelation: "test_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theory_mock_scores: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          pupil_id: string
+          score: number
+          source: string | null
+          test_date: string
+          test_type: string
+          total_questions: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          pupil_id: string
+          score: number
+          source?: string | null
+          test_date?: string
+          test_type?: string
+          total_questions?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          pupil_id?: string
+          score?: number
+          source?: string | null
+          test_date?: string
+          test_type?: string
+          total_questions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theory_mock_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theory_mock_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theory_mock_scores_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]

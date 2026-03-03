@@ -21,6 +21,7 @@ import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackProm
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { InstructorEnRouteTracker } from "@/components/pupil-portal/InstructorEnRouteTracker";
+import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 
 interface PupilData {
   id: string;
@@ -195,6 +196,9 @@ export default function PupilPortal() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Lesson Check-In */}
+            <PupilCheckInCard pupilId={pupil.id} />
+
             {/* Feedback Prompt */}
             <PupilFeedbackPrompt pupilId={pupil.id} />
 
