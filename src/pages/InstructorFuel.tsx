@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
-  ArrowLeft, 
   Fuel, 
   Navigation, 
   MapPin, 
@@ -10,13 +8,14 @@ import {
   TrendingDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useFuelPrices, FuelStation } from "@/hooks/useFuelPrices";
 import { cn } from "@/lib/utils";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { divIcon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
@@ -91,15 +90,12 @@ function StationCard({
       isCheapest && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
       isNearest && !isCheapest && "border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20"
     )}>
-      {/* Brand Badge */}
       <div className={cn(
         "w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shadow-sm shrink-0",
         getBrandColor(station.brand)
       )}>
         {station.brand.charAt(0)}
       </div>
-      
-      {/* Station Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-foreground text-sm truncate">{station.name}</h3>
@@ -126,14 +122,10 @@ function StationCard({
           )}
         </div>
       </div>
-      
-      {/* Price */}
       <div className="text-right shrink-0">
         <div className="text-xl font-bold text-foreground">{formatPrice(price)}</div>
         <div className="text-[10px] text-muted-foreground uppercase">{fuelType}</div>
       </div>
-      
-      {/* Navigate Button */}
       <Button
         size="icon"
         variant="secondary"
@@ -147,7 +139,6 @@ function StationCard({
 }
 
 export default function InstructorFuel() {
-  const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const { 
     stations, 
@@ -168,45 +159,40 @@ export default function InstructorFuel() {
     window.open(mapsUrl, "_blank");
   };
 
-  // Center map on first station or default UK location
   const mapCenter = cheapest 
     ? [cheapest.lat, cheapest.lng] as [number, number]
     : [52.4862, -1.8904] as [number, number];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="font-semibold text-foreground">Fuel Finder</h1>
-          {location && (
-            <p className="text-xs text-muted-foreground">{location}</p>
-          )}
+    <InstructorPortalLayout>
+      <div className="space-y-4 pb-24">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+              <Fuel className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+            Fuel Finder
+          </h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              localStorage.removeItem("fuel_prices_cache");
+              refetch();
+            }}
+            disabled={loading}
+          >
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => {
-            localStorage.removeItem("fuel_prices_cache");
-            refetch();
-          }}
-          disabled={loading}
-        >
-          <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-        </Button>
-      </div>
 
-      {/* Fuel Type Selector */}
-      <div className="px-4 py-3 border-b border-border">
+        {location && (
+          <p className="text-xs text-muted-foreground">{location}</p>
+        )}
+
+        {/* Fuel Type Selector */}
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Fuel type:</span>
@@ -224,34 +210,31 @@ export default function InstructorFuel() {
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="p-8 text-center">
-          <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Finding cheapest fuel nearby...</p>
-        </div>
-      )}
+        {/* Loading State */}
+        {loading && (
+          <div className="p-8 text-center">
+            <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <p className="text-muted-foreground">Finding cheapest fuel nearby...</p>
+          </div>
+        )}
 
-      {/* Error State */}
-      {error && !loading && (
-        <div className="p-8 text-center">
-          <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={refetch}>Try Again</Button>
-        </div>
-      )}
+        {/* Error State */}
+        {error && !loading && (
+          <div className="p-8 text-center">
+            <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={refetch}>Try Again</Button>
+          </div>
+        )}
 
-      {/* Content */}
-      {!loading && !error && stations.length > 0 && (
-        <>
-          {/* Summary Cards */}
-          <div className="p-4 space-y-3">
-            {/* Nearest Station Card */}
-            {nearest && (
-              <Card className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30 border-blue-200/50 dark:border-blue-800/30">
-                <CardContent className="p-4">
+        {/* Content */}
+        {!loading && !error && stations.length > 0 && (
+          <>
+            {/* Summary Cards */}
+            <div className="space-y-3">
+              {nearest && (
+                <div className="bg-card rounded-xl border bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30 border-blue-200/50 dark:border-blue-800/30 p-4">
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md",
@@ -282,14 +265,11 @@ export default function InstructorFuel() {
                       Go
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              )}
 
-            {/* Cheapest Station Card */}
-            {cheapest && (
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200/50 dark:border-green-800/30">
-                <CardContent className="p-4">
+              {cheapest && (
+                <div className="bg-card rounded-xl border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200/50 dark:border-green-800/30 p-4">
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md",
@@ -320,94 +300,93 @@ export default function InstructorFuel() {
                       Go
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
 
-          {/* Tabs for List/Map */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
-            <TabsList className="w-full">
-              <TabsTrigger value="list" className="flex-1">List</TabsTrigger>
-              <TabsTrigger value="map" className="flex-1">Map</TabsTrigger>
-            </TabsList>
+            {/* Tabs for List/Map */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="w-full">
+                <TabsTrigger value="list" className="flex-1">List</TabsTrigger>
+                <TabsTrigger value="map" className="flex-1">Map</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="list" className="mt-4 space-y-3">
-              {stations.map((station, index) => (
-                <StationCard
-                  key={`${station.brand}-${station.postcode}-${index}`}
-                  station={station}
-                  fuelType={fuelType}
-                  isCheapest={cheapest?.lat === station.lat && cheapest?.lng === station.lng}
-                  isNearest={nearest?.lat === station.lat && nearest?.lng === station.lng}
-                  onNavigate={handleNavigate}
-                />
-              ))}
-            </TabsContent>
+              <TabsContent value="list" className="mt-4 space-y-3">
+                {stations.map((station, index) => (
+                  <StationCard
+                    key={`${station.brand}-${station.postcode}-${index}`}
+                    station={station}
+                    fuelType={fuelType}
+                    isCheapest={cheapest?.lat === station.lat && cheapest?.lng === station.lng}
+                    isNearest={nearest?.lat === station.lat && nearest?.lng === station.lng}
+                    onNavigate={handleNavigate}
+                  />
+                ))}
+              </TabsContent>
 
-            <TabsContent value="map" className="mt-4">
-              <div className="h-[400px] rounded-xl overflow-hidden border border-border">
-                <MapContainer
-                  center={mapCenter}
-                  zoom={12}
-                  className="h-full w-full"
-                  scrollWheelZoom={false}
-                >
-                  <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />
-                  {stations.map((station, index) => {
-                    const price = station.prices[fuelType as keyof typeof station.prices];
-                    const isCheapest = cheapest?.lat === station.lat && cheapest?.lng === station.lng;
-                    const isNearest = nearest?.lat === station.lat && nearest?.lng === station.lng;
-                    
-                    return (
-                      <Marker
-                        key={`${station.brand}-${station.postcode}-${index}`}
-                        position={[station.lat, station.lng]}
-                        icon={createStationIcon(price, isNearest && !isCheapest, isCheapest)}
-                      >
-                        <Popup>
-                          <div className="p-2">
-                            <h3 className="font-semibold">{station.name}</h3>
-                            <p className="text-sm text-muted-foreground">{station.brand}</p>
-                            <p className="text-lg font-bold mt-1">{formatPrice(price)}</p>
-                            <p className="text-xs text-muted-foreground">{station.distance_miles.toFixed(1)} mi away</p>
-                            <Button
-                              size="sm"
-                              className="mt-2 w-full gap-1"
-                              onClick={() => handleNavigate(station)}
-                            >
-                              <Navigation className="h-3 w-3" />
-                              Navigate
-                            </Button>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                </MapContainer>
-              </div>
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="map" className="mt-4">
+                <div className="h-[400px] rounded-xl overflow-hidden border border-border">
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={12}
+                    className="h-full w-full"
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />
+                    {stations.map((station, index) => {
+                      const price = station.prices[fuelType as keyof typeof station.prices];
+                      const isCheapest = cheapest?.lat === station.lat && cheapest?.lng === station.lng;
+                      const isNearest = nearest?.lat === station.lat && nearest?.lng === station.lng;
+                      
+                      return (
+                        <Marker
+                          key={`${station.brand}-${station.postcode}-${index}`}
+                          position={[station.lat, station.lng]}
+                          icon={createStationIcon(price, isNearest && !isCheapest, isCheapest)}
+                        >
+                          <Popup>
+                            <div className="p-2">
+                              <h3 className="font-semibold">{station.name}</h3>
+                              <p className="text-sm text-muted-foreground">{station.brand}</p>
+                              <p className="text-lg font-bold mt-1">{formatPrice(price)}</p>
+                              <p className="text-xs text-muted-foreground">{station.distance_miles.toFixed(1)} mi away</p>
+                              <Button
+                                size="sm"
+                                className="mt-2 w-full gap-1"
+                                onClick={() => handleNavigate(station)}
+                              >
+                                <Navigation className="h-3 w-3" />
+                                Navigate
+                              </Button>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                  </MapContainer>
+                </div>
+              </TabsContent>
+            </Tabs>
 
-          {/* Footer info */}
-          <div className="px-4 mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              Prices from UK CMA scheme • Updated every 30 minutes
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">
+                Prices from UK CMA scheme • Updated every 30 minutes
+              </p>
+            </div>
+          </>
+        )}
+
+        {/* No Results */}
+        {!loading && !error && stations.length === 0 && (
+          <div className="p-8 text-center">
+            <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No fuel stations found within 15km</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Try setting your home postcode in settings
             </p>
           </div>
-        </>
-      )}
-
-      {/* No Results */}
-      {!loading && !error && stations.length === 0 && (
-        <div className="p-8 text-center">
-          <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No fuel stations found within 15km</p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Try setting your home postcode in settings
-          </p>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </InstructorPortalLayout>
   );
 }

@@ -8,17 +8,14 @@ export default function InstructorDashcamGallery() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6 p-3 sm:p-4 md:p-6 pb-24">
-        <div>
-          <h1 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Camera className="h-4 w-4 text-primary" />
+      <div className="space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center shrink-0">
+              <Camera className="h-4 w-4 text-rose-600 dark:text-rose-400" />
             </div>
             Dashcam Footage
           </h1>
-          <p className="text-muted-foreground text-xs sm:text-sm ml-10 hidden sm:block">
-            View and download recorded clips from your Geotab dashcam
-          </p>
         </div>
         {instructor?.id ? (
           <DashcamGalleryView instructorId={instructor.id} />

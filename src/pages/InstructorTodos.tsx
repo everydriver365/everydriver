@@ -146,10 +146,10 @@ export default function InstructorTodos() {
             <button
               onClick={() => setFilterProject("all")}
               className={cn(
-                "px-3 py-1 text-xs font-medium border shrink-0 transition-colors",
+                "px-3 py-1 text-xs font-medium border shrink-0 rounded-lg transition-colors",
                 filterProject === "all"
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-white text-muted-foreground border-border hover:bg-muted"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               )}
             >
               All
@@ -180,7 +180,7 @@ export default function InstructorTodos() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden px-4 md:px-0"
             >
-              <div className="bg-white border border-border p-3 space-y-3">
+              <div className="bg-card rounded-xl border border-border p-3 space-y-3">
                 <div className="flex gap-2 items-center">
                   <Input
                     ref={inputRef}
@@ -329,7 +329,7 @@ function FullTodoItem({
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
-      className="flex items-start gap-3 py-3 px-3 bg-white border border-border group hover:shadow-sm transition-shadow"
+      className="flex items-start gap-3 py-3 px-3 bg-card rounded-xl border border-border group hover:shadow-sm transition-shadow"
     >
       {/* Priority checkbox */}
       <button
