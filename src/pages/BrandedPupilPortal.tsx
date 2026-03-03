@@ -38,6 +38,7 @@ import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
 import { LessonPrepChecklist } from "@/components/pupil-portal/LessonPrepChecklist";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
+import TheoryProgressChart from "@/components/pupil-portal/TheoryProgressChart";
 
 interface InstructorBranding {
   id: string;
@@ -618,6 +619,13 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
+                <div className="px-4 pb-4">
+                  <TheoryProgressChart
+                    pupilId={pupil.id}
+                    instructorId={instructor.id}
+                    brandColour={instructor.brand_colour}
+                  />
+                </div>
               </motion.div>
             )}
 

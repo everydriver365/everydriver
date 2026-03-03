@@ -33,6 +33,8 @@ import { LessonPackageManager } from "@/components/instructor/LessonPackageManag
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
+import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
+
 
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
@@ -1185,6 +1187,21 @@ export default function InstructorSettings() {
                 iconBg="bg-emerald-100 dark:bg-emerald-900/30"
               >
                 <ReferralSettingsCard instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Digital Terms Agreement */}
+              {/* Digital Terms - managed per-pupil in pupil profiles */}
+
+              {/* GDPR Data Retention */}
+              <SettingsTile 
+                id="gdpr" 
+                icon={Shield} 
+                title="GDPR Data Retention" 
+                description="Auto-flag stale pupil records"
+                iconColor="text-blue-600"
+                iconBg="bg-blue-100 dark:bg-blue-900/30"
+              >
+                <GDPRRetentionWidget instructorId={instructorId} />
               </SettingsTile>
 
               {/* Data Export & Backup Section */}
