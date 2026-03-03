@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
 
@@ -169,12 +170,11 @@ export default function InstructorSchedule() {
             </>
           ) : (
             <>
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-primary" />
-                </div>
-                <h1 className="text-xl font-bold">Schedule</h1>
-              </div>
+              <InstructorPageHeader
+                lucideIcon={Calendar}
+                title="Schedule"
+                className="flex-1"
+              />
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"

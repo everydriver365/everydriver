@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useInstructorTodos, InstructorTodo } from "@/hooks/useInstructorTodos";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -118,26 +119,18 @@ export default function InstructorTodos() {
     <InstructorPortalLayout>
       <div className="space-y-4 -mx-4 md:mx-0 pb-24">
         {/* Header */}
-        <div className="px-4 md:px-0 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                <Check className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-              </div>
-              To Do
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {activeTodos.length} task{activeTodos.length !== 1 ? "s" : ""} remaining
-            </p>
-          </div>
-          <Button
-            size="sm"
-            className="gap-1"
-            onClick={() => setShowInput(true)}
-          >
-            <Plus className="h-4 w-4" />
-            Add Task
-          </Button>
+        <div className="px-4 md:px-0">
+          <InstructorPageHeader
+            lucideIcon={Check}
+            title="To Do"
+            subtitle={`${activeTodos.length} task${activeTodos.length !== 1 ? "s" : ""} remaining`}
+            action={
+              <Button size="sm" className="gap-1" onClick={() => setShowInput(true)}>
+                <Plus className="h-4 w-4" />
+                Add Task
+              </Button>
+            }
+          />
         </div>
 
         {/* Project filter */}
