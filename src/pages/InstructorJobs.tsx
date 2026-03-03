@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Briefcase, MapPin, Clock, User, Calendar, FileText, ChevronRight, X, Check, Navigation } from "lucide-react";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -199,15 +200,11 @@ export default function InstructorJobs() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            Available Jobs
-          </h1>
-          <Badge variant="secondary">{jobs.length} open</Badge>
-        </div>
+        <InstructorPageHeader
+          lucideIcon={Briefcase}
+          title="Available Jobs"
+          action={<Badge variant="secondary">{jobs.length} open</Badge>}
+        />
 
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Loading jobs...</div>

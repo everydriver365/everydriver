@@ -64,6 +64,7 @@ import { NextLessonTile } from "@/components/instructor/NextLessonTile";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 interface Pupil {
   id: string;
@@ -476,18 +477,16 @@ export default function InstructorPupils() {
     <InstructorPortalLayout>
       <div className="space-y-4 pb-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            Pupils
-          </h1>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setIsAddOpen(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            Add Pupil
-          </Button>
-        </div>
+        <InstructorPageHeader
+          lucideIcon={Users}
+          title="Pupils"
+          action={
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setIsAddOpen(true)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Pupil
+            </Button>
+          }
+        />
 
         {/* Hero Stats Card */}
         <motion.div

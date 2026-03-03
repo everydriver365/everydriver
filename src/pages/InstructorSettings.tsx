@@ -51,6 +51,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 interface InstructorProfile {
   name: string;
@@ -312,13 +313,11 @@ export default function InstructorSettings() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
-        <div>
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold">Settings</h1>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">Manage your profile and preferences</p>
-        </div>
+        <InstructorPageHeader
+          lucideIcon={Settings}
+          title="Settings"
+          subtitle="Manage your profile and preferences"
+        />
 
         {/* Quick Jump Navigation */}
         <div className="relative">
