@@ -1,27 +1,39 @@
 
 
-## Diagnosis: Persistent Blank Preview
+## Diagnosis
 
-The previous fix lazy-loaded ~28 demo pages, but there are still **~90 eager imports** at the top of `App.tsx`. This is still too many synchronous modules for Vite to transform at once, causing 503s.
+The `lazyWithRetry` utility retries the `import()` call 3 times, but the Vite dev server returns persistent 503s for certain modules (not transient). When all retries fail, the error propagates to the `AppErrorBoundary` which shows the crash screen. The user must manually reload, but the same module often fails again.
 
-## Plan: Aggressive Lazy Loading
+The core issue: after all retries exhaust, there is no graceful recovery path -- the error boundary catches it and the app is dead until a full page reload clears Vite's stuck transform pipeline.
 
-Convert **all** page imports to `React.lazy()` except the absolute minimum needed for first render (`ConditionalHome` dependencies and critical shared components). This means:
+## Plan: App-wide Lazy Import Hardening
 
-**Keep eager (needed immediately):**
-- UI providers, layout components, auth contexts (~10 imports)
-- `Index`, `HomepageRedesignDemo`, `MiniWebsiteHome` (used by `ConditionalHome`)
-- `NotFound` (catch-all)
+Two changes to make the app resilient:
 
-**Convert to lazy (~80 imports):**
-- All `/instructor/*` pages (~50 imports)
-- All `/instructor-app/*` pages (~15 imports)  
-- All mini-website sub-pages, pupil/parent portals
-- All utility pages (Theory, FAQs, Help, Privacy, etc.)
-- The already-lazy demo pages stay lazy
+### 1. Upgrade `lazyWithRetry` to force-reload on final failure
 
-This reduces Vite's initial transform workload from ~120 modules to ~15, which should permanently fix the 503 overload.
+When all 3 retries fail, instead of throwing (which crashes the app), do a single automatic page reload with a sessionStorage guard to prevent infinite reload loops.
 
-### Implementation
-Single file change: `src/App.tsx` -- move all page `import` statements (lines 3-4, 17-121) to `lazy()` declarations, keeping only the handful needed by `ConditionalHome` and the app shell as eager imports.
+**File:** `src/utils/lazyWithRetry.ts`
+
+```typescript
+// After all retries exhausted:
+// 1. Check sessionStorage for a "reloaded" flag with the module path
+// 2. If not set: set the flag and call window.location.reload()
+// 3. If already set: clear the flag and throw (to show error boundary)
+```
+
+This gives one automatic recovery attempt per failed module before falling back to the error screen.
+
+### 2. Add per-route error boundary via Suspense fallback improvement
+
+**File:** `src/App.tsx`
+
+Wrap the `<Suspense>` fallback to show a loading spinner instead of an empty div, so users see feedback during retries rather than a blank screen.
+
+### Summary
+
+- **Files changed:** 2 (`lazyWithRetry.ts`, `App.tsx`)
+- **Risk:** Very low -- only changes error recovery behavior, no functional changes
+- **Effect:** Failed module imports auto-reload once, preventing the crash screen in most cases
 
