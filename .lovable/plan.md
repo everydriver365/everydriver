@@ -1,47 +1,59 @@
 
 
-## Incomplete / Unwired Features Found
+## Settings & Feature Organisation Audit
 
-After auditing the full codebase, here are the components that were built but never wired into their parent views:
+After a thorough scan of the codebase, here are the issues found -- orphaned components, misplaced settings, and inconsistencies:
 
-### 1. ReceiptScanner -- not used anywhere
-`ReceiptScanner.tsx` exists with full camera capture + AI extraction via the `extract-receipt` edge function, but it is **never imported**. The `ExpenseTracker.tsx` has its own built-in file upload but does NOT call the `extract-receipt` edge function for AI-powered auto-categorisation. The AI extraction feature is completely disconnected.
+### 1. Orphaned Components (built but never imported anywhere)
 
-**Fix:** Import `ReceiptScanner` into `ExpenseTracker.tsx` (or wire the `extract-receipt` call into the existing upload flow) so that when an instructor uploads/photographs a receipt, the AI auto-fills amount, date, category, and vendor.
+| Component | Purpose | Where it should go |
+|-----------|---------|-------------------|
+| `EmergencyContactEditor.tsx` | Edit pupil emergency contact info | Pupil detail panels (`PupilCardStack`, `ExpandablePupilCard`, `DesktopPupilDetailPanel`) |
+| `PreFlightChecks.tsx` | GPS/tracking system readiness check | GPS Setup page (`InstructorGPSSetup`) or Tracking settings |
+| `ReminderSettings.tsx` | Lesson reminder channel preferences (SMS/email/push + timing) | Settings > Scheduling category, alongside Cancellation Policy |
 
-### 2. DigitalTermsManager -- not used anywhere
-`DigitalTermsManager.tsx` exists but is **never imported**. However, a more complete terms system already exists via `TermsSignatureModal`, `TermsConditionsEditor`, `SendSigningLinkButton`, and `RemoteSigning` page. This component appears redundant -- the digital terms feature is actually **fully implemented** through the other components.
+### 2. Unused Imports (imported but never rendered)
 
-**Fix:** Delete `DigitalTermsManager.tsx` as dead code, or repurpose it as a quick-status widget on pupil profiles (though `PupilCardStack` already shows signed/unsigned status).
+| File | Unused Imports |
+|------|---------------|
+| `InstructorSettings.tsx` | `SyllabusBuilder`, `TrainingResources` -- imported on lines 39-40 but never used in JSX. Dead imports. |
 
-### 3. TheoryMockScoreLogger -- not used anywhere
-`TheoryMockScoreLogger.tsx` exists with a form to log mock test scores and a bar chart, but is **never imported** into any page. Pupils have no way to log mock scores.
+### 3. Misplaced Settings Tiles
 
-**Fix:** Add it to `BrandedPupilPortal.tsx` in the Theory tab alongside the existing `TheoryProgressChart`.
+| Tile | Currently In | Should Be In |
+|------|-------------|-------------|
+| **Pupil Self-Service Booking** (`PupilBookingSettingsEditor`) | Website & Branding | **Scheduling** -- it controls booking/cancellation/rescheduling rules, not branding |
+| **Bulk Messaging** (`BulkSMSDialog`) | Preferences & Data | **Not a setting** -- it's an action. Should be accessible from Messages/Inbox page, not buried in settings |
+| **Referral Programme** | Preferences & Data | **Courses & Payments** -- referrals are a monetisation/growth tool |
+| **Payment Summary** widget | Courses & Payments (settings) | This is a read-only dashboard widget, not a configuration. It belongs on the Money/Pay page, not in settings |
 
-### 4. PupilCheckInCard -- missing from BrandedPupilPortal
-The check-in card is wired into `PupilPortal.tsx` (the old portal) but **not** into `BrandedPupilPortal.tsx` (the branded portal that most pupils actually use). Pupils on branded portals never see the check-in prompt.
+### 4. Duplicate Functionality
 
-**Fix:** Import and render `PupilCheckInCard` in `BrandedPupilPortal.tsx` near the top of the home tab.
+| Issue | Details |
+|-------|---------|
+| **Commission Payer** toggle | Exists in TWO places: (a) inline in "Images & Media" tile (lines 525-635 with full dual QR upload), and (b) as a separate `CommissionPayerSettings` tile under "Courses & Payments". These should be merged into one location. |
+| **Visibility toggle** | Exists in THREE places: Settings page tile, InstructorPortal desktop header, and mobile home. The settings one is fine as canonical, but the duplicated logic is acceptable for quick-access. No action needed. |
 
-### 5. LessonCheckInBadge -- missing from NewMobileScheduleView
-The badge shows on `TodayScheduleView.tsx` but **not** on `NewMobileScheduleView.tsx` (the mobile schedule that instructors actually use on phones). Instructors on mobile don't see check-in status.
+### Proposed Changes
 
-**Fix:** Import and render `LessonCheckInBadge` in `NewMobileScheduleView.tsx` lesson cards.
+**A. Wire orphaned components:**
+- Add `EmergencyContactEditor` to pupil detail panels (DesktopPupilDetailPanel / ExpandablePupilCard)
+- Add `PreFlightChecks` to InstructorGPSSetup page
+- Add `ReminderSettings` to Settings > Scheduling category
 
-### 6. Post-Lesson Feedback -- no Google Review prompt
-`PupilFeedbackPrompt` collects ratings but never prompts high-raters (4-5 stars) to leave a Google or Trustpilot review. The plan called for this but it was not built.
+**B. Clean dead imports:**
+- Remove unused `SyllabusBuilder` and `TrainingResources` imports from InstructorSettings.tsx
 
-**Fix:** After a pupil submits a 4+ star rating, show a "Leave us a Google Review" link (using the instructor's Google Maps place URL if configured).
+**C. Move misplaced tiles:**
+- Move "Pupil Self-Service Booking" from Website & Branding → Scheduling
+- Move "Referral Programme" from Preferences & Data → Courses & Payments
+- Remove "Payment Summary" widget from Settings (it's already on the Pay page)
+- Remove "Bulk Messaging" from Settings (it's already accessible from Inbox)
 
-### Summary of work
+**D. Deduplicate Commission Payer:**
+- Remove the inline commission payer toggle + dual QR uploads from the "Images & Media" tile
+- Keep only the dedicated `CommissionPayerSettings` tile under Courses & Payments
+- Move QR code uploads to a standalone "Payment QR Codes" tile under Courses & Payments
 
-| # | Issue | Effort |
-|---|-------|--------|
-| 1 | Wire AI receipt extraction into ExpenseTracker | Medium |
-| 2 | Delete unused DigitalTermsManager (redundant) | Trivial |
-| 3 | Add TheoryMockScoreLogger to BrandedPupilPortal | Small |
-| 4 | Add PupilCheckInCard to BrandedPupilPortal | Small |
-| 5 | Add LessonCheckInBadge to NewMobileScheduleView | Small |
-| 6 | Add Google Review prompt after high feedback | Small |
+This reorganisation affects only `InstructorSettings.tsx` plus wiring 3 orphaned components into their correct parent pages. No database changes needed.
 
