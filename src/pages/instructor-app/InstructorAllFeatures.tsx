@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -50,10 +49,14 @@ import {
   PieChart,
   Palette,
   Code,
+  Heart,
+  Wrench,
   LucideIcon,
   Sparkles,
 } from "lucide-react";
 import { useState } from "react";
+
+const PLAN_ORDER = ["free", "pro", "max", "multi", "enterprise"] as const;
 
 const iconMap: Record<string, LucideIcon> = {
   Calendar, RefreshCw, Search, MessageSquare, Repeat, Zap, Settings,
@@ -63,6 +66,7 @@ const iconMap: Record<string, LucideIcon> = {
   Gauge, Award, PlayCircle, MapPin, Eye, AlertTriangle, Map,
   Brain, CloudUpload, Share2, Video, Camera,
   Smartphone, Building, Car, PieChart, Palette, Code,
+  Heart, Wrench,
 };
 
 const tierConfig: Record<string, { label: string; color: string; bg: string }> = {
@@ -82,21 +86,44 @@ const categoryIcons: Record<string, LucideIcon> = {
   "Dashcam": Camera,
   "Apps & Portals": Smartphone,
   "Driving Schools": Building,
+  "Health & Wellbeing": Heart,
+  "Tools & Productivity": Wrench,
 };
 
 export default function InstructorAllFeatures() {
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
 
   const { data: features = [], isLoading } = useQuery({
-    queryKey: ["feature-showcase-items"],
+    queryKey: ["feature-showcase-items-with-plans"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("feature_showcase_items")
-        .select("*")
-        .eq("is_visible", true)
-        .order("display_order");
-      if (error) throw error;
-      return data;
+      const [featuresRes, assignmentsRes] = await Promise.all([
+        supabase
+          .from("feature_showcase_items")
+          .select("*")
+          .eq("is_visible", true)
+          .order("display_order"),
+        supabase
+          .from("feature_plan_assignments")
+          .select("feature_id, plan_slug"),
+      ]);
+      if (featuresRes.error) throw featuresRes.error;
+      if (assignmentsRes.error) throw assignmentsRes.error;
+
+      // Build a map of feature_id → sorted plan slugs
+      const planMap: Record<string, string[]> = {};
+      for (const a of assignmentsRes.data || []) {
+        if (!planMap[a.feature_id]) planMap[a.feature_id] = [];
+        planMap[a.feature_id].push(a.plan_slug);
+      }
+      // Sort each array by tier order
+      for (const key of Object.keys(planMap)) {
+        planMap[key].sort((a, b) => PLAN_ORDER.indexOf(a as any) - PLAN_ORDER.indexOf(b as any));
+      }
+
+      return (featuresRes.data || []).map((f) => ({
+        ...f,
+        plan_slugs: planMap[f.id] || [f.plan_tier],
+      }));
     },
   });
 
@@ -198,7 +225,6 @@ export default function InstructorAllFeatures() {
                       >
                         {items.map((item) => {
                           const Icon = iconMap[item.icon_name || ""] || Zap;
-                          const tier = tierConfig[item.plan_tier] || tierConfig.free;
                           return (
                             <div
                               key={item.id}
@@ -208,9 +234,17 @@ export default function InstructorAllFeatures() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-medium text-sm text-foreground">{item.title}</span>
-                                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tier.bg} ${tier.color}`}>
-                                    {tier.label}
-                                  </span>
+                                  {item.plan_slugs.map((slug: string) => {
+                                    const tier = tierConfig[slug] || tierConfig.free;
+                                    return (
+                                      <span
+                                        key={slug}
+                                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tier.bg} ${tier.color}`}
+                                      >
+                                        {tier.label}
+                                      </span>
+                                    );
+                                  })}
                                 </div>
                                 {item.description && (
                                   <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
