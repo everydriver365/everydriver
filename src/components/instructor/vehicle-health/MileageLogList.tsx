@@ -1,5 +1,5 @@
 import { MapPin, User, Calendar } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { MileageLogEntry } from "@/hooks/useVehicleHealth";
 import { format } from "date-fns";
 import { kmToMiles } from "@/lib/utils";
@@ -21,7 +21,6 @@ export function MileageLogList({ entries }: MileageLogListProps) {
     );
   }
 
-  // Group by date
   const grouped = entries.reduce((acc, entry) => {
     const dateKey = format(new Date(entry.session_date), "yyyy-MM-dd");
     if (!acc[dateKey]) {
@@ -50,8 +49,8 @@ export function MileageLogList({ entries }: MileageLogListProps) {
             
             <div className="space-y-2">
               {dayEntries.map(entry => (
-                <Card key={entry.id} className="overflow-hidden">
-                  <CardContent className="p-3 flex items-center justify-between gap-3">
+                <InstructorCard key={entry.id} className="overflow-hidden">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-sm">
                         {entry.pupil_name ? (
@@ -77,8 +76,8 @@ export function MileageLogList({ entries }: MileageLogListProps) {
                         {kmToMiles(entry.distance_km).toFixed(1)} mi
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </InstructorCard>
               ))}
             </div>
           </div>

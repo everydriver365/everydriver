@@ -1,5 +1,5 @@
 import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,12 +21,10 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const speedLimitKmh = device.last_speed_limit_kmh;
   const roadName = device.last_road_name;
   
-  // ECU odometer in miles
   const odometerMiles = device.last_ecu_odometer_km != null
     ? Math.round(kmToMiles(device.last_ecu_odometer_km))
     : null;
   
-  // Today's distance from ECU odometer (accurate), falling back to GPS odometer
   const today = new Date().toISOString().split("T")[0];
   const todayDistanceMiles = device.daily_start_date === today
     ? (device.daily_start_ecu_odometer_km != null && device.last_ecu_odometer_km != null)
@@ -36,12 +34,10 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         : null
     : null;
   
-  // Format engine hours
   const engineHoursFormatted = device.last_engine_hours != null
     ? `${Math.floor(device.last_engine_hours)}h ${Math.round((device.last_engine_hours % 1) * 60)}m`
     : null;
 
-  // Fuel level
   const fuelPercent = device.last_fuel_percent;
   const getFuelColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";
@@ -50,7 +46,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
     return "text-primary";
   };
 
-  // Battery voltage (12V system)
   const batteryVoltage = device.last_battery_voltage;
   const getVoltageColor = (v: number | null) => {
     if (v === null) return "text-muted-foreground";
@@ -59,7 +54,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
     return "text-primary";
   };
 
-  // Coolant temp
   const coolantTemp = device.last_coolant_temp_c;
   const getCoolantColor = (t: number | null) => {
     if (t === null) return "text-muted-foreground";
@@ -68,7 +62,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
     return "text-primary";
   };
 
-  // Fault codes
   const faultCodes = device.last_fault_codes;
   const hasFaults = faultCodes && faultCodes.length > 0;
 
@@ -90,12 +83,12 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const isSpeeding = speedKmh !== null && speedLimitKmh !== null && speedKmh > speedLimitKmh;
 
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all",
-      isOnline && "ring-1 ring-primary/20",
-      hasFaults && "ring-1 ring-destructive/30"
+    <InstructorCard className={cn(
+      "overflow-hidden",
+      isOnline && "ring-primary/20",
+      hasFaults && "ring-destructive/30"
     )}>
-      <CardContent className="p-3 sm:p-4 space-y-3">
+      <div className="space-y-3">
         {/* Device header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -213,7 +206,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {/* Engine Diagnostics row */}
         {(fuelPercent != null || batteryVoltage != null || coolantTemp != null) && (
           <div className="grid grid-cols-3 gap-2">
-            {/* Fuel Level */}
             {fuelPercent != null && (
               <div className="p-2 rounded-lg bg-muted/50 space-y-1">
                 <div className="flex items-center gap-1 text-xs">
@@ -234,8 +226,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
                 />
               </div>
             )}
-
-            {/* Battery Voltage */}
             {batteryVoltage != null && (
               <div className="p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-1 text-xs">
@@ -250,8 +240,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
                 )}
               </div>
             )}
-
-            {/* Coolant Temperature */}
             {coolantTemp != null && (
               <div className="p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-1 text-xs">
@@ -381,7 +369,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
             )}
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </InstructorCard>
   );
 }

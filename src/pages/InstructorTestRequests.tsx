@@ -20,8 +20,8 @@ export default function InstructorTestRequests() {
       <div className="space-y-4 pb-24">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <ArrowLeftRight className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center">
+              <ArrowLeftRight className="h-6 w-6 text-foreground/70" />
             </div>
             Test Swap
           </h1>

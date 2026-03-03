@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle, Clock, Shield, Car, BadgeCheck, GraduationCap, Award } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -58,20 +58,14 @@ export function ComplianceOverview({
   cpdYearTarget,
   cpdCertified
 }: ComplianceOverviewProps) {
-  // Build compliance items list
   const items: ComplianceItem[] = [];
   
-  // ADI Badge
   if (adiExpiry) {
     items.push({ label: "ADI Badge", expiryDate: adiExpiry, type: "adi", icon: "instructor" });
   }
-  
-  // DBS Check
   if (dbsExpiry) {
     items.push({ label: "DBS Certificate", expiryDate: dbsExpiry, type: "dbs", icon: "instructor" });
   }
-
-  // Instructor's primary vehicle compliance (from instructor record)
   if (carMotExpiry) {
     items.push({ label: "Car MOT", expiryDate: carMotExpiry, type: "car_mot", icon: "vehicle" });
   }
@@ -82,7 +76,6 @@ export function ComplianceOverview({
     items.push({ label: "Car Tax", expiryDate: carTaxExpiry, type: "car_tax", icon: "vehicle" });
   }
   
-  // Additional vehicles from fleet
   vehicles.forEach(v => {
     if (v.mot_expiry) {
       items.push({ label: "MOT", expiryDate: v.mot_expiry, type: "mot", vehicleReg: v.registration });
@@ -95,7 +88,6 @@ export function ComplianceOverview({
     }
   });
 
-  // Sort by expiry date (soonest first)
   items.sort((a, b) => {
     const daysA = getDaysUntil(a.expiryDate);
     const daysB = getDaysUntil(b.expiryDate);
@@ -104,7 +96,6 @@ export function ComplianceOverview({
     return daysA - daysB;
   });
 
-  // Count alerts
   const expiredCount = items.filter(i => {
     const days = getDaysUntil(i.expiryDate);
     return days !== null && days < 0;
@@ -117,30 +108,27 @@ export function ComplianceOverview({
 
   const allGood = expiredCount === 0 && warningCount === 0 && items.length > 0;
 
-  // CPD Progress
-  const cpdTarget = cpdYearTarget || 7; // Default DVSA recommendation is 7 hours/year
+  const cpdTarget = cpdYearTarget || 7;
   const cpdLogged = cpdHoursLogged || 0;
   const cpdProgress = Math.min((cpdLogged / cpdTarget) * 100, 100);
 
   return (
     <div className="space-y-4">
       {/* CPD Progress Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between text-base">
-            <span className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4" />
-              CPD Progress
-            </span>
-            {cpdCertified && (
-              <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-                <Award className="h-3 w-3 mr-1" />
-                Certified
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <InstructorCard>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
+            <GraduationCap className="h-4 w-4" />
+            CPD Progress
+          </h3>
+          {cpdCertified && (
+            <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+              <Award className="h-3 w-3 mr-1" />
+              Certified
+            </Badge>
+          )}
+        </div>
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Hours this year</span>
             <span className="font-semibold">{cpdLogged} / {cpdTarget} hrs</span>
@@ -152,33 +140,31 @@ export function ComplianceOverview({
               : `${(cpdTarget - cpdLogged).toFixed(1)} hours remaining to meet DVSA recommendation`
             }
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </InstructorCard>
 
       {/* Compliance Items Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between text-base">
-            <span className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              DVSA Compliance
-            </span>
-            {allGood ? (
-              <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-                All Clear
-              </Badge>
-            ) : expiredCount > 0 ? (
-              <Badge variant="destructive">
-                {expiredCount} Expired
-              </Badge>
-            ) : warningCount > 0 ? (
-              <Badge className="bg-orange-500 text-white border-orange-500">
-                {warningCount} Due Soon
-              </Badge>
-            ) : null}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <InstructorCard>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
+            <Shield className="h-4 w-4" />
+            DVSA Compliance
+          </h3>
+          {allGood ? (
+            <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+              All Clear
+            </Badge>
+          ) : expiredCount > 0 ? (
+            <Badge variant="destructive">
+              {expiredCount} Expired
+            </Badge>
+          ) : warningCount > 0 ? (
+            <Badge className="bg-orange-500 text-white border-orange-500">
+              {warningCount} Due Soon
+            </Badge>
+          ) : null}
+        </div>
+        <div className="space-y-3">
           {items.length === 0 ? (
             <div className="py-4 text-center">
               <Shield className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
@@ -236,8 +222,8 @@ export function ComplianceOverview({
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </InstructorCard>
     </div>
   );
 }

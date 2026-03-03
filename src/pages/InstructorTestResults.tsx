@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -157,8 +157,8 @@ export default function InstructorTestResults() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-              <Award className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center">
+              <Award className="h-6 w-6 text-foreground/70" />
             </div>
             Driving Test Results
           </h1>
@@ -204,26 +204,26 @@ export default function InstructorTestResults() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-          <div className="bg-card rounded-xl border p-3 text-center">
+          <InstructorCard className="text-center">
             <div className="text-2xl font-bold">{stats.total}</div>
             <p className="text-xs text-muted-foreground">Total</p>
-          </div>
-          <div className="bg-card rounded-xl border p-3 text-center">
+          </InstructorCard>
+          <InstructorCard className="text-center">
             <div className="text-2xl font-bold text-emerald-600">{stats.passed}</div>
             <p className="text-xs text-muted-foreground">Passed</p>
-          </div>
-          <div className="bg-card rounded-xl border p-3 text-center">
+          </InstructorCard>
+          <InstructorCard className="text-center">
             <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
             <p className="text-xs text-muted-foreground">Failed</p>
-          </div>
-          <div className="bg-card rounded-xl border p-3 text-center">
+          </InstructorCard>
+          <InstructorCard className="text-center">
             <div className="text-2xl font-bold text-primary">{passRate}%</div>
             <p className="text-xs text-muted-foreground">Pass Rate</p>
-          </div>
-          <div className="bg-card rounded-xl border p-3 text-center">
+          </InstructorCard>
+          <InstructorCard className="text-center">
             <div className="text-2xl font-bold text-primary">{stats.mockTests}</div>
             <p className="text-xs text-muted-foreground">Mock</p>
-          </div>
+          </InstructorCard>
         </div>
 
         {/* Tabs */}
@@ -289,8 +289,8 @@ export default function InstructorTestResults() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : filteredResults.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
+              <InstructorCard>
+                <div className="flex flex-col items-center justify-center py-12">
                   <Award className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No test results found</h3>
                   <p className="text-muted-foreground text-center max-w-md">
@@ -298,10 +298,10 @@ export default function InstructorTestResults() {
                       ? "No results match your filters."
                       : "Start recording driving test results to track your pupils' progress."}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </InstructorCard>
             ) : (
-              <Card>
+              <InstructorCard noPadding>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -375,7 +375,7 @@ export default function InstructorTestResults() {
                     ))}
                   </TableBody>
                 </Table>
-              </Card>
+              </InstructorCard>
             )}
           </TabsContent>
 
@@ -393,17 +393,13 @@ export default function InstructorTestResults() {
 
           {/* Examiners Tab */}
           <TabsContent value="examiners">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manage Examiners</CardTitle>
-                <CardDescription>
-                  Add and manage driving test examiners for your records.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ExaminerManager instructorId={instructor.id} />
-              </CardContent>
-            </Card>
+            <InstructorCard>
+              <h3 className="font-semibold text-base mb-1">Manage Examiners</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add and manage driving test examiners for your records.
+              </p>
+              <ExaminerManager instructorId={instructor.id} />
+            </InstructorCard>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,5 +1,5 @@
 import { Car, Gauge, Wrench, Wifi, Star, Camera, Pencil } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,24 +72,23 @@ export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
     : null;
 
   return (
-    <Card className="overflow-hidden">
-      {/* Vehicle Image - Compact on mobile */}
+    <InstructorCard noPadding className="overflow-hidden">
+      {/* Vehicle Image */}
       <div className="relative">
         {vehicle.image_url ? (
           <div className="aspect-[16/9] sm:aspect-video bg-muted max-h-32 sm:max-h-none">
             <img
               src={vehicle.image_url}
               alt={vehicle.registration}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-t-[20px]"
             />
           </div>
         ) : (
-          <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center">
+          <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center rounded-t-[20px]">
             <Camera className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" />
           </div>
         )}
         
-        {/* Edit Button */}
         {onEdit && (
           <Button
             variant="secondary"
@@ -102,7 +101,7 @@ export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
         )}
       </div>
       
-      <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+      <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -122,7 +121,7 @@ export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
           <Car className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
         </div>
 
-        {/* Stats row - Stack on very small screens */}
+        {/* Stats row */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
           <div className="flex items-center gap-1.5">
             <Gauge className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
@@ -158,7 +157,7 @@ export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
             <span>GPS tracker linked</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </InstructorCard>
   );
 }
