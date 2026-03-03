@@ -3,15 +3,18 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
-  BookOpen, Car, History, ChevronRight, ChevronDown, X, AlertCircle,
-  Loader2, Moon, Sun, MapPin, CheckCircle2, User, StickyNote, Sparkles
+  BookOpen, Car, History, ChevronRight, AlertCircle,
+  Loader2, MapPin, User, StickyNote, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { toast } from "@/hooks/use-toast";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { PupilMobileHeader } from "@/components/pupil-portal/PupilMobileHeader";
+import { PupilBottomNav } from "@/components/pupil-portal/PupilBottomNav";
 import { PupilPortalLessonCountdown } from "@/components/pupil-portal/PupilPortalLessonCountdown";
 import { PupilPortalSchedule } from "@/components/pupil-portal/PupilPortalSchedule";
 import { PupilPortalPayments } from "@/components/pupil-portal/PupilPortalPayments";
@@ -95,11 +98,9 @@ export default function BrandedPupilPortal() {
         title: "Payment successful! ✓", 
         description: paymentAmount ? `£${parseFloat(paymentAmount).toFixed(2)} has been added to your account` : "Your payment has been processed",
       });
-      // Clear the params from URL
       searchParams.delete("payment");
       searchParams.delete("amount");
       setSearchParams(searchParams);
-      // Invalidate all payment caches and refresh pupil data
       invalidatePaymentQueries({ pupilId: pupil?.id, instructorId: instructor?.id });
       if (pupil) {
         fetchPupil(pupil.id);
@@ -120,7 +121,6 @@ export default function BrandedPupilPortal() {
     fetchInstructor();
   }, [slug]);
 
-  // Load dark mode preference from localStorage
   useEffect(() => {
     if (instructor) {
       const stored = localStorage.getItem(`darkMode_${instructor.id}`);
@@ -162,12 +162,10 @@ export default function BrandedPupilPortal() {
 
       setInstructor(data);
       
-      // Check if pupil is already verified in session
       const storedPupilId = sessionStorage.getItem(`pupil_${data.id}`);
       if (storedPupilId) {
         fetchPupil(storedPupilId);
       } else {
-        // Check email-based session from /pupil/login
         const verifiedEmail = sessionStorage.getItem("pupil_email_verified");
         if (verifiedEmail) {
           const { data: pupilData } = await supabase
@@ -202,7 +200,6 @@ export default function BrandedPupilPortal() {
     }
   };
 
-
   const handleLogout = () => {
     if (instructor) {
       sessionStorage.removeItem(`pupil_${instructor.id}`);
@@ -211,20 +208,12 @@ export default function BrandedPupilPortal() {
     setActiveSection('home');
   };
 
-  // Generate CSS variables for branding
-  const brandStyles = instructor ? {
-    '--brand-primary': instructor.brand_colour || '#1e3a5f',
-    '--brand-secondary': instructor.secondary_colour || '#d4a574',
-    '--brand-bg': effectiveDarkMode ? '#0f0f0f' : '#ffffff',
-    '--brand-card': effectiveDarkMode ? '#1a1a1a' : '#ffffff',
-    '--brand-text': effectiveDarkMode ? '#ffffff' : '#1a1a1a',
-    '--brand-muted': effectiveDarkMode ? '#a0a0a0' : '#6b7280',
-    '--brand-border': effectiveDarkMode ? '#2a2a2a' : '#e5e7eb',
-  } as React.CSSProperties : {};
+  // Wallpaper color - use brand-derived light tint or default
+  const wallpaperColor = effectiveDarkMode ? '#111111' : '#E8F1FE';
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: wallpaperColor }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -232,7 +221,7 @@ export default function BrandedPupilPortal() {
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ backgroundColor: wallpaperColor }}>
         <AlertCircle className="h-16 w-16 text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold mb-2">Portal Not Found</h1>
         <p className="text-muted-foreground text-center mb-4">
@@ -245,14 +234,28 @@ export default function BrandedPupilPortal() {
 
   if (!instructor) return null;
 
+  const isSubPage = activeSection !== 'home';
+
+  // Section back handler
+  const handleBack = () => setActiveSection('home');
+
+  // Render a sub-page wrapper with back button
+  const renderSubPage = (content: React.ReactNode) => (
+    <div className="p-4">
+      <button 
+        onClick={handleBack}
+        className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors"
+      >
+        ← Back
+      </button>
+      {content}
+    </div>
+  );
+
   return (
     <div 
       className="min-h-screen transition-colors"
-      style={{
-        ...brandStyles,
-        backgroundColor: 'var(--brand-bg)',
-        color: 'var(--brand-text)',
-      }}
+      style={{ backgroundColor: wallpaperColor }}
     >
       {/* iOS Install Banner */}
       <PortalIOSInstallBanner 
@@ -262,118 +265,58 @@ export default function BrandedPupilPortal() {
       />
 
       {/* Header */}
-      <header 
-        className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-sm"
-        style={{ backgroundColor: instructor.brand_colour || '#1e3a5f' }}
-      >
-        <div className="flex items-center gap-3">
-          {pupil ? (
-            <button onClick={() => setDetailsOpen(true)} className="flex items-center gap-3">
-              {pupil.profile_image_url ? (
-                <img 
-                  src={pupil.profile_image_url} 
-                  alt={pupil.name} 
-                  className="h-10 w-10 object-cover rounded-full border-2 border-white/30"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                  {pupil.name.charAt(0)}
-                </div>
-              )}
-              <div className="text-left">
-                <h1 className="font-bold text-white text-sm line-clamp-1">{pupil.name}</h1>
-                <p className="text-white/70 text-xs">{instructor.name}</p>
-              </div>
-              <ChevronDown className="h-4 w-4 text-white/60" />
-            </button>
-          ) : (
-            <>
-              {instructor.logo_url ? (
-                <img 
-                  src={instructor.logo_url} 
-                  alt={instructor.name} 
-                  className="h-10 w-10 object-contain rounded-lg bg-white/10 p-1"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                  {instructor.name.charAt(0)}
-                </div>
-              )}
-              <div>
-                <h1 className="font-bold text-white text-sm line-clamp-1">{instructor.name}</h1>
-                <p className="text-white/70 text-xs">Pupil Portal</p>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleDarkMode}
-            className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
-          >
-            {effectiveDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
-          {pupil && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLogout}
-              className="text-white/80 hover:text-white hover:bg-white/10"
-            >
-              Logout
-            </Button>
-          )}
-        </div>
-      </header>
+      <PupilMobileHeader
+        pupilName={pupil?.name}
+        pupilImageUrl={pupil?.profile_image_url}
+        instructorName={instructor.name}
+        instructorLogoUrl={instructor.logo_url}
+        brandColour={instructor.brand_colour}
+        showBackButton={isSubPage}
+        title={activeSection !== 'home' ? activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/-/g, ' ') : undefined}
+        darkMode={effectiveDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+        onLogout={pupil ? handleLogout : undefined}
+        onAvatarClick={() => setDetailsOpen(true)}
+      />
 
       {/* Main Content */}
       <main className="pb-20">
         {!pupil ? (
-          // Sign In Screen
+          /* Sign In Screen */
           <div className="p-4 max-w-md mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-8"
             >
-              <Card 
-                className="border-0 shadow-lg"
-                style={{ 
-                  backgroundColor: 'var(--brand-card)',
-                  borderColor: 'var(--brand-border)'
-                }}
-              >
-                <CardHeader className="text-center">
-                  <CardTitle style={{ color: 'var(--brand-text)' }}>
+              <InstructorCard>
+                <div className="text-center mb-4">
+                  <h2 className="text-lg font-bold text-foreground">
                     Welcome to {instructor.name}'s Portal
-                  </CardTitle>
-                  <CardDescription style={{ color: 'var(--brand-muted)' }}>
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Sign in with your email and password to access your lessons and account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button 
-                    className="w-full h-12 text-base"
-                    onClick={() => navigate("/pupil/login")}
-                    style={{ 
-                      backgroundColor: instructor.brand_colour || '#1e3a5f',
-                      color: '#ffffff'
-                    }}
-                  >
-                    Sign In
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <p className="text-xs text-center" style={{ color: 'var(--brand-muted)' }}>
-                    Use the email address registered with your instructor
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+                <Button 
+                  className="w-full h-12 text-base"
+                  onClick={() => navigate("/pupil/login")}
+                  style={{ 
+                    backgroundColor: instructor.brand_colour || 'hsl(var(--primary))',
+                    color: '#ffffff'
+                  }}
+                >
+                  Sign In
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+                <p className="text-xs text-center text-muted-foreground mt-3">
+                  Use the email address registered with your instructor
+                </p>
+              </InstructorCard>
 
               {/* Contact if issues */}
               <div className="mt-6 text-center">
-                <p className="text-sm mb-2" style={{ color: 'var(--brand-muted)' }}>
+                <p className="text-sm mb-2 text-muted-foreground">
                   Having trouble? Contact your instructor:
                 </p>
                 <div className="flex justify-center gap-3">
@@ -382,7 +325,6 @@ export default function BrandedPupilPortal() {
                       variant="outline"
                       size="sm"
                       onClick={() => window.location.href = `tel:${instructor.phone}`}
-                      style={{ borderColor: 'var(--brand-border)', color: 'var(--brand-text)' }}
                     >
                       <Phone className="h-4 w-4 mr-2" />
                       Call
@@ -393,7 +335,6 @@ export default function BrandedPupilPortal() {
                       variant="outline"
                       size="sm"
                       onClick={() => window.location.href = `sms:${instructor.phone}`}
-                      style={{ borderColor: 'var(--brand-border)', color: 'var(--brand-text)' }}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Text
@@ -404,7 +345,7 @@ export default function BrandedPupilPortal() {
             </motion.div>
           </div>
         ) : (
-          // Logged In Pupil View
+          /* Logged In Pupil View */
           <AnimatePresence mode="wait">
             {activeSection === 'home' && (
               <motion.div
@@ -438,7 +379,7 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                 />
 
-                {/* Welcome & Next Lesson Countdown */}
+                {/* Lesson Countdown */}
                 <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
                   instructorId={instructor.id}
@@ -457,29 +398,25 @@ export default function BrandedPupilPortal() {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || '#1e3a5f' }}>
+                  <InstructorCard>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }}>
                         {pupil.lessons_completed || 0}
                       </div>
-                      <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>
-                        Lessons Done
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || '#1e3a5f' }}>
+                      <div className="text-xs text-muted-foreground">Lessons Done</div>
+                    </div>
+                  </InstructorCard>
+                  <InstructorCard>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }}>
                         {pupil.progress || 0}%
                       </div>
-                      <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>
-                        Progress
-                      </div>
-                    </CardContent>
-                  </Card>
+                      <div className="text-xs text-muted-foreground">Progress</div>
+                    </div>
+                  </InstructorCard>
                 </div>
 
-                {/* AI Driving Insights Summary */}
+                {/* AI Driving Insights */}
                 <PupilDashboardInsights
                   pupilId={pupil.id}
                   instructorId={instructor.id}
@@ -502,26 +439,25 @@ export default function BrandedPupilPortal() {
                     { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap a driving test' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
-                    <Card 
+                    <InstructorCard
                       key={item.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                      style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}
+                      interactive
                       onClick={() => setActiveSection(item.id)}
                     >
-                      <CardContent className="p-4 flex items-center gap-4">
+                      <div className="flex items-center gap-4">
                         <div 
-                          className="h-10 w-10 rounded-lg flex items-center justify-center"
-                          style={{ backgroundColor: `${instructor.brand_colour}20` }}
+                          className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${instructor.brand_colour || 'hsl(var(--primary))'}20` }}
                         >
-                          <item.icon className="h-5 w-5" style={{ color: instructor.brand_colour || '#1e3a5f' }} />
+                          <item.icon className="h-5 w-5" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }} />
                         </div>
-                        <div className="flex-1">
-                          <div className="font-medium" style={{ color: 'var(--brand-text)' }}>{item.label}</div>
-                          <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>{item.desc}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">{item.desc}</div>
                         </div>
-                        <ChevronRight className="h-5 w-5" style={{ color: 'var(--brand-muted)' }} />
-                      </CardContent>
-                    </Card>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                      </div>
+                    </InstructorCard>
                   ))}
                 </div>
 
@@ -534,29 +470,14 @@ export default function BrandedPupilPortal() {
                 />
 
                 {/* Contact Instructor */}
-                <PupilPortalContact 
-                  instructor={instructor}
-                />
+                <PupilPortalContact instructor={instructor} />
               </motion.div>
             )}
 
             {activeSection === 'schedule' && (
-              <motion.div
-                key="schedule"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="schedule" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalSchedule 
                   pupilId={pupil.id}
@@ -569,22 +490,9 @@ export default function BrandedPupilPortal() {
             )}
 
             {activeSection === 'payments' && (
-              <motion.div
-                key="payments"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="payments" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalPayments 
                   pupilId={pupil.id}
@@ -603,366 +511,152 @@ export default function BrandedPupilPortal() {
             )}
 
             {activeSection === 'theory' && (
-              <motion.div
-                key="theory"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="theory" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalTheory 
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
                 <div className="px-4 pb-4 space-y-4">
-                  <TheoryProgressChart
-                    pupilId={pupil.id}
-                    instructorId={instructor.id}
-                    brandColour={instructor.brand_colour}
-                  />
-                  <TheoryMockScoreLogger
-                    pupilId={pupil.id}
-                    instructorId={instructor.id}
-                  />
+                  <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
+                  <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
                 </div>
               </motion.div>
             )}
 
             {activeSection === 'progress' && (
-              <motion.div
-                key="progress"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="progress" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalProgress 
-                  pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <PupilPortalProgress pupilId={pupil.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'coaching' && (
-              <motion.div
-                key="coaching"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="coaching" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilAICoaching 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <PupilAICoaching pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'messages' && (
-              <motion.div
-                key="messages"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="h-[calc(100vh-8rem)]"
-              >
-                <PupilChat 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  instructorName={instructor.name}
-                  onBack={() => setActiveSection('home')}
-                />
+              <motion.div key="messages" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-[calc(100vh-8rem)]">
+                <PupilChat pupilId={pupil.id} instructorId={instructor.id} instructorName={instructor.name} onBack={handleBack} />
               </motion.div>
             )}
 
             {activeSection === 'history' && (
-              <motion.div
-                key="history"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="history" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalHistory 
-                  pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <PupilPortalHistory pupilId={pupil.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'gaps' && (
-              <motion.div
-                key="gaps"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="gaps" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalGaps 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'notes' && (
-              <motion.div
-                key="notes"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="notes" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilNotes
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
-                  instructorName={instructor.name}
-                />
+                <PupilNotes pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} instructorName={instructor.name} />
               </motion.div>
             )}
 
             {activeSection === 'test-requests' && (
-              <motion.div
-                key="test-requests"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="test-requests" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilTestRequests
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
-                />
+                <PupilTestRequests pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
               </motion.div>
             )}
 
             {activeSection === 'reflections' && (
-              <motion.div
-                key="reflections"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="reflections" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
-                </div>
-                <div className="px-4">
-                  <ReflectiveLog
-                    pupilId={pupil.id}
-                    brandColour={instructor.brand_colour}
-                  />
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                  <ReflectiveLog pupilId={pupil.id} brandColour={instructor.brand_colour} />
                 </div>
               </motion.div>
             )}
 
             {activeSection === 'book' && (
-              <motion.div
-                key="book"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="book" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setActiveSection('home')}
-                    className="mb-4"
-                    style={{ color: 'var(--brand-text)' }}
-                  >
-                    ← Back
-                  </Button>
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalGaps 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'profile' && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="p-4"
-              >
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setActiveSection('home')}
-                  className="mb-4"
-                  style={{ color: 'var(--brand-text)' }}
-                >
-                  ← Back
-                </Button>
+              <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-4">
+                <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 
-                <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-                  <CardHeader className="text-center">
-                    <CardTitle style={{ color: 'var(--brand-text)' }}>My Profile</CardTitle>
-                    <CardDescription style={{ color: 'var(--brand-muted)' }}>
-                      Update your profile picture
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <PupilProfilePictureUpload
-                      pupilId={pupil.id}
-                      pupilName={pupil.name}
-                      currentImageUrl={pupil.profile_image_url}
-                      onImageUpdated={(newUrl) => {
-                        setPupil(prev => prev ? { ...prev, profile_image_url: newUrl } : null);
-                      }}
-                    />
-                    
-                    <div className="mt-6 pt-6 border-t space-y-3" style={{ borderColor: 'var(--brand-border)' }}>
-                      <div className="flex justify-between">
-                        <span style={{ color: 'var(--brand-muted)' }}>Name</span>
-                        <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.name}</span>
-                      </div>
-                      {pupil.email && (
-                        <div className="flex justify-between">
-                          <span style={{ color: 'var(--brand-muted)' }}>Email</span>
-                          <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.email}</span>
-                        </div>
-                      )}
-                      {pupil.phone && (
-                        <div className="flex justify-between">
-                          <span style={{ color: 'var(--brand-muted)' }}>Phone</span>
-                          <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.phone}</span>
-                        </div>
-                      )}
+                <InstructorCard>
+                  <div className="text-center mb-4">
+                    <h2 className="text-lg font-bold text-foreground">My Profile</h2>
+                    <p className="text-sm text-muted-foreground">Update your profile picture</p>
+                  </div>
+                  <PupilProfilePictureUpload
+                    pupilId={pupil.id}
+                    pupilName={pupil.name}
+                    currentImageUrl={pupil.profile_image_url}
+                    onImageUpdated={(newUrl) => {
+                      setPupil(prev => prev ? { ...prev, profile_image_url: newUrl } : null);
+                    }}
+                  />
+                  
+                  <div className="mt-6 pt-6 border-t border-border space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Name</span>
+                      <span className="font-medium text-foreground">{pupil.name}</span>
                     </div>
-                  </CardContent>
-                </Card>
+                    {pupil.email && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Email</span>
+                        <span className="font-medium text-foreground">{pupil.email}</span>
+                      </div>
+                    )}
+                    {pupil.phone && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Phone</span>
+                        <span className="font-medium text-foreground">{pupil.phone}</span>
+                      </div>
+                    )}
+                  </div>
+                </InstructorCard>
               </motion.div>
             )}
           </AnimatePresence>
         )}
       </main>
 
-      {/* Bottom Nav for logged in users */}
+      {/* Bottom Nav */}
       {pupil && (
-        <nav 
-          className="fixed bottom-0 left-0 right-0 z-50 border-t"
-          style={{ 
-            backgroundColor: 'var(--brand-card)',
-            borderColor: 'var(--brand-border)'
-          }}
-        >
-          <div className="flex items-center justify-around h-16 px-2">
-            {[
-              { id: 'home' as const, icon: Calendar, label: 'Home' },
-              { id: 'schedule' as const, icon: Clock, label: 'Lessons' },
-              { id: 'payments' as const, icon: CreditCard, label: 'Payments' },
-              { id: 'theory' as const, icon: BookOpen, label: 'Theory' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors"
-                style={{ 
-                  color: activeSection === item.id 
-                    ? instructor.brand_colour || '#1e3a5f' 
-                    : 'var(--brand-muted)'
-                }}
-              >
-                <item.icon className={`h-5 w-5 ${activeSection === item.id ? 'scale-110' : ''} transition-transform`} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </button>
-            ))}
-          </div>
-          <div className="h-safe-area-inset-bottom" style={{ backgroundColor: 'var(--brand-card)' }} />
-        </nav>
+        <PupilBottomNav
+          activeSection={activeSection}
+          onNavigate={(section) => setActiveSection(section as ActiveSection)}
+          brandColour={instructor.brand_colour}
+          wallpaperColor={wallpaperColor}
+        />
       )}
+
       {pupil && (
         <PupilDetailsDrawer
           open={detailsOpen}
