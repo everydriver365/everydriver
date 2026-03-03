@@ -2,7 +2,9 @@ import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
 import { TestimonialStrip } from "@/components/instructor-features/TestimonialStrip";
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
-import { Megaphone, Search, MapPin, Star, Share2, TrendingUp, FileText, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Megaphone, Search, MapPin, Star, Share2, TrendingUp, FileText, Users, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import marketingImg from "@/assets/features/marketing-website-mockup.png";
 
@@ -67,6 +69,30 @@ export default function InstructorMarketing() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* All Features CTA */}
+      <section className="py-16 bg-background">
+        <div className="container max-w-3xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              Marketing is just the start
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+              Explore all 50+ features across diary, payments, telematics, dashcam and more — see exactly what each plan includes.
+            </p>
+            <Button size="lg" className="bg-[#0075c9] hover:bg-[#0075c9]/90 text-white" asChild>
+              <Link to="/instructor-app/all-features">
+                See All 50+ Features
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
