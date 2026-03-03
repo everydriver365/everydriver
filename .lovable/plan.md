@@ -1,17 +1,59 @@
 
 
-## Improve "All Features" Page — Show Multi-Plan Badges
+## Premium Placement for Paid Instructors
 
-### Problem
-The existing page at `/instructor-app/all-features` only shows a **single** `plan_tier` badge per feature (from the legacy column on `feature_showcase_items`). The actual plan assignments live in `feature_plan_assignments` and many features are available on multiple plans. Two categories also lack icons in `categoryIcons`.
+### Overview
+Add a premium placement system where instructors on paid plans (Pro+) get boosted visibility in the learner-facing course discovery pages. Premium instructors appear first in search results with a visual "Featured" badge and highlighted card styling.
 
-### Changes to `src/pages/instructor-app/InstructorAllFeatures.tsx`
+### Database Changes
 
-1. **Fetch plan assignments alongside features** — join `feature_plan_assignments` data so each feature gets an array of plan slugs (free, pro, max, etc.)
-2. **Render multiple plan badges per feature** — instead of one `plan_tier` badge, show a row of colored badges for every plan that includes the feature
-3. **Add missing category icons** — add `Health & Wellbeing` (Heart/Activity icon) and `Tools & Productivity` (Wrench/Settings icon) to `categoryIcons`
-4. **Sort plan badges** in tier order (Free → Pro → Max → Multi → Enterprise)
+**New table: `instructor_premium_placements`**
+- `id` (uuid, PK)
+- `instructor_id` (uuid, FK → instructors, unique)
+- `is_active` (boolean, default true)
+- `placement_type` (text: 'featured' | 'spotlight' | 'top_result')
+- `priority_score` (integer, default 10) — higher = shown first
+- `started_at` (timestamptz, default now)
+- `expires_at` (timestamptz, nullable)
+- `created_at` / `updated_at`
 
-### No new files, no database changes
-Single file modification: `src/pages/instructor-app/InstructorAllFeatures.tsx`
+RLS: public read (learners need to see it), authenticated write restricted to the instructor's own row.
+
+**Auto-assign via subscription tier**: Add a database trigger or handle in code — when an instructor has an active subscription on Pro/Max/Multi/Enterprise, they automatically get a premium placement row.
+
+### Code Changes
+
+**1. `src/hooks/useCourseDiscovery.ts`** — Sorting logic update
+- Fetch `instructor_premium_placements` alongside existing queries
+- In the final `.sort()`, add premium instructors first (sorted by `priority_score` desc), then non-premium sorted by existing criteria (price/nearest/soonest)
+- Add `isPremium` and `placementType` fields to `CourseWithInstructor`
+
+**2. `src/components/DynamicCourseCard.tsx`** — Desktop card
+- Accept new `isPremium` prop
+- When true: add a gold/amber gradient border, a "Featured" badge in top corner, subtle glow shadow
+- Slightly larger card or top positioning emphasis
+
+**3. `src/components/courses/MobileCourseCard.tsx`** — Mobile card
+- Accept `isPremium` prop
+- Show "Featured" badge, amber accent border on premium cards
+
+**4. `src/components/courses/CourseGrid.tsx`** — Grid layout
+- Pass `isPremium` through to card components
+- Optionally render premium cards in a separate "Featured Instructors" section above the main grid
+
+**5. Admin management** — `src/pages/admin/` area
+- Add a small section in the admin instructor management to toggle premium placement and set priority for any instructor
+
+**6. Instructor self-service** — Settings or plan page
+- Show premium placement status on the instructor's plan/subscription page
+- "Your listing is boosted" indicator for paid plan holders
+
+### Files to Create
+- `src/hooks/usePremiumPlacement.ts` — hook to fetch placement data
+
+### Files to Modify
+- `src/hooks/useCourseDiscovery.ts` — integrate premium sorting
+- `src/components/DynamicCourseCard.tsx` — premium card styling
+- `src/components/courses/MobileCourseCard.tsx` — premium mobile styling
+- `src/components/courses/CourseGrid.tsx` — featured section + prop passing
 
