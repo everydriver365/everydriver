@@ -1,34 +1,27 @@
 
 
-## Diagnosis: Preview Blank Page
+## Diagnosis: Persistent Blank Preview
 
-The blank preview is caused by the Vite dev server returning **503 errors** on random module requests. Each page load attempt fails on different files (Intensives.tsx, CalendarConnect.tsx, useVehicleHealth.ts, PrivacyPolicy.tsx, etc.), which confirms this is **not a code syntax error** but rather the Vite dev server being overloaded or stuck.
+The previous fix lazy-loaded ~28 demo pages, but there are still **~90 eager imports** at the top of `App.tsx`. This is still too many synchronous modules for Vite to transform at once, causing 503s.
 
-### Evidence
-- Vite connects successfully (`[vite] connected.`)
-- No JavaScript runtime errors in the console
-- 503s appear on different, unrelated files each attempt
-- All recently edited files have been reviewed and are syntactically correct
-- The 503 pattern is consistent with Vite transform pipeline failure under load
+## Plan: Aggressive Lazy Loading
 
-### Root Cause
-This is a **transient dev server issue** common with very large codebases (340+ line App.tsx with 100+ route imports, all eagerly loaded). The project has an exceptionally large number of pages and components loaded synchronously.
+Convert **all** page imports to `React.lazy()` except the absolute minimum needed for first render (`ConditionalHome` dependencies and critical shared components). This means:
 
-### Fix Plan
+**Keep eager (needed immediately):**
+- UI providers, layout components, auth contexts (~10 imports)
+- `Index`, `HomepageRedesignDemo`, `MiniWebsiteHome` (used by `ConditionalHome`)
+- `NotFound` (catch-all)
 
-1. **Immediate fix**: Add a trivial no-op change (e.g. add a comment) to `src/main.tsx` to force a Vite server restart and clear any stuck transform cache.
+**Convert to lazy (~80 imports):**
+- All `/instructor/*` pages (~50 imports)
+- All `/instructor-app/*` pages (~15 imports)  
+- All mini-website sub-pages, pupil/parent portals
+- All utility pages (Theory, FAQs, Help, Privacy, etc.)
+- The already-lazy demo pages stay lazy
 
-2. **Long-term improvement** (optional, prevents recurrence): Convert the heaviest page imports in `App.tsx` to lazy imports using `React.lazy()` and `Suspense`. This reduces the initial module graph Vite has to process. For example, the ~30 demo pages and rarely-visited pages could be lazy-loaded:
+This reduces Vite's initial transform workload from ~120 modules to ~15, which should permanently fix the 503 overload.
 
-```tsx
-const HeroLayoutDemo = React.lazy(() => import("./pages/HeroLayoutDemo"));
-const CollageDemo = React.lazy(() => import("./pages/CollageDemo"));
-// ... etc for all demo/rarely-used pages
-```
-
-Wrapped in a `<Suspense fallback={<div>Loading...</div>}>` around the `<Routes>`.
-
-### Recommended Approach
-
-Start with just the trivial file touch (step 1) to get the preview back. If the issue recurs, proceed with lazy loading (step 2) in a follow-up.
+### Implementation
+Single file change: `src/App.tsx` -- move all page `import` statements (lines 3-4, 17-121) to `lazy()` declarations, keeping only the handful needed by `ConditionalHome` and the app shell as eager imports.
 
