@@ -173,7 +173,7 @@ export default function InstructorTodos() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden px-4 md:px-0"
             >
-              <div className="bg-card rounded-xl border border-border p-3 space-y-3">
+              <div className="bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-[20px] shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/60 dark:ring-white/5 p-3 space-y-3">
                 <div className="flex gap-2 items-center">
                   <Input
                     ref={inputRef}
@@ -322,7 +322,7 @@ function FullTodoItem({
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
-      className="flex items-start gap-3 py-3 px-3 bg-card rounded-xl border border-border group hover:shadow-sm transition-shadow"
+      className="flex items-start gap-3 py-3 px-3 bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-[20px] shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)] ring-1 ring-inset ring-white/60 dark:ring-white/5 group transition-shadow"
     >
       {/* Priority checkbox */}
       <button

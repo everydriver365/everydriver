@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -198,21 +199,14 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
   return (
     <>
-      <Card className="h-[calc(100vh-8rem)]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <MessageCircle className="h-5 w-5" />
-              Messages
-              {(totalUnread + adminUnreadCount) > 0 && (
-                <Badge variant="destructive" className="ml-1">
-                  {totalUnread + adminUnreadCount}
-                </Badge>
-              )}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="px-4 pb-4 pt-0 space-y-3">
+      <div className="space-y-4 h-[calc(100vh-8rem)]">
+        <InstructorPageHeader
+          lucideIcon={MessageCircle}
+          title="Messages"
+          subtitle={(totalUnread + adminUnreadCount) > 0 ? `${totalUnread + adminUnreadCount} unread` : undefined}
+        />
+        <Card className="flex-1 overflow-hidden">
+        <CardContent className="px-4 pb-4 pt-4 space-y-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex items-center justify-between gap-2">
               <TabsList className="grid grid-cols-2 flex-1">
@@ -421,6 +415,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
         onOpenChange={setShowBroadcast}
         instructorId={instructorId}
       />
+      </div>
     </>
   );
 }

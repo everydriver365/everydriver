@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Briefcase, MapPin, Clock, User, Calendar, FileText, ChevronRight, X, Check, Navigation } from "lucide-react";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
@@ -209,53 +209,51 @@ export default function InstructorJobs() {
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Loading jobs...</div>
         ) : jobs.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
+          <InstructorCard className="py-8 text-center">
               <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
               <p className="text-muted-foreground">No available jobs at the moment</p>
               <p className="text-sm text-muted-foreground mt-1">Check back later for new enquiries</p>
-            </CardContent>
-          </Card>
+          </InstructorCard>
         ) : (
           <div className="space-y-3">
             {jobs.map((job) => (
-              <Card 
+              <InstructorCard
                 key={job.id} 
-                className="cursor-pointer hover:bg-muted/30 transition-colors"
+                interactive
+                noPadding
+                className="p-4"
                 onClick={() => setSelectedJob(job)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-1">
-                        <div>
-                          <h3 className="font-semibold">{job.name}</h3>
-                          <p className="text-sm text-muted-foreground">{job.course_type}</p>
-                        </div>
-                        <Badge variant="outline" className="ml-2">{job.requested_hours || 10}hrs</Badge>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <h3 className="font-semibold">{job.name}</h3>
+                        <p className="text-sm text-muted-foreground">{job.course_type}</p>
                       </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                      <Badge variant="outline" className="ml-2">{job.requested_hours || 10}hrs</Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span>{job.postcode}</span>
+                      </div>
+                      {jobDistances[job.id] !== undefined && jobDistances[job.id] !== null && (
                         <div className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" />
-                          <span>{job.postcode}</span>
+                          <Navigation className="h-3.5 w-3.5" />
+                          <span>{jobDistances[job.id]!.toFixed(1)} mi</span>
                         </div>
-                        {jobDistances[job.id] !== undefined && jobDistances[job.id] !== null && (
-                          <div className="flex items-center gap-1">
-                            <Navigation className="h-3.5 w-3.5" />
-                            <span>{jobDistances[job.id]!.toFixed(1)} mi</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          <span>{job.preferred_timing}</span>
-                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{job.preferred_timing}</span>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground ml-2" />
                   </div>
-                </CardContent>
-              </Card>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground ml-2" />
+                </div>
+              </InstructorCard>
             ))}
           </div>
         )}
