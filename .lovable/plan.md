@@ -1,54 +1,28 @@
 
 
-## Codebase Cleanup — Remove Redundant Demo & Showcase Pages
+## Dead Links & Routing Issues Found
 
-### Problem
-There are **27 demo/showcase pages** registered as routes and lazy imports in `App.tsx`. These are design exploration artifacts that add no production value but increase bundle size, clutter the router, and create maintenance overhead.
+### 1. `/instructor/tests` — Dead Link (404)
+**File:** `src/components/instructor/CleanHomeView.tsx` (line 145)
+The "Tests" quick-access tile links to `/instructor/tests`, but **no such route exists** in `App.tsx`. The closest routes are `/instructor/test-results` or `/instructor/test-requests`.
+**Fix:** Change path from `/instructor/tests` to `/instructor/test-results` (the DL25A test results page).
 
-### Pages to Remove
+### 2. `/instructor/live-map` — Dead Link (404)
+**File:** `src/components/instructor/CleanHomeView.tsx` (line 143)
+The "Live Map" quick-access tile links to `/instructor/live-map`, but **no such route exists**. The correct route is `/instructor/tracking` (which renders `InstructorLiveSession`).
+**Fix:** Change path from `/instructor/live-map` to `/instructor/tracking`.
 
-**Demo pages (files + routes + imports):**
-1. `src/pages/DesignDemo.tsx`
-2. `src/pages/HeroLayoutDemo.tsx`
-3. `src/pages/CollageDemo.tsx`
-4. `src/pages/HeroRedesignDemo.tsx`
-5. `src/pages/MobileHomeDemo.tsx`
-6. `src/pages/MobilePortalDemo.tsx`
-7. `src/pages/InstructorMobileDemo.tsx`
-8. `src/pages/InstructorTileDemo.tsx`
-9. `src/pages/InstructorHeroDemo.tsx`
-10. `src/pages/InstructorHomeDesignDemo.tsx`
-11. `src/pages/InstructorBlueStyleDemo.tsx`
-12. `src/pages/InstructorNoHeroDemo.tsx`
-13. `src/pages/InstructorNoHeroIOSDemo.tsx`
-14. `src/pages/InstructorIOSDemo2.tsx`
-15. `src/pages/InstructorIOSDemo3.tsx`
-16. `src/pages/QuickActionGradientDemo.tsx`
-17. `src/pages/HomepageRedesignDemo.tsx`
-18. `src/pages/MobileHomeRedesignDemo.tsx`
-19. `src/pages/MobileHomeRedesignDemo2.tsx`
-20. `src/pages/MobileHomeIOSDemo.tsx`
-21. `src/pages/HeaderRedesignDemo.tsx`
-22. `src/pages/IOSHomeLayoutsDemo.tsx`
-23. `src/pages/DiaryImageDemo.tsx`
-24. `src/pages/TileDesignDemo.tsx`
-25. `src/pages/instructor-app/DesignDemo.tsx`
-26. `src/pages/instructor-app/PortalLayoutDemo.tsx`
+**File:** `src/components/instructor/NextUpTile.tsx` (line 367)
+The "Start Lesson" button navigates to `/instructor/live-map?lesson=${lessonId}` — same dead route.
+**Fix:** Change to `/instructor/tracking?lesson=${lessonId}`.
 
-**Showcase pages (also demo artifacts):**
-27. `src/pages/NextUpTileShowcase.tsx`
-28. `src/pages/TodoTileShowcase.tsx`
-29. `src/pages/PupilCardDemo.tsx`
+### No Other Issues Found
+- All routes in the Menu page (`InstructorMenu.tsx`) have valid corresponding routes in `App.tsx`
+- Bottom nav links are all valid
+- Learner-side mobile nav links are all valid
+- Mini-website routes, SaaS marketing routes, and shared routes all resolve correctly
 
-### Changes to `src/App.tsx`
-- Remove all 29 lazy imports (lines 76–77, 91, 124–150)
-- Remove all corresponding `<Route>` entries (lines 234–235, 239–243, 280–281, 292, 322–340)
-
-### Additional Cleanup in `src/App.tsx`
-- Remove the 4 homepage redesign demo routes that sit outside the demo block (lines 239–243): `/homepage-redesign-demo`, `/mobile-home-redesign`, `/mobile-home-redesign-2`, `/mobile-home-ios-demo`, `/header-redesign-demo`
-
-### What Stays
-All production pages, install pages, mini-website pages, instructor portal pages, and the instructor-app SaaS pages remain untouched.
-
-### No Database Changes
+### Files to Modify
+1. `src/components/instructor/CleanHomeView.tsx` — Fix 2 dead paths (`/instructor/tests` → `/instructor/test-results`, `/instructor/live-map` → `/instructor/tracking`)
+2. `src/components/instructor/NextUpTile.tsx` — Fix 1 dead path (`/instructor/live-map` → `/instructor/tracking`)
 
