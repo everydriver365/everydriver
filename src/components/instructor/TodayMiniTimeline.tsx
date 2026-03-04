@@ -4,6 +4,7 @@ import { Clock, MapPin, PoundSterling } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
+import { PupilAvatar } from "./PupilAvatar";
 
 interface TodayMiniTimelineProps {
   lessons: TodayLesson[];
@@ -17,15 +18,6 @@ const lessonTypeColors: Record<string, { bg: string; text: string }> = {
   "Motorway": { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
   "Refresher": { bg: "bg-pink-500/10", text: "text-pink-600 dark:text-pink-400" },
   "Pass Plus": { bg: "bg-sky-500/10", text: "text-sky-600 dark:text-sky-400" },
-};
-
-const lessonTypeBorderColors: Record<string, string> = {
-  "Standard": "border-l-[#007AFF]",
-  "Test Prep": "border-l-[#FF9500]",
-  "Mock Test": "border-l-[#AF52DE]",
-  "Motorway": "border-l-[#FF2D55]",
-  "Refresher": "border-l-pink-500",
-  "Pass Plus": "border-l-sky-500",
 };
 
 export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimelineProps) {
@@ -64,7 +56,6 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
       <div className="space-y-3">
         {lessons.map((lesson, idx) => {
           const typeColors = lessonTypeColors[lesson.lessonType] || lessonTypeColors["Standard"];
-          const borderColor = lessonTypeBorderColors[lesson.lessonType] || "border-l-primary";
           const isPaid = lesson.paymentStatus === "paid";
 
           return (
@@ -73,24 +64,28 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.06 }}
-              className={`border-l-4 ${borderColor} overflow-hidden active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]`}
-              style={{
-                background: "rgba(255,255,255,0.65)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                borderRadius: 22,
-                boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-                border: "1px solid rgba(255,255,255,0.5)",
-                borderLeft: `4px solid`,
-              }}
+                className="overflow-hidden active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
+                style={{
+                  background: "rgba(255,255,255,0.65)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  borderRadius: 22,
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+                  border: "1px solid rgba(255,255,255,0.5)",
+                }}
               >
                 <div className="p-4">
-                  {/* Top row: Name + Lesson Type Badge */}
-                  <div className="flex items-center justify-between mb-2.5">
-                    <h4 className="text-[15px] font-semibold text-foreground truncate">{lesson.pupilName}</h4>
+                  {/* Top row: Avatar + Name + Lesson Type Badge */}
+                  <div className="flex items-center gap-3 mb-2.5">
+                    <PupilAvatar
+                      name={lesson.pupilName}
+                      imageUrl={lesson.pupilProfileImageUrl}
+                      size="sm"
+                    />
+                    <h4 className="text-[15px] font-semibold text-foreground truncate flex-1">{lesson.pupilName}</h4>
                     <Badge
                       variant="outline"
-                      className={`${typeColors.bg} ${typeColors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0 ml-2`}
+                      className={`${typeColors.bg} ${typeColors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`}
                     >
                       {lesson.lessonType}
                     </Badge>
