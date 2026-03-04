@@ -283,9 +283,9 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             {allDayEvents.map((evt) => (
               <div
                 key={evt.id}
-                className="bg-[#306285]/10 rounded-xl border border-[#306285]/20 px-4 py-2.5 flex items-center gap-2"
+                className="bg-warning/10 rounded-xl border border-warning/20 px-4 py-2.5 flex items-center gap-2"
               >
-                <CalendarDays className="h-3.5 w-3.5 text-[#306285] shrink-0" />
+                <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
                 <span className="text-sm font-bold text-foreground truncate flex-1">{evt.title}</span>
                 <span className="text-xs text-foreground/70 shrink-0">all-day</span>
               </div>
