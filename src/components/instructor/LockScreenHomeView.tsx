@@ -206,6 +206,8 @@ export function LockScreenHomeView({
               prepaidHours={nextLesson.prepaidHours}
               durationMinutes={nextLesson.durationMinutes}
               instructorId={instructorId}
+              checkInStatus={nextLesson.checkInStatus}
+              lastLessonPlan={nextLesson.lastLessonPlan}
             />
           </FrostedCard>
         )}

@@ -213,6 +213,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
               prepaidHours={nextLesson.prepaidHours}
               durationMinutes={nextLesson.durationMinutes}
               instructorId={instructorId}
+              checkInStatus={nextLesson.checkInStatus}
+              lastLessonPlan={nextLesson.lastLessonPlan}
             />
           </div>
         )}
