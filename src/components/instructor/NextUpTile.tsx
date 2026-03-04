@@ -187,11 +187,14 @@ export function NextUpTile({
     <>
       <div
         style={{
-          background: "linear-gradient(135deg, rgb(38,64,140) 0%, rgb(31,89,166) 50%, rgb(26,115,179) 100%)",
+          background: "rgba(255,255,255,0.65)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
           borderRadius: 22,
-          boxShadow: "0 6px 12px rgba(0,0,0,0.15)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+          border: "1px solid rgba(255,255,255,0.5)",
         }}
-        className="w-full overflow-hidden"
+        className="w-full overflow-hidden dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
       >
         {/* === HEADER (always visible) === */}
         <button
@@ -203,8 +206,8 @@ export function NextUpTile({
             {/* Avatar */}
             <div className="relative shrink-0">
               <div
-                className="w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold text-lg"
-                style={{ background: "rgba(255,255,255,0.2)" }}
+                className="w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg"
+                style={{ background: "linear-gradient(135deg, #3B82F6, #6366F1)", color: "white" }}
               >
                 {pupilProfileImage ? (
                   <img src={pupilProfileImage} alt={pupilName} className="w-full h-full rounded-full object-cover" />
@@ -225,42 +228,42 @@ export function NextUpTile({
             {/* Center info */}
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#FBBF24" }}>
+                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#6366F1" }}>
                   Next Up
                 </span>
                 {checkInStatus && (
                   <LessonCheckInBadge status={checkInStatus} className="ml-1 text-[9px] py-0 px-1.5 h-4" />
                 )}
-                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
-                <span className="text-[11px] font-bold" style={{ color: "#00E5FF" }}>
+                <span className="text-[11px]" style={{ color: "#D1D5DB" }}>·</span>
+                <span className="text-[11px] font-bold" style={{ color: "#059669" }}>
                   {getCountdownText()}
                 </span>
               </div>
-              <p className="text-[20px] font-bold text-white truncate mt-0.5">{pupilName}</p>
+              <p className="text-[20px] font-bold truncate mt-0.5" style={{ color: "hsl(var(--foreground))" }}>{pupilName}</p>
             </div>
 
             {/* Right: time + chevron */}
             <div className="flex flex-col items-end shrink-0">
-              <span className="text-[22px] font-bold text-white" style={{ fontVariantNumeric: "tabular-nums", fontFamily: "ui-monospace, monospace" }}>
+              <span className="text-[22px] font-bold" style={{ color: "hsl(var(--foreground))", fontVariantNumeric: "tabular-nums", fontFamily: "ui-monospace, monospace" }}>
                 {formatTime24(startTime)}
               </span>
               {expanded
-                ? <ChevronUp className="h-4 w-4 mt-1" style={{ color: "rgba(255,255,255,0.5)" }} />
-                : <ChevronDown className="h-4 w-4 mt-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+                ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" />
+                : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />
               }
             </div>
           </div>
 
           {/* Pill badges row */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+            <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
               <Calendar className="h-[11px] w-[11px]" /> {getDateLabel()}
             </span>
-            <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+            <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
               <Clock className="h-[11px] w-[11px]" /> {formatDuration()}
             </span>
             {(pickupLocation || pickupPostcode) && (
-              <span className={pillStyle} style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>
+              <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
                 <MapPin className="h-[11px] w-[11px]" />
                 <span className="truncate max-w-[200px]">
                   {[pickupLocation, pickupPostcode].filter(Boolean).join(", ")}
@@ -286,10 +289,10 @@ export function NextUpTile({
               >
                 <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: "#FBBF24" }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-white">
+                  <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
                     You may arrive ~{lateByMinutes} min late
                   </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <p className="text-[10px] mt-0.5 text-muted-foreground">
                     ETA {arrivalTimeText}
                   </p>
                 </div>
@@ -323,29 +326,29 @@ export function NextUpTile({
             >
               <div className="px-[18px] pb-[18px]" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {/* Divider */}
-                <div style={{ height: 1, background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ height: 1, background: "rgba(0,0,0,0.06)" }} />
 
                 {/* 1. Info Badges Row */}
                 <div className="grid grid-cols-3 gap-[10px]">
                   {/* Start */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <Clock className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
-                    <span className="text-[15px] font-bold text-white">{formatTime24(startTime)}</span>
-                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Start</span>
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Clock className="h-4 w-4 mb-1 text-muted-foreground" />
+                    <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{formatTime24(startTime)}</span>
+                    <span className="text-[10px] mt-0.5 text-muted-foreground">Start</span>
                   </div>
                   {/* Duration */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <Hourglass className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
-                    <span className="text-[15px] font-bold text-white">{formatDuration()}</span>
-                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Duration</span>
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Hourglass className="h-4 w-4 mb-1 text-muted-foreground" />
+                    <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{formatDuration()}</span>
+                    <span className="text-[10px] mt-0.5 text-muted-foreground">Duration</span>
                   </div>
                   {/* Balance / Due */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <PoundSterling className="h-4 w-4 mb-1" style={{ color: "rgba(255,255,255,0.5)" }} />
-                    <span className={`text-[15px] font-bold ${effectiveBalance < 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <PoundSterling className="h-4 w-4 mb-1 text-muted-foreground" />
+                    <span className={`text-[15px] font-bold ${effectiveBalance < 0 ? "text-orange-500" : "text-emerald-600"}`}>
                       £{Math.abs(effectiveBalance).toFixed(0)}
                     </span>
-                    <span className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <span className="text-[10px] mt-0.5 text-muted-foreground">
                       {effectiveBalance < 0 ? "Due" : "Balance"}
                     </span>
                   </div>
@@ -353,23 +356,23 @@ export function NextUpTile({
 
                 {/* 2. Live ETA Row */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <Car className="h-5 w-5 shrink-0" style={{ color: "#00E5FF" }} />
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Car className="h-5 w-5 shrink-0" style={{ color: "#6366F1" }} />
                     {etaLoading ? (
                       <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-white/50" />
-                        <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>Calculating ETA...</span>
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-[11px] text-muted-foreground">Calculating ETA...</span>
                       </div>
                     ) : (
                       <div className="flex flex-col">
-                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Live ETA</span>
+                        <span className="text-[10px] text-muted-foreground">Live ETA</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[15px] font-bold text-white">~{etaMinutes} min</span>
+                          <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>~{etaMinutes} min</span>
                           {trafficCondition && (
                             <>
-                              <span style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
+                              <span className="text-muted-foreground">·</span>
                               <span className={`w-2 h-2 rounded-full ${getTrafficDot()}`} />
-                              <span className="text-[11px] capitalize" style={{ color: "rgba(255,255,255,0.7)" }}>
+                              <span className="text-[11px] capitalize text-muted-foreground">
                                 {trafficCondition} traffic
                               </span>
                             </>
@@ -382,13 +385,13 @@ export function NextUpTile({
 
                 {/* 2b. Weather Conditions Strip */}
                 {currentWeather && currentWeather.temperature != null && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <Thermometer className="h-5 w-5 shrink-0" style={{ color: "#fbbf24" }} />
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Thermometer className="h-5 w-5 shrink-0" style={{ color: "#f59e0b" }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-bold text-white">{currentWeather.temperature}°C</span>
+                        <span className="text-[14px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{currentWeather.temperature}°C</span>
                         {currentWeather.description && (
-                          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.6)" }}>{currentWeather.description}</span>
+                          <span className="text-[11px] text-muted-foreground">{currentWeather.description}</span>
                         )}
                       </div>
                       {getWeatherSafetyTip() && (
@@ -402,25 +405,25 @@ export function NextUpTile({
 
                 {/* 2c. Vehicle Health Quick Status */}
                 {primaryDevice && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <Car className="h-5 w-5 shrink-0" style={{ color: primaryDevice.is_connected ? "#4ade80" : "#f87171" }} />
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Car className="h-5 w-5 shrink-0" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
                     <div className="flex-1 min-w-0 flex items-center gap-3">
                       <div className="flex items-center gap-1.5">
-                        <Wifi className="h-3.5 w-3.5" style={{ color: primaryDevice.is_connected ? "#4ade80" : "#f87171" }} />
-                        <span className="text-[11px] font-medium text-white">
+                        <Wifi className="h-3.5 w-3.5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
+                        <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
                           {primaryDevice.is_connected ? "Connected" : "Offline"}
                         </span>
                       </div>
                       {primaryDevice.last_battery_percent != null && (
                         <div className="flex items-center gap-1.5">
-                          <Battery className="h-3.5 w-3.5" style={{ color: primaryDevice.last_battery_percent > 20 ? "#4ade80" : "#f87171" }} />
-                          <span className="text-[11px] font-medium text-white">{primaryDevice.last_battery_percent}%</span>
+                          <Battery className="h-3.5 w-3.5" style={{ color: primaryDevice.last_battery_percent > 20 ? "#16a34a" : "#dc2626" }} />
+                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{primaryDevice.last_battery_percent}%</span>
                         </div>
                       )}
                       {primaryDevice.last_fuel_percent != null && (
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>⛽</span>
-                          <span className="text-[11px] font-medium text-white">{primaryDevice.last_fuel_percent}%</span>
+                          <span className="text-[11px] text-muted-foreground">⛽</span>
+                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{primaryDevice.last_fuel_percent}%</span>
                         </div>
                       )}
                     </div>
@@ -429,11 +432,11 @@ export function NextUpTile({
 
                 {/* 2d. Last Lesson Plan */}
                 {lastLessonPlan && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <BookOpen className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#a78bfa" }} />
+                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <BookOpen className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#7c3aed" }} />
                     <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>Plan for this lesson</span>
-                      <p className="text-[12px] text-white mt-0.5 line-clamp-2">{lastLessonPlan}</p>
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Plan for this lesson</span>
+                      <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--foreground))" }}>{lastLessonPlan}</p>
                     </div>
                   </div>
                 )}
@@ -444,12 +447,12 @@ export function NextUpTile({
                     className="flex items-center gap-2.5 p-3 rounded-xl"
                     style={{ background: paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)", border: paymentDue ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(251,191,36,0.4)" }}
                   >
-                    <Banknote className="h-5 w-5 shrink-0" style={{ color: paymentDue ? "#f87171" : "#FBBF24" }} />
+                    <Banknote className="h-5 w-5 shrink-0" style={{ color: paymentDue ? "#dc2626" : "#d97706" }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-white">
+                      <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
                         {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
                       </p>
-                      <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      <p className="text-[10px] mt-0.5 text-muted-foreground">
                         Collect payment before or after lesson
                       </p>
                     </div>
@@ -468,13 +471,13 @@ export function NextUpTile({
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
                     className="flex items-center gap-3 p-3 rounded-xl w-full text-left"
-                    style={{ background: "rgba(255,255,255,0.08)" }}
+                    style={{ background: "rgba(0,0,0,0.04)" }}
                   >
-                    <MessageCircle className="h-5 w-5 shrink-0 text-orange-400" />
-                    <span className="text-[13px] font-medium text-white flex-1">
+                    <MessageCircle className="h-5 w-5 shrink-0 text-orange-500" />
+                    <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
                       {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {firstName}
                     </span>
-                    <ChevronDown className="h-4 w-4 -rotate-90" style={{ color: "rgba(255,255,255,0.5)" }} />
+                    <ChevronDown className="h-4 w-4 -rotate-90 text-muted-foreground" />
                   </button>
                 )}
 
@@ -509,10 +512,10 @@ export function NextUpTile({
                   <button
                     onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                     className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.12)" }}
+                    style={{ background: "rgba(0,0,0,0.04)" }}
                   >
-                    <Navigation className="h-5 w-5 text-blue-400" />
-                    <span className="text-[10px] font-bold text-white">Navigate</span>
+                    <Navigation className="h-5 w-5 text-blue-600" />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Navigate</span>
                   </button>
 
                   {/* On My Way */}
@@ -520,11 +523,11 @@ export function NextUpTile({
                     <DropdownMenuTrigger asChild>
                       <button
                         className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                        style={{ background: "rgba(255,255,255,0.12)" }}
+                        style={{ background: "rgba(0,0,0,0.04)" }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Send className="h-5 w-5 text-white" />
-                        <span className="text-[10px] font-bold text-white">On Way</span>
+                        <Send className="h-5 w-5" style={{ color: "#6366F1" }} />
+                        <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>On Way</span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-52">
@@ -544,30 +547,30 @@ export function NextUpTile({
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCall(); }}
                     className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.12)" }}
+                    style={{ background: "rgba(0,0,0,0.04)" }}
                   >
-                    <Phone className="h-5 w-5 text-emerald-400" />
-                    <span className="text-[10px] font-bold text-white">Call</span>
+                    <Phone className="h-5 w-5 text-emerald-600" />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Call</span>
                   </button>
 
                   {/* SMS */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleMessage(); }}
                     className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.12)" }}
+                    style={{ background: "rgba(0,0,0,0.04)" }}
                   >
-                    <MessageSquare className="h-5 w-5 text-orange-400" />
-                    <span className="text-[10px] font-bold text-white">SMS</span>
+                    <MessageSquare className="h-5 w-5 text-orange-500" />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>SMS</span>
                   </button>
 
                   {/* Here / Arrived */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleArrived(); }}
                     className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(34,197,94,0.25)" }}
+                    style={{ background: "rgba(22,163,74,0.1)" }}
                   >
-                    <MapPin className="h-5 w-5 text-emerald-400" />
-                    <span className="text-[10px] font-bold text-white">Here</span>
+                    <MapPin className="h-5 w-5 text-emerald-600" />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Here</span>
                   </button>
                 </div>
 
@@ -576,14 +579,14 @@ export function NextUpTile({
                   <button
                     onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
                     className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)" }}
+                    style={{ background: "rgba(0,0,0,0.04)", color: "hsl(var(--foreground))" }}
                   >
                     <Calendar className="h-3.5 w-3.5" /> Reschedule
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
                     className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
-                    style={{ background: "rgba(255,0,0,0.12)", color: "rgba(255,80,80,0.9)" }}
+                    style={{ background: "rgba(239,68,68,0.08)", color: "#dc2626" }}
                   >
                     <X className="h-3.5 w-3.5" /> Cancel Lesson
                   </button>
