@@ -67,18 +67,18 @@ export function HomepageHero({
 
         {/* Bottom — This Week tile */}
         <div
-          className="bg-white/15 backdrop-blur-md rounded-2xl p-3.5 flex items-center justify-between"
+          className="bg-white dark:bg-card backdrop-blur-md rounded-2xl p-3.5 flex items-center justify-between"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
         >
           {/* Left side */}
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-white/80">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
               THIS WEEK
             </p>
-            <p className="text-[17px] font-semibold text-white mt-0.5 leading-snug">
+            <p className="text-[17px] font-semibold text-foreground mt-0.5 leading-snug">
               Keep it moving!
             </p>
-            <p className="text-[13px] text-white/60 mt-0.5">
+            <p className="text-[13px] text-muted-foreground mt-0.5">
               {weeklyLessonsScheduled} lesson{weeklyLessonsScheduled !== 1 ? "s" : ""} scheduled
             </p>
           </div>
@@ -89,14 +89,14 @@ export function HomepageHero({
               <circle
                 cx="32" cy="32" r={radius}
                 fill="none"
-                stroke="white"
+                stroke="hsl(var(--muted))"
                 strokeWidth={stroke}
-                opacity={0.2}
+                opacity={0.3}
               />
               <motion.circle
                 cx="32" cy="32" r={radius}
                 fill="none"
-                stroke="white"
+                className="stroke-teal-600 dark:stroke-teal-400"
                 strokeWidth={stroke}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
@@ -106,7 +106,7 @@ export function HomepageHero({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[15px] font-bold text-white leading-none">
+              <span className="text-[15px] font-bold text-foreground leading-none">
                 {completed}/{total}
               </span>
             </div>
