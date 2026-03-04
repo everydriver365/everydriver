@@ -16,6 +16,8 @@ interface NextLessonDetails {
   durationMinutes: number;
   accountBalance: number;
   prepaidHours: number;
+  checkInStatus: string | null;
+  lastLessonPlan: string | null;
 }
 
 export function useNextLessonDetails(instructorId: string | undefined) {
@@ -34,7 +36,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         .from("scheduled_lessons")
         .select(`
           id, lesson_date, start_time, duration_minutes,
-          pickup_location, pickup_postcode,
+          pickup_location, pickup_postcode, check_in_status,
           pupils!inner (
             id, name, phone, profile_image_url,
             postcode, address, pickup_address, pickup_postcode,
@@ -56,7 +58,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
           .from("scheduled_lessons")
           .select(`
             id, lesson_date, start_time, duration_minutes,
-            pickup_location, pickup_postcode,
+            pickup_location, pickup_postcode, check_in_status,
             pupils!inner (
               id, name, phone, profile_image_url,
               postcode, address, pickup_address, pickup_postcode,
@@ -86,6 +88,22 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       const effectivePostcode = pupil.pickup_postcode || pupil.postcode || null;
       const effectiveLocation = pupil.pickup_address || pupil.address || null;
 
+      // Fetch last lesson's next_lesson_plan for this pupil
+      let lastLessonPlan: string | null = null;
+      const { data: lastReview } = await supabase
+        .from("lesson_history")
+        .select("next_lesson_plan")
+        .eq("instructor_id", instructorId)
+        .eq("pupil_id", pupil.id)
+        .not("next_lesson_plan", "is", null)
+        .order("lesson_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (lastReview?.next_lesson_plan) {
+        lastLessonPlan = lastReview.next_lesson_plan;
+      }
+
       return {
         lessonId: lesson.id,
         pupilId: pupil.id,
@@ -100,6 +118,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         durationMinutes: lesson.duration_minutes || 60,
         accountBalance: pupil.account_balance || 0,
         prepaidHours: pupil.prepaid_hours || 0,
+        checkInStatus: (lesson as any).check_in_status || null,
+        lastLessonPlan,
       };
     },
     enabled: !!instructorId,

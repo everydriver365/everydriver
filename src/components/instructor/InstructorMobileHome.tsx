@@ -479,6 +479,8 @@ export function InstructorMobileHome({
               prepaidHours={nextLesson.prepaidHours}
               durationMinutes={nextLesson.durationMinutes}
               instructorId={instructorId}
+              checkInStatus={nextLesson.checkInStatus}
+              lastLessonPlan={nextLesson.lastLessonPlan}
             />
           </div>
         )}

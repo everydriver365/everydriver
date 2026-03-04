@@ -4,6 +4,7 @@ import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2,
   ChevronDown, ChevronUp, Send, Play, MapPin, Calendar,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
+  CloudRain, Thermometer, Battery, Wifi, BookOpen, Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
+import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
+import { useVehicleHealth } from "@/hooks/useVehicleHealth";
+import { LessonCheckInBadge } from "./LessonCheckInBadge";
 import { haptics } from "@/lib/haptics";
 
 import {
@@ -41,6 +45,8 @@ interface NextUpTileProps {
   prepaidHours: number;
   durationMinutes?: number;
   instructorId?: string;
+  checkInStatus?: string | null;
+  lastLessonPlan?: string | null;
 }
 
 function getInitials(name: string): string {
@@ -51,6 +57,7 @@ export function NextUpTile({
   lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
   lessonDate, pickupPostcode, pickupLocation, startTime,
   minutesUntil, accountBalance, prepaidHours, durationMinutes = 60, instructorId,
+  checkInStatus, lastLessonPlan,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -62,6 +69,8 @@ export function NextUpTile({
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+  const { currentWeather } = useDrivingAlerts(instructorId);
+  const { devices } = useVehicleHealth();
 
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
@@ -118,6 +127,26 @@ export function NextUpTile({
   const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
   const firstName = pupilName.split(" ")[0];
   const hasUnread = pupilUnreadCount > 0;
+  const paymentDue = effectiveBalance < 0;
+  const noBalance = effectiveBalance <= 0 && prepaidHours <= 0;
+
+  // Weather helpers
+  const getWeatherSafetyTip = () => {
+    if (!currentWeather) return null;
+    const temp = currentWeather.temperature;
+    const code = currentWeather.weatherCode;
+    const wind = currentWeather.windSpeed;
+    if (temp != null && temp <= 2) return { tip: "Watch for ice", color: "#38bdf8" };
+    if (code != null && (code >= 95 || (code >= 61 && code <= 67))) return { tip: "Heavy rain — reduced grip", color: "#60a5fa" };
+    if (code != null && (code === 45 || code === 48)) return { tip: "Fog — reduced visibility", color: "#94a3b8" };
+    if (code != null && code >= 71 && code <= 77) return { tip: "Snow — drive with caution", color: "#38bdf8" };
+    if (wind != null && wind > 50) return { tip: "Strong winds", color: "#2dd4bf" };
+    if (code != null && code >= 51 && code <= 57) return { tip: "Light rain — roads may be slippery", color: "#60a5fa" };
+    return null;
+  };
+
+  // Primary device for vehicle health
+  const primaryDevice = devices.find(d => d.is_connected) || devices[0] || null;
 
   const handleNavigate = () => {
     if (pickupPostcode) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupPostcode)}`, "_blank");
@@ -194,6 +223,9 @@ export function NextUpTile({
                 <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#FBBF24" }}>
                   Next Up
                 </span>
+                {checkInStatus && (
+                  <LessonCheckInBadge status={checkInStatus} className="ml-1 text-[9px] py-0 px-1.5 h-4" />
+                )}
                 <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
                 <span className="text-[11px] font-bold" style={{ color: "#00E5FF" }}>
                   {getCountdownText()}
@@ -340,6 +372,89 @@ export function NextUpTile({
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* 2b. Weather Conditions Strip */}
+                {currentWeather && currentWeather.temperature != null && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <Thermometer className="h-5 w-5 shrink-0" style={{ color: "#fbbf24" }} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[14px] font-bold text-white">{currentWeather.temperature}°C</span>
+                        {currentWeather.description && (
+                          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.6)" }}>{currentWeather.description}</span>
+                        )}
+                      </div>
+                      {getWeatherSafetyTip() && (
+                        <p className="text-[10px] mt-0.5" style={{ color: getWeatherSafetyTip()!.color }}>
+                          ⚠ {getWeatherSafetyTip()!.tip}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2c. Vehicle Health Quick Status */}
+                {primaryDevice && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <Car className="h-5 w-5 shrink-0" style={{ color: primaryDevice.is_connected ? "#4ade80" : "#f87171" }} />
+                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <Wifi className="h-3.5 w-3.5" style={{ color: primaryDevice.is_connected ? "#4ade80" : "#f87171" }} />
+                        <span className="text-[11px] font-medium text-white">
+                          {primaryDevice.is_connected ? "Connected" : "Offline"}
+                        </span>
+                      </div>
+                      {primaryDevice.last_battery_percent != null && (
+                        <div className="flex items-center gap-1.5">
+                          <Battery className="h-3.5 w-3.5" style={{ color: primaryDevice.last_battery_percent > 20 ? "#4ade80" : "#f87171" }} />
+                          <span className="text-[11px] font-medium text-white">{primaryDevice.last_battery_percent}%</span>
+                        </div>
+                      )}
+                      {primaryDevice.last_fuel_percent != null && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>⛽</span>
+                          <span className="text-[11px] font-medium text-white">{primaryDevice.last_fuel_percent}%</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2d. Last Lesson Plan */}
+                {lastLessonPlan && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <BookOpen className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#a78bfa" }} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>Plan for this lesson</span>
+                      <p className="text-[12px] text-white mt-0.5 line-clamp-2">{lastLessonPlan}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2e. Payment Warning Banner */}
+                {noBalance && (
+                  <div
+                    className="flex items-center gap-2.5 p-3 rounded-xl"
+                    style={{ background: paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)", border: paymentDue ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(251,191,36,0.4)" }}
+                  >
+                    <Banknote className="h-5 w-5 shrink-0" style={{ color: paymentDue ? "#f87171" : "#FBBF24" }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-white">
+                        {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
+                      </p>
+                      <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                        Collect payment before or after lesson
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                      className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold"
+                      style={{ background: paymentDue ? "#ef4444" : "#FBBF24", color: paymentDue ? "white" : "#1a1a2e" }}
+                    >
+                      Collect
+                    </button>
                   </div>
                 )}
 
