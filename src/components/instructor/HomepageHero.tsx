@@ -36,8 +36,8 @@ export function HomepageHero({
 
   return (
     <div
-      className="relative h-[200px] overflow-hidden"
-      style={{ paddingTop: "env(safe-area-inset-top)", borderRadius: "0 0 20px 20px" }}
+      className="relative h-[200px] overflow-hidden hero-banner-no-top-radius"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Background image */}
       <img
