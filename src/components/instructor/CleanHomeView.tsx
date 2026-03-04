@@ -340,7 +340,7 @@ export function CleanHomeView({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.04 }}
-                    onClick={() => navigate(`/instructor/pupils/${lesson.id}`)}
+                    onClick={() => navigate(lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils")}
                     className="w-full px-4 py-3.5 flex items-center gap-3 active:bg-muted/50 transition-colors text-left"
                   >
                     {/* Time column */}

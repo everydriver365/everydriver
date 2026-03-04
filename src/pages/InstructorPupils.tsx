@@ -45,7 +45,7 @@ import {
   History,
   Globe,
 } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
@@ -107,6 +107,7 @@ export default function InstructorPupils() {
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
+  const { pupilId } = useParams<{ pupilId?: string }>();
   const instructorId = instructor?.id;
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
@@ -187,23 +188,27 @@ export default function InstructorPupils() {
     }
   }, [location.search]);
 
-  // Auto-select pupil when navigated with ?pupil=ID
+  // Auto-open pupil profile when navigated with /instructor/pupils/:pupilId or ?pupil=ID
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const pupilId = params.get("pupil");
-    if (pupilId && pupils.length > 0) {
-      const pupil = pupils.find(p => p.id === pupilId);
+    const deepLinkPupilId = pupilId || params.get("pupil");
+
+    if (deepLinkPupilId && pupils.length > 0) {
+      const pupil = pupils.find((p) => p.id === deepLinkPupilId);
       if (pupil) {
-        setExpandedPupilId(pupilId);
-        navigate("/instructor/pupils", { replace: true });
-        // Scroll to the pupil card after a short delay
+        setExpandedPupilId(deepLinkPupilId);
+
+        if (params.get("pupil")) {
+          navigate(`/instructor/pupils/${deepLinkPupilId}`, { replace: true });
+        }
+
         setTimeout(() => {
-          const el = document.getElementById(`pupil-card-${pupilId}`);
+          const el = document.getElementById(`pupil-card-${deepLinkPupilId}`);
           el?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300);
+        }, 250);
       }
     }
-  }, [location.search, pupils]);
+  }, [location.search, pupilId, pupils, navigate]);
 
   const requestOpenTerms = () => {
     if (selectedPupil) {
@@ -444,6 +449,8 @@ export default function InstructorPupils() {
     return matchesSearch && pupilStatus === activeTab;
   });
 
+  const displayedPupils = pupilId ? filteredPupils.filter((p) => p.id === pupilId) : filteredPupils;
+
   const statusCounts = {
     active: pupils.filter((p) => (p.status || 'active') === 'active').length,
     passed: pupils.filter((p) => (p.status || 'active') === 'passed').length,
@@ -564,7 +571,7 @@ export default function InstructorPupils() {
         </div>
 
         {/* Pupils List */}
-        {filteredPupils.length === 0 ? (
+        {displayedPupils.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Users className="h-8 w-8 text-muted-foreground" />
@@ -578,7 +585,7 @@ export default function InstructorPupils() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredPupils.map((pupil) => (
+            {displayedPupils.map((pupil) => (
               <div id={`pupil-card-${pupil.id}`}>
               <PupilCardStack
                 key={pupil.id}

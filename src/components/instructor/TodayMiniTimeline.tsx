@@ -68,7 +68,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
           const isPaid = lesson.paymentStatus === "paid";
 
           return (
-            <Link key={lesson.id} to={`/instructor/pupils?pupil=${lesson.pupilId}`}>
+            <Link key={lesson.id} to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
