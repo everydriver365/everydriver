@@ -205,8 +205,8 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
           title="Messages"
           subtitle={(totalUnread + adminUnreadCount) > 0 ? `${totalUnread + adminUnreadCount} unread` : undefined}
         />
-        <Card className="flex-1 overflow-hidden">
-        <CardContent className="px-4 pb-4 pt-4 space-y-3">
+        <Card className="flex-1 overflow-hidden border-border/40">
+        <CardContent className="px-4 pb-4 pt-5 space-y-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex items-center justify-between gap-2">
               <TabsList className="grid grid-cols-2 flex-1">
