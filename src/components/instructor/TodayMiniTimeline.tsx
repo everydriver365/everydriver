@@ -73,7 +73,16 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.06 }}
-                className={`bg-card rounded-xl shadow-sm border border-border/60 border-l-4 ${borderColor} overflow-hidden active:scale-[0.98] transition-transform`}
+              className={`border-l-4 ${borderColor} overflow-hidden active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]`}
+              style={{
+                background: "rgba(255,255,255,0.65)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                borderRadius: 22,
+                boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+                border: "1px solid rgba(255,255,255,0.5)",
+                borderLeft: `4px solid`,
+              }}
               >
                 <div className="p-4">
                   {/* Top row: Name + Lesson Type Badge */}
