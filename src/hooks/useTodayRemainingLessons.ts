@@ -4,6 +4,7 @@ import { format } from "date-fns";
 
 export interface TodayLesson {
   id: string;
+  pupilId: string;
   pupilName: string;
   pupilInitials: string;
   startTime: string;
@@ -28,7 +29,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
         .from("scheduled_lessons")
         .select(`
           id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
-          pupils!inner (name, postcode, address)
+          pupils!inner (id, name, postcode, address)
         `)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
@@ -47,6 +48,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           .toUpperCase();
         return {
           id: l.id,
+          pupilId: pupil?.id || "",
           pupilName: name,
           pupilInitials: initials,
           startTime: l.start_time,
