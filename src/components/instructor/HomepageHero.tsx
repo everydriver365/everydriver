@@ -36,14 +36,8 @@ export function HomepageHero({
 
   return (
     <div
-      className="relative h-[200px] overflow-hidden"
-      style={{
-        paddingTop: "env(safe-area-inset-top)",
-        borderTopLeftRadius: 0,
-        borderTopRightRadius: 0,
-        borderBottomRightRadius: "20px",
-        borderBottomLeftRadius: "20px",
-      }}
+      className="relative h-[200px] overflow-hidden rounded-b-[20px]"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Background image */}
       <img
