@@ -208,8 +208,8 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
         <Card className="flex-1 overflow-hidden border-border/40">
         <CardContent className="px-4 pb-4 pt-5 space-y-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between gap-2">
-              <TabsList className="grid grid-cols-2 flex-1">
+            <div className="space-y-3">
+              <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="pupils" className="relative text-sm">
                   Pupils
                   {totalUnread > 0 && (
@@ -228,7 +228,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                 </TabsTrigger>
               </TabsList>
               {activeTab === "pupils" && (
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 justify-end">
                   {authInstructor?.broadcast_messaging_enabled !== false && (
                     <Button size="sm" variant="outline" onClick={() => setShowBroadcast(true)}>
                       <Megaphone className="h-4 w-4 mr-1" />
