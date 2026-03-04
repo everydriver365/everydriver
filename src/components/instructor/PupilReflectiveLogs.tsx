@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { BookOpen, MessageSquare, Send, Loader2, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, MessageSquare, Send, Loader2, Clock } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -139,11 +140,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
                   </Badge>
                 )}
               </div>
-              {expandedLog === log.id ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
+              <ExpandChevron isExpanded={expandedLog === log.id} />
             </div>
           </button>
 

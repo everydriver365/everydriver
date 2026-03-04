@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Navigation, Trash2, Star, Building2, School, Home, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { MapPin, Navigation, Trash2, Star, Building2, School, Home, Plus } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { AddFavouriteLocationDialog } from "./AddFavouriteLocationDialog";
@@ -121,7 +122,7 @@ export function FavouriteLocationsList({ instructorId, onNavigate }: FavouriteLo
                 <Plus className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setExpanded(!expanded)}>
-                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {expanded ? <ExpandChevron isExpanded={true} /> : <ExpandChevron isExpanded={false} />}
               </Button>
             </div>
           </div>

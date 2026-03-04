@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Car, Briefcase, Home, Calendar, TrendingUp, 
-  PoundSterling, MapPin, ChevronDown, ChevronUp,
+  PoundSterling, MapPin,
   Plus, Trash2, Edit2, Check, X
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useMileageLogs, MileageLog } from "@/hooks/useMileageLogs";
 import { kmToMiles } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -224,11 +225,7 @@ export function AutoMileageLog() {
                     <span className="font-semibold text-primary">
                       {dayTotal.toFixed(1)} mi
                     </span>
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    <ExpandChevron isExpanded={isExpanded} />
                   </div>
                 </button>
 

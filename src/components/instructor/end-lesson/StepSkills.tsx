@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PostLessonReview } from "@/components/instructor/PostLessonReview";
 
@@ -19,11 +19,7 @@ export function StepSkills({ lessonId, pupilId, instructorId, onSaved }: StepSki
         <span className="text-sm font-medium text-foreground">
           {open ? "Update Skills" : "Tap to update skills"}
         </span>
-        {open ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
+        <ExpandChevron isExpanded={open} />
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-3">
         <PostLessonReview

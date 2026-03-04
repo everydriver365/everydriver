@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Save, ChevronDown, ChevronUp, Sparkles, MessageSquare, CheckSquare } from 'lucide-react';
+import { Loader2, Save, Sparkles, MessageSquare, CheckSquare } from 'lucide-react';
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { cn } from '@/lib/utils';
 import {
   DVSA_SYLLABUS,
@@ -247,11 +248,7 @@ export function PostLessonReview({
                 {categoryChanges > 0 && (
                   <Badge variant="secondary" className="text-xs">{categoryChanges} modified</Badge>
                 )}
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
+                <ExpandChevron isExpanded={isExpanded} />
               </div>
             </button>
 

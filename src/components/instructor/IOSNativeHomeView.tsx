@@ -3,11 +3,12 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Car, ChevronDown, ChevronUp, ChevronRight, Clock, Hourglass,
+  Car, ChevronRight, Clock, Hourglass,
   PoundSterling, Navigation, Phone, MessageSquare, Send, Play, MapPin,
   Calendar, Users, Briefcase, BookOpen, Fuel, BarChart3, Settings,
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -163,7 +164,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
             </div>
             <div className="text-right shrink-0">
               <p className="text-[20px] font-bold text-white tabular-nums">{nextLesson.startTime}</p>
-              {expanded ? <ChevronUp className="h-4 w-4 text-white/50 ml-auto" /> : <ChevronDown className="h-4 w-4 text-white/50 ml-auto" />}
+              <ExpandChevron isExpanded={expanded} className="text-white/50 ml-auto" />
             </div>
           </div>
 

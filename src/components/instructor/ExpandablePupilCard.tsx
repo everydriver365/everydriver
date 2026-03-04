@@ -6,7 +6,6 @@ import {
   Mail, 
   MapPin,
   ChevronDown,
-  ChevronUp,
   Clock,
   Edit,
   Trash2,
@@ -36,6 +35,7 @@ import {
   XCircle,
   Route
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
@@ -683,11 +683,7 @@ export function ExpandablePupilCard({
 
         {/* Expand Indicator */}
         <div className="flex items-center self-center shrink-0">
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          )}
+          <ExpandChevron isExpanded={isExpanded} size={20} />
         </div>
       </button>
 
@@ -1021,11 +1017,7 @@ export function ExpandablePupilCard({
                     <Route className="h-4 w-4 text-primary" />
                     <span className="font-medium text-sm">Tracking History</span>
                   </div>
-                  {isTrackingHistoryExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  <ExpandChevron isExpanded={isTrackingHistoryExpanded} />
                 </button>
                 <AnimatePresence>
                   {isTrackingHistoryExpanded && (

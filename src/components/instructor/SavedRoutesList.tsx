@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Route, MapPin, Trash2, ChevronDown, ChevronUp, Calendar, Share2, Upload, FileUp, GraduationCap, FolderOpen, Play } from "lucide-react";
+import { Route, MapPin, Trash2, ChevronDown, Calendar, Share2, Upload, FileUp, GraduationCap, FolderOpen, Play } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { format } from "date-fns";
 import { SavedRoutePreview } from "./SavedRoutePreview";
 import { UploadedRoutePreview } from "./UploadedRoutePreview";
@@ -298,11 +299,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
                       </span>
                     </div>
                   </div>
-                  {expandedRouteId === route.id ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  <ExpandChevron isExpanded={expandedRouteId === route.id} />
                 </button>
 
                 {expandedRouteId === route.id && (

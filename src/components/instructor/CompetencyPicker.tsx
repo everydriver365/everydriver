@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { cn } from '@/lib/utils';
 import {
   DVSA_SYLLABUS,
@@ -74,7 +75,7 @@ export function CompetencyPicker({ selected, onChange, compact = false }: Compet
                         {selectedInCategory}
                       </Badge>
                     )}
-                    {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    <ExpandChevron isExpanded={isOpen} size={12} />
                   </div>
                 </Button>
               </CollapsibleTrigger>

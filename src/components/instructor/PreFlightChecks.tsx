@@ -10,10 +10,9 @@ import {
   Smartphone, 
   Database, 
   Shield,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp
+  RefreshCw
 } from 'lucide-react';
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { supabase } from '@/integrations/supabase/client';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -221,7 +220,7 @@ const PreFlightChecks: React.FC<PreFlightChecksProps> = ({
                     {hasCriticalFailure ? 'Issues Found' : allPassed ? 'Ready' : 'Checking...'}
                   </Badge>
                 )}
-                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <ExpandChevron isExpanded={isOpen} />
               </div>
             </div>
           </CardHeader>

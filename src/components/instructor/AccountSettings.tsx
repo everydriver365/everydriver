@@ -13,8 +13,7 @@ import {
   Fuel, 
   PoundSterling, 
   FileText, 
-  ChevronDown, 
-  ChevronUp,
+  ChevronDown,
   Car,
   Home,
   Phone,
@@ -26,6 +25,7 @@ import {
   Receipt,
   Info
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { PaymentOptionsSettings } from "./PaymentOptionsSettings";
@@ -369,11 +369,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
                     HMRC-approved expenses you can claim
                   </CardDescription>
                 </div>
-                {deductionsOpen ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                )}
+                <ExpandChevron isExpanded={deductionsOpen} size={20} />
               </div>
             </CardHeader>
           </CollapsibleTrigger>

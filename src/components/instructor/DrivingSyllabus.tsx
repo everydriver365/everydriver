@@ -12,7 +12,8 @@ import {
   calculateSyllabusProgress,
   type SyllabusCompetency 
 } from '@/constants/dvsaSyllabus';
-import { ChevronDown, ChevronUp, Save, Loader2, GraduationCap, Info } from 'lucide-react';
+import { Save, Loader2, GraduationCap, Info } from 'lucide-react';
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
@@ -194,11 +195,7 @@ export function DrivingSyllabus({ pupilId, pupilName, onClose }: DrivingSyllabus
                         {categoryPercent}%
                       </Badge>
                     </div>
-                    {expandedCategory === category ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    <ExpandChevron isExpanded={expandedCategory === category} />
                   </div>
                   <Progress value={categoryPercent} className="h-1.5 mt-2" />
                 </CardHeader>

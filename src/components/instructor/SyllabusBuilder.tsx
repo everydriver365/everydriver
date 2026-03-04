@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { GraduationCap, Plus, Save, Loader2, Trash2, Copy, Share2, ChevronDown, ChevronUp, Edit2 } from "lucide-react";
+import { GraduationCap, Plus, Save, Loader2, Trash2, Copy, Share2, Edit2 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -400,11 +401,7 @@ export function SyllabusBuilder({ instructorId }: SyllabusBuilderProps) {
                     <span className="text-sm text-muted-foreground">
                       {template.competencies.length} skills
                     </span>
-                    {expandedTemplate === template.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                    <ExpandChevron isExpanded={expandedTemplate === template.id} />
                   </div>
                 </div>
               </button>

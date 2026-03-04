@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Car, Clock, Gauge, Route, ChevronDown, ChevronUp, Share2, Check } from "lucide-react";
+import { Car, Clock, Gauge, Route, Share2, Check } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Button } from "@/components/ui/button";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -223,7 +224,7 @@ export function StepLessonSummary({
             {uniqueRoads.length > 5 && (
               <CollapsibleTrigger asChild>
                 <button className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1.5 mx-auto hover:text-foreground transition-colors">
-                  {roadsOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  <ExpandChevron isExpanded={roadsOpen} size={12} />
                   {roadsOpen ? "Show less" : `+ ${uniqueRoads.length - 5} more roads`}
                 </button>
               </CollapsibleTrigger>
