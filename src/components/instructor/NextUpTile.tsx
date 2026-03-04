@@ -148,6 +148,11 @@ export function NextUpTile({
   // Primary device for vehicle health
   const primaryDevice = devices.find(d => d.is_connected) || devices[0] || null;
 
+  const handleArrived = () => {
+    supabase.from("scheduled_lessons").update({ status: "arrived" }).eq("id", lessonId).then(() => {});
+    supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "arrived" } }).catch(() => {});
+    sendSMS(`Hi ${firstName}, I'm outside and ready when you are! 🚗`);
+  };
   const handleNavigate = () => {
     if (pickupPostcode) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupPostcode)}`, "_blank");
   };
@@ -499,7 +504,7 @@ export function NextUpTile({
                   </button>
                 )}
 
-                <div className="grid grid-cols-4 gap-[10px]">
+                <div className="grid grid-cols-5 gap-[10px]">
                   {/* Navigate */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
@@ -553,6 +558,16 @@ export function NextUpTile({
                   >
                     <MessageSquare className="h-5 w-5 text-orange-400" />
                     <span className="text-[10px] font-bold text-white">SMS</span>
+                  </button>
+
+                  {/* Here / Arrived */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleArrived(); }}
+                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                    style={{ background: "rgba(34,197,94,0.25)" }}
+                  >
+                    <MapPin className="h-5 w-5 text-emerald-400" />
+                    <span className="text-[10px] font-bold text-white">Here</span>
                   </button>
                 </div>
 
