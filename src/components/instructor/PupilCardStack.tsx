@@ -716,63 +716,88 @@ export function PupilCardStack({
                     />
                   </div>
                 ) : (
-                <div className="pb-4">
-                  {/* Profile Hero Card */}
-                  <div className="bg-card rounded-xl border border-border mx-4 mt-4 p-6 flex flex-col items-center">
-                    <Avatar className={cn("h-20 w-20 mb-3", getAvatarRingColor())}>
+                <div className="pb-6">
+                  {/* ── iOS Contact Hero ── */}
+                  <div className="bg-gradient-to-b from-[#1C2A3A] to-[#2C3E50] px-6 pt-8 pb-6 flex flex-col items-center">
+                    <Avatar className={cn("h-24 w-24 mb-3 ring-4 ring-white/20 ring-offset-2 ring-offset-[#1C2A3A]", isTracking && "ring-primary")}>
                       <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-                      <AvatarFallback className="text-white text-2xl font-semibold" style={{ backgroundColor: '#2C3E50' }}>
+                      <AvatarFallback className="text-white text-2xl font-bold" style={{ backgroundColor: avatarBg }}>
                         {getInitials(pupil.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <h2 className="text-xl font-bold text-foreground">{pupil.name}</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Pupil since {format(parseISO(pupil.created_at), "EEE, d MMM yyyy")}
+                    {isTracking && (
+                      <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-2 py-0.5 mb-1 -mt-1">
+                        <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" /></span>
+                        LIVE TRACKING
+                      </Badge>
+                    )}
+                    <h2 className="text-xl font-bold text-white mt-1">{pupil.name}</h2>
+                    <p className="text-sm text-white/60 mt-0.5">
+                      Pupil since {format(parseISO(pupil.created_at), "MMM yyyy")}
+                      {pupil.course_type && ` · ${courseTypeLabels[pupil.course_type] || pupil.course_type}`}
                     </p>
-                    <div className="flex gap-3 mt-4">
-                      <Button variant="outline" size="sm" className="rounded-full px-5 gap-2" onClick={(e) => { e.stopPropagation(); if (pupil.phone) window.open(`tel:${pupil.phone}`); }} disabled={!pupil.phone}>
-                        <Phone className="h-4 w-4" /> Call
-                      </Button>
-                      <Button variant="outline" size="sm" className="rounded-full px-5 gap-2" onClick={(e) => { e.stopPropagation(); if (pupil.email) window.open(`mailto:${pupil.email}`); }} disabled={!pupil.email}>
-                        <Mail className="h-4 w-4" /> Email
-                      </Button>
+
+                    {/* Circular Action Buttons */}
+                    <div className="flex items-center gap-5 mt-5">
+                      {[
+                        { icon: Phone, label: "Call", action: () => pupil.phone && window.open(`tel:${pupil.phone}`), disabled: !pupil.phone },
+                        { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil) },
+                        { icon: Mail, label: "Email", action: () => pupil.email && window.open(`mailto:${pupil.email}`), disabled: !pupil.email },
+                        { icon: Navigation, label: "Navigate", action: handleNavigate },
+                      ].map(({ icon: Icon, label, action, disabled }) => (
+                        <button
+                          key={label}
+                          onClick={(e) => { e.stopPropagation(); action?.(); }}
+                          disabled={disabled}
+                          className="flex flex-col items-center gap-1.5 disabled:opacity-30"
+                        >
+                          <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-95 transition-transform">
+                            <Icon className="h-5 w-5 text-white" />
+                          </div>
+                          <span className="text-[10px] font-medium text-white/70">{label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Stats Row */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border">
-                    <div className="grid grid-cols-3 divide-x divide-border py-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-foreground">{pupil.lessons_completed || 0}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">Lessons</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-foreground">{pupil.prepaid_hours || 0}h</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">Hours</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={cn("text-2xl font-bold", hasDebt ? "text-rose-600" : "text-foreground")}>
-                          {pupil.account_balance ? (pupil.account_balance < 0 ? `£${Math.abs(pupil.account_balance).toFixed(2)}` : `£${Number(pupil.account_balance).toFixed(2)}`) : "£0.00"}
+                  {/* ── Stats Strip ── */}
+                  <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
+                    <div className="grid grid-cols-4 divide-x divide-border py-4">
+                      {[
+                        { value: pupil.lessons_completed || 0, label: "Lessons" },
+                        { value: `${pupil.prepaid_hours || 0}h`, label: "Hours" },
+                        { value: `${pupil.progress || 0}%`, label: "Progress" },
+                        { value: pupil.account_balance ? `£${Math.abs(Number(pupil.account_balance)).toFixed(0)}` : "£0", label: hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance", highlight: hasDebt },
+                      ].map(({ value, label, highlight }) => (
+                        <div key={label} className="text-center">
+                          <div className={cn("text-lg font-bold", highlight ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{value}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance"}</div>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Test Date Card */}
+                  {/* ── Test Date Banner ── */}
                   {pupil.test_date && (() => {
                     const testDate = new Date(pupil.test_date);
                     const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
                     return (
-                      <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold text-foreground">Driving Test</span>
+                      <div className={cn(
+                        "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
+                        isUrgent
+                          ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
+                          : "bg-card border border-border"
+                      )}>
+                        <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
+                          <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
                         </div>
-                        <p className="text-base font-bold text-foreground">{format(testDate, "EEE, d MMM yyyy")}</p>
-                        <Badge className={cn("mt-2 text-xs font-medium", daysUntilTest <= 7 ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 hover:bg-rose-100" : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 hover:bg-amber-100")}>
-                          {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
-                        </Badge>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">{format(testDate, "EEE, d MMM yyyy")}</p>
+                          <p className={cn("text-xs font-medium", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
+                            {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
+                          </p>
+                        </div>
                       </div>
                     );
                   })()}
@@ -784,16 +809,49 @@ export function PupilCardStack({
                     const isOverdue = daysUntilDue < 0;
                     const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
                     return (
-                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-xl p-4 border", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
+                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-2xl p-4 border", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
                         <AlertCircle className="h-4 w-4 shrink-0" />
                         <span>{isOverdue ? "OVERDUE: " : ""}£{Math.abs(pupil.account_balance || 0)} due {dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
                     );
                   })()}
 
-                  {/* Details Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground">Details</h3>
+                  {/* ── Colorful Quick Actions Grid ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4">
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        { icon: History, label: "Lessons", bg: "bg-blue-500/10", color: "text-blue-600 dark:text-blue-400", action: () => onViewHistory(pupil) },
+                        { icon: GraduationCap, label: "Syllabus", bg: "bg-purple-500/10", color: "text-purple-600 dark:text-purple-400", action: () => setShowSyllabusSheet(true) },
+                        { icon: Car, label: "Report", bg: "bg-emerald-500/10", color: "text-emerald-600 dark:text-emerald-400", action: () => onViewReport(pupil) },
+                        ...(onRecordTestResult ? [{ icon: Award, label: "Test", bg: "bg-amber-500/10", color: "text-amber-600 dark:text-amber-400", action: () => onRecordTestResult(pupil, false) }] : []),
+                        { icon: PoundSterling, label: "Record £", bg: "bg-emerald-500/10", color: "text-emerald-600 dark:text-emerald-400", action: () => setShowRecordPaymentModal(true) },
+                        { icon: QrCode, label: "QR Pay", bg: "bg-indigo-500/10", color: "text-indigo-600 dark:text-indigo-400", action: () => setShowQRModal(true) },
+                        { icon: Share2, label: "Share", bg: "bg-pink-500/10", color: "text-pink-600 dark:text-pink-400", action: null },
+                      ].map(({ icon: Icon, label, bg, color, action }) => (
+                        label === "Share" ? (
+                          <SharePupilDetailsDialog key={label} pupil={pupil} instructorName={instructorName} trigger={
+                            <button className="flex flex-col items-center gap-1.5">
+                              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", bg)}>
+                                <Icon className={cn("h-6 w-6", color)} />
+                              </div>
+                              <span className="text-[10px] font-medium text-foreground">{label}</span>
+                            </button>
+                          } />
+                        ) : (
+                          <button key={label} className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); action?.(); }}>
+                            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", bg)}>
+                              <Icon className={cn("h-6 w-6", color)} />
+                            </div>
+                            <span className="text-[10px] font-medium text-foreground">{label}</span>
+                          </button>
+                        )
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Details Card ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
+                    <h3 className="font-semibold text-foreground text-sm">Details</h3>
                     {pupil.phone && (
                       <div className="flex items-center gap-3 text-sm">
                         <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -820,28 +878,19 @@ export function PupilCardStack({
                         <ExternalLink className="h-3 w-3" />
                       </button>
                     )}
-                    {pupil.course_type && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-foreground">{courseTypeLabels[pupil.course_type] || pupil.course_type}</span>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Notes Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-2">
+                  {/* ── Notes Card ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-foreground">Notes</h3>
+                      <h3 className="font-semibold text-foreground text-sm">Notes</h3>
                       {!isAddingNote && (
-                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}>+ Add Note</Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}>+ Add</Button>
                       )}
                     </div>
                     {pupil.notes ? (
-                      <div className="border-l-4 border-border rounded-r-lg bg-muted/30 p-3">
-                        <div className="flex items-start gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
-                        </div>
+                      <div className="bg-muted/30 rounded-xl p-3">
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground italic">No notes yet</p>
@@ -868,9 +917,9 @@ export function PupilCardStack({
                     )}
                   </div>
 
-                  {/* Lesson History Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground">
+                  {/* ── Lesson History Card ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
+                    <h3 className="font-semibold text-foreground text-sm">
                       Lesson History {recentLessons.length > 0 && <span className="text-muted-foreground font-normal">({recentLessons.length})</span>}
                     </h3>
                     {recentLessons.length === 0 ? (
@@ -904,9 +953,9 @@ export function PupilCardStack({
                           const paymentColor = lesson.payment_status === 'paid' ? 'text-emerald-600' : lesson.payment_status === 'unpaid' ? 'text-amber-600' : 'text-muted-foreground';
 
                           return (
-                            <div key={lesson.id} className={cn("border-l-4 rounded-r-lg bg-muted/20 p-3", borderColor)}>
+                            <div key={lesson.id} className={cn("border-l-4 rounded-r-xl bg-muted/20 p-3", borderColor)}>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-semibold text-sm text-foreground">{pupil.name}</span>
+                                <span className="font-semibold text-sm text-foreground">{format(parseISO(lesson.lesson_date), "EEE, d MMM")}</span>
                                 <Badge className={cn("text-[10px] px-2 py-0 font-medium border-0", badgeColor)}>
                                   {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
                                 </Badge>
@@ -938,11 +987,11 @@ export function PupilCardStack({
                     )}
                   </div>
 
-                  {/* Driving Sessions Card */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
+                  {/* ── Driving Sessions Card ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Route className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-semibold text-foreground">
+                      <h3 className="font-semibold text-foreground text-sm">
                         Driving Sessions {recentDrivingSessions.length > 0 && <span className="text-muted-foreground font-normal">({recentDrivingSessions.length})</span>}
                       </h3>
                     </div>
@@ -958,7 +1007,7 @@ export function PupilCardStack({
                           const distKm = session.total_distance_km || 0;
 
                           return (
-                            <div key={session.id} className="border-l-4 border-l-border rounded-r-lg bg-muted/20 p-3 space-y-1">
+                            <div key={session.id} className="rounded-xl bg-muted/20 p-3 space-y-1">
                               <div className="flex items-center justify-between">
                                 <span className="font-semibold text-sm text-foreground">{format(started, "EEE, d MMM yyyy")}</span>
                                 {session.speeding_count > 0 && (
@@ -971,17 +1020,9 @@ export function PupilCardStack({
                                 {format(started, "HH:mm")} — {ended ? format(ended, "HH:mm") : "ongoing"}
                               </p>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                {maxMph && (
-                                  <span className="flex items-center gap-1">
-                                    <Gauge className="h-3 w-3" /> Max {maxMph} mph
-                                  </span>
-                                )}
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" /> {durationMin} min
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Route className="h-3 w-3" /> {distKm.toFixed(1)} km
-                                </span>
+                                {maxMph && <span className="flex items-center gap-1"><Gauge className="h-3 w-3" /> Max {maxMph} mph</span>}
+                                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {durationMin} min</span>
+                                <span className="flex items-center gap-1"><Route className="h-3 w-3" /> {distKm.toFixed(1)} km</span>
                               </div>
                               {session.feedback_notes && (
                                 <p className="text-xs text-muted-foreground italic mt-1 truncate">{session.feedback_notes}</p>
@@ -993,62 +1034,22 @@ export function PupilCardStack({
                     )}
                   </div>
 
-                  {/* Payments */}
-                  <div className="mx-4 mt-3">
-                    <SectionPanel title="Payments" icon={<PoundSterling className="h-4 w-4 text-primary" />} headerGradient>
-                      <div className="px-4 pb-2 space-y-3">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowRecordPaymentModal(true); }}><PoundSterling className="h-4 w-4 mr-1" /> Record</Button>
-                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowQRModal(true); }}><QrCode className="h-4 w-4 mr-1" /> QR</Button>
-                          {instructorId && instructorName && hasDebt && (
-                            <SendPaymentReminderButton pupilId={pupil.id} pupilName={pupil.name} pupilPhone={pupil.phone} pupilEmail={pupil.email} instructorId={instructorId} instructorName={instructorName} outstandingAmount={pupil.account_balance || 0} />
-                          )}
-                        </div>
-                        <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} refreshTrigger={paymentRefreshTrigger} />
-                        <PupilCreditBreakdown pupilId={pupil.id} prepaidHours={pupil.prepaid_hours || 0} depositPaid={pupil.deposit_paid || 0} paymentType={pupil.payment_type} />
-                      </div>
-                    </SectionPanel>
-                  </div>
-
-                  {/* Tools Grid */}
-                  <div className="mx-4 mt-3 bg-card rounded-xl border border-border p-4">
-                    <div className="grid grid-cols-4 gap-x-4 gap-y-4">
-                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}>
-                        <div className="w-14 h-14 rounded-none bg-muted/50 flex items-center justify-center"><History className="h-6 w-6 text-primary" /></div>
-                        <span className="text-[10px] font-medium text-foreground">Lessons</span>
-                      </button>
-                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); setShowSyllabusSheet(true); }}>
-                        <div className="w-14 h-14 rounded-none bg-muted/50 flex items-center justify-center"><GraduationCap className="h-6 w-6 text-primary" /></div>
-                        <span className="text-[10px] font-medium text-foreground">Syllabus</span>
-                      </button>
-                      <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onViewReport(pupil); }}>
-                        <div className="w-14 h-14 rounded-none bg-muted/50 flex items-center justify-center"><Car className="h-6 w-6 text-primary" /></div>
-                        <span className="text-[10px] font-medium text-foreground">Report</span>
-                      </button>
-                      {onRecordTestResult && (
-                        <button className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); onRecordTestResult(pupil, false); }}>
-                          <div className="w-14 h-14 rounded-none bg-muted/50 flex items-center justify-center"><Award className="h-6 w-6 text-primary" /></div>
-                          <span className="text-[10px] font-medium text-foreground">Test</span>
-                        </button>
+                  {/* ── Payments Card ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
+                    <h3 className="font-semibold text-foreground text-sm">Payments</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Button variant="outline" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); setShowRecordPaymentModal(true); }}><PoundSterling className="h-4 w-4 mr-1" /> Record</Button>
+                      <Button variant="outline" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); setShowQRModal(true); }}><QrCode className="h-4 w-4 mr-1" /> QR</Button>
+                      {instructorId && instructorName && hasDebt && (
+                        <SendPaymentReminderButton pupilId={pupil.id} pupilName={pupil.name} pupilPhone={pupil.phone} pupilEmail={pupil.email} instructorId={instructorId} instructorName={instructorName} outstandingAmount={pupil.account_balance || 0} />
                       )}
                     </div>
-                    <div className="flex items-center justify-around mt-4 pt-4 border-t border-border">
-                      <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }} className="flex flex-col items-center gap-1.5">
-                        <Navigation className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Navigate</span>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); onStartChat?.(pupil); }} className="flex flex-col items-center gap-1.5">
-                        <MessageSquare className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Chat</span>
-                      </button>
-                      <SharePupilDetailsDialog pupil={pupil} instructorName={instructorName} trigger={
-                        <button className="flex flex-col items-center gap-1.5">
-                          <Share2 className="h-5 w-5 text-primary" /><span className="text-[10px] font-medium text-foreground">Share</span>
-                        </button>
-                      } />
-                    </div>
+                    <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} refreshTrigger={paymentRefreshTrigger} />
+                    <PupilCreditBreakdown pupilId={pupil.id} prepaidHours={pupil.prepaid_hours || 0} depositPaid={pupil.deposit_paid || 0} paymentType={pupil.payment_type} />
                   </div>
 
-                  {/* Status & Admin */}
-                  <div className="mx-4 mt-3 bg-card rounded-none border border-border border-l-4 border-l-primary p-4 space-y-3">
+                  {/* ── Status & Admin ── */}
+                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Progress</span>
@@ -1060,7 +1061,7 @@ export function PupilCardStack({
                       <span className="text-sm text-muted-foreground">Status:</span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="outline" size="sm" className="gap-2">
+                          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
                             {(() => { const StatusIcon = statusConfig[currentStatus].icon; return <StatusIcon className="h-4 w-4" />; })()}
                             {statusConfig[currentStatus].label}
                             {changingStatus && <Clock className="h-3 w-3 animate-spin" />}
@@ -1076,13 +1077,13 @@ export function PupilCardStack({
                     </div>
                     <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
                     {onViewTerms && (
-                      <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
+                      <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
                         {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
                       </Button>
                     )}
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+                      <Button variant="ghost" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+                      <Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
                     </div>
                   </div>
                 </div>
