@@ -414,7 +414,7 @@ export function InstructorMobileHome({
           >
             <div className="flex items-center gap-2 min-w-0">
               <Timer className="h-3.5 w-3.5 shrink-0" />
-              <span className="text-[10px] font-medium uppercase tracking-wider opacity-80 mr-1">Next Up</span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-yellow-300 mr-1">Next Up</span>
               <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
             </div>
             <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
