@@ -133,9 +133,9 @@ export function SwipeableQuickAccess() {
                             e.stopPropagation();
                             navigate(quickActionRoutes[tile.title]);
                           }}
-                          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm active:scale-90 transition-transform z-10"
+                          className="absolute bottom-2.5 left-2.5 w-6 h-6 rounded-full bg-emerald-400/70 flex items-center justify-center active:scale-90 transition-transform z-10"
                         >
-                          <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                          <Plus className="h-3.5 w-3.5 text-emerald-900/70" strokeWidth={2.5} />
                         </div>
                       )}
                       <div>
