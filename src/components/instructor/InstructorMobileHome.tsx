@@ -516,10 +516,6 @@ export function InstructorMobileHome({
           />
         )}
 
-        {/* Your Plan */}
-        <div className="mt-3">
-          <PlanWidget />
-        </div>
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
