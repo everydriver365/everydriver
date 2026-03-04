@@ -386,7 +386,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
               className="bg-[#306285]/10 rounded-xl border border-[#306285]/20 px-4 py-2.5 flex items-center gap-2"
             >
               <CalendarDays className="h-3.5 w-3.5 text-[#306285] shrink-0" />
-              <span className="text-sm text-foreground truncate">{evt.title}</span>
+              <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
               <Badge variant="outline" className="ml-auto text-[10px] px-1.5 shrink-0 border-[#306285]/30 text-foreground">All day</Badge>
             </div>
           ))}
