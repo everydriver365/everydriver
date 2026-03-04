@@ -33,8 +33,11 @@ export function HomepageHero({
   const circumference = 2 * Math.PI * radius;
   const total = weeklyLessonsTotal || 1;
   const completed = weeklyLessonsCompleted;
-  const progress = Math.min(completed / total, 1);
-  const dashOffset = circumference * (1 - progress);
+  const scheduled = weeklyLessonsScheduled;
+  const completedProgress = Math.min(completed / total, 1);
+  const scheduledProgress = Math.min(scheduled / total, 1);
+  const completedOffset = circumference * (1 - completedProgress);
+  const scheduledOffset = circumference * (1 - scheduledProgress);
 
   return (
     <div
@@ -104,24 +107,40 @@ export function HomepageHero({
                 strokeWidth={stroke}
                 opacity={0.4}
               />
-              {/* Gradient definition */}
+              {/* Gradient definitions */}
               <defs>
-                <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="ring-gradient-green" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#34D399" />
                   <stop offset="100%" stopColor="#10B981" />
                 </linearGradient>
+                <linearGradient id="ring-gradient-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#F87171" />
+                  <stop offset="100%" stopColor="#EF4444" />
+                </linearGradient>
               </defs>
-              {/* Progress arc */}
+              {/* Scheduled arc (red, behind green) */}
               <motion.circle
                 cx="34" cy="34" r={radius}
                 fill="none"
-                stroke="url(#ring-gradient)"
+                stroke="url(#ring-gradient-red)"
                 strokeWidth={stroke}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset: dashOffset }}
-                transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
+                animate={{ strokeDashoffset: scheduledOffset }}
+                transition={{ duration: 1, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
+              />
+              {/* Completed arc (green, on top) */}
+              <motion.circle
+                cx="34" cy="34" r={radius}
+                fill="none"
+                stroke="url(#ring-gradient-green)"
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset: completedOffset }}
+                transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
