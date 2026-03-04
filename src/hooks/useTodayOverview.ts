@@ -4,6 +4,7 @@ import { format } from "date-fns";
 
 interface TodayOverview {
   lessonCount: number;
+  completedCount: number;
   totalHours: number;
   expectedEarnings: number;
   firstPickupLocation: string | null;
@@ -24,6 +25,7 @@ export function useTodayOverview(instructorId: string | undefined) {
       if (!instructorId) {
         return {
           lessonCount: 0,
+          completedCount: 0,
           totalHours: 0,
           expectedEarnings: 0,
           firstPickupLocation: null,
@@ -67,8 +69,9 @@ export function useTodayOverview(instructorId: string | undefined) {
 
       if (instructorError) throw instructorError;
 
-      const hourlyRate = instructor?.hourly_rate || 35; // Default £35/hour
+      const hourlyRate = instructor?.hourly_rate || 35;
       const lessonCount = lessons?.length || 0;
+      const completedCount = lessons?.filter(l => l.status === 'completed')?.length || 0;
       const totalMinutes = lessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const totalHours = totalMinutes / 60;
       const expectedEarnings = totalHours * hourlyRate;
@@ -91,6 +94,7 @@ export function useTodayOverview(instructorId: string | undefined) {
 
       return {
         lessonCount,
+        completedCount,
         totalHours: Math.round(totalHours * 10) / 10,
         expectedEarnings: Math.round(expectedEarnings),
         firstPickupLocation,

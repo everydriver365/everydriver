@@ -40,6 +40,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
+import { useMonthlyGoals } from "@/hooks/useMonthlyGoals";
 import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
@@ -223,6 +224,7 @@ export function InstructorMobileHome({
   // New enhancement hooks
   const { data: streak } = useInstructorStreak(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
+  const { data: monthlyGoals } = useMonthlyGoals(instructorId);
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
@@ -394,6 +396,11 @@ export function InstructorMobileHome({
         weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
         weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
         weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
+        todayCompleted={todayOverview?.completedCount || 0}
+        todayTotal={todayOverview?.lessonCount || 0}
+        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
+        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
+        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
       />
 
       {/* Sticky next-up bar */}
