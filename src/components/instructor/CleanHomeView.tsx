@@ -420,10 +420,6 @@ export function CleanHomeView({
 
         {instructorId && <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />}
 
-        {/* Your Plan — at the bottom */}
-        <div className="mt-3">
-          <PlanWidget />
-        </div>
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />
