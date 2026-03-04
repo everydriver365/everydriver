@@ -76,9 +76,14 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: isCancelled ? 0.5 : 1, y: 0 }}
                   transition={{ delay: idx * 0.04 }}
-                  className="bg-card rounded-[14px] p-4 active:scale-[0.98] transition-transform"
+                  className="p-4 active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
                   style={{
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                    background: "rgba(255,255,255,0.65)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    borderRadius: 22,
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+                    border: "1px solid rgba(255,255,255,0.5)",
                     borderLeft: `4px solid ${borderColor}`,
                   }}
                 >
