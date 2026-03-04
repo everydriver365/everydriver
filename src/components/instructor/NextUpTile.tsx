@@ -524,7 +524,7 @@ export function NextUpTile({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Send className="h-5 w-5 text-white" />
-                        <span className="text-[10px] font-bold text-white">On My Way</span>
+                        <span className="text-[10px] font-bold text-white">On Way</span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-52">
