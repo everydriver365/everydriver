@@ -7,7 +7,7 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt,
+  Gift, Clock, Receipt, Plus,
 } from "lucide-react";
 import expensesIcon from "@/assets/expenses-icon.png";
 import trackLessonIcon from "@/assets/track-lesson-icon.png";
@@ -38,7 +38,23 @@ interface QuickTile {
   customIcon?: string;
   accent: string;
   route: string;
+  quickAction?: string;
 }
+
+const quickActionRoutes: Record<string, string> = {
+  "Agenda": "/instructor/schedule?action=add",
+  "Pupils": "/instructor/pupils?action=add",
+  "Track Lesson": "/instructor/tracking",
+  "Take Payment": "/instructor/take-payment",
+  "Fill Gaps": "/instructor/gaps?action=add",
+  "To Do": "/instructor/todos?action=add",
+  "Log Test Result": "/instructor/test-results?action=add",
+  "Messages": "/instructor/messages?action=new",
+  "CPD Log": "/instructor/cpd?action=add",
+  "Referrals": "/instructor/referrals?action=invite",
+  "Availability": "/instructor/availability?action=add",
+  "Expenses": "/instructor/expenses?action=add",
+};
 
 const ALL_TILES: QuickTile[] = [
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, customIcon: agendaIcon, accent: "#007AFF", route: "/instructor/schedule" },
@@ -104,12 +120,24 @@ export function SwipeableQuickAccess() {
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={() => navigate(tile.route)}
-                      className="h-[110px] p-5 rounded-[20px] text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+                      className="relative h-[110px] p-5 rounded-[20px] text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
                       style={{
                         backgroundColor: "#F2F3F5",
                         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
                       }}
                     >
+                      {/* Green plus button */}
+                      {quickActionRoutes[tile.title] && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(quickActionRoutes[tile.title]);
+                          }}
+                          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm active:scale-90 transition-transform z-10"
+                        >
+                          <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                        </div>
+                      )}
                       <div>
                         <p className="text-[16px] font-bold leading-tight text-foreground">
                           {tile.title}
