@@ -492,7 +492,7 @@ export default function InstructorPupils() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-white bg-gradient-to-br from-[#306285] via-[#306285]/85 to-[#306285]/70"
+          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
         >
           <div className="flex items-center justify-between">
             <div>
