@@ -27,6 +27,14 @@ export function HomepageHero({
     return `Hello, ${firstName}`;
   };
 
+  // Progress ring calculations
+  const radius = 28;
+  const stroke = 5;
+  const circumference = 2 * Math.PI * radius;
+  const total = weeklyLessonsTotal || 1;
+  const completed = weeklyLessonsCompleted;
+  const progress = Math.min(completed / total, 1);
+  const dashOffset = circumference * (1 - progress);
 
   return (
     <div
@@ -70,19 +78,60 @@ export function HomepageHero({
 
         {/* Bottom — This Week tile */}
         <div
-          className="bg-white dark:bg-card backdrop-blur-md rounded-2xl p-3.5 flex items-center justify-between"
-          style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
+          className="bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl p-3.5 flex items-center justify-between"
+          style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.12)" }}
         >
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               THIS WEEK
             </p>
             <p className="text-[17px] font-semibold text-foreground mt-0.5 leading-snug">
-              Keep it moving!
+              {completed === total && total > 0 ? "All done! 🎉" : "Keep it moving!"}
             </p>
             <p className="text-[13px] text-muted-foreground mt-0.5">
               {weeklyLessonsScheduled} lesson{weeklyLessonsScheduled !== 1 ? "s" : ""} scheduled
             </p>
+          </div>
+
+          {/* iOS-style progress ring */}
+          <div className="relative w-[68px] h-[68px] shrink-0">
+            <svg viewBox="0 0 68 68" className="w-full h-full -rotate-90">
+              {/* Track */}
+              <circle
+                cx="34" cy="34" r={radius}
+                fill="none"
+                stroke="hsl(var(--border))"
+                strokeWidth={stroke}
+                opacity={0.4}
+              />
+              {/* Gradient definition */}
+              <defs>
+                <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#34D399" />
+                  <stop offset="100%" stopColor="#10B981" />
+                </linearGradient>
+              </defs>
+              {/* Progress arc */}
+              <motion.circle
+                cx="34" cy="34" r={radius}
+                fill="none"
+                stroke="url(#ring-gradient)"
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset: dashOffset }}
+                transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-[17px] font-bold text-foreground leading-none tabular-nums">
+                {completed}
+              </span>
+              <span className="text-[9px] font-medium text-muted-foreground leading-tight mt-0.5">
+                of {total}
+              </span>
+            </div>
           </div>
         </div>
       </div>
