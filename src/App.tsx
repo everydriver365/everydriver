@@ -24,7 +24,7 @@ const PupilLogin = lazy(() => import("./pages/PupilLogin"));
 const InstructorPortal = lazy(() => import("./pages/InstructorPortal"));
 const InstructorPupils = lazy(() => import("./pages/InstructorPupils"));
 const InstructorSchedule = lazy(() => import("./pages/InstructorSchedule"));
-
+const NextUpTileDemo = lazy(() => import("./pages/instructor/NextUpTileDemo"));
 const InstructorDiary = lazy(() => import("./pages/InstructorDiary"));
 const InstructorJobs = lazy(() => import("./pages/InstructorJobs"));
 const InstructorPay = lazy(() => import("./pages/InstructorPay"));
@@ -213,7 +213,7 @@ const App = () => (
                 <Route path="/instructor/pupils" element={<InstructorPupils />} />
                 <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
                 <Route path="/instructor/schedule" element={<InstructorSchedule />} />
-                
+                <Route path="/instructor/next-up-demo" element={<NextUpTileDemo />} />
                 <Route path="/instructor/diary" element={<InstructorDiary />} />
                 <Route path="/instructor/jobs" element={<InstructorJobs />} />
                 <Route path="/instructor/pay" element={<InstructorPay />} />
