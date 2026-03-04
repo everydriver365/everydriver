@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Clock, MapPin, ChevronRight, Car, Loader2 } from "lucide-react";
+import { Clock, MapPin, ChevronRight, Car, Loader2, Calendar, Hourglass } from "lucide-react";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
@@ -87,7 +87,6 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
   const destinationPostcode = nextLesson?.pupil.pickup_postcode || nextLesson?.pupil.postcode || null;
   const { durationMinutes, durationText, trafficCondition, isLoading: etaLoading } = useTrafficETA(destinationPostcode);
 
-  // Compute actual arrival time (now + travel duration)
   const getArrivalTime = () => {
     if (!durationMinutes) return null;
     const arrival = new Date(Date.now() + durationMinutes * 60 * 1000);
@@ -102,15 +101,19 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-2xl border p-4 animate-pulse">
-        <div className="h-16 bg-muted rounded-xl" />
+      <div className="rounded-[22px] p-4 animate-pulse"
+        style={{
+          background: "rgba(255,255,255,0.65)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
+      >
+        <div className="h-16 bg-muted/30 rounded-xl" />
       </div>
     );
   }
 
-  if (!nextLesson) {
-    return null;
-  }
+  if (!nextLesson) return null;
 
   const lessonDate = parseISO(nextLesson.lesson_date);
   const isLessonToday = isToday(lessonDate);
@@ -122,8 +125,16 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     return format(lessonDate, "EEE, d MMM");
   };
 
-  const getTimeLabel = () => {
-    return nextLesson.start_time.slice(0, 5);
+  const getTimeLabel = () => nextLesson.start_time.slice(0, 5);
+
+  const getDurationLabel = () => {
+    const mins = nextLesson.duration_minutes;
+    if (mins >= 60) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return m > 0 ? `${h}.${Math.round((m / 60) * 10)}h` : `${h}h`;
+    }
+    return `${mins}m`;
   };
 
   const getTrafficEmoji = () => {
@@ -143,71 +154,119 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
       className="block"
     >
       <div
-        className={cn(
-          "rounded-2xl p-4 text-white bg-gradient-to-br from-[#306285] via-[#306285]/90 to-[#306285]/80",
-          "hover:shadow-lg transition-all duration-200"
-        )}
+        className="w-full overflow-hidden hover:shadow-lg transition-all duration-200 active:scale-[0.98]"
+        style={{
+          background: "rgba(255,255,255,0.65)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: 22,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+          border: "1px solid rgba(255,255,255,0.5)",
+        }}
       >
-        <div className="flex items-center gap-3">
-          {/* Avatar with ring */}
-          <div className="relative">
-            <div className="ring-2 ring-white/30 ring-offset-2 ring-offset-primary rounded-full">
-              <PupilAvatar
-                name={nextLesson.pupil.name}
-                imageUrl={nextLesson.pupil.profile_image_url}
-                size="lg"
-              />
+        <div className="px-4 pt-4 pb-3 flex flex-col gap-2.5">
+          {/* Top row: Avatar + Name + Time */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div
+                className="rounded-full p-[2px]"
+                style={{ background: "linear-gradient(135deg, #3B82F6, #6366F1)" }}
+              >
+                <PupilAvatar
+                  name={nextLesson.pupil.name}
+                  imageUrl={nextLesson.pupil.profile_image_url}
+                  size="lg"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <span
+                  className="text-[11px] font-bold uppercase tracking-[0.5px]"
+                  style={{ color: "#6366F1" }}
+                >
+                  Next Up
+                </span>
+              </div>
+              <h3
+                className="font-bold truncate text-[20px] mt-0.5"
+                style={{ color: "hsl(var(--foreground))" }}
+              >
+                {nextLesson.pupil.name}
+              </h3>
+            </div>
+
+            <div className="flex flex-col items-end shrink-0">
+              <span
+                className="text-[22px] font-bold"
+                style={{
+                  color: "hsl(var(--foreground))",
+                  fontVariantNumeric: "tabular-nums",
+                  fontFamily: "ui-monospace, monospace",
+                }}
+              >
+                {getTimeLabel()}
+              </span>
+              <div className="h-8 w-8 rounded-full flex items-center justify-center mt-1" style={{ background: "rgba(99,102,241,0.1)" }}>
+                <ChevronRight className="h-4 w-4" style={{ color: "#6366F1" }} />
+              </div>
             </div>
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-primary-foreground/70 font-medium uppercase tracking-wide mb-0.5">
-              Next Lesson
-            </p>
-            <h3 className="font-semibold text-primary-foreground truncate text-lg">
-              {nextLesson.pupil.name}
-            </h3>
-            <div className="flex items-center gap-3 mt-1.5">
-              <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1">
-                <Clock className="h-3.5 w-3.5" />
-                <span className="text-sm font-medium">
-                  {getDateLabel()} · {getTimeLabel()}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className="flex items-center gap-1.5 text-sm text-primary-foreground/80">
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="truncate max-w-[180px]">
-                  {nextLesson.pupil.pickup_address || nextLesson.pupil.address || nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
-                </span>
-              </div>
-              <PaymentStatusBadge
-                balance={effectiveBalance}
-                size="sm"
-                className="rounded-none bg-white/15 border-white/20 text-white [&_svg]:text-white"
-              />
-            </div>
-            {/* ETA row */}
-            <div className="flex items-center gap-1.5 mt-1.5 text-sm text-primary-foreground/80">
-              {etaLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : durationMinutes ? (
-                <>
-                  <Car className="h-3.5 w-3.5" />
-                  <span>ETA {getArrivalTime()} ({durationText})</span>
-                  {trafficCondition && (
-                    <span className="text-xs">{getTrafficEmoji()}</span>
-                  )}
-                </>
-              ) : null}
-            </div>
+          {/* Info pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold"
+              style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}
+            >
+              <Calendar className="h-[11px] w-[11px]" />
+              {getDateLabel()}
+            </span>
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold"
+              style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}
+            >
+              <Hourglass className="h-[11px] w-[11px]" />
+              {getDurationLabel()}
+            </span>
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold"
+              style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}
+            >
+              <MapPin className="h-[11px] w-[11px]" />
+              {nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
+            </span>
           </div>
 
-          {/* Arrow */}
-          <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-            <ChevronRight className="h-5 w-5" />
+          {/* Location + Payment + ETA row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[12px] min-w-0" style={{ color: "#9CA3AF" }}>
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">
+                {nextLesson.pupil.pickup_address || nextLesson.pupil.address || nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
+              </span>
+            </div>
+            <PaymentStatusBadge
+              balance={effectiveBalance}
+              size="sm"
+              className="rounded-full bg-black/5 border-black/10 text-foreground/70 dark:bg-white/10 dark:border-white/15 dark:text-foreground/80"
+            />
+          </div>
+
+          {/* ETA row */}
+          <div className="flex items-center gap-1.5 text-[12px]" style={{ color: "#9CA3AF" }}>
+            {etaLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : durationMinutes ? (
+              <>
+                <Car className="h-3.5 w-3.5" />
+                <span>ETA {getArrivalTime()} ({durationText})</span>
+                {trafficCondition && (
+                  <span className="text-[11px]">{getTrafficEmoji()}</span>
+                )}
+              </>
+            ) : null}
           </div>
         </div>
       </div>
