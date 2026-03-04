@@ -4,19 +4,20 @@ import { Clock, CalendarOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
+import { PupilAvatar } from "./PupilAvatar";
 
 interface TodayLessonsListProps {
   lessons: TodayLesson[];
   className?: string;
 }
 
-const typeColors: Record<string, string> = {
-  Standard: "#007AFF",
-  "Test Prep": "#FF9500",
-  "Mock Test": "#AF52DE",
-  Motorway: "#FF2D55",
-  Refresher: "#5AC8FA",
-  "Pass Plus": "#34C759",
+const typeColors: Record<string, { bg: string; text: string }> = {
+  Standard: { bg: "bg-primary/10", text: "text-primary" },
+  "Test Prep": { bg: "bg-amber-500/10", text: "text-amber-600" },
+  "Mock Test": { bg: "bg-violet-500/10", text: "text-violet-600" },
+  Motorway: { bg: "bg-rose-500/10", text: "text-rose-600" },
+  Refresher: { bg: "bg-sky-500/10", text: "text-sky-600" },
+  "Pass Plus": { bg: "bg-emerald-500/10", text: "text-emerald-600" },
 };
 
 export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListProps) {
@@ -66,9 +67,9 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
       ) : (
         <div className="space-y-3">
           {lessons.map((lesson, idx) => {
-            const borderColor = typeColors[lesson.lessonType] || typeColors.Standard;
             const isCancelled = lesson.status === "cancelled";
             const isPaid = lesson.paymentStatus === "paid";
+            const colors = typeColors[lesson.lessonType] || typeColors.Standard;
 
             return (
               <Link key={lesson.id} to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}>
@@ -84,9 +85,26 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
                     borderRadius: 22,
                     boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
                     border: "1px solid rgba(255,255,255,0.5)",
-                    borderLeft: `4px solid ${borderColor}`,
                   }}
                 >
+                  {/* Top row: Avatar + Name + Type badge */}
+                  <div className="flex items-center gap-3 mb-2">
+                    <PupilAvatar
+                      name={lesson.pupilName}
+                      imageUrl={lesson.pupilProfileImageUrl}
+                      size="sm"
+                    />
+                    <p className="text-[16px] font-semibold text-foreground leading-tight flex-1 truncate">
+                      {lesson.pupilName}
+                    </p>
+                    <Badge
+                      variant="outline"
+                      className={`${colors.bg} ${colors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`}
+                    >
+                      {lesson.lessonType}
+                    </Badge>
+                  </div>
+
                   {/* Time */}
                   <div className="flex items-center gap-1.5 text-muted-foreground mb-1.5">
                     <Clock className="h-3.5 w-3.5" />
@@ -94,23 +112,6 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
                       {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                     </span>
                   </div>
-
-                  {/* Type badge + pupil name */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge
-                      variant="outline"
-                      className="border-0 text-[11px] font-medium px-2 py-0.5"
-                      style={{
-                        backgroundColor: `${borderColor}1A`,
-                        color: borderColor,
-                      }}
-                    >
-                      {lesson.lessonType}
-                    </Badge>
-                  </div>
-                  <p className="text-[16px] font-semibold text-foreground leading-tight">
-                    {lesson.pupilName}
-                  </p>
 
                   {/* Bottom row: amount + status */}
                   <div className="flex items-center justify-between mt-2">

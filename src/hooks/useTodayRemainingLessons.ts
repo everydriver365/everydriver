@@ -7,6 +7,7 @@ export interface TodayLesson {
   pupilId: string;
   pupilName: string;
   pupilInitials: string;
+  pupilProfileImageUrl: string | null;
   startTime: string;
   durationMinutes: number;
   pickupPostcode: string | null;
@@ -29,7 +30,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
         .from("scheduled_lessons")
         .select(`
           id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
-          pupils!inner (id, name, postcode, address)
+          pupils!inner (id, name, postcode, address, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
@@ -51,6 +52,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           pupilId: l.pupil_id || pupil?.id || "",
           pupilName: name,
           pupilInitials: initials,
+          pupilProfileImageUrl: pupil?.profile_image_url || null,
           startTime: l.start_time,
           durationMinutes: l.duration_minutes || 60,
           pickupPostcode: l.pickup_postcode || pupil?.postcode || null,
