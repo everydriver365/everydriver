@@ -133,6 +133,7 @@ interface LatestFeedback {
 
 interface PupilCardStackProps {
   pupil: Pupil;
+  defaultExpanded?: boolean;
   onEdit: (pupil: Pupil) => void;
   onDelete: (pupil: Pupil) => void;
   onViewHistory: (pupil: Pupil) => void;
@@ -162,6 +163,7 @@ const courseTypeLabels: Record<string, string> = {
 
 export function PupilCardStack({
   pupil,
+  defaultExpanded = false,
   onEdit,
   onDelete,
   onViewHistory,
@@ -182,7 +184,7 @@ export function PupilCardStack({
   const isMobile = useIsMobile();
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
   const [isAddingFeedback, setIsAddingFeedback] = useState(false);
   const [newFeedback, setNewFeedback] = useState("");
