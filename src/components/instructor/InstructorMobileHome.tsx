@@ -390,6 +390,7 @@ export function InstructorMobileHome({
       <HomepageHero
         firstName={firstName}
         heroImageUrl={personalHeroUrl || content?.hero_image_url}
+        profileImageUrl={instructor?.profile_image_url}
         weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
         weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
         weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
