@@ -137,42 +137,45 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
     <div className="min-h-screen flex flex-col">
       {/* ─── 1. GRADIENT HEADER ─── */}
       <div
-        className="w-full"
+        className="w-full rounded-b-[28px]"
         style={{
           background: isDark
-            ? "linear-gradient(135deg, rgb(20,31,56) 0%, rgb(26,46,82) 100%)"
-            : "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)",
+            ? "linear-gradient(180deg, hsl(210, 25%, 18%) 0%, hsl(205, 30%, 25%) 100%)"
+            : "linear-gradient(180deg, hsl(205, 30%, 48%) 0%, hsl(200, 28%, 52%) 100%)",
         }}
       >
         <div style={{ height: 54 }} />
-        <div className="flex items-center justify-between px-5 pb-3">
+        <div className="flex items-center justify-between px-5 pb-4">
           <div>
-            <h1 className="text-[24px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
-            <p className="text-[15px] text-white/80">Welcome</p>
+            <h1 className="text-[32px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
+            <p className="text-[16px] text-white/80">Welcome</p>
           </div>
-          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-            <Car className="h-6 w-6 text-white/90" />
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+              <Car className="h-7 w-7 text-white/90" />
+            </div>
+            <span className="text-[9px] font-bold text-white/90 uppercase tracking-wider">BestMate</span>
           </div>
         </div>
 
         {/* Stats bar */}
-        <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{weeklyEarnings}</p>
-              <p className="text-[9px] text-white/60">Earnings this week</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Monthly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
-              <p className="text-[9px] text-white/60">Earnings this month</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Schedule</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">{upcomingBookings}</p>
-              <p className="text-[9px] text-white/60">Upcoming Bookings</p>
-            </div>
+        <div className="mx-5 mb-5 rounded-[16px] p-1.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.20)" }}>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { label: "Weekly", value: `£${weeklyEarnings}`, sub: "Earnings this week" },
+              { label: "Monthly", value: `£${Math.round(monthEarnings)}`, sub: "Earnings this month" },
+              { label: "Schedule", value: `${upcomingBookings}`, sub: "Upcoming Bookings" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="text-center rounded-[12px] py-3 px-2"
+                style={{ backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.65)" }}
+              >
+                <p className="text-[12px] font-bold text-primary uppercase tracking-wide">{stat.label}</p>
+                <p className="text-[24px] font-bold text-primary mt-0.5 tabular-nums">{stat.value}</p>
+                <p className="text-[10px] text-muted-foreground">{stat.sub}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
