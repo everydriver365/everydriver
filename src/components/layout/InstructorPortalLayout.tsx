@@ -353,12 +353,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header - Concept C: Gradient Navy + Avatar */}
+            {/* Mobile Header */}
             <header className="sticky top-0 z-40 bg-primary pt-[env(safe-area-inset-top)]">
-              <div className="bg-gradient-to-r from-primary via-primary/95 to-primary/85 text-primary-foreground relative overflow-hidden">
-                {/* Decorative circles */}
-                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-primary-foreground/5" />
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary-foreground/[0.03]" />
+              <div className="bg-primary text-primary-foreground relative overflow-hidden">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                   {/* Left: Hamburger + Avatar/Greeting */}
