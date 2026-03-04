@@ -383,7 +383,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           {allDayEvents.map((evt) => (
             <div
               key={evt.id}
-              className="bg-warning/10 rounded-xl border border-warning px-4 py-2.5 flex items-center gap-2"
+              className="bg-warning/10 rounded-xl border border-foreground px-4 py-2.5 flex items-center gap-2"
             >
               <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
               <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
