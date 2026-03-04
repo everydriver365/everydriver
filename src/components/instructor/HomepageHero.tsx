@@ -35,28 +35,28 @@ export function HomepageHero({
   const dashOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative">
-      {/* Hero Banner */}
-      <div
-        className="relative h-[100px] overflow-hidden hero-banner-no-top-radius"
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          borderBottomRightRadius: "20px",
-          borderBottomLeftRadius: "20px",
-        }}
-      >
-        {/* Gradient overlay adapts to dark mode */}
-        <img
-          src={heroImageUrl || instructorHeroImg}
-          alt="Driving scene"
-          className="absolute inset-0 h-full w-full object-cover !rounded-none"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
+    <div
+      className="relative h-[200px] overflow-hidden"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: "20px",
+        borderBottomLeftRadius: "20px",
+      }}
+    >
+      {/* Background image */}
+      <img
+        src={heroImageUrl || instructorHeroImg}
+        alt="Driving scene"
+        className="absolute inset-0 h-full w-full object-cover !rounded-none"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
 
-        {/* Bottom-left text */}
-        <div className="absolute bottom-6 left-5 right-5">
+      {/* Content layer */}
+      <div className="absolute inset-0 flex flex-col justify-between p-5 pb-4">
+        {/* Top — Greeting */}
+        <div>
           <h1 className="text-[28px] font-bold text-white leading-tight drop-shadow-md">
             {getGreeting()}
           </h1>
@@ -64,23 +64,21 @@ export function HomepageHero({
             {format(new Date(), "EEEE d MMMM")}
           </p>
         </div>
-      </div>
 
-      {/* Overlapping "This Week" card */}
-      <div className="-mt-4 mx-4 relative z-10">
+        {/* Bottom — This Week tile */}
         <div
-          className="bg-white/80 dark:bg-card/80 backdrop-blur-xl rounded-[20px] p-4 flex items-center justify-between"
-          style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
+          className="bg-white/15 backdrop-blur-md rounded-2xl p-3.5 flex items-center justify-between"
+          style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
         >
           {/* Left side */}
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/80">
               THIS WEEK
             </p>
-            <p className="text-[18px] font-semibold text-foreground mt-0.5 leading-snug">
+            <p className="text-[17px] font-semibold text-white mt-0.5 leading-snug">
               Keep it moving!
             </p>
-            <p className="text-[14px] text-muted-foreground mt-0.5">
+            <p className="text-[13px] text-white/60 mt-0.5">
               {weeklyLessonsScheduled} lesson{weeklyLessonsScheduled !== 1 ? "s" : ""} scheduled
             </p>
           </div>
@@ -91,14 +89,14 @@ export function HomepageHero({
               <circle
                 cx="32" cy="32" r={radius}
                 fill="none"
-                stroke="hsl(var(--muted))"
+                stroke="white"
                 strokeWidth={stroke}
-                opacity={0.3}
+                opacity={0.2}
               />
               <motion.circle
                 cx="32" cy="32" r={radius}
                 fill="none"
-                className="stroke-teal-600 dark:stroke-teal-400"
+                stroke="white"
                 strokeWidth={stroke}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
@@ -108,7 +106,7 @@ export function HomepageHero({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[15px] font-bold text-foreground leading-none">
+              <span className="text-[15px] font-bold text-white leading-none">
                 {completed}/{total}
               </span>
             </div>
