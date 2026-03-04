@@ -118,7 +118,7 @@ const InstructorPayments = lazy(() => import("./pages/instructor-app/InstructorP
 const InstructorMarketing = lazy(() => import("./pages/instructor-app/InstructorMarketing"));
 const InstructorOnboarding = lazy(() => import("./pages/instructor-app/onboarding/InstructorOnboarding"));
 const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/OnboardingPreview"));
-
+const DemoPupilProfile = lazy(() => import("./pages/DemoPupilProfile"));
 
 
 // Lazy-load ConditionalRoutes
@@ -283,6 +283,9 @@ const App = () => (
 
 
 
+
+                {/* Demo Pages */}
+                <Route path="/demo/pupil-profile" element={<DemoPupilProfile />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
