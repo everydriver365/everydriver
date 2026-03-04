@@ -315,6 +315,23 @@ export function QuickActionTiles({
     return null;
   };
 
+  // Quick action route for green plus button
+  const getQuickActionRoute = (action: QuickAction): string | null => {
+    if (isScheduleAction(action)) return "/instructor/schedule?action=add";
+    if (isPupilsAction(action)) return "/instructor/pupils?action=add";
+    if (isMessagesAction(action)) return "/instructor/messages?action=new";
+    if (action.id === "take-payment") return "/instructor/take-payment";
+    if (action.id === "expenses") return "/instructor/expenses?action=add";
+    if (action.id === "todos") return "/instructor/todos?action=add";
+    if (action.id === "track-lesson") return "/instructor/tracking";
+    if (action.id === "availability") return "/instructor/availability?action=add";
+    if (action.id === "test-results") return "/instructor/test-results?action=add";
+    if (action.id === "cpd-log") return "/instructor/cpd?action=add";
+    if (action.id === "fill-gaps") return "/instructor/gaps?action=add";
+    if (action.id === "referrals") return "/instructor/referrals?action=invite";
+    return null;
+  };
+
   // Loading skeleton
   if (loading) {
     return (
@@ -503,6 +520,20 @@ export function QuickActionTiles({
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-semibold text-foreground leading-tight line-clamp-2">{action.title}</p>
                   </div>
+
+                  {/* Green plus button */}
+                  {getQuickActionRoute(action) && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(getQuickActionRoute(action)!);
+                      }}
+                      className="shrink-0 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+                    >
+                      <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                    </button>
+                  )}
                 </motion.div>
               </Link>
             );
