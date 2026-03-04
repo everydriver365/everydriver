@@ -361,7 +361,7 @@
   border-radius: 0 !important;
 }
 
-/* Global safe-area chrome: fill status bar / notch area with primary navy */
+/* Global safe-area chrome: fill status bar / notch area */
 html {
-  background-color: hsl(218, 54%, 17%);
+  background-color: hsl(var(--background));
 }
