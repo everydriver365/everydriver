@@ -28,7 +28,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
+          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
           pupils!inner (id, name, postcode, address)
         `)
         .eq("instructor_id", instructorId)
@@ -48,7 +48,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           .toUpperCase();
         return {
           id: l.id,
-          pupilId: pupil?.id || "",
+          pupilId: l.pupil_id || pupil?.id || "",
           pupilName: name,
           pupilInitials: initials,
           startTime: l.start_time,
