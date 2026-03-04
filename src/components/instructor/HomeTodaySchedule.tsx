@@ -43,7 +43,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       
       <div className="bg-card rounded-xl border p-4 shadow-sm">
         {hasLessons ? (
-          <Link to="/instructor/schedule" className="block">
+          <Link to={overview.firstPupilId ? `/instructor/pupils/${overview.firstPupilId}` : "/instructor/pupils"} className="block">
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">

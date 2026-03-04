@@ -1,6 +1,7 @@
 import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { Clock, CalendarOff } from "lucide-react";
+import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
 
@@ -70,61 +71,62 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
             const isPaid = lesson.paymentStatus === "paid";
 
             return (
-              <motion.div
-                key={lesson.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: isCancelled ? 0.5 : 1, y: 0 }}
-                transition={{ delay: idx * 0.04 }}
-                className="bg-card rounded-[14px] p-4"
-                style={{
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  borderLeft: `4px solid ${borderColor}`,
-                }}
-              >
-                {/* Time */}
-                <div className="flex items-center gap-1.5 text-muted-foreground mb-1.5">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="text-[13px]">
-                    {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
-                  </span>
-                </div>
-
-                {/* Type badge + pupil name */}
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge
-                    variant="outline"
-                    className="border-0 text-[11px] font-medium px-2 py-0.5"
-                    style={{
-                      backgroundColor: `${borderColor}1A`,
-                      color: borderColor,
-                    }}
-                  >
-                    {lesson.lessonType}
-                  </Badge>
-                </div>
-                <p className="text-[16px] font-semibold text-foreground leading-tight">
-                  {lesson.pupilName}
-                </p>
-
-                {/* Bottom row: amount + status */}
-                <div className="flex items-center justify-between mt-2">
-                  {lesson.amountDue != null && (
-                    <span className="text-[14px] font-bold text-foreground">
-                      £{lesson.amountDue}
+              <Link key={lesson.id} to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: isCancelled ? 0.5 : 1, y: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  className="bg-card rounded-[14px] p-4 active:scale-[0.98] transition-transform"
+                  style={{
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                    borderLeft: `4px solid ${borderColor}`,
+                  }}
+                >
+                  {/* Time */}
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="text-[13px]">
+                      {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                     </span>
-                  )}
-                  <Badge
-                    variant="outline"
-                    className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
-                      isPaid
-                        ? "bg-emerald-500/10 text-emerald-600"
-                        : "bg-amber-500/10 text-amber-600"
-                    }`}
-                  >
-                    {isPaid ? "Done" : "Unpaid"}
-                  </Badge>
-                </div>
-              </motion.div>
+                  </div>
+
+                  {/* Type badge + pupil name */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge
+                      variant="outline"
+                      className="border-0 text-[11px] font-medium px-2 py-0.5"
+                      style={{
+                        backgroundColor: `${borderColor}1A`,
+                        color: borderColor,
+                      }}
+                    >
+                      {lesson.lessonType}
+                    </Badge>
+                  </div>
+                  <p className="text-[16px] font-semibold text-foreground leading-tight">
+                    {lesson.pupilName}
+                  </p>
+
+                  {/* Bottom row: amount + status */}
+                  <div className="flex items-center justify-between mt-2">
+                    {lesson.amountDue != null && (
+                      <span className="text-[14px] font-bold text-foreground">
+                        £{lesson.amountDue}
+                      </span>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
+                        isPaid
+                          ? "bg-emerald-500/10 text-emerald-600"
+                          : "bg-amber-500/10 text-amber-600"
+                      }`}
+                    >
+                      {isPaid ? "Done" : "Unpaid"}
+                    </Badge>
+                  </div>
+                </motion.div>
+              </Link>
             );
           })}
         </div>
