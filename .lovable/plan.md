@@ -1,42 +1,45 @@
 
 
-## Swipeable "Today / This Week / This Month" Tile in Hero
+## Features Available to Add to the Next Up Tile
 
-### What changes
+After reviewing the codebase, here are recently built features that could be integrated into the Next Up tile's expanded section:
 
-Replace the static "This Week" tile at the bottom of the hero banner with a **horizontally swipeable carousel** containing three slides, each with its own progress ring and stats:
+### 1. Weather Conditions Strip
+- **Component exists**: `WeatherWidget.tsx` + `useDrivingAlerts` hook already provides `CurrentWeather` data (temperature, wind, weather code, driving safety tips)
+- **What it would show**: A compact row inside the expanded tile showing current weather + driving safety tip (e.g. "Watch for ice on roads", "Reduce speed in rain")
+- **Why it fits**: Instructor is about to drive — weather context is directly relevant
 
-1. **Today** — Shows today's completed vs scheduled lessons, with the same dual-arc progress ring (green completed, red scheduled). Label: "TODAY", subtitle: "{n} lessons today".
+### 2. Pupil's Last Lesson Notes / Next Plan
+- **Component exists**: `PostLessonReview.tsx` stores `lesson_notes` and `next_lesson_plan` per lesson
+- **What it would show**: A small "Last lesson" row showing what was covered and what was planned for this session — so the instructor doesn't need to navigate away to remember
+- **Why it fits**: Quick context refresh before heading to the pupil
 
-2. **This Week** — The current view, unchanged. Label: "THIS WEEK", subtitle: "{n} lessons scheduled".
+### 3. Vehicle Health Quick Status
+- **Component exists**: `VehicleHealthStrip.tsx` + `useVehicleHealth` hook
+- **What it would show**: A compact battery/ignition/connection status indicator inside the tile
+- **Why it fits**: Pre-lesson vehicle readiness check at a glance
 
-3. **This Month** — Shows monthly completed vs total lessons. Label: "THIS MONTH", subtitle: "{n} lessons this month".
+### 4. Payment Due Warning
+- **Data already available**: The tile already has `accountBalance` and `prepaidHours` — but only shows it in the expanded info badges
+- **Enhancement**: Add a prominent amber/red warning banner (similar to the running-late alert) when the pupil has a negative balance or zero prepaid hours, prompting "Collect payment" with a quick action button
+- **Why it fits**: Prevents instructors from forgetting to collect payment
 
-A row of 3 small dot indicators sits below the carousel to show which slide is active.
+### 5. Check-In Status Badge
+- **Component exists**: `LessonCheckInBadge.tsx` — shows Confirmed/Declined/Awaiting status
+- **What it would show**: A small badge on the header row showing whether the pupil has confirmed attendance
+- **Why it fits**: Instructor knows at a glance if the pupil is confirmed or hasn't responded
 
-### Data
+---
 
-- **Today**: Already available via `useTodayOverview` — has `lessonCount`. Need to also get today's completed count (filter by `status === 'completed'`). Will update the hook to return `completedCount`.
-- **This Week**: Already passed in as props from `useWeeklyGoals`.
-- **This Month**: Create a new `useMonthlyGoals` hook (similar to `useWeeklyGoals`) that queries `scheduled_lessons` for the current month, returning `lessonsThisMonth`, `lessonsCompleted`, `lessonsScheduled`.
+### Recommendation
 
-### Implementation
+I'd suggest adding **all 5** as they're lightweight additions to the expanded section. The implementation would be:
 
-1. **New hook `src/hooks/useMonthlyGoals.ts`** — Queries scheduled_lessons for current month (1st to end), returns total/completed/scheduled counts.
+1. **Weather row** — Add `useDrivingAlerts` hook call, render a compact weather + safety tip row in the expanded section (between ETA and unread messages)
+2. **Last lesson context** — Query the pupil's most recent completed lesson's `next_lesson_plan` field, show as a collapsible row
+3. **Vehicle health mini-strip** — Render battery + connection as small icons in the info badges grid (or as a 4th column)
+4. **Payment warning banner** — Add an amber alert banner (like the running-late one) when balance is negative
+5. **Check-in badge** — Add the `LessonCheckInBadge` next to the "Next Up" label in the header
 
-2. **Update `useTodayOverview.ts`** — Add `completedCount` to the return (count lessons with `status === 'completed'`).
-
-3. **Update `HomepageHero` props** — Add today and monthly data props (todayCompleted, todayTotal, monthlyCompleted, monthlyScheduled, monthlyTotal).
-
-4. **Refactor `HomepageHero.tsx`** — Replace the static tile with an Embla carousel (already installed). Each slide renders the frosted glass card with its own label, text, and progress ring. Add dot indicators below. Unique gradient IDs per slide to avoid SVG conflicts.
-
-5. **Update `InstructorMobileHome.tsx`** — Import `useMonthlyGoals`, pass new props to `HomepageHero`.
-
-### Visual details
-
-- Carousel uses `embla-carousel-react` with `{ loop: false, align: "center" }`.
-- Each slide is full-width inside the tile area.
-- 3 dots centered below the card: active dot is `bg-white`, inactive `bg-white/40`, all 6px circles.
-- Progress rings animate on slide entry using framer-motion.
-- Card styling remains identical: `bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl`.
+Each is a small, self-contained addition. Shall I implement all of them, or would you prefer to pick specific ones?
 
