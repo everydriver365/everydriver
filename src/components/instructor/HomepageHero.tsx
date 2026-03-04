@@ -5,6 +5,7 @@ import instructorHeroImg from "@/assets/hero-instructor.jpg";
 interface HomepageHeroProps {
   firstName: string;
   heroImageUrl?: string | null;
+  profileImageUrl?: string | null;
   weeklyLessonsScheduled: number;
   weeklyLessonsCompleted: number;
   weeklyLessonsTotal: number;
@@ -13,6 +14,7 @@ interface HomepageHeroProps {
 export function HomepageHero({
   firstName,
   heroImageUrl,
+  profileImageUrl,
   weeklyLessonsScheduled,
   weeklyLessonsCompleted,
   weeklyLessonsTotal,
@@ -49,14 +51,29 @@ export function HomepageHero({
 
       {/* Content layer */}
       <div className="absolute inset-0 flex flex-col justify-between p-5 pb-4">
-        {/* Top — Greeting */}
-        <div>
-          <h1 className="text-[28px] font-bold text-white leading-tight drop-shadow-md">
-            {getGreeting()}
-          </h1>
-          <p className="text-[14px] text-white/70 -mt-0.5">
-            {format(new Date(), "EEEE d MMMM")}
-          </p>
+        {/* Top — Avatar + Greeting */}
+        <div className="flex items-center gap-3">
+          {profileImageUrl ? (
+            <img
+              src={profileImageUrl}
+              alt={firstName}
+              className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
+              <span className="text-white font-semibold text-[16px]">
+                {firstName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <div>
+            <h1 className="text-[22px] font-bold text-white leading-tight drop-shadow-md">
+              {getGreeting()}
+            </h1>
+            <p className="text-[12px] text-white/70 -mt-0.5">
+              {format(new Date(), "EEEE d MMMM")}
+            </p>
+          </div>
         </div>
 
         {/* Bottom — This Week tile */}
