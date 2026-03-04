@@ -68,60 +68,61 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
           const isPaid = lesson.paymentStatus === "paid";
 
           return (
-            <motion.div
-              key={lesson.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.06 }}
-              className={`bg-card rounded-xl shadow-sm border border-border/60 border-l-4 ${borderColor} overflow-hidden`}
-            >
-              <div className="p-4">
-                {/* Top row: Name + Lesson Type Badge */}
-                <div className="flex items-center justify-between mb-2.5">
-                  <h4 className="text-[15px] font-semibold text-foreground truncate">{lesson.pupilName}</h4>
-                  <Badge
-                    variant="outline"
-                    className={`${typeColors.bg} ${typeColors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0 ml-2`}
-                  >
-                    {lesson.lessonType}
-                  </Badge>
-                </div>
-
-                {/* Time */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
-                  <Clock className="h-3.5 w-3.5 shrink-0" />
-                  <span>{formatTime(lesson.startTime)} - {getEndTime(lesson.startTime, lesson.durationMinutes)}</span>
-                </div>
-
-                {/* Location */}
-                {(lesson.pickupLocation || lesson.pickupPostcode) && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{lesson.pickupLocation || lesson.pickupPostcode}</span>
+            <Link key={lesson.id} to={`/instructor/pupils?pupil=${lesson.pupilId}`}>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.06 }}
+                className={`bg-card rounded-xl shadow-sm border border-border/60 border-l-4 ${borderColor} overflow-hidden active:scale-[0.98] transition-transform`}
+              >
+                <div className="p-4">
+                  {/* Top row: Name + Lesson Type Badge */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <h4 className="text-[15px] font-semibold text-foreground truncate">{lesson.pupilName}</h4>
+                    <Badge
+                      variant="outline"
+                      className={`${typeColors.bg} ${typeColors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0 ml-2`}
+                    >
+                      {lesson.lessonType}
+                    </Badge>
                   </div>
-                )}
 
-                {/* Price + Payment Status */}
-                <div className="flex items-center justify-between mt-1">
-                  {lesson.amountDue != null && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <PoundSterling className="h-3.5 w-3.5 shrink-0" />
-                      <span>£{lesson.amountDue}</span>
+                  {/* Time */}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span>{formatTime(lesson.startTime)} - {getEndTime(lesson.startTime, lesson.durationMinutes)}</span>
+                  </div>
+
+                  {/* Location */}
+                  {(lesson.pickupLocation || lesson.pickupPostcode) && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{lesson.pickupLocation || lesson.pickupPostcode}</span>
                     </div>
                   )}
-                  <Badge
-                    variant="outline"
-                    className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
-                      isPaid
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                    }`}
-                  >
-                    {isPaid ? "Paid" : "Unpaid"}
-                  </Badge>
+
+                  {/* Price + Payment Status */}
+                  <div className="flex items-center justify-between mt-1">
+                    {lesson.amountDue != null && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <PoundSterling className="h-3.5 w-3.5 shrink-0" />
+                        <span>£{lesson.amountDue}</span>
+                      </div>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
+                        isPaid
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
+                      {isPaid ? "Paid" : "Unpaid"}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           );
         })}
       </div>
