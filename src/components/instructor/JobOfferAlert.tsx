@@ -19,9 +19,9 @@ import {
   FileText,
   Loader2,
   ChevronDown,
-  ChevronUp,
   Timer
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { cn } from "@/lib/utils";
 
 interface CourseEnquiry {
@@ -294,11 +294,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
                             {payment.grossAmount.toFixed(0)}
                           </div>
                         </div>
-                        {isExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        )}
+                        <ExpandChevron isExpanded={isExpanded} size={20} />
                       </div>
                     </div>
                   </div>

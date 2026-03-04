@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
 import {
-  Clock, Phone, MessageSquare, X, Navigation, Car, Loader2,
-  ChevronDown, ChevronUp, Send, Play, MapPin, Calendar,
+  Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
+  Send, Play, MapPin, Calendar,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
   CloudRain, Thermometer, Battery, Wifi, BookOpen, Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
@@ -247,10 +248,7 @@ export function NextUpTile({
               <span className="text-[22px] font-bold" style={{ color: "hsl(var(--foreground))", fontVariantNumeric: "tabular-nums", fontFamily: "ui-monospace, monospace" }}>
                 {formatTime24(startTime)}
               </span>
-              {expanded
-                ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" />
-                : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />
-              }
+              <ExpandChevron isExpanded={expanded} className="mt-1" />
             </div>
           </div>
 

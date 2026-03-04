@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { ChevronDown, ChevronUp, MapPin, ExternalLink } from "lucide-react";
+import { MapPin, ExternalLink } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { Button } from "@/components/ui/button";
@@ -84,11 +85,7 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
               <p className="text-xs text-muted-foreground">{locations.length} stops</p>
             </div>
           </div>
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          )}
+          <ExpandChevron isExpanded={isExpanded} size={20} />
         </button>
 
         {/* Map */}

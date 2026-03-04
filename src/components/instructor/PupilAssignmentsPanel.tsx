@@ -13,10 +13,9 @@ import {
   Target,
   Trash2,
   Edit,
-  ChevronDown,
-  ChevronUp,
   Star,
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -200,11 +199,7 @@ export function PupilAssignmentsPanel({ pupilId, instructorId, pupilName }: Pupi
             </Badge>
           )}
         </div>
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
+        <ExpandChevron isExpanded={isExpanded} />
       </button>
 
       {/* Expanded Content */}

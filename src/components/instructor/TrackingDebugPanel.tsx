@@ -4,9 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
-  Bug, 
-  ChevronDown, 
-  ChevronUp,
+  Bug,
   Copy,
   Check,
   User,
@@ -17,6 +15,7 @@ import {
   Cloud,
   AlertCircle
 } from 'lucide-react';
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useToast } from '@/hooks/use-toast';
 
 interface DebugInfo {
@@ -101,7 +100,7 @@ const TrackingDebugPanel: React.FC<TrackingDebugPanelProps> = ({ debugInfo }) =>
                 <Bug className="h-3 w-3" />
                 Debug Info
               </CardTitle>
-              {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              <ExpandChevron isExpanded={isOpen} size={12} />
             </div>
           </CardHeader>
         </CollapsibleTrigger>

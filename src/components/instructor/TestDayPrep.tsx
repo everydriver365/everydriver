@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { format, parseISO, differenceInDays, differenceInHours } from "date-fns";
 import {
   Car, MapPin, Phone, Clock, Calendar, ExternalLink, CheckCircle2,
-  AlertTriangle, FileCheck, Eye, Lightbulb, ChevronDown, ChevronUp,
+  AlertTriangle, FileCheck, Eye, Lightbulb,
   Navigation, Fuel, ParkingCircle, Route, Shield
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -192,7 +193,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
               <Badge variant="outline" className="text-[10px] h-5">
                 {checkedCount}/{allChecks.length}
               </Badge>
-              {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+              <ExpandChevron isExpanded={isOpen} />
             </div>
           </button>
         </CollapsibleTrigger>
@@ -399,7 +400,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                         <span className="text-[11px] flex-1 leading-tight">{q.question}</span>
                         <div className="flex items-center gap-1 shrink-0">
                           {isRevised && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
-                          {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          {isExpanded ? <ExpandChevron isExpanded={true} size={12} /> : <ExpandChevron isExpanded={false} size={12} />}
                         </div>
                       </button>
                       {isExpanded && (

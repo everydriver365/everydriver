@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, Circle } from "react-leaflet";
-import { Navigation, ChevronDown, ChevronUp } from "lucide-react";
+import { Navigation } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import L from "leaflet";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { cn } from "@/lib/utils";
@@ -102,12 +103,12 @@ export function CoordsMapPreview({
       >
         {isExpanded ? (
           <>
-            <ChevronUp className="h-3 w-3" />
+            <ExpandChevron isExpanded={true} size={12} />
             Hide map
           </>
         ) : (
           <>
-            <ChevronDown className="h-3 w-3" />
+            <ExpandChevron isExpanded={false} size={12} />
             Show map
           </>
         )}
