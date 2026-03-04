@@ -134,6 +134,7 @@ export default function InstructorPupils() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null);
+  const [expandedPupilId, setExpandedPupilId] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -193,10 +194,13 @@ export default function InstructorPupils() {
     if (pupilId && pupils.length > 0) {
       const pupil = pupils.find(p => p.id === pupilId);
       if (pupil) {
-        setSelectedPupil(pupil);
-        setEditForm(pupil);
-        setIsEditOpen(true);
+        setExpandedPupilId(pupilId);
         navigate("/instructor/pupils", { replace: true });
+        // Scroll to the pupil card after a short delay
+        setTimeout(() => {
+          const el = document.getElementById(`pupil-card-${pupilId}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
       }
     }
   }, [location.search, pupils]);
@@ -575,9 +579,11 @@ export default function InstructorPupils() {
         ) : (
           <div className="space-y-3">
             {filteredPupils.map((pupil) => (
+              <div id={`pupil-card-${pupil.id}`}>
               <PupilCardStack
                 key={pupil.id}
                 pupil={pupil}
+                defaultExpanded={expandedPupilId === pupil.id}
                 onEdit={handleEditPupil}
                 onDelete={handleDeletePupil}
                 onViewHistory={(p) => {
@@ -618,6 +624,7 @@ export default function InstructorPupils() {
                 paymentQrUrl={getActivePaymentQrUrl(instructor)}
                 commissionPayer={instructor?.commission_payer}
               />
+              </div>
             ))}
           </div>
         )}
