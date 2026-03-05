@@ -89,6 +89,7 @@ const InstructorNotes = lazy(() => import("./pages/InstructorNotes"));
 const InstructorPlans = lazy(() => import("./pages/InstructorPlans"));
 const InstructorResources = lazy(() => import("./pages/InstructorResources"));
 const InstructorDocumentTemplates = lazy(() => import("./pages/InstructorDocumentTemplates"));
+const InstructorStandardsCheck = lazy(() => import("./pages/InstructorStandardsCheck"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -242,6 +243,7 @@ const App = () => (
                 <Route path="/instructor/install" element={<InstallInstructor />} />
                 <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
                 <Route path="/instructor/test-results" element={<InstructorTestResults />} />
+                <Route path="/instructor/standards-check" element={<InstructorStandardsCheck />} />
                 <Route path="/instructor/routes" element={<InstructorRoutes />} />
                 <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
                 <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
