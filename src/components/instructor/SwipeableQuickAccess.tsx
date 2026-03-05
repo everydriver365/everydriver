@@ -72,7 +72,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, customIcon: fuelIcon, accent: "#34C759", route: "/instructor/fuel" },
   { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, customIcon: testResultIcon, accent: "#007AFF", route: "/instructor/test-results" },
   { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, customIcon: testSwapIcon, accent: "#FF9500", route: "/instructor/test-requests" },
-  { title: "Standards Check", subtitle: "DVSA triggers", icon: Target, customIcon: standardsCheckIcon, accent: "#FF3B30", route: "/instructor/test-results?tab=triggers" },
+  { title: "Standards Check", subtitle: "DVSA triggers", icon: Target, customIcon: standardsCheckIcon, accent: "#FF3B30", route: "/instructor/standards-check" },
   { title: "Messages", subtitle: "Chat", icon: MessageSquare, customIcon: messagesIcon, accent: "#007AFF", route: "/instructor/messages" },
   { title: "Locations", subtitle: "Saved places", icon: MapPinned, customIcon: locationsIcon, accent: "#FF3B30", route: "/instructor/locations" },
   { title: "CPD Log", subtitle: "Training hours", icon: BookOpen, customIcon: cpdIcon, accent: "#5856D6", route: "/instructor/cpd" },
