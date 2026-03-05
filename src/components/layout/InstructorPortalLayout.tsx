@@ -462,37 +462,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   {/* Right: Action buttons */}
                   <div className="flex items-center gap-1.5">
                     <MobileNotificationBell instructorId={instructor?.id} />
-                    <DropdownMenu modal={false}>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
-                          title="Settings"
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
-                        <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/logout")} className="cursor-pointer">
-                          Logout
-                        </DropdownMenuItem>
-                        {location.pathname === "/instructor" && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => navigate("/instructor?editTiles=true")} className="cursor-pointer">
-                              <LayoutGrid className="h-4 w-4 mr-2" />
-                              Customize Tiles
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                      title="Settings"
+                      onClick={() => navigate("/instructor/settings")}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
