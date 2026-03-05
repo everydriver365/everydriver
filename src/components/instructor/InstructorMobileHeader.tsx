@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import edLogo from "@/assets/ed-white-logo.png";
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut } from "lucide-react";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
