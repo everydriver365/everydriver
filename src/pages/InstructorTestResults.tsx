@@ -234,21 +234,21 @@ export default function InstructorTestResults() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="results">
-              <FileText className="h-4 w-4 mr-2" />
+          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+            <TabsTrigger value="results" className="shrink-0">
+              <FileText className="h-4 w-4 mr-1.5" />
               Results
             </TabsTrigger>
-            <TabsTrigger value="centres">
-              <MapPin className="h-4 w-4 mr-2" />
-              Test Centres
+            <TabsTrigger value="centres" className="shrink-0">
+              <MapPin className="h-4 w-4 mr-1.5" />
+              Centres
             </TabsTrigger>
-            <TabsTrigger value="triggers">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Standards Check
+            <TabsTrigger value="triggers" className="shrink-0">
+              <TrendingUp className="h-4 w-4 mr-1.5" />
+              Standards
             </TabsTrigger>
-            <TabsTrigger value="examiners">
-              <Users className="h-4 w-4 mr-2" />
+            <TabsTrigger value="examiners" className="shrink-0">
+              <Users className="h-4 w-4 mr-1.5" />
               Examiners
             </TabsTrigger>
           </TabsList>
