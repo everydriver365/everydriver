@@ -34,7 +34,9 @@ export default function InstructorVehicleHealth() {
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   const [activeTab, setActiveTab] = useState(() => {
-    return location.hash === "#faults" ? "live" : "compliance";
+    if (location.hash === "#faults") return "live";
+    if (location.hash === "#compliance") return "compliance";
+    return "fleet";
   });
   
   const [linkingDevice, setLinkingDevice] = useState<GPSDeviceHealth | null>(null);
