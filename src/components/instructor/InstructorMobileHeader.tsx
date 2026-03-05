@@ -101,9 +101,14 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               {showBackButton ? (
                 <p className="text-sm font-semibold leading-tight">{title}</p>
               ) : (
-                <>
-                  <img src={edLogo} alt="EveryDriver" className="h-6 w-auto object-contain" />
-                </>
+                <p className="text-sm font-semibold leading-tight">
+                  {(() => {
+                    const h = new Date().getHours();
+                    const g = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+                    const firstName = instructor?.name?.split(" ")[0] || "";
+                    return `${g}${firstName ? `, ${firstName}` : ""}`;
+                  })()}
+                </p>
               )}
             </div>
           </div>
