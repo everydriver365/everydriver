@@ -8835,6 +8835,7 @@ export type Database = {
           balance_due_date: string | null
           best_driving_score: number | null
           checklist_completed_at: string | null
+          course_status: string
           course_type: string | null
           created_at: string
           current_streak: number | null
@@ -8915,6 +8916,7 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          course_status?: string
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -8995,6 +8997,7 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          course_status?: string
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -11540,6 +11543,10 @@ export type Database = {
     }
     Functions: {
       auto_cleanup_stale_sessions: { Args: never; Returns: undefined }
+      award_course_completion_bonus: {
+        Args: { p_instructor_id: string; p_pupil_id: string }
+        Returns: boolean
+      }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }

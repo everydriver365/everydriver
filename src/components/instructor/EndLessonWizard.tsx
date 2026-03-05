@@ -236,11 +236,56 @@ export function EndLessonWizard({
         console.error("Charge error:", e);
       }
 
-      // 5. Fetch telematics report data (non-blocking)
+      // 5. Check if all scheduled lessons for this pupil are now completed (course complete)
+      let courseCompleted = false;
+      try {
+        const { count } = await supabase
+          .from("scheduled_lessons")
+          .select("id", { count: "exact", head: true })
+          .eq("pupil_id", pupilId)
+          .eq("instructor_id", instructorId)
+          .neq("status", "completed")
+          .is("deleted_at", null);
+
+        if (count === 0) {
+          // All lessons done — award £50 bonus via database function
+          const { data: bonusResult } = await supabase.rpc("award_course_completion_bonus", {
+            p_pupil_id: pupilId,
+            p_instructor_id: instructorId,
+          });
+
+          if (bonusResult === true) {
+            courseCompleted = true;
+            toast.success("🎉 Course complete! £50 bonus awarded!", { duration: 5000 });
+            
+            // Send push notification for bonus
+            try {
+              await supabase.functions.invoke("send-push-notification", {
+                body: {
+                  instructorId,
+                  notification: {
+                    title: "£50 Bonus Earned! 🎉",
+                    body: `${pupilName}'s course is complete. £50 bonus has been added to your account.`,
+                    tag: "course-bonus",
+                  },
+                },
+              });
+            } catch (pushErr) {
+              console.error("Push notification error:", pushErr);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Course completion check error:", e);
+      }
+
+      // 6. Fetch telematics report data (non-blocking)
       const report = await fetchTelematicsReport();
       setRouteReportData(report);
 
-      toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
+      if (!courseCompleted) {
+        toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
+      }
       onCompleted();
 
       // Show summary instead of closing
