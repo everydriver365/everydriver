@@ -71,10 +71,6 @@ export default function InstructorVehicleHealth() {
           }
         />
 
-        {/* Mobile GPS Tracking Banner */}
-        {instructor?.id && (
-          <MobileTrackingSettingsBanner instructorId={instructor.id} />
-        )}
 
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
