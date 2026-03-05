@@ -447,8 +447,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               </SheetContent>
             </Sheet>
 
-            {/* Sub-page top bar (not on homepage) */}
-            {!isHomePage && <InstructorMobileTopBar />}
+            {/* Mobile top bar on all pages */}
+            <InstructorMobileTopBar />
 
             {/* Mobile Search Overlay */}
             {mobileSearchOpen && (

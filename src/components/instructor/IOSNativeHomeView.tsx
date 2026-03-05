@@ -7,7 +7,6 @@ import {
   PoundSterling, Navigation, Phone, MessageSquare, Send, Play, MapPin,
   Calendar, Users, Briefcase, BookOpen, Fuel, BarChart3, Settings,
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
-  Menu, Bell, Search, Plus, CalendarClock, LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
-import { useInstructorHeaderActions } from "@/context/InstructorHeaderContext";
-import instructorLogo from "@/assets/ed-white-logo.png";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
@@ -432,8 +428,6 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
 
 // ─── Main Component ───
 export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeViewProps) {
-  const { onOpenMenu, onOpenSearch, onOpenPaymentSheet, instructorId: _ctxId } = useInstructorHeaderActions();
-  const { total: totalNotifCount } = useCombinedNotificationCount(instructorId);
   const navigate = useNavigate();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark" || resolvedTheme === "oled";
@@ -452,128 +446,34 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ─── 1. HEADER ─── */}
-      <div
-        className="w-full"
-        style={{
-          background: isDark
-            ? "linear-gradient(135deg, rgb(20,31,56) 0%, rgb(26,46,82) 100%)"
-            : "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)",
-        }}
-      >
-        {/* Action buttons row */}
-        <div className="flex items-center justify-between px-3 pt-[env(safe-area-inset-top)]" style={{ paddingTop: "max(env(safe-area-inset-top), 8px)" }}>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenMenu}
-              className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/15"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <img src={instructorLogo} alt="EveryDriver" className="h-7 w-auto object-contain" />
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/instructor/test-requests")}
-              className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/15 relative"
-            >
-              <Bell className="h-4 w-4" />
-              {totalNotifCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center animate-pulse">
-                  {totalNotifCount > 9 ? "9+" : totalNotifCount}
-                </span>
-              )}
-            </Button>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/15">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
-                <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
-                  <Settings className="h-4 w-4 mr-2" />Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/logout")} className="cursor-pointer">Logout</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/instructor?editTiles=true")} className="cursor-pointer">
-                  <LayoutGrid className="h-4 w-4 mr-2" />Customize Tiles
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="ghost" size="icon" onClick={onOpenSearch} className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/15">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/availability")} className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/15">
-              <Calendar className="h-4 w-4" />
-            </Button>
-            <button
-              onClick={onOpenPaymentSheet}
-              className="h-7 px-3 rounded-lg text-xs font-semibold bg-white/90 hover:bg-white text-gray-900 transition-colors"
-            >
-              Pay
-            </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white">
-                  <Plus className="h-3.5 w-3.5" strokeWidth={3} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-                <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
-                  <Users className="h-4 w-4 mr-2" />Add Pupil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=add")} className="cursor-pointer">
-                  <Calendar className="h-4 w-4 mr-2" />Add Lesson
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
-                  <Car className="h-4 w-4 mr-2" />Find My Car
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
-                  <CalendarClock className="h-4 w-4 mr-2" />Availability
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onOpenPaymentSheet} className="cursor-pointer">
-                  <PoundSterling className="h-4 w-4 mr-2" />Take Payment
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
-                  <Bell className="h-4 w-4 mr-2" />Add Reminder
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between px-5 pb-3 pt-2">
+      {/* ─── 1. STATS HERO ─── */}
+      <div className="px-5 pt-4 pb-2 bg-[#F2F2F7] dark:bg-[#111111]">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-[24px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
-            <p className="text-[15px] text-white/80">Welcome</p>
+            <h1 className="text-[24px] font-bold text-foreground leading-tight">{instructor?.name || "Instructor"}</h1>
+            <p className="text-[15px] text-muted-foreground">Welcome</p>
           </div>
-          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-            <Car className="h-6 w-6 text-white/90" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-muted">
+            <Car className="h-6 w-6 text-muted-foreground" />
           </div>
         </div>
 
-        <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
+        <div className="rounded-[14px] p-3.5 bg-card">
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{weeklyEarnings}</p>
-              <p className="text-[9px] text-white/60">Earnings this week</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Weekly</p>
+              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">£{weeklyEarnings}</p>
+              <p className="text-[9px] text-muted-foreground">Earnings this week</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Monthly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
-              <p className="text-[9px] text-white/60">Earnings this month</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Monthly</p>
+              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
+              <p className="text-[9px] text-muted-foreground">Earnings this month</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Schedule</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">{upcomingBookings}</p>
-              <p className="text-[9px] text-white/60">Upcoming Bookings</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Schedule</p>
+              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">{upcomingBookings}</p>
+              <p className="text-[9px] text-muted-foreground">Upcoming Bookings</p>
             </div>
           </div>
         </div>

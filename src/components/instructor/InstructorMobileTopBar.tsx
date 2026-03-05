@@ -31,9 +31,9 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
   })();
 
   return (
-    <div className="sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
+    <div className="sticky top-0 z-40 bg-background pt-[env(safe-area-inset-top)]">
       <div
-        className="flex items-center justify-between px-3 h-12 backdrop-blur-xl bg-background/75 dark:bg-background/80 border-b border-border/30"
+        className="flex items-center justify-between px-3 h-12 bg-background border-b border-border/30"
       >
         {/* Left: Hamburger */}
         <div className="flex items-center gap-2">
