@@ -8,14 +8,6 @@ import {
   Calendar, Users, Briefcase, BookOpen, Fuel, BarChart3, Settings,
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
@@ -32,6 +24,13 @@ import { triggerHaptic } from "@/lib/haptics";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface IOSNativeHomeViewProps {
   instructorId: string | undefined;
@@ -446,34 +445,42 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ─── 1. STATS HERO ─── */}
-      <div className="px-5 pt-4 pb-2 bg-[#F2F2F7] dark:bg-[#111111]">
-        <div className="flex items-center justify-between mb-3">
+      {/* ─── 1. HEADER ─── */}
+      <div
+        className="w-full"
+        style={{
+          background: isDark
+            ? "linear-gradient(135deg, rgb(20,31,56) 0%, rgb(26,46,82) 100%)"
+            : "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)",
+        }}
+      >
+        <div style={{ height: 54 }} />
+        <div className="flex items-center justify-between px-5 pb-3">
           <div>
-            <h1 className="text-[24px] font-bold text-foreground leading-tight">{instructor?.name || "Instructor"}</h1>
-            <p className="text-[15px] text-muted-foreground">Welcome</p>
+            <h1 className="text-[24px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
+            <p className="text-[15px] text-white/80">Welcome</p>
           </div>
-          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-muted">
-            <Car className="h-6 w-6 text-muted-foreground" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+            <Car className="h-6 w-6 text-white/90" />
           </div>
         </div>
 
-        <div className="rounded-[14px] p-3.5 bg-card">
+        <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Weekly</p>
-              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">£{weeklyEarnings}</p>
-              <p className="text-[9px] text-muted-foreground">Earnings this week</p>
+              <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>
+              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{weeklyEarnings}</p>
+              <p className="text-[9px] text-white/60">Earnings this week</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Monthly</p>
-              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
-              <p className="text-[9px] text-muted-foreground">Earnings this month</p>
+              <p className="text-[10px] text-white/80 uppercase tracking-wide">Monthly</p>
+              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
+              <p className="text-[9px] text-white/60">Earnings this month</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Schedule</p>
-              <p className="text-[22px] font-bold text-foreground mt-0.5 tabular-nums">{upcomingBookings}</p>
-              <p className="text-[9px] text-muted-foreground">Upcoming Bookings</p>
+              <p className="text-[10px] text-white/80 uppercase tracking-wide">Schedule</p>
+              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">{upcomingBookings}</p>
+              <p className="text-[9px] text-white/60">Upcoming Bookings</p>
             </div>
           </div>
         </div>
