@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import {
   Award,
@@ -66,7 +67,10 @@ interface Pupil {
 }
 
 export default function InstructorTestResults() {
+  const [searchParams] = useSearchParams();
   const { instructor, loading: authLoading } = useInstructorAuth();
+  const defaultTab = searchParams.get("tab") || "results";
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [results, setResults] = useState<TestResult[]>([]);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,14 +159,14 @@ export default function InstructorTestResults() {
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-3">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center">
               <Award className="h-6 w-6 text-foreground/70" />
             </div>
             Driving Test Results
           </h1>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select
               value={selectedPupilId}
               onValueChange={(id) => {
@@ -184,25 +188,23 @@ export default function InstructorTestResults() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="flex gap-2">
-              <Button
-                className="flex-1 sm:flex-none"
-                onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
-                disabled={!selectedPupilId}
-              >
-                <Award className="h-4 w-4 mr-2" />
-                Record Test
-              </Button>
-              <Button
-                className="flex-1 sm:flex-none"
-                variant="outline"
-                onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
-                disabled={!selectedPupilId}
-              >
-                <ClipboardList className="h-4 w-4 mr-2" />
-                Mock Test
-              </Button>
-            </div>
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
+              disabled={!selectedPupilId}
+            >
+              <Award className="h-4 w-4 mr-2" />
+              Record Test
+            </Button>
+            <Button
+              className="w-full sm:w-auto"
+              variant="outline"
+              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
+              disabled={!selectedPupilId}
+            >
+              <ClipboardList className="h-4 w-4 mr-2" />
+              Mock Test
+            </Button>
           </div>
         </div>
 
@@ -231,7 +233,7 @@ export default function InstructorTestResults() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="results" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="results">
               <FileText className="h-4 w-4 mr-2" />
