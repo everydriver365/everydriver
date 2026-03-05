@@ -396,33 +396,39 @@ export function DrivingTestReportForm({
                 <Label>Time</Label>
                 <Input type="time" value={testTime} onChange={(e) => setTestTime(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label>Test centre</Label>
-                <Select value={testCentreId} onValueChange={setTestCentreId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select test centre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {testCentres.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Examiner</Label>
-                <ExaminerSelector
-                  value={examinerId}
-                  onChange={setExaminerId}
-                  instructorId={instructor?.id || ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Application ref</Label>
-                <Input value={applicationRef} onChange={(e) => setApplicationRef(e.target.value)} />
-              </div>
+              {!isMock && (
+                <div className="space-y-2">
+                  <Label>Test centre</Label>
+                  <Select value={testCentreId} onValueChange={setTestCentreId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select test centre" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {testCentres.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {!isMock && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Examiner</Label>
+                  <ExaminerSelector
+                    value={examinerId}
+                    onChange={setExaminerId}
+                    instructorId={instructor?.id || ""}
+                  />
+                </div>
+              )}
+              {!isMock && (
+                <div className="space-y-2">
+                  <Label>Application ref</Label>
+                  <Input value={applicationRef} onChange={(e) => setApplicationRef(e.target.value)} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>Category</Label>
                 <Select value={catType} onValueChange={setCatType}>
@@ -435,18 +441,24 @@ export function DrivingTestReportForm({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>ADI cert no.</Label>
-                <Input value={adiCertNo} onChange={(e) => setAdiCertNo(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>ETA code</Label>
-                <Input value={etaCode} onChange={(e) => setEtaCode(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Debrief / activity code</Label>
-                <Input value={debriefCode} onChange={(e) => setDebriefCode(e.target.value)} />
-              </div>
+              {!isMock && (
+                <div className="space-y-2">
+                  <Label>ADI cert no.</Label>
+                  <Input value={adiCertNo} onChange={(e) => setAdiCertNo(e.target.value)} />
+                </div>
+              )}
+              {!isMock && (
+                <div className="space-y-2">
+                  <Label>ETA code</Label>
+                  <Input value={etaCode} onChange={(e) => setEtaCode(e.target.value)} />
+                </div>
+              )}
+              {!isMock && (
+                <div className="space-y-2">
+                  <Label>Debrief / activity code</Label>
+                  <Input value={debriefCode} onChange={(e) => setDebriefCode(e.target.value)} />
+                </div>
+              )}
               <div className="space-y-2 md:col-span-3">
                 <Label>Notes</Label>
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
