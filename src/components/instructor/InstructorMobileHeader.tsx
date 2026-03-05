@@ -112,7 +112,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           <div className="flex items-center gap-1">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
             <button
-              onClick={() => navigate("/instructor/test-requests")}
+              onClick={() => navigate("/instructor/notifications")}
               className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
             >
               <Bell className="h-4 w-4" />

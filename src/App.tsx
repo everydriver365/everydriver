@@ -42,6 +42,7 @@ const InstructorMessages = lazy(() => import("./pages/InstructorMessages"));
 const InstructorVisitorChats = lazy(() => import("./pages/InstructorVisitorChats"));
 const InstructorAdminChat = lazy(() => import("./pages/InstructorAdminChat"));
 const InstructorFAQs = lazy(() => import("./pages/InstructorFAQs"));
+const InstructorNotifications = lazy(() => import("./pages/InstructorNotifications"));
 const ParentPortal = lazy(() => import("./pages/ParentPortal"));
 const AdminPortal = lazy(() => import("./pages/AdminPortal"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
@@ -266,6 +267,7 @@ const App = () => (
                 <Route path="/instructor/dashcam" element={<DashcamGallery />} />
                 <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
                 <Route path="/instructor/test-requests" element={<InstructorTestRequests />} />
+                <Route path="/instructor/notifications" element={<InstructorNotifications />} />
                 <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
 
                 {/* Other portals */}
