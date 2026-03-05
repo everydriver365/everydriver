@@ -265,27 +265,29 @@ export default function InstructorTestResults() {
                   className="pl-10"
                 />
               </div>
-              <Select value={filterType} onValueChange={(v) => setFilterType(v as typeof filterType)}>
-                <SelectTrigger className="w-[130px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="real">Official</SelectItem>
-                  <SelectItem value="mock">Mock</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filterResult} onValueChange={(v) => setFilterResult(v as typeof filterResult)}>
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Results</SelectItem>
-                  <SelectItem value="pass">Passed</SelectItem>
-                  <SelectItem value="fail">Failed</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
+                <Select value={filterResult} onValueChange={(v) => setFilterResult(v as typeof filterResult)}>
+                  <SelectTrigger className="w-full sm:w-[130px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Results</SelectItem>
+                    <SelectItem value="pass">Passed</SelectItem>
+                    <SelectItem value="fail">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterType} onValueChange={(v) => setFilterType(v as typeof filterType)}>
+                  <SelectTrigger className="w-full sm:w-[130px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="real">Official</SelectItem>
+                    <SelectItem value="mock">Mock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Results Table */}
