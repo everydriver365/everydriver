@@ -102,12 +102,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <p className="text-sm font-semibold leading-tight">{title}</p>
               ) : (
                 <p className="text-sm font-semibold leading-tight">
-                  {(() => {
-                    const h = new Date().getHours();
-                    const g = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-                    const firstName = instructor?.name?.split(" ")[0] || "";
-                    return `${g}${firstName ? `, ${firstName}` : ""}`;
-                  })()}
+                  {instructor?.name?.split(" ")[0] || "Instructor"}
                 </p>
               )}
             </div>
