@@ -23,6 +23,7 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
   const location = useLocation();
   const { onOpenMenu, onOpenSearch, onOpenPaymentSheet, instructorId } = useInstructorHeaderActions();
   const { total: totalNotifCount } = useCombinedNotificationCount(instructorId);
+  const isHomePage = location.pathname === "/instructor";
 
   // Derive page title from path if not provided
   const pageTitle = title || (() => {
@@ -31,9 +32,10 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
   })();
 
   return (
-    <div className="sticky top-0 z-40 bg-background pt-[env(safe-area-inset-top)]">
+    <div className="sticky top-0 z-40 pt-[env(safe-area-inset-top)]" style={{ backgroundColor: isHomePage ? "#142420" : undefined }}>
       <div
-        className="flex items-center justify-between px-3 h-12 bg-background border-b border-border/30"
+        className={`flex items-center justify-between px-3 h-12 border-b border-border/30 ${isHomePage ? "" : "bg-background"}`}
+        style={isHomePage ? { backgroundColor: "#142420" } : undefined}
       >
         {/* Left: Hamburger */}
         <div className="flex items-center gap-2">
@@ -41,11 +43,11 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
             variant="ghost"
             size="icon"
             onClick={onOpenMenu}
-            className="h-8 w-8 text-foreground/70 hover:text-foreground hover:bg-foreground/10"
+            className={`h-8 w-8 ${isHomePage ? "text-white/80 hover:text-white hover:bg-white/15" : "text-foreground/70 hover:text-foreground hover:bg-foreground/10"}`}
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="text-[15px] font-semibold text-foreground truncate max-w-[140px]">
+          <span className={`text-[15px] font-semibold truncate max-w-[140px] ${isHomePage ? "text-white" : "text-foreground"}`}>
             {pageTitle}
           </span>
         </div>
@@ -56,7 +58,7 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/instructor/test-requests")}
-            className="h-7 w-7 text-foreground/60 hover:text-foreground hover:bg-foreground/10 relative"
+            className={`h-7 w-7 relative ${isHomePage ? "text-white/70 hover:text-white hover:bg-white/15" : "text-foreground/60 hover:text-foreground hover:bg-foreground/10"}`}
           >
             <Bell className="h-4 w-4" />
             {totalNotifCount > 0 && (
@@ -71,7 +73,7 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-foreground/60 hover:text-foreground hover:bg-foreground/10"
+                className={`h-7 w-7 ${isHomePage ? "text-white/70 hover:text-white hover:bg-white/15" : "text-foreground/60 hover:text-foreground hover:bg-foreground/10"}`}
               >
                 <Settings className="h-4 w-4" />
               </Button>
@@ -92,7 +94,7 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
             variant="ghost"
             size="icon"
             onClick={onOpenSearch}
-            className="h-7 w-7 text-foreground/60 hover:text-foreground hover:bg-foreground/10"
+            className={`h-7 w-7 ${isHomePage ? "text-white/70 hover:text-white hover:bg-white/15" : "text-foreground/60 hover:text-foreground hover:bg-foreground/10"}`}
           >
             <Search className="h-4 w-4" />
           </Button>
@@ -101,16 +103,16 @@ export function InstructorMobileTopBar({ title }: InstructorMobileTopBarProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/instructor/availability")}
-            className="h-7 w-7 text-foreground/60 hover:text-foreground hover:bg-foreground/10"
+            className={`h-7 w-7 ${isHomePage ? "text-white/70 hover:text-white hover:bg-white/15" : "text-foreground/60 hover:text-foreground hover:bg-foreground/10"}`}
           >
             <Calendar className="h-4 w-4" />
           </Button>
 
           <Button
-            variant="outline"
+            variant={isHomePage ? "ghost" : "outline"}
             size="sm"
             onClick={onOpenPaymentSheet}
-            className="h-7 px-3 text-xs font-semibold"
+            className={`h-7 px-3 text-xs font-semibold ${isHomePage ? "bg-white/90 hover:bg-white text-gray-900" : ""}`}
           >
             Pay
           </Button>
