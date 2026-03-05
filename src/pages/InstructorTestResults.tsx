@@ -234,24 +234,25 @@ export default function InstructorTestResults() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-            <TabsTrigger value="results" className="shrink-0">
-              <FileText className="h-4 w-4 mr-1.5" />
-              Results
-            </TabsTrigger>
-            <TabsTrigger value="centres" className="shrink-0">
-              <MapPin className="h-4 w-4 mr-1.5" />
-              Centres
-            </TabsTrigger>
-            <TabsTrigger value="triggers" className="shrink-0">
-              <TrendingUp className="h-4 w-4 mr-1.5" />
-              Standards
-            </TabsTrigger>
-            <TabsTrigger value="examiners" className="shrink-0">
-              <Users className="h-4 w-4 mr-1.5" />
-              Examiners
-            </TabsTrigger>
-          </TabsList>
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="w-full sm:w-[220px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="results">
+                <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Results</span>
+              </SelectItem>
+              <SelectItem value="centres">
+                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Test Centres</span>
+              </SelectItem>
+              <SelectItem value="triggers">
+                <span className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standards Check</span>
+              </SelectItem>
+              <SelectItem value="examiners">
+                <span className="flex items-center gap-2"><Users className="h-4 w-4" /> Examiners</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Results Tab */}
           <TabsContent value="results" className="space-y-4">
