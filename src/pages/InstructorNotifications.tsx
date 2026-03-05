@@ -60,6 +60,25 @@ export default function InstructorNotifications() {
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
       <div className="px-4 py-4 space-y-4">
+        {/* Messages tile - always visible */}
+        <button
+          onClick={() => navigate("/instructor/messages")}
+          className="w-full flex items-center gap-3 rounded-xl border bg-card p-4 text-left hover:bg-muted/50 transition-colors"
+        >
+          <div className="h-10 w-10 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Messages</p>
+            <p className="text-xs text-muted-foreground">
+              {messageCount > 0 ? `${messageCount} unread` : "No unread messages"}
+            </p>
+          </div>
+          {messageCount > 0 && (
+            <Badge variant="destructive" className="text-xs">{messageCount}</Badge>
+          )}
+        </button>
+
         {/* Quick counts */}
         {quickCards.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
