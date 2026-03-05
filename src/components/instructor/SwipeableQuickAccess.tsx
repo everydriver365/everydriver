@@ -60,7 +60,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, customIcon: agendaIcon, accent: "#007AFF", route: "/instructor/schedule" },
   { title: "Pupils", subtitle: "Manage learners", icon: Users, customIcon: pupilsIcon, accent: "#34C759", route: "/instructor/pupils" },
   { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, customIcon: trackLessonIcon, accent: "#FF3B30", route: "/instructor/tracking" },
-  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/payments" },
+  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/pay" },
   { title: "SatNav", subtitle: "Navigation", icon: Navigation, customIcon: satnavIcon, accent: "#007AFF", route: "/instructor/satnav" },
   { title: "Find My Car", subtitle: "Last position", icon: Car, customIcon: findMyCarIcon, accent: "#FF9500", route: "/instructor/find-my-car" },
   { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, customIcon: planAheadIcon, accent: "#FFCC00", route: "/instructor/diary" },
