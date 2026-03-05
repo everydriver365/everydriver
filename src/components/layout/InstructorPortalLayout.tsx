@@ -335,12 +335,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
   // Check if on main dashboard (don't show back button)
   const showBackButton = location.pathname !== "/instructor";
-  const firstName = instructor?.name?.split(" ")[0] || "there";
-  const greetingLabel = (() => {
-    const h = new Date().getHours();
-    const base = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    return `${base}, ${firstName}`;
-  })();
+  const firstName = instructor?.name?.split(" ")[0] || "Instructor";
+  const headerLabel = firstName;
   const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
 
   // Mobile Layout
@@ -458,7 +454,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">
-                        {showBackButton ? mobilePageTitle : greetingLabel}
+                        {showBackButton ? mobilePageTitle : headerLabel}
                       </p>
                     </div>
                   </div>
