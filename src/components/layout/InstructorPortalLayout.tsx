@@ -452,14 +452,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </SheetContent>
                     </Sheet>
 
-                    {!showBackButton && (
-                      <Avatar className="h-8 w-8 border-2 border-primary-foreground/30 shrink-0">
-                        <AvatarImage src={instructor?.profile_image_url || undefined} />
-                        <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
-                          {instructor?.name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">
                         {showBackButton ? mobilePageTitle : headerLabel}
