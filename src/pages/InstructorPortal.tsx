@@ -298,7 +298,7 @@ export default function InstructorPortal() {
           <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?tab=gaps")} className="gap-1 h-7 px-2 text-xs shrink-0">
             <Calendar className="h-3 w-3" /> Fill Gaps
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/payments?action=reminder")} className="gap-1 h-7 px-2 text-xs shrink-0">
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pay?action=reminder")} className="gap-1 h-7 px-2 text-xs shrink-0">
             <CreditCard className="h-3 w-3" /> Reminder
           </Button>
           <Button variant="outline" size="sm" onClick={() => setAvailabilityModalOpen(true)} className="gap-1 h-7 px-2 text-xs shrink-0">

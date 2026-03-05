@@ -201,7 +201,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           <div className="grid grid-cols-3 gap-4">
             <FeatureTile icon={Users} title="Pupils" subtitle={`${todayOverview?.lessonCount ?? 0} Active`} color="#5856D6" onClick={() => navigate("/instructor/pupils")} />
             <FeatureTile icon={Calendar} title="Bookings" subtitle={`${upcomingBookings} upcoming`} color="#007AFF" onClick={() => navigate("/instructor/diary")} />
-            <FeatureTile icon={PoundSterling} title="Finances" subtitle={`£${weeklyEarnings}`} color="#34C759" onClick={() => navigate("/instructor/payments")} />
+            <FeatureTile icon={PoundSterling} title="Finances" subtitle={`£${weeklyEarnings}`} color="#34C759" onClick={() => navigate("/instructor/pay")} />
             <FeatureTile icon={MessageSquare} title="Messages" subtitle={`${unreadCount} unread`} color="#FF9500" badge={unreadCount} onClick={() => navigate("/instructor/messages")} />
             <FeatureTile icon={Briefcase} title="Job Offers" subtitle={`${pendingJobsCount} available`} color="#AF52DE" badge={pendingJobsCount} onClick={() => navigate("/instructor/jobs")} />
             <FeatureTile icon={BookOpen} title="Diary" subtitle={`${diaryEntries} entries`} color="#5AC8FA" onClick={() => navigate("/instructor/diary")} />
