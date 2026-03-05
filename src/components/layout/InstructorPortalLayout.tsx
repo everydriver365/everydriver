@@ -76,7 +76,7 @@ import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { LayoutGrid } from "lucide-react";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
-import instructorLogo from "@/assets/ed-white-logo.png";
+
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
@@ -335,6 +335,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
   // Check if on main dashboard (don't show back button)
   const showBackButton = location.pathname !== "/instructor";
+  const firstName = instructor?.name?.split(" ")[0] || "there";
+  const greetingLabel = (() => {
+    const h = new Date().getHours();
+    const base = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+    return `${base}, ${firstName}`;
+  })();
+  const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
 
   // Mobile Layout
   if (isMobile) {
@@ -450,7 +457,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </Sheet>
 
                     <div className="min-w-0">
-                      <img src={instructorLogo} alt="EveryDriver" className="h-7 w-auto object-contain" />
+                      <p className="text-sm font-semibold truncate">
+                        {showBackButton ? mobilePageTitle : greetingLabel}
+                      </p>
                     </div>
                   </div>
 
