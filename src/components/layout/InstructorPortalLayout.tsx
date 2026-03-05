@@ -182,7 +182,7 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
       variant="ghost"
       size="icon"
       className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 relative"
-      onClick={() => navigate("/instructor/test-requests")}
+      onClick={() => navigate("/instructor/notifications")}
       title="Notifications"
     >
       <Bell className="h-4 w-4" />
