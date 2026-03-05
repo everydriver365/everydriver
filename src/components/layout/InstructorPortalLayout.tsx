@@ -15,7 +15,7 @@ import {
   Receipt,
   Navigation,
   MapPin,
-  ArrowLeft,
+  ChevronLeft,
   Moon,
   Sun,
   Wallet,
@@ -364,14 +364,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                    {/* Left: Back button + Hamburger + Title */}
                   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     {showBackButton && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="-ml-2 h-8 w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                      <button
                         onClick={() => navigate(-1)}
+                        className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
                       >
-                        <ArrowLeft className="h-5 w-5" />
-                      </Button>
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
                     )}
                     <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                       <SheetTrigger asChild>
