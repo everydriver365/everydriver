@@ -162,7 +162,7 @@ export default function InstructorTestResults() {
             </div>
             Driving Test Results
           </h1>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Select
               value={selectedPupilId}
               onValueChange={(id) => {
@@ -173,7 +173,7 @@ export default function InstructorTestResults() {
                 }
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Select pupil..." />
               </SelectTrigger>
               <SelectContent>
@@ -184,21 +184,25 @@ export default function InstructorTestResults() {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
-              disabled={!selectedPupilId}
-            >
-              <Award className="h-4 w-4 mr-2" />
-              Record Test
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
-              disabled={!selectedPupilId}
-            >
-              <ClipboardList className="h-4 w-4 mr-2" />
-              Mock Test
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 sm:flex-none"
+                onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
+                disabled={!selectedPupilId}
+              >
+                <Award className="h-4 w-4 mr-2" />
+                Record Test
+              </Button>
+              <Button
+                className="flex-1 sm:flex-none"
+                variant="outline"
+                onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
+                disabled={!selectedPupilId}
+              >
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Mock Test
+              </Button>
+            </div>
           </div>
         </div>
 
