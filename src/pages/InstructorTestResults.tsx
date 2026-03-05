@@ -166,30 +166,29 @@ export default function InstructorTestResults() {
             </div>
             Driving Test Results
           </h1>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select
-              value={selectedPupilId}
-              onValueChange={(id) => {
-                const pupil = pupils.find((p) => p.id === id);
-                if (pupil) {
-                  setSelectedPupilId(pupil.id);
-                  setSelectedPupilName(pupil.name);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Select pupil..." />
-              </SelectTrigger>
-              <SelectContent>
-                {pupils.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Select
+            value={selectedPupilId}
+            onValueChange={(id) => {
+              const pupil = pupils.find((p) => p.id === id);
+              if (pupil) {
+                setSelectedPupilId(pupil.id);
+                setSelectedPupilName(pupil.name);
+              }
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select pupil..." />
+            </SelectTrigger>
+            <SelectContent>
+              {pupils.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="grid grid-cols-2 gap-2">
             <Button
-              className="w-full sm:w-auto"
               onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
               disabled={!selectedPupilId}
             >
@@ -197,7 +196,6 @@ export default function InstructorTestResults() {
               Record Test
             </Button>
             <Button
-              className="w-full sm:w-auto"
               variant="outline"
               onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
               disabled={!selectedPupilId}
