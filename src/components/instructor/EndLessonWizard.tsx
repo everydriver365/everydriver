@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Trophy, PartyPopper } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +26,7 @@ interface EndLessonWizardProps {
   onCompleted: () => void;
 }
 
-type WizardStep = "summary" | "payment" | "skills" | "book" | "completing" | "completed";
+type WizardStep = "summary" | "payment" | "skills" | "book" | "completing" | "course_complete" | "completed";
 
 export function EndLessonWizard({
   open,
@@ -50,6 +50,8 @@ export function EndLessonWizard({
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
   const [routeReportData, setRouteReportData] = useState<any>(null);
+  const [isLastLesson, setIsLastLesson] = useState(false);
+  const [claimingBonus, setClaimingBonus] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
@@ -60,6 +62,8 @@ export function EndLessonWizard({
       setHistoryId(null);
       setUpdatedCompetencies([]);
       setRouteReportData(null);
+      setIsLastLesson(false);
+      setClaimingBonus(false);
       fetchInstructorRate();
     }
   }, [open]);
@@ -237,7 +241,6 @@ export function EndLessonWizard({
       }
 
       // 5. Check if all scheduled lessons for this pupil are now completed (course complete)
-      let courseCompleted = false;
       try {
         const { count } = await supabase
           .from("scheduled_lessons")
@@ -248,32 +251,7 @@ export function EndLessonWizard({
           .is("deleted_at", null);
 
         if (count === 0) {
-          // All lessons done — award £50 bonus via database function
-          const { data: bonusResult } = await supabase.rpc("award_course_completion_bonus", {
-            p_pupil_id: pupilId,
-            p_instructor_id: instructorId,
-          });
-
-          if (bonusResult === true) {
-            courseCompleted = true;
-            toast.success("🎉 Course complete! £50 bonus awarded!", { duration: 5000 });
-            
-            // Send push notification for bonus
-            try {
-              await supabase.functions.invoke("send-push-notification", {
-                body: {
-                  instructorId,
-                  notification: {
-                    title: "£50 Bonus Earned! 🎉",
-                    body: `${pupilName}'s course is complete. £50 bonus has been added to your account.`,
-                    tag: "course-bonus",
-                  },
-                },
-              });
-            } catch (pushErr) {
-              console.error("Push notification error:", pushErr);
-            }
-          }
+          setIsLastLesson(true);
         }
       } catch (e) {
         console.error("Course completion check error:", e);
@@ -283,19 +261,53 @@ export function EndLessonWizard({
       const report = await fetchTelematicsReport();
       setRouteReportData(report);
 
-      if (!courseCompleted) {
-        toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
-      }
+      toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
       onCompleted();
 
-      // Show summary instead of closing
-      setStep("completed");
+      // Show course complete step if last lesson, otherwise show summary
+      setStep(isLastLesson ? "course_complete" : "completed");
     } catch (e) {
       console.error("Error completing lesson:", e);
       toast.error("Failed to complete lesson");
       setStep("summary");
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const handleClaimBonus = async () => {
+    setClaimingBonus(true);
+    try {
+      const { data: bonusResult } = await supabase.rpc("award_course_completion_bonus", {
+        p_pupil_id: pupilId,
+        p_instructor_id: instructorId,
+      });
+
+      if (bonusResult === true) {
+        toast.success("🎉 £50 bonus awarded!", { duration: 5000 });
+        try {
+          await supabase.functions.invoke("send-push-notification", {
+            body: {
+              instructorId,
+              notification: {
+                title: "£50 Bonus Earned! 🎉",
+                body: `${pupilName}'s course is complete. £50 bonus has been added to your account.`,
+                tag: "course-bonus",
+              },
+            },
+          });
+        } catch (pushErr) {
+          console.error("Push notification error:", pushErr);
+        }
+      } else {
+        toast.info("Bonus already claimed for this course.");
+      }
+    } catch (e) {
+      console.error("Bonus claim error:", e);
+      toast.error("Failed to claim bonus");
+    } finally {
+      setClaimingBonus(false);
+      setStep("completed");
     }
   };
 
@@ -309,6 +321,7 @@ export function EndLessonWizard({
     skills: "Skills Update",
     book: "Book Next Lesson",
     completing: "Completing…",
+    course_complete: "Course Complete",
     completed: "Lesson Summary",
   };
 
@@ -324,7 +337,7 @@ export function EndLessonWizard({
           </SheetTitle>
           <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
           {/* Progress dots - hide on completed */}
-          {step !== "completed" && step !== "completing" && (
+          {step !== "completed" && step !== "completing" && step !== "course_complete" && (
             <>
               <div className="flex items-center gap-1.5 pt-1">
                 {Array.from({ length: totalSteps }).map((_, i) => (
@@ -412,6 +425,44 @@ export function EndLessonWizard({
             <div className="flex flex-col items-center justify-center py-10 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Completing lesson…</p>
+            </div>
+          )}
+
+          {step === "course_complete" && (
+            <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+              <div className="relative">
+                <div className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Trophy className="h-10 w-10 text-accent" />
+                </div>
+                <PartyPopper className="h-6 w-6 text-primary absolute -top-1 -right-1" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Course Complete! 🎉</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  All scheduled lessons for <strong>{pupilName}</strong> have been completed.
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Claim your <strong className="text-accent">£50 bonus</strong> for finishing this course.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full max-w-xs">
+                <Button
+                  onClick={handleClaimBonus}
+                  disabled={claimingBonus}
+                  size="lg"
+                  variant="accent"
+                  className="w-full"
+                >
+                  {claimingBonus ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Claiming…</>
+                  ) : (
+                    <><Trophy className="h-4 w-4" /> Claim £50 Bonus</>
+                  )}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setStep("completed")}>
+                  Skip for now
+                </Button>
+              </div>
             </div>
           )}
 
