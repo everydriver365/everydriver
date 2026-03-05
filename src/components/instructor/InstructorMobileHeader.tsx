@@ -102,7 +102,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <p className="text-sm font-semibold leading-tight">{title}</p>
               ) : (
                 <>
-                  <img src={edLogo} alt="EveryDriver" className="h-9 w-auto object-contain" />
+                  <img src={edLogo} alt="EveryDriver" className="h-6 w-auto object-contain" />
                 </>
               )}
             </div>
