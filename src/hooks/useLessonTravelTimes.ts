@@ -46,7 +46,9 @@ export function useLessonTravelTimes(lessons: Lesson[]) {
       const fromPostcode = from.pickup_postcode || from.pupil?.postcode;
       const toPostcode = to.pickup_postcode || to.pupil?.postcode;
       
-      if (!fromPostcode || !toPostcode) continue;
+      // Skip invalid postcodes (must look like a UK postcode)
+      const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
+      if (!fromPostcode || !toPostcode || !postcodeRegex.test(fromPostcode) || !postcodeRegex.test(toPostcode)) continue;
       
       // Calculate gap between lessons
       const fromEndTime = addMinutesToTime(from.start_time, from.duration_minutes);
