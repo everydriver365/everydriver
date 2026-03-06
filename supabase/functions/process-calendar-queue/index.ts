@@ -37,18 +37,42 @@ function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str);
 }
 
-async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
-  let normalizedKey = pemKey.replace(/\\n/g, "\n");
-  const pemContents = normalizedKey
+async function importPrivateKey(rawPrivateKey: string): Promise<CryptoKey> {
+  let keyInput = rawPrivateKey?.trim() ?? "";
+
+  if (keyInput.startsWith("{") && keyInput.includes("private_key")) {
+    try {
+      const parsed = JSON.parse(keyInput) as { private_key?: string };
+      if (parsed.private_key) keyInput = parsed.private_key;
+    } catch { /* keep original */ }
+  }
+
+  const normalizedKey = keyInput
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "")
+    .replace(/^"|"$/g, "")
+    .trim();
+
+  let pemContents = normalizedKey
     .replace(/-----BEGIN PRIVATE KEY-----/g, "")
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/-----BEGIN RSA PRIVATE KEY-----/g, "")
     .replace(/-----END RSA PRIVATE KEY-----/g, "")
     .replace(/\r?\n/g, "")
     .replace(/\s/g, "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .replace(/[^A-Za-z0-9+/=]/g, "")
     .trim();
 
-  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+  if (!pemContents) {
+    throw new Error("Google private key is empty or invalid");
+  }
+
+  pemContents = pemContents.replace(/=+$/g, "");
+  const paddedContents = pemContents + "=".repeat((4 - (pemContents.length % 4)) % 4);
+
+  const binaryDer = Uint8Array.from(atob(paddedContents), (c) => c.charCodeAt(0));
 
   return await crypto.subtle.importKey(
     "pkcs8",
