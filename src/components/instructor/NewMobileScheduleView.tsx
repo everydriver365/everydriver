@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, isToday, parseISO } from "date-fns";
+import { format, isToday, parseISO, startOfDay, endOfDay } from "date-fns";
 import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling, CalendarDays, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -133,9 +133,8 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
   const fetchExternalEvents = async () => {
     try {
-      const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const dayStart = `${dateStr}T00:00:00`;
-      const dayEnd = `${dateStr}T23:59:59`;
+      const dayStart = startOfDay(selectedDate).toISOString();
+      const dayEnd = endOfDay(selectedDate).toISOString();
 
       const { data, error } = await supabase
         .from("instructor_calendar_events")
