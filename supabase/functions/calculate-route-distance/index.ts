@@ -94,6 +94,15 @@ serve(async (req) => {
       );
     }
 
+    // Validate UK postcode format
+    const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
+    if (!postcodeRegex.test(from_postcode)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid from_postcode format", from_postcode }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const tomtomApiKey = Deno.env.get("TOMTOM_API_KEY");
     if (!tomtomApiKey) {
       return new Response(
