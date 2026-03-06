@@ -14,7 +14,7 @@ import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
-import { useGoogleCalendarSync } from "@/hooks/useGoogleCalendarSync";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -52,12 +52,22 @@ export default function InstructorSchedule() {
 
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
-  const { isSyncing, syncAllLessons, importBusyTimes } = useGoogleCalendarSync(instructorId || '');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
-    await Promise.all([syncAllLessons(), importBusyTimes()]);
-    calendar.refetch();
-    toast.success("Calendar synced");
+    if (!instructorId) return;
+    setIsSyncing(true);
+    try {
+      await supabase.functions.invoke("google-calendar-service", {
+        body: { action: "fetchExternalEvents", instructorId },
+      });
+      calendar.refetch();
+      toast.success("Calendar synced");
+    } catch {
+      toast.error("Sync failed");
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   useEffect(() => {

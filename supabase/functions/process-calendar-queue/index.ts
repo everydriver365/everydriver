@@ -5,15 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
-
-interface TokenData {
-  access_token: string;
-  refresh_token: string;
-  token_expiry: string;
-  email?: string;
-}
 
 interface QueueItem {
   id: string;
@@ -35,89 +27,93 @@ interface LessonData {
   pupils?: { name: string } | null;
 }
 
-// deno-lint-ignore no-explicit-any
-async function getValidAccessToken(
-  supabase: any,
-  instructorId: string,
-  clientId: string,
-  clientSecret: string
-): Promise<{ accessToken: string; calendarEmail: string } | null> {
-  const { data: tokenData, error } = await supabase
-    .from("instructor_calendar_tokens")
-    .select("access_token, refresh_token, token_expiry, email")
-    .eq("instructor_id", instructorId)
-    .eq("provider", "google")
-    .maybeSingle();
+// Base64url encode
+function base64urlEncode(data: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode(...data));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
 
-  if (error || !tokenData) {
-    return null;
-  }
+function stringToUint8Array(str: string): Uint8Array {
+  return new TextEncoder().encode(str);
+}
 
-  const typedTokenData = tokenData as TokenData;
-  const isExpired = new Date(typedTokenData.token_expiry) < new Date();
+async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
+  let normalizedKey = pemKey.replace(/\\n/g, "\n");
+  const pemContents = normalizedKey
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/-----BEGIN RSA PRIVATE KEY-----/g, "")
+    .replace(/-----END RSA PRIVATE KEY-----/g, "")
+    .replace(/\r?\n/g, "")
+    .replace(/\s/g, "")
+    .trim();
 
-  if (isExpired && typedTokenData.refresh_token) {
-    const refreshResponse = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: typedTokenData.refresh_token,
-        grant_type: "refresh_token",
-      }),
-    });
+  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
 
-    const refreshData = await refreshResponse.json();
+  return await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer,
+    { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
+    false,
+    ["sign"]
+  );
+}
 
-    if (refreshData.error) {
-      console.error("Token refresh failed:", refreshData);
-      return null;
-    }
-
-    const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000).toISOString();
-
-    await supabase
-      .from("instructor_calendar_tokens")
-      .update({
-        access_token: refreshData.access_token,
-        token_expiry: newExpiry,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("instructor_id", instructorId)
-      .eq("provider", "google");
-
-    return { 
-      accessToken: refreshData.access_token, 
-      calendarEmail: typedTokenData.email || "primary" 
-    };
-  }
-
-  return { 
-    accessToken: typedTokenData.access_token, 
-    calendarEmail: typedTokenData.email || "primary" 
+async function generateJWT(serviceEmail: string, privateKey: string): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const claims = {
+    iss: serviceEmail,
+    sub: serviceEmail,
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+    scope: "https://www.googleapis.com/auth/calendar",
   };
+
+  const encodedHeader = base64urlEncode(stringToUint8Array(JSON.stringify(header)));
+  const encodedClaims = base64urlEncode(stringToUint8Array(JSON.stringify(claims)));
+  const signatureInput = `${encodedHeader}.${encodedClaims}`;
+
+  const key = await importPrivateKey(privateKey);
+  const signature = await crypto.subtle.sign(
+    { name: "RSASSA-PKCS1-v1_5" },
+    key,
+    stringToUint8Array(signatureInput).buffer as ArrayBuffer
+  );
+
+  return `${signatureInput}.${base64urlEncode(new Uint8Array(signature))}`;
+}
+
+async function getAccessToken(jwt: string): Promise<string> {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: jwt,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to get access token: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
 }
 
 async function createGoogleEvent(
   accessToken: string,
   calendarId: string,
-  event: {
-    summary: string;
-    description?: string;
-    start: string;
-    end: string;
-    location?: string;
-  }
+  event: { summary: string; description?: string; start: string; end: string; location?: string }
 ): Promise<string> {
   const response = await fetch(
     `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events`,
     {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         summary: event.summary,
         description: event.description,
@@ -141,34 +137,20 @@ async function updateGoogleEvent(
   accessToken: string,
   calendarId: string,
   eventId: string,
-  event: {
-    summary?: string;
-    description?: string;
-    start?: string;
-    end?: string;
-    location?: string;
-  }
+  event: { summary?: string; description?: string; start?: string; end?: string; location?: string }
 ): Promise<void> {
   const updateData: Record<string, unknown> = {};
-  
   if (event.summary) updateData.summary = event.summary;
   if (event.description) updateData.description = event.description;
   if (event.location) updateData.location = event.location;
-  if (event.start) {
-    updateData.start = { dateTime: event.start, timeZone: "Europe/London" };
-  }
-  if (event.end) {
-    updateData.end = { dateTime: event.end, timeZone: "Europe/London" };
-  }
+  if (event.start) updateData.start = { dateTime: event.start, timeZone: "Europe/London" };
+  if (event.end) updateData.end = { dateTime: event.end, timeZone: "Europe/London" };
 
   const response = await fetch(
     `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
     {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body: JSON.stringify(updateData),
     }
   );
@@ -186,10 +168,7 @@ async function deleteGoogleEvent(
 ): Promise<void> {
   const response = await fetch(
     `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
-    {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
+    { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   if (!response.ok && response.status !== 404) {
@@ -204,14 +183,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
-    const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
+    const serviceEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+    const privateKey = Deno.env.get("GOOGLE_PRIVATE_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!clientId || !clientSecret) {
+    if (!serviceEmail || !privateKey) {
       return new Response(
-        JSON.stringify({ error: "Google OAuth not configured" }),
+        JSON.stringify({ error: "Google service account not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -240,15 +219,24 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${queueItems.length} calendar sync items`);
 
+    // Get service account access token once for all items
+    const jwt = await generateJWT(serviceEmail, privateKey);
+    const accessToken = await getAccessToken(jwt);
+
     let successCount = 0;
     let errorCount = 0;
 
     for (const item of queueItems as QueueItem[]) {
       try {
-        const tokenInfo = await getValidAccessToken(supabase, item.instructor_id, clientId, clientSecret);
-        
-        if (!tokenInfo) {
-          // No calendar connected, mark as processed
+        // Look up instructor's calendar ID from service account table
+        const { data: calendarConfig } = await supabase
+          .from("instructor_google_service_calendar")
+          .select("calendar_id")
+          .eq("instructor_id", item.instructor_id)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (!calendarConfig) {
           await supabase
             .from("calendar_sync_queue")
             .update({ processed_at: new Date().toISOString(), error: "No calendar connected" })
@@ -256,8 +244,9 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        const calendarId = calendarConfig.calendar_id;
+
         if (item.action === "syncLesson") {
-          // Fetch lesson details
           const { data: lessonRaw } = await supabase
             .from("scheduled_lessons")
             .select(`*, pupils:pupil_id (name)`)
@@ -273,7 +262,6 @@ Deno.serve(async (req) => {
           }
 
           const lesson = lessonRaw as LessonData;
-
           const startDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
           const endDateTime = new Date(startDateTime.getTime() + lesson.duration_minutes * 60000);
 
@@ -289,15 +277,14 @@ Deno.serve(async (req) => {
 
           if (googleEventId) {
             try {
-              await updateGoogleEvent(tokenInfo.accessToken, tokenInfo.calendarEmail, googleEventId, eventDetails);
+              await updateGoogleEvent(accessToken, calendarId, googleEventId, eventDetails);
             } catch {
-              googleEventId = await createGoogleEvent(tokenInfo.accessToken, tokenInfo.calendarEmail, eventDetails);
+              googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
             }
           } else {
-            googleEventId = await createGoogleEvent(tokenInfo.accessToken, tokenInfo.calendarEmail, eventDetails);
+            googleEventId = await createGoogleEvent(accessToken, calendarId, eventDetails);
           }
 
-          // Save Google event ID
           await supabase
             .from("scheduled_lessons")
             .update({ google_event_id: googleEventId })
@@ -315,7 +302,7 @@ Deno.serve(async (req) => {
 
           if (lesson?.google_event_id) {
             try {
-              await deleteGoogleEvent(tokenInfo.accessToken, tokenInfo.calendarEmail, lesson.google_event_id);
+              await deleteGoogleEvent(accessToken, calendarId, lesson.google_event_id);
               console.log(`Deleted lesson ${item.lesson_id} from Google Calendar`);
             } catch (err) {
               console.log("Event already deleted:", err);
@@ -323,7 +310,6 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Mark as processed
         await supabase
           .from("calendar_sync_queue")
           .update({ processed_at: new Date().toISOString() })
@@ -334,9 +320,9 @@ Deno.serve(async (req) => {
         console.error(`Error processing queue item ${item.id}:`, err);
         await supabase
           .from("calendar_sync_queue")
-          .update({ 
-            processed_at: new Date().toISOString(), 
-            error: err instanceof Error ? err.message : "Unknown error" 
+          .update({
+            processed_at: new Date().toISOString(),
+            error: err instanceof Error ? err.message : "Unknown error",
           })
           .eq("id", item.id);
         errorCount++;

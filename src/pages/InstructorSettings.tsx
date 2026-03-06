@@ -10,7 +10,7 @@ import { ReferralSettingsCard } from "@/components/instructor/ReferralSettingsCa
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
-import { CalendarConnect } from "@/components/instructor/CalendarConnect";
+import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
 
 import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
@@ -973,7 +973,7 @@ export default function InstructorSettings() {
                 iconColor="text-sky-600"
                 iconBg="bg-sky-100 dark:bg-sky-900/30"
               >
-                <CalendarConnect instructorId={instructorId} />
+                <GoogleServiceAccountSetup instructorId={instructorId} />
               </SettingsTile>
 
               {/* Cancellation Policy Section */}

@@ -101,7 +101,7 @@ const InstructorNearbyFriends = lazy(() => import("./pages/InstructorNearbyFrien
 const InstructorGPSSetup = lazy(() => import("./pages/InstructorGPSSetup"));
 const InstructorLiveSession = lazy(() => import("./pages/InstructorLiveSession"));
 const InstructorMiniWebsite = lazy(() => import("./pages/InstructorMiniWebsite"));
-const CalendarCallback = lazy(() => import("./pages/CalendarCallback"));
+
 const InstructorPortalLogin = lazy(() => import("./pages/InstructorPortalLogin"));
 const InstructorGeotabHub = lazy(() => import("./pages/InstructorGeotabHub"));
 const DashcamGallery = lazy(() => import("./pages/instructor/DashcamGallery"));
@@ -190,8 +190,6 @@ const App = () => (
                 {/* Quote Accept */}
                 <Route path="/quote/:token" element={<QuoteAcceptPage />} />
 
-                {/* Calendar OAuth Callback */}
-                <Route path="/calendar-callback" element={<CalendarCallback />} />
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
                 <Route path="/instructor-app" element={<InstructorAppHome />} />
