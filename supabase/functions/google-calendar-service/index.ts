@@ -780,6 +780,113 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Sync ALL connected instructors (for cron usage)
+    if (action === "syncAllInstructors") {
+      const { data: connections, error: connErr } = await supabase
+        .from("instructor_google_service_calendar")
+        .select("instructor_id, calendar_id")
+        .eq("is_active", true);
+
+      if (connErr || !connections || connections.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, synced: 0, message: "No connected instructors" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      let totalSynced = 0;
+      let errors = 0;
+
+      for (const conn of connections) {
+        try {
+          const jwt = await generateJWT(serviceEmail, privateKey, conn.calendar_id);
+          const accessToken = await getAccessToken(jwt);
+
+          const now = new Date();
+          const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+          const allEvents: Array<{ id: string; summary: string; start: string; end: string }> = [];
+          let pageToken: string | undefined;
+
+          do {
+            const params = new URLSearchParams({
+              timeMin: now.toISOString(),
+              timeMax: oneYearLater.toISOString(),
+              singleEvents: "true",
+              orderBy: "startTime",
+              maxResults: "2500",
+            });
+            if (pageToken) params.set("pageToken", pageToken);
+
+            const response = await fetch(
+              `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(conn.calendar_id)}/events?${params}`,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            if (!response.ok) {
+              const error = await response.text();
+              throw new Error(`Failed to fetch events: ${error}`);
+            }
+
+            const data = await response.json();
+            const pageEvents = (data.items || [])
+              .filter((item: { start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string } }) =>
+                (item.start?.dateTime || item.start?.date) && (item.end?.dateTime || item.end?.date)
+              )
+              .map((item: { id: string; summary?: string; start: { dateTime?: string; date?: string }; end: { dateTime?: string; date?: string } }) => ({
+                id: item.id,
+                summary: item.summary || "Busy",
+                start: item.start.dateTime || `${item.start.date}T00:00:00`,
+                end: item.end.dateTime || `${item.end.date}T23:59:59`,
+              }));
+
+            allEvents.push(...pageEvents);
+            pageToken = data.nextPageToken;
+          } while (pageToken);
+
+          await supabase
+            .from("instructor_calendar_events")
+            .delete()
+            .eq("instructor_id", conn.instructor_id);
+
+          if (allEvents.length > 0) {
+            const eventsToInsert = allEvents.map((event) => ({
+              instructor_id: conn.instructor_id,
+              external_event_id: event.id,
+              title: event.summary,
+              start_time: event.start,
+              end_time: event.end,
+              is_busy: true,
+              synced_at: new Date().toISOString(),
+            }));
+
+            await supabase
+              .from("instructor_calendar_events")
+              .upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
+          }
+
+          await supabase
+            .from("instructor_google_service_calendar")
+            .update({ last_sync: new Date().toISOString(), sync_error: null })
+            .eq("instructor_id", conn.instructor_id);
+
+          totalSynced += allEvents.length;
+          console.log(`Synced ${allEvents.length} events for instructor ${conn.instructor_id}`);
+        } catch (err) {
+          errors++;
+          console.error(`Sync error for instructor ${conn.instructor_id}:`, err);
+          await supabase
+            .from("instructor_google_service_calendar")
+            .update({ sync_error: String(err) })
+            .eq("instructor_id", conn.instructor_id);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, instructors: connections.length, synced: totalSynced, errors }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
