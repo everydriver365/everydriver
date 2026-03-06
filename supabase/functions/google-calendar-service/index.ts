@@ -90,8 +90,7 @@ async function importPrivateKey(rawPrivateKey: string): Promise<CryptoKey> {
 // Generate signed JWT for Google API
 async function generateJWT(
   serviceEmail: string,
-  privateKey: string,
-  calendarId: string
+  privateKey: string
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   
@@ -391,7 +390,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const jwt = await generateJWT(serviceEmail, privateKey, calendarId);
+        const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
         const result = await testConnection(accessToken, calendarId);
         
@@ -418,7 +417,7 @@ Deno.serve(async (req) => {
       }
 
       // First test the connection
-      const jwt = await generateJWT(serviceEmail, privateKey, calendarId);
+      const jwt = await generateJWT(serviceEmail, privateKey);
       const accessToken = await getAccessToken(jwt);
       const testResult = await testConnection(accessToken, calendarId);
 
@@ -547,7 +546,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
+        const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
 
         // Fetch actual events (with stable IDs) for the next 365 days using events.list with pagination
@@ -681,7 +680,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
+        const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
         const googleEventId = await createEvent(accessToken, connection.calendar_id, event);
 
@@ -722,7 +721,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
+        const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
         await updateEvent(accessToken, connection.calendar_id, eventId, event);
 
@@ -763,7 +762,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
+        const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
         await deleteEvent(accessToken, connection.calendar_id, eventId);
 
@@ -799,7 +798,7 @@ Deno.serve(async (req) => {
 
       for (const conn of connections) {
         try {
-          const jwt = await generateJWT(serviceEmail, privateKey, conn.calendar_id);
+          const jwt = await generateJWT(serviceEmail, privateKey);
           const accessToken = await getAccessToken(jwt);
 
           const now = new Date();

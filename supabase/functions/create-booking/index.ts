@@ -240,21 +240,9 @@ serve(async (req) => {
         duration: lesson.duration_minutes,
       }));
 
-      const syncResponse = await fetch(
-        `${supabaseUrl}/functions/v1/google-calendar-sync`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            action: "syncLessons",
-            instructorId: booking.instructorId,
-            lessons: calendarLessons,
-          }),
-        }
-      );
+      // Calendar sync happens automatically via trigger_calendar_sync trigger
+      // on scheduled_lessons table, no manual call needed
+      console.log("Calendar sync will be handled by database trigger");
 
       const syncResult = await syncResponse.json();
       console.log("Calendar sync result:", syncResult);

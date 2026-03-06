@@ -261,18 +261,9 @@ serve(async (req: Request) => {
       }),
     }).catch(console.error);
 
-    // Sync to Google Calendar
-    fetch(`${supabaseUrl}/functions/v1/google-calendar-sync`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${supabaseAnonKey}`,
-      },
-      body: JSON.stringify({
-        action: "syncAll",
-        instructorId,
-      }),
-    }).catch(console.error);
+    // Calendar sync happens automatically via trigger_calendar_sync trigger
+    // on scheduled_lessons table, no manual call needed
+    console.log("Calendar sync will be handled by database trigger");
 
     console.log("Booking completed successfully:", pupilId);
 
