@@ -66,13 +66,37 @@ export function PupilPortalGaps({
       const today = format(new Date(), 'yyyy-MM-dd');
       const twoWeeksLater = format(addDays(new Date(), 14), 'yyyy-MM-dd');
 
-      const { data: existingLessons } = await supabase
-        .from("scheduled_lessons")
-        .select("lesson_date, start_time, duration_minutes")
-        .eq("instructor_id", instructorId)
-        .neq("status", "cancelled")
-        .gte("lesson_date", today)
-        .lte("lesson_date", twoWeeksLater);
+      const [{ data: existingLessons }, { data: calendarEvents }] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, start_time, duration_minutes")
+          .eq("instructor_id", instructorId)
+          .neq("status", "cancelled")
+          .gte("lesson_date", today)
+          .lte("lesson_date", twoWeeksLater),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time, end_time")
+          .eq("instructor_id", instructorId)
+          .eq("is_busy", true)
+          .gte("end_time", `${today}T00:00:00`)
+          .lte("start_time", `${twoWeeksLater}T23:59:59`)
+      ]);
+
+      // Parse calendar events into per-day busy blocks (ignoring all-day events)
+      const calendarBusyByDate: Record<string, { start: number; end: number }[]> = {};
+      (calendarEvents || []).forEach(ev => {
+        const evStart = new Date(ev.start_time);
+        const evEnd = new Date(ev.end_time);
+        // Skip all-day events (span >= 24 hours)
+        if (evEnd.getTime() - evStart.getTime() >= 24 * 60 * 60 * 1000) return;
+        const evDateStr = format(evStart, 'yyyy-MM-dd');
+        if (!calendarBusyByDate[evDateStr]) calendarBusyByDate[evDateStr] = [];
+        calendarBusyByDate[evDateStr].push({
+          start: evStart.getHours() * 60 + evStart.getMinutes(),
+          end: evEnd.getHours() * 60 + evEnd.getMinutes()
+        });
+      });
 
       // Calculate available slots
       const slots: TimeSlot[] = [];
@@ -104,25 +128,29 @@ export function PupilPortalGaps({
           })
           .sort((a, b) => a.start - b.start);
 
+        // Merge lesson blocks with calendar busy blocks
+        const calBusy = (calendarBusyByDate[dateStr] || []).map(b => ({ start: b.start, end: b.end }));
+        const allBusy = [...dayLessons, ...calBusy].sort((a, b) => a.start - b.start);
+
         // Find gaps
         let currentTime = workStart;
         
-        for (const lesson of dayLessons) {
-          if (lesson.start > currentTime) {
-            const gapDuration = lesson.start - currentTime;
-            if (gapDuration >= 60) { // At least 1 hour gap
+        for (const block of allBusy) {
+          if (block.start > currentTime) {
+            const gapDuration = block.start - currentTime;
+            if (gapDuration >= 60) {
               slots.push({
                 date: dateStr,
                 startTime: `${Math.floor(currentTime / 60).toString().padStart(2, '0')}:${(currentTime % 60).toString().padStart(2, '0')}`,
-                endTime: `${Math.floor(lesson.start / 60).toString().padStart(2, '0')}:${(lesson.start % 60).toString().padStart(2, '0')}`,
+                endTime: `${Math.floor(block.start / 60).toString().padStart(2, '0')}:${(block.start % 60).toString().padStart(2, '0')}`,
                 duration: gapDuration
               });
             }
           }
-          currentTime = Math.max(currentTime, lesson.end);
+          currentTime = Math.max(currentTime, block.end);
         }
 
-        // Check for gap after last lesson
+        // Check for gap after last block
         if (currentTime < workEnd) {
           const gapDuration = workEnd - currentTime;
           if (gapDuration >= 60) {

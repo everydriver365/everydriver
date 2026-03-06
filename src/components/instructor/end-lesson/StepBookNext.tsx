@@ -41,6 +41,17 @@ export function StepBookNext({
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
       const today = new Date();
+      const todayStr = format(today, "yyyy-MM-dd");
+      const weekLaterStr = format(addDays(today, 7), "yyyy-MM-dd");
+
+      // Fetch calendar events for the 7-day window
+      const { data: calendarEvents } = await supabase
+        .from("instructor_calendar_events")
+        .select("start_time, end_time")
+        .eq("instructor_id", instructorId)
+        .eq("is_busy", true)
+        .gte("end_time", `${todayStr}T00:00:00`)
+        .lte("start_time", `${weekLaterStr}T23:59:59`);
 
       for (let d = 1; d <= 7 && found.length < 3; d++) {
         const date = addDays(today, d);
@@ -54,6 +65,14 @@ export function StepBookNext({
           .neq("status", "cancelled")
           .order("start_time");
 
+        // Parse calendar busy times for this day (ignoring all-day events)
+        const dayCalBusy = (calendarEvents || [])
+          .map(ev => ({ start: new Date(ev.start_time), end: new Date(ev.end_time) }))
+          .filter(ev => {
+            if (ev.end.getTime() - ev.start.getTime() >= 24 * 60 * 60 * 1000) return false;
+            return format(ev.start, "yyyy-MM-dd") === dateStr;
+          });
+
         // Simple: suggest slots at 9am, 11am, 1pm, 3pm that don't conflict
         const candidateTimes = ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
 
@@ -62,13 +81,17 @@ export function StepBookNext({
           const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
           const candidateEnd = candidateStart + durationMinutes * 60000;
 
-          const conflicts = (existing || []).some((ex) => {
+          const lessonConflict = (existing || []).some((ex) => {
             const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
             const exEnd = exStart + (ex.duration_minutes || 60) * 60000;
             return candidateStart < exEnd && candidateEnd > exStart;
           });
 
-          if (!conflicts) {
+          const calConflict = dayCalBusy.some(ev =>
+            candidateStart < ev.end.getTime() && candidateEnd > ev.start.getTime()
+          );
+
+          if (!lessonConflict && !calConflict) {
             found.push({
               date: dateStr,
               startTime: ct,
