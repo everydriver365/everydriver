@@ -1,71 +1,49 @@
 
 
-## Consolidate to Single Google Service Account
+## Calendar Sync Status: Mostly Correct, Some Cleanup Needed
 
-### Problem
-You currently have **two separate** Google Calendar systems running in parallel:
-1. **OAuth flow** — each instructor connects their own Google account (complex, requires Google verification, unverified app warnings)
-2. **Service account flow** — one Google account manages everything (simple, no per-user auth needed)
+### What's Working Well
+- **Service account auth** is solid — robust key parsing handles JSON blobs, escaped newlines, padding
+- **2-way sync**: External events imported via `fetchExternalEvents`, lessons pushed via `process-calendar-queue`
+- **Per-instructor isolation**: Each instructor's calendar ID stored separately in `instructor_google_service_calendar`
+- **Pagination**: Both sync paths handle Google's `nextPageToken` correctly
+- **Error recording**: Sync errors stored per-instructor for debugging
+- **Queue cleanup**: Old processed items cleaned up after 7 days
 
-### Solution
-Keep **only the service account approach**. One Google account, one set of credentials. Instructors just share their Google Calendar with the service account email — done.
+### Issues to Fix
 
-### What stays
-- `google-calendar-service` edge function — already handles read busy times (events.list) and write events (create/update/delete)
-- `instructor_google_service_calendar` table — stores each instructor's calendar ID
-- `instructor_calendar_events` table — stores synced busy times
-- `GoogleServiceAccountSetup` component — already has the UI for entering calendar ID and testing connection
+**1. Duplicate/stale cron jobs (4 jobs, should be 2)**
 
-### What changes
+| Job ID | Schedule | Target | Status |
+|--------|----------|--------|--------|
+| 3 | `*/15 * * * *` | `scheduled-calendar-sync` | **REDUNDANT** — old function, duplicates job 14 |
+| 14 | `*/15 * * * *` | `google-calendar-service` (syncAllInstructors) | ✅ Keep |
+| 5 | `* * * * *` | `process-calendar-queue` | **OLD** — runs every minute, wasteful |
+| 15 | `*/15 * * * *` | `process-calendar-queue` | ✅ Keep |
 
-**1. Update `process-calendar-queue` to use service account**
-Currently this function uses OAuth tokens (`instructor_calendar_tokens`). Change it to look up the instructor's calendar ID from `instructor_google_service_calendar` and authenticate via the service account JWT (using `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`), same pattern as `google-calendar-service`.
+**Fix**: Remove jobs 3 and 5. They're leftover from the old setup.
 
-**2. Update `scheduled-calendar-sync` to use service account**
-Same change — iterate over `instructor_google_service_calendar` rows instead of `instructor_calendar_tokens`, use service account JWT for auth.
+**2. Redundant edge functions still exist**
 
-**3. Replace `CalendarConnect` with `GoogleServiceAccountSetup`**
-- In `InstructorSettings.tsx` and `InstructorForm.tsx`, swap `CalendarConnect` for `GoogleServiceAccountSetup`
-- Remove imports of `CalendarConnect`, `useGoogleOAuth`, `useGoogleCalendarSync`
+Per the consolidation plan, these old OAuth-based files should be deleted:
+- `supabase/functions/scheduled-calendar-sync/index.ts` — superseded by `syncAllInstructors` action in `google-calendar-service`
+- `supabase/functions/sync-all-calendars/index.ts` — also redundant
+- Any remaining OAuth files (`google-oauth`, `calendar-sync`, `CalendarConnect`, `useGoogleOAuth`, `useGoogleCalendarSync`, `CalendarCallback`)
 
-**4. Remove OAuth-only files**
-- Delete `supabase/functions/google-oauth/index.ts`
-- Delete `supabase/functions/calendar-sync/index.ts`
-- Delete `src/hooks/useGoogleOAuth.ts`
-- Delete `src/hooks/useGoogleCalendarSync.ts`
-- Delete `src/components/instructor/CalendarConnect.tsx`
-- Delete `src/pages/CalendarCallback.tsx`
-- Remove `/calendar-callback` route from router
+**3. `generateJWT` signature mismatch**
 
-**5. Clean up secrets**
-- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are no longer needed (service account uses `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY` which are already set)
+In `google-calendar-service/index.ts`, `generateJWT` accepts 3 params (`serviceEmail, privateKey, calendarId`) but `calendarId` is never used inside the function. The `process-calendar-queue` version only takes 2 params. This is harmless but messy — should standardize to 2 params.
 
-### How it works for instructors
-1. Admin or instructor goes to settings → Google Calendar section
-2. Sees the service account email (e.g. `calendar@everydriver.iam.gserviceaccount.com`)
-3. Copies it, goes to Google Calendar settings, shares their calendar with that email (give "Make changes to events" permission)
-4. Pastes their Calendar ID (found in Google Calendar settings → Integrate calendar)
-5. Clicks "Test & Connect" — done
+### Plan
 
-### Files to modify
-- `supabase/functions/process-calendar-queue/index.ts` — switch from OAuth to service account auth
-- `supabase/functions/scheduled-calendar-sync/index.ts` — switch from OAuth to service account auth
-- `src/pages/InstructorSettings.tsx` — swap CalendarConnect → GoogleServiceAccountSetup
-- `src/components/admin/InstructorForm.tsx` — swap CalendarConnect → GoogleServiceAccountSetup
-- Router config — remove `/calendar-callback` route
+1. **Remove stale cron jobs** (IDs 3 and 5) via SQL
+2. **Delete redundant edge functions**: `scheduled-calendar-sync`, `sync-all-calendars`
+3. **Fix `generateJWT` signature** in `google-calendar-service` — remove unused `calendarId` parameter and update all call sites
+4. **Delete old OAuth files** if they still exist (per the consolidation plan)
 
-### Files to delete
-- `supabase/functions/google-oauth/index.ts`
-- `supabase/functions/calendar-sync/index.ts`
-- `src/hooks/useGoogleOAuth.ts`
-- `src/hooks/useGoogleCalendarSync.ts`
-- `src/components/instructor/CalendarConnect.tsx`
-- `src/pages/CalendarCallback.tsx`
+### Technical Details
 
-### Google setup (your new account)
-1. Create Google Cloud project, enable Calendar API
-2. Create a **Service Account** (not OAuth client)
-3. Download the JSON key file
-4. Update secrets: `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_PRIVATE_KEY` with the new values
-5. No OAuth consent screen, no verification, no redirect URIs needed
+- SQL to remove stale jobs: `SELECT cron.unschedule(3); SELECT cron.unschedule(5);`
+- The `process-calendar-queue` function correctly uses service account auth and looks up `instructor_google_service_calendar` — no changes needed there
+- The delete-then-upsert pattern in `fetchExternalEvents` (line 602-624) could theoretically cause a brief window with no events, but for a 15-min sync this is acceptable
 
