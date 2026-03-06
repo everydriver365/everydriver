@@ -320,10 +320,10 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                       }`}>
                         {/* Driving Test Banner */}
                         {lesson.lesson_type === 'driving_test' && (
-                          <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg px-3 py-1.5 -mx-1 -mt-1 mb-1">
-                            <Car className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg px-3 py-2 -mx-1 -mt-1 mb-1">
+                            <Car className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                             <span className="text-sm font-bold text-orange-700 dark:text-orange-300">DRIVING TEST</span>
-                            <span className="ml-auto text-xs font-semibold text-orange-600 dark:text-orange-400">
+                            <span className="ml-auto text-lg font-bold font-mono text-orange-700 dark:text-orange-300 tracking-tight">
                               {formatTime(lesson.start_time)}
                             </span>
                           </div>
