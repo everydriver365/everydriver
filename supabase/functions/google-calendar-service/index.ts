@@ -28,8 +28,12 @@ function stringToUint8Array(str: string): Uint8Array {
 // Import PEM private key for signing
 async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
   // Handle various formats of the private key
-  // First, replace literal \n with actual newlines (from JSON string escaping)
-  let normalizedKey = pemKey.replace(/\\n/g, "\n");
+  // Replace literal \n with actual newlines (from JSON/env string escaping)
+  let normalizedKey = pemKey
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "")
+    .replace(/"/g, "")  // Remove surrounding quotes if present
+    .trim();
   
   // Remove PEM headers, footers, and all whitespace
   const pemContents = normalizedKey
@@ -43,8 +47,11 @@ async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
 
   console.log("PEM contents length:", pemContents.length);
 
+  // Add base64 padding if missing
+  const paddedContents = pemContents + "=".repeat((4 - (pemContents.length % 4)) % 4);
+
   // Decode base64 to binary
-  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+  const binaryDer = Uint8Array.from(atob(paddedContents), (c) => c.charCodeAt(0));
 
   console.log("Binary DER length:", binaryDer.length);
 
