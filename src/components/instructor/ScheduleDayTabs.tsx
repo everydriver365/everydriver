@@ -21,22 +21,44 @@ export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsP
     if (!instructor?.id) return;
     const from = format(weekStart, "yyyy-MM-dd");
     const to = format(addDays(weekStart, 6), "yyyy-MM-dd");
+    const weekStartISO = new Date(from + "T00:00:00").toISOString();
+    const weekEndISO = new Date(to + "T23:59:59").toISOString();
     try {
-      const { data } = await supabase
-        .from("scheduled_lessons")
-        .select("lesson_date")
-        .eq("instructor_id", instructor.id)
-        .neq("status", "cancelled")
-        .gte("lesson_date", from)
-        .lte("lesson_date", to);
+      const [lessonsRes, externalRes, blocksRes] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select("lesson_date")
+          .eq("instructor_id", instructor.id)
+          .neq("status", "cancelled")
+          .gte("lesson_date", from)
+          .lte("lesson_date", to),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time")
+          .eq("instructor_id", instructor.id)
+          .gte("start_time", weekStartISO)
+          .lte("start_time", weekEndISO),
+        supabase
+          .from("instructor_manual_blocks")
+          .select("start_datetime")
+          .eq("instructor_id", instructor.id)
+          .gte("start_datetime", weekStartISO)
+          .lte("start_datetime", weekEndISO),
+      ]);
 
-      if (data) {
-        const counts: Record<string, number> = {};
-        data.forEach((r) => {
-          counts[r.lesson_date] = (counts[r.lesson_date] || 0) + 1;
-        });
-        setEventDots(counts);
-      }
+      const counts: Record<string, number> = {};
+      lessonsRes.data?.forEach((r) => {
+        counts[r.lesson_date] = (counts[r.lesson_date] || 0) + 1;
+      });
+      externalRes.data?.forEach((r) => {
+        const dateStr = r.start_time.slice(0, 10);
+        counts[dateStr] = (counts[dateStr] || 0) + 1;
+      });
+      blocksRes.data?.forEach((r) => {
+        const dateStr = r.start_datetime.slice(0, 10);
+        counts[dateStr] = (counts[dateStr] || 0) + 1;
+      });
+      setEventDots(counts);
     } catch (e) {
       console.error("Failed to fetch event dots:", e);
     }
