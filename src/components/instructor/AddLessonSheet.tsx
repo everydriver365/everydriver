@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
+import { ExaminerSelector } from './driving-test/ExaminerSelector';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -32,6 +35,32 @@ interface Pupil {
   postcode: string | null;
 }
 
+interface TestCentre {
+  id: string;
+  name: string;
+  address: string | null;
+}
+
+const TEST_DAY_CHECKLIST = [
+  'Provisional driving licence (photocard)',
+  'Theory test pass certificate',
+  'Glasses or contact lenses (if needed)',
+  'Correct mirrors & L plates fitted',
+  'Be ready 10 minutes before test time',
+];
+
+const LESSON_TYPES = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'intensive', label: 'Intensive' },
+  { value: 'motorway', label: 'Motorway' },
+  { value: 'test_prep', label: 'Test Prep' },
+  { value: 'mock_test', label: 'Mock Test' },
+  { value: 'refresher', label: 'Refresher' },
+  { value: 'first_lesson', label: 'First Lesson' },
+  { value: 'pass_plus', label: 'Pass Plus' },
+  { value: 'driving_test', label: '🚗 Driving Test' },
+];
+
 export function AddLessonSheet({ 
   open, 
   onOpenChange, 
@@ -43,6 +72,9 @@ export function AddLessonSheet({
   const [loading, setLoading] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [loadingPupils, setLoadingPupils] = useState(false);
+
+  // Lesson type
+  const [lessonType, setLessonType] = useState('standard');
 
   // Existing pupil form state
   const [selectedPupil, setSelectedPupil] = useState('');
@@ -57,11 +89,19 @@ export function AddLessonSheet({
   const [recurrenceWeeks, setRecurrenceWeeks] = useState('4');
   const [plannedCompetencies, setPlannedCompetencies] = useState<string[]>([]);
 
+  // Driving test fields
+  const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
+  const [selectedTestCentre, setSelectedTestCentre] = useState('');
+  const [selectedExaminer, setSelectedExaminer] = useState('');
+  const [checklistOpen, setChecklistOpen] = useState(true);
+
   // New pupil form state
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
   const [newPupilAddress, setNewPupilAddress] = useState('');
   const [newPupilPostcode, setNewPupilPostcode] = useState('');
+
+  const isDrivingTest = lessonType === 'driving_test';
 
   useEffect(() => {
     if (open) {
@@ -71,6 +111,22 @@ export function AddLessonSheet({
       }
     }
   }, [open, defaultDate]);
+
+  // Fetch test centres when driving test is selected
+  useEffect(() => {
+    if (isDrivingTest && instructorId) {
+      fetchTestCentres();
+    }
+  }, [isDrivingTest, instructorId]);
+
+  // Auto-set duration to 1hr when switching to driving test
+  useEffect(() => {
+    if (isDrivingTest) {
+      setLessonDuration('1');
+      setIsRecurring(false);
+      setPlannedCompetencies([]);
+    }
+  }, [isDrivingTest]);
 
   const fetchPupils = async () => {
     setLoadingPupils(true);
@@ -86,6 +142,21 @@ export function AddLessonSheet({
     setLoadingPupils(false);
   };
 
+  const fetchTestCentres = async () => {
+    // Fetch from instructor_test_centres joined with test_centres
+    const { data: instructorCentres } = await supabase
+      .from('instructor_test_centres')
+      .select('test_centre_id, test_centres ( id, name, address )')
+      .eq('instructor_id', instructorId);
+
+    if (instructorCentres) {
+      const centres = instructorCentres
+        .map((ic: any) => ic.test_centres)
+        .filter(Boolean) as TestCentre[];
+      setTestCentres(centres);
+    }
+  };
+
   const resetForm = () => {
     setSelectedPupil('');
     setPickupAddress('');
@@ -99,6 +170,9 @@ export function AddLessonSheet({
     setIsRecurring(false);
     setRecurrenceWeeks('4');
     setPlannedCompetencies([]);
+    setLessonType('standard');
+    setSelectedTestCentre('');
+    setSelectedExaminer('');
   };
 
   // Auto-fill pickup address when selecting an existing pupil
@@ -112,6 +186,14 @@ export function AddLessonSheet({
     }
   }, [selectedPupil, pupils]);
 
+  const buildDrivingTestNotes = () => {
+    if (!isDrivingTest) return null;
+    const parts: string[] = [];
+    const centre = testCentres.find(c => c.id === selectedTestCentre);
+    if (centre) parts.push(`Test Centre: ${centre.name}`);
+    return parts.length > 0 ? parts.join(' | ') : null;
+  };
+
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) {
       toast.error('Please select a pupil and date');
@@ -124,6 +206,7 @@ export function AddLessonSheet({
       const durationMinutes = durationHours * 60;
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const lessons = [];
+      const testNotes = buildDrivingTestNotes();
 
       const parentLesson = {
         instructor_id: instructorId,
@@ -134,8 +217,11 @@ export function AddLessonSheet({
         pickup_location: pickupAddress || null,
         status: 'scheduled',
         payment_status: 'not_paid',
+        lesson_type: lessonType,
         recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
         planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
+        notes: testNotes,
+        ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
       };
       lessons.push(parentLesson);
 
@@ -151,8 +237,10 @@ export function AddLessonSheet({
             pickup_location: pickupAddress || null,
             status: 'scheduled',
             payment_status: 'not_paid',
+            lesson_type: lessonType,
             recurrence_rule: `WEEKLY;COUNT=${weeks}`,
             planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
+            notes: testNotes,
           });
         }
       }
@@ -163,9 +251,11 @@ export function AddLessonSheet({
 
       if (error) throw error;
 
-      const message = isRecurring 
-        ? `${weeks} lessons scheduled (weekly recurring)` 
-        : 'Lesson scheduled';
+      const message = isDrivingTest 
+        ? 'Driving test scheduled! Pupil will be reminded.'
+        : isRecurring 
+          ? `${weeks} lessons scheduled (weekly recurring)` 
+          : 'Lesson scheduled';
       toast.success(message);
       resetForm();
       onOpenChange(false);
@@ -205,6 +295,7 @@ export function AddLessonSheet({
       const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const lessons = [];
+      const testNotes = buildDrivingTestNotes();
 
       for (let i = 0; i < weeks; i++) {
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
@@ -217,8 +308,10 @@ export function AddLessonSheet({
           pickup_location: addr || null,
           status: 'scheduled',
           payment_status: 'not_paid',
+          lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
+          notes: testNotes,
         });
       }
 
@@ -228,9 +321,11 @@ export function AddLessonSheet({
 
       if (lessonError) throw lessonError;
 
-      const message = isRecurring 
-        ? `Pupil created and ${weeks} lessons scheduled (weekly)` 
-        : 'Pupil created and lesson scheduled';
+      const message = isDrivingTest
+        ? 'Pupil created and driving test scheduled!'
+        : isRecurring 
+          ? `Pupil created and ${weeks} lessons scheduled (weekly)` 
+          : 'Pupil created and lesson scheduled';
       toast.success(message);
       resetForm();
       onOpenChange(false);
@@ -249,14 +344,139 @@ export function AddLessonSheet({
     return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
   });
 
+  // Shared driving test fields component
+  const DrivingTestFields = () => (
+    <>
+      {/* Test Centre */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1.5">
+          <MapPin className="h-3.5 w-3.5" />
+          Test Centre
+        </Label>
+        <Select value={selectedTestCentre} onValueChange={setSelectedTestCentre}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select test centre..." />
+          </SelectTrigger>
+          <SelectContent>
+            {testCentres.length === 0 ? (
+              <div className="p-2 text-center text-sm text-muted-foreground">
+                No test centres saved yet
+              </div>
+            ) : (
+              testCentres.map((centre) => (
+                <SelectItem key={centre.id} value={centre.id}>
+                  {centre.name}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Examiner */}
+      <div className="space-y-2">
+        <Label>Examiner (optional)</Label>
+        <ExaminerSelector
+          value={selectedExaminer}
+          onChange={setSelectedExaminer}
+          instructorId={instructorId}
+        />
+      </div>
+
+      {/* Test Day Checklist */}
+      <Collapsible open={checklistOpen} onOpenChange={setChecklistOpen}>
+        <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg border bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-sm font-medium text-orange-800 dark:text-orange-300">
+          <CheckSquare className="h-4 w-4" />
+          Test Day Checklist
+          <span className="ml-auto text-xs text-orange-600 dark:text-orange-400">
+            {checklistOpen ? '▾' : '▸'}
+          </span>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+            {TEST_DAY_CHECKLIST.map((item, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <Checkbox id={`checklist-${i}`} className="mt-0.5" />
+                <label htmlFor={`checklist-${i}`} className="text-sm text-muted-foreground cursor-pointer leading-tight">
+                  {item}
+                </label>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground/70 mt-2 italic">
+              This checklist is sent to the pupil as part of their reminder notification.
+            </p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </>
+  );
+
+  // Shared lesson scheduling fields
+  const LessonScheduleFields = (prefix: string) => (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Start Time</Label>
+          <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              {timeSlots.map((time) => (
+                <SelectItem key={time} value={time}>
+                  {time}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Duration</Label>
+          <Select value={lessonDuration} onValueChange={setLessonDuration}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 hour</SelectItem>
+              <SelectItem value="1.5">1.5 hours</SelectItem>
+              <SelectItem value="2">2 hours</SelectItem>
+              <SelectItem value="2.5">2.5 hours</SelectItem>
+              <SelectItem value="3">3 hours</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
         <SheetHeader className="pb-4">
-          <SheetTitle>Add Lesson</SheetTitle>
+          <SheetTitle>{isDrivingTest ? '🚗 Schedule Driving Test' : 'Add Lesson'}</SheetTitle>
         </SheetHeader>
 
         <div className="overflow-y-auto max-h-[calc(85vh-140px)] pb-4">
+          {/* Lesson Type Selector */}
+          <div className="space-y-2 mb-4">
+            <Label className="flex items-center gap-1.5">
+              <Car className="h-3.5 w-3.5" />
+              Lesson Type
+            </Label>
+            <Select value={lessonType} onValueChange={setLessonType}>
+              <SelectTrigger className={cn(isDrivingTest && "border-orange-300 dark:border-orange-500/40 bg-orange-50/50 dark:bg-orange-500/5")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LESSON_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Tabs value={tab} onValueChange={(v) => setTab(v as 'existing' | 'new')} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="existing" className="gap-1.5">
@@ -321,38 +541,7 @@ export function AddLessonSheet({
                 </Popover>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Start Time</Label>
-                  <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Duration</Label>
-                  <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hour</SelectItem>
-                      <SelectItem value="1.5">1.5 hours</SelectItem>
-                      <SelectItem value="2">2 hours</SelectItem>
-                      <SelectItem value="2.5">2.5 hours</SelectItem>
-                      <SelectItem value="3">3 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              {LessonScheduleFields('existing')}
 
               <div className="space-y-2">
                 <Label>Pickup Address</Label>
@@ -364,52 +553,59 @@ export function AddLessonSheet({
                 />
               </div>
 
-              {/* Recurring Lesson Options */}
-              <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Repeat className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="recurring-existing" className="text-sm cursor-pointer">
-                      Weekly recurring lesson
-                    </Label>
+              {/* Driving Test specific fields */}
+              {isDrivingTest && <DrivingTestFields />}
+
+              {/* Recurring Lesson Options - hidden for driving test */}
+              {!isDrivingTest && (
+                <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="h-4 w-4 text-muted-foreground" />
+                      <Label htmlFor="recurring-existing" className="text-sm cursor-pointer">
+                        Weekly recurring lesson
+                      </Label>
+                    </div>
+                    <Switch
+                      id="recurring-existing"
+                      checked={isRecurring}
+                      onCheckedChange={setIsRecurring}
+                    />
                   </div>
-                  <Switch
-                    id="recurring-existing"
-                    checked={isRecurring}
-                    onCheckedChange={setIsRecurring}
+                  {isRecurring && (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Number of weeks</Label>
+                      <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2">2 weeks</SelectItem>
+                          <SelectItem value="4">4 weeks</SelectItem>
+                          <SelectItem value="6">6 weeks</SelectItem>
+                          <SelectItem value="8">8 weeks</SelectItem>
+                          <SelectItem value="10">10 weeks</SelectItem>
+                          <SelectItem value="12">12 weeks</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Planned Competencies - hidden for driving test */}
+              {!isDrivingTest && (
+                <div className="space-y-2">
+                  <Label>Skills to Practice (optional)</Label>
+                  <CompetencyPicker
+                    selected={plannedCompetencies}
+                    onChange={setPlannedCompetencies}
                   />
                 </div>
-                {isRecurring && (
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Number of weeks</Label>
-                    <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2">2 weeks</SelectItem>
-                        <SelectItem value="4">4 weeks</SelectItem>
-                        <SelectItem value="6">6 weeks</SelectItem>
-                        <SelectItem value="8">8 weeks</SelectItem>
-                        <SelectItem value="10">10 weeks</SelectItem>
-                        <SelectItem value="12">12 weeks</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Planned Competencies */}
-              <div className="space-y-2">
-                <Label>Skills to Practice (optional)</Label>
-                <CompetencyPicker
-                  selected={plannedCompetencies}
-                  onChange={setPlannedCompetencies}
-                />
-              </div>
+              )}
             </TabsContent>
 
             {/* New Pupil Tab */}
@@ -464,85 +660,61 @@ export function AddLessonSheet({
                 </Popover>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Start Time</Label>
-                  <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Duration</Label>
-                  <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hour</SelectItem>
-                      <SelectItem value="1.5">1.5 hours</SelectItem>
-                      <SelectItem value="2">2 hours</SelectItem>
-                      <SelectItem value="2.5">2.5 hours</SelectItem>
-                      <SelectItem value="3">3 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              {LessonScheduleFields('new')}
 
-              {/* Recurring Lesson Options */}
-              <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Repeat className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="recurring-new" className="text-sm cursor-pointer">
-                      Weekly recurring lesson
-                    </Label>
+              {/* Driving Test specific fields */}
+              {isDrivingTest && <DrivingTestFields />}
+
+              {/* Recurring Lesson Options - hidden for driving test */}
+              {!isDrivingTest && (
+                <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="h-4 w-4 text-muted-foreground" />
+                      <Label htmlFor="recurring-new" className="text-sm cursor-pointer">
+                        Weekly recurring lesson
+                      </Label>
+                    </div>
+                    <Switch
+                      id="recurring-new"
+                      checked={isRecurring}
+                      onCheckedChange={setIsRecurring}
+                    />
                   </div>
-                  <Switch
-                    id="recurring-new"
-                    checked={isRecurring}
-                    onCheckedChange={setIsRecurring}
+                  {isRecurring && (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Number of weeks</Label>
+                      <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2">2 weeks</SelectItem>
+                          <SelectItem value="4">4 weeks</SelectItem>
+                          <SelectItem value="6">6 weeks</SelectItem>
+                          <SelectItem value="8">8 weeks</SelectItem>
+                          <SelectItem value="10">10 weeks</SelectItem>
+                          <SelectItem value="12">12 weeks</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Planned Competencies - hidden for driving test */}
+              {!isDrivingTest && (
+                <div className="space-y-2">
+                  <Label>Skills to Practice (optional)</Label>
+                  <CompetencyPicker
+                    selected={plannedCompetencies}
+                    onChange={setPlannedCompetencies}
                   />
                 </div>
-                {isRecurring && (
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Number of weeks</Label>
-                    <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2">2 weeks</SelectItem>
-                        <SelectItem value="4">4 weeks</SelectItem>
-                        <SelectItem value="6">6 weeks</SelectItem>
-                        <SelectItem value="8">8 weeks</SelectItem>
-                        <SelectItem value="10">10 weeks</SelectItem>
-                        <SelectItem value="12">12 weeks</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Planned Competencies */}
-              <div className="space-y-2">
-                <Label>Skills to Practice (optional)</Label>
-                <CompetencyPicker
-                  selected={plannedCompetencies}
-                  onChange={setPlannedCompetencies}
-                />
-              </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -559,13 +731,15 @@ export function AddLessonSheet({
             <Button 
               onClick={tab === 'existing' ? handleAddLessonExisting : handleAddLessonNew}
               disabled={loading}
-              className="flex-1"
+              className={cn("flex-1", isDrivingTest && "bg-orange-600 hover:bg-orange-700")}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Adding...
                 </>
+              ) : isDrivingTest ? (
+                'Schedule Test'
               ) : (
                 'Add Lesson'
               )}

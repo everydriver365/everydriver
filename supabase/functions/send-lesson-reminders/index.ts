@@ -39,7 +39,7 @@ serve(async (req) => {
     const { data: lessons, error: lessonsError } = await supabase
       .from("scheduled_lessons")
       .select(`
-        id, lesson_date, start_time, duration_minutes,
+        id, lesson_date, start_time, duration_minutes, lesson_type, notes,
         pickup_location, pickup_postcode, pupil_id, instructor_id,
         pupils ( id, name, email, phone ),
         instructors ( id, name, phone, email )
@@ -101,27 +101,45 @@ serve(async (req) => {
       const displayTime = formatTime(startTime);
       const durationHours = (lesson.duration_minutes || 60) / 60;
 
+      const isDrivingTest = (lesson as any).lesson_type === 'driving_test';
+      const testCentreFromNotes = isDrivingTest && lesson.notes
+        ? lesson.notes.match(/Test Centre: (.+?)(\s*\||$)/)?.[1] || null
+        : null;
+
       // EMAIL reminder
       if (prefs.email_enabled && resendApiKey && pupil.email) {
         try {
+          const testChecklistHtml = isDrivingTest ? `
+              <h3 style="color: #ea580c;">🚨 Driving Test Day Checklist:</h3>
+              <ul style="color: #4b5563;">
+                <li><strong>Provisional driving licence</strong> (photocard) — you CANNOT take the test without it</li>
+                <li><strong>Theory test pass certificate</strong></li>
+                <li>Glasses or contact lenses (if needed for driving)</li>
+                <li>Be ready <strong>10 minutes before</strong> your test time</li>
+              </ul>
+              ${testCentreFromNotes ? `<p style="margin: 8px 0;"><strong>📍 Test Centre:</strong> ${testCentreFromNotes}</p>` : ''}
+          ` : '';
+
           const emailHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #3b82f6;">Lesson Reminder - Tomorrow! 🚗</h2>
+              <h2 style="color: ${isDrivingTest ? '#ea580c' : '#3b82f6'};">${isDrivingTest ? 'Driving Test Tomorrow! 🚗🎯' : 'Lesson Reminder - Tomorrow! 🚗'}</h2>
               <p>Hi ${pupil.name},</p>
-              <p>This is a friendly reminder that you have a driving lesson scheduled for <strong>tomorrow</strong>:</p>
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+              <p>This is a friendly reminder that you have ${isDrivingTest ? 'your <strong>driving test</strong>' : 'a driving lesson'} scheduled for <strong>tomorrow</strong>:</p>
+              <div style="background: ${isDrivingTest ? '#fff7ed' : '#f3f4f6'}; padding: 20px; border-radius: 12px; margin: 20px 0; ${isDrivingTest ? 'border: 2px solid #fed7aa;' : ''}">
                 <p style="margin: 0 0 8px 0;"><strong>📅 Date:</strong> ${formattedDate}</p>
                 <p style="margin: 0 0 8px 0;"><strong>🕐 Time:</strong> ${displayTime}</p>
                 <p style="margin: 0 0 8px 0;"><strong>⏱️ Duration:</strong> ${durationHours} hour${durationHours !== 1 ? 's' : ''}</p>
+                ${testCentreFromNotes ? `<p style="margin: 0 0 8px 0;"><strong>📍 Test Centre:</strong> ${testCentreFromNotes}</p>` : ''}
                 ${lesson.pickup_location ? `<p style="margin: 0;"><strong>📍 Pickup:</strong> ${lesson.pickup_location}${lesson.pickup_postcode ? `, ${lesson.pickup_postcode}` : ''}</p>` : ''}
               </div>
-              <h3 style="color: #374151;">Before your lesson:</h3>
+              ${testChecklistHtml}
+              ${!isDrivingTest ? `<h3 style="color: #374151;">Before your lesson:</h3>
               <ul style="color: #4b5563;">
                 <li>Bring your provisional driving licence</li>
                 <li>Wear comfortable shoes suitable for driving</li>
                 <li>Be ready at your pickup location 5 minutes early</li>
                 <li>Bring glasses/contact lenses if needed</li>
-              </ul>
+              </ul>` : ''}
               <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
                 Need to reschedule? Please contact ${instructor?.name || 'your instructor'} as soon as possible.
               </p>
@@ -155,7 +173,9 @@ serve(async (req) => {
 
       // SMS reminder
       if (prefs.sms_enabled && twilioAccountSid && twilioAuthToken && twilioPhoneNumber && pupil.phone) {
-        const message = `Hi ${pupil.name}! 🚗 Reminder: Your driving lesson is tomorrow at ${displayTime} with ${instructor?.name || "your instructor"}. Pickup: ${lesson.pickup_location || "As arranged"}. Duration: ${lesson.duration_minutes} mins. See you then!`;
+        const message = isDrivingTest 
+          ? `Hi ${pupil.name}! 🚗🎯 DRIVING TEST TOMORROW at ${displayTime}${testCentreFromNotes ? ` at ${testCentreFromNotes}` : ''}. Don't forget: ✅ Provisional licence ✅ Theory cert ✅ Glasses if needed. Be ready 10 mins early. Good luck! 🤞`
+          : `Hi ${pupil.name}! 🚗 Reminder: Your driving lesson is tomorrow at ${displayTime} with ${instructor?.name || "your instructor"}. Pickup: ${lesson.pickup_location || "As arranged"}. Duration: ${lesson.duration_minutes} mins. See you then!`;
         try {
           const response = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
@@ -221,8 +241,10 @@ serve(async (req) => {
             const result = await sendPush(
               { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
               {
-                title: "Lesson Tomorrow! 🚗",
-                body: `Your driving lesson is at ${displayTime} with ${instructor?.name || 'your instructor'}`,
+                title: isDrivingTest ? "Driving Test Tomorrow! 🚗🎯" : "Lesson Tomorrow! 🚗",
+                body: isDrivingTest 
+                  ? `Your driving test is at ${displayTime}${testCentreFromNotes ? ` at ${testCentreFromNotes}` : ''}. Don't forget your provisional licence & theory cert!`
+                  : `Your driving lesson is at ${displayTime} with ${instructor?.name || 'your instructor'}`,
                 icon: "/icon-192x192.png",
                 badge: "/icon-192x192.png",
               }
