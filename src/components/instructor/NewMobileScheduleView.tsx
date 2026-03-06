@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday, parseISO } from "date-fns";
-import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling, CalendarDays } from "lucide-react";
+import { Calendar, Loader2, Plus, Clock, MapPin, PoundSterling, CalendarDays, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -313,7 +313,21 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
                     onDelete={handleDeleteLesson}
                     renderCustomCollapsed={
-                      <div className={`bg-card rounded-xl border border-border ${colors.border} p-4 space-y-2`}>
+                      <div className={`rounded-xl border p-4 space-y-2 ${
+                        lesson.lesson_type === 'driving_test' 
+                          ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-300 dark:border-orange-500/30 border-l-4 border-l-orange-500 ring-1 ring-orange-200 dark:ring-orange-500/20' 
+                          : `bg-card border-border ${colors.border}`
+                      }`}>
+                        {/* Driving Test Banner */}
+                        {lesson.lesson_type === 'driving_test' && (
+                          <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg px-3 py-1.5 -mx-1 -mt-1 mb-1">
+                            <Car className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            <span className="text-sm font-bold text-orange-700 dark:text-orange-300">DRIVING TEST</span>
+                            <span className="ml-auto text-xs font-semibold text-orange-600 dark:text-orange-400">
+                              {formatTime(lesson.start_time)}
+                            </span>
+                          </div>
+                        )}
                         {/* Header: Avatar + Name + Badge */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -326,9 +340,11 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                           </div>
                           <div className="flex items-center gap-1.5">
                             <LessonCheckInBadge status={(lesson as any).check_in_status} />
-                            <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
-                              {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
-                            </Badge>
+                            {lesson.lesson_type !== 'driving_test' && (
+                              <Badge className={`border-0 text-xs px-2.5 py-0.5 font-medium ${colors.badge}`}>
+                                {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                         {/* Time */}
@@ -336,6 +352,13 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                           <Clock className="h-3.5 w-3.5" />
                           <span>{formatTime(lesson.start_time)} - {getEndTime(lesson.start_time, lesson.duration_minutes)}</span>
                         </div>
+                        {/* Test Centre from notes */}
+                        {lesson.lesson_type === 'driving_test' && lesson.notes && (
+                          <div className="flex items-center gap-2 text-sm font-medium text-orange-700 dark:text-orange-400">
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span className="truncate">{lesson.notes.replace('Test Centre: ', '')}</span>
+                          </div>
+                        )}
                         {/* Location */}
                         {pickupAddress !== "No address" && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
