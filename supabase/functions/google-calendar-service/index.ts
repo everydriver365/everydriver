@@ -549,8 +549,9 @@ Deno.serve(async (req) => {
         const jwt = await generateJWT(serviceEmail, privateKey);
         const accessToken = await getAccessToken(jwt);
 
-        // Fetch actual events (with stable IDs) for the next 365 days using events.list with pagination
+        // Fetch actual events (with stable IDs) for the past 30 days + next 365 days using events.list with pagination
         const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
         
         const allEvents: Array<{ id: string; summary: string; start: string; end: string }> = [];
@@ -558,7 +559,7 @@ Deno.serve(async (req) => {
 
         do {
           const params = new URLSearchParams({
-            timeMin: now.toISOString(),
+            timeMin: thirtyDaysAgo.toISOString(),
             timeMax: oneYearLater.toISOString(),
             singleEvents: "true",
             orderBy: "startTime",
@@ -802,13 +803,14 @@ Deno.serve(async (req) => {
           const accessToken = await getAccessToken(jwt);
 
           const now = new Date();
+          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
           const allEvents: Array<{ id: string; summary: string; start: string; end: string }> = [];
           let pageToken: string | undefined;
 
           do {
             const params = new URLSearchParams({
-              timeMin: now.toISOString(),
+              timeMin: thirtyDaysAgo.toISOString(),
               timeMax: oneYearLater.toISOString(),
               singleEvents: "true",
               orderBy: "startTime",
