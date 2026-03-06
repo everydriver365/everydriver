@@ -26,34 +26,54 @@ function stringToUint8Array(str: string): Uint8Array {
 }
 
 // Import PEM private key for signing
-async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
-  // Handle various formats of the private key
-  // Replace literal \n with actual newlines (from JSON/env string escaping)
-  let normalizedKey = pemKey
+async function importPrivateKey(rawPrivateKey: string): Promise<CryptoKey> {
+  let keyInput = rawPrivateKey?.trim() ?? "";
+
+  // If a full service-account JSON was pasted, extract private_key from it
+  if (keyInput.startsWith("{") && keyInput.includes("private_key")) {
+    try {
+      const parsed = JSON.parse(keyInput) as { private_key?: string };
+      if (parsed.private_key) keyInput = parsed.private_key;
+    } catch {
+      // keep original input and continue normalization
+    }
+  }
+
+  // Normalize common env/secret encodings
+  const normalizedKey = keyInput
     .replace(/\\n/g, "\n")
     .replace(/\\r/g, "")
-    .replace(/"/g, "")  // Remove surrounding quotes if present
+    .replace(/^"|"$/g, "")
     .trim();
-  
-  // Remove PEM headers, footers, and all whitespace
-  const pemContents = normalizedKey
+
+  // Strip PEM envelope and keep only key body chars
+  let pemContents = normalizedKey
     .replace(/-----BEGIN PRIVATE KEY-----/g, "")
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/-----BEGIN RSA PRIVATE KEY-----/g, "")
     .replace(/-----END RSA PRIVATE KEY-----/g, "")
     .replace(/\r?\n/g, "")
     .replace(/\s/g, "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .replace(/[^A-Za-z0-9+/=]/g, "")
     .trim();
 
-  console.log("PEM contents length:", pemContents.length);
+  if (!pemContents) {
+    throw new Error("Google private key is empty or invalid after normalization");
+  }
 
-  // Add base64 padding if missing
+  // Normalize padding
+  pemContents = pemContents.replace(/=+$/g, "");
   const paddedContents = pemContents + "=".repeat((4 - (pemContents.length % 4)) % 4);
 
-  // Decode base64 to binary
-  const binaryDer = Uint8Array.from(atob(paddedContents), (c) => c.charCodeAt(0));
-
-  console.log("Binary DER length:", binaryDer.length);
+  let binaryDer: Uint8Array;
+  try {
+    binaryDer = Uint8Array.from(atob(paddedContents), (c) => c.charCodeAt(0));
+  } catch (error) {
+    console.error("Private key decode failed. Length:", paddedContents.length);
+    throw new Error(`Invalid private key encoding: ${(error as Error).message}`);
+  }
 
   return await crypto.subtle.importKey(
     "pkcs8",
