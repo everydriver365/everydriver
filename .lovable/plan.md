@@ -1,38 +1,48 @@
 
 
-## Analysis: Are Available Slots Based on Live Google Calendar Data?
+## Add "Driving Test" as a Lesson Type in AddLessonSheet
 
-### Current State
+### What Changes
 
-**Yes for public booking, No for two other places.**
+**1. Add lesson type selector to `AddLessonSheet.tsx`**
+- Add a "Lesson Type" dropdown at the top of both the Existing and New Pupil tabs, defaulting to "Standard"
+- Include all existing types plus new **"Driving Test"** option
+- When "Driving Test" is selected:
+  - Show test centre selector (fetched from `instructor_test_centres` + `test_centres`, same pattern as `DrivingTestStartDialog`)
+  - Show examiner selector (fetched from `examiners` table)
+  - Auto-set duration to 1 hour (typical test slot)
+  - Hide recurring lesson option (tests aren't recurring)
+  - Hide competency picker (not relevant for tests)
+- Store the `lesson_type` as `"driving_test"` in the `scheduled_lessons` insert
+- Store test centre and examiner info in the `notes` field as structured text (e.g. "Test Centre: Blyth | Examiner: John Smith") — avoids needing new columns
 
-| Component | Checks Google Calendar? | Status |
-|-----------|------------------------|--------|
-| `LessonScheduler.tsx` (public booking page) | Yes — queries `instructor_calendar_events` | Correct |
-| `useRealGapSlots.ts` (instructor gap-fill dashboard) | Yes — queries `instructor_calendar_events` | Correct |
-| `PupilPortalGaps.tsx` (pupil portal "Book a Slot") | **No** — only checks working hours + scheduled lessons | **Missing** |
-| `StepBookNext.tsx` (end-lesson "Book Next") | **No** — only checks scheduled lessons | **Missing** |
+**2. Add "Driving Test" to display labels and colors**
+- Update `courseTypeLabels` in `NewMobileScheduleView.tsx` (and other schedule views that define it): add `driving_test: "Driving Test"`
+- Add color entry: red/orange theme to make it visually prominent on the schedule
 
-The Google Calendar data is stored in the `instructor_calendar_events` table and refreshed every 15 minutes by the cron job. So the data is "live" within a 15-minute window. The public booking page correctly cross-references this table.
+**3. Show test day checklist when creating a driving test lesson**
+- After selecting "Driving Test" type, show an expandable "Test Day Checklist" section in the form with key items:
+  - Provisional licence
+  - Theory test certificate
+  - Glasses/contact lenses (if needed)
+  - Car insurance & MOT documents
+  - Correct mirrors and L plates fitted
+- This is a visual reminder for the instructor, not persisted
 
-However, two components skip Google Calendar data entirely, which means they could suggest/book slots that conflict with Google Calendar events (e.g., speed awareness courses, personal appointments).
+**4. Send a reminder notification to the pupil**
+- When a driving test lesson is saved, trigger a push notification and/or SMS to the pupil with a test day reminder message including:
+  - Test date, time, and centre name
+  - Checklist items to bring
+- Leverage the existing `send-lesson-reminders` edge function pattern — the daily cron already sends reminders for next-day lessons. Add logic to include extra test checklist content when `lesson_type = 'driving_test'`
 
-### Plan
+### Files to Modify
+- `src/components/instructor/AddLessonSheet.tsx` — Add lesson type selector, conditional driving test fields (test centre, examiner, checklist)
+- `src/components/instructor/NewMobileScheduleView.tsx` — Add `driving_test` to `courseTypeLabels` and `lessonTypeColors`
+- `src/components/instructor/ExpandableLessonCard.tsx` — Add `driving_test` label/color if it has its own map
+- `src/components/instructor/PupilCardStack.tsx` — Add `driving_test` to label/color maps
+- `supabase/functions/send-lesson-reminders/index.ts` — Enhance reminder content for driving test lessons with checklist items
 
-1. **Fix `PupilPortalGaps.tsx`** — Add a query to `instructor_calendar_events` for the 14-day window, then filter out slots that overlap with busy calendar events (ignoring all-day events per existing convention)
-
-2. **Fix `StepBookNext.tsx`** — Add a query to `instructor_calendar_events` for the 7-day lookahead window, then exclude candidate times that conflict with busy calendar events (ignoring all-day events)
-
-3. Both fixes follow the same pattern already used in `useRealGapSlots.ts` and `LessonScheduler.tsx`: fetch events, parse start/end times, check overlap with candidate slots
-
-### Technical Detail
-
-For both components, after fetching `scheduled_lessons`, also fetch:
-```sql
-SELECT start_time, end_time FROM instructor_calendar_events
-WHERE instructor_id = ? AND is_busy = true
-  AND start_time <= end_of_range AND end_time >= start_of_range
-```
-
-Then filter out all-day events (span >= 24 hours) and check time overlaps against candidate slots, same as the existing pattern.
+### No Database Migration Needed
+- `lesson_type` is already a free-text `string` column — we just store `"driving_test"`
+- Test centre/examiner details stored in existing `notes` field
 
