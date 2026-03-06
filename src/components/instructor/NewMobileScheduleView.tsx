@@ -55,6 +55,7 @@ const courseTypeLabels: Record<string, string> = {
   intensive: "Intensive",
   first_lesson: "First Lesson",
   pass_plus: "Pass Plus",
+  driving_test: "Driving Test",
 };
 
 const lessonTypeColors: Record<string, { border: string; badge: string }> = {
@@ -66,6 +67,7 @@ const lessonTypeColors: Record<string, { border: string; badge: string }> = {
   refresher: { border: "border-l-cyan-400", badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400" },
   first_lesson: { border: "border-l-green-400", badge: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400" },
   pass_plus: { border: "border-l-indigo-400", badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400" },
+  driving_test: { border: "border-l-orange-500", badge: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
 };
 
 interface ExternalEvent {

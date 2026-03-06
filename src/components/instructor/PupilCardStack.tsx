@@ -159,6 +159,7 @@ const courseTypeLabels: Record<string, string> = {
   "pass-plus": "Pass Plus",
   motorway: "Motorway",
   other: "Custom",
+  driving_test: "Driving Test",
 };
 
 export function PupilCardStack({
@@ -934,6 +935,7 @@ export function PupilCardStack({
                             'motorway': 'border-l-emerald-500',
                             'mock_test': 'border-l-rose-500',
                             'refresher': 'border-l-cyan-500',
+                            'driving_test': 'border-l-orange-500',
                           };
                           const lessonTypeBadgeColors: Record<string, string> = {
                             'test_prep': 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
@@ -942,6 +944,7 @@ export function PupilCardStack({
                             'motorway': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
                             'mock_test': 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400',
                             'refresher': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
+                            'driving_test': 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
                           };
                           const borderColor = lessonTypeColors[lesson.lesson_type] || 'border-l-border';
                           const badgeColor = lessonTypeBadgeColors[lesson.lesson_type] || 'bg-muted text-muted-foreground';
