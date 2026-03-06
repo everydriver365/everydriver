@@ -122,6 +122,7 @@ const InstructorAllFeatures = lazy(() => import("./pages/instructor-app/Instruct
 const DrivingSchools = lazy(() => import("./pages/instructor-app/DrivingSchools"));
 const InstructorPayments = lazy(() => import("./pages/instructor-app/InstructorPayments"));
 const InstructorMarketing = lazy(() => import("./pages/instructor-app/InstructorMarketing"));
+const InstructorCompare = lazy(() => import("./pages/instructor-app/InstructorCompare"));
 const InstructorOnboarding = lazy(() => import("./pages/instructor-app/onboarding/InstructorOnboarding"));
 const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/OnboardingPreview"));
 const DemoPupilProfile = lazy(() => import("./pages/DemoPupilProfile"));
