@@ -172,6 +172,9 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
         })}
       </div>
 
+      {/* Morning Briefing — prominent position above activity tiles */}
+      <MorningBriefingCard instructorId={instructorId} />
+
       {/* Activity Tiles (same as dashboard) */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
@@ -182,7 +185,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
       {/* Content sections — identical to dashboard */}
       <div className="px-4">
-        <MorningBriefingCard instructorId={instructorId} />
         <EndOfDaySummary instructorId={instructorId} />
         <SmartNudgesCard instructorId={instructorId} />
 
