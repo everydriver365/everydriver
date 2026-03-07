@@ -17,18 +17,22 @@ function resolveDate(dateStr: string | undefined): string {
     return d.toISOString().split("T")[0];
   }
 
+  // Handle "next monday" etc
+  const nextMatch = lower.match(/^next\s+(\w+)$/);
+  const dayName = nextMatch ? nextMatch[1] : lower;
+
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const dayIndex = days.indexOf(lower);
+  const dayIndex = days.indexOf(dayName);
   if (dayIndex !== -1) {
     const current = now.getDay();
     let diff = dayIndex - current;
     if (diff <= 0) diff += 7;
+    if (nextMatch && diff < 7) diff += 7; // "next" means the week after
     const d = new Date(now);
     d.setDate(d.getDate() + diff);
     return d.toISOString().split("T")[0];
   }
 
-  // Try parsing as date string
   const parsed = new Date(dateStr!);
   if (!isNaN(parsed.getTime())) return parsed.toISOString().split("T")[0];
 
@@ -41,7 +45,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes } = await req.json();
+    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes, phone, todo_text, expense_category } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -217,6 +221,7 @@ serve(async (req) => {
       case "navigate": {
         const pageMap: Record<string, string> = {
           schedule: "/instructor/schedule",
+          diary: "/instructor/diary",
           pupils: "/instructor/pupils",
           messages: "/instructor/messages",
           payments: "/instructor/pay",
@@ -225,6 +230,35 @@ serve(async (req) => {
           gaps: "/instructor/gaps",
           tracking: "/instructor/tracking",
           fuel: "/instructor/fuel",
+          expenses: "/instructor/expenses",
+          income: "/instructor/income",
+          tax: "/instructor/tax",
+          accounts: "/instructor/accounts",
+          live: "/instructor/live",
+          satnav: "/instructor/satnav",
+          "find-my-car": "/instructor/find-my-car",
+          mileage: "/instructor/mileage",
+          "vehicle-health": "/instructor/vehicle-health",
+          health: "/instructor/health",
+          todos: "/instructor/todos",
+          notes: "/instructor/notes",
+          reviews: "/instructor/reviews",
+          referrals: "/instructor/referrals",
+          dashcam: "/instructor/dashcam",
+          routes: "/instructor/routes",
+          "test-results": "/instructor/test-results",
+          notifications: "/instructor/notifications",
+          website: "/instructor/website",
+          resources: "/instructor/resources",
+          "standards-check": "/instructor/standards-check",
+          cpd: "/instructor/cpd",
+          availability: "/instructor/availability",
+          "fleet-dashboard": "/instructor/fleet-dashboard",
+          "nearby-friends": "/instructor/nearby-friends",
+          doodlepad: "/instructor/doodlepad",
+          "document-templates": "/instructor/document-templates",
+          plans: "/instructor/plans",
+          "test-requests": "/instructor/test-requests",
         };
         const route = pageMap[page || ""] || null;
         if (route) {
@@ -423,7 +457,6 @@ serve(async (req) => {
         const now = new Date();
         const todayStr = now.toISOString().split("T")[0];
 
-        // Find today's or most recent lesson for this pupil
         const { data: lessons } = await supabase
           .from("scheduled_lessons")
           .select("id, lesson_date, start_time, notes")
@@ -563,7 +596,6 @@ serve(async (req) => {
         const firstName = pupil.name.split(" ")[0];
         const lateMsg = `Hi ${firstName}, I'm running about ${mins} minutes late. Apologies for the delay, I'll be with you shortly!`;
 
-        // Save to conversations
         let { data: convo } = await supabase
           .from("conversations")
           .select("id")
@@ -590,7 +622,6 @@ serve(async (req) => {
           });
         }
 
-        // Try SMS
         if (pupil.phone) {
           try {
             const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -703,7 +734,6 @@ serve(async (req) => {
       }
 
       case "call_office": {
-        // Get instructor name for the callback request
         const { data: instructor } = await supabase
           .from("instructors")
           .select("name")
@@ -712,7 +742,6 @@ serve(async (req) => {
 
         const instrName = instructor?.name || "An instructor";
 
-        // Log a callback request via admin activity log
         await supabase.from("admin_activity_log").insert({
           action_type: "callback_request",
           description: `${instrName} has requested a callback from the office (via voice assistant).`,
@@ -725,8 +754,295 @@ serve(async (req) => {
         break;
       }
 
+      // ========== NEW COMMANDS ==========
+
+      case "add_pupil": {
+        if (!pupil_name) {
+          responseText = "I need a name for the new pupil. Try saying 'Add a pupil called Emma Smith'.";
+          break;
+        }
+
+        const insertData: any = {
+          instructor_id,
+          name: pupil_name,
+          status: "active",
+        };
+        if (phone) insertData.phone = phone;
+
+        const { error } = await supabase.from("pupils").insert(insertData);
+
+        if (error) {
+          console.error("add_pupil error:", error);
+          responseText = `Sorry, I couldn't add ${pupil_name}. There was an error.`;
+        } else {
+          responseText = `Added ${pupil_name} as a new pupil.${phone ? ` Phone: ${phone}.` : ""}`;
+        }
+        break;
+      }
+
+      case "pupil_contact": {
+        if (!pupil_name) {
+          responseText = "Which pupil's contact details do you need?";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("name, phone, email")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+        } else {
+          const parts: string[] = [];
+          if (pupil.phone) parts.push(`phone: ${pupil.phone}`);
+          if (pupil.email) parts.push(`email: ${pupil.email}`);
+          if (parts.length > 0) {
+            responseText = `${pupil.name}'s contact details: ${parts.join(", ")}.`;
+          } else {
+            responseText = `${pupil.name} doesn't have any contact details on file.`;
+          }
+        }
+        break;
+      }
+
+      case "monthly_earnings": {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+
+        const { data: payments } = await supabase
+          .from("payment_history")
+          .select("amount")
+          .eq("instructor_id", instructor_id)
+          .gte("payment_date", firstDay)
+          .lte("payment_date", lastDay);
+
+        const total = (payments || []).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+        const count = payments?.length || 0;
+
+        if (count > 0) {
+          responseText = `You've earned £${total.toFixed(2)} this month from ${count} payment${count > 1 ? 's' : ''}.`;
+        } else {
+          responseText = "No payments recorded this month yet.";
+        }
+        break;
+      }
+
+      case "lesson_count": {
+        if (!pupil_name) {
+          responseText = "Which pupil would you like to check?";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        const { count } = await supabase
+          .from("scheduled_lessons")
+          .select("id", { count: "exact", head: true })
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .neq("status", "cancelled");
+
+        responseText = `${pupil.name} has had ${count || 0} lesson${(count || 0) !== 1 ? 's' : ''}.`;
+        break;
+      }
+
+      case "add_todo": {
+        if (!todo_text) {
+          responseText = "What should the to-do say? Try 'Add a to-do: order new L plates'.";
+          break;
+        }
+
+        const { error } = await supabase.from("instructor_todos").insert({
+          instructor_id,
+          title: todo_text,
+          priority: 4,
+          project: "Inbox",
+        });
+
+        if (error) {
+          console.error("add_todo error:", error);
+          responseText = "Sorry, I couldn't add that to-do.";
+        } else {
+          responseText = `To-do added: "${todo_text}".`;
+        }
+        break;
+      }
+
+      case "next_test": {
+        const todayStr = new Date().toISOString().split("T")[0];
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("name, test_date")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .gte("test_date", todayStr)
+          .order("test_date", { ascending: true })
+          .limit(5);
+
+        if (pupils && pupils.length > 0) {
+          const list = pupils.map((p: any) => `${p.name} on ${p.test_date}`).join(", ");
+          responseText = `Upcoming tests: ${list}.`;
+        } else {
+          responseText = "No pupils have upcoming test dates set.";
+        }
+        break;
+      }
+
+      case "week_schedule": {
+        const now = new Date();
+        const day = now.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset);
+        const mondayStr = monday.toISOString().split("T")[0];
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const sundayStr = sunday.toISOString().split("T")[0];
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, start_time, duration_minutes")
+          .eq("instructor_id", instructor_id)
+          .neq("status", "cancelled")
+          .gte("lesson_date", mondayStr)
+          .lte("lesson_date", sundayStr)
+          .order("lesson_date", { ascending: true });
+
+        if (!lessons || lessons.length === 0) {
+          responseText = "You have no lessons this week.";
+          break;
+        }
+
+        const dayCounts: Record<string, number> = {};
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        for (const l of lessons) {
+          const d = new Date(l.lesson_date + "T12:00:00");
+          const name = dayNames[d.getDay()];
+          dayCounts[name] = (dayCounts[name] || 0) + 1;
+        }
+
+        const totalHours = lessons.reduce((s: number, l: any) => s + (l.duration_minutes || 60), 0) / 60;
+        const breakdown = Object.entries(dayCounts).map(([d, c]) => `${d}: ${c}`).join(", ");
+        responseText = `This week you have ${lessons.length} lesson${lessons.length > 1 ? 's' : ''} totalling ${totalHours} hours. ${breakdown}.`;
+        break;
+      }
+
+      case "pupil_progress": {
+        if (!pupil_name) {
+          responseText = "Which pupil would you like a progress update on?";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name, test_date, lesson_count, total_hours")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        // Get lesson count
+        const { count: lessonCount } = await supabase
+          .from("scheduled_lessons")
+          .select("id", { count: "exact", head: true })
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .neq("status", "cancelled");
+
+        // Get latest lesson note
+        const { data: recentLessons } = await supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, notes")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .not("notes", "is", null)
+          .order("lesson_date", { ascending: false })
+          .limit(1);
+
+        const parts: string[] = [`${pupil.name} has had ${lessonCount || 0} lessons`];
+        if (pupil.test_date) parts.push(`test date: ${pupil.test_date}`);
+        if (recentLessons?.[0]?.notes) {
+          const lastNote = recentLessons[0].notes.split("\n").pop() || recentLessons[0].notes;
+          parts.push(`latest note: "${lastNote.substring(0, 80)}"`);
+        }
+        responseText = parts.join(". ") + ".";
+        break;
+      }
+
+      case "record_expense": {
+        if (!amount || amount <= 0) {
+          responseText = "I need an amount. Try saying 'Log an expense of £40 for fuel'.";
+          break;
+        }
+
+        const category = expense_category || "other";
+
+        const { error } = await supabase.from("instructor_expenses").insert({
+          instructor_id,
+          amount,
+          category,
+          description: `${category} expense (recorded via voice)`,
+          expense_date: new Date().toISOString().split("T")[0],
+        });
+
+        if (error) {
+          console.error("record_expense error:", error);
+          responseText = "Sorry, I couldn't record that expense.";
+        } else {
+          responseText = `Recorded £${amount.toFixed(2)} ${category} expense.`;
+        }
+        break;
+      }
+
+      case "total_hours_today": {
+        const todayStr = new Date().toISOString().split("T")[0];
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("duration_minutes")
+          .eq("instructor_id", instructor_id)
+          .eq("lesson_date", todayStr)
+          .neq("status", "cancelled");
+
+        if (!lessons || lessons.length === 0) {
+          responseText = "You have no lessons today, so zero teaching hours.";
+          break;
+        }
+
+        const totalMins = lessons.reduce((s: number, l: any) => s + (l.duration_minutes || 60), 0);
+        const hours = totalMins / 60;
+        responseText = `You have ${hours} hour${hours !== 1 ? 's' : ''} of teaching today across ${lessons.length} lesson${lessons.length > 1 ? 's' : ''}.`;
+        break;
+      }
+
       default:
-        responseText = "Sorry, I didn't understand that command. Try saying something like 'Tell Sarah I'm on my way', 'Record £30 from Tom', or 'When am I free tomorrow?'";
+        responseText = "Sorry, I didn't understand that command. Try saying something like 'Tell Sarah I'm on my way', 'Record £30 from Tom', 'Open expenses', or 'Add a to-do: book MOT'.";
     }
 
     return new Response(JSON.stringify({ responseText }), {
