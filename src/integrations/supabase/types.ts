@@ -10168,6 +10168,60 @@ export type Database = {
           },
         ]
       }
+      sos_alerts: {
+        Row: {
+          alert_level: string
+          created_at: string
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          message: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          what3words: string | null
+        }
+        Insert: {
+          alert_level?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          what3words?: string | null
+        }
+        Update: {
+          alert_level?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          what3words?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sos_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sos_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       speed_limit_cache: {
         Row: {
           expires_at: string
