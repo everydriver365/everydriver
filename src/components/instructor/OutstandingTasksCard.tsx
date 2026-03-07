@@ -50,18 +50,17 @@ export function OutstandingTasksCard({ instructorId }: OutstandingTasksCardProps
       const items: TaskItem[] = [];
       const now = new Date();
 
-      // 1. Compliance items (ADI badge, DBS, insurance)
+      // 1. Compliance items (ADI badge, car insurance)
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("adi_expiry, dbs_expiry, insurance_expiry")
+        .select("adi_badge_expiry, car_insurance_expiry")
         .eq("id", instructorId)
         .maybeSingle();
 
       if (instructor) {
         const complianceChecks = [
-          { label: "ADI Badge", date: instructor.adi_expiry },
-          { label: "DBS Check", date: instructor.dbs_expiry },
-          { label: "Insurance", date: instructor.insurance_expiry },
+          { label: "ADI Badge", date: instructor.adi_badge_expiry },
+          { label: "Car Insurance", date: instructor.car_insurance_expiry },
         ];
         for (const check of complianceChecks) {
           if (check.date) {
@@ -75,10 +74,10 @@ export function OutstandingTasksCard({ instructorId }: OutstandingTasksCardProps
         }
       }
 
-      // 2. Vehicle health (MOT, tax, service)
+      // 2. Vehicle health (MOT, tax, insurance)
       const { data: vehicles } = await supabase
         .from("instructor_vehicles")
-        .select("id, make, model, mot_expiry, tax_expiry, next_service_date")
+        .select("id, make, model, mot_expiry, tax_expiry, insurance_expiry")
         .eq("instructor_id", instructorId)
         .eq("is_active", true);
 
@@ -88,7 +87,7 @@ export function OutstandingTasksCard({ instructorId }: OutstandingTasksCardProps
           const vChecks = [
             { label: `${vName} MOT`, date: v.mot_expiry },
             { label: `${vName} Tax`, date: v.tax_expiry },
-            { label: `${vName} Service`, date: v.next_service_date },
+            { label: `${vName} Insurance`, date: v.insurance_expiry },
           ];
           for (const check of vChecks) {
             if (check.date) {

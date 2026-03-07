@@ -547,6 +547,7 @@ export function InstructorMobileHome({
         <SmartNudgesCard instructorId={instructorId} />
         <DormantPupilsCard instructorId={instructorId} />
         <WeeklyReportCard instructorId={instructorId} />
+        <OutstandingTasksCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
