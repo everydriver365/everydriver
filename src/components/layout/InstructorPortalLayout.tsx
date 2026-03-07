@@ -12,6 +12,7 @@ import {
   Home, 
   Calendar, 
   CalendarClock,
+  CalendarPlus,
   Users, 
   Briefcase, 
   CreditCard, 
@@ -30,6 +31,7 @@ import {
   Headphones,
   ShieldCheck,
   ClipboardList,
+  ClipboardCheck,
   Award,
   ChevronRight,
   ChevronDown,
@@ -45,7 +47,10 @@ import {
   Bell,
   FileText,
   Camera,
-  Satellite
+  Satellite,
+  Coffee,
+  BookOpen,
+  Gift
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -536,7 +541,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                           <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
+                      <DropdownMenuContent align="end" className="w-56 bg-background border shadow-lg z-50">
                         <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
                           <Users className="h-4 w-4 mr-2" />
                           Add Pupil
@@ -550,10 +555,35 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                           Take Payment
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
+                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=break")} className="cursor-pointer">
+                          <Coffee className="h-4 w-4 mr-2" />
+                          Log Break
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/availability?action=add")} className="cursor-pointer">
                           <CalendarClock className="h-4 w-4 mr-2" />
                           Availability
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/expenses?action=add")} className="cursor-pointer">
+                          <Receipt className="h-4 w-4 mr-2" />
+                          Expenses
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/test-results?action=add")} className="cursor-pointer">
+                          <ClipboardCheck className="h-4 w-4 mr-2" />
+                          Log Test Result
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/gaps?action=add")} className="cursor-pointer">
+                          <CalendarPlus className="h-4 w-4 mr-2" />
+                          Fill Gaps
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/cpd?action=add")} className="cursor-pointer">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          CPD Log
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/referrals?action=invite")} className="cursor-pointer">
+                          <Gift className="h-4 w-4 mr-2" />
+                          Referrals
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/instructor/schedule")} className="cursor-pointer">
                           <Calendar className="h-4 w-4 mr-2" />
                           Schedule
