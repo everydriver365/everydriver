@@ -38,6 +38,10 @@ export default function MonthEndReview() {
   const [exporting, setExporting] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [adjustments, setAdjustments] = useState<Record<string, { value: number; note: string }>>({});
+  
+  const {
+    isConnected, getConnection, getLastSync, connect, disconnect, sync, isSyncing, isConnecting,
+  } = useAccountingConnection(authInstructorId);
 
   const selectedMonth = useMemo(() => subMonths(new Date(), monthOffset), [monthOffset]);
   const monthStart = format(startOfMonth(selectedMonth), "yyyy-MM-dd");
