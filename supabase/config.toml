@@ -215,3 +215,21 @@ verify_jwt = false
 
 [functions.voice-execute]
 verify_jwt = false
+
+[functions.generate-morning-briefing]
+verify_jwt = false
+
+[functions.generate-nudges]
+verify_jwt = false
+
+[functions.generate-eod-summary]
+verify_jwt = false
+
+[functions.generate-lesson-prep]
+verify_jwt = false
+
+[functions.generate-weekly-report]
+verify_jwt = false
+
+[functions.generate-quick-replies]
+verify_jwt = false
