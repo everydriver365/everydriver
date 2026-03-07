@@ -25,7 +25,7 @@ const quickActions = [
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
   { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
-  { id: "expenses", label: "Expenses", icon: Receipt, color: "bg-pink-500", route: "/instructor/expenses?action=add" },
+  
   { id: "log-test-result", label: "Log Test Result", icon: ClipboardCheck, color: "bg-blue-600", route: "/instructor/test-results?action=add" },
   { id: "fill-gaps", label: "Fill Gaps", icon: CalendarPlus, color: "bg-fuchsia-500", route: "/instructor/gaps?action=add" },
   { id: "cpd-log", label: "CPD Log", icon: BookOpen, color: "bg-purple-600", route: "/instructor/cpd?action=add" },
