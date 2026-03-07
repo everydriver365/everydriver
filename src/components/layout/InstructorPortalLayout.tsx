@@ -4,6 +4,7 @@ import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { useLessonEndAlert, OverdueLesson } from "@/hooks/useLessonEndAlert";
 import { LessonEndAlert } from "@/components/instructor/LessonEndAlert";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { VoiceAssistantButton } from "@/components/instructor/VoiceAssistantButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -632,6 +633,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
+            <VoiceAssistantButton instructorId={instructor?.id} />
           </>
         )}
 
@@ -1026,6 +1028,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
+      <VoiceAssistantButton instructorId={instructor?.id} />
     </>
   );
 }
