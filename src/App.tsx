@@ -110,6 +110,7 @@ const MonthEndReview = lazy(() => import("./pages/instructor/MonthEndReview"));
 const AccountingCallback = lazy(() => import("./pages/instructor/AccountingCallback"));
 const WeeklyReportPage = lazy(() => import("./pages/instructor/WeeklyReportPage"));
 const OutstandingTasksPage = lazy(() => import("./pages/instructor/OutstandingTasksPage"));
+const EndOfDayPage = lazy(() => import("./pages/instructor/EndOfDayPage"));
 
 // Instructor SaaS pages
 const InstructorAppHome = lazy(() => import("./pages/instructor-app/InstructorAppHome"));
@@ -287,6 +288,7 @@ const App = () => (
                 <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
                 <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
                 <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
+                <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />

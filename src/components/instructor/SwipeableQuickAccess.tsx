@@ -8,7 +8,7 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3,
+  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3, Moon,
 } from "lucide-react";
 import expensesIcon from "@/assets/expenses-icon.png";
 import trackLessonIcon from "@/assets/track-lesson-icon.png";
@@ -35,6 +35,7 @@ import standardsCheckIcon from "@/assets/standards-check-icon.png";
 import monthEndIcon from "@/assets/month-end-icon.png";
 import weeklyReportIcon from "@/assets/weekly-report-icon.png";
 import tasksDueIcon from "@/assets/tasks-due-icon.png";
+import endOfDayIcon from "@/assets/end-of-day-icon.png";
 
 interface QuickTile {
   title: string;
@@ -88,6 +89,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, customIcon: monthEndIcon, accent: "#5856D6", route: "/instructor/month-end" },
   { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, customIcon: weeklyReportIcon, accent: "#7C3AED", route: "/instructor/weekly-report" },
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },
+  { title: "End of Day", subtitle: "Day summary", icon: Moon, customIcon: endOfDayIcon, accent: "#6366F1", route: "/instructor/end-of-day" },
 ];
 
 const TILES_PER_PAGE = 6;

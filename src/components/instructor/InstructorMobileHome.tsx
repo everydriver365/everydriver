@@ -65,7 +65,7 @@ import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
@@ -457,7 +457,7 @@ export function InstructorMobileHome({
           />
         )}
 
-        <EndOfDaySummary instructorId={instructorId} />
+        
 
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
