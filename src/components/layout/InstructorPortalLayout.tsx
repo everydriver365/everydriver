@@ -467,6 +467,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         {showBackButton ? mobilePageTitle : headerLabel}
                       </p>
                     </div>
+                    <MobileNotificationBell instructorId={instructor?.id} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
+                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                      title="Search"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
                   </div>
 
                   {/* Right: Action buttons */}
@@ -478,16 +488,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     >
                       <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
                     </button>
-                    <MobileNotificationBell instructorId={instructor?.id} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8 shrink-0"
-                      title="Search"
-                    >
-                      <Search className="h-4 w-4" />
-                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
