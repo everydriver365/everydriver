@@ -68,6 +68,7 @@ import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
+import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
@@ -464,6 +465,11 @@ export function InstructorMobileHome({
             minutesUntil={nextLesson.minutesUntil}
           />
         )}
+      </div>
+
+      {/* Pupil Milestone Feed */}
+      <div className="px-4">
+        <PupilMilestoneFeed instructorId={instructorId} />
       </div>
 
       {/* 4. Your Day */}

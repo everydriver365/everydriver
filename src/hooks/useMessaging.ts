@@ -9,6 +9,7 @@ export interface Message {
   sender_id: string;
   content: string;
   read_at: string | null;
+  delivered_at?: string | null;
   created_at: string;
   attachment_url?: string | null;
   attachment_type?: string | null;
@@ -322,10 +323,19 @@ export function useConversationMessages(conversationId: string | null, userType:
   const markAsRead = async (senderId: string) => {
     if (!conversationId) return;
 
-    // Mark all messages from the other party as read
     const oppositeType = userType === "instructor" ? "pupil" : "instructor";
     
     try {
+      // Mark as delivered first (if not already)
+      await supabase
+        .from("messages")
+        .update({ delivered_at: new Date().toISOString() } as any)
+        .eq("conversation_id", conversationId)
+        .eq("sender_type", oppositeType)
+        .is("delivered_at" as any, null)
+        .is("deleted_at", null);
+
+      // Then mark as read
       await supabase
         .from("messages")
         .update({ read_at: new Date().toISOString() })

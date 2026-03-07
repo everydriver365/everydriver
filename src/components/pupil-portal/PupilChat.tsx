@@ -359,11 +359,21 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
                               {format(new Date(message.created_at), "HH:mm")}
                             </span>
                             {isPupil && (
-                              message.read_at ? (
-                                <CheckCheck className="h-3 w-3 text-primary-foreground/70" />
-                              ) : (
-                                <Check className="h-3 w-3 text-primary-foreground/70" />
-                              )
+                              <span className="inline-flex items-center" title={
+                                message.read_at
+                                  ? `Delivered ${message.delivered_at ? format(new Date(message.delivered_at), "HH:mm") : ""} · Read ${format(new Date(message.read_at), "HH:mm")}`
+                                  : message.delivered_at
+                                    ? `Delivered ${format(new Date(message.delivered_at), "HH:mm")}`
+                                    : "Sent"
+                              }>
+                                {message.read_at ? (
+                                  <CheckCheck className="h-3 w-3 text-sky-400" />
+                                ) : message.delivered_at ? (
+                                  <CheckCheck className="h-3 w-3 text-primary-foreground/50" />
+                                ) : (
+                                  <Check className="h-3 w-3 text-primary-foreground/50" />
+                                )}
+                              </span>
                             )}
                           </div>
                         </div>
