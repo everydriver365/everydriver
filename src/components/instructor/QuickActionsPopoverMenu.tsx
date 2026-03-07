@@ -23,7 +23,7 @@ const quickActions = [
   { id: "take-payment", label: "Take Payment", icon: PoundSterling, color: "bg-rose-500", route: "/instructor/take-payment" },
   { id: "messages", label: "Messages", icon: MessageSquare, color: "bg-cyan-500", route: "/instructor/messages?action=new" },
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
-  { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
+  
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
   
   { id: "log-test-result", label: "Log Test Result", icon: ClipboardCheck, color: "bg-blue-600", route: "/instructor/test-results?action=add" },
