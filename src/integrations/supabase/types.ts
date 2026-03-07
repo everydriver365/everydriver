@@ -2320,6 +2320,30 @@ export type Database = {
           },
         ]
       }
+      geotab_session_cache: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          server_url: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          server_url: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          server_url?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       gps_battery_history: {
         Row: {
           battery_percent: number
