@@ -286,6 +286,26 @@ Deno.serve(async (req) => {
           }
 
           const lesson = lessonRaw as LessonData;
+
+          // If lesson is cancelled, delete from Google Calendar instead of syncing
+          if (lesson.status === "cancelled" && lesson.google_event_id) {
+            try {
+              await deleteGoogleEvent(accessToken, calendarId, lesson.google_event_id);
+              await supabase
+                .from("scheduled_lessons")
+                .update({ google_event_id: null })
+                .eq("id", item.lesson_id);
+              console.log(`Deleted cancelled lesson ${item.lesson_id} from Google Calendar`);
+            } catch (delErr) {
+              console.error(`Failed to delete cancelled lesson ${item.lesson_id}:`, delErr);
+            }
+            await supabase
+              .from("calendar_sync_queue")
+              .update({ processed_at: new Date().toISOString() })
+              .eq("id", item.id);
+            continue;
+          }
+
           const startDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
           const endDateTime = new Date(startDateTime.getTime() + lesson.duration_minutes * 60000);
 
