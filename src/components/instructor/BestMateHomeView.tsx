@@ -241,29 +241,31 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           )}
 
           {nextLesson && (
-            <NextUpTile
-              lessonId={nextLesson.lessonId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
-              pupilProfileImage={nextLesson.pupilProfileImage}
-              pupilPhone={nextLesson.pupilPhone}
-              lessonDate={nextLesson.lessonDate}
-              pickupPostcode={nextLesson.pickupPostcode}
-              pickupLocation={nextLesson.pickupLocation}
-              startTime={nextLesson.startTime}
-              minutesUntil={nextLesson.minutesUntil}
-              accountBalance={nextLesson.accountBalance}
-              prepaidHours={nextLesson.prepaidHours}
-              durationMinutes={nextLesson.durationMinutes}
-              instructorId={instructorId}
-              checkInStatus={nextLesson.checkInStatus}
-              lastLessonPlan={nextLesson.lastLessonPlan}
-            />
-            <LessonPrepCard
-              instructorId={instructorId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
-            />
+            <>
+              <NextUpTile
+                lessonId={nextLesson.lessonId}
+                pupilId={nextLesson.pupilId}
+                pupilName={nextLesson.pupilName}
+                pupilProfileImage={nextLesson.pupilProfileImage}
+                pupilPhone={nextLesson.pupilPhone}
+                lessonDate={nextLesson.lessonDate}
+                pickupPostcode={nextLesson.pickupPostcode}
+                pickupLocation={nextLesson.pickupLocation}
+                startTime={nextLesson.startTime}
+                minutesUntil={nextLesson.minutesUntil}
+                accountBalance={nextLesson.accountBalance}
+                prepaidHours={nextLesson.prepaidHours}
+                durationMinutes={nextLesson.durationMinutes}
+                instructorId={instructorId}
+                checkInStatus={nextLesson.checkInStatus}
+                lastLessonPlan={nextLesson.lastLessonPlan}
+              />
+              <LessonPrepCard
+                instructorId={instructorId}
+                pupilId={nextLesson.pupilId}
+                pupilName={nextLesson.pupilName}
+              />
+            </>
           )}
 
           {todayLessons && todayLessons.length > 0 && (
