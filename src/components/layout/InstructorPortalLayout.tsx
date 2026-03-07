@@ -83,6 +83,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
+import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
 import { LayoutGrid } from "lucide-react";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
