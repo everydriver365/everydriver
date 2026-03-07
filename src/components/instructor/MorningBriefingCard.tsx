@@ -96,12 +96,12 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="mx-4 mb-4 relative overflow-hidden"
+      className="mx-4 mt-5 mb-4 relative overflow-hidden"
     >
       {/* Main card */}
-      <div className="relative rounded-[20px] overflow-hidden">
+      <div className="relative rounded-[20px] overflow-hidden shadow-xl shadow-amber-500/15 dark:shadow-amber-900/20 ring-1 ring-amber-200/30 dark:ring-amber-700/20">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 dark:from-amber-600 dark:via-orange-600 dark:to-rose-600" />
         
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-12 translate-x-8" />
