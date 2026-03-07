@@ -103,32 +103,36 @@ serve(async (req) => {
       );
     }
 
-    // 2. Create scheduled lessons for each slot
-    const lessonInserts = booking.slots.map((slot) => ({
-      instructor_id: booking.instructorId,
-      pupil_id: pupil.id,
-      lesson_date: slot.date,
-      start_time: slot.startTime,
-      duration_minutes: slot.duration,
-      pickup_location: booking.pupilAddress,
-      pickup_postcode: booking.pupilPostcode,
-      lesson_type: "driving",
-      status: "scheduled",
-      payment_status: "pending",
-    }));
+    // 2. Create scheduled lessons for each slot (if any provided)
+    let lessons: any[] = [];
+    if (booking.slots.length > 0) {
+      const lessonInserts = booking.slots.map((slot) => ({
+        instructor_id: booking.instructorId,
+        pupil_id: pupil.id,
+        lesson_date: slot.date,
+        start_time: slot.startTime,
+        duration_minutes: slot.duration,
+        pickup_location: booking.pupilAddress,
+        pickup_postcode: booking.pupilPostcode,
+        lesson_type: "driving",
+        status: "scheduled",
+        payment_status: "pending",
+      }));
 
-    const { data: lessons, error: lessonsError } = await supabase
-      .from("scheduled_lessons")
-      .insert(lessonInserts)
-      .select();
+      const { data: lessonData, error: lessonsError } = await supabase
+        .from("scheduled_lessons")
+        .insert(lessonInserts)
+        .select();
 
-    if (lessonsError) {
-      console.error("Error creating lessons:", lessonsError);
-      await supabase.from("pupils").delete().eq("id", pupil.id);
-      return new Response(
-        JSON.stringify({ error: "Failed to create lesson schedule" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (lessonsError) {
+        console.error("Error creating lessons:", lessonsError);
+        await supabase.from("pupils").delete().eq("id", pupil.id);
+        return new Response(
+          JSON.stringify({ error: "Failed to create lesson schedule" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      lessons = lessonData || [];
     }
 
     // 3. Save purchased upsells
