@@ -15,10 +15,11 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
   const [dismissed, setDismissed] = useState(false);
 
   const hour = new Date().getHours();
-  const isMorning = hour >= 5 && hour < 12;
+  // Show anytime for now (remove time restriction for demo)
+  const isMorning = true; // Was: hour >= 5 && hour < 12;
 
   useEffect(() => {
-    if (!instructorId || !isMorning) return;
+    if (!instructorId) return;
     // Check if already dismissed today
     const key = `briefing-dismissed-${new Date().toDateString()}`;
     if (sessionStorage.getItem(key)) {
