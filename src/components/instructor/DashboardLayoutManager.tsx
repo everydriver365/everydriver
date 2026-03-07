@@ -1,4 +1,4 @@
-import { Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2, MapPin, MessageSquare, Heart, ListTodo, FileBarChart } from "lucide-react";
+import { Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2, MapPin, MessageSquare, Heart, ListTodo, FileBarChart, BarChart3, ClipboardCheck } from "lucide-react";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
 import { useInstructorHomepageContent, QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { cn } from "@/lib/utils";
@@ -21,9 +21,11 @@ import expensesIcon from "@/assets/expenses-icon.png";
 import todoIcon from "@/assets/todo-icon.png";
 import settingsIcon from "@/assets/settings-icon.png";
 import monthEndIcon from "@/assets/month-end-icon.png";
+import weeklyReportIcon from "@/assets/weekly-report-icon.png";
+import tasksDueIcon from "@/assets/tasks-due-icon.png";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, MapPin, MessageSquare, Heart, Fuel: Car, ListTodo, FileBarChart,
+  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, MapPin, MessageSquare, Heart, Fuel: Car, ListTodo, FileBarChart, BarChart3, ClipboardCheck,
 };
 
 const customIconImages: Record<string, string> = {
@@ -44,6 +46,8 @@ const customIconImages: Record<string, string> = {
   todos: todoIcon,
   settings: settingsIcon,
   "month-end": monthEndIcon,
+  "weekly-report": weeklyReportIcon,
+  "tasks-due": tasksDueIcon,
 };
 
 const customIconRadius: Record<string, string> = {
@@ -77,6 +81,8 @@ const additionalTiles: QuickAction[] = [
   { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
   { id: "nearby-adis", title: "Nearby ADIs", icon: "Users", route: "/instructor/nearby-friends", display_order: 108 },
   { id: "month-end", title: "Month End", icon: "FileBarChart", route: "/instructor/month-end", display_order: 109 },
+  { id: "weekly-report", title: "Weekly Report", icon: "BarChart3", route: "/instructor/weekly-report", display_order: 110 },
+  { id: "tasks-due", title: "Tasks Due", icon: "ClipboardCheck", route: "/instructor/outstanding-tasks", display_order: 111 },
 ];
 
 interface DashboardLayoutManagerProps {
