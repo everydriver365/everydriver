@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
-  Car, StickyNote, UsersRound, X,
+  Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
@@ -19,6 +19,9 @@ const quickActions = [
   { id: "find-car", label: "Find My Car", icon: Car, color: "bg-amber-500", route: "/instructor/find-my-car" },
   { id: "notes", label: "Notes", icon: StickyNote, color: "bg-yellow-500", route: "/instructor/notes" },
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
+  { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
+  { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
+  { id: "expenses", label: "Expenses", icon: Receipt, color: "bg-pink-500", route: "/instructor/expenses?action=add" },
 ];
 
 export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMenuProps) {
