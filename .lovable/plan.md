@@ -1,50 +1,18 @@
 
 
-## Plan: Add More Useful Voice Commands to Ask ED
+## Problem
 
-### Current Commands (already implemented)
-- send_message, next_lesson, today_schedule, pupil_balance, navigate, record_payment, cancel_lesson, weekly_earnings, free_slots, log_lesson_note
+The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
 
-### Proposed New Commands
+## Fix
 
-**1. pupil_count** — "How many pupils do I have?"
-- Query active pupil count from `pupils` table
-- Simple but frequently useful stat
+Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
 
-**2. tomorrow_schedule** — "What's on tomorrow?"
-- Like today_schedule but for tomorrow (currently requires "What's my schedule today" only)
-- Reuse today_schedule logic with a date parameter
+### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
 
-**3. reschedule_lesson** — "Move Sarah's lesson to Thursday"
-- Find next upcoming lesson for the pupil, update `lesson_date` to the requested day
-- Parameters: `pupil_name`, `new_date`
+1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
+2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
+3. Optionally also query `instructor_manual_blocks` for completeness.
 
-**4. send_running_late** — "Tell Sarah I'm running 10 minutes late"
-- Shortcut that auto-generates a polite "running late" message with ETA
-- Parameters: `pupil_name`, `delay_minutes`
-
-**5. total_lessons_today** — "How many lessons left today?"
-- Count remaining lessons (after current time) for quick at-a-glance info
-
-**6. pupil_test_date** — "When is Sarah's test?"
-- Query `test_date` from `pupils` table
-- Parameters: `pupil_name`
-
-**7. unpaid_pupils** — "Who hasn't paid?"
-- Query pupils with negative `account_balance`, list names and amounts owed
-
-### Changes Required
-
-#### 1. `supabase/functions/voice-parse-intent/index.ts`
-- Add 7 new actions to the system prompt with example phrases
-- Add new enum values and parameters (`new_date`, `delay_minutes`)
-
-#### 2. `supabase/functions/voice-execute/index.ts`
-- Add 7 new `case` blocks with the database queries described above
-
-#### 3. `src/hooks/useVoiceAssistant.ts`
-- Pass `new_date` and `delay_minutes` through to voice-execute
-
-### No database changes needed
-All data already exists in existing tables (`pupils`, `scheduled_lessons`, `payment_history`).
+This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
 

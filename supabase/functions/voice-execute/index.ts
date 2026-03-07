@@ -41,7 +41,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, pupil_name, message, page, instructor_id, amount, note, date } = await req.json();
+    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -446,6 +446,251 @@ serve(async (req) => {
         }).eq("id", lesson.id);
 
         responseText = `Note added to ${pupil.name}'s lesson on ${lesson.lesson_date}: "${note}".`;
+        break;
+      }
+
+      case "pupil_count": {
+        const { count } = await supabase
+          .from("pupils")
+          .select("id", { count: "exact", head: true })
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null);
+
+        responseText = `You have ${count || 0} active pupil${(count || 0) !== 1 ? 's' : ''}.`;
+        break;
+      }
+
+      case "tomorrow_schedule": {
+        const tom = new Date();
+        tom.setDate(tom.getDate() + 1);
+        const tomorrowStr = tom.toISOString().split("T")[0];
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("start_time, duration_minutes, pupils!inner(name)")
+          .eq("instructor_id", instructor_id)
+          .eq("lesson_date", tomorrowStr)
+          .neq("status", "cancelled")
+          .order("start_time", { ascending: true });
+
+        if (lessons && lessons.length > 0) {
+          const summary = lessons.map((l: any) => {
+            const name = l.pupils?.name || "Unknown";
+            const time = l.start_time?.slice(0, 5) || "TBC";
+            return `${name} at ${time}`;
+          }).join(", ");
+          responseText = `You have ${lessons.length} lesson${lessons.length > 1 ? 's' : ''} tomorrow. ${summary}.`;
+        } else {
+          responseText = "You have no lessons scheduled for tomorrow.";
+        }
+        break;
+      }
+
+      case "reschedule_lesson": {
+        if (!pupil_name || !new_date) {
+          responseText = "I need a pupil name and a new date. Try saying 'Move Sarah's lesson to Thursday'.";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        const now = new Date();
+        const todayStr = now.toISOString().split("T")[0];
+        const currentTime = now.toTimeString().split(" ")[0];
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .neq("status", "cancelled")
+          .or(`lesson_date.gt.${todayStr},and(lesson_date.eq.${todayStr},start_time.gte.${currentTime})`)
+          .order("lesson_date", { ascending: true })
+          .order("start_time", { ascending: true })
+          .limit(1);
+
+        const lesson = lessons?.[0];
+        if (!lesson) {
+          responseText = `${pupil.name} doesn't have any upcoming lessons to reschedule.`;
+          break;
+        }
+
+        const newDateStr = resolveDate(new_date);
+        await supabase.from("scheduled_lessons").update({
+          lesson_date: newDateStr,
+        }).eq("id", lesson.id);
+
+        const time = lesson.start_time?.slice(0, 5) || "TBC";
+        responseText = `Moved ${pupil.name}'s lesson from ${lesson.lesson_date} to ${newDateStr} at ${time}.`;
+        break;
+      }
+
+      case "send_running_late": {
+        if (!pupil_name) {
+          responseText = "Which pupil should I tell you're running late?";
+          break;
+        }
+
+        const mins = delay_minutes || 10;
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name, phone")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        const firstName = pupil.name.split(" ")[0];
+        const lateMsg = `Hi ${firstName}, I'm running about ${mins} minutes late. Apologies for the delay, I'll be with you shortly!`;
+
+        // Save to conversations
+        let { data: convo } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .limit(1)
+          .single();
+
+        if (!convo) {
+          const { data: newConvo } = await supabase
+            .from("conversations")
+            .insert({ instructor_id, pupil_id: pupil.id })
+            .select("id")
+            .single();
+          convo = newConvo;
+        }
+
+        if (convo) {
+          await supabase.from("messages").insert({
+            conversation_id: convo.id,
+            sender_type: "instructor",
+            sender_id: instructor_id,
+            content: lateMsg,
+          });
+        }
+
+        // Try SMS
+        if (pupil.phone) {
+          try {
+            const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+            const twilioAuth = Deno.env.get("TWILIO_AUTH_TOKEN");
+            const twilioPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+            if (twilioSid && twilioAuth && twilioPhone) {
+              const formData = new URLSearchParams();
+              formData.append("To", pupil.phone);
+              formData.append("From", twilioPhone);
+              formData.append("Body", lateMsg);
+
+              await fetch(
+                `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Basic ${btoa(`${twilioSid}:${twilioAuth}`)}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  body: formData.toString(),
+                }
+              );
+              responseText = `Sent a running late message to ${pupil.name}. Told them you'll be about ${mins} minutes late.`;
+            } else {
+              responseText = `Running late message sent to ${pupil.name} in the app. They don't have SMS set up.`;
+            }
+          } catch {
+            responseText = `Running late message sent to ${pupil.name} in the app, but text message failed.`;
+          }
+        } else {
+          responseText = `Running late message sent to ${pupil.name} in the app.`;
+        }
+        break;
+      }
+
+      case "total_lessons_today": {
+        const now = new Date();
+        const todayStr = now.toISOString().split("T")[0];
+        const currentTime = now.toTimeString().split(" ")[0];
+
+        const { data: remaining } = await supabase
+          .from("scheduled_lessons")
+          .select("start_time, pupils!inner(name)")
+          .eq("instructor_id", instructor_id)
+          .eq("lesson_date", todayStr)
+          .neq("status", "cancelled")
+          .gte("start_time", currentTime)
+          .order("start_time", { ascending: true });
+
+        const count = remaining?.length || 0;
+        if (count > 0) {
+          const names = remaining!.map((l: any) => l.pupils?.name || "Unknown").join(", ");
+          responseText = `You have ${count} lesson${count > 1 ? 's' : ''} left today: ${names}.`;
+        } else {
+          responseText = "You have no more lessons today. You're done!";
+        }
+        break;
+      }
+
+      case "pupil_test_date": {
+        if (!pupil_name) {
+          responseText = "Which pupil's test date would you like to check?";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("name, test_date")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+        } else if (pupil.test_date) {
+          responseText = `${pupil.name}'s driving test is on ${pupil.test_date}.`;
+        } else {
+          responseText = `${pupil.name} doesn't have a test date set yet.`;
+        }
+        break;
+      }
+
+      case "unpaid_pupils": {
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("name, account_balance")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .lt("account_balance", 0)
+          .order("account_balance", { ascending: true });
+
+        if (pupils && pupils.length > 0) {
+          const total = pupils.reduce((sum: number, p: any) => sum + Math.abs(p.account_balance || 0), 0);
+          const list = pupils.map((p: any) => `${p.name} owes £${Math.abs(p.account_balance).toFixed(2)}`).join(", ");
+          responseText = `${pupils.length} pupil${pupils.length > 1 ? 's' : ''} with outstanding balances totalling £${total.toFixed(2)}. ${list}.`;
+        } else {
+          responseText = "All pupils are up to date with payments. No outstanding balances.";
+        }
         break;
       }
 
