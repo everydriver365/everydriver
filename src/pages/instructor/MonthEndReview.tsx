@@ -13,10 +13,11 @@ import { toast } from "sonner";
 import {
   ArrowLeft, PoundSterling, BookOpen, XCircle, ClipboardCheck,
   Receipt, Target, Download, Loader2, ChevronDown, ChevronUp,
-  Calendar, FileBarChart, Pencil,
+  Calendar, FileBarChart, Pencil, CloudUpload, Link2, Unlink, CheckCircle2,
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { Platform, platformConfigs } from "@/components/instructor/accounting-export/platformConfigs";
+import { useAccountingConnection, AccountingPlatform } from "@/hooks/useAccountingConnection";
 
 interface MetricCard {
   key: string;
@@ -37,6 +38,10 @@ export default function MonthEndReview() {
   const [exporting, setExporting] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [adjustments, setAdjustments] = useState<Record<string, { value: number; note: string }>>({});
+  
+  const {
+    isConnected, getConnection, getLastSync, connect, disconnect, sync, isSyncing, isConnecting,
+  } = useAccountingConnection(authInstructorId);
 
   const selectedMonth = useMemo(() => subMonths(new Date(), monthOffset), [monthOffset]);
   const monthStart = format(startOfMonth(selectedMonth), "yyyy-MM-dd");
@@ -315,11 +320,11 @@ export default function MonthEndReview() {
               </Card>
             )}
 
-            {/* Export Section */}
+            {/* Export / Sync Section */}
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Download className="h-4 w-4" />
+                  <CloudUpload className="h-4 w-4" />
                   Submit to Accounting
                 </CardTitle>
               </CardHeader>
@@ -332,10 +337,81 @@ export default function MonthEndReview() {
                     <TabsTrigger value="sage" className="text-xs">Sage</TabsTrigger>
                   </TabsList>
                 </Tabs>
-                <Button className="w-full gap-2" onClick={handleExport} disabled={exporting}>
-                  {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                  Download for {platformConfigs[platform].label}
-                </Button>
+
+                {/* Connection Status */}
+                {isConnected(platform as AccountingPlatform) ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <div>
+                          <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                            Connected{getConnection(platform as AccountingPlatform)?.company_name ? ` — ${getConnection(platform as AccountingPlatform)?.company_name}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-muted-foreground"
+                        onClick={() => disconnect(platform as AccountingPlatform)}
+                      >
+                        <Unlink className="h-3 w-3 mr-1" />
+                        Disconnect
+                      </Button>
+                    </div>
+
+                    {/* Sync buttons */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => sync({
+                          platform: platform as AccountingPlatform,
+                          syncType: "both",
+                          periodStart: monthStart,
+                          periodEnd: monthEnd,
+                        })}
+                        disabled={isSyncing}
+                      >
+                        {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudUpload className="h-4 w-4" />}
+                        Sync to {platformConfigs[platform].label}
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExport} disabled={exporting}>
+                        {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                        Download CSV
+                      </Button>
+                    </div>
+
+                    {/* Last sync info */}
+                    {(() => {
+                      const lastSync = getLastSync(platform as AccountingPlatform);
+                      return lastSync ? (
+                        <p className="text-[11px] text-muted-foreground text-center">
+                          Last synced: {format(new Date(lastSync.synced_at), "dd MMM yyyy HH:mm")} — {lastSync.records_synced} records
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full gap-2"
+                      onClick={() => connect(platform as AccountingPlatform)}
+                      disabled={isConnecting}
+                    >
+                      {isConnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                      Connect to {platformConfigs[platform].label}
+                    </Button>
+                    <Button variant="outline" className="w-full gap-2" onClick={handleExport} disabled={exporting}>
+                      {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      Download CSV Instead
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Connect your {platformConfigs[platform].label} account to sync expenses & income directly
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>

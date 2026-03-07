@@ -1,34 +1,18 @@
 
 
-## Apply Enhancements to Quick Actions Popover
+## Problem
 
-Based on the previous suggestions, here are the changes to implement:
+The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
 
-### 1. Add Haptic Feedback to Quick Actions
-**File:** `src/components/instructor/QuickActionsPopoverMenu.tsx`
-- Import `haptics` from `@/lib/haptics`
-- Add `haptics.light()` on each action tap
-- Add `haptics.medium()` when the popover opens
+## Fix
 
-### 2. Add Search/Filter Bar
-**File:** `src/components/instructor/QuickActionsPopoverMenu.tsx`
-- Add a `useState` for search query
-- Add a search `Input` at the top of the popover (sticky, above the ScrollArea)
-- Filter `quickActions` by label match against the query
-- Show "No results" when nothing matches
-- Auto-focus the input when the popover opens
-- Clear search on close
+Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
 
-### 3. Customizable Quick Actions (Pin Favorites)
-**File:** `src/components/instructor/QuickActionsPopoverMenu.tsx`
-- Read pinned action IDs from `localStorage` (key: `pinned-quick-actions`)
-- Sort pinned actions to the top of the list with a subtle "Pinned" divider
-- Add a long-press or star icon on each action to toggle pinned state
-- Persist changes back to `localStorage`
+### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
 
-### 4. Pull-to-Refresh
-Already implemented on the instructor mobile home — no changes needed.
+1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
+2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
+3. Optionally also query `instructor_manual_blocks` for completeness.
 
-### Summary of Changes
-Only one file changes: `QuickActionsPopoverMenu.tsx` — adding haptics, a search input, and pinning logic with localStorage persistence.
+This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
 
