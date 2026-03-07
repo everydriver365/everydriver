@@ -5,19 +5,6 @@ import {
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
   ClipboardCheck, CalendarPlus, BookOpen, Gift,
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Custom image icons (same as QuickActionTiles)
-import messagesIcon from "@/assets/messages-icon.png";
-import paymentsIcon from "@/assets/payments-icon-new.png";
-import takePaymentIcon from "@/assets/take-payment-icon.png";
-import scheduleIcon from "@/assets/calendar-icon.png";
-import pupilsIcon from "@/assets/pupils-icon.png";
-import trackIcon from "@/assets/track-icon.png";
-import findMyCarIcon from "@/assets/find_car2.png";
-import availabilityIcon from "@/assets/availability-icon.png";
-import expensesIcon from "@/assets/expenses-icon.png";
-import settingsIcon from "@/assets/settings-icon.png";
 
 interface QuickActionsPopoverMenuProps {
   open: boolean;
@@ -25,22 +12,21 @@ interface QuickActionsPopoverMenuProps {
 }
 
 const quickActions = [
-  { id: "add-lesson", label: "Add Lesson", icon: Calendar, customIcon: scheduleIcon, route: "/instructor/schedule?action=add" },
-  { id: "add-pupil", label: "Add Pupil", icon: Users, customIcon: pupilsIcon, route: "/instructor/pupils?action=add" },
-  { id: "track-live", label: "Track Live", icon: MapPin, customIcon: trackIcon, route: "/instructor/tracking" },
-  { id: "take-payment", label: "Take Payment", icon: PoundSterling, customIcon: takePaymentIcon, route: "/instructor/take-payment" },
-  { id: "messages", label: "Messages", icon: MessageSquare, customIcon: messagesIcon, route: "/instructor/messages?action=new" },
-  { id: "find-car", label: "Find My Car", icon: Car, customIcon: findMyCarIcon, route: "/instructor/find-my-car" },
-  { id: "notes", label: "Notes", icon: StickyNote, route: "/instructor/notes" },
-  { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, route: "/instructor/nearby-friends" },
-  { id: "log-break", label: "Log Break", icon: Coffee, route: "/instructor/schedule?action=break" },
-  { id: "availability", label: "Availability", icon: Clock, customIcon: availabilityIcon, route: "/instructor/availability?action=add" },
-  { id: "expenses", label: "Expenses", icon: Receipt, customIcon: expensesIcon, route: "/instructor/expenses?action=add" },
-  { id: "log-test-result", label: "Log Test", icon: ClipboardCheck, route: "/instructor/test-results?action=add" },
-  { id: "fill-gaps", label: "Fill Gaps", icon: CalendarPlus, route: "/instructor/gaps?action=add" },
-  { id: "cpd-log", label: "CPD Log", icon: BookOpen, route: "/instructor/cpd?action=add" },
-  { id: "referrals", label: "Referrals", icon: Gift, route: "/instructor/referrals?action=invite" },
-  { id: "settings", label: "Settings", icon: settingsIcon ? Calendar : Calendar, customIcon: settingsIcon, route: "/instructor/settings" },
+  { id: "add-lesson", label: "Add Lesson", icon: Calendar, color: "bg-violet-500", route: "/instructor/schedule?action=add" },
+  { id: "add-pupil", label: "Add Pupil", icon: Users, color: "bg-[hsl(var(--primary))]", route: "/instructor/pupils?action=add" },
+  { id: "track-live", label: "Track Live", icon: MapPin, color: "bg-emerald-500", route: "/instructor/tracking" },
+  { id: "take-payment", label: "Take Payment", icon: PoundSterling, color: "bg-rose-500", route: "/instructor/take-payment" },
+  { id: "messages", label: "Messages", icon: MessageSquare, color: "bg-cyan-500", route: "/instructor/messages?action=new" },
+  { id: "find-car", label: "Find My Car", icon: Car, color: "bg-amber-500", route: "/instructor/find-my-car" },
+  { id: "notes", label: "Notes", icon: StickyNote, color: "bg-yellow-500", route: "/instructor/notes" },
+  { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
+  { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
+  { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
+  { id: "expenses", label: "Expenses", icon: Receipt, color: "bg-pink-500", route: "/instructor/expenses?action=add" },
+  { id: "log-test-result", label: "Log Test Result", icon: ClipboardCheck, color: "bg-blue-600", route: "/instructor/test-results?action=add" },
+  { id: "fill-gaps", label: "Fill Gaps", icon: CalendarPlus, color: "bg-fuchsia-500", route: "/instructor/gaps?action=add" },
+  { id: "cpd-log", label: "CPD Log", icon: BookOpen, color: "bg-purple-600", route: "/instructor/cpd?action=add" },
+  { id: "referrals", label: "Referrals", icon: Gift, color: "bg-red-500", route: "/instructor/referrals?action=invite" },
 ];
 
 export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMenuProps) {
@@ -60,56 +46,43 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80]"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[80]"
             onClick={onClose}
           />
 
           {/* Menu card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 30 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 30 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             className="fixed inset-x-4 bottom-24 z-[81] max-w-sm mx-auto"
           >
             <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-              <ScrollArea className="max-h-[60vh]">
-                <div className="grid grid-cols-4 gap-1 p-3">
-                  {quickActions.map((action, index) => {
-                    const Icon = action.icon;
-                    return (
-                      <motion.button
-                        key={action.id}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.02 }}
-                        onClick={() => handleAction(action.route)}
-                        className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors"
-                      >
-                        <div className="h-11 w-11 rounded-[10px] bg-muted flex items-center justify-center shrink-0">
-                          {action.customIcon ? (
-                            <img
-                              src={action.customIcon}
-                              alt={action.label}
-                              className="h-7 w-7 object-contain"
-                              style={{ borderRadius: "7px" }}
-                            />
-                          ) : (
-                            <Icon className="h-6 w-6 text-muted-foreground" strokeWidth={1.8} />
-                          )}
-                        </div>
-                        <span className="text-[10px] font-medium text-foreground leading-tight text-center line-clamp-2">
-                          {action.label}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
+              <div className="p-2">
+                {quickActions.map((action, index) => {
+                  const Icon = action.icon;
+                  return (
+                    <motion.button
+                      key={action.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      onClick={() => handleAction(action.route)}
+                      className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors text-left"
+                    >
+                      <div className={`h-10 w-10 rounded-full ${action.color} flex items-center justify-center shrink-0`}>
+                        <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                      </div>
+                      <span className="text-[15px] font-semibold text-foreground">{action.label}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Close button */}
-            <div className="flex justify-center mt-3">
+            <div className="flex justify-end mt-3 pr-1">
               <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
