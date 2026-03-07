@@ -58,11 +58,39 @@ Return a JSON tool call with one of these actions:
    Examples: "When am I free tomorrow?", "What gaps do I have on Monday?", "Am I free today?"
 
 10. log_lesson_note - Log a note about a pupil's lesson
-    Parameters: pupil_name (string), note (string)
-    Examples: "Sarah did well on roundabouts today", "Tom needs more practice on parallel parking", "Note that Emma struggled with hill starts"
+     Parameters: pupil_name (string), note (string)
+     Examples: "Sarah did well on roundabouts today", "Tom needs more practice on parallel parking", "Note that Emma struggled with hill starts"
 
-11. unknown - Could not understand the command
-    Parameters: original_text (string)
+11. pupil_count - Count total active pupils
+     Parameters: none
+     Examples: "How many pupils do I have?", "Total number of students"
+
+12. tomorrow_schedule - Query tomorrow's schedule
+     Parameters: none
+     Examples: "What's on tomorrow?", "Who do I have tomorrow?", "Any lessons tomorrow?"
+
+13. reschedule_lesson - Move a pupil's next lesson to a different date
+     Parameters: pupil_name (string), new_date (string - e.g. "thursday", "next monday", "2025-03-15")
+     Examples: "Move Sarah's lesson to Thursday", "Reschedule Tom to next Monday"
+
+14. send_running_late - Send a running late message to a pupil with ETA
+     Parameters: pupil_name (string), delay_minutes (number)
+     Examples: "Tell Sarah I'm running 10 minutes late", "Let Tom know I'll be 15 minutes late"
+
+15. total_lessons_today - Count remaining lessons for today
+     Parameters: none
+     Examples: "How many lessons left today?", "How many more lessons do I have?", "Am I nearly done?"
+
+16. pupil_test_date - Check when a pupil's driving test is
+     Parameters: pupil_name (string)
+     Examples: "When is Sarah's test?", "What date is Tom's driving test?"
+
+17. unpaid_pupils - List pupils who owe money
+     Parameters: none
+     Examples: "Who hasn't paid?", "Which pupils owe me money?", "Any outstanding balances?"
+
+18. unknown - Could not understand the command
+     Parameters: original_text (string)
 
 Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest match from the available pupils list.`;
 
@@ -89,7 +117,7 @@ Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest m
                 properties: {
                   action: {
                     type: "string",
-                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "record_payment", "cancel_lesson", "weekly_earnings", "free_slots", "log_lesson_note", "unknown"],
+                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "record_payment", "cancel_lesson", "weekly_earnings", "free_slots", "log_lesson_note", "pupil_count", "tomorrow_schedule", "reschedule_lesson", "send_running_late", "total_lessons_today", "pupil_test_date", "unpaid_pupils", "unknown"],
                   },
                   pupil_name: { type: "string", description: "Matched pupil name from the available list" },
                   message: { type: "string", description: "Message content for send_message" },
@@ -98,6 +126,8 @@ Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest m
                   amount: { type: "number", description: "Payment amount for record_payment" },
                   note: { type: "string", description: "Lesson note text for log_lesson_note" },
                   date: { type: "string", description: "Date reference for free_slots (e.g. today, tomorrow, monday, or YYYY-MM-DD)" },
+                  new_date: { type: "string", description: "New date for reschedule_lesson (e.g. thursday, next monday, or YYYY-MM-DD)" },
+                  delay_minutes: { type: "number", description: "How many minutes late for send_running_late" },
                 },
                 required: ["action"],
                 additionalProperties: false,
