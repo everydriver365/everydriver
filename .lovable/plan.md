@@ -1,18 +1,33 @@
 
 
-## Problem
+## Analysis: Cancelled Lessons and Google Calendar
 
-The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
+### Current Behaviour (Bug)
 
-## Fix
+When a lesson is cancelled, the code sets `status = 'cancelled'` on the row. This triggers the database `trigger_calendar_sync()` function, which queues a **`syncLesson`** action — not a `deleteLesson`. The queue processor then **updates** the Google Calendar event with the same details, leaving it visible on the instructor's Google Calendar as though the lesson is still happening.
 
-Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
+The `deleteLesson` action only fires on actual row deletion (`DELETE`), which never occurs during cancellation.
 
-### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
+**In the app schedule**, cancelled lessons are correctly hidden (all queries use `.neq("status", "cancelled")`).
 
-1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
-2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
-3. Optionally also query `instructor_manual_blocks` for completeness.
+### Fix
 
-This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
+Modify `supabase/functions/process-calendar-queue/index.ts` so that when `syncLesson` runs and the lesson has `status = 'cancelled'`, it **deletes the Google Calendar event** instead of updating it, then clears the `google_event_id` on the lesson row.
+
+Specifically, in the `syncLesson` branch (~line 273), after fetching the lesson, add a check:
+
+```text
+if (lesson.status === 'cancelled' && lesson.google_event_id) {
+  → delete the Google event
+  → clear google_event_id on the row
+  → continue to next queue item
+}
+```
+
+This is a single-file change to the edge function. No database migration needed, no new components, no frontend changes.
+
+### What This Fixes
+- Cancelled individual lessons will be removed from Google Calendar
+- Cancelled course lessons (which also set `status = 'cancelled'`) will likewise be removed
+- The existing trigger already fires on status changes, so no trigger modifications needed
 
