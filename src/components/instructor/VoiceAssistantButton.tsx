@@ -63,7 +63,7 @@ export function VoiceAssistantHeaderButton({
       <span className="relative z-10 hidden sm:inline">
         {isActive ? config.label : "Ask ED"}
       </span>
-      <span className="relative z-10 sm:hidden">ED</span>
+      <span className="relative z-10 sm:hidden">Ask ED</span>
 
       {/* Active pulse ring */}
       {isActive && (
