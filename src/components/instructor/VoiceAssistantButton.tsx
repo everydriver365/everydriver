@@ -73,16 +73,16 @@ export function VoiceAssistantOverlay({
     <AnimatePresence>
       {isActive && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          exit={{ opacity: 0, y: -6 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] w-80 max-w-[calc(100vw-2rem)]"
+          className="fixed top-12 left-1/2 -translate-x-1/2 z-[60] w-64 max-w-[calc(100vw-2rem)]"
         >
-          <div className="bg-card rounded-2xl shadow-2xl border overflow-hidden">
+          <div className="bg-card rounded-xl shadow-lg border overflow-hidden">
             {/* Header */}
-            <div className={cn("px-4 py-3 flex items-center justify-between", config.color)}>
-              <div className="flex items-center gap-2">
+            <div className={cn("px-3 py-2 flex items-center justify-between", config.color)}>
+              <div className="flex items-center gap-1.5">
                 {state === "listening" && (
                   <motion.div
                     className="flex gap-0.5"
@@ -92,39 +92,39 @@ export function VoiceAssistantOverlay({
                     {[1, 2, 3].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-1 bg-white rounded-full"
-                        animate={{ height: ["8px", "16px", "8px"] }}
+                        className="w-0.5 bg-white rounded-full"
+                        animate={{ height: ["6px", "12px", "6px"] }}
                         transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.15 }}
                       />
                     ))}
                   </motion.div>
                 )}
-                <span className="text-white text-sm font-semibold">{config.label}</span>
+                <span className="text-white text-xs font-semibold">{config.label}</span>
               </div>
               <button
                 onClick={onCancel}
-                className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition"
+                className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition"
               >
-                <X className="h-3.5 w-3.5 text-white" />
+                <X className="h-3 w-3 text-white" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="px-4 py-3 space-y-2">
+            <div className="px-3 py-2 space-y-1.5">
               {transcript && (
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">You said</p>
-                  <p className="text-sm text-foreground">{transcript}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">You said</p>
+                  <p className="text-[13px] text-foreground">{transcript}</p>
                 </div>
               )}
               {responseText && (
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">ED</p>
-                  <p className="text-sm text-foreground">{responseText}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">ED</p>
+                  <p className="text-[13px] text-foreground">{responseText}</p>
                 </div>
               )}
               {state === "listening" && !transcript && (
-                <p className="text-sm text-muted-foreground italic">
+                <p className="text-[12px] text-muted-foreground italic">
                   Try: "Tell Sarah I'm on my way"
                 </p>
               )}
