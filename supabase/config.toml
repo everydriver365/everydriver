@@ -206,3 +206,12 @@ verify_jwt = false
 
 [functions.auto-payment-reminders]
 verify_jwt = false
+
+[functions.voice-parse-intent]
+verify_jwt = false
+
+[functions.voice-tts]
+verify_jwt = false
+
+[functions.voice-execute]
+verify_jwt = false
