@@ -87,12 +87,6 @@ import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPop
 import { LayoutGrid } from "lucide-react";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
-        {/* Header Quick Actions Popover */}
-        <QuickActionsPopoverMenu
-          open={headerQuickActionsOpen}
-          onClose={() => setHeaderQuickActionsOpen(false)}
-        />
-
 
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
