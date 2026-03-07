@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, ChevronRight, X, User } from "lucide-react";
+import {
+  Sparkles, ChevronRight, ChevronUp, ChevronDown, X, User,
+  Bell, UserMinus, PoundSterling, Award, Clock,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Nudge {
@@ -36,11 +40,41 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+function getIcon(type: string) {
+  switch (type) {
+    case "dormant_pupil": return UserMinus;
+    case "overdue_payments": return PoundSterling;
+    case "upcoming_test": return Award;
+    case "schedule_gap": return Clock;
+    default: return Bell;
+  }
+}
+
+function getCategory(type: string): string {
+  switch (type) {
+    case "dormant_pupil": return "Pupils";
+    case "overdue_payments": return "Payments";
+    case "upcoming_test": return "Tests";
+    case "schedule_gap": return "Schedule";
+    default: return "Other";
+  }
+}
+
+const CATEGORY_ORDER = ["Payments", "Tests", "Pupils", "Schedule", "Other"];
+const CATEGORY_EMOJI: Record<string, string> = {
+  Payments: "🔴",
+  Tests: "🟡",
+  Pupils: "🟠",
+  Schedule: "🔵",
+  Other: "⚪",
+};
+
 export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
   const navigate = useNavigate();
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -72,66 +106,122 @@ export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
 
   if (visibleNudges.length === 0) return null;
 
-  const priorityColors: Record<number, string> = {
-    1: "border-rose-200/60 dark:border-rose-800/40 bg-rose-50/50 dark:bg-rose-950/20",
-    2: "border-amber-200/60 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-950/20",
-    3: "border-blue-200/60 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20",
-  };
+  // Group by category
+  const grouped = visibleNudges.reduce((acc, n) => {
+    const cat = getCategory(n.type);
+    (acc[cat] = acc[cat] || []).push(n);
+    return acc;
+  }, {} as Record<string, Nudge[]>);
 
   return (
     <div className="mt-4 mb-4">
-      <div className="flex items-center gap-1.5 mb-2">
-        <Sparkles className="h-3.5 w-3.5 text-primary" />
-        <span className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Smart Nudges</span>
-      </div>
-      <div className="space-y-2">
-        <AnimatePresence mode="popLayout">
-          {visibleNudges.map((nudge) => (
-            <motion.div
-              key={nudge.id}
-              layout
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20, height: 0 }}
-              className={`rounded-xl border p-3 flex items-center gap-3 ${priorityColors[nudge.priority] || priorityColors[3]}`}
-            >
-              {/* Pupil avatar */}
-              {nudge.pupil_name ? (
-                nudge.pupil_image ? (
-                  <img
-                    src={nudge.pupil_image}
-                    alt={nudge.pupil_name}
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-black/20 shrink-0"
-                  />
-                ) : (
-                  <div className={`w-9 h-9 rounded-full ${getAvatarColor(nudge.pupil_name)} flex items-center justify-center ring-2 ring-white dark:ring-black/20 shrink-0`}>
-                    <span className="text-[11px] font-bold text-white">{getInitials(nudge.pupil_name)}</span>
-                  </div>
-                )
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center ring-2 ring-white dark:ring-black/20 shrink-0">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
+      <div className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-sm">
+        {/* Header */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center justify-between p-3.5 hover:bg-muted/10 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-[13px] font-semibold text-foreground">Smart Nudges</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+              {visibleNudges.length}
+            </Badge>
+          </div>
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-foreground leading-tight">{nudge.title}</p>
+        {/* Feed */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="border-t border-border/30">
+                {CATEGORY_ORDER.map(cat => {
+                  const items = grouped[cat];
+                  if (!items) return null;
+                  return (
+                    <div key={cat}>
+                      {/* Category header */}
+                      <div className="px-4 py-1.5 bg-muted/5">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {CATEGORY_EMOJI[cat]} {cat}
+                        </span>
+                      </div>
+                      {/* Items */}
+                      <AnimatePresence mode="popLayout">
+                        {items.map((nudge, i) => {
+                          const Icon = getIcon(nudge.type);
+                          return (
+                            <motion.div
+                              key={nudge.id}
+                              layout
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -20, height: 0 }}
+                              className={`flex items-center gap-3 px-4 py-2.5 hover:bg-muted/5 transition-colors ${
+                                i < items.length - 1 ? "border-b border-border/20" : ""
+                              }`}
+                            >
+                              {/* Avatar or icon */}
+                              {nudge.pupil_name ? (
+                                nudge.pupil_image ? (
+                                  <img
+                                    src={nudge.pupil_image}
+                                    alt={nudge.pupil_name}
+                                    className="w-8 h-8 rounded-full object-cover shrink-0"
+                                  />
+                                ) : (
+                                  <div className={`w-8 h-8 rounded-full ${getAvatarColor(nudge.pupil_name)} flex items-center justify-center shrink-0`}>
+                                    <span className="text-[10px] font-bold text-white">{getInitials(nudge.pupil_name)}</span>
+                                  </div>
+                                )
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-muted/15 flex items-center justify-center shrink-0">
+                                  <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                              )}
+
+                              {/* Title */}
+                              <p className="flex-1 text-[12px] text-foreground leading-tight min-w-0">{nudge.title}</p>
+
+                              {/* Action */}
+                              <button
+                                onClick={() => navigate(nudge.action_route)}
+                                className="text-[11px] font-semibold text-primary hover:underline whitespace-nowrap flex items-center gap-0.5"
+                              >
+                                {nudge.action_label}
+                                <ChevronRight className="h-3 w-3" />
+                              </button>
+
+                              {/* Dismiss */}
+                              <button
+                                onClick={() => dismiss(nudge.id)}
+                                className="p-1 rounded-full hover:bg-foreground/5 transition-colors -mr-1"
+                              >
+                                <X className="h-3 w-3 text-muted-foreground/40" />
+                              </button>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
-              <button
-                onClick={() => navigate(nudge.action_route)}
-                className="flex items-center gap-0.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold whitespace-nowrap hover:bg-primary/20 transition-colors"
-              >
-                {nudge.action_label}
-                <ChevronRight className="h-3 w-3" />
-              </button>
-              <button
-                onClick={() => dismiss(nudge.id)}
-                className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-              >
-                <X className="h-3 w-3 text-muted-foreground/50" />
-              </button>
             </motion.div>
-          ))}
+          )}
         </AnimatePresence>
       </div>
     </div>
