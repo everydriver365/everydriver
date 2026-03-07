@@ -778,6 +778,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Right: Notifications + Theme + Avatar */}
             <div className="flex items-center gap-1">
+              <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
               <DesktopNotificationBell instructorId={instructor?.id} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
