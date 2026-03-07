@@ -7,7 +7,7 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt, Plus,
+  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3,
 } from "lucide-react";
 import expensesIcon from "@/assets/expenses-icon.png";
 import trackLessonIcon from "@/assets/track-lesson-icon.png";
@@ -81,6 +81,9 @@ const ALL_TILES: QuickTile[] = [
   { title: "Availability", subtitle: "Working hours", icon: Clock, customIcon: availabilityIcon, accent: "#34C759", route: "/instructor/availability" },
   { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
   { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, accent: "#5856D6", route: "/instructor/nearby-friends" },
+  { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, customIcon: monthEndIcon, accent: "#5856D6", route: "/instructor/month-end" },
+  { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, customIcon: weeklyReportIcon, accent: "#7C3AED", route: "/instructor/weekly-report" },
+  { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },
 ];
 
 const TILES_PER_PAGE = 6;

@@ -30,7 +30,8 @@ interface MetricCard {
 
 export default function MonthEndReview() {
   const navigate = useNavigate();
-  const { authInstructorId } = useInstructorAuth();
+  const { instructor } = useInstructorAuth();
+  const authInstructorId = instructor?.id;
   const [monthOffset, setMonthOffset] = useState(0);
   const [platform, setPlatform] = useState<Platform>("xero");
   const [exporting, setExporting] = useState(false);

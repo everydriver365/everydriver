@@ -6,7 +6,8 @@ import { OutstandingTasksCard } from "@/components/instructor/OutstandingTasksCa
 
 export default function OutstandingTasksPage() {
   const navigate = useNavigate();
-  const { authInstructorId } = useInstructorAuth();
+  const { instructor } = useInstructorAuth();
+  const authInstructorId = instructor?.id;
 
   return (
     <div className="min-h-screen bg-background">

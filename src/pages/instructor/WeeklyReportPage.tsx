@@ -6,7 +6,8 @@ import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
 
 export default function WeeklyReportPage() {
   const navigate = useNavigate();
-  const { authInstructorId } = useInstructorAuth();
+  const { instructor } = useInstructorAuth();
+  const authInstructorId = instructor?.id;
 
   return (
     <div className="min-h-screen bg-background">
