@@ -13,10 +13,11 @@ import { toast } from "sonner";
 import {
   ArrowLeft, PoundSterling, BookOpen, XCircle, ClipboardCheck,
   Receipt, Target, Download, Loader2, ChevronDown, ChevronUp,
-  Calendar, FileBarChart, Pencil,
+  Calendar, FileBarChart, Pencil, CloudUpload, Link2, Unlink, CheckCircle2,
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { Platform, platformConfigs } from "@/components/instructor/accounting-export/platformConfigs";
+import { useAccountingConnection, AccountingPlatform } from "@/hooks/useAccountingConnection";
 
 interface MetricCard {
   key: string;

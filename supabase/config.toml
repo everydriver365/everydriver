@@ -233,3 +233,9 @@ verify_jwt = false
 
 [functions.generate-quick-replies]
 verify_jwt = false
+
+[functions.accounting-oauth]
+verify_jwt = false
+
+[functions.accounting-sync]
+verify_jwt = false
