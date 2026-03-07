@@ -53,6 +53,11 @@ import {
   Wrench,
   LucideIcon,
   Sparkles,
+  Mic,
+  MessageCircle,
+  Navigation,
+  PoundSterling,
+  HelpCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -173,6 +178,139 @@ export default function InstructorAllFeatures() {
                 <span key={key} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
                   {cfg.label}
                 </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Voice Assistant Showcase */}
+      <section className="py-16 md:py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary mb-4">
+              <Mic className="h-4 w-4" />
+              NEW — Voice Assistant
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+              Meet ED, Your Voice Assistant
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Hands-free control while you're on the road. Tap the mic button on any screen, speak your command, and ED will handle the rest — and talk back to confirm.
+            </p>
+          </motion.div>
+
+          {/* How to use */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mb-12">
+            <div className="bg-card rounded-2xl border p-6 md:p-8">
+              <h3 className="text-lg font-bold text-foreground mb-4">How It Works</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  { step: "1", title: "Tap the Mic", desc: "Press the floating microphone button in the bottom-right corner of any screen.", icon: Mic },
+                  { step: "2", title: "Speak Your Command", desc: "Say something like \"Tell Sarah I'm on my way\" or \"What's my next lesson?\"", icon: MessageCircle },
+                  { step: "3", title: "ED Responds", desc: "ED executes your command and speaks back to confirm — completely hands-free.", icon: Mic },
+                ].map((s, i) => (
+                  <motion.div key={s.step} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 + i * 0.1 }} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <s.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-sm">Step {s.step}: {s.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Supported Phrases */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+            <h3 className="text-lg font-bold text-foreground mb-6 text-center">Supported Voice Commands</h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                {
+                  category: "Messaging",
+                  icon: MessageCircle,
+                  phrases: [
+                    "\"Tell Sarah I'm on my way\"",
+                    "\"Message John I'll be 10 minutes late\"",
+                    "\"Send a message to Emily saying lesson is confirmed\"",
+                  ],
+                },
+                {
+                  category: "Schedule",
+                  icon: Calendar,
+                  phrases: [
+                    "\"What's my next lesson?\"",
+                    "\"What's my schedule today?\"",
+                    "\"How many lessons do I have?\"",
+                  ],
+                },
+                {
+                  category: "Payments",
+                  icon: PoundSterling,
+                  phrases: [
+                    "\"How much does Sarah owe?\"",
+                    "\"What's John's balance?\"",
+                    "\"Check Emily's account\"",
+                  ],
+                },
+                {
+                  category: "Navigation",
+                  icon: Navigation,
+                  phrases: [
+                    "\"Show my schedule\"",
+                    "\"Go to payments\"",
+                    "\"Open messages\"",
+                    "\"Show my pupils\"",
+                  ],
+                },
+                {
+                  category: "Quick Info",
+                  icon: HelpCircle,
+                  phrases: [
+                    "\"What time is my first lesson?\"",
+                    "\"How many hours today?\"",
+                    "\"Show tracking\"",
+                  ],
+                },
+                {
+                  category: "Tips",
+                  icon: Sparkles,
+                  phrases: [
+                    "Use natural language — ED understands variations",
+                    "Pupil names are fuzzy-matched automatically",
+                    "Works on any page in the instructor portal",
+                  ],
+                },
+              ].map((group, gi) => (
+                <motion.div
+                  key={group.category}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 + gi * 0.05 }}
+                  className="bg-card rounded-2xl border p-5"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <group.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <h4 className="font-bold text-sm text-foreground">{group.category}</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {group.phrases.map((phrase, pi) => (
+                      <li key={pi} className="text-xs text-muted-foreground leading-relaxed">
+                        {phrase.startsWith('"') ? (
+                          <span className="bg-muted rounded-md px-2 py-1 font-mono text-foreground">{phrase}</span>
+                        ) : (
+                          <span className="text-muted-foreground italic">💡 {phrase}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
               ))}
             </div>
           </motion.div>
