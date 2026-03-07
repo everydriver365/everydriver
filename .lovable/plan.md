@@ -1,18 +1,37 @@
 
 
-## Problem
+# Lesson End-Time Alert
 
-The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
+## What It Does
 
-## Fix
+When a lesson reaches its scheduled end time, a dismissible alert overlay appears prompting the instructor to complete the end-of-lesson wizard. The alert shows the pupil name, lesson time, and a "Complete Lesson" button that opens the `EndLessonWizard`.
 
-Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
+## Approach
 
-### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
+### New Hook: `useLessonEndAlert`
 
-1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
-2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
-3. Optionally also query `instructor_manual_blocks` for completeness.
+A hook that runs in `InstructorPortalLayout`, polling the instructor's today lessons from `scheduled_lessons`. It calculates each lesson's end time (`start_time + duration_minutes`) and compares against `Date.now()`. When a lesson's end time has passed and its status is still `scheduled`/`in_progress`/`arrived`, it surfaces it as "needs completion."
 
-This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
+- Checks every 30 seconds
+- Only shows lessons that are not yet `completed` or `cancelled`
+- Stores dismissed lesson IDs in local state so the alert doesn't reappear after dismissal
+
+### New Component: `LessonEndAlert.tsx`
+
+A modal overlay (similar to `UrgentAlertOverlay`) with:
+- Amber/orange header (not red — this is a reminder, not an emergency)
+- Pupil name and lesson time
+- "Complete Lesson" button → opens the `EndLessonWizard`
+- "Dismiss" button → hides until next uncompleted lesson
+
+### Integration
+
+- Mount `LessonEndAlert` in `InstructorPortalLayout` alongside the existing `UrgentAlertOverlay`
+- On "Complete Lesson" tap, pass the lesson data to `EndLessonWizard` (already used in `TodayScheduleView` and `NextUpTile`)
+
+## Files
+
+1. **Create** `src/hooks/useLessonEndAlert.ts` — poll today's lessons, detect overdue ones
+2. **Create** `src/components/instructor/LessonEndAlert.tsx` — the overlay component
+3. **Edit** `src/components/layout/InstructorPortalLayout.tsx` — mount the alert + wire up `EndLessonWizard` trigger
 
