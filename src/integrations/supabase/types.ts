@@ -5340,6 +5340,63 @@ export type Database = {
           },
         ]
       }
+      instructor_weekly_reports: {
+        Row: {
+          cancelled_count: number | null
+          created_at: string | null
+          expenses: number | null
+          id: string
+          instructor_id: string
+          lesson_count: number | null
+          mileage_miles: number | null
+          report_text: string | null
+          revenue: number | null
+          total_hours: number | null
+          week_start: string
+        }
+        Insert: {
+          cancelled_count?: number | null
+          created_at?: string | null
+          expenses?: number | null
+          id?: string
+          instructor_id: string
+          lesson_count?: number | null
+          mileage_miles?: number | null
+          report_text?: string | null
+          revenue?: number | null
+          total_hours?: number | null
+          week_start: string
+        }
+        Update: {
+          cancelled_count?: number | null
+          created_at?: string | null
+          expenses?: number | null
+          id?: string
+          instructor_id?: string
+          lesson_count?: number | null
+          mileage_miles?: number | null
+          report_text?: string | null
+          revenue?: number | null
+          total_hours?: number | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_weekly_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_weekly_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_working_hours: {
         Row: {
           created_at: string
