@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
-  Send, Play, MapPin, Calendar,
+  Send, Play, MapPin, Calendar, ClipboardList,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
   CloudRain, Thermometer, Battery, Wifi, BookOpen, Banknote,
 } from "lucide-react";
@@ -505,7 +505,16 @@ export function NextUpTile({
                   </button>
                 )}
 
-                <div className="grid grid-cols-5 gap-[10px]">
+                <div className="grid grid-cols-6 gap-[8px]">
+                  {/* Prep */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
+                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
+                    style={{ background: "rgba(124,58,237,0.1)" }}
+                  >
+                    <ClipboardList className="h-5 w-5" style={{ color: "#7c3aed" }} />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Prep</span>
+                  </button>
                   {/* Navigate */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
