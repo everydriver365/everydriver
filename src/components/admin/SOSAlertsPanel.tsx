@@ -23,15 +23,13 @@ export const SOSAlertsPanel = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchAlerts = async () => {
-    const { data } = await supabase
-      .from("sos_alerts")
+    const { data } = await (supabase.from as any)("sos_alerts")
       .select("*")
       .is("resolved_at", null)
       .order("created_at", { ascending: false });
 
     if (data) {
-      // Fetch instructor names
-      const instructorIds = [...new Set(data.map((a: any) => a.instructor_id))];
+      const instructorIds = [...new Set((data as any[]).map((a: any) => a.instructor_id))];
       const { data: instructors } = await supabase
         .from("instructors")
         .select("id, name")
@@ -59,8 +57,7 @@ export const SOSAlertsPanel = () => {
   }, []);
 
   const resolveAlert = async (id: string) => {
-    const { error } = await supabase
-      .from("sos_alerts")
+    const { error } = await (supabase.from as any)("sos_alerts")
       .update({ resolved_at: new Date().toISOString(), resolved_by: "admin" })
       .eq("id", id);
 
