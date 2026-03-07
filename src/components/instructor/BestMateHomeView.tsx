@@ -32,6 +32,12 @@ import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
+import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
+import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 interface BestMateHomeViewProps {
   instructorId: string | undefined;
@@ -222,6 +228,10 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
         {/* ─── EXISTING DASHBOARD CONTENT ─── */}
         <div className="px-4 space-y-4">
+          <MorningBriefingCard instructorId={instructorId} />
+          <EndOfDaySummary instructorId={instructorId} />
+          <SmartNudgesCard instructorId={instructorId} />
+
           {alerts.length > 0 && (
             <DrivingAlertsStrip
               alerts={alerts}
@@ -249,6 +259,11 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               checkInStatus={nextLesson.checkInStatus}
               lastLessonPlan={nextLesson.lastLessonPlan}
             />
+            <LessonPrepCard
+              instructorId={instructorId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
+            />
           )}
 
           {todayLessons && todayLessons.length > 0 && (
@@ -274,6 +289,9 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           {authInstructorId && (
             <VehicleHealthStrip instructorId={authInstructorId} />
           )}
+
+          <DormantPupilsCard instructorId={instructorId} />
+          <WeeklyReportCard instructorId={instructorId} />
         </div>
 
         <FloatingSessionBar instructorId={instructorId} />
