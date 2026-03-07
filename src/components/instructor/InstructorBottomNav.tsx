@@ -111,8 +111,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
     checkActiveSession();
 
-    // Poll frequently for near-instant indicator updates
-    const interval = setInterval(checkActiveSession, 2000);
+    const interval = setInterval(checkActiveSession, 15000);
     return () => clearInterval(interval);
   }, [instructor?.id]);
 
