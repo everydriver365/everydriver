@@ -211,11 +211,15 @@
   html, body {
     @apply overflow-x-hidden;
     max-width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "kern" 1, "rlig" 1, "calt" 1;
+    letter-spacing: -0.011em;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -226,6 +230,12 @@
   #root {
     @apply overflow-x-hidden;
     max-width: 100vw;
+  }
+
+  /* iOS-style rubber-band overscroll */
+  .ios-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 }
 
