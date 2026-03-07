@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
@@ -56,29 +57,31 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="fixed inset-x-4 bottom-24 z-[81] max-w-sm mx-auto"
+            className="fixed inset-x-4 bottom-20 z-[81] max-w-sm mx-auto max-h-[calc(100vh-8rem)] flex flex-col"
           >
-            <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-              <div className="p-2">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon;
-                  return (
-                    <motion.button
-                      key={action.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      onClick={() => handleAction(action.route)}
-                      className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors text-left"
-                    >
-                      <div className={`h-10 w-10 rounded-full ${action.color} flex items-center justify-center shrink-0`}>
-                        <Icon className="h-5 w-5 text-white" strokeWidth={2} />
-                      </div>
-                      <span className="text-[15px] font-semibold text-foreground">{action.label}</span>
-                    </motion.button>
-                  );
-                })}
-              </div>
+            <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
+              <ScrollArea className="max-h-[60vh]">
+                <div className="p-2">
+                  {quickActions.map((action, index) => {
+                    const Icon = action.icon;
+                    return (
+                      <motion.button
+                        key={action.id}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        onClick={() => handleAction(action.route)}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors text-left"
+                      >
+                        <div className={`h-9 w-9 rounded-full ${action.color} flex items-center justify-center shrink-0`}>
+                          <Icon className="h-4.5 w-4.5 text-white" strokeWidth={2} />
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{action.label}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             </div>
 
             {/* Close button */}
