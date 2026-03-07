@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Sun, Volume2, VolumeX, Loader2, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Volume2, VolumeX, Loader2, RefreshCw, X, CloudSun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -15,12 +15,12 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
   const [dismissed, setDismissed] = useState(false);
 
   const hour = new Date().getHours();
-  // Show anytime for now (remove time restriction for demo)
-  const isMorning = true; // Was: hour >= 5 && hour < 12;
+  const isMorning = true;
+
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   useEffect(() => {
     if (!instructorId) return;
-    // Check if already dismissed today
     const key = `briefing-dismissed-${new Date().toDateString()}`;
     if (sessionStorage.getItem(key)) {
       setDismissed(true);
@@ -92,57 +92,92 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200/50 dark:border-amber-800/30 rounded-2xl p-4 mb-4"
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="mx-4 mb-4 relative overflow-hidden"
     >
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full bg-amber-400/20 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-          <Sun className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-foreground">Morning Briefing</h3>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={readAloud}
-                disabled={speaking || loading}
-              >
-                {speaking ? (
-                  <VolumeX className="h-3.5 w-3.5 text-amber-600" />
-                ) : (
-                  <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={fetchBriefing}
-                disabled={loading}
-              >
-                <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
-              </Button>
+      {/* Main card */}
+      <div className="relative rounded-[20px] overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-12 translate-x-8" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-10 -translate-x-6" />
+        <div className="absolute top-1/2 right-8 w-16 h-16 bg-white/5 rounded-full" />
+
+        {/* Content */}
+        <div className="relative p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-black/10">
+                <CloudSun className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-primary-foreground/70 uppercase tracking-wider">{greeting}</p>
+                <h3 className="text-base font-bold text-primary-foreground">Your Daily Briefing</h3>
+              </div>
             </div>
+            
+            {/* Close button */}
+            <button
+              onClick={dismiss}
+              className="w-7 h-7 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+            >
+              <X className="h-3.5 w-3.5 text-primary-foreground/80" />
+            </button>
           </div>
-          {loading ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
-              <span className="text-xs text-muted-foreground">Preparing your briefing...</span>
-            </div>
-          ) : (
-            <p className="text-[13px] leading-relaxed text-muted-foreground">{briefing}</p>
-          )}
-          <button
-            onClick={dismiss}
-            className="text-[11px] text-muted-foreground/60 mt-2 hover:text-muted-foreground transition-colors"
-          >
-            Dismiss for today
-          </button>
+
+          {/* Briefing content */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 mb-3">
+            {loading ? (
+              <div className="flex items-center gap-2.5 py-3">
+                <div className="relative">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary-foreground/70" />
+                  <Sparkles className="h-3 w-3 text-primary-foreground absolute -top-1 -right-1" />
+                </div>
+                <span className="text-sm text-primary-foreground/80 font-medium">Preparing your briefing...</span>
+              </div>
+            ) : (
+              <p className="text-[13px] leading-[1.65] text-primary-foreground/90 font-medium">{briefing}</p>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3.5 rounded-full bg-white/15 hover:bg-white/25 text-primary-foreground text-xs font-semibold gap-1.5 backdrop-blur-sm border-0"
+              onClick={readAloud}
+              disabled={speaking || loading}
+            >
+              {speaking ? (
+                <>
+                  <VolumeX className="h-3.5 w-3.5" />
+                  Speaking...
+                </>
+              ) : (
+                <>
+                  <Volume2 className="h-3.5 w-3.5" />
+                  Listen
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3.5 rounded-full bg-white/15 hover:bg-white/25 text-primary-foreground text-xs font-semibold gap-1.5 backdrop-blur-sm border-0"
+              onClick={fetchBriefing}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
     </motion.div>

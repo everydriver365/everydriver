@@ -430,6 +430,9 @@ export function InstructorMobileHome({
         )}
       </AnimatePresence>
 
+      {/* Morning Briefing — prominent position above activity tiles */}
+      <MorningBriefingCard instructorId={instructorId} />
+
       {/* 2. Activity Tiles Grid */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
@@ -454,7 +457,6 @@ export function InstructorMobileHome({
           />
         )}
 
-        <MorningBriefingCard instructorId={instructorId} />
         <EndOfDaySummary instructorId={instructorId} />
         <SmartNudgesCard instructorId={instructorId} />
 

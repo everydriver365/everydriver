@@ -226,9 +226,11 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           </div>
         </div>
 
+        {/* Morning Briefing — prominent position */}
+        <MorningBriefingCard instructorId={instructorId} />
+
         {/* ─── EXISTING DASHBOARD CONTENT ─── */}
         <div className="px-4 space-y-4">
-          <MorningBriefingCard instructorId={instructorId} />
           <EndOfDaySummary instructorId={instructorId} />
           <SmartNudgesCard instructorId={instructorId} />
 
