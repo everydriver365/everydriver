@@ -59,20 +59,6 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
     color: "bg-cyan-500 hover:bg-cyan-600",
   },
   {
-    id: "find-car",
-    icon: Car,
-    label: "Find My Car",
-    route: "/instructor/find-my-car",
-    color: "bg-amber-500 hover:bg-amber-600",
-  },
-  {
-    id: "notes",
-    icon: StickyNote,
-    label: "Notes",
-    route: "/instructor/notes",
-    color: "bg-yellow-500 hover:bg-yellow-600",
-  },
-  {
     id: "nearby-adis",
     icon: UsersRound,
     label: "Nearby ADIs",

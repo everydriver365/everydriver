@@ -22,8 +22,6 @@ const quickActions = [
   { id: "track-live", label: "Track Live", icon: MapPin, color: "bg-emerald-500", route: "/instructor/tracking" },
   { id: "take-payment", label: "Take Payment", icon: PoundSterling, color: "bg-rose-500", route: "/instructor/take-payment" },
   { id: "messages", label: "Messages", icon: MessageSquare, color: "bg-cyan-500", route: "/instructor/messages?action=new" },
-  { id: "find-car", label: "Find My Car", icon: Car, color: "bg-amber-500", route: "/instructor/find-my-car" },
-  { id: "notes", label: "Notes", icon: StickyNote, color: "bg-yellow-500", route: "/instructor/notes" },
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
   { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
