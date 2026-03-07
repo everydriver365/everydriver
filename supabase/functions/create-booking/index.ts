@@ -24,7 +24,7 @@ const bookingSchema = z.object({
   courseType: z.string().trim().min(1).max(100),
   courseHours: z.number().min(1).max(200),
   totalPrice: z.number().min(0).max(100000),
-  slots: z.array(bookingSlotSchema).min(1, "At least one slot required").max(100),
+  slots: z.array(bookingSlotSchema).max(100).default([]),
   paymentType: z.enum(['full', 'deposit']).optional(),
   amountPaid: z.number().min(0).max(100000).optional(),
   depositAmount: z.number().min(0).max(100000).optional(),
@@ -240,12 +240,9 @@ serve(async (req) => {
         duration: lesson.duration_minutes,
       }));
 
-      // Calendar sync happens automatically via trigger_calendar_sync trigger
-      // on scheduled_lessons table, no manual call needed
-      console.log("Calendar sync will be handled by database trigger");
-
-      const syncResult = await syncResponse.json();
-      console.log("Calendar sync result:", syncResult);
+    // Calendar sync happens automatically via trigger_calendar_sync trigger
+    // on scheduled_lessons table, no manual call needed
+    console.log("Calendar sync will be handled by database trigger");
     } catch (calendarError) {
       console.error("Calendar sync error (non-fatal):", calendarError);
     }
