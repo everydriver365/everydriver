@@ -454,6 +454,10 @@ export function InstructorMobileHome({
           />
         )}
 
+        <MorningBriefingCard instructorId={instructorId} />
+        <EndOfDaySummary instructorId={instructorId} />
+        <SmartNudgesCard instructorId={instructorId} />
+
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
             lessonId={nextLesson.lessonId}
@@ -487,6 +491,11 @@ export function InstructorMobileHome({
               instructorId={instructorId}
               checkInStatus={nextLesson.checkInStatus}
               lastLessonPlan={nextLesson.lastLessonPlan}
+            />
+            <LessonPrepCard
+              instructorId={instructorId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
             />
           </div>
         )}
@@ -533,6 +542,8 @@ export function InstructorMobileHome({
           />
         )}
 
+        <DormantPupilsCard instructorId={instructorId} />
+        <WeeklyReportCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
