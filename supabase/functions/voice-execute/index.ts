@@ -224,6 +224,7 @@ serve(async (req) => {
           home: "/instructor",
           gaps: "/instructor/gaps",
           tracking: "/instructor/tracking",
+          fuel: "/instructor/fuel",
         };
         const route = pageMap[page || ""] || null;
         if (route) {
@@ -691,6 +692,36 @@ serve(async (req) => {
         } else {
           responseText = "All pupils are up to date with payments. No outstanding balances.";
         }
+        break;
+      }
+
+      case "nearest_fuel": {
+        responseText = "Opening the fuel finder for you now.";
+        return new Response(JSON.stringify({ responseText, navigate: "/instructor/fuel" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "call_office": {
+        // Get instructor name for the callback request
+        const { data: instructor } = await supabase
+          .from("instructors")
+          .select("name")
+          .eq("id", instructor_id)
+          .single();
+
+        const instrName = instructor?.name || "An instructor";
+
+        // Log a callback request via admin activity log
+        await supabase.from("admin_activity_log").insert({
+          action_type: "callback_request",
+          description: `${instrName} has requested a callback from the office (via voice assistant).`,
+          entity_type: "instructor",
+          entity_id: instructor_id,
+          metadata: { source: "voice_assistant", instructor_name: instrName },
+        });
+
+        responseText = "Done. I've sent a callback request to the office. They'll ring you back shortly.";
         break;
       }
 
