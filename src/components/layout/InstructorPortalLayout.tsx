@@ -646,6 +646,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorId={instructor?.id}
           instructorName={instructor?.name}
         />
+
+        {/* SOS Emergency Sheet */}
+        <SOSEmergencySheet
+          open={showSOS}
+          onOpenChange={setShowSOS}
+          instructorId={instructor?.id}
+          instructorName={instructor?.name}
+        />
       </div>
       </>
     );
