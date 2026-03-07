@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,6 +38,7 @@ interface InstructorInboxProps {
 
 export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const { instructor: authInstructor } = useInstructorAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { conversations, loading, getTotalUnreadCount, getOrCreateConversation, fetchConversations } = useMessaging(instructorId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +50,42 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const [showAdminChat, setShowAdminChat] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+
+  // Auto-open conversation when ?pupil=<id> is in the URL
+  const autoOpenPupilId = searchParams.get("pupil");
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
+
+  useEffect(() => {
+    if (!autoOpenPupilId || autoOpenHandled || loading) return;
+
+    const openConversation = async () => {
+      // Check if there's already a conversation with this pupil
+      const existing = conversations.find(c => c.pupil_id === autoOpenPupilId);
+      if (existing) {
+        setSelectedConversation(existing);
+      } else {
+        // Create a new conversation, then refetch to get the full object
+        const convId = await getOrCreateConversation(autoOpenPupilId);
+        if (convId) {
+          await fetchConversations();
+        }
+      }
+      setAutoOpenHandled(true);
+      // Clear the query param
+      searchParams.delete("pupil");
+      setSearchParams(searchParams, { replace: true });
+    };
+
+    openConversation();
+  }, [autoOpenPupilId, autoOpenHandled, loading, conversations]);
+
+  // After refetch, select the auto-opened conversation
+  useEffect(() => {
+    if (autoOpenHandled && !selectedConversation && autoOpenPupilId) {
+      const match = conversations.find(c => c.pupil_id === autoOpenPupilId);
+      if (match) setSelectedConversation(match);
+    }
+  }, [conversations, autoOpenHandled]);
 
   const filteredConversations = conversations.filter((conv) =>
     conv.pupil?.name?.toLowerCase().includes(searchQuery.toLowerCase())
