@@ -458,7 +458,6 @@ export function InstructorMobileHome({
         )}
 
         <EndOfDaySummary instructorId={instructorId} />
-        <SmartNudgesCard instructorId={instructorId} />
 
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
@@ -544,6 +543,7 @@ export function InstructorMobileHome({
           />
         )}
 
+        <SmartNudgesCard instructorId={instructorId} />
         <DormantPupilsCard instructorId={instructorId} />
         <WeeklyReportCard instructorId={instructorId} />
 
