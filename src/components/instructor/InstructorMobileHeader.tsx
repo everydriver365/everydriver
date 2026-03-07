@@ -114,6 +114,11 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           <div className="flex items-center gap-1">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
             <button
+              onClick={() => setSosOpen(true)}
+              className="h-8 w-8 rounded-full bg-destructive flex items-center justify-center shadow-md"
+            >
+              <span className="text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+            </button>
               onClick={() => navigate("/instructor/notifications")}
               className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
             >
@@ -180,6 +185,12 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
         onOpenChange={setQrOpen} 
         paymentQrUrl={getActivePaymentQrUrl(instructor)}
         commissionPayer={instructor?.commission_payer}
+        instructorName={instructor?.name}
+      />
+      <SOSEmergencySheet
+        open={sosOpen}
+        onOpenChange={setSosOpen}
+        instructorId={instructor?.id}
         instructorName={instructor?.name}
       />
     </div>
