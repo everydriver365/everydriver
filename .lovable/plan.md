@@ -2,24 +2,17 @@
 
 ## Problem
 
-The "Month End" tile exists in the `SwipeableQuickAccess` component but is missing from the two main tile systems used by the mobile app:
-- `AppStyleHomeView.tsx` (the iOS-style home grid)
-- `DashboardLayoutManager.tsx` (the tile visibility settings)
+The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
 
-## Plan
+## Fix
 
-**Add "Month End" to the `additionalTiles` array in both files:**
+Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
 
-1. **`src/components/instructor/AppStyleHomeView.tsx`** — Add a month-end entry to `additionalTiles` and import the existing `month-end-icon.png` asset. Add it to the `customIconImages` map.
+### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
 
-2. **`src/components/instructor/DashboardLayoutManager.tsx`** — Same changes: add the tile to `additionalTiles`, import the icon, and add it to `customIconImages`.
+1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
+2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
+3. Optionally also query `instructor_manual_blocks` for completeness.
 
-The tile will use:
-- `id: "month-end"`
-- `title: "Month End"`
-- `icon: "FileBarChart"` (fallback)
-- `route: "/instructor/month-end"`
-- Custom PNG: `src/assets/month-end-icon.png` (already exists)
-
-Both files also need `FileBarChart` added to the lucide icon imports for the fallback, and added to the `iconMap`.
+This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
 
