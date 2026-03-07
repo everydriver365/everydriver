@@ -25,7 +25,7 @@ serve(async (req) => {
     // 1. Dormant pupils (no lesson in 14+ days)
     const { data: allPupils } = await supabase
       .from("pupils")
-      .select("id, name, account_balance")
+      .select("id, name, account_balance, profile_image_url")
       .eq("instructor_id", instructor_id)
       .is("deleted_at", null)
       .eq("status", "active");
@@ -49,6 +49,9 @@ serve(async (req) => {
             action_label: "Send check-in",
             action_route: `/instructor/messages?pupil=${pupil.id}`,
             priority: 2,
+            pupil_id: pupil.id,
+            pupil_name: pupil.name,
+            pupil_image: pupil.profile_image_url || null,
           });
         }
       }
@@ -73,7 +76,7 @@ serve(async (req) => {
     const weekAhead = format(addDays(new Date(), 7), "yyyy-MM-dd");
     const { data: testPupils } = await supabase
       .from("pupils")
-      .select("name, test_date")
+      .select("id, name, test_date, profile_image_url")
       .eq("instructor_id", instructor_id)
       .is("deleted_at", null)
       .gte("test_date", today)
@@ -83,13 +86,16 @@ serve(async (req) => {
       for (const p of testPupils) {
         const daysUntil = Math.ceil((new Date(p.test_date!).getTime() - Date.now()) / 86400000);
         nudges.push({
-          id: `test-${p.name}`,
+          id: `test-${p.id}`,
           type: "upcoming_test",
           icon: "Award",
           title: `${p.name}'s test is in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`,
           action_label: "Schedule mock",
           action_route: "/instructor/diary",
           priority: daysUntil <= 3 ? 1 : 2,
+          pupil_id: p.id,
+          pupil_name: p.name,
+          pupil_image: p.profile_image_url || null,
         });
       }
     }
