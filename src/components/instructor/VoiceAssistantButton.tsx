@@ -28,34 +28,39 @@ export function VoiceAssistantHeaderButton({
   onTap: () => void;
 }) {
   const isActive = state !== "idle";
+  const config = stateConfig[state];
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <motion.button
       onClick={onTap}
+      whileTap={{ scale: 0.93 }}
       className={cn(
-        "h-7 w-7 sm:h-8 sm:w-8 shrink-0 relative",
+        "relative flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-xs transition-all duration-200 shadow-sm",
         isActive
-          ? "text-white bg-primary-foreground/25 hover:bg-primary-foreground/35"
-          : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+          ? cn(config.color, "text-white shadow-md")
+          : "bg-primary-foreground/90 text-primary hover:bg-primary-foreground"
       )}
       title="Voice Assistant (ED)"
     >
-      {state === "idle" && <Mic className="h-4 w-4" />}
+      {state === "idle" && <Mic className="h-3.5 w-3.5" />}
       {state === "listening" && (
-        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
-          <Mic className="h-4 w-4 text-destructive-foreground" />
+        <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
+          <Mic className="h-3.5 w-3.5" />
         </motion.div>
       )}
-      {state === "processing" && <Loader2 className="h-4 w-4 animate-spin" />}
-      {state === "speaking" && <Volume2 className="h-4 w-4" />}
+      {state === "processing" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+      {state === "speaking" && <Volume2 className="h-3.5 w-3.5" />}
 
-      {/* Active indicator dot */}
+      <span className="hidden sm:inline">
+        {isActive ? config.label : "Hey ED"}
+      </span>
+      <span className="sm:hidden">ED</span>
+
+      {/* Active pulse ring */}
       {isActive && (
-        <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
+        <span className="absolute inset-0 rounded-full animate-ping opacity-20 bg-current pointer-events-none" />
       )}
-    </Button>
+    </motion.button>
   );
 }
 
