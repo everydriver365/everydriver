@@ -61,7 +61,7 @@ export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
   };
 
   return (
-    <div className="mb-4">
+    <div className="mt-4 mb-4">
       <div className="flex items-center gap-1.5 mb-2">
         <Sparkles className="h-3.5 w-3.5 text-primary" />
         <span className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Smart Nudges</span>
