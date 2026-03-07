@@ -789,7 +789,19 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("geotab-poller error:", err);
-    cachedSession = null; // Clear session on error to force re-auth
+    cachedSession = null; // Clear in-memory session on error
+
+    // Clear DB-cached session if it's an auth error
+    if (err.message?.includes("auth failed") || err.message?.includes("quota exceeded")) {
+      try {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        );
+        await supabase.from("geotab_session_cache").delete().eq("id", "default");
+      } catch (_) { /* ignore cleanup errors */ }
+    }
+
     return new Response(
       JSON.stringify({ ok: false, error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
