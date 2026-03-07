@@ -99,9 +99,9 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
       className="mx-4 mt-5 mb-4 relative overflow-hidden"
     >
       {/* Main card */}
-      <div className="relative rounded-[20px] overflow-hidden shadow-xl shadow-amber-500/15 dark:shadow-amber-900/20 ring-1 ring-amber-200/30 dark:ring-amber-700/20">
+      <div className="relative rounded-[20px] overflow-hidden shadow-xl shadow-slate-500/15 dark:shadow-black/30 ring-1 ring-white/20 dark:ring-white/10">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 dark:from-amber-600 dark:via-orange-600 dark:to-rose-600" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900" />
         
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-12 translate-x-8" />
