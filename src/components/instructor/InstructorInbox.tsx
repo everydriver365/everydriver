@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
