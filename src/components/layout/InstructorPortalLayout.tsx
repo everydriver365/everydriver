@@ -232,7 +232,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     dismissLessonAlert(lesson.id);
     setEndWizardLesson(lesson);
   };
-  
+
+  // Voice assistant
+  const voiceAssistant = useVoiceAssistant({ instructorId: instructor?.id });
+  const handleVoiceTap = () => {
+    if (voiceAssistant.state === "idle") voiceAssistant.startListening();
+    else if (voiceAssistant.state === "listening") voiceAssistant.stopListening();
+    else voiceAssistant.cancel();
+  };
+
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
