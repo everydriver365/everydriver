@@ -49,6 +49,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
+import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -143,6 +144,7 @@ export function QuickActionTiles({
 }: QuickActionTilesProps) {
   const navigate = useNavigate();
   const [internalEditMode, setInternalEditMode] = useState(false);
+  const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
   const isEditMode = externalEditMode ?? internalEditMode;
   const [swipedTileId, setSwipedTileId] = useState<string | null>(null);
   const { getOrderedTiles, getHiddenTiles, saveTileOrder, hideTile, showTile, saving } = useInstructorTilePreferences(instructorId);
@@ -527,7 +529,7 @@ export function QuickActionTiles({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        navigate(getQuickActionRoute(action)!);
+                        setQuickActionsMenuOpen(true);
                       }}
                       className="shrink-0 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
                     >
@@ -540,6 +542,11 @@ export function QuickActionTiles({
           })}
         </div>
       )}
+
+      <QuickActionsPopoverMenu
+        open={quickActionsMenuOpen}
+        onClose={() => setQuickActionsMenuOpen(false)}
+      />
     </div>
   );
 }

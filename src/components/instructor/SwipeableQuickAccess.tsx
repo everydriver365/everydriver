@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
@@ -94,6 +95,7 @@ const TILES_PER_PAGE = 6;
 export function SwipeableQuickAccess() {
   const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
   const pages: QuickTile[][] = [];
@@ -139,7 +141,7 @@ export function SwipeableQuickAccess() {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(quickActionRoutes[tile.title]);
+                            setQuickActionsMenuOpen(true);
                           }}
                           className="absolute bottom-2.5 left-2.5 w-5 h-5 rounded-full bg-emerald-300/40 flex items-center justify-center active:scale-90 transition-transform z-10"
                         >
@@ -186,6 +188,11 @@ export function SwipeableQuickAccess() {
           />
         ))}
       </div>
+
+      <QuickActionsPopoverMenu
+        open={quickActionsMenuOpen}
+        onClose={() => setQuickActionsMenuOpen(false)}
+      />
     </div>
   );
 }
