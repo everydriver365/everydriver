@@ -83,6 +83,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
+import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
 import { LayoutGrid } from "lucide-react";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
@@ -219,6 +220,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [showQRModal, setShowQRModal] = useState(false);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
+  const [headerQuickActionsOpen, setHeaderQuickActionsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -530,79 +532,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     >
                       <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
                     </button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
+                    <Button
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-primary-foreground shrink-0"
                           title="Quick Actions"
+                          onClick={() => setHeaderQuickActionsOpen(true)}
                         >
                           <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 bg-background border shadow-lg z-50">
-                        <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
-                          <Users className="h-4 w-4 mr-2" />
-                          Add Pupil
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=add")} className="cursor-pointer">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Add Lesson
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setShowPaymentSheet(true)} className="cursor-pointer">
-                          <PoundSterling className="h-4 w-4 mr-2" />
-                          Take Payment
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=break")} className="cursor-pointer">
-                          <Coffee className="h-4 w-4 mr-2" />
-                          Log Break
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/availability?action=add")} className="cursor-pointer">
-                          <CalendarClock className="h-4 w-4 mr-2" />
-                          Availability
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/expenses?action=add")} className="cursor-pointer">
-                          <Receipt className="h-4 w-4 mr-2" />
-                          Expenses
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/test-results?action=add")} className="cursor-pointer">
-                          <ClipboardCheck className="h-4 w-4 mr-2" />
-                          Log Test Result
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/gaps?action=add")} className="cursor-pointer">
-                          <CalendarPlus className="h-4 w-4 mr-2" />
-                          Fill Gaps
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/cpd?action=add")} className="cursor-pointer">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          CPD Log
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/referrals?action=invite")} className="cursor-pointer">
-                          <Gift className="h-4 w-4 mr-2" />
-                          Referrals
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule")} className="cursor-pointer">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Schedule
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
-                          <Car className="h-4 w-4 mr-2" />
-                          Find My Car
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
-                          <Bell className="h-4 w-4 mr-2" />
-                          Add Reminder
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Settings
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </div>
               </div>
@@ -676,6 +614,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
           </>
         )}
+
+        {/* Header Quick Actions Popover */}
+        <QuickActionsPopoverMenu
+          open={headerQuickActionsOpen}
+          onClose={() => setHeaderQuickActionsOpen(false)}
+        />
 
         {/* Payment Sheet */}
         <TakePaymentSheet
