@@ -30,6 +30,7 @@ import { EarningsChart } from "@/components/instructor/money/EarningsChart";
 import { WeeklyComparisonBar } from "@/components/instructor/money/WeeklyComparisonBar";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
+import { OwesMoneyCard } from "@/components/instructor/money/OwesMoneyCard";
 
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
