@@ -38,7 +38,7 @@ import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
-import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
+
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
@@ -227,11 +227,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
               instructorId={instructorId}
               checkInStatus={nextLesson.checkInStatus}
               lastLessonPlan={nextLesson.lastLessonPlan}
-            />
-            <LessonPrepCard
-              instructorId={instructorId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
             />
           </div>
         )}

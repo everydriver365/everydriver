@@ -67,7 +67,7 @@ import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
-import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
+
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
@@ -497,11 +497,6 @@ export function InstructorMobileHome({
               instructorId={instructorId}
               checkInStatus={nextLesson.checkInStatus}
               lastLessonPlan={nextLesson.lastLessonPlan}
-            />
-            <LessonPrepCard
-              instructorId={instructorId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
             />
           </div>
         )}

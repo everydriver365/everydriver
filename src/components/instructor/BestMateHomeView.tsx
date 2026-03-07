@@ -37,7 +37,6 @@ import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
-import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 interface BestMateHomeViewProps {
   instructorId: string | undefined;
@@ -261,11 +260,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
                 instructorId={instructorId}
                 checkInStatus={nextLesson.checkInStatus}
                 lastLessonPlan={nextLesson.lastLessonPlan}
-              />
-              <LessonPrepCard
-                instructorId={instructorId}
-                pupilId={nextLesson.pupilId}
-                pupilName={nextLesson.pupilName}
               />
             </>
           )}
