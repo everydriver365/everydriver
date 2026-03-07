@@ -513,6 +513,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     >
                       <Search className="h-4 w-4" />
                     </Button>
+                    <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
                   </div>
 
                   {/* Right: Action buttons */}
@@ -642,7 +643,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
-            <VoiceAssistantButton instructorId={instructor?.id} />
+            <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
           </>
         )}
 
@@ -1037,7 +1038,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
-      <VoiceAssistantButton instructorId={instructor?.id} />
+      <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
     </>
   );
 }
