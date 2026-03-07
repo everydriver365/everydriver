@@ -79,7 +79,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="bg-primary text-primary-foreground relative overflow-hidden">
+      <div className="backdrop-blur-xl backdrop-saturate-150 bg-primary/85 text-primary-foreground relative overflow-hidden">
         
         <div className="relative flex items-center justify-between px-4 py-3">
           {/* Left: Back button OR Avatar + Greeting */}
