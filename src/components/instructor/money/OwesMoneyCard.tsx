@@ -19,9 +19,10 @@ interface OwesMoneyCardProps {
   pupils: Pupil[];
   instructorId: string;
   instructorName: string;
+  paymentLink?: string | null;
 }
 
-export function OwesMoneyCard({ pupils, instructorId, instructorName }: OwesMoneyCardProps) {
+export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLink }: OwesMoneyCardProps) {
   const [chasing, setChasing] = useState<string | null>(null);
 
   const debtors = [...pupils]
