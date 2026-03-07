@@ -58,8 +58,6 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
     route: "/instructor/messages",
     color: "bg-cyan-500 hover:bg-cyan-600",
   },
-    color: "bg-yellow-500 hover:bg-yellow-600",
-  },
   {
     id: "nearby-adis",
     icon: UsersRound,
