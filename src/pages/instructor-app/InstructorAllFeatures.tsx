@@ -53,6 +53,11 @@ import {
   Wrench,
   LucideIcon,
   Sparkles,
+  Mic,
+  MessageCircle,
+  Navigation,
+  PoundSterling,
+  HelpCircle,
 } from "lucide-react";
 import { useState } from "react";
 
