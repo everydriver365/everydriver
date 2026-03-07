@@ -482,38 +482,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
-                      title="Settings"
-                      onClick={() => navigate("/instructor/settings")}
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
                       onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
                       className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8 shrink-0"
                       title="Search"
                     >
                       <Search className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => navigate("/instructor/availability")}
-                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8"
-                      title="Availability"
-                    >
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPaymentSheet(true)}
-                      className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold bg-primary-foreground/90 hover:bg-primary-foreground text-primary border-primary-foreground/30"
-                      title="Take Payment"
-                    >
-                      Pay
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -535,21 +508,31 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                           <Calendar className="h-4 w-4 mr-2" />
                           Add Lesson
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
-                          <Car className="h-4 w-4 mr-2" />
-                          Find My Car
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
-                          <CalendarClock className="h-4 w-4 mr-2" />
-                          Availability
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setShowPaymentSheet(true)} className="cursor-pointer">
                           <PoundSterling className="h-4 w-4 mr-2" />
                           Take Payment
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
+                          <CalendarClock className="h-4 w-4 mr-2" />
+                          Availability
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/schedule")} className="cursor-pointer">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Schedule
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
+                          <Car className="h-4 w-4 mr-2" />
+                          Find My Car
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
                           <Bell className="h-4 w-4 mr-2" />
                           Add Reminder
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Settings
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
