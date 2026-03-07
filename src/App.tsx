@@ -128,6 +128,7 @@ const InstructorOnboarding = lazy(() => import("./pages/instructor-app/onboardin
 const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/OnboardingPreview"));
 const DemoPupilProfile = lazy(() => import("./pages/DemoPupilProfile"));
 const SmartNudgesDemo = lazy(() => import("./pages/SmartNudgesDemo"));
+const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
 
 
 // Lazy-load ConditionalRoutes
