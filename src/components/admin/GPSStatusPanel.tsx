@@ -33,8 +33,6 @@ export function GPSStatusPanel() {
   useEffect(() => {
     fetchData();
 
-    const interval = setInterval(fetchData, 2000); // Refresh every 2 seconds for instant updates
-
     const channel = supabase
       .channel("admin-gps-status")
       .on(
@@ -45,7 +43,6 @@ export function GPSStatusPanel() {
       .subscribe();
 
     return () => {
-      clearInterval(interval);
       supabase.removeChannel(channel);
     };
   }, []);

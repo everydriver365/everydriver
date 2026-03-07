@@ -34,7 +34,7 @@ export function useActiveTrackingPupils(instructorId: string | null) {
     }
   }, [instructorId]);
 
-  // Initial fetch and polling every 10s
+  // Initial fetch only — realtime subscription handles updates
   useEffect(() => {
     if (!instructorId) {
       setIsLoading(false);
@@ -42,9 +42,6 @@ export function useActiveTrackingPupils(instructorId: string | null) {
     }
 
     fetchActiveIds();
-    const interval = setInterval(fetchActiveIds, 1000); // 1s polling for real-time updates
-
-    return () => clearInterval(interval);
   }, [instructorId, fetchActiveIds]);
 
   // Real-time subscription for immediate updates

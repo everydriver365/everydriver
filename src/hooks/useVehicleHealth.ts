@@ -83,7 +83,7 @@ export function useVehicleHealth() {
   // Adaptive poller: trigger GPS backend function faster when moving
   const triggerPoller = useCallback(async () => {
     try {
-      await supabase.functions.invoke("gpsgate-poller", { method: "POST" });
+      await supabase.functions.invoke("geotab-poller", { method: "POST" });
     } catch (err) {
       console.error("Failed to trigger GPSgate poller:", err);
     }
