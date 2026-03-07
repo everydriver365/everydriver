@@ -17,6 +17,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
