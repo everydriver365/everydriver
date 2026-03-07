@@ -6,13 +6,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function resolveDate(dateStr: string | undefined): string {
+  const now = new Date();
+  const lower = (dateStr || "today").toLowerCase().trim();
+
+  if (lower === "today") return now.toISOString().split("T")[0];
+  if (lower === "tomorrow") {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  }
+
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const dayIndex = days.indexOf(lower);
+  if (dayIndex !== -1) {
+    const current = now.getDay();
+    let diff = dayIndex - current;
+    if (diff <= 0) diff += 7;
+    const d = new Date(now);
+    d.setDate(d.getDate() + diff);
+    return d.toISOString().split("T")[0];
+  }
+
+  // Try parsing as date string
+  const parsed = new Date(dateStr!);
+  if (!isNaN(parsed.getTime())) return parsed.toISOString().split("T")[0];
+
+  return now.toISOString().split("T")[0];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, pupil_name, message, page, instructor_id } = await req.json();
+    const { action, pupil_name, message, page, instructor_id, amount, note, date } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -27,7 +56,6 @@ serve(async (req) => {
           break;
         }
 
-        // Find the pupil
         const { data: pupils } = await supabase
           .from("pupils")
           .select("id, name, phone")
@@ -42,7 +70,6 @@ serve(async (req) => {
           break;
         }
 
-        // Find or create conversation
         let { data: convo } = await supabase
           .from("conversations")
           .select("id")
@@ -69,7 +96,6 @@ serve(async (req) => {
           });
         }
 
-        // Also try SMS if phone available
         if (pupil.phone) {
           try {
             const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -93,7 +119,6 @@ serve(async (req) => {
                   body: formData.toString(),
                 }
               );
-
               responseText = `Message sent to ${pupil.name} via text and in-app.`;
             } else {
               responseText = `Message sent to ${pupil.name} in the app.`;
@@ -211,8 +236,221 @@ serve(async (req) => {
         });
       }
 
+      case "record_payment": {
+        if (!pupil_name || !amount || amount <= 0) {
+          responseText = "I need a pupil name and a valid amount. Try saying 'Record £30 from Sarah'.";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name, account_balance")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        await supabase.from("payment_history").insert({
+          pupil_id: pupil.id,
+          instructor_id,
+          amount,
+          payment_method: "Voice/Cash",
+          notes: "Recorded via voice assistant",
+        });
+
+        const newBalance = (pupil.account_balance || 0) + amount;
+        await supabase.from("pupils").update({ account_balance: newBalance }).eq("id", pupil.id);
+
+        responseText = `Recorded £${amount.toFixed(2)} payment from ${pupil.name}. Their new balance is £${newBalance.toFixed(2)}.`;
+        break;
+      }
+
+      case "cancel_lesson": {
+        if (!pupil_name) {
+          responseText = "Which pupil's lesson should I cancel?";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        const now = new Date();
+        const todayStr = now.toISOString().split("T")[0];
+        const currentTime = now.toTimeString().split(" ")[0];
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .neq("status", "cancelled")
+          .or(`lesson_date.gt.${todayStr},and(lesson_date.eq.${todayStr},start_time.gte.${currentTime})`)
+          .order("lesson_date", { ascending: true })
+          .order("start_time", { ascending: true })
+          .limit(1);
+
+        const lesson = lessons?.[0];
+        if (!lesson) {
+          responseText = `${pupil.name} doesn't have any upcoming lessons to cancel.`;
+          break;
+        }
+
+        await supabase.from("scheduled_lessons").update({
+          status: "cancelled",
+          cancellation_reason: "Cancelled via voice assistant",
+        }).eq("id", lesson.id);
+
+        const time = lesson.start_time?.slice(0, 5) || "TBC";
+        responseText = `Cancelled ${pupil.name}'s lesson on ${lesson.lesson_date} at ${time}.`;
+        break;
+      }
+
+      case "weekly_earnings": {
+        const now = new Date();
+        const day = now.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset);
+        const mondayStr = monday.toISOString().split("T")[0];
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const sundayStr = sunday.toISOString().split("T")[0];
+
+        const { data: payments } = await supabase
+          .from("payment_history")
+          .select("amount")
+          .eq("instructor_id", instructor_id)
+          .gte("payment_date", mondayStr)
+          .lte("payment_date", sundayStr);
+
+        const total = (payments || []).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+        const count = payments?.length || 0;
+
+        if (count > 0) {
+          responseText = `You've earned £${total.toFixed(2)} this week from ${count} payment${count > 1 ? 's' : ''}.`;
+        } else {
+          responseText = "No payments recorded this week yet.";
+        }
+        break;
+      }
+
+      case "free_slots": {
+        const targetDate = resolveDate(date);
+
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("start_time, duration_minutes")
+          .eq("instructor_id", instructor_id)
+          .eq("lesson_date", targetDate)
+          .neq("status", "cancelled")
+          .order("start_time", { ascending: true });
+
+        const workStart = "08:00";
+        const workEnd = "19:00";
+
+        if (!lessons || lessons.length === 0) {
+          responseText = `You're completely free on ${targetDate}, from ${workStart} to ${workEnd}.`;
+          break;
+        }
+
+        const gaps: string[] = [];
+        let cursor = workStart;
+
+        for (const l of lessons) {
+          const lessonStart = l.start_time?.slice(0, 5) || cursor;
+          if (lessonStart > cursor) {
+            gaps.push(`${cursor} to ${lessonStart}`);
+          }
+          const dur = l.duration_minutes || 60;
+          const [h, m] = lessonStart.split(":").map(Number);
+          const endMins = h * 60 + m + dur;
+          const endH = String(Math.floor(endMins / 60)).padStart(2, "0");
+          const endM = String(endMins % 60).padStart(2, "0");
+          cursor = `${endH}:${endM}`;
+        }
+
+        if (cursor < workEnd) {
+          gaps.push(`${cursor} to ${workEnd}`);
+        }
+
+        if (gaps.length > 0) {
+          responseText = `On ${targetDate} you have ${gaps.length} free slot${gaps.length > 1 ? 's' : ''}: ${gaps.join(", ")}.`;
+        } else {
+          responseText = `You're fully booked on ${targetDate}.`;
+        }
+        break;
+      }
+
+      case "log_lesson_note": {
+        if (!pupil_name || !note) {
+          responseText = "I need a pupil name and a note. Try saying 'Sarah did well on roundabouts today'.";
+          break;
+        }
+
+        const { data: pupils } = await supabase
+          .from("pupils")
+          .select("id, name")
+          .eq("instructor_id", instructor_id)
+          .is("deleted_at", null)
+          .ilike("name", `%${pupil_name}%`)
+          .limit(1);
+
+        const pupil = pupils?.[0];
+        if (!pupil) {
+          responseText = `I couldn't find a pupil called ${pupil_name}.`;
+          break;
+        }
+
+        const now = new Date();
+        const todayStr = now.toISOString().split("T")[0];
+
+        // Find today's or most recent lesson for this pupil
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, notes")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .neq("status", "cancelled")
+          .lte("lesson_date", todayStr)
+          .order("lesson_date", { ascending: false })
+          .order("start_time", { ascending: false })
+          .limit(1);
+
+        const lesson = lessons?.[0];
+        if (!lesson) {
+          responseText = `I couldn't find a recent lesson for ${pupil.name} to add a note to.`;
+          break;
+        }
+
+        const existingNotes = lesson.notes ? lesson.notes + "\n" : "";
+        await supabase.from("scheduled_lessons").update({
+          notes: existingNotes + `[Voice] ${note}`,
+        }).eq("id", lesson.id);
+
+        responseText = `Note added to ${pupil.name}'s lesson on ${lesson.lesson_date}: "${note}".`;
+        break;
+      }
+
       default:
-        responseText = "Sorry, I didn't understand that command. Try saying something like 'Tell Sarah I'm on my way' or 'What's my next lesson?'";
+        responseText = "Sorry, I didn't understand that command. Try saying something like 'Tell Sarah I'm on my way', 'Record £30 from Tom', or 'When am I free tomorrow?'";
     }
 
     return new Response(JSON.stringify({ responseText }), {
