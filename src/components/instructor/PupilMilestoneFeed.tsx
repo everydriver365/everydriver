@@ -1,0 +1,114 @@
+import { useEffect, useState } from "react";
+import { format, formatDistanceToNow } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+import { Award, BookOpen, Trophy, Star, Target, Sparkles, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
+import { cn } from "@/lib/utils";
+
+interface Milestone {
+  id: string;
+  pupil_id: string;
+  milestone_type: string;
+  title: string;
+  description: string | null;
+  icon_name: string | null;
+  created_at: string;
+  pupil?: { name: string; profile_image_url: string | null };
+}
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  first_lesson: Star,
+  "10_lessons": Award,
+  "25_lessons": Trophy,
+  "50_lessons": Sparkles,
+  test_booked: Target,
+  test_passed: Trophy,
+  perfect_manoeuvre: Star,
+};
+
+const COLOR_MAP: Record<string, string> = {
+  first_lesson: "bg-amber-500/10 text-amber-600",
+  "10_lessons": "bg-blue-500/10 text-blue-600",
+  "25_lessons": "bg-purple-500/10 text-purple-600",
+  "50_lessons": "bg-emerald-500/10 text-emerald-600",
+  test_booked: "bg-primary/10 text-primary",
+  test_passed: "bg-emerald-500/10 text-emerald-600",
+  perfect_manoeuvre: "bg-amber-500/10 text-amber-600",
+};
+
+interface PupilMilestoneFeedProps {
+  instructorId: string | undefined;
+}
+
+export function PupilMilestoneFeed({ instructorId }: PupilMilestoneFeedProps) {
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!instructorId) return;
+
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("pupil_milestones")
+        .select("*, pupil:pupils(name, profile_image_url)")
+        .eq("instructor_id", instructorId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      setMilestones((data as unknown as Milestone[]) || []);
+      setLoading(false);
+    };
+
+    fetch();
+  }, [instructorId]);
+
+  if (loading || milestones.length === 0) return null;
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5" />
+          Pupil Achievements
+        </p>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+        <AnimatePresence>
+          {milestones.map((m, i) => {
+            const Icon = ICON_MAP[m.milestone_type] || Award;
+            const colorClass = COLOR_MAP[m.milestone_type] || "bg-muted text-muted-foreground";
+            return (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="shrink-0 w-44 rounded-xl border bg-card p-3 space-y-2 shadow-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <PupilAvatar
+                    name={m.pupil?.name || "?"}
+                    imageUrl={m.pupil?.profile_image_url}
+                    size="xs"
+                  />
+                  <span className="text-xs font-medium truncate">{m.pupil?.name}</span>
+                </div>
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", colorClass)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-sm font-semibold leading-tight">{m.title}</p>
+                {m.description && (
+                  <p className="text-[11px] text-muted-foreground line-clamp-2">{m.description}</p>
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+                </p>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
