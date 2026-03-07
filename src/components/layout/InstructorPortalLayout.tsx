@@ -4,7 +4,8 @@ import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { useLessonEndAlert, OverdueLesson } from "@/hooks/useLessonEndAlert";
 import { LessonEndAlert } from "@/components/instructor/LessonEndAlert";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
-import { VoiceAssistantButton } from "@/components/instructor/VoiceAssistantButton";
+import { VoiceAssistantHeaderButton, VoiceAssistantOverlay } from "@/components/instructor/VoiceAssistantButton";
+import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -231,7 +232,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     dismissLessonAlert(lesson.id);
     setEndWizardLesson(lesson);
   };
-  
+
+  // Voice assistant
+  const voiceAssistant = useVoiceAssistant({ instructorId: instructor?.id });
+  const handleVoiceTap = () => {
+    if (voiceAssistant.state === "idle") voiceAssistant.startListening();
+    else if (voiceAssistant.state === "listening") voiceAssistant.stopListening();
+    else voiceAssistant.cancel();
+  };
+
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
@@ -504,6 +513,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     >
                       <Search className="h-4 w-4" />
                     </Button>
+                    <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
                   </div>
 
                   {/* Right: Action buttons */}
@@ -633,7 +643,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
-            <VoiceAssistantButton instructorId={instructor?.id} />
+            <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
           </>
         )}
 
@@ -768,6 +778,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Right: Notifications + Theme + Avatar */}
             <div className="flex items-center gap-1">
+              <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
               <DesktopNotificationBell instructorId={instructor?.id} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1028,7 +1039,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
-      <VoiceAssistantButton instructorId={instructor?.id} />
+      <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
     </>
   );
 }
