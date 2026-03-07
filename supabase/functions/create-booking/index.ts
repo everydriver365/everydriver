@@ -24,7 +24,7 @@ const bookingSchema = z.object({
   courseType: z.string().trim().min(1).max(100),
   courseHours: z.number().min(1).max(200),
   totalPrice: z.number().min(0).max(100000),
-  slots: z.array(bookingSlotSchema).min(1, "At least one slot required").max(100),
+  slots: z.array(bookingSlotSchema).max(100).default([]),
   paymentType: z.enum(['full', 'deposit']).optional(),
   amountPaid: z.number().min(0).max(100000).optional(),
   depositAmount: z.number().min(0).max(100000).optional(),
@@ -103,32 +103,36 @@ serve(async (req) => {
       );
     }
 
-    // 2. Create scheduled lessons for each slot
-    const lessonInserts = booking.slots.map((slot) => ({
-      instructor_id: booking.instructorId,
-      pupil_id: pupil.id,
-      lesson_date: slot.date,
-      start_time: slot.startTime,
-      duration_minutes: slot.duration,
-      pickup_location: booking.pupilAddress,
-      pickup_postcode: booking.pupilPostcode,
-      lesson_type: "driving",
-      status: "scheduled",
-      payment_status: "pending",
-    }));
+    // 2. Create scheduled lessons for each slot (if any provided)
+    let lessons: any[] = [];
+    if (booking.slots.length > 0) {
+      const lessonInserts = booking.slots.map((slot) => ({
+        instructor_id: booking.instructorId,
+        pupil_id: pupil.id,
+        lesson_date: slot.date,
+        start_time: slot.startTime,
+        duration_minutes: slot.duration,
+        pickup_location: booking.pupilAddress,
+        pickup_postcode: booking.pupilPostcode,
+        lesson_type: "driving",
+        status: "scheduled",
+        payment_status: "pending",
+      }));
 
-    const { data: lessons, error: lessonsError } = await supabase
-      .from("scheduled_lessons")
-      .insert(lessonInserts)
-      .select();
+      const { data: lessonData, error: lessonsError } = await supabase
+        .from("scheduled_lessons")
+        .insert(lessonInserts)
+        .select();
 
-    if (lessonsError) {
-      console.error("Error creating lessons:", lessonsError);
-      await supabase.from("pupils").delete().eq("id", pupil.id);
-      return new Response(
-        JSON.stringify({ error: "Failed to create lesson schedule" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (lessonsError) {
+        console.error("Error creating lessons:", lessonsError);
+        await supabase.from("pupils").delete().eq("id", pupil.id);
+        return new Response(
+          JSON.stringify({ error: "Failed to create lesson schedule" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      lessons = lessonData || [];
     }
 
     // 3. Save purchased upsells
@@ -240,12 +244,9 @@ serve(async (req) => {
         duration: lesson.duration_minutes,
       }));
 
-      // Calendar sync happens automatically via trigger_calendar_sync trigger
-      // on scheduled_lessons table, no manual call needed
-      console.log("Calendar sync will be handled by database trigger");
-
-      const syncResult = await syncResponse.json();
-      console.log("Calendar sync result:", syncResult);
+    // Calendar sync happens automatically via trigger_calendar_sync trigger
+    // on scheduled_lessons table, no manual call needed
+    console.log("Calendar sync will be handled by database trigger");
     } catch (calendarError) {
       console.error("Calendar sync error (non-fatal):", calendarError);
     }

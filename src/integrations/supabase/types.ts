@@ -11673,6 +11673,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_pupil_balance: {
+        Args: { p_amount: number; p_pupil_id: string }
+        Returns: number
+      }
       increment_total_distance: {
         Args: { p_distance: number; p_id: string }
         Returns: undefined

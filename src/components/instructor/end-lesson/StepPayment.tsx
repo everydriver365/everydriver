@@ -60,14 +60,11 @@ export function StepPayment({
       });
       if (hErr) throw hErr;
 
-      const { data: fresh } = await supabase
-        .from("pupils")
-        .select("account_balance")
-        .eq("id", pupilId)
-        .single();
-
-      const newBal = (fresh?.account_balance || currentBalance) + parsed;
-      await supabase.from("pupils").update({ account_balance: newBal }).eq("id", pupilId);
+      const { data: newBal, error: balErr } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId,
+        p_amount: parsed,
+      });
+      if (balErr) throw balErr;
 
       toast.success(`£${parsed.toFixed(2)} recorded`);
       invalidatePaymentQueries({ pupilId, instructorId });

@@ -590,7 +590,7 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("square-checkout", {
         body: {
-          amount: totalPrice,
+          amount: totalPrice + upsellTotal,
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
@@ -641,7 +641,7 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("elavon-checkout", {
         body: {
-          amount: totalPrice,
+          amount: totalPrice + upsellTotal,
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
