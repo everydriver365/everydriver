@@ -1028,6 +1028,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
+      <VoiceAssistantButton instructorId={instructor?.id} />
     </>
   );
 }
