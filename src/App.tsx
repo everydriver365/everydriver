@@ -25,6 +25,7 @@ const InstructorPortal = lazy(() => import("./pages/InstructorPortal"));
 const InstructorPupils = lazy(() => import("./pages/InstructorPupils"));
 const InstructorSchedule = lazy(() => import("./pages/InstructorSchedule"));
 const NextUpTileDemo = lazy(() => import("./pages/instructor/NextUpTileDemo"));
+const BriefingDemo = lazy(() => import("./pages/instructor/BriefingDemo"));
 const HeaderHeroDemo = lazy(() => import("./pages/HeaderHeroDemo"));
 const InstructorDiary = lazy(() => import("./pages/InstructorDiary"));
 const InstructorJobs = lazy(() => import("./pages/InstructorJobs"));
@@ -219,6 +220,7 @@ const App = () => (
                 <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
                 <Route path="/instructor/schedule" element={<InstructorSchedule />} />
                 <Route path="/instructor/next-up-demo" element={<NextUpTileDemo />} />
+                <Route path="/instructor/briefing-demo" element={<BriefingDemo />} />
                 <Route path="/instructor/header-demo" element={<HeaderHeroDemo />} />
                 <Route path="/instructor/diary" element={<InstructorDiary />} />
                 <Route path="/instructor/jobs" element={<InstructorJobs />} />
