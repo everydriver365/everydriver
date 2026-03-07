@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
+  ClipboardCheck, CalendarPlus, BookOpen, Gift,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
@@ -22,6 +23,10 @@ const quickActions = [
   { id: "log-break", label: "Log Break", icon: Coffee, color: "bg-orange-500", route: "/instructor/schedule?action=break" },
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
   { id: "expenses", label: "Expenses", icon: Receipt, color: "bg-pink-500", route: "/instructor/expenses?action=add" },
+  { id: "log-test-result", label: "Log Test Result", icon: ClipboardCheck, color: "bg-blue-600", route: "/instructor/test-results?action=add" },
+  { id: "fill-gaps", label: "Fill Gaps", icon: CalendarPlus, color: "bg-fuchsia-500", route: "/instructor/gaps?action=add" },
+  { id: "cpd-log", label: "CPD Log", icon: BookOpen, color: "bg-purple-600", route: "/instructor/cpd?action=add" },
+  { id: "referrals", label: "Referrals", icon: Gift, color: "bg-red-500", route: "/instructor/referrals?action=invite" },
 ];
 
 export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMenuProps) {
