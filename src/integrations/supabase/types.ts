@@ -467,6 +467,51 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          instructor_id: string | null
+          is_system: boolean
+          title: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          is_system?: boolean
+          title: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          is_system?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           event_type: string
@@ -7172,6 +7217,7 @@ export type Database = {
           conversation_id: string
           created_at: string | null
           deleted_at: string | null
+          delivered_at: string | null
           id: string
           is_urgent: boolean | null
           read_at: string | null
@@ -7185,6 +7231,7 @@ export type Database = {
           conversation_id: string
           created_at?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
           is_urgent?: boolean | null
           read_at?: string | null
@@ -7198,6 +7245,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
           is_urgent?: boolean | null
           read_at?: string | null
@@ -8501,6 +8549,61 @@ export type Database = {
           },
           {
             foreignKeyName: "pupil_leaderboard_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_milestones: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon_name: string | null
+          id: string
+          instructor_id: string
+          milestone_type: string
+          pupil_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          instructor_id: string
+          milestone_type: string
+          pupil_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          instructor_id?: string
+          milestone_type?: string
+          pupil_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_milestones_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_milestones_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_milestones_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
