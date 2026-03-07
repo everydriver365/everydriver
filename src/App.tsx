@@ -300,6 +300,7 @@ const App = () => (
 
                 {/* Demo Pages */}
                 <Route path="/demo/pupil-profile" element={<DemoPupilProfile />} />
+                <Route path="/demo/smart-nudges" element={<SmartNudgesDemo />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
