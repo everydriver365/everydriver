@@ -86,11 +86,19 @@ Return a JSON tool call with one of these actions:
      Examples: "When is Sarah's test?", "What date is Tom's driving test?"
 
 17. unpaid_pupils - List pupils who owe money
-     Parameters: none
-     Examples: "Who hasn't paid?", "Which pupils owe me money?", "Any outstanding balances?"
+      Parameters: none
+      Examples: "Who hasn't paid?", "Which pupils owe me money?", "Any outstanding balances?"
 
-18. unknown - Could not understand the command
-     Parameters: original_text (string)
+18. nearest_fuel - Find the nearest fuel station
+      Parameters: none
+      Examples: "Where is the nearest fuel?", "Find me a petrol station", "I need fuel", "Nearest garage?"
+
+19. call_office - Request the office/school to call the instructor back
+      Parameters: none
+      Examples: "Get the office to call me", "Ask the school to ring me", "Tell the office to call me back", "I need to speak to the office"
+
+20. unknown - Could not understand the command
+      Parameters: original_text (string)
 
 Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest match from the available pupils list.`;
 
@@ -117,7 +125,7 @@ Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest m
                 properties: {
                   action: {
                     type: "string",
-                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "record_payment", "cancel_lesson", "weekly_earnings", "free_slots", "log_lesson_note", "pupil_count", "tomorrow_schedule", "reschedule_lesson", "send_running_late", "total_lessons_today", "pupil_test_date", "unpaid_pupils", "unknown"],
+                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "record_payment", "cancel_lesson", "weekly_earnings", "free_slots", "log_lesson_note", "pupil_count", "tomorrow_schedule", "reschedule_lesson", "send_running_late", "total_lessons_today", "pupil_test_date", "unpaid_pupils", "nearest_fuel", "call_office", "unknown"],
                   },
                   pupil_name: { type: "string", description: "Matched pupil name from the available list" },
                   message: { type: "string", description: "Message content for send_message" },
