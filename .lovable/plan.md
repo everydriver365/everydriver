@@ -2,17 +2,21 @@
 
 ## Problem
 
-The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
+The green **+** button in the mobile header opens `QuickActionsPopoverMenu`, which displays a **vertical list** of actions with small colored circles. The user expects it to match the style shown in the reference image: an **iOS-style grid of square tiles** with custom image icons (like the tiles already used in `QuickActionTiles.tsx`).
 
-## Fix
+## Root Cause
 
-Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
+`QuickActionsPopoverMenu.tsx` uses a simple vertical list layout with `lucide-react` icons in colored circles. Meanwhile, the dashboard's `QuickActionTiles.tsx` already has the correct iOS-style appearance with custom image assets (`messages-icon.png`, `take-payment-icon.png`, etc.) rendered in a grid.
 
-### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
+## Plan
 
-1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
-2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
-3. Optionally also query `instructor_manual_blocks` for completeness.
+**Restyle `QuickActionsPopoverMenu.tsx`** to use the same iOS-style grid layout and custom image icons as `QuickActionTiles.tsx`:
 
-This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
+1. **Update the layout** from a vertical list to a **4-column grid** of square tiles
+2. **Import the same custom image assets** already used in `QuickActionTiles.tsx` (e.g., `scheduleIcon`, `pupilsIcon`, `trackIcon`, etc.)
+3. **Map each quick action to its custom icon image** where available, falling back to lucide icons with colored circles for actions that don't have custom images
+4. **Style each tile** as a rounded square with the icon image centered and a label below — matching the reference screenshot
+5. **Add a `ScrollArea`** so the grid is scrollable if it overflows the viewport, keeping the close button accessible
+
+This ensures the popover from the header + button has the same visual identity as the dashboard tiles.
 
