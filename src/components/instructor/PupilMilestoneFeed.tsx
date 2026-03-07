@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, BookOpen, Trophy, Star, Target, Sparkles, ChevronRight } from "lucide-react";
+import { Award, Trophy, Star, Target, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,8 @@ interface Milestone {
   description: string | null;
   icon_name: string | null;
   created_at: string;
-  pupil?: { name: string; profile_image_url: string | null };
+  pupil_name: string | null;
+  pupil_image: string | null;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -48,19 +49,38 @@ export function PupilMilestoneFeed({ instructorId }: PupilMilestoneFeedProps) {
   useEffect(() => {
     if (!instructorId) return;
 
-    const fetch = async () => {
+    const fetchMilestones = async () => {
       const { data } = await supabase
-        .from("pupil_milestones")
-        .select("*, pupil:pupils(name, profile_image_url)")
+        .from("pupil_milestones" as any)
+        .select("id, pupil_id, milestone_type, title, description, icon_name, created_at")
         .eq("instructor_id", instructorId)
         .order("created_at", { ascending: false })
         .limit(10);
 
-      setMilestones((data as unknown as Milestone[]) || []);
+      if (!data || data.length === 0) {
+        setMilestones([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch pupil names
+      const pupilIds = [...new Set((data as any[]).map((d: any) => d.pupil_id))];
+      const { data: pupils } = await supabase
+        .from("pupils")
+        .select("id, name, profile_image_url")
+        .in("id", pupilIds);
+
+      const pupilMap = new Map((pupils || []).map(p => [p.id, p]));
+
+      setMilestones((data as any[]).map((m: any) => ({
+        ...m,
+        pupil_name: pupilMap.get(m.pupil_id)?.name || "Unknown",
+        pupil_image: pupilMap.get(m.pupil_id)?.profile_image_url || null,
+      })));
       setLoading(false);
     };
 
-    fetch();
+    fetchMilestones();
   }, [instructorId]);
 
   if (loading || milestones.length === 0) return null;
@@ -88,11 +108,11 @@ export function PupilMilestoneFeed({ instructorId }: PupilMilestoneFeedProps) {
               >
                 <div className="flex items-center gap-2">
                   <PupilAvatar
-                    name={m.pupil?.name || "?"}
-                    imageUrl={m.pupil?.profile_image_url}
+                    name={m.pupil_name || "?"}
+                    imageUrl={m.pupil_image}
                     size="xs"
                   />
-                  <span className="text-xs font-medium truncate">{m.pupil?.name}</span>
+                  <span className="text-xs font-medium truncate">{m.pupil_name}</span>
                 </div>
                 <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", colorClass)}>
                   <Icon className="h-4 w-4" />
