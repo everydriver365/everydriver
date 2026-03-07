@@ -64,11 +64,10 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
       if (existing) {
         setSelectedConversation(existing);
       } else {
-        // Create a new conversation
-        const conv = await getOrCreateConversation(autoOpenPupilId);
-        if (conv) {
-          setSelectedConversation(conv);
-          fetchConversations();
+        // Create a new conversation, then refetch to get the full object
+        const convId = await getOrCreateConversation(autoOpenPupilId);
+        if (convId) {
+          await fetchConversations();
         }
       }
       setAutoOpenHandled(true);
@@ -79,6 +78,14 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
     openConversation();
   }, [autoOpenPupilId, autoOpenHandled, loading, conversations]);
+
+  // After refetch, select the auto-opened conversation
+  useEffect(() => {
+    if (autoOpenHandled && !selectedConversation && autoOpenPupilId) {
+      const match = conversations.find(c => c.pupil_id === autoOpenPupilId);
+      if (match) setSelectedConversation(match);
+    }
+  }, [conversations, autoOpenHandled]);
 
   const filteredConversations = conversations.filter((conv) =>
     conv.pupil?.name?.toLowerCase().includes(searchQuery.toLowerCase())
