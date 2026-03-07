@@ -11,7 +11,7 @@ interface VehicleHealthStripProps {
 
 export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
   const { devices, vehicles, isLoading } = useVehicleHealth();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (isLoading || devices.length === 0) return null;
 

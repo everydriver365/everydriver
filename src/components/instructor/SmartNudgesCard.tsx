@@ -74,7 +74,7 @@ export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (!instructorId) return;
