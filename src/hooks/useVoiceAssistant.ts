@@ -95,7 +95,7 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
 
         if (intentError) throw intentError;
 
-        const { action, pupil_name, message, page, original_text } = intentData;
+        const { action, pupil_name, message, page, original_text, amount, note, date } = intentData;
 
         // Step 2: Execute command
         const { data: execData, error: execError } = await supabase.functions.invoke(
@@ -106,6 +106,9 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
               pupil_name,
               message,
               page,
+              amount,
+              note,
+              date,
               instructor_id: instructorId,
             },
           }

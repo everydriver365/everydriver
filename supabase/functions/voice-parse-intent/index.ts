@@ -41,10 +41,30 @@ Return a JSON tool call with one of these actions:
    Parameters: page (string - one of: schedule, pupils, messages, payments, settings, home, gaps, tracking)
    Example: "Show my schedule", "Go to payments"
 
-6. unknown - Could not understand the command
-   Parameters: original_text (string)
+6. record_payment - Record a payment from a pupil
+   Parameters: pupil_name (string), amount (number)
+   Examples: "Record £30 from Sarah", "Sarah paid 35 pounds", "Log payment of 40 from Tom"
 
-Match pupil names fuzibly (e.g. "sara" matches "Sarah Jones"). Pick the closest match from the available pupils list.`;
+7. cancel_lesson - Cancel an upcoming lesson with a pupil
+   Parameters: pupil_name (string)
+   Examples: "Cancel my next lesson with Tom", "Cancel Tom's lesson"
+
+8. weekly_earnings - Check total earnings for this week
+   Parameters: none
+   Examples: "How much did I earn this week?", "What are my weekly earnings?", "Total income this week"
+
+9. free_slots - Check available free time on a given day
+   Parameters: date (string - e.g. "today", "tomorrow", "monday", "2025-03-10")
+   Examples: "When am I free tomorrow?", "What gaps do I have on Monday?", "Am I free today?"
+
+10. log_lesson_note - Log a note about a pupil's lesson
+    Parameters: pupil_name (string), note (string)
+    Examples: "Sarah did well on roundabouts today", "Tom needs more practice on parallel parking", "Note that Emma struggled with hill starts"
+
+11. unknown - Could not understand the command
+    Parameters: original_text (string)
+
+Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest match from the available pupils list.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -69,12 +89,15 @@ Match pupil names fuzibly (e.g. "sara" matches "Sarah Jones"). Pick the closest 
                 properties: {
                   action: {
                     type: "string",
-                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "unknown"],
+                    enum: ["send_message", "next_lesson", "today_schedule", "pupil_balance", "navigate", "record_payment", "cancel_lesson", "weekly_earnings", "free_slots", "log_lesson_note", "unknown"],
                   },
                   pupil_name: { type: "string", description: "Matched pupil name from the available list" },
                   message: { type: "string", description: "Message content for send_message" },
                   page: { type: "string", description: "Page name for navigate" },
                   original_text: { type: "string", description: "Original text for unknown commands" },
+                  amount: { type: "number", description: "Payment amount for record_payment" },
+                  note: { type: "string", description: "Lesson note text for log_lesson_note" },
+                  date: { type: "string", description: "Date reference for free_slots (e.g. today, tomorrow, monday, or YYYY-MM-DD)" },
                 },
                 required: ["action"],
                 additionalProperties: false,
