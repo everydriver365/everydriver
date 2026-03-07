@@ -63,6 +63,12 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
+import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
@@ -448,6 +454,10 @@ export function InstructorMobileHome({
           />
         )}
 
+        <MorningBriefingCard instructorId={instructorId} />
+        <EndOfDaySummary instructorId={instructorId} />
+        <SmartNudgesCard instructorId={instructorId} />
+
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
             lessonId={nextLesson.lessonId}
@@ -481,6 +491,11 @@ export function InstructorMobileHome({
               instructorId={instructorId}
               checkInStatus={nextLesson.checkInStatus}
               lastLessonPlan={nextLesson.lastLessonPlan}
+            />
+            <LessonPrepCard
+              instructorId={instructorId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
             />
           </div>
         )}
@@ -527,6 +542,8 @@ export function InstructorMobileHome({
           />
         )}
 
+        <DormantPupilsCard instructorId={instructorId} />
+        <WeeklyReportCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
