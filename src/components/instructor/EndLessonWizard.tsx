@@ -262,7 +262,6 @@ export function EndLessonWizard({
       setRouteReportData(report);
 
       toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
-      onCompleted();
 
       // Show course complete step if last lesson, otherwise show summary
       setStep(isLastLesson ? "course_complete" : "completed");
@@ -312,6 +311,7 @@ export function EndLessonWizard({
   };
 
   const handleDone = () => {
+    onCompleted();
     onOpenChange(false);
   };
 
