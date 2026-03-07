@@ -6,6 +6,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const LEVEL_LABELS: Record<number, string> = {
+  0: "Not Started",
+  1: "Introduced",
+  2: "Under Guidance",
+  3: "Prompted",
+  4: "Seldom Prompted",
+  5: "Independent",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -18,41 +27,112 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get pupil info
-    const { data: pupil } = await supabase
-      .from("pupils")
-      .select("name, test_date, experience_level, lesson_notes")
-      .eq("id", pupil_id)
-      .maybeSingle();
+    // Fetch all data in parallel
+    const [pupilRes, lessonsRes, historyRes, recommendationsRes, syllabusRes] = await Promise.all([
+      // Pupil info
+      supabase
+        .from("pupils")
+        .select("name, test_date, experience_level, lesson_notes")
+        .eq("id", pupil_id)
+        .maybeSingle(),
 
-    // Get last 3 completed lessons with notes
-    const { data: recentLessons } = await supabase
-      .from("scheduled_lessons")
-      .select("lesson_date, start_time, notes, status, lesson_plan_notes")
-      .eq("pupil_id", pupil_id)
-      .eq("instructor_id", instructor_id)
-      .eq("status", "completed")
-      .order("lesson_date", { ascending: false })
-      .limit(3);
+      // Last 3 completed scheduled lessons with notes
+      supabase
+        .from("scheduled_lessons")
+        .select("lesson_date, start_time, notes, status, lesson_plan_notes")
+        .eq("pupil_id", pupil_id)
+        .eq("instructor_id", instructor_id)
+        .eq("status", "completed")
+        .order("lesson_date", { ascending: false })
+        .limit(3),
 
-    // Get any syllabus recommendations
-    const { data: recommendations } = await supabase
-      .from("pupil_recommendations")
-      .select("topic, notes, priority")
-      .eq("pupil_id", pupil_id)
-      .eq("is_completed", false)
-      .order("priority", { ascending: false })
-      .limit(5);
+      // Last lesson from lesson_history (has richer notes + next_lesson_plan)
+      supabase
+        .from("lesson_history")
+        .select("lesson_date, start_time, notes, next_lesson_plan, skills_practiced, duration_minutes")
+        .eq("pupil_id", pupil_id)
+        .eq("instructor_id", instructor_id)
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: false })
+        .limit(3),
+
+      // Syllabus recommendations
+      supabase
+        .from("pupil_recommendations")
+        .select("topic, notes, priority")
+        .eq("pupil_id", pupil_id)
+        .eq("is_completed", false)
+        .order("priority", { ascending: false })
+        .limit(5),
+
+      // DVSA syllabus progress
+      supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level, instructor_notes, last_practiced")
+        .eq("pupil_id", pupil_id),
+    ]);
+
+    const pupil = pupilRes.data;
+    const recentLessons = lessonsRes.data || [];
+    const lessonHistory = historyRes.data || [];
+    const recommendations = recommendationsRes.data || [];
+    const syllabusProgress = syllabusRes.data || [];
+
+    // Build previous lesson notes summary
+    const previousLessonNotes = lessonHistory.length > 0
+      ? {
+          date: lessonHistory[0].lesson_date,
+          notes: lessonHistory[0].notes || null,
+          nextPlan: lessonHistory[0].next_lesson_plan || null,
+          skillsPracticed: lessonHistory[0].skills_practiced || [],
+          duration: lessonHistory[0].duration_minutes,
+        }
+      : null;
+
+    // Build syllabus summary
+    const totalCompetencies = 27; // DVSA standard
+    const tracked = syllabusProgress.length;
+    const competenciesByLevel: Record<string, string[]> = {};
+    const weakAreas: { id: string; level: number; levelLabel: string; notes: string | null }[] = [];
+    const strongAreas: { id: string; level: number; levelLabel: string }[] = [];
+
+    for (const sp of syllabusProgress) {
+      const lvl = sp.level ?? 0;
+      const label = LEVEL_LABELS[lvl] || `Level ${lvl}`;
+      if (!competenciesByLevel[label]) competenciesByLevel[label] = [];
+      competenciesByLevel[label].push(sp.competency_id);
+
+      if (lvl <= 2) {
+        weakAreas.push({ id: sp.competency_id, level: lvl, levelLabel: label, notes: sp.instructor_notes });
+      }
+      if (lvl >= 4) {
+        strongAreas.push({ id: sp.competency_id, level: lvl, levelLabel: label });
+      }
+    }
+
+    const syllabusSummary = {
+      totalCompetencies,
+      tracked,
+      notStarted: totalCompetencies - tracked,
+      levelBreakdown: competenciesByLevel,
+      weakAreas: weakAreas.slice(0, 8),
+      strongAreas: strongAreas.slice(0, 5),
+      averageLevel: tracked > 0
+        ? Math.round((syllabusProgress.reduce((s, p) => s + (p.level ?? 0), 0) / tracked) * 10) / 10
+        : 0,
+    };
 
     const context = {
       pupilName: pupil?.name || "Unknown",
       testDate: pupil?.test_date || null,
       experienceLevel: pupil?.experience_level || "unknown",
-      recentLessons: (recentLessons || []).map(l => ({
+      recentLessons: recentLessons.map(l => ({
         date: l.lesson_date,
         notes: l.notes || l.lesson_plan_notes || "No notes",
       })),
-      recommendations: (recommendations || []).map(r => ({
+      previousLessonNotes,
+      syllabusSummary,
+      recommendations: recommendations.map(r => ({
         topic: r.topic,
         notes: r.notes,
         priority: r.priority,
@@ -72,7 +152,13 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are ED, a driving instructor assistant. Write a 3-bullet lesson prep guide for the upcoming lesson. Each bullet should be actionable and specific. Include: what to build on from last time, what to focus on today, and any test prep if a test date is approaching. Keep each bullet under 20 words. Do NOT use markdown formatting, just plain numbered points.`
+              content: `You are ED, a UK driving instructor assistant. Write a lesson prep guide for the upcoming lesson. Structure it as:
+
+1. PREVIOUS LESSON RECAP (1 bullet): What was covered last time and key observations. Reference specific notes if available.
+2. TODAY'S FOCUS (1-2 bullets): What to work on today based on syllabus weak areas and recommendations. Be specific about DVSA competencies.
+3. TEST PREP (1 bullet, only if test date within 30 days): Specific test preparation advice.
+
+Keep each bullet under 25 words. Use plain numbered points, no markdown. Always use £ (GBP) for currency. Reference DVSA competency names where relevant.`
             },
             { role: "user", content: JSON.stringify(context) }
           ],
@@ -84,7 +170,12 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ prep: prepText, data: context }), {
+    return new Response(JSON.stringify({
+      prep: prepText,
+      previousLessonNotes,
+      syllabusSummary,
+      data: context,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
