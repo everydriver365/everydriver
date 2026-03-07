@@ -30,6 +30,7 @@ import { EarningsChart } from "@/components/instructor/money/EarningsChart";
 import { WeeklyComparisonBar } from "@/components/instructor/money/WeeklyComparisonBar";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
+import { OwesMoneyCard } from "@/components/instructor/money/OwesMoneyCard";
 
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
@@ -144,6 +145,9 @@ export default function InstructorPay() {
             </div>
           </div>
         </motion.div>
+
+        {/* Owes Money - debtors first */}
+        <OwesMoneyCard pupils={pupils} instructorId={instructorId} instructorName={instructorName} />
 
         {/* Quick Stats Row */}
         <div className="grid grid-cols-3 gap-3">
