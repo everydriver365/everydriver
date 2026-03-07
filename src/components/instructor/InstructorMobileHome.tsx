@@ -68,6 +68,7 @@ import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+import { OutstandingTasksCard } from "@/components/instructor/OutstandingTasksCard";
 import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
