@@ -146,6 +146,9 @@ export default function InstructorPay() {
           </div>
         </motion.div>
 
+        {/* Owes Money - debtors first */}
+        <OwesMoneyCard pupils={pupils} instructorId={instructorId} instructorName={instructorName} />
+
         {/* Quick Stats Row */}
         <div className="grid grid-cols-3 gap-3">
           <motion.div
