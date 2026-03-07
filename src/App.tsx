@@ -106,6 +106,9 @@ const InstructorMiniWebsite = lazy(() => import("./pages/InstructorMiniWebsite")
 const InstructorPortalLogin = lazy(() => import("./pages/InstructorPortalLogin"));
 const InstructorGeotabHub = lazy(() => import("./pages/InstructorGeotabHub"));
 const DashcamGallery = lazy(() => import("./pages/instructor/DashcamGallery"));
+const MonthEndReview = lazy(() => import("./pages/instructor/MonthEndReview"));
+const WeeklyReportPage = lazy(() => import("./pages/instructor/WeeklyReportPage"));
+const OutstandingTasksPage = lazy(() => import("./pages/instructor/OutstandingTasksPage"));
 
 // Instructor SaaS pages
 const InstructorAppHome = lazy(() => import("./pages/instructor-app/InstructorAppHome"));
@@ -279,6 +282,9 @@ const App = () => (
                 <Route path="/instructor/test-requests" element={<InstructorTestRequests />} />
                 <Route path="/instructor/notifications" element={<InstructorNotifications />} />
                 <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
+                <Route path="/instructor/month-end" element={<MonthEndReview />} />
+                <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
+                <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />

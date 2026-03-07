@@ -67,8 +67,6 @@ import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
-import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
-import { OutstandingTasksCard } from "@/components/instructor/OutstandingTasksCard";
 import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
@@ -546,8 +544,6 @@ export function InstructorMobileHome({
 
         <SmartNudgesCard instructorId={instructorId} />
         <DormantPupilsCard instructorId={instructorId} />
-        <WeeklyReportCard instructorId={instructorId} />
-        <OutstandingTasksCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />

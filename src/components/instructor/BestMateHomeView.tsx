@@ -36,7 +36,7 @@ import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
-import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+
 import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 interface BestMateHomeViewProps {
@@ -295,7 +295,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           )}
 
           <DormantPupilsCard instructorId={instructorId} />
-          <WeeklyReportCard instructorId={instructorId} />
+          
         </div>
 
         <FloatingSessionBar instructorId={instructorId} />
