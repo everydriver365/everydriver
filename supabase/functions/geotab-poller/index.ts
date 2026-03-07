@@ -22,11 +22,36 @@ const DEVICE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 let lastMediaSyncAt = 0;
 const MEDIA_SYNC_INTERVAL = 60_000; // 60 seconds
 
-async function authenticate(): Promise<GeotabSession> {
+async function authenticate(supabaseClient?: any): Promise<GeotabSession> {
+  // 1. Check in-memory cache first
   if (cachedSession && cachedSession.expiresAt > Date.now()) {
     return cachedSession;
   }
 
+  // 2. Check database cache (survives cold starts)
+  if (supabaseClient) {
+    try {
+      const { data: dbSession } = await supabaseClient
+        .from("geotab_session_cache")
+        .select("session_id, server_url, expires_at")
+        .eq("id", "default")
+        .maybeSingle();
+
+      if (dbSession && new Date(dbSession.expires_at).getTime() > Date.now()) {
+        console.log("[GeotabPoller] Reusing DB-cached session, server:", dbSession.server_url);
+        cachedSession = {
+          sessionId: dbSession.session_id,
+          serverUrl: dbSession.server_url,
+          expiresAt: new Date(dbSession.expires_at).getTime(),
+        };
+        return cachedSession;
+      }
+    } catch (e) {
+      console.log("[GeotabPoller] DB session cache lookup failed (non-critical):", e);
+    }
+  }
+
+  // 3. Authenticate with Geotab API
   const database = Deno.env.get("GEOTAB_DATABASE");
   const username = Deno.env.get("GEOTAB_USERNAME");
   const password = Deno.env.get("GEOTAB_PASSWORD");
@@ -52,13 +77,28 @@ async function authenticate(): Promise<GeotabSession> {
     ? "my.geotab.com"
     : path;
 
-  console.log("[GeotabPoller] Authenticated, server:", resolvedPath);
+  console.log("[GeotabPoller] Fresh auth, server:", resolvedPath);
 
+  const expiresAt = Date.now() + 20 * 60 * 1000;
   cachedSession = {
     sessionId: credentials.sessionId,
     serverUrl: `https://${resolvedPath}/apiv1`,
-    expiresAt: Date.now() + 20 * 60 * 1000,
+    expiresAt,
   };
+
+  // 4. Persist to DB so other isolates can reuse
+  if (supabaseClient) {
+    try {
+      await supabaseClient.from("geotab_session_cache").upsert({
+        id: "default",
+        session_id: credentials.sessionId,
+        server_url: cachedSession.serverUrl,
+        expires_at: new Date(expiresAt).toISOString(),
+      });
+    } catch (e) {
+      console.log("[GeotabPoller] Failed to persist session to DB (non-critical):", e);
+    }
+  }
 
   return cachedSession;
 }
@@ -188,7 +228,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await authenticate();
+    const session = await authenticate(supabase);
     const deviceMap = new Map(devices.map((d) => [d.geotab_device_id, d]));
 
     // Get cached device ID mappings (only hits Geotab API every 5 min)
@@ -749,7 +789,19 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("geotab-poller error:", err);
-    cachedSession = null; // Clear session on error to force re-auth
+    cachedSession = null; // Clear in-memory session on error
+
+    // Clear DB-cached session if it's an auth error
+    if (err.message?.includes("auth failed") || err.message?.includes("quota exceeded")) {
+      try {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        );
+        await supabase.from("geotab_session_cache").delete().eq("id", "default");
+      } catch (_) { /* ignore cleanup errors */ }
+    }
+
     return new Response(
       JSON.stringify({ ok: false, error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
