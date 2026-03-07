@@ -72,7 +72,7 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
         sos: `${instructorName || "An instructor"} has triggered an SOS emergency.`,
       };
 
-      const { error } = await supabase.from("sos_alerts").insert({
+      const { error } = await (supabase.from as any)("sos_alerts").insert({
         instructor_id: instructorId,
         alert_level: level,
         latitude: coords?.latitude ?? null,
@@ -81,11 +81,14 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
         message: messages[level],
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("SOS insert error:", JSON.stringify(error));
+        throw error;
+      }
 
       // For SOS level, also broadcast via urgent_alerts
       if (level === "sos") {
-        await supabase.from("urgent_alerts").insert({
+        await (supabase.from as any)("urgent_alerts").insert({
           instructor_id: instructorId,
           is_broadcast: true,
           title: "🚨 SOS Emergency",
