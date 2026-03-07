@@ -262,11 +262,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
                 checkInStatus={nextLesson.checkInStatus}
                 lastLessonPlan={nextLesson.lastLessonPlan}
               />
-              <LessonPrepCard
-                instructorId={instructorId}
-                pupilId={nextLesson.pupilId}
-                pupilName={nextLesson.pupilName}
-              />
             </>
           )}
 
