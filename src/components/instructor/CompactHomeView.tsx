@@ -35,7 +35,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
 
@@ -185,7 +185,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
       {/* Content sections — identical to dashboard */}
       <div className="px-4">
-        <EndOfDaySummary instructorId={instructorId} />
+        
         <SmartNudgesCard instructorId={instructorId} />
 
         {alerts.length > 0 && (

@@ -25,7 +25,7 @@ const quickActions = [
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "bg-indigo-500", route: "/instructor/nearby-friends" },
   
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
-  
+  { id: "end-of-day", label: "End of Day", icon: Coffee, color: "bg-indigo-500", route: "/instructor/end-of-day" },
 ];
 
 function loadPinned(): string[] {

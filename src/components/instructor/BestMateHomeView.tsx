@@ -34,7 +34,7 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
 
@@ -230,7 +230,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
         {/* ─── EXISTING DASHBOARD CONTENT ─── */}
         <div className="px-4 space-y-4">
-          <EndOfDaySummary instructorId={instructorId} />
+          
           <SmartNudgesCard instructorId={instructorId} />
 
           {alerts.length > 0 && (
