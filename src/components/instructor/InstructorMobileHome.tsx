@@ -63,6 +63,12 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
+import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
+import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
