@@ -31,6 +31,9 @@ import messagesIcon from "@/assets/messages-icon.png";
 import testResultIcon from "@/assets/test-result-icon.png";
 import testSwapIcon from "@/assets/test-swap-icon.png";
 import standardsCheckIcon from "@/assets/standards-check-icon.png";
+import monthEndIcon from "@/assets/month-end-icon.png";
+import weeklyReportIcon from "@/assets/weekly-report-icon.png";
+import tasksDueIcon from "@/assets/tasks-due-icon.png";
 
 interface QuickTile {
   title: string;
