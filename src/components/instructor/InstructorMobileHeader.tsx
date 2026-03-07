@@ -17,6 +17,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
@@ -42,6 +43,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [qrOpen, setQrOpen] = useState(false);
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [sosOpen, setSosOpen] = useState(false);
   const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const { total: totalNotifCount } = useCombinedNotificationCount(instructor?.id);
@@ -112,6 +114,12 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           <div className="flex items-center gap-1">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
             <button
+              onClick={() => setSosOpen(true)}
+              className="h-8 w-8 rounded-full bg-destructive flex items-center justify-center shadow-md"
+            >
+              <span className="text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+            </button>
+            <button
               onClick={() => navigate("/instructor/notifications")}
               className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
             >
@@ -178,6 +186,12 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
         onOpenChange={setQrOpen} 
         paymentQrUrl={getActivePaymentQrUrl(instructor)}
         commissionPayer={instructor?.commission_payer}
+        instructorName={instructor?.name}
+      />
+      <SOSEmergencySheet
+        open={sosOpen}
+        onOpenChange={setSosOpen}
+        instructorId={instructor?.id}
         instructorName={instructor?.name}
       />
     </div>
