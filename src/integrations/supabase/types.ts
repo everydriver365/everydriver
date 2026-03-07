@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounting_sync_log: {
+        Row: {
+          error_message: string | null
+          id: string
+          instructor_id: string
+          period_end: string
+          period_start: string
+          platform: string
+          records_synced: number
+          status: string
+          sync_type: string
+          synced_at: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          instructor_id: string
+          period_end: string
+          period_start: string
+          platform: string
+          records_synced?: number
+          status?: string
+          sync_type: string
+          synced_at?: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          instructor_id?: string
+          period_end?: string
+          period_start?: string
+          platform?: string
+          records_synced?: number
+          status?: string
+          sync_type?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_sync_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_sync_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_activity_log: {
         Row: {
           action_type: string
@@ -2979,6 +3033,60 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      instructor_accounting_connections: {
+        Row: {
+          access_token: string
+          company_name: string | null
+          connected_at: string
+          id: string
+          instructor_id: string
+          platform: string
+          refresh_token: string | null
+          tenant_id: string | null
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          company_name?: string | null
+          connected_at?: string
+          id?: string
+          instructor_id: string
+          platform: string
+          refresh_token?: string | null
+          tenant_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          company_name?: string | null
+          connected_at?: string
+          id?: string
+          instructor_id?: string
+          platform?: string
+          refresh_token?: string | null
+          tenant_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_accounting_connections_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_accounting_connections_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       instructor_app_features: {
         Row: {
