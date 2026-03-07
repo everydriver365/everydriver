@@ -1,18 +1,41 @@
 
 
 ## Problem
+The green "+" buttons on homepage tiles currently navigate directly to routes. The user wants them to instead open a unified quick-actions popover menu styled like the reference screenshot — a white rounded card with a vertical list of actions, each having a colored circle icon and label.
 
-The `ScheduleDayTabs` component only queries `scheduled_lessons` for the dot indicators. It does **not** query `instructor_calendar_events` (Google Calendar events) or `instructor_manual_blocks`. So dots only appear for lessons, not for synced Google Calendar events.
+## Design (from screenshot)
+- White rounded card popover, anchored near the "+" button
+- Each row: colored circle icon (left) + action label (right)
+- Actions: Add Lesson, Add Pupil, Track Live, Take Payment, Messages, Find My Car, Notes, Nearby ADIs
+- Close "X" button at bottom-right corner
+- Backdrop overlay behind the menu
 
-## Fix
+## Plan
 
-Update the `fetchEventDots` function in `ScheduleDayTabs.tsx` to also query `instructor_calendar_events` for the visible week. For each external event, extract the date from `start_time` and add it to the dot counts.
+### 1. Create `QuickActionsPopoverMenu` component
+A new reusable component (`src/components/instructor/QuickActionsPopoverMenu.tsx`) that renders:
+- A fixed/absolute white rounded card with the action list
+- Each item: a 44×44 colored circle with an icon + label text
+- Colors matching the screenshot (purple for Add Lesson, blue for Add Pupil, green for Track Live, red/pink for Take Payment, cyan for Messages, orange for Find My Car, amber for Notes, purple for Nearby ADIs)
+- A dark circular "X" close button at the bottom-right
+- Semi-transparent backdrop overlay
+- Framer Motion enter/exit animations
 
-### Changes to `src/components/instructor/ScheduleDayTabs.tsx`:
+Action items and their routes:
+- Add Lesson → `/instructor/schedule?action=add`
+- Add Pupil → `/instructor/pupils?action=add`
+- Track Live → `/instructor/tracking`
+- Take Payment → `/instructor/take-payment`
+- Messages → `/instructor/messages?action=new`
+- Find My Car → `/instructor/find-my-car`
+- Notes → `/instructor/notes` (or todos)
+- Nearby ADIs → `/instructor/nearby-adis`
 
-1. **Add a second query** inside `fetchEventDots` to fetch `instructor_calendar_events` where `start_time` falls within the week range.
-2. **Extract dates** from the ISO `start_time` strings and merge counts into the same `counts` record.
-3. Optionally also query `instructor_manual_blocks` for completeness.
+### 2. Update `QuickActionTiles.tsx`
+- Add state `popoverOpen` to manage menu visibility
+- Change green "+" button `onClick` to open the popover menu instead of navigating directly
+- Render `QuickActionsPopoverMenu` at the bottom of the component
 
-This ensures dots appear under any date that has lessons, Google Calendar events, or manual blocks.
+### 3. Update `SwipeableQuickAccess.tsx`
+- Same changes: green "+" opens the shared popover menu instead of navigating
 
