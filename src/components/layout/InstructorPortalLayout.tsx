@@ -402,8 +402,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <IOSInstallBanner />
 
             {/* Mobile Header */}
-            <header className="sticky top-0 z-40 bg-primary pt-[env(safe-area-inset-top)]">
-              <div className="bg-primary text-primary-foreground relative overflow-hidden">
+            <header className="sticky top-0 z-40 backdrop-blur-xl backdrop-saturate-150 bg-primary/85 pt-[env(safe-area-inset-top)]">
+              <div className="text-primary-foreground relative overflow-hidden">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Hamburger + Title */}
