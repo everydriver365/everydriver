@@ -127,6 +127,7 @@ const InstructorCompare = lazy(() => import("./pages/instructor-app/InstructorCo
 const InstructorOnboarding = lazy(() => import("./pages/instructor-app/onboarding/InstructorOnboarding"));
 const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/OnboardingPreview"));
 const DemoPupilProfile = lazy(() => import("./pages/DemoPupilProfile"));
+const SmartNudgesDemo = lazy(() => import("./pages/SmartNudgesDemo"));
 
 
 // Lazy-load ConditionalRoutes
