@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
