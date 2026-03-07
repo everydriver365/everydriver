@@ -38,6 +38,7 @@ interface InstructorInboxProps {
 
 export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const { instructor: authInstructor } = useInstructorAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { conversations, loading, getTotalUnreadCount, getOrCreateConversation, fetchConversations } = useMessaging(instructorId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,6 +50,35 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const [showAdminChat, setShowAdminChat] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+
+  // Auto-open conversation when ?pupil=<id> is in the URL
+  const autoOpenPupilId = searchParams.get("pupil");
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
+
+  useEffect(() => {
+    if (!autoOpenPupilId || autoOpenHandled || loading) return;
+
+    const openConversation = async () => {
+      // Check if there's already a conversation with this pupil
+      const existing = conversations.find(c => c.pupil_id === autoOpenPupilId);
+      if (existing) {
+        setSelectedConversation(existing);
+      } else {
+        // Create a new conversation
+        const conv = await getOrCreateConversation(autoOpenPupilId);
+        if (conv) {
+          setSelectedConversation(conv);
+          fetchConversations();
+        }
+      }
+      setAutoOpenHandled(true);
+      // Clear the query param
+      searchParams.delete("pupil");
+      setSearchParams(searchParams, { replace: true });
+    };
+
+    openConversation();
+  }, [autoOpenPupilId, autoOpenHandled, loading, conversations]);
 
   const filteredConversations = conversations.filter((conv) =>
     conv.pupil?.name?.toLowerCase().includes(searchQuery.toLowerCase())
