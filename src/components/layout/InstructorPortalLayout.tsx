@@ -86,6 +86,7 @@ import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
+import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 
 const sidebarGroups = [
   {
@@ -207,6 +208,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+  const [showSOS, setShowSOS] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -469,6 +471,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   {/* Right: Action buttons */}
                   <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setShowSOS(true)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-destructive flex items-center justify-center shadow-md shrink-0"
+                      title="Emergency SOS"
+                    >
+                      <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+                    </button>
                     <MobileNotificationBell instructorId={instructor?.id} />
                     <Button
                       variant="ghost"
