@@ -35,40 +35,21 @@ export function VoiceAssistantHeaderButton({
       onClick={onTap}
       whileTap={{ scale: 0.93 }}
       className={cn(
-        "relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-bold text-xs transition-all duration-300 overflow-hidden",
+        "relative flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold text-[11px] transition-all duration-300 overflow-hidden",
         isActive
-          ? cn(config.color, "text-white shadow-lg shadow-destructive/30")
-          : "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/40 hover:shadow-violet-500/60 hover:brightness-110"
+          ? cn(config.color, "text-white shadow-md")
+          : "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-sm hover:brightness-110"
       )}
       title="Voice Assistant (ED)"
     >
-      {/* Shimmer sweep on idle */}
-      {!isActive && (
-        <motion.span
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
-          animate={{ x: ["-100%", "200%"] }}
-          transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 2 }}
-        />
-      )}
+      {state === "idle" && <Mic className="h-3 w-3 relative z-10" />}
+      {state === "listening" && <Mic className="h-3 w-3" />}
+      {state === "processing" && <Loader2 className="h-3 w-3 animate-spin" />}
+      {state === "speaking" && <Volume2 className="h-3 w-3" />}
 
-      {state === "idle" && <Mic className="h-3.5 w-3.5 relative z-10" />}
-      {state === "listening" && (
-        <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
-          <Mic className="h-3.5 w-3.5" />
-        </motion.div>
-      )}
-      {state === "processing" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-      {state === "speaking" && <Volume2 className="h-3.5 w-3.5" />}
-
-      <span className="relative z-10 hidden sm:inline">
+      <span className="relative z-10">
         {isActive ? config.label : "Ask ED"}
       </span>
-      <span className="relative z-10 sm:hidden">Ask ED</span>
-
-      {/* Active pulse ring */}
-      {isActive && (
-        <span className="absolute inset-0 rounded-full animate-ping opacity-20 bg-current pointer-events-none" />
-      )}
     </motion.button>
   );
 }
