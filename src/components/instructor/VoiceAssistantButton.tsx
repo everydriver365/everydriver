@@ -35,14 +35,23 @@ export function VoiceAssistantHeaderButton({
       onClick={onTap}
       whileTap={{ scale: 0.93 }}
       className={cn(
-        "relative flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-xs transition-all duration-200 shadow-sm",
+        "relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-bold text-xs transition-all duration-300 overflow-hidden",
         isActive
-          ? cn(config.color, "text-white shadow-md")
-          : "bg-primary-foreground/90 text-primary hover:bg-primary-foreground"
+          ? cn(config.color, "text-white shadow-lg shadow-destructive/30")
+          : "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/40 hover:shadow-violet-500/60 hover:brightness-110"
       )}
       title="Voice Assistant (ED)"
     >
-      {state === "idle" && <Mic className="h-3.5 w-3.5" />}
+      {/* Shimmer sweep on idle */}
+      {!isActive && (
+        <motion.span
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
+          animate={{ x: ["-100%", "200%"] }}
+          transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 2 }}
+        />
+      )}
+
+      {state === "idle" && <Mic className="h-3.5 w-3.5 relative z-10" />}
       {state === "listening" && (
         <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
           <Mic className="h-3.5 w-3.5" />
@@ -51,10 +60,10 @@ export function VoiceAssistantHeaderButton({
       {state === "processing" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
       {state === "speaking" && <Volume2 className="h-3.5 w-3.5" />}
 
-      <span className="hidden sm:inline">
-        {isActive ? config.label : "Hey ED"}
+      <span className="relative z-10 hidden sm:inline">
+        {isActive ? config.label : "Ask ED"}
       </span>
-      <span className="sm:hidden">ED</span>
+      <span className="relative z-10 sm:hidden">ED</span>
 
       {/* Active pulse ring */}
       {isActive && (
