@@ -65,6 +65,20 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
     route: "/instructor/find-my-car",
     color: "bg-amber-500 hover:bg-amber-600",
   },
+  {
+    id: "notes",
+    icon: StickyNote,
+    label: "Notes",
+    route: "/instructor/notes",
+    color: "bg-yellow-500 hover:bg-yellow-600",
+  },
+  {
+    id: "nearby-adis",
+    icon: UsersRound,
+    label: "Nearby ADIs",
+    route: "/instructor/nearby-friends",
+    color: "bg-indigo-500 hover:bg-indigo-600",
+  },
 ];
 
 export function QuickActionsFAB({ className, position = "bottom-right" }: QuickActionsFABProps) {
