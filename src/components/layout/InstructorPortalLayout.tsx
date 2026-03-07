@@ -633,6 +633,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
+            <VoiceAssistantButton instructorId={instructor?.id} />
           </>
         )}
 
