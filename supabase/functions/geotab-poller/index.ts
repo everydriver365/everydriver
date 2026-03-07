@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await authenticate();
+    const session = await authenticate(supabase);
     const deviceMap = new Map(devices.map((d) => [d.geotab_device_id, d]));
 
     // Get cached device ID mappings (only hits Geotab API every 5 min)
