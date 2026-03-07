@@ -126,10 +126,10 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-black/5",
-        wallpaperColor ? "" : "bg-[#f2f2f7]"
+        "fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border/30",
+        wallpaperColor ? "" : "bg-background/80 backdrop-blur-xl backdrop-saturate-150"
       )}
-      style={wallpaperColor ? { backgroundColor: wallpaperColor } : undefined}
+      style={wallpaperColor ? { backgroundColor: `${wallpaperColor}e6` } : undefined}
     >
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
