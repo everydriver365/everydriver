@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { haptics } from "@/lib/haptics";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
-  ClipboardCheck, CalendarPlus, BookOpen, Gift, Search, Star,
+  ClipboardCheck, CalendarPlus, BookOpen, Gift, Star,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
@@ -45,16 +44,12 @@ function loadPinned(): string[] {
 
 export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMenuProps) {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
+  
   const [pinned, setPinned] = useState<string[]>(loadPinned);
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  // Haptic on open + auto-focus search
+  // Haptic on open
   useEffect(() => {
     if (open) {
       haptics.medium();
-      setSearch("");
-      setTimeout(() => searchRef.current?.focus(), 150);
     }
   }, [open]);
 
@@ -73,13 +68,8 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
     navigate(route);
   };
 
-  // Filter by search
-  const filtered = quickActions.filter(a =>
-    a.label.toLowerCase().includes(search.toLowerCase())
-  );
-
   // Sort: pinned first
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = [...quickActions].sort((a, b) => {
     const aP = pinned.includes(a.id) ? 0 : 1;
     const bP = pinned.includes(b.id) ? 0 : 1;
     return aP - bP;
@@ -110,25 +100,8 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             className="fixed inset-x-4 bottom-20 z-[81] max-w-sm mx-auto max-h-[calc(100vh-8rem)] flex flex-col"
           >
             <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
-              {/* Sticky search */}
-              <div className="p-2 pb-0 sticky top-0 z-10 bg-card">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    ref={searchRef}
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search actions…"
-                    className="h-8 pl-8 text-xs rounded-lg bg-muted/50 border-0 focus-visible:ring-1"
-                  />
-                </div>
-              </div>
-
               <ScrollArea className="max-h-[55vh]">
                 <div className="p-2 pt-1">
-                  {sorted.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-6">No actions match "{search}"</p>
-                  )}
 
                   {/* Pinned section */}
                   {pinnedVisible.length > 0 && (
