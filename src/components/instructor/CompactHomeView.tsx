@@ -37,7 +37,7 @@ import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard
 import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
-import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+
 import { LessonPrepCard } from "@/components/instructor/LessonPrepCard";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useNavigate } from "react-router-dom";
@@ -267,7 +267,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <DormantPupilsCard instructorId={instructorId} />
 
-        <WeeklyReportCard instructorId={instructorId} />
+        
 
         {instructorId && (
           <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
