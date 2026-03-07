@@ -428,6 +428,16 @@ export function NextUpTile({
                   </div>
                 )}
 
+                {/* 2d. Last Lesson Plan */}
+                {lastLessonPlan && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <BookOpen className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#7c3aed" }} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Plan for this lesson</span>
+                      <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--foreground))" }}>{lastLessonPlan}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* 2e. Payment Warning Banner */}
                 {noBalance && (
