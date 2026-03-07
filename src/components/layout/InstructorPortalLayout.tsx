@@ -220,6 +220,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [showQRModal, setShowQRModal] = useState(false);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
+  const [headerQuickActionsOpen, setHeaderQuickActionsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
