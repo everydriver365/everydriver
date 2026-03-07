@@ -208,7 +208,7 @@ export default function InstructorAllFeatures() {
                 {[
                   { step: "1", title: "Tap the Mic", desc: "Press the floating microphone button in the bottom-right corner of any screen.", icon: Mic },
                   { step: "2", title: "Speak Your Command", desc: "Say something like \"Tell Sarah I'm on my way\" or \"What's my next lesson?\"", icon: MessageCircle },
-                  { step: "3", title: "ED Responds", desc: "ED executes your command and speaks back to confirm — completely hands-free.", icon: Volume2Icon },
+                  { step: "3", title: "ED Responds", desc: "ED executes your command and speaks back to confirm — completely hands-free.", icon: Mic },
                 ].map((s, i) => (
                   <motion.div key={s.step} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 + i * 0.1 }} className="flex gap-4">
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
