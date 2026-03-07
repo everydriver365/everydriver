@@ -615,6 +615,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </>
         )}
 
+        {/* Header Quick Actions Popover */}
+        <QuickActionsPopoverMenu
+          open={headerQuickActionsOpen}
+          onClose={() => setHeaderQuickActionsOpen(false)}
+        />
+
         {/* Payment Sheet */}
         <TakePaymentSheet
           open={showPaymentSheet}
