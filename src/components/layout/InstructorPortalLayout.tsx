@@ -1,6 +1,9 @@
 import { ReactNode, useState, useEffect } from "react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
+import { useLessonEndAlert, OverdueLesson } from "@/hooks/useLessonEndAlert";
+import { LessonEndAlert } from "@/components/instructor/LessonEndAlert";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -220,6 +223,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     setOpenGroups(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]);
   };
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
+  const { overdueLesson, dismiss: dismissLessonAlert } = useLessonEndAlert(instructor?.id);
+  const [endWizardLesson, setEndWizardLesson] = useState<OverdueLesson | null>(null);
+
+  const handleCompleteLessonAlert = (lesson: OverdueLesson) => {
+    dismissLessonAlert(lesson.id);
+    setEndWizardLesson(lesson);
+  };
   
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
@@ -346,6 +356,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
+      <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />
+      {endWizardLesson && instructor?.id && (
+        <EndLessonWizard
+          open={!!endWizardLesson}
+          onOpenChange={(open) => !open && setEndWizardLesson(null)}
+          lessonId={endWizardLesson.id}
+          pupilId={endWizardLesson.pupilId}
+          pupilName={endWizardLesson.pupilName}
+          instructorId={instructor.id}
+          durationMinutes={endWizardLesson.durationMinutes}
+          lessonDate={endWizardLesson.lessonDate}
+          startTime={endWizardLesson.startTime}
+          currentBalance={endWizardLesson.currentBalance}
+          onCompleted={() => setEndWizardLesson(null)}
+        />
+      )}
       <div
         className={cn(
           "min-h-screen overflow-x-hidden instructor-portal",
@@ -685,6 +711,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
+      <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />
+      {endWizardLesson && instructor?.id && (
+        <EndLessonWizard
+          open={!!endWizardLesson}
+          onOpenChange={(open) => !open && setEndWizardLesson(null)}
+          lessonId={endWizardLesson.id}
+          pupilId={endWizardLesson.pupilId}
+          pupilName={endWizardLesson.pupilName}
+          instructorId={instructor.id}
+          durationMinutes={endWizardLesson.durationMinutes}
+          lessonDate={endWizardLesson.lessonDate}
+          startTime={endWizardLesson.startTime}
+          currentBalance={endWizardLesson.currentBalance}
+          onCompleted={() => setEndWizardLesson(null)}
+        />
+      )}
       <CommandPalette variant="instructor" />
       <div className="min-h-screen flex flex-col w-full bg-background instructor-portal">
         {/* Navy Blue Header */}
