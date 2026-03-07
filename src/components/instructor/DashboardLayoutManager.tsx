@@ -83,6 +83,7 @@ const additionalTiles: QuickAction[] = [
   { id: "month-end", title: "Month End", icon: "FileBarChart", route: "/instructor/month-end", display_order: 109 },
   { id: "weekly-report", title: "Weekly Report", icon: "BarChart3", route: "/instructor/weekly-report", display_order: 110 },
   { id: "tasks-due", title: "Tasks Due", icon: "ClipboardCheck", route: "/instructor/outstanding-tasks", display_order: 111 },
+  { id: "end-of-day", title: "End of Day", icon: "Moon", route: "/instructor/end-of-day", display_order: 112 },
 ];
 
 interface DashboardLayoutManagerProps {
