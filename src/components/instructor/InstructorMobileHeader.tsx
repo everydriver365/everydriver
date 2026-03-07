@@ -119,6 +119,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             >
               <span className="text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
             </button>
+            <button
               onClick={() => navigate("/instructor/notifications")}
               className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
             >
