@@ -19,9 +19,10 @@ interface OwesMoneyCardProps {
   pupils: Pupil[];
   instructorId: string;
   instructorName: string;
+  paymentLink?: string | null;
 }
 
-export function OwesMoneyCard({ pupils, instructorId, instructorName }: OwesMoneyCardProps) {
+export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLink }: OwesMoneyCardProps) {
   const [chasing, setChasing] = useState<string | null>(null);
 
   const debtors = [...pupils]
@@ -41,6 +42,10 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName }: OwesMone
 
     try {
       const amount = Math.abs(pupil.account_balance || 0).toFixed(2);
+      const paymentLinkLine = paymentLink ? `\n\nPay now: ${paymentLink}` : "";
+      const paymentLinkHtml = paymentLink
+        ? `<p><a href="${paymentLink}" style="display:inline-block;padding:12px 24px;background-color:#10b981;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:bold;">Pay £${amount} Now</a></p><p style="font-size:12px;color:#888;">Or copy this link: ${paymentLink}</p>`
+        : "";
 
       if (method === "sms") {
         if (!pupil.phone) {
@@ -50,7 +55,7 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName }: OwesMone
         await supabase.functions.invoke("send-sms", {
           body: {
             to: pupil.phone,
-            message: `Hi ${pupil.name.split(" ")[0]}, this is a friendly reminder from ${instructorName} that you have an outstanding balance of £${amount} for driving lessons. Please arrange payment at your earliest convenience. Thank you!`,
+            message: `Hi ${pupil.name.split(" ")[0]}, this is a friendly reminder from ${instructorName} that you have an outstanding balance of £${amount} for driving lessons. Please arrange payment at your earliest convenience.${paymentLinkLine} Thank you!`,
           },
         });
         toast.success(`Payment reminder sent to ${pupil.name} via SMS`);
@@ -63,7 +68,7 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName }: OwesMone
           body: {
             to: pupil.email,
             subject: `Payment Reminder — £${amount} outstanding`,
-            html: `<p>Hi ${pupil.name.split(" ")[0]},</p><p>This is a friendly reminder that you have an outstanding balance of <strong>£${amount}</strong> for driving lessons with ${instructorName}.</p><p>Please arrange payment at your earliest convenience.</p><p>Thank you!</p>`,
+            html: `<p>Hi ${pupil.name.split(" ")[0]},</p><p>This is a friendly reminder that you have an outstanding balance of <strong>£${amount}</strong> for driving lessons with ${instructorName}.</p>${paymentLinkHtml}<p>Please arrange payment at your earliest convenience.</p><p>Thank you!</p>`,
           },
         });
         toast.success(`Payment reminder sent to ${pupil.name} via email`);
