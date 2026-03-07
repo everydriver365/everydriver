@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, ChevronRight, X } from "lucide-react";
+import { Sparkles, ChevronRight, X, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Nudge {
@@ -12,10 +12,28 @@ interface Nudge {
   action_label: string;
   action_route: string;
   priority: number;
+  pupil_id?: string;
+  pupil_name?: string;
+  pupil_image?: string | null;
 }
 
 interface SmartNudgesCardProps {
   instructorId: string | undefined;
+}
+
+const AVATAR_COLORS = [
+  "bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-amber-500",
+  "bg-rose-500", "bg-cyan-500", "bg-pink-500", "bg-indigo-500",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
@@ -77,6 +95,25 @@ export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
               exit={{ opacity: 0, x: 20, height: 0 }}
               className={`rounded-xl border p-3 flex items-center gap-3 ${priorityColors[nudge.priority] || priorityColors[3]}`}
             >
+              {/* Pupil avatar */}
+              {nudge.pupil_name ? (
+                nudge.pupil_image ? (
+                  <img
+                    src={nudge.pupil_image}
+                    alt={nudge.pupil_name}
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-black/20 shrink-0"
+                  />
+                ) : (
+                  <div className={`w-9 h-9 rounded-full ${getAvatarColor(nudge.pupil_name)} flex items-center justify-center ring-2 ring-white dark:ring-black/20 shrink-0`}>
+                    <span className="text-[11px] font-bold text-white">{getInitials(nudge.pupil_name)}</span>
+                  </div>
+                )
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center ring-2 ring-white dark:ring-black/20 shrink-0">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-medium text-foreground leading-tight">{nudge.title}</p>
               </div>
