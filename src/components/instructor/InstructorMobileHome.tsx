@@ -48,7 +48,7 @@ import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
-import { HomepageHero } from "@/components/instructor/HomepageHero";
+import { HomepageHeroZ2 } from "@/components/instructor/HomepageHeroZ2";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
