@@ -44,6 +44,7 @@ import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import TheoryProgressChart from "@/components/pupil-portal/TheoryProgressChart";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
+import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 
 interface InstructorBranding {
   id: string;
