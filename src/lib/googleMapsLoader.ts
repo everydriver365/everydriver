@@ -26,11 +26,20 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
 
 /** Fetch the Google Maps API key from the backend. */
 export async function fetchGoogleMapsKey(): Promise<string> {
+  const { data: session } = await supabase.auth.getSession();
+  const jwt = session?.session?.access_token;
+  if (!jwt) return "";
+
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const url = `https://${projectId}.supabase.co/functions/v1/get-google-maps-key`;
 
-  const res = await fetch(url, { headers: { apikey: anonKey } });
+  const res = await fetch(url, {
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
   const data = await res.json();
   return data?.key || "";
 }
