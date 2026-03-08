@@ -176,7 +176,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   />
                 </div>
                 {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
