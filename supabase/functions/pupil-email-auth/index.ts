@@ -44,6 +44,23 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
   return hash === storedHash;
 }
 
+// Helper to get password hash from pupil_credentials table
+async function getCredentials(supabase: any, pupilId: string) {
+  const { data } = await supabase
+    .from("pupil_credentials")
+    .select("password_hash")
+    .eq("pupil_id", pupilId)
+    .single();
+  return data?.password_hash || null;
+}
+
+// Helper to upsert password hash in pupil_credentials table
+async function setCredentials(supabase: any, pupilId: string, hash: string) {
+  await supabase
+    .from("pupil_credentials")
+    .upsert({ pupil_id: pupilId, password_hash: hash, updated_at: new Date().toISOString() }, { onConflict: "pupil_id" });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -69,7 +86,7 @@ serve(async (req) => {
       const { data: pupils, error: pupilError } = await supabase
         .from("pupils")
         .select(`
-          id, name, email, password_hash, phone,
+          id, name, email, phone,
           instructor:instructors!inner(
             id, app_slug, pupil_app_enabled
           )
@@ -88,13 +105,12 @@ serve(async (req) => {
         return jsonResponse({ error: "Pupil portal is not enabled for your instructor." });
       }
 
+      const storedHash = await getCredentials(supabase, pupil.id);
+
       // If no password set yet, this is first login - set the password
-      if (!pupil.password_hash) {
+      if (!storedHash) {
         const { hash } = await hashPassword(password);
-        await supabase
-          .from("pupils")
-          .update({ password_hash: hash })
-          .eq("id", pupil.id);
+        await setCredentials(supabase, pupil.id, hash);
 
         return jsonResponse({
           success: true,
@@ -106,7 +122,7 @@ serve(async (req) => {
         });
       }
 
-      const valid = await verifyPassword(password, pupil.password_hash);
+      const valid = await verifyPassword(password, storedHash);
       if (!valid) {
         return jsonResponse({ error: "Incorrect password" });
       }
@@ -122,7 +138,7 @@ serve(async (req) => {
     } else if (action === "check") {
       const { data: pupils } = await supabase
         .from("pupils")
-        .select("id, name, password_hash")
+        .select("id, name")
         .ilike("email", cleanEmail)
         .limit(1);
 
@@ -130,9 +146,11 @@ serve(async (req) => {
         return jsonResponse({ exists: false });
       }
 
+      const storedHash = await getCredentials(supabase, pupils[0].id);
+
       return jsonResponse({
         exists: true,
-        hasPassword: !!pupils[0].password_hash,
+        hasPassword: !!storedHash,
         name: pupils[0].name.split(" ")[0],
       });
 
@@ -143,7 +161,7 @@ serve(async (req) => {
 
       const { data: pupils, error: pupilError } = await supabase
         .from("pupils")
-        .select("id, name, password_hash, instructor:instructors!inner(id, app_slug, pupil_app_enabled)")
+        .select("id, name, instructor:instructors!inner(id, app_slug, pupil_app_enabled)")
         .ilike("email", cleanEmail)
         .limit(1);
 
@@ -152,16 +170,14 @@ serve(async (req) => {
       }
 
       const pupil = pupils[0] as any;
+      const existingHash = await getCredentials(supabase, pupil.id);
 
-      if (pupil.password_hash) {
+      if (existingHash) {
         return jsonResponse({ error: "Account already registered. Please sign in instead." });
       }
 
       const { hash } = await hashPassword(password);
-      await supabase
-        .from("pupils")
-        .update({ password_hash: hash })
-        .eq("id", pupil.id);
+      await setCredentials(supabase, pupil.id, hash);
 
       return jsonResponse({ success: true, message: "Account registered successfully" });
 
