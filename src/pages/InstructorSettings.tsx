@@ -34,6 +34,7 @@ import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestions
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
+import { SmartBufferSettings } from "@/components/instructor/SmartBufferSettings";
 
 
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
