@@ -67,6 +67,7 @@ export function useLessonRouteRecorder(
     distanceRef.current = 0;
     startTimeRef.current = new Date();
     setIsRecording(true);
+    acquireWakeLock();
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
