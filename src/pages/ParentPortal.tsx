@@ -349,46 +349,51 @@ export default function ParentPortal() {
           onBackClick={() => { setSelectedChild(null); setActiveSection('dashboard'); }}
         />
         <main className="p-4 pb-20 space-y-4">
-          {/* Child Info */}
-          <InstructorCard>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground shrink-0">
+          {/* Child Info Card — iOS Style */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-lg font-bold text-primary-foreground shrink-0">
                 {selectedChild.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{selectedChild.name}</h2>
-                <p className="text-sm text-muted-foreground">Instructor: {selectedChild.instructor_name}</p>
+                <h2 className="text-lg font-bold text-foreground">{selectedChild.name}</h2>
+                <p className="text-xs text-muted-foreground">with {selectedChild.instructor_name}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* 4-Column Stats Strip */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
               {[
                 { label: "Lessons", value: selectedChild.lessons_completed },
                 { label: "Progress", value: `${selectedChild.progress}%` },
-                { label: "Credit", value: `${selectedChild.prepaid_hours}h`, color: "text-emerald-600" },
-                { label: "Balance", value: `£${selectedChild.account_balance.toFixed(0)}`, color: "text-amber-600" },
-              ].map(stat => (
-                <div key={stat.label} className="text-center p-3 rounded-xl bg-secondary">
-                  <div className={`text-2xl font-bold ${stat.color || ''}`}>{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                { label: "Credit", value: `${selectedChild.prepaid_hours}h` },
+                { label: "Balance", value: `£${Math.abs(selectedChild.account_balance).toFixed(0)}`, negative: selectedChild.account_balance < 0 },
+              ].map((stat, i) => (
+                <div key={i} className="bg-secondary/50 rounded-xl p-2.5 text-center">
+                  <div className={`text-base font-bold ${stat.negative ? 'text-destructive' : 'text-foreground'}`}>
+                    {stat.negative ? '-' : ''}{stat.value}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span>Learning Progress</span>
-                <span>{selectedChild.progress}%</span>
+            {/* Progress Bar */}
+            <div className="mb-3">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground">Learning Progress</span>
+                <span className="font-medium text-foreground">{selectedChild.progress}%</span>
               </div>
-              <Progress value={selectedChild.progress} className="h-3" />
+              <Progress value={selectedChild.progress} className="h-2" />
             </div>
 
+            {/* Next Lesson */}
             {selectedChild.next_lesson_date && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 mb-3">
-                <Clock className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-primary/10 mb-2 text-xs">
+                <Clock className="h-4 w-4 text-primary" />
                 <div>
-                  <div className="font-medium text-sm">Next Lesson</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground">Next Lesson</div>
+                  <div className="text-muted-foreground">
                     {format(parseISO(selectedChild.next_lesson_date), 'EEEE, d MMMM')}
                     {selectedChild.next_lesson_time && ` at ${formatTime(selectedChild.next_lesson_time)}`}
                   </div>
@@ -396,30 +401,36 @@ export default function ParentPortal() {
               </div>
             )}
 
+            {/* Test Date */}
             {selectedChild.test_date && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10">
-                <Calendar className="h-5 w-5 text-amber-600" />
-                <div>
-                  <div className="font-medium text-sm">Test Date</div>
-                  <div className="text-xs text-muted-foreground">
-                    {format(parseISO(selectedChild.test_date), 'EEEE, d MMMM yyyy')}
+              <div className="rounded-xl p-2.5 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-white/80" />
+                    <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
                   </div>
+                  <span className="font-bold text-sm">
+                    {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
+                  </span>
                 </div>
               </div>
             )}
-          </InstructorCard>
+          </div>
 
-          {/* Feedback */}
-          <InstructorCard>
-            <InstructorPageHeader lucideIcon={MessageSquare} title="Instructor Feedback" className="mb-4" />
+          {/* Instructor Feedback */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+            <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              Instructor Feedback
+            </h2>
             {recentFeedback.filter(f => f.pupil_name === selectedChild.name).length === 0 ? (
-              <p className="text-muted-foreground text-center py-4 text-sm">No feedback yet for {selectedChild.name}</p>
+              <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet for {selectedChild.name}</p>
             ) : (
               <div className="space-y-3">
                 {recentFeedback.filter(f => f.pupil_name === selectedChild.name).map((feedback) => (
-                  <div key={feedback.id} className="p-3 rounded-xl border border-border">
+                  <div key={feedback.id} className="p-3 rounded-xl bg-secondary/50">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
+                      <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
                       {feedback.rating && (
                         <div className="flex gap-0.5">
                           {[1,2,3,4,5].map((star) => (
@@ -428,18 +439,18 @@ export default function ParentPortal() {
                         </div>
                       )}
                     </div>
-                    <p className="text-sm">{feedback.notes}</p>
+                    <p className="text-xs text-foreground leading-relaxed">{feedback.notes}</p>
                   </div>
                 ))}
               </div>
             )}
-          </InstructorCard>
+          </div>
 
           <ParentUpcomingLessons childId={selectedChild.id} />
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
-          <div className="px-4">
+          <div className="px-0">
             <PupilRouteHistory pupilId={selectedChild.id} />
           </div>
           <ParentMessageCard
