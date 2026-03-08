@@ -175,6 +175,7 @@ export function LiveChatWidget({
                     userType="visitor"
                     userName={visitorInfo?.name}
                     otherPartyName={instructorName || "Support"}
+                    instructorId={instructorId}
                   />
                 )}
               </div>
