@@ -36,7 +36,7 @@ import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 

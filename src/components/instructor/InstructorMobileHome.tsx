@@ -81,7 +81,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
 import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";

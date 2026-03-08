@@ -37,7 +37,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
