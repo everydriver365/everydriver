@@ -25,17 +25,13 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 
 interface BestMateHomeViewProps {
