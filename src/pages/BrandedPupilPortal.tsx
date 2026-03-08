@@ -48,6 +48,8 @@ import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTracker";
 import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
+import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
+import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
 
 interface InstructorBranding {
   id: string;
