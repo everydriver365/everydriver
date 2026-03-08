@@ -2,6 +2,23 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parse, addMinutes, isBefore } from "date-fns";
 
+const STORAGE_KEY = "dismissed-lesson-alerts";
+
+function loadDismissed(): Record<string, number> {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveDismissed(map: Record<string, number>) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+  } catch {}
+}
+
 export interface OverdueLesson {
   id: string;
   pupilId: string;
@@ -14,12 +31,22 @@ export interface OverdueLesson {
 
 export function useLessonEndAlert(instructorId: string | undefined) {
   const [overdueLesson, setOverdueLesson] = useState<OverdueLesson | null>(null);
-  const dismissedIdsRef = useRef<Set<string>>(new Set());
+  const dismissedRef = useRef<Record<string, number>>(loadDismissed());
 
   const checkLessons = useCallback(async () => {
     if (!instructorId) return;
 
     const today = format(new Date(), "yyyy-MM-dd");
+    const now = Date.now();
+
+    // Clean expired snoozes (older than 2 hours)
+    const dismissed = dismissedRef.current;
+    for (const id of Object.keys(dismissed)) {
+      if (now - dismissed[id] > 2 * 60 * 60 * 1000) {
+        delete dismissed[id];
+      }
+    }
+    saveDismissed(dismissed);
 
     const { data, error } = await supabase
       .from("scheduled_lessons")
@@ -34,16 +61,16 @@ export function useLessonEndAlert(instructorId: string | undefined) {
 
     if (error || !data) return;
 
-    const now = new Date();
+    const nowDate = new Date();
 
     for (const lesson of data) {
-      if (dismissedIdsRef.current.has(lesson.id)) continue;
+      if (dismissed[lesson.id]) continue;
       if (!lesson.start_time || !lesson.duration_minutes) continue;
 
       const startDate = parse(lesson.start_time, "HH:mm:ss", new Date());
       const endDate = addMinutes(startDate, lesson.duration_minutes);
 
-      if (isBefore(endDate, now)) {
+      if (isBefore(endDate, nowDate)) {
         const pupil = (lesson as any).pupils;
         setOverdueLesson({
           id: lesson.id,
@@ -63,12 +90,13 @@ export function useLessonEndAlert(instructorId: string | undefined) {
 
   useEffect(() => {
     checkLessons();
-    const interval = setInterval(checkLessons, 30_000);
+    const interval = setInterval(checkLessons, 60_000);
     return () => clearInterval(interval);
   }, [checkLessons]);
 
   const dismiss = useCallback((lessonId: string) => {
-    dismissedIdsRef.current.add(lessonId);
+    dismissedRef.current[lessonId] = Date.now();
+    saveDismissed(dismissedRef.current);
     setOverdueLesson(null);
   }, []);
 
