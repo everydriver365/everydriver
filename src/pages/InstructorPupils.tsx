@@ -486,77 +486,33 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-6">
-        {/* Header */}
-        <InstructorPageHeader
-          lucideIcon={Users}
-          title="Pupils"
-          action={
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setIsAddOpen(true)}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add Pupil
-            </Button>
-          }
-        />
-
-        {/* Hero Stats Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white/70 text-xs">Total Pupils</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold">{stats.total}</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-white/70 text-xs">Active</p>
-              <p className="text-xl font-bold">{stats.active}</p>
-            </div>
+      <div className="space-y-3 pb-6">
+        {/* Header row */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Pupils</h1>
+            <p className="text-[13px] text-muted-foreground">{stats.total} total · {stats.active} active</p>
           </div>
-        </motion.div>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-3" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add
+          </Button>
+        </div>
 
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-3 gap-3">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-1">
-              <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+        {/* Compact stats strip */}
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: "Active", value: stats.active, icon: Users, color: "text-primary" },
+            { label: "Passed", value: stats.passed, icon: GraduationCap, color: "text-emerald-600 dark:text-emerald-400" },
+            { label: "Lessons", value: stats.totalLessons, icon: BookOpen, color: "text-amber-600 dark:text-amber-400" },
+            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, icon: Target, color: "text-violet-600 dark:text-violet-400" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-card rounded-xl border p-2.5 text-center">
+              <stat.icon className={`h-4 w-4 ${stat.color} mx-auto mb-1`} />
+              <p className="text-base font-bold text-foreground leading-none">{stat.value}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
             </div>
-            <p className="text-lg font-bold">{stats.passed}</p>
-            <p className="text-[10px] text-muted-foreground">Passed</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-1">
-              <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            </div>
-            <p className="text-lg font-bold">{stats.totalLessons}</p>
-            <p className="text-[10px] text-muted-foreground">Lessons</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-1">
-              <Target className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-            </div>
-            <p className="text-lg font-bold">{statusCounts.on_hold + statusCounts.inactive}</p>
-            <p className="text-[10px] text-muted-foreground">On Hold</p>
-          </motion.div>
+          ))}
         </div>
 
         {/* Search */}
@@ -566,75 +522,98 @@ export default function InstructorPupils() {
             placeholder="Search pupils..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-12 rounded-xl bg-card border"
+            className="pl-9 h-10 rounded-xl bg-card border text-sm"
           />
+        </div>
+
+        {/* Status filter tabs */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1 no-scrollbar">
+          {[
+            { key: "all" as const, label: "All", count: pupils.length },
+            { key: "active" as const, label: "Active", count: statusCounts.active },
+            { key: "passed" as const, label: "Passed", count: statusCounts.passed },
+            { key: "on_hold" as const, label: "On Hold", count: statusCounts.on_hold },
+            { key: "inactive" as const, label: "Inactive", count: statusCounts.inactive },
+          ].filter(t => t.key === "all" || t.count > 0).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                activeTab === tab.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {tab.label} {tab.count > 0 && <span className="ml-0.5 opacity-70">{tab.count}</span>}
+            </button>
+          ))}
         </div>
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Users className="h-8 w-8 text-muted-foreground" />
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Users className="h-7 w-7 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold mb-1">No pupils found</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">
+            <h3 className="font-semibold text-sm mb-1">No pupils found</h3>
+            <p className="text-xs text-muted-foreground max-w-xs">
               {searchQuery
                 ? "No pupils match your search."
                 : "Add your first pupil to get started."}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {displayedPupils.map((pupil) => (
-              <div id={`pupil-card-${pupil.id}`}>
-              <PupilCardStack
-                key={pupil.id}
-                pupil={pupil}
-                defaultExpanded={expandedPupilId === pupil.id}
-                onEdit={handleEditPupil}
-                onDelete={handleDeletePupil}
-                onViewHistory={(p) => {
-                  setSelectedPupil(p);
-                  setIsHistoryOpen(true);
-                }}
-                onViewReport={(p) => {
-                  setSelectedPupil(p);
-                  setIsDrivingReportOpen(true);
-                }}
-                onViewTerms={(p) => {
-                  setSelectedPupil(p);
-                  setIsTermsModalOpen(true);
-                }}
-                onStartChat={(p) => {
-                  navigate(`/instructor/messages?pupilId=${p.id}`);
-                }}
-                onRecordTestResult={(p, isMock) => {
-                  setSelectedPupil(p);
-                  setTestFormIsMock(isMock);
-                  setIsTestFormOpen(true);
-                }}
-                onViewTestHistory={(p) => {
-                  setSelectedPupil(p);
-                  setIsTestHistoryOpen(true);
-                }}
-                onStatusChange={(pupilId, newStatus) => {
-                  setPupils(prevPupils => 
-                    prevPupils.map(p => 
-                      p.id === pupilId ? { ...p, status: newStatus } : p
-                    )
-                  );
-                }}
-                hasSignedTerms={pupilSignatures[pupil.id] || false}
-                instructorId={instructorId}
-                instructorName={instructor?.name}
-                isTracking={isTracking(pupil.id)}
-                paymentQrUrl={getActivePaymentQrUrl(instructor)}
-                commissionPayer={instructor?.commission_payer}
-              />
+              <div key={pupil.id} id={`pupil-card-${pupil.id}`}>
+                <PupilCardStack
+                  pupil={pupil}
+                  defaultExpanded={expandedPupilId === pupil.id}
+                  onEdit={handleEditPupil}
+                  onDelete={handleDeletePupil}
+                  onViewHistory={(p) => {
+                    setSelectedPupil(p);
+                    setIsHistoryOpen(true);
+                  }}
+                  onViewReport={(p) => {
+                    setSelectedPupil(p);
+                    setIsDrivingReportOpen(true);
+                  }}
+                  onViewTerms={(p) => {
+                    setSelectedPupil(p);
+                    setIsTermsModalOpen(true);
+                  }}
+                  onStartChat={(p) => {
+                    navigate(`/instructor/messages?pupilId=${p.id}`);
+                  }}
+                  onRecordTestResult={(p, isMock) => {
+                    setSelectedPupil(p);
+                    setTestFormIsMock(isMock);
+                    setIsTestFormOpen(true);
+                  }}
+                  onViewTestHistory={(p) => {
+                    setSelectedPupil(p);
+                    setIsTestHistoryOpen(true);
+                  }}
+                  onStatusChange={(pupilId, newStatus) => {
+                    setPupils(prevPupils => 
+                      prevPupils.map(p => 
+                        p.id === pupilId ? { ...p, status: newStatus } : p
+                      )
+                    );
+                  }}
+                  hasSignedTerms={pupilSignatures[pupil.id] || false}
+                  instructorId={instructorId}
+                  instructorName={instructor?.name}
+                  isTracking={isTracking(pupil.id)}
+                  paymentQrUrl={getActivePaymentQrUrl(instructor)}
+                  commissionPayer={instructor?.commission_payer}
+                />
               </div>
             ))}
           </div>
         )}
+        
         {/* Progress Reports */}
         <PupilProgressReportGenerator 
           instructorId={instructorId} 
