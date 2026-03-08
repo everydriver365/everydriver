@@ -77,7 +77,7 @@ export function VoiceAssistantOverlay({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="fixed top-12 left-1/2 -translate-x-1/2 z-[60] w-64 max-w-[calc(100vw-2rem)]"
+          className="fixed top-12 left-4 right-4 z-[60] mx-auto max-w-sm"
         >
           <div className="bg-card rounded-xl shadow-lg border overflow-hidden">
             {/* Header */}
@@ -110,7 +110,7 @@ export function VoiceAssistantOverlay({
             </div>
 
             {/* Body */}
-            <div className="px-3 py-2 space-y-1.5">
+            <div className="px-3 py-2 space-y-1.5 max-h-[50vh] overflow-y-auto">
               {transcript && (
                 <div>
                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">You said</p>
@@ -120,7 +120,7 @@ export function VoiceAssistantOverlay({
               {responseText && (
                 <div>
                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">ED</p>
-                  <p className="text-[13px] text-foreground">{responseText}</p>
+                  <p className="text-[13px] text-foreground whitespace-pre-wrap break-words">{responseText}</p>
                 </div>
               )}
               {state === "listening" && !transcript && (
