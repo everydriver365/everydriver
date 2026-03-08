@@ -988,6 +988,12 @@ export default function HeroRedesignDemo() {
     { id: "V", title: "iOS Grouped", desc: "Grouped notifications like iOS lock screen", component: <OptionV /> },
     { id: "W", title: "Metric Tickers", desc: "Bold numbers with color accent bars", component: <OptionW /> },
     { id: "X", title: "Achievement Feed", desc: "Timeline-style achievement activity feed", component: <OptionX /> },
+    { id: "Y1", title: "Banner + Timeline", desc: "K-style banners with H-style lesson timeline", component: <OptionY1 /> },
+    { id: "Y2", title: "Compact Timeline Feed", desc: "Color notifications with integrated schedule bar", component: <OptionY2 /> },
+    { id: "Y3", title: "Grouped + Timeline", desc: "iOS grouped cards with timeline header", component: <OptionY3 /> },
+    { id: "Y4", title: "Ticker + Schedule", desc: "Bold metric tickers with lesson progress strip", component: <OptionY4 /> },
+    { id: "Y5", title: "Gradient Banners + Bar", desc: "Gradient feed cards topped with timeline bar", component: <OptionY5 /> },
+    { id: "Y6", title: "Full Day Card", desc: "Single card with timeline, stats & next lesson", component: <OptionY6 /> },
   ];
 
   return (
