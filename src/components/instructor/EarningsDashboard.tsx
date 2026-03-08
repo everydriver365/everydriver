@@ -568,6 +568,15 @@ export function EarningsDashboard() {
                   <TabsTrigger value="year" className="text-xs px-3">Year</TabsTrigger>
                 </TabsList>
               </Tabs>
+              <Button 
+                variant={showComparison ? "default" : "outline"}
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                <Layers className="h-3 w-3" />
+                Compare
+              </Button>
             </div>
           </div>
         </CardHeader>
