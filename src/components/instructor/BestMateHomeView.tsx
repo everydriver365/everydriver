@@ -25,17 +25,13 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 
 interface BestMateHomeViewProps {
@@ -230,8 +226,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
         {/* ─── EXISTING DASHBOARD CONTENT ─── */}
         <div className="px-4 space-y-4">
-          
-          <SmartNudgesCard instructorId={instructorId} />
 
           {alerts.length > 0 && (
             <DrivingAlertsStrip
@@ -280,15 +274,8 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
           <TodayLessonsList lessons={todayLessons || []} />
 
-          {gapSuggestions && gapSuggestions.length > 0 && (
-            <GapFillerCard gaps={gapSuggestions} />
-          )}
-
-          {authInstructorId && (
-            <VehicleHealthStrip instructorId={authInstructorId} />
-          )}
-
-          <DormantPupilsCard instructorId={instructorId} />
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-2 mb-2">Insights</p>
+          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
           
         </div>
 

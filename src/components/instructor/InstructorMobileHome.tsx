@@ -60,13 +60,10 @@ import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralS
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
 
@@ -80,7 +77,7 @@ import testRequestsIcon from "@/assets/test-requests-icon.png";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
+
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
@@ -521,19 +518,9 @@ export function InstructorMobileHome({
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
 
-        {/* 9. Gap Filler */}
-        {gapSuggestions && gapSuggestions.length > 0 && (
-          <div className="mt-4">
-            <GapFillerCard gaps={gapSuggestions} />
-          </div>
-        )}
-
-        {/* 9. Vehicle Health Strip */}
-        {authInstructor?.id && (
-          <div className="mt-4">
-            <VehicleHealthStrip instructorId={authInstructor.id} />
-          </div>
-        )}
+        {/* Insights Tiles */}
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         {/* Setup Checklist for new instructors */}
         {instructorId && (
@@ -542,9 +529,6 @@ export function InstructorMobileHome({
             variant="mobile"
           />
         )}
-
-        <SmartNudgesCard instructorId={instructorId} />
-        <DormantPupilsCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
