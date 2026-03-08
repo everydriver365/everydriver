@@ -947,6 +947,14 @@ export default function InstructorLiveSession() {
               isConnected={isConnected}
             />
  
+           {/* Manual GPS Route Recorder */}
+           {instructor?.id && (
+             <LessonRouteRecorder
+               instructorId={instructor.id}
+               pupilId={selectedPupilId || null}
+             />
+           )}
+
            {/* Recent Sessions */}
            {instructor?.id && (
              <RecentSessionsList instructorId={instructor.id} />
