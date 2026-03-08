@@ -73,6 +73,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { InstructorDesktopSidebar } from "@/components/instructor/InstructorDesktopSidebar";
+import { DesktopQuickActionBar } from "@/components/instructor/DesktopQuickActionBar";
 
 function getContrastColor(hex: string): string {
   const c = hex.replace("#", "");
@@ -771,6 +772,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <SidebarTrigger className="text-white/70 hover:text-white hover:bg-white/10" />
                   <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
                 </div>
+
+                {/* Center: Quick Actions */}
+                <DesktopQuickActionBar />
 
                 {/* Right: Voice + Notifications + Theme + Avatar */}
                 <div className="flex items-center gap-1">

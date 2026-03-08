@@ -53,6 +53,8 @@ import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PupilSplitPane } from "@/components/instructor/PupilSplitPane";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { PupilCardStack } from "@/components/instructor/PupilCardStack";
@@ -112,6 +114,7 @@ export default function InstructorPupils() {
   const navigate = useNavigate();
   const { pupilId } = useParams<{ pupilId?: string }>();
   const instructorId = instructor?.id;
+  const isMobile = useIsMobile();
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
   const handleVisibilityToggle = async (isVisible: boolean) => {
@@ -483,6 +486,15 @@ export default function InstructorPupils() {
     return (
       <InstructorPortalLayout>
         <PupilListSkeleton />
+      </InstructorPortalLayout>
+    );
+  }
+
+  // Desktop: Split-pane master-detail view
+  if (!isMobile && instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <PupilSplitPane instructorId={instructorId} />
       </InstructorPortalLayout>
     );
   }

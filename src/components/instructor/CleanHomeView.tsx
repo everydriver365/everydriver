@@ -47,7 +47,9 @@ import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
+import { DailyManifest } from "@/components/instructor/dashboard/DailyManifest";
 import { triggerHaptic } from "@/lib/haptics";
+import { useIsMobile } from "@/hooks/use-mobile";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
@@ -84,6 +86,7 @@ export function CleanHomeView({
 }: CleanHomeViewProps) {
   const navigate = useNavigate();
   const { instructor: authInstructor } = useInstructorAuth();
+  const isMobile = useIsMobile();
   const now = new Date();
   const dateStr = format(now, "EEEE d MMMM");
 
@@ -386,6 +389,13 @@ export function CleanHomeView({
             onEditModeChange={setIsTileEditMode}
           />
         </div>
+
+        {/* ── Daily Manifest (desktop only) ── */}
+        {!isMobile && instructorId && (
+          <div className="mt-4">
+            <DailyManifest instructorId={instructorId} />
+          </div>
+        )}
 
         {/* ── Widgets ── */}
         <div className="mt-2 space-y-3">
