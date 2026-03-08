@@ -1,74 +1,67 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## How MyDriveTime's Journey Tracking Works vs Your App
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+### MyDriveTime's Approach
+MyDriveTime's "Journey Tracking" is a **phone GPS recorder** built into their lesson flow:
+1. Instructor taps "Start Lesson" on the diary entry
+2. App begins recording phone GPS coordinates in the background
+3. When lesson ends, the route is saved and displayed on a map
+4. Students and parents can view routes in the pupil app — showing progression from quiet estates to dual carriageways over time
+5. It's a simple breadcrumb trail — no speed analysis, no telemetry, no hardware needed
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+### What You Currently Have
+- **`lesson_routes` table** exists in the DB (coordinates JSONB, distance_km, duration_minutes)
+- **`LessonRouteViewer`** displays saved routes on a Leaflet map with start/end markers
+- **No recorder** — there is no component or hook to actually capture GPS during a lesson
+- **Geotab telemetry** records GPS points with speed, speed limits, road names — but it's separate from lesson_routes and requires hardware
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+### The Gap
+You have the **viewer** but not the **recorder**. You also have a much more powerful GPS system (Geotab) that already records everything — but it's not linked to individual lesson routes.
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+---
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+## Plan: Build Lesson Route Recording
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+Two approaches combined for maximum coverage:
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### 1. Auto-Link Geotab Trips to Lessons (Zero effort for instructor)
+When a lesson starts/ends (from the diary), automatically match the Geotab GPS points from that time window and save them as a `lesson_route`. No button pressing needed.
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+- Create a `useLessonRouteAutoCapture` hook that runs when a scheduled lesson's status changes to "in_progress" or "completed"
+- Query `telematics_gps_points` for the instructor's active device during the lesson time window
+- Save matched points to `lesson_routes` with the `pupil_id` and `lesson_id`
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### 2. Phone GPS Fallback Recorder (For instructors without Geotab)
+A simple "Record Route" button on the lesson view that uses the browser Geolocation API — matching MyDriveTime's approach.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+- **New component**: `LessonRouteRecorder.tsx` — Start/Stop recording button
+- Uses `navigator.geolocation.watchPosition()` to collect coordinates every 5 seconds
+- Calculates distance via haversine (already have `haversineKm` in `useInterpolatedPosition.ts`)
+- On stop, saves to `lesson_routes` table
+- Works offline using existing `useOfflineGPSQueue` pattern for IndexedDB buffering
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+### 3. Pupil & Parent Portal Route View
+- Add route history to the pupil portal (like MyDriveTime shows students where they've been)
+- Show progression over time: "Lesson 1: residential streets" → "Lesson 15: dual carriageways"
+- Parents can see routes too
+
+### 4. Link lesson_routes to scheduled_lessons
+- Add `lesson_id` column to `lesson_routes` table (currently missing)
+- This connects routes to specific diary entries
+
+---
+
+### Technical Steps
+
+| Step | What |
+|------|------|
+| Migration | Add `lesson_id` column to `lesson_routes`, add `instructor_id` column |
+| `LessonRouteRecorder.tsx` | Phone GPS recorder with Start/Stop, uses Geolocation API |
+| `useLessonRouteAutoCapture.ts` | Hook to auto-extract Geotab GPS points for a lesson time window |
+| Update `LessonRouteViewer` | Add speed-colored route segments (reuse TripReplayMap pattern) |
+| Pupil portal | Add lesson route history view to BrandedPupilPortal |
+| Parent portal | Show child's lesson routes |
+
+This gives you **better than MyDriveTime** — they only have phone GPS with a basic map. You'll have Geotab auto-capture (no button needed) plus phone fallback, speed-colored routes, and road names.
+
