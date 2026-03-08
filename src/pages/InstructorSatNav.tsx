@@ -21,7 +21,9 @@ interface UpcomingLesson {
   pickup_postcode: string;
   pickup_location: string | null;
   pupils: {
+    id: string;
     name: string;
+    phone: string | null;
   } | null;
 }
 
