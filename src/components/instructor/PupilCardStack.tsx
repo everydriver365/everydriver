@@ -572,7 +572,11 @@ export function PupilCardStack({
 
   const handleCardClick = () => {
     haptics.selection();
-    setIsExpanded(!isExpanded);
+    if (isMobile) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(!isExpanded);
+    }
   };
 
   // Calculate balance state from real-time account_balance
@@ -675,16 +679,16 @@ export function PupilCardStack({
 
           {/* Chevron */}
           <motion.div
-            animate={{ rotate: isExpanded ? 90 : 0 }}
+            animate={{ rotate: (!isMobile && isExpanded) ? 90 : 0 }}
             transition={{ duration: 0.2 }}
           >
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </motion.div>
         </button>
 
-        {/* Expanded Content */}
+        {/* Expanded Content - Desktop only (inline) */}
         <AnimatePresence>
-          {isExpanded && (
+          {isExpanded && !isMobile && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -692,10 +696,7 @@ export function PupilCardStack({
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="border-t border-border">
-                {/* Desktop: Combined Layout */}
-                {!isMobile ? (
-                  <div className="p-4">
+              <div className="border-t border-border p-4">
                     <DesktopPupilDetailPanel
                       pupil={pupil}
                       onEdit={onEdit}
@@ -715,387 +716,169 @@ export function PupilCardStack({
                       commissionPayer={commissionPayer}
                       onClose={() => setIsExpanded(false)}
                     />
-                  </div>
-                ) : (
-                <div className="pb-6">
-                  {/* ── iOS Contact Hero ── */}
-                  <div className="bg-gradient-to-b from-[#1C2A3A] to-[#2C3E50] px-6 pt-8 pb-6 flex flex-col items-center">
-                    <Avatar className={cn("h-24 w-24 mb-3 ring-4 ring-white/20 ring-offset-2 ring-offset-[#1C2A3A]", isTracking && "ring-primary")}>
-                      <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-                      <AvatarFallback className="text-white text-2xl font-bold" style={{ backgroundColor: avatarBg }}>
-                        {getInitials(pupil.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {isTracking && (
-                      <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-2 py-0.5 mb-1 -mt-1">
-                        <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" /></span>
-                        LIVE TRACKING
-                      </Badge>
-                    )}
-                    <h2 className="text-xl font-bold text-white mt-1">{pupil.name}</h2>
-                    <p className="text-sm text-white/60 mt-0.5">
-                      Pupil since {format(parseISO(pupil.created_at), "MMM yyyy")}
-                      {pupil.course_type && ` · ${courseTypeLabels[pupil.course_type] || pupil.course_type}`}
-                    </p>
-
-                    {/* Circular Action Buttons */}
-                    <div className="flex items-center gap-5 mt-5">
-                      {[
-                        { icon: Phone, label: "Call", action: () => pupil.phone && window.open(`tel:${pupil.phone}`), disabled: !pupil.phone },
-                        { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil) },
-                        { icon: Mail, label: "Email", action: () => pupil.email && window.open(`mailto:${pupil.email}`), disabled: !pupil.email },
-                        { icon: Navigation, label: "Navigate", action: handleNavigate },
-                      ].map(({ icon: Icon, label, action, disabled }) => (
-                        <button
-                          key={label}
-                          onClick={(e) => { e.stopPropagation(); action?.(); }}
-                          disabled={disabled}
-                          className="flex flex-col items-center gap-1.5 disabled:opacity-30"
-                        >
-                          <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-95 transition-transform">
-                            <Icon className="h-5 w-5 text-white" />
-                          </div>
-                          <span className="text-[10px] font-medium text-white/70">{label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── Stats Strip ── */}
-                  <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
-                    <div className="grid grid-cols-4 divide-x divide-border py-4">
-                      {[
-                        { value: pupil.lessons_completed || 0, label: "Lessons" },
-                        { value: `${pupil.prepaid_hours || 0}h`, label: "Hours" },
-                        { value: `${pupil.progress || 0}%`, label: "Progress" },
-                        { value: pupil.account_balance ? `£${Math.abs(Number(pupil.account_balance)).toFixed(0)}` : "£0", label: hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance", highlight: hasDebt },
-                      ].map(({ value, label, highlight }) => (
-                        <div key={label} className="text-center">
-                          <div className={cn("text-lg font-bold", highlight ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{value}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── Test Date Banner ── */}
-                  {pupil.test_date && (() => {
-                    const testDate = new Date(pupil.test_date);
-                    const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                    const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
-                    return (
-                      <div className={cn(
-                        "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
-                        isUrgent
-                          ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
-                          : "bg-card border border-border"
-                      )}>
-                        <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
-                          <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-foreground">{format(testDate, "EEE, d MMM yyyy")}</p>
-                          <p className={cn("text-xs font-medium", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
-                            {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Payment Due Warning */}
-                  {pupil.payment_type === "deposit" && hasDebt && pupil.balance_due_date && !pupil.deposit_forfeited && (() => {
-                    const dueDate = new Date(pupil.balance_due_date);
-                    const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                    const isOverdue = daysUntilDue < 0;
-                    const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
-                    return (
-                      <div className={cn("mx-4 mt-3 flex items-center gap-2 text-sm rounded-2xl p-4 border", isOverdue ? "bg-destructive/10 text-destructive border-destructive/20" : isUrgent ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800" : "bg-muted/50 text-muted-foreground border-border")}>
-                        <AlertCircle className="h-4 w-4 shrink-0" />
-                        <span>{isOverdue ? "OVERDUE: " : ""}£{Math.abs(pupil.account_balance || 0)} due {dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-                      </div>
-                    );
-                  })()}
-
-                  {/* ── Colorful Quick Actions Grid ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4">
-                    <div className="grid grid-cols-4 gap-3">
-                      {[
-                        { icon: History, label: "Lessons", bg: "bg-blue-500/10", color: "text-blue-600 dark:text-blue-400", action: () => onViewHistory(pupil) },
-                        { icon: GraduationCap, label: "Syllabus", bg: "bg-purple-500/10", color: "text-purple-600 dark:text-purple-400", action: () => setShowSyllabusSheet(true) },
-                        { icon: Car, label: "Report", bg: "bg-emerald-500/10", color: "text-emerald-600 dark:text-emerald-400", action: () => onViewReport(pupil) },
-                        ...(onRecordTestResult ? [{ icon: Award, label: "Test", bg: "bg-amber-500/10", color: "text-amber-600 dark:text-amber-400", action: () => onRecordTestResult(pupil, false) }] : []),
-                        { icon: PoundSterling, label: "Record £", bg: "bg-emerald-500/10", color: "text-emerald-600 dark:text-emerald-400", action: () => setShowRecordPaymentModal(true) },
-                        { icon: QrCode, label: "QR Pay", bg: "bg-indigo-500/10", color: "text-indigo-600 dark:text-indigo-400", action: () => setShowQRModal(true) },
-                        { icon: Share2, label: "Share", bg: "bg-pink-500/10", color: "text-pink-600 dark:text-pink-400", action: null },
-                      ].map(({ icon: Icon, label, bg, color, action }) => (
-                        label === "Share" ? (
-                          <SharePupilDetailsDialog key={label} pupil={pupil} instructorName={instructorName} trigger={
-                            <button className="flex flex-col items-center gap-1.5">
-                              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", bg)}>
-                                <Icon className={cn("h-6 w-6", color)} />
-                              </div>
-                              <span className="text-[10px] font-medium text-foreground">{label}</span>
-                            </button>
-                          } />
-                        ) : (
-                          <button key={label} className="flex flex-col items-center gap-1.5" onClick={(e) => { e.stopPropagation(); action?.(); }}>
-                            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", bg)}>
-                              <Icon className={cn("h-6 w-6", color)} />
-                            </div>
-                            <span className="text-[10px] font-medium text-foreground">{label}</span>
-                          </button>
-                        )
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── Details Card ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground text-sm">Details</h3>
-                    {pupil.phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-foreground">{pupil.phone}</span>
-                      </div>
-                    )}
-                    {pupil.email && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-foreground truncate">{pupil.email}</span>
-                      </div>
-                    )}
-                    <InlineEditField value={pupil.address || ""} onSave={(v) => saveField("address", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} placeholder="Address" emptyText="Add address" />
-                    {pupil.postcode && (
-                      <div className="flex items-center gap-3 text-sm ml-7">
-                        <span className="text-muted-foreground">{pupil.postcode}</span>
-                      </div>
-                    )}
-                    <InlineEditField value={pupil.pickup_address || ""} onSave={(v) => saveField("pickup_address", v || null)} icon={<Navigation className="h-4 w-4 text-muted-foreground" />} placeholder="Pickup address" emptyText="Add pickup address" />
-                    {pupil.what3words && (
-                      <button onClick={(e) => { e.stopPropagation(); openWhat3Words(); }} className="flex items-center gap-3 text-sm text-primary hover:underline">
-                        <span className="font-medium text-muted-foreground">///</span>
-                        <span>{pupil.what3words}</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* ── Notes Card ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-foreground text-sm">Notes</h3>
-                      {!isAddingNote && (
-                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}>+ Add</Button>
-                      )}
-                    </div>
-                    {pupil.notes ? (
-                      <div className="bg-muted/30 rounded-xl p-3">
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">No notes yet</p>
-                    )}
-                    {isAddingNote && (
-                      <div className="space-y-2 pt-1">
-                        <Select value={noteLessonId} onValueChange={setNoteLessonId}>
-                          <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}>
-                            <SelectValue placeholder="Link to lesson (optional)" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background z-50">
-                            <SelectItem value="general">General note (no lesson)</SelectItem>
-                            {noteLessons.map((lesson) => (
-                              <SelectItem key={lesson.id} value={lesson.id}>{format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Enter note..." className="min-h-[80px]" onClick={(e) => e.stopPropagation()} />
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); setIsAddingNote(false); setNoteText(""); setNoteLessonId(""); }}>Cancel</Button>
-                          <Button size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); handleSaveNote(); }} disabled={savingNote || !noteText.trim()}>{savingNote ? "Saving..." : "Save"}</Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ── Lesson History Card ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground text-sm">
-                      Lesson History {recentLessons.length > 0 && <span className="text-muted-foreground font-normal">({recentLessons.length})</span>}
-                    </h3>
-                    {recentLessons.length === 0 ? (
-                      <p className="text-sm text-muted-foreground italic">No lessons recorded yet</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {recentLessons.map((lesson) => {
-                          const lessonTypeColors: Record<string, string> = {
-                            'test_prep': 'border-l-amber-500',
-                            'standard': 'border-l-blue-500',
-                            'intensive': 'border-l-purple-500',
-                            'motorway': 'border-l-emerald-500',
-                            'mock_test': 'border-l-rose-500',
-                            'refresher': 'border-l-cyan-500',
-                            'driving_test': 'border-l-orange-500',
-                          };
-                          const lessonTypeBadgeColors: Record<string, string> = {
-                            'test_prep': 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
-                            'standard': 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
-                            'intensive': 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400',
-                            'motorway': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
-                            'mock_test': 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400',
-                            'refresher': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
-                            'driving_test': 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
-                          };
-                          const borderColor = lessonTypeColors[lesson.lesson_type] || 'border-l-border';
-                          const badgeColor = lessonTypeBadgeColors[lesson.lesson_type] || 'bg-muted text-muted-foreground';
-                          const endTime = (() => {
-                            const [h, m] = lesson.start_time.split(':').map(Number);
-                            const endMinutes = h * 60 + m + lesson.duration_minutes;
-                            return `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
-                          })();
-                          const paymentColor = lesson.payment_status === 'paid' ? 'text-emerald-600' : lesson.payment_status === 'unpaid' ? 'text-amber-600' : 'text-muted-foreground';
-
-                          return (
-                            <div key={lesson.id} className={cn("border-l-4 rounded-r-xl bg-muted/20 p-3", borderColor)}>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-semibold text-sm text-foreground">{format(parseISO(lesson.lesson_date), "EEE, d MMM")}</span>
-                                <Badge className={cn("text-[10px] px-2 py-0 font-medium border-0", badgeColor)}>
-                                  {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                <span>{lesson.start_time.slice(0, 5)} - {endTime}</span>
-                              </div>
-                              {lesson.amount_due != null && (
-                                <div className="flex items-center justify-between mt-1">
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <PoundSterling className="h-3 w-3" />
-                                    <span>£{lesson.amount_due}</span>
-                                  </div>
-                                  <span className={cn("text-[10px] font-medium capitalize", paymentColor)}>
-                                    {lesson.payment_status === 'paid' ? 'Paid' : lesson.payment_status === 'unpaid' ? 'Unpaid' : lesson.payment_status}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        {recentLessons.length >= 5 && (
-                          <Button variant="ghost" size="sm" className="w-full text-xs text-primary" onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}>
-                            View all lessons
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ── Driving Sessions Card ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Route className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-semibold text-foreground text-sm">
-                        Driving Sessions {recentDrivingSessions.length > 0 && <span className="text-muted-foreground font-normal">({recentDrivingSessions.length})</span>}
-                      </h3>
-                    </div>
-                    {recentDrivingSessions.length === 0 ? (
-                      <p className="text-sm text-muted-foreground italic">No driving sessions recorded yet</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {recentDrivingSessions.map((session) => {
-                          const started = new Date(session.started_at);
-                          const ended = session.ended_at ? new Date(session.ended_at) : null;
-                          const durationMin = ended ? Math.round((ended.getTime() - started.getTime()) / 60000) : 0;
-                          const maxMph = session.max_speed_kmh ? Math.round(session.max_speed_kmh * 0.621371) : null;
-                          const distKm = session.total_distance_km || 0;
-
-                          return (
-                            <div key={session.id} className="rounded-xl bg-muted/20 p-3 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-semibold text-sm text-foreground">{format(started, "EEE, d MMM yyyy")}</span>
-                                {session.speeding_count > 0 && (
-                                  <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-0 text-[10px] px-2 py-0">
-                                    {session.speeding_count} overspeed{session.speeding_count !== 1 ? 's' : ''}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                {format(started, "HH:mm")} — {ended ? format(ended, "HH:mm") : "ongoing"}
-                              </p>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                {maxMph && <span className="flex items-center gap-1"><Gauge className="h-3 w-3" /> Max {maxMph} mph</span>}
-                                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {durationMin} min</span>
-                                <span className="flex items-center gap-1"><Route className="h-3 w-3" /> {distKm.toFixed(1)} km</span>
-                              </div>
-                              {session.feedback_notes && (
-                                <p className="text-xs text-muted-foreground italic mt-1 truncate">{session.feedback_notes}</p>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ── Payments Card ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground text-sm">Payments</h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Button variant="outline" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); setShowRecordPaymentModal(true); }}><PoundSterling className="h-4 w-4 mr-1" /> Record</Button>
-                      <Button variant="outline" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); setShowQRModal(true); }}><QrCode className="h-4 w-4 mr-1" /> QR</Button>
-                      {instructorId && instructorName && hasDebt && (
-                        <SendPaymentReminderButton pupilId={pupil.id} pupilName={pupil.name} pupilPhone={pupil.phone} pupilEmail={pupil.email} instructorId={instructorId} instructorName={instructorName} outstandingAmount={pupil.account_balance || 0} />
-                      )}
-                    </div>
-                    <PupilPaymentHistory pupilId={pupil.id} pupilName={pupil.name} refreshTrigger={paymentRefreshTrigger} />
-                    <PupilCreditBreakdown pupilId={pupil.id} prepaidHours={pupil.prepaid_hours || 0} depositPaid={pupil.deposit_paid || 0} paymentType={pupil.payment_type} />
-                  </div>
-
-                  {/* ── Status & Admin ── */}
-                  <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-4 space-y-3">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-semibold">{pupil.progress || 0}%</span>
-                      </div>
-                      <Progress value={pupil.progress || 0} className="h-2" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Status:</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
-                            {(() => { const StatusIcon = statusConfig[currentStatus].icon; return <StatusIcon className="h-4 w-4" />; })()}
-                            {statusConfig[currentStatus].label}
-                            {changingStatus && <Clock className="h-3 w-3 animate-spin" />}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-background z-50" onClick={(e) => e.stopPropagation()}>
-                          {(Object.keys(statusConfig) as PupilStatus[]).map((status) => {
-                            const config = statusConfig[status]; const Icon = config.icon;
-                            return (<DropdownMenuItem key={status} onClick={(e) => { e.stopPropagation(); handleStatusChange(status); }} className={status === currentStatus ? "bg-muted" : ""}><Icon className="h-4 w-4 mr-2" />{config.label}{status === currentStatus && <Check className="h-4 w-4 ml-auto" />}</DropdownMenuItem>);
-                          })}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
-                    {onViewTerms && (
-                      <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
-                        {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
-                      </Button>
-                    )}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                      <Button variant="ghost" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                      <Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
-                    </div>
-                  </div>
-                </div>
-                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Mobile: Full-screen pupil profile sheet */}
+      {isMobile && (
+        <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
+          <SheetContent side="bottom" className="h-[95vh] rounded-t-2xl p-0 overflow-y-auto">
+            {/* Close button */}
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <X className="h-4 w-4 text-white" />
+            </button>
+            <div className="pb-6">
+              {/* ── iOS Contact Hero ── */}
+              <div className="bg-gradient-to-b from-[#1C2A3A] to-[#2C3E50] px-6 pt-8 pb-6 flex flex-col items-center">
+                <Avatar className={cn("h-24 w-24 mb-3 ring-4 ring-white/20 ring-offset-2 ring-offset-[#1C2A3A]", isTracking && "ring-primary")}>
+                  <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+                  <AvatarFallback className="text-white text-2xl font-bold" style={{ backgroundColor: avatarBg }}>
+                    {getInitials(pupil.name)}
+                  </AvatarFallback>
+                </Avatar>
+                {isTracking && (
+                  <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-2 py-0.5 mb-1 -mt-1">
+                    <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" /></span>
+                    LIVE TRACKING
+                  </Badge>
+                )}
+                <h2 className="text-xl font-bold text-white mt-1">{pupil.name}</h2>
+                <p className="text-sm text-white/60 mt-0.5">
+                  Pupil since {format(parseISO(pupil.created_at), "MMM yyyy")}
+                  {pupil.course_type && ` · ${courseTypeLabels[pupil.course_type] || pupil.course_type}`}
+                </p>
+
+                {/* Circular Action Buttons */}
+                <div className="flex items-center gap-5 mt-5">
+                  {[
+                    { icon: Phone, label: "Call", action: () => pupil.phone && window.open(`tel:${pupil.phone}`), disabled: !pupil.phone },
+                    { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil) },
+                    { icon: Mail, label: "Email", action: () => pupil.email && window.open(`mailto:${pupil.email}`), disabled: !pupil.email },
+                    { icon: Navigation, label: "Navigate", action: handleNavigate },
+                  ].map(({ icon: Icon, label, action, disabled }) => (
+                    <button
+                      key={label}
+                      onClick={(e) => { e.stopPropagation(); action?.(); }}
+                      disabled={disabled}
+                      className="flex flex-col items-center gap-1.5 disabled:opacity-30"
+                    >
+                      <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-95 transition-transform">
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-medium text-white/70">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Stats Strip ── */}
+              <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
+                <div className="grid grid-cols-4 divide-x divide-border py-4">
+                  {[
+                    { value: pupil.lessons_completed || 0, label: "Lessons" },
+                    { value: `${pupil.prepaid_hours || 0}h`, label: "Hours" },
+                    { value: `${pupil.progress || 0}%`, label: "Progress" },
+                    { value: pupil.account_balance ? `£${Math.abs(Number(pupil.account_balance)).toFixed(0)}` : "£0", label: hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance", highlight: hasDebt },
+                  ].map(({ value, label, highlight }) => (
+                    <div key={label} className="text-center">
+                      <div className={cn("text-lg font-bold", highlight ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{value}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Test Date Banner ── */}
+              {pupil.test_date && (() => {
+                const testDate = new Date(pupil.test_date);
+                const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
+                return (
+                  <div className={cn(
+                    "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
+                    isUrgent
+                      ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
+                      : "bg-card border border-border"
+                  )}>
+                    <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
+                      <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-foreground">{format(new Date(pupil.test_date), "EEE, d MMM yyyy")}</p>
+                      <p className={cn("text-xs font-medium", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
+                        {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Quick Actions ── */}
+              <div className="mx-4 mt-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Quick Actions</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: ClipboardList, label: "Syllabus", color: "bg-blue-500/10 text-blue-600", action: () => setShowSyllabusSheet(true) },
+                    { icon: History, label: "History", color: "bg-violet-500/10 text-violet-600", action: () => onViewHistory(pupil) },
+                    { icon: Gauge, label: "Report", color: "bg-emerald-500/10 text-emerald-600", action: () => onViewReport(pupil) },
+                    { icon: Award, label: "Test Result", color: "bg-amber-500/10 text-amber-600", action: () => onRecordTestResult?.(pupil, false) },
+                    { icon: PoundSterling, label: "Payment", color: "bg-rose-500/10 text-rose-600", action: () => setShowRecordPaymentModal(true) },
+                    { icon: Share2, label: "Share", color: "bg-sky-500/10 text-sky-600", action: () => {} },
+                  ].map(({ icon: Icon, label, color, action }) => (
+                    <button key={label} onClick={action} className={`${color} rounded-xl p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform`}>
+                      <Icon className="h-5 w-5" />
+                      <span className="text-[11px] font-medium">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Contact Info ── */}
+              <div className="mx-4 mt-3">
+                <SectionPanel title="Details">
+                  <div className="space-y-3">
+                    {pupil.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground">{pupil.phone}</span>
+                      </div>
+                    )}
+                    {pupil.email && (
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground truncate">{pupil.email}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm text-foreground">{pupil.postcode}</span>
+                    </div>
+                  </div>
+                </SectionPanel>
+              </div>
+
+              {/* ── Action buttons ── */}
+              <div className="mx-4 mt-3 space-y-2 pb-4">
+                {onViewTerms && (
+                  <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
+                    {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                  <Button variant="ghost" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+                  <Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Modals */}
       {instructorId && (
