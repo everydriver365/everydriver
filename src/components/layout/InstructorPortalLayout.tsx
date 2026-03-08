@@ -98,7 +98,8 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
-
+import { OfflineBanner } from "@/components/instructor/OfflineBanner";
+import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 const sidebarGroups = [
   {
     label: "TEACHING",
