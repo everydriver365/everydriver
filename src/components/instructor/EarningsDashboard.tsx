@@ -426,6 +426,11 @@ export function EarningsDashboard() {
     );
   }
 
+  // Computed metrics
+  const totalExpenseAmount = allExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const netProfit = earnings.thisMonth.amount - totalExpenseAmount;
+  const hourlyRate = earnings.totalHours > 0 ? earnings.thisMonth.amount / earnings.totalHours : 0;
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -436,7 +441,9 @@ export function EarningsDashboard() {
               <div className="text-sm text-muted-foreground">{t('time.today')}</div>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.today.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.today.amount} />
+            </div>
             <div className="text-xs text-muted-foreground">{earnings.today.lessons} payments</div>
           </CardContent>
         </Card>
@@ -451,7 +458,9 @@ export function EarningsDashboard() {
                   <ArrowDownRight className="h-4 w-4 text-red-500" />
               )}
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.thisWeek.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.thisWeek.amount} />
+            </div>
             {earnings.thisWeek.change !== 0 && (
               <div className={`text-xs ${earnings.thisWeek.change > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {earnings.thisWeek.change > 0 ? '+' : ''}{earnings.thisWeek.change.toFixed(0)}% vs last week
@@ -470,7 +479,9 @@ export function EarningsDashboard() {
                   <TrendingDown className="h-4 w-4 text-red-500" />
               )}
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.thisMonth.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.thisMonth.amount} />
+            </div>
             {earnings.thisMonth.change !== 0 && (
               <div className={`text-xs ${earnings.thisMonth.change > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {earnings.thisMonth.change > 0 ? '+' : ''}{earnings.thisMonth.change.toFixed(0)}% vs last month
@@ -485,8 +496,43 @@ export function EarningsDashboard() {
               <div className="text-sm text-muted-foreground">{t('instructor.outstanding')}</div>
               <PiggyBank className="h-4 w-4 text-amber-500" />
             </div>
-            <div className="text-2xl font-bold mt-1 text-amber-600">{formatCurrency(earnings.outstanding)}</div>
+            <div className="text-2xl font-bold mt-1 text-amber-600">
+              <CurrencyCounter value={earnings.outstanding} />
+            </div>
             <div className="text-xs text-muted-foreground">Projected: {formatCurrency(earnings.projectedMonth)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Profit/Loss + Hourly Rate Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Net Profit</div>
+              <Layers className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+              <CurrencyCounter value={netProfit} />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Income {formatCurrency(earnings.thisMonth.amount)} − Expenses {formatCurrency(totalExpenseAmount)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Hourly Rate</div>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={hourlyRate} showPence />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {earnings.totalHours.toFixed(1)}h this month
+            </div>
           </CardContent>
         </Card>
       </div>
