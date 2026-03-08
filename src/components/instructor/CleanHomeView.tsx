@@ -436,6 +436,7 @@ export function CleanHomeView({
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />
+        <CommunityAlertReporter instructorId={instructorId} />
       </div>
     </div>
   );
