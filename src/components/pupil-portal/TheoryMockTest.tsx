@@ -115,7 +115,7 @@ export function TheoryMockTest({ pupilId, onComplete }: TheoryMockTestProps) {
   const saveResult = async () => {
     if (!pupilId) return;
     try {
-      await supabase.from("theory_mock_results").insert({
+      await (supabase.from("theory_mock_results" as any) as any).insert({
         pupil_id: pupilId,
         score,
         total_questions: questions.length,
