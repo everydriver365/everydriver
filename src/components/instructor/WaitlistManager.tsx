@@ -424,7 +424,22 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
             </p>
           ) : (
             <div className="space-y-3">
-              {waitlist.map((entry) => (
+              {waitlist
+                .map((entry) => {
+                  // Calculate best match score across available gaps
+                  const bestScore = availableGaps.length > 0
+                    ? Math.max(0, ...availableGaps.map(gap => calculateMatchScore(entry, gap)))
+                    : null;
+                  return { entry, bestScore };
+                })
+                .sort((a, b) => {
+                  // Sort by match score descending, then by wait time
+                  if (a.bestScore !== null && b.bestScore !== null) {
+                    return b.bestScore - a.bestScore;
+                  }
+                  return new Date(a.entry.created_at).getTime() - new Date(b.entry.created_at).getTime();
+                })
+                .map(({ entry, bestScore }) => (
                 <div
                   key={entry.id}
                   className={`flex items-start justify-between rounded-lg border p-3 transition-all ${
@@ -435,6 +450,16 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{entry.pupil?.name}</span>
+                      {bestScore !== null && (
+                        <Badge
+                          variant={bestScore >= 80 ? "default" : bestScore >= 50 ? "secondary" : "outline"}
+                          className={`text-[10px] px-1.5 ${
+                            bestScore >= 80 ? "bg-emerald-500 hover:bg-emerald-500" : ""
+                          }`}
+                        >
+                          {bestScore}% match
+                        </Badge>
+                      )}
                       <WaitlistFreshnessIndicator
                         lastConfirmedAt={(entry as any).last_confirmed_at}
                         createdAt={entry.created_at}
