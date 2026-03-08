@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { EndLessonWizard } from "./EndLessonWizard";
+import { RunningLateSheet } from "./RunningLateSheet";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
