@@ -27,7 +27,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
+
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
