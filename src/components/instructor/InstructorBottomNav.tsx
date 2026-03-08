@@ -66,7 +66,8 @@ const navItems: NavItem[] = [
   { 
     label: "Pupils", 
     icon: Users, 
-    path: "/instructor/pupils"
+    path: "/instructor/pupils",
+    showBadge: true
   },
   { 
     label: "More", 

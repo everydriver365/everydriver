@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { EndLessonWizard } from "./EndLessonWizard";
+import { RunningLateSheet } from "./RunningLateSheet";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
@@ -64,6 +65,7 @@ export function NextUpTile({
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -582,7 +584,14 @@ export function NextUpTile({
                 </div>
 
                 {/* 6. Secondary Actions Row */}
-                <div className="grid grid-cols-2 gap-[10px]">
+                <div className="grid grid-cols-3 gap-[10px]">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
+                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
+                    style={{ background: "rgba(251,191,36,0.1)", color: "#d97706" }}
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" /> Running Late
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
                     className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
@@ -595,7 +604,7 @@ export function NextUpTile({
                     className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
                     style={{ background: "rgba(239,68,68,0.08)", color: "#dc2626" }}
                   >
-                    <X className="h-3.5 w-3.5" /> Cancel Lesson
+                    <X className="h-3.5 w-3.5" /> Cancel
                   </button>
                 </div>
               </div>
@@ -650,6 +659,13 @@ export function NextUpTile({
           onCompleted={handleCancelled}
         />
       )}
+      <RunningLateSheet
+        open={lateSheetOpen}
+        onOpenChange={setLateSheetOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+      />
     </>
   );
 }
