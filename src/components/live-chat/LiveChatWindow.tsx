@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypingIndicator } from "./TypingIndicator";
 import { useLiveChat, LiveChatMessage } from "@/hooks/useLiveChat";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface LiveChatWindowProps {
@@ -15,6 +16,7 @@ interface LiveChatWindowProps {
   userId?: string;
   userName?: string;
   otherPartyName?: string;
+  instructorId?: string;
 }
 
 export function LiveChatWindow({
@@ -23,10 +25,12 @@ export function LiveChatWindow({
   userId,
   userName,
   otherPartyName,
+  instructorId,
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     session,
@@ -45,15 +49,45 @@ export function LiveChatWindow({
     }
   }, [messages, otherTyping]);
 
+  const triggerAIReceptionist = async (visitorMessage: string) => {
+    if (!instructorId || userType !== "visitor") return;
+    try {
+      await supabase.functions.invoke("ai-receptionist", {
+        body: { session_id: sessionId, message: visitorMessage, instructor_id: instructorId },
+      });
+    } catch (e) {
+      console.error("AI receptionist error:", e);
+    }
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
-    const success = await sendMessage(newMessage, userType, userId);
+    const messageText = newMessage.trim();
+    const success = await sendMessage(messageText, userType, userId);
     if (success) {
       setNewMessage("");
       inputRef.current?.focus();
+
+      // If visitor, trigger AI receptionist after 5 seconds if no human reply
+      if (userType === "visitor" && instructorId) {
+        if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = setTimeout(() => {
+          triggerAIReceptionist(messageText);
+        }, 5000);
+      }
     }
   };
+
+  // Cancel AI trigger if human replies
+  useEffect(() => {
+    if (userType === "visitor" && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.sender_type !== "visitor" && aiTimeoutRef.current) {
+        clearTimeout(aiTimeoutRef.current);
+      }
+    }
+  }, [messages, userType]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
