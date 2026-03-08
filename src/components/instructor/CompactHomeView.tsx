@@ -26,7 +26,6 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
