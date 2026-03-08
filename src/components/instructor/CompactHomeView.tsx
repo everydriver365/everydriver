@@ -36,7 +36,7 @@ import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBa
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 
 
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+
 
 
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
