@@ -116,11 +116,11 @@ export function useLessonRouteRecorder(
     );
 
     try {
-      const { error: dbError } = await supabase.from("lesson_routes").insert({
+      const { error: dbError } = await (supabase.from("lesson_routes") as any).insert({
         instructor_id: instructorId,
         pupil_id: pupilId || null,
         lesson_id: lessonId || null,
-        coordinates: finalCoords,
+        coordinates: finalCoords as any,
         distance_km: distanceRef.current,
         duration_minutes: durationMinutes,
         started_at: startedAt,
