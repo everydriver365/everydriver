@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useMemo, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,12 +25,18 @@ import {
   ChevronRight,
   Check,
   Loader2,
+  Sun,
+  Sunset,
+  Moon,
+  Flame,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, addDays, startOfWeek, isBefore, isToday, parseISO } from 'date-fns';
+import { format, addDays, startOfWeek, isBefore, isToday, parseISO, isSameDay } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import confetti from 'canvas-confetti';
 
 interface SelfBookingCalendarProps {
   pupilId: string;
@@ -54,6 +60,19 @@ interface BookingSettings {
   booking_message?: string;
 }
 
+function getTimeSlotGroup(time: string): 'morning' | 'afternoon' | 'evening' {
+  const hour = parseInt(time.split(':')[0]);
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
+}
+
+const TIME_GROUP_CONFIG = {
+  morning: { label: 'Morning', icon: Sun, color: 'text-amber-500' },
+  afternoon: { label: 'Afternoon', icon: Sunset, color: 'text-orange-500' },
+  evening: { label: 'Evening', icon: Moon, color: 'text-indigo-500' },
+};
+
 const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   pupilId,
   instructorId,
@@ -61,9 +80,12 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   className,
 }) => {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number>(60);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const dayStripRef = useRef<HTMLDivElement>(null);
 
   const queryClient = useQueryClient();
 
@@ -101,7 +123,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   const { data: existingBookings } = useQuery({
     queryKey: ['existing-bookings', instructorId, weekStart],
     queryFn: async () => {
-      const weekEnd = addDays(weekStart, 6);
+      const weekEnd = addDays(weekStart, 13); // fetch 2 weeks for scrolling
       
       const { data, error } = await supabase
         .from('scheduled_lessons')
@@ -120,7 +142,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   // Create booking mutation
   const bookLessonMutation = useMutation({
     mutationFn: async (slot: AvailableSlot) => {
-      // Get pupil details
       const { data: pupil, error: pupilError } = await supabase
         .from('pupils')
         .select('address, postcode')
@@ -153,9 +174,20 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       queryClient.invalidateQueries({ queryKey: ['existing-bookings'] });
       setShowConfirmDialog(false);
       setSelectedSlot(null);
+      setBookingSuccess(true);
+      
+      // Confetti!
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: [brandColour, '#10B981', '#F59E0B'],
+      });
+
+      setTimeout(() => setBookingSuccess(false), 3000);
       
       toast({
-        title: bookingStatus === 'pending_approval' ? 'Booking Requested!' : 'Lesson Booked!',
+        title: bookingStatus === 'pending_approval' ? 'Booking Requested! 🎉' : 'Lesson Booked! 🎉',
         description: bookingStatus === 'pending_approval'
           ? 'Your instructor will confirm your booking soon.'
           : 'Your lesson has been confirmed.',
@@ -170,7 +202,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     },
   });
 
-  // Generate available slots for the week
+  // Generate available slots
   const availableSlots = useMemo(() => {
     if (!availability || !settings) return {};
 
@@ -178,17 +210,13 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     const minNoticeDate = addDays(new Date(), settings.min_notice_hours / 24);
     const maxAdvanceDate = addDays(new Date(), settings.max_advance_days);
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 14; i++) {
       const date = addDays(weekStart, i);
       const dateStr = format(date, 'yyyy-MM-dd');
       const dayOfWeek = format(date, 'EEEE').toLowerCase();
 
-      // Skip if date is before minimum notice or after max advance
-      if (isBefore(date, minNoticeDate) || isBefore(maxAdvanceDate, date)) {
-        continue;
-      }
+      if (isBefore(date, minNoticeDate) || isBefore(maxAdvanceDate, date)) continue;
 
-      // Find availability for this day
       const dayAvailability = availability.filter(
         (a) => a.day_of_week?.toLowerCase() === dayOfWeek && a.is_available
       );
@@ -196,7 +224,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       slots[dateStr] = [];
 
       dayAvailability.forEach((avail) => {
-        // Generate hourly slots
         const startHour = parseInt(avail.start_time?.split(':')[0] || '9');
         const endHour = parseInt(avail.end_time?.split(':')[0] || '17');
 
@@ -204,7 +231,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
           const slotStart = `${hour.toString().padStart(2, '0')}:00`;
           const slotEnd = `${(hour + 1).toString().padStart(2, '0')}:00`;
 
-          // Check if slot is already booked
           const isBooked = existingBookings?.some((booking) => {
             if (booking.lesson_date !== dateStr) return false;
             const bookingStart = parseInt(booking.start_time?.split(':')[0] || '0');
@@ -214,11 +240,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
           });
 
           if (!isBooked) {
-            slots[dateStr].push({
-              date: dateStr,
-              startTime: slotStart,
-              endTime: slotEnd,
-            });
+            slots[dateStr].push({ date: dateStr, startTime: slotStart, endTime: slotEnd });
           }
         }
       });
@@ -259,187 +281,278 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   if (settingsLoading || availabilityLoading) {
     return (
       <Card className={className}>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
+          <Skeleton className="h-12 w-full mb-4" />
           <Skeleton className="h-64 w-full" />
         </CardContent>
       </Card>
     );
   }
 
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days = Array.from({ length: 14 }, (_, i) => addDays(weekStart, i));
+  const selectedDateStr = format(selectedDay, 'yyyy-MM-dd');
+  const daySlots = availableSlots[selectedDateStr] || [];
+
+  // Group slots by time of day
+  const groupedSlots = {
+    morning: daySlots.filter((s) => getTimeSlotGroup(s.startTime) === 'morning'),
+    afternoon: daySlots.filter((s) => getTimeSlotGroup(s.startTime) === 'afternoon'),
+    evening: daySlots.filter((s) => getTimeSlotGroup(s.startTime) === 'evening'),
+  };
 
   return (
     <>
-      <Card className={cn("overflow-hidden", className)}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Calendar className="h-5 w-5" style={{ color: brandColour }} />
-              Book a Lesson
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={handlePrevWeek}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium min-w-[120px] text-center">
-                {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d')}
-              </span>
-              <Button variant="ghost" size="icon" onClick={handleNextWeek}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+      <div className={cn("space-y-4", className)}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Calendar className="h-5 w-5" style={{ color: brandColour }} />
+            Book a Lesson
+          </h2>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevWeek}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextWeek}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          {settings?.booking_message && (
-            <p className="text-sm text-muted-foreground mb-4 p-3 bg-muted/50 rounded-lg">
-              {settings.booking_message}
-            </p>
-          )}
+        {settings?.booking_message && (
+          <p className="text-sm text-muted-foreground px-4 py-2 bg-muted/50 rounded-lg mx-4">
+            {settings.booking_message}
+          </p>
+        )}
 
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((day) => (
-              <div
-                key={day.toISOString()}
+        {/* Horizontal Day Strip */}
+        <div
+          ref={dayStripRef}
+          className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide snap-x snap-mandatory"
+        >
+          {days.map((day) => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const slotCount = (availableSlots[dateStr] || []).length;
+            const isSelected = isSameDay(day, selectedDay);
+            const isCurrentDay = isToday(day);
+
+            return (
+              <motion.button
+                key={dateStr}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedDay(day)}
                 className={cn(
-                  "text-center text-xs font-medium py-1",
-                  isToday(day) && "text-primary"
+                  "flex flex-col items-center min-w-[56px] py-2.5 px-2 rounded-2xl border transition-all snap-center shrink-0",
+                  isSelected
+                    ? "border-transparent shadow-md"
+                    : "border-border bg-card hover:bg-muted",
+                  slotCount === 0 && !isSelected && "opacity-40"
                 )}
+                style={{
+                  backgroundColor: isSelected ? brandColour : undefined,
+                  color: isSelected ? '#ffffff' : undefined,
+                }}
               >
-                <div>{format(day, 'EEE')}</div>
-                <div className={cn(
-                  "text-lg",
-                  isToday(day) && "bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center mx-auto"
+                <span className={cn("text-[10px] font-medium uppercase", !isSelected && "text-muted-foreground")}>
+                  {format(day, 'EEE')}
+                </span>
+                <span className={cn(
+                  "text-lg font-bold",
+                  isCurrentDay && !isSelected && "text-primary"
                 )}>
                   {format(day, 'd')}
-                </div>
-              </div>
-            ))}
-          </div>
+                </span>
+                {slotCount > 0 && (
+                  <span className={cn(
+                    "text-[9px] font-medium mt-0.5",
+                    isSelected ? "opacity-80" : "text-muted-foreground"
+                  )}>
+                    {slotCount} slots
+                  </span>
+                )}
+                {slotCount === 0 && (
+                  <span className={cn(
+                    "text-[9px] mt-0.5",
+                    isSelected ? "opacity-60" : "text-muted-foreground"
+                  )}>
+                    Full
+                  </span>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
 
-          <div className="grid grid-cols-7 gap-1 min-h-[200px]">
-            {weekDays.map((day) => {
-              const dateStr = format(day, 'yyyy-MM-dd');
-              const daySlots = availableSlots[dateStr] || [];
+        {/* Selected Day Label */}
+        <div className="px-4">
+          <h3 className="text-sm font-semibold text-foreground">
+            {format(selectedDay, 'EEEE, MMMM d')}
+          </h3>
+        </div>
 
-              return (
-                <div
-                  key={day.toISOString()}
-                  className="border rounded-lg p-1 min-h-[150px] bg-muted/20"
-                >
-                  {daySlots.length > 0 ? (
-                    <div className="space-y-1">
-                      {daySlots.map((slot) => (
-                        <button
-                          key={`${slot.date}-${slot.startTime}`}
-                          onClick={() => handleSlotClick(slot)}
-                          className="w-full text-xs py-1.5 px-1 rounded text-center transition-colors hover:opacity-90"
-                          style={{
-                            backgroundColor: `${brandColour}20`,
-                            color: brandColour,
-                          }}
-                        >
-                          {slot.startTime}
-                        </button>
-                      ))}
+        {/* Time Slots grouped by period */}
+        <div className="px-4 space-y-4">
+          <AnimatePresence mode="wait">
+            {daySlots.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-8 text-muted-foreground"
+              >
+                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No available slots on this day</p>
+              </motion.div>
+            ) : (
+              <motion.div key={selectedDateStr} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                {(['morning', 'afternoon', 'evening'] as const).map((period) => {
+                  const slots = groupedSlots[period];
+                  if (slots.length === 0) return null;
+                  const config = TIME_GROUP_CONFIG[period];
+
+                  return (
+                    <div key={period} className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <config.icon className={cn("h-4 w-4", config.color)} />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {config.label}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {slots.map((slot, i) => {
+                          const isPopular = slots.length <= 2;
+                          return (
+                            <motion.button
+                              key={`${slot.date}-${slot.startTime}`}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: i * 0.03 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleSlotClick(slot)}
+                              className="relative rounded-xl border border-border bg-card py-3 px-2 text-center transition-colors hover:border-primary/30 hover:bg-primary/5"
+                            >
+                              <span className="text-sm font-semibold text-foreground">{slot.startTime}</span>
+                              {isPopular && (
+                                <div className="absolute -top-1 -right-1">
+                                  <Badge className="text-[8px] px-1 py-0 h-4 bg-amber-500 hover:bg-amber-500 border-0">
+                                    <Flame className="h-2 w-2 mr-0.5" />
+                                    Hot
+                                  </Badge>
+                                </div>
+                              )}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-                      —
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <div
-                className="w-3 h-3 rounded"
-                style={{ backgroundColor: `${brandColour}20` }}
-              />
-              <span>Available</span>
-            </div>
-            {settings?.require_approval && (
-              <Badge variant="secondary" className="text-xs">
-                Requires approval
-              </Badge>
+                  );
+                })}
+              </motion.div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </AnimatePresence>
+        </div>
 
-      {/* Booking Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Booking</DialogTitle>
-            <DialogDescription>
-              {settings?.require_approval
-                ? 'Your booking will be sent to your instructor for approval.'
-                : 'Confirm your lesson booking.'}
-            </DialogDescription>
-          </DialogHeader>
+        {/* Legend */}
+        <div className="px-4 flex items-center gap-3 text-xs text-muted-foreground">
+          {settings?.require_approval && (
+            <Badge variant="secondary" className="text-xs">
+              Requires approval
+            </Badge>
+          )}
+        </div>
+      </div>
 
-          {selectedSlot && (
-            <div className="space-y-4 py-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">
-                    {format(parseISO(selectedSlot.date), 'EEEE, MMMM d, yyyy')}
+      {/* Sticky Bottom Summary + Confirm */}
+      <AnimatePresence>
+        {selectedSlot && showConfirmDialog && (
+          <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Booking</DialogTitle>
+                <DialogDescription>
+                  {settings?.require_approval
+                    ? 'Your booking will be sent to your instructor for approval.'
+                    : 'Confirm your lesson booking.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <div className="font-medium">
+                      {format(parseISO(selectedSlot.date), 'EEEE, MMMM d, yyyy')}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Starting at {selectedSlot.startTime}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Starting at {selectedSlot.startTime}
-                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Lesson Duration</label>
+                  <Select
+                    value={selectedDuration.toString()}
+                    onValueChange={(val) => setSelectedDuration(parseInt(val))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(settings?.allowed_durations || [60, 90, 120]).map((duration) => (
+                        <SelectItem key={duration} value={duration.toString()}>
+                          {duration} minutes
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Lesson Duration</label>
-                <Select
-                  value={selectedDuration.toString()}
-                  onValueChange={(val) => setSelectedDuration(parseInt(val))}
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmBooking}
+                  disabled={bookLessonMutation.isPending}
+                  style={{ backgroundColor: brandColour }}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(settings?.allowed_durations || [60, 90, 120]).map((duration) => (
-                      <SelectItem key={duration} value={duration.toString()}>
-                        {duration} minutes
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
+                  {bookLessonMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4 mr-2" />
+                  )}
+                  {settings?.require_approval ? 'Request Booking' : 'Confirm Booking'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirmBooking}
-              disabled={bookLessonMutation.isPending}
+      {/* Success animation overlay */}
+      <AnimatePresence>
+        {bookingSuccess && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="h-20 w-20 rounded-full flex items-center justify-center"
               style={{ backgroundColor: brandColour }}
             >
-              {bookLessonMutation.isPending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 mr-2" />
-              )}
-              {settings?.require_approval ? 'Request Booking' : 'Confirm Booking'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Check className="h-10 w-10 text-white" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
