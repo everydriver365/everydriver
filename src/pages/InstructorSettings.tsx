@@ -99,6 +99,9 @@ export default function InstructorSettings() {
   const [uploading, setUploading] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [openCategories, setOpenCategories] = useState<string[]>(["profile"]);
+  const [heyEdEnabled, setHeyEdEnabled] = useState<boolean>(() => {
+    return localStorage.getItem(`hey-ed-always-listen-${instructorId}`) === "true";
+  });
   const [selectedCategory, setSelectedCategory] = useState<string>("profile");
   
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
