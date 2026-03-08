@@ -23,6 +23,7 @@ import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOvervi
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
 import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
+import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 
 interface Child {
   id: string;
