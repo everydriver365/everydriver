@@ -60,13 +60,10 @@ import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralS
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
-
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
 
