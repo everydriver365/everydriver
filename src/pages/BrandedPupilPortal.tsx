@@ -46,6 +46,8 @@ import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
 import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
+import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTracker";
+import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 
 interface InstructorBranding {
   id: string;
