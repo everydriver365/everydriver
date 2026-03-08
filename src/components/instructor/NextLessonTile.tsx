@@ -33,6 +33,8 @@ interface NextLesson {
 }
 
 export function NextLessonTile({ instructorId }: NextLessonTileProps) {
+  const [showRecorder, setShowRecorder] = useState(false);
+
   const { data: nextLesson, isLoading } = useQuery({
     queryKey: ["next-lesson-tile", instructorId],
     queryFn: async () => {
