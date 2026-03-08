@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, AlertCircle,
-  Loader2, MapPin, User, StickyNote, Sparkles
+  Loader2, MapPin, User, StickyNote, Sparkles, TrendingUp
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
