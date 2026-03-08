@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Volume2, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Moon, Volume2, Loader2, ChevronDown, ChevronUp, Share2 } from "lucide-react";
+import { ShareableEODCard } from "@/components/instructor/ShareableEODCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
