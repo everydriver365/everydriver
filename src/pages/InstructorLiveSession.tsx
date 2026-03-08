@@ -27,6 +27,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
 import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
+import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
 
 
 interface GPSDevice {
@@ -947,6 +948,14 @@ export default function InstructorLiveSession() {
               isConnected={isConnected}
             />
  
+           {/* Manual GPS Route Recorder */}
+           {instructor?.id && (
+             <LessonRouteRecorder
+               instructorId={instructor.id}
+               pupilId={selectedPupilId || null}
+             />
+           )}
+
            {/* Recent Sessions */}
            {instructor?.id && (
              <RecentSessionsList instructorId={instructor.id} />
