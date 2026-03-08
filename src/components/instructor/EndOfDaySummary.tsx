@@ -154,6 +154,13 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
           </button>
         </motion.div>
       )}
+
+      {/* Share card */}
+      {showShareCard && summary && data && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+          <ShareableEODCard summary={summary} data={data} />
+        </motion.div>
+      )}
     </motion.div>
   );
 }
