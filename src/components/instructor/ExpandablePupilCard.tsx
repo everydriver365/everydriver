@@ -1048,8 +1048,9 @@ export function ExpandablePupilCard({
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-3 pt-0">
+                      <div className="p-3 pt-0 space-y-3">
                         <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
+                        <LessonRouteViewer pupilId={pupil.id} pupilName={pupil.name} />
                       </div>
                     </motion.div>
                   )}
