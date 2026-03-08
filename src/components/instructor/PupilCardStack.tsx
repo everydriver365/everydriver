@@ -686,9 +686,9 @@ export function PupilCardStack({
           </motion.div>
         </button>
 
-        {/* Expanded Content */}
+        {/* Expanded Content - Desktop only (inline) */}
         <AnimatePresence>
-          {isExpanded && (
+          {isExpanded && !isMobile && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -698,7 +698,6 @@ export function PupilCardStack({
             >
               <div className="border-t border-border">
                 {/* Desktop: Combined Layout */}
-                {!isMobile ? (
                   <div className="p-4">
                     <DesktopPupilDetailPanel
                       pupil={pupil}
