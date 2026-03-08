@@ -23,6 +23,7 @@ interface VoiceLessonNotesProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  handsFree?: boolean;
 }
 
 const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
