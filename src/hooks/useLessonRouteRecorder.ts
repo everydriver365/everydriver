@@ -151,7 +151,21 @@ export function useLessonRouteRecorder(
       console.error("[RouteRecorder] Save error:", err);
       setError("Failed to save route");
     }
-  }, [instructorId, pupilId, lessonId]);
+  }, [instructorId, pupilId, lessonId, releaseWakeLock]);
+
+  // Re-acquire wake lock when page becomes visible during recording
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && watchIdRef.current !== null) {
+        acquireWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      releaseWakeLock();
+    };
+  }, [acquireWakeLock, releaseWakeLock]);
 
   return {
     isRecording,
