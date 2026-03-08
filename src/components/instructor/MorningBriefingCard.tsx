@@ -82,8 +82,8 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
   };
 
   const dismiss = () => {
-    const key = `briefing-dismissed-${new Date().toDateString()}`;
-    sessionStorage.setItem(key, "1");
+    const key = `briefing-shown-${instructorId}`;
+    localStorage.setItem(key, "1");
     setDismissed(true);
   };
 
