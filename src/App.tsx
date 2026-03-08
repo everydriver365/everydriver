@@ -94,6 +94,8 @@ const InstructorDocumentTemplates = lazy(() => import("./pages/InstructorDocumen
 const InstructorStandardsCheck = lazy(() => import("./pages/InstructorStandardsCheck"));
 const InstructorCPD = lazy(() => import("./pages/InstructorCPD"));
 const InstructorReferrals = lazy(() => import("./pages/InstructorReferrals"));
+const InstructorPipeline = lazy(() => import("./pages/InstructorPipeline"));
+const InstructorAutomations = lazy(() => import("./pages/InstructorAutomations"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
