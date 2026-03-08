@@ -3,6 +3,8 @@ import { CheckCircle2, Circle, ClipboardList } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+import confetti from "canvas-confetti";
 
 interface LessonPrepChecklistProps {
   pupilId: string;
@@ -23,10 +25,44 @@ const DEFAULT_ITEMS: Omit<ChecklistItem, 'id'>[] = [
   { label: "Have water bottle ready", checked: false },
 ];
 
+function ProgressRing({ progress, size = 40, strokeWidth = 3, color }: { progress: number; size?: number; strokeWidth?: number; color?: string }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className="text-muted/30"
+      />
+      <motion.circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color || 'hsl(var(--primary))'}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        initial={{ strokeDashoffset: circumference }}
+        animate={{ strokeDashoffset: offset }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      />
+    </svg>
+  );
+}
+
 export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: LessonPrepChecklistProps) {
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [hasUpcomingLesson, setHasUpcomingLesson] = useState(false);
   const [nextLessonType, setNextLessonType] = useState<string | null>(null);
+  const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
 
   useEffect(() => {
     checkUpcomingLesson();
@@ -49,10 +85,8 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
       setHasUpcomingLesson(true);
       setNextLessonType(data.lesson_type);
 
-      // Build contextual checklist
       const baseItems = DEFAULT_ITEMS.map((item, i) => ({ ...item, id: `default-${i}` }));
 
-      // Add lesson-type specific items
       if (data.lesson_type?.toLowerCase().includes('test')) {
         baseItems.push(
           { id: 'test-1', label: "Review test routes and common fault areas", checked: false },
@@ -65,7 +99,6 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
         );
       }
 
-      // Load saved state from localStorage
       const storageKey = `prep_${pupilId}_${data.id}`;
       const saved = localStorage.getItem(storageKey);
       if (saved) {
@@ -86,19 +119,34 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
       const updated = prev.map(item =>
         item.id === id ? { ...item, checked: !item.checked } : item
       );
-      // Persist to localStorage
       const checks: Record<string, boolean> = {};
       updated.forEach(i => { checks[i.id] = i.checked; });
-      // We don't have lesson id here easily, so use pupilId
       localStorage.setItem(`prep_${pupilId}_latest`, JSON.stringify(checks));
       return updated;
     });
   };
 
-  if (!hasUpcomingLesson || items.length === 0) return null;
-
+  // Confetti when all done
   const completedCount = items.filter(i => i.checked).length;
-  const allDone = completedCount === items.length;
+  const allDone = items.length > 0 && completedCount === items.length;
+  const progress = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+
+  useEffect(() => {
+    if (allDone && !hasTriggeredConfetti) {
+      setHasTriggeredConfetti(true);
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: [brandColour || '#22c55e', '#fbbf24', '#3b82f6'],
+      });
+    }
+    if (!allDone) {
+      setHasTriggeredConfetti(false);
+    }
+  }, [allDone, hasTriggeredConfetti, brandColour]);
+
+  if (!hasUpcomingLesson || items.length === 0) return null;
 
   return (
     <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
@@ -106,9 +154,12 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
         <CardTitle className="text-sm flex items-center gap-2" style={{ color: 'var(--brand-text)' }}>
           <ClipboardList className="h-4 w-4" style={{ color: brandColour || '#3b82f6' }} />
           Lesson Prep
-          <span className="text-xs font-normal ml-auto" style={{ color: 'var(--brand-muted)' }}>
-            {completedCount}/{items.length}
-          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <ProgressRing progress={progress} size={28} strokeWidth={2.5} color={brandColour || undefined} />
+            <span className="text-xs font-normal" style={{ color: 'var(--brand-muted)' }}>
+              {completedCount}/{items.length}
+            </span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -119,7 +170,9 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
             className="flex items-center gap-2 w-full text-left p-1.5 rounded-md hover:bg-muted/30 transition-colors"
           >
             {item.checked ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: brandColour || '#22c55e' }} />
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400 }}>
+                <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: brandColour || '#22c55e' }} />
+              </motion.div>
             ) : (
               <Circle className="h-4 w-4 shrink-0" style={{ color: 'var(--brand-muted)' }} />
             )}
@@ -132,9 +185,14 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
           </button>
         ))}
         {allDone && (
-          <p className="text-xs text-center pt-1" style={{ color: brandColour || '#22c55e' }}>
-            ✓ You're all set for your lesson!
-          </p>
+          <motion.p
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-xs text-center pt-1 font-medium"
+            style={{ color: brandColour || '#22c55e' }}
+          >
+            🎉 You're all set for your lesson!
+          </motion.p>
         )}
       </CardContent>
     </Card>

@@ -105,10 +105,17 @@ export function TheoryMockTest({ pupilId, onComplete }: TheoryMockTestProps) {
     return acc;
   }, {} as Record<string, { correct: number; total: number }>);
 
-  // Save result
+  // Save result and award XP
   useEffect(() => {
     if (mode === "results" && pupilId && questions.length > 0) {
       saveResult();
+      // Award XP via streak tracker
+      const awardXP = (window as any).__theoryStreakAwardXP;
+      if (awardXP) {
+        const xpFromQuestions = score * 10; // 10 XP per correct answer
+        const passBonus = passed ? 50 : 0;
+        awardXP(xpFromQuestions + passBonus, true);
+      }
     }
   }, [mode]);
 
