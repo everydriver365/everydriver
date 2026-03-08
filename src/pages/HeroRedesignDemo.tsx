@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { ChevronRight, MapPin, Clock, CheckCircle, Zap, TrendingUp, Calendar } from "lucide-react";
+import { ChevronRight, MapPin, Clock, CheckCircle, Zap, TrendingUp, Calendar, Bell, Settings, Star, Sun } from "lucide-react";
 import instructorHeroImg from "@/assets/hero-instructor.jpg";
 
 const firstName = "Kenneth";
@@ -478,6 +478,265 @@ function OptionL() {
   );
 }
 
+// ─── Option M: Header-Fused Compact ───
+// Mimics the real header (bg-primary/85 blur) and flows stats directly below it
+function OptionM() {
+  const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
+  return (
+    <div>
+      {/* Fake header bar */}
+      <div className="backdrop-blur-xl bg-primary/85 text-primary-foreground px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <span className="text-xs font-bold">KE</span>
+          </div>
+          <span className="text-sm font-semibold">{firstName}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+          <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Settings className="h-4 w-4" /></div>
+        </div>
+      </div>
+      {/* Stats strip — same primary tone, slightly lighter */}
+      <div className="bg-primary/75 backdrop-blur-xl px-4 py-2.5 flex items-center gap-3 text-primary-foreground">
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60 font-medium">Today</p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex-1 h-1.5 bg-primary-foreground/15 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-primary-foreground/90 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+            </div>
+            <span className="text-xs font-bold">{todayCompleted}/{todayTotal}</span>
+          </div>
+        </div>
+        <div className="w-px h-8 bg-primary-foreground/15" />
+        <div className="text-center">
+          <p className="text-lg font-bold leading-none">{weekCompleted}</p>
+          <p className="text-[9px] text-primary-foreground/60 mt-0.5">this week</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option N: Header + Floating Glass Card ───
+function OptionN() {
+  const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
+  return (
+    <div>
+      <div className="backdrop-blur-xl bg-primary/85 text-primary-foreground px-4 pt-3 pb-10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <span className="text-xs font-bold">KE</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight">{greeting}, {firstName}</p>
+            <p className="text-[11px] text-primary-foreground/50">{dateStr}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+        </div>
+      </div>
+      {/* Overlapping card */}
+      <div className="px-4 -mt-7">
+        <div className="bg-card rounded-2xl border border-border/40 p-3.5 shadow-md flex items-center gap-3">
+          <div className="relative w-12 h-12 shrink-0">
+            <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
+              <circle cx="24" cy="24" r="19" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+              <motion.circle cx="24" cy="24" r="19" fill="none" stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 19}`}
+                initial={{ strokeDashoffset: 2 * Math.PI * 19 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 19 * (1 - pct / 100) }}
+                transition={{ duration: 1 }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold text-foreground">{todayCompleted}</span>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">{todayCompleted} of {todayTotal} today</p>
+            <p className="text-[11px] text-muted-foreground">{todayTotal - todayCompleted} lessons remaining</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option O: Header Expansion Panel ───
+function OptionO() {
+  return (
+    <div>
+      <div className="backdrop-blur-xl bg-primary/85 text-primary-foreground">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <span className="text-xs font-bold">KE</span>
+            </div>
+            <span className="text-sm font-semibold">{firstName}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+            <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Settings className="h-4 w-4" /></div>
+          </div>
+        </div>
+        {/* Expanded stats row — still within primary */}
+        <div className="px-4 pb-3 grid grid-cols-3 gap-2">
+          {[
+            { label: "Today", value: `${todayCompleted}/${todayTotal}`, icon: CheckCircle },
+            { label: "Week", value: `${weekCompleted}/${weekTotal}`, icon: TrendingUp },
+            { label: "Streak", value: "5 days", icon: Zap },
+          ].map((s) => (
+            <div key={s.label} className="bg-primary-foreground/10 rounded-xl px-3 py-2 text-center">
+              <s.icon className="h-3.5 w-3.5 mx-auto mb-1 text-primary-foreground/70" />
+              <p className="text-sm font-bold leading-none">{s.value}</p>
+              <p className="text-[9px] text-primary-foreground/50 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option P: Gradient Melt ───
+function OptionP() {
+  const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
+  return (
+    <div>
+      {/* Header melts into a gradient that fades to background */}
+      <div className="bg-gradient-to-b from-primary/85 via-primary/40 to-transparent backdrop-blur-xl text-primary-foreground px-4 pt-3 pb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <span className="text-xs font-bold">KE</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{greeting}, {firstName}</p>
+              <p className="text-[11px] text-primary-foreground/50">{dateStr}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/70">Today's Lessons</span>
+              <span className="text-xs font-bold">{todayCompleted}/{todayTotal}</span>
+            </div>
+            <div className="h-2 bg-primary-foreground/15 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-primary-foreground rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }} />
+            </div>
+          </div>
+          <div className="text-center pl-3 border-l border-primary-foreground/15">
+            <p className="text-xl font-bold leading-none">{weekCompleted}</p>
+            <p className="text-[9px] text-primary-foreground/50">week</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Q: Pill Tabs Under Header ───
+function OptionQ() {
+  return (
+    <div>
+      <div className="backdrop-blur-xl bg-primary/85 text-primary-foreground px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <span className="text-xs font-bold">KE</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight">{greeting}, {firstName}</p>
+            <p className="text-[11px] text-primary-foreground/50">{dateStr}</p>
+          </div>
+        </div>
+        <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+      </div>
+      {/* Pill row — straddles header/content */}
+      <div className="px-4 py-2.5 bg-card border-b border-border/40">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {[
+            { label: `${todayCompleted}/${todayTotal} Today`, active: true, icon: Sun },
+            { label: `${weekCompleted} This Week`, active: false, icon: Calendar },
+            { label: "£420 Earned", active: false, icon: Star },
+          ].map((pill) => (
+            <div
+              key={pill.label}
+              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                pill.active
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <pill.icon className="h-3 w-3" />
+              {pill.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option R: Apple Watch Ring Stack ───
+function OptionR() {
+  const todayPct = todayTotal > 0 ? todayCompleted / todayTotal : 0;
+  const weekPct = weekTotal > 0 ? weekCompleted / weekTotal : 0;
+  const r1 = 24, r2 = 16;
+  const c1 = 2 * Math.PI * r1, c2 = 2 * Math.PI * r2;
+  return (
+    <div>
+      <div className="backdrop-blur-xl bg-primary/85 text-primary-foreground">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <span className="text-xs font-bold">KE</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold leading-tight">{greeting}, {firstName}</p>
+              <p className="text-[11px] text-primary-foreground/50">{dateStr}</p>
+            </div>
+          </div>
+          <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"><Bell className="h-4 w-4" /></div>
+        </div>
+        {/* Ring + stats in header */}
+        <div className="px-4 pb-3 flex items-center gap-4">
+          <div className="relative w-[56px] h-[56px] shrink-0">
+            <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
+              <circle cx="28" cy="28" r={r1} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
+              <motion.circle cx="28" cy="28" r={r1} fill="none" stroke="#34D399" strokeWidth="5" strokeLinecap="round"
+                strokeDasharray={c1} initial={{ strokeDashoffset: c1 }} animate={{ strokeDashoffset: c1 * (1 - todayPct) }}
+                transition={{ duration: 1.2 }} />
+              <circle cx="28" cy="28" r={r2} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
+              <motion.circle cx="28" cy="28" r={r2} fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="5" strokeLinecap="round"
+                strokeDasharray={c2} initial={{ strokeDashoffset: c2 }} animate={{ strokeDashoffset: c2 * (1 - weekPct) }}
+                transition={{ duration: 1, delay: 0.2 }} />
+            </svg>
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-[11px] font-medium text-primary-foreground/80">Today</span>
+              <span className="text-xs font-bold ml-auto">{todayCompleted}/{todayTotal}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary-foreground/80" />
+              <span className="text-[11px] font-medium text-primary-foreground/80">Week</span>
+              <span className="text-xs font-bold ml-auto">{weekCompleted}/{weekTotal}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HeroRedesignDemo() {
   const [selected, setSelected] = useState<string | null>(null);
   const options = [
@@ -493,6 +752,12 @@ export default function HeroRedesignDemo() {
     { id: "J", title: "Radial Dashboard", desc: "Nested concentric rings with legend", component: <OptionJ /> },
     { id: "K", title: "Notification Banners", desc: "Stacked alert-style stat banners", component: <OptionK /> },
     { id: "L", title: "Map Peek Hero", desc: "Bottom-gradient image with floating stat pills", component: <OptionL /> },
+    { id: "M", title: "Header-Fused Strip", desc: "Stats row extends from header in same primary tone", component: <OptionM /> },
+    { id: "N", title: "Header + Float Card", desc: "Overlapping card bridges header and content", component: <OptionN /> },
+    { id: "O", title: "Header Expansion", desc: "Stats grid inside expanded header panel", component: <OptionO /> },
+    { id: "P", title: "Gradient Melt", desc: "Header fades to background with inline progress", component: <OptionP /> },
+    { id: "Q", title: "Pill Tabs", desc: "Scrollable stat pills below header bar", component: <OptionQ /> },
+    { id: "R", title: "Apple Watch Rings", desc: "Concentric activity rings inside header", component: <OptionR /> },
   ];
 
   return (
