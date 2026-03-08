@@ -23,6 +23,7 @@ import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOvervi
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
 import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
+import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 
 interface Child {
   id: string;
@@ -438,6 +439,9 @@ export default function ParentPortal() {
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
+          <div className="px-4">
+            <PupilRouteHistory pupilId={selectedChild.id} />
+          </div>
           <ParentMessageCard
             instructorId={selectedChild.instructor_id}
             instructorName={selectedChild.instructor_name}

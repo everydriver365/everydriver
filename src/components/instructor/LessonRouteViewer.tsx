@@ -1,19 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapContainer, TileLayer, Polyline, CircleMarker } from "react-leaflet";
 import { supabase } from "@/integrations/supabase/client";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
-import { Route, Calendar, Clock, MapPin } from "lucide-react";
+import { Route, Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 interface Coordinate {
   lat: number;
   lng: number;
   speed_kmh?: number;
+  speed_limit_kmh?: number;
+  road_name?: string;
   timestamp?: string;
 }
 
@@ -33,45 +33,75 @@ interface LessonRouteViewerProps {
   pupilName?: string;
 }
 
-function MapFitter({ coordinates }: { coordinates: Coordinate[] }) {
-  // This component doesn't render, it fits bounds on mount via ref
-  return null;
-}
-
 export function LessonRouteViewer({ pupilId, pupilName }: LessonRouteViewerProps) {
   const [routes, setRoutes] = useState<LessonRoute[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<LessonRoute | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchRoutes = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await (supabase.from("lesson_routes" as any) as any)
+          .select("*")
+          .eq("pupil_id", pupilId)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (!error && data) {
+          setRoutes(data.map((r: any) => ({
+            ...r,
+            coordinates: Array.isArray(r.coordinates) ? r.coordinates : [],
+          })));
+        }
+      } catch (error) {
+        console.error("Error fetching routes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchRoutes();
   }, [pupilId]);
-
-  const fetchRoutes = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await (supabase.from("lesson_routes" as any) as any)
-        .select("*")
-        .eq("pupil_id", pupilId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (!error && data) {
-        setRoutes(data.map((r: any) => ({
-          ...r,
-          coordinates: Array.isArray(r.coordinates) ? r.coordinates : [],
-        })));
-      }
-    } catch (error) {
-      console.error("Error fetching routes:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const routePath = useMemo(() => {
     if (!selectedRoute) return [];
     return selectedRoute.coordinates.map((c) => [c.lat, c.lng] as [number, number]);
+  }, [selectedRoute]);
+
+  // Speed-colored segments (reuses TripReplayMap pattern)
+  const speedSegments = useMemo(() => {
+    if (!selectedRoute) return [];
+    const segments: { path: [number, number][]; color: string }[] = [];
+    let current: { path: [number, number][]; color: string } | null = null;
+
+    for (const coord of selectedRoute.coordinates) {
+      const speed = coord.speed_kmh || 0;
+      const limit = coord.speed_limit_kmh;
+
+      let color: string;
+      if (!limit) {
+        color = "hsl(var(--primary))";
+      } else if (speed > limit + 10) {
+        color = "hsl(var(--destructive))";
+      } else if (speed > limit) {
+        color = "hsl(35 100% 50%)";
+      } else {
+        color = "hsl(142 76% 36%)";
+      }
+
+      const pos: [number, number] = [coord.lat, coord.lng];
+      if (!current || current.color !== color) {
+        if (current && current.path.length > 0) {
+          current.path.push(pos);
+          segments.push(current);
+        }
+        current = { path: [pos], color };
+      } else {
+        current.path.push(pos);
+      }
+    }
+    if (current && current.path.length > 1) segments.push(current);
+    return segments;
   }, [selectedRoute]);
 
   const center = useMemo((): [number, number] => {
@@ -151,41 +181,59 @@ export function LessonRouteViewer({ pupilId, pupilName }: LessonRouteViewerProps
         ))}
       </div>
 
-      {/* Map */}
+      {/* Map with speed-colored segments */}
       {selectedRoute && routePath.length > 0 && (
-        <div className="h-64 rounded-lg overflow-hidden border">
-          <MapContainer
-            center={center}
-            zoom={13}
-            className="h-full w-full"
-            zoomControl={false}
-          >
-            <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />
-            <Polyline
-              positions={routePath}
-              color="hsl(var(--primary))"
-              weight={4}
-              opacity={0.8}
-            />
-            {/* Start marker */}
-            <CircleMarker
-              center={routePath[0]}
-              radius={7}
-              fillColor="hsl(142 76% 36%)"
-              fillOpacity={1}
-              color="white"
-              weight={2}
-            />
-            {/* End marker */}
-            <CircleMarker
-              center={routePath[routePath.length - 1]}
-              radius={7}
-              fillColor="hsl(var(--destructive))"
-              fillOpacity={1}
-              color="white"
-              weight={2}
-            />
-          </MapContainer>
+        <div className="rounded-lg overflow-hidden border">
+          <div className="h-64">
+            <MapContainer
+              center={center}
+              zoom={13}
+              className="h-full w-full"
+              zoomControl={false}
+            >
+              <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />
+
+              {speedSegments.length > 0 ? (
+                speedSegments.map((seg, i) => (
+                  <Polyline key={i} positions={seg.path} color={seg.color} weight={5} opacity={0.85} />
+                ))
+              ) : (
+                <Polyline positions={routePath} color="hsl(var(--primary))" weight={4} opacity={0.8} />
+              )}
+
+              {/* Start marker */}
+              <CircleMarker
+                center={routePath[0]}
+                radius={7}
+                fillColor="hsl(142 76% 36%)"
+                fillOpacity={1}
+                color="white"
+                weight={2}
+              />
+              {/* End marker */}
+              <CircleMarker
+                center={routePath[routePath.length - 1]}
+                radius={7}
+                fillColor="hsl(var(--destructive))"
+                fillOpacity={1}
+                color="white"
+                weight={2}
+              />
+            </MapContainer>
+          </div>
+
+          {/* Speed legend */}
+          <div className="flex items-center gap-3 px-3 py-2 bg-muted/50 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <div className="h-2 w-4 rounded-full bg-[hsl(142,76%,36%)]" /> Within limit
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="h-2 w-4 rounded-full bg-[hsl(35,100%,50%)]" /> Slightly over
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="h-2 w-4 rounded-full bg-destructive" /> Speeding
+            </span>
+          </div>
         </div>
       )}
     </div>
