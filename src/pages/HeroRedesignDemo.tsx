@@ -1267,6 +1267,375 @@ function OptionY6() {
   );
 }
 
+
+// ─── Option Z1: iOS Today View ───
+function OptionZ1() {
+  const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight">{greeting}</h1>
+      <div className="mt-4 space-y-3">
+        {/* Schedule widget */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="bg-card rounded-[20px] border border-border/30 shadow-sm overflow-hidden">
+          <div className="px-4 pt-3 pb-1.5 flex items-center justify-between">
+            <span className="text-[13px] font-semibold text-foreground">Schedule</span>
+            <span className="text-[13px] text-primary font-medium">{pct}%</span>
+          </div>
+          <div className="px-4 pb-2.5">
+            <div className="flex items-center gap-1 mb-2">
+              {timelineLessons.map((l, i) => (
+                <div key={i} className="flex-1">
+                  <div className={`h-[6px] rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted"}`} />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[10px] text-muted-foreground">{timelineLessons[0].time}</span>
+              <span className="text-[10px] text-muted-foreground">{timelineLessons[timelineLessons.length - 1].time}</span>
+            </div>
+          </div>
+          <div className="border-t border-border/30 px-4 py-2.5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[15px] font-medium text-foreground">Priya S.</p>
+              <p className="text-[13px] text-muted-foreground">13:30 · Wildern Lane</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground/40" />
+          </div>
+        </motion.div>
+        {/* Progress widget */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="bg-card rounded-[20px] border border-border/30 shadow-sm overflow-hidden">
+          <div className="px-4 pt-3 pb-2">
+            <span className="text-[13px] font-semibold text-foreground">Activity</span>
+          </div>
+          <div className="divide-y divide-border/20">
+            {[
+              { icon: CheckCircle, color: "bg-emerald-500", title: `${todayCompleted} of ${todayTotal}`, sub: "Lessons today" },
+              { icon: TrendingUp, color: "bg-primary", title: `${weekCompleted} of ${weekTotal}`, sub: "This week" },
+              { icon: PoundSterling, color: "bg-amber-500", title: "£175", sub: "Expected earnings" },
+            ].map((row, i) => (
+              <div key={i} className="px-4 py-2.5 flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full ${row.color} flex items-center justify-center shrink-0`}>
+                  <row.icon className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[15px] font-medium text-foreground">{row.title}</p>
+                  <p className="text-[13px] text-muted-foreground">{row.sub}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/40" />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Z2: iOS Stacked Widgets ───
+function OptionZ2() {
+  const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
+  const todayR = 32, c = 2 * Math.PI * todayR;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight mb-4">{greeting}</h1>
+      <div className="grid grid-cols-2 gap-3">
+        {/* Ring widget */}
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
+          className="bg-card rounded-[20px] border border-border/30 shadow-sm p-4 flex flex-col items-center">
+          <div className="relative w-[72px] h-[72px]">
+            <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
+              <circle cx="36" cy="36" r={todayR} fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+              <motion.circle cx="36" cy="36" r={todayR} fill="none" stroke="#10B981" strokeWidth="6" strokeLinecap="round"
+                strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - pct / 100) }}
+                transition={{ duration: 1.2 }} />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-xl font-bold text-foreground leading-none">{todayCompleted}</span>
+              <span className="text-[10px] text-muted-foreground">of {todayTotal}</span>
+            </div>
+          </div>
+          <p className="text-[13px] font-semibold text-foreground mt-2">Today</p>
+          <p className="text-[11px] text-muted-foreground">{todayTotal - todayCompleted} remaining</p>
+        </motion.div>
+        {/* Next up widget */}
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
+          className="bg-card rounded-[20px] border border-border/30 shadow-sm p-4 flex flex-col justify-between">
+          <div>
+            <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
+              <Clock className="h-4 w-4 text-amber-500" />
+            </div>
+            <p className="text-[13px] font-semibold text-foreground">Next Lesson</p>
+            <p className="text-[22px] font-bold text-foreground leading-tight mt-0.5">13:30</p>
+          </div>
+          <div className="mt-2">
+            <p className="text-[13px] text-foreground font-medium">Priya S.</p>
+            <p className="text-[11px] text-muted-foreground">Wildern Lane</p>
+          </div>
+        </motion.div>
+      </div>
+      {/* Full-width schedule bar */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        className="bg-card rounded-[20px] border border-border/30 shadow-sm mt-3 overflow-hidden">
+        <div className="px-4 pt-3 pb-1.5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[13px] font-semibold text-foreground">Schedule</span>
+            <span className="text-[13px] text-primary">{todayCompleted}/{todayTotal} done</span>
+          </div>
+          <div className="flex gap-1">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className={`w-full h-[6px] rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted"}`} />
+                <span className="text-[9px] text-muted-foreground">{l.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-border/30 px-4 py-2.5 flex items-center gap-3">
+          <PoundSterling className="h-4 w-4 text-muted-foreground" />
+          <span className="text-[13px] text-foreground">£175 expected · 5 hours</span>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Option Z3: iOS Notification Center ───
+function OptionZ3() {
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight mb-4">{greeting}</h1>
+      {/* Grouped notifications */}
+      {[
+        { group: "Schedule", items: [
+          { icon: Clock, color: "bg-amber-500", title: "Next: Priya S. at 13:30", sub: "Wildern Lane · 1hr", timeline: true },
+        ]},
+        { group: "Progress", items: [
+          { icon: CheckCircle, color: "bg-emerald-500", title: `${todayCompleted} of ${todayTotal} lessons today`, sub: `${todayTotal - todayCompleted} remaining` },
+          { icon: TrendingUp, color: "bg-primary", title: `${weekCompleted} of ${weekTotal} this week`, sub: `${weekTotal - weekCompleted} to go` },
+        ]},
+        { group: "Earnings", items: [
+          { icon: PoundSterling, color: "bg-amber-500", title: "£175 expected today", sub: "5 hours at £35/hr" },
+        ]},
+      ].map((section, si) => (
+        <motion.div key={si} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * si }}
+          className="mb-3">
+          <p className="text-[13px] font-semibold text-muted-foreground mb-1.5 px-1">{section.group}</p>
+          <div className="bg-card/80 backdrop-blur-xl rounded-[16px] border border-border/20 overflow-hidden shadow-sm">
+            {(section.items[0] as any).timeline && (
+              <div className="px-4 pt-3 pb-1">
+                <div className="flex gap-1">
+                  {timelineLessons.map((l, i) => (
+                    <div key={i} className="flex-1">
+                      <div className={`h-[5px] rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted/60"}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="divide-y divide-border/15">
+              {section.items.map((item, i) => (
+                <div key={i} className="px-4 py-3 flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-[10px] ${item.color} flex items-center justify-center shrink-0`}>
+                    <item.icon className="h-[18px] w-[18px] text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium text-foreground leading-snug">{item.title}</p>
+                    <p className="text-[13px] text-muted-foreground">{item.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Option Z4: iOS Weather-Style Card ───
+function OptionZ4() {
+  const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight mb-4">{greeting}</h1>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-primary to-primary/80 rounded-[20px] shadow-lg overflow-hidden text-primary-foreground">
+        <div className="px-5 pt-4 pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[13px] text-primary-foreground/60 font-medium uppercase tracking-wider">Today</p>
+              <p className="text-[42px] font-bold leading-none mt-1">{todayCompleted}<span className="text-[24px] text-primary-foreground/50">/{todayTotal}</span></p>
+              <p className="text-[13px] text-primary-foreground/70 mt-0.5">{pct}% complete</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[13px] text-primary-foreground/60 font-medium">Earnings</p>
+              <p className="text-[28px] font-bold leading-tight">£175</p>
+              <p className="text-[11px] text-primary-foreground/50">5 hours</p>
+            </div>
+          </div>
+        </div>
+        {/* Hourly forecast style */}
+        <div className="border-t border-primary-foreground/10 px-4 py-2.5">
+          <div className="flex gap-1">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1 py-1">
+                <span className="text-[10px] text-primary-foreground/60 font-medium">{l.time}</span>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${l.done ? "bg-primary-foreground/20" : i === todayCompleted ? "bg-amber-400/30" : "bg-primary-foreground/10"}`}>
+                  {l.done ? <CheckCircle className="h-3 w-3 text-primary-foreground" /> : <Clock className="h-3 w-3 text-primary-foreground/60" />}
+                </div>
+                <span className="text-[9px] text-primary-foreground/50 truncate w-full text-center">{l.name.split(" ")[0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Bottom row */}
+        <div className="border-t border-primary-foreground/10 px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-3.5 w-3.5 text-primary-foreground/60" />
+            <span className="text-[13px] text-primary-foreground/80">{weekCompleted}/{weekTotal} this week</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-primary-foreground/40" />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Option Z5: iOS Health Rings Card ───
+function OptionZ5() {
+  const todayPct = todayTotal > 0 ? todayCompleted / todayTotal : 0;
+  const weekPct = weekTotal > 0 ? weekCompleted / weekTotal : 0;
+  const earnPct = 0.7;
+  const r1 = 38, r2 = 28, r3 = 18;
+  const c1 = 2 * Math.PI * r1, c2 = 2 * Math.PI * r2, c3 = 2 * Math.PI * r3;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight mb-4">{greeting}</h1>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-card rounded-[20px] border border-border/30 shadow-sm overflow-hidden">
+        <div className="p-5 flex items-center gap-5">
+          <div className="relative w-[90px] h-[90px] shrink-0">
+            <svg viewBox="0 0 90 90" className="w-full h-full -rotate-90">
+              <circle cx="45" cy="45" r={r1} fill="none" stroke="hsl(var(--muted))" strokeWidth="7" opacity="0.4" />
+              <motion.circle cx="45" cy="45" r={r1} fill="none" stroke="#10B981" strokeWidth="7" strokeLinecap="round"
+                strokeDasharray={c1} initial={{ strokeDashoffset: c1 }} animate={{ strokeDashoffset: c1 * (1 - todayPct) }}
+                transition={{ duration: 1.2 }} />
+              <circle cx="45" cy="45" r={r2} fill="none" stroke="hsl(var(--muted))" strokeWidth="7" opacity="0.4" />
+              <motion.circle cx="45" cy="45" r={r2} fill="none" stroke="hsl(var(--primary))" strokeWidth="7" strokeLinecap="round"
+                strokeDasharray={c2} initial={{ strokeDashoffset: c2 }} animate={{ strokeDashoffset: c2 * (1 - weekPct) }}
+                transition={{ duration: 1, delay: 0.2 }} />
+              <circle cx="45" cy="45" r={r3} fill="none" stroke="hsl(var(--muted))" strokeWidth="7" opacity="0.4" />
+              <motion.circle cx="45" cy="45" r={r3} fill="none" stroke="#F59E0B" strokeWidth="7" strokeLinecap="round"
+                strokeDasharray={c3} initial={{ strokeDashoffset: c3 }} animate={{ strokeDashoffset: c3 * (1 - earnPct) }}
+                transition={{ duration: 0.8, delay: 0.4 }} />
+            </svg>
+          </div>
+          <div className="flex-1 space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold text-foreground leading-none">Today</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{todayCompleted}/{todayTotal} lessons</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-3 h-3 rounded-full bg-primary" />
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold text-foreground leading-none">Week</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{weekCompleted}/{weekTotal} lessons</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-3 h-3 rounded-full bg-amber-500" />
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold text-foreground leading-none">Earnings</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">£175 today</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Schedule strip */}
+        <div className="border-t border-border/30 px-4 py-2.5">
+          <div className="flex gap-1">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className={`w-full h-[5px] rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted"}`} />
+                <span className="text-[9px] text-muted-foreground">{l.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Option Z6: iOS Lock Screen Widgets ───
+function OptionZ6() {
+  const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground font-medium">{dateStr}</p>
+      <h1 className="text-[34px] font-bold text-foreground leading-tight tracking-tight mb-4">{greeting}</h1>
+      {/* Compact widget row */}
+      <div className="grid grid-cols-4 gap-2 mb-3">
+        {[
+          { value: todayCompleted.toString(), label: "Done", color: "bg-emerald-500" },
+          { value: (todayTotal - todayCompleted).toString(), label: "Left", color: "bg-amber-500" },
+          { value: `${pct}%`, label: "Today", color: "bg-primary" },
+          { value: "£175", label: "Earn", color: "bg-violet-500" },
+        ].map((w, i) => (
+          <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08 * i }}
+            className="bg-card/80 backdrop-blur-xl rounded-[16px] border border-border/20 p-2.5 text-center shadow-sm">
+            <div className={`w-5 h-5 ${w.color} rounded-full mx-auto mb-1.5 flex items-center justify-center`}>
+              <span className="text-[8px] font-bold text-white">{w.value.charAt(0)}</span>
+            </div>
+            <p className="text-[17px] font-bold text-foreground leading-none">{w.value}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{w.label}</p>
+          </motion.div>
+        ))}
+      </div>
+      {/* Full-width timeline + next */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+        className="bg-card/80 backdrop-blur-xl rounded-[16px] border border-border/20 shadow-sm overflow-hidden">
+        <div className="px-4 pt-3 pb-2">
+          <div className="flex gap-1 mb-1">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1">
+                <div className={`h-[6px] rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted/60"}`} />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[9px] text-muted-foreground">{timelineLessons[0].time}</span>
+            <span className="text-[9px] text-muted-foreground">{timelineLessons[timelineLessons.length - 1].time}</span>
+          </div>
+        </div>
+        <div className="border-t border-border/15 px-4 py-2.5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+            <Clock className="h-4 w-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[15px] font-medium text-foreground">Priya S. at 13:30</p>
+            <p className="text-[13px] text-muted-foreground">Wildern Lane</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground/40" />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function HeroRedesignDemo() {
   const [selected, setSelected] = useState<string | null>(null);
   const options = [
@@ -1300,6 +1669,12 @@ export default function HeroRedesignDemo() {
     { id: "Y4", title: "Ticker + Schedule", desc: "Bold metric tickers with lesson progress strip", component: <OptionY4 /> },
     { id: "Y5", title: "Gradient Banners + Bar", desc: "Gradient feed cards topped with timeline bar", component: <OptionY5 /> },
     { id: "Y6", title: "Full Day Card", desc: "Single card with timeline, stats & next lesson", component: <OptionY6 /> },
+    { id: "Z1", title: "iOS Today View", desc: "Large title + grouped widget cards with schedule", component: <OptionZ1 /> },
+    { id: "Z2", title: "iOS Stacked Widgets", desc: "2-col widgets + ring + schedule strip", component: <OptionZ2 /> },
+    { id: "Z3", title: "iOS Notification Center", desc: "Grouped notifications with schedule bar", component: <OptionZ3 /> },
+    { id: "Z4", title: "iOS Weather-Style", desc: "Primary gradient card with hourly-style layout", component: <OptionZ4 /> },
+    { id: "Z5", title: "iOS Health Rings", desc: "Triple activity rings with schedule strip", component: <OptionZ5 /> },
+    { id: "Z6", title: "iOS Lock Screen", desc: "Compact widget grid + frosted timeline card", component: <OptionZ6 /> },
   ];
 
   return (
