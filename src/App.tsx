@@ -293,6 +293,8 @@ const App = () => (
                 <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
                 <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
                 <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
+                <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
+                <Route path="/instructor/automations" element={<InstructorAutomations />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />
