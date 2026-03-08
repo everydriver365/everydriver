@@ -296,6 +296,7 @@ const App = () => (
                 <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
+                <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />

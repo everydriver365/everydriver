@@ -1038,7 +1038,19 @@ export default function InstructorSettings() {
                 iconColor="text-sky-600"
                 iconBg="bg-sky-100 dark:bg-sky-900/30"
               >
-                <ReminderSettings instructorId={instructorId} />
+              <ReminderSettings instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Smart Buffer Time */}
+              <SettingsTile
+                id="smart-buffer"
+                icon={Timer}
+                title="Smart Buffer Time"
+                description="Travel-aware gaps between lessons"
+                iconColor="text-violet-600"
+                iconBg="bg-violet-100 dark:bg-violet-900/30"
+              >
+                <SmartBufferSettings instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>

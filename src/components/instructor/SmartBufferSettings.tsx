@@ -39,9 +39,10 @@ export function SmartBufferSettings({ instructorId }: SmartBufferSettingsProps) 
 
       if (error) throw error;
       if (data) {
-        setEnabled(data.smart_buffer_enabled ?? false);
-        setMode(data.smart_buffer_mode ?? "flat");
-        setPaddingMinutes(data.smart_buffer_padding_minutes ?? 5);
+        const d = data as any;
+        setEnabled(d.smart_buffer_enabled ?? false);
+        setMode(d.smart_buffer_mode ?? "flat");
+        setPaddingMinutes(d.smart_buffer_padding_minutes ?? 5);
       }
     } catch (error) {
       console.error("Error fetching smart buffer settings:", error);
@@ -59,7 +60,7 @@ export function SmartBufferSettings({ instructorId }: SmartBufferSettingsProps) 
           smart_buffer_enabled: enabled,
           smart_buffer_mode: mode,
           smart_buffer_padding_minutes: paddingMinutes,
-        })
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
