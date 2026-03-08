@@ -260,7 +260,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const isAppStyle = isHomePage && layoutStyle === "schedule";
   const mobileBg = wallpaperColor || "#E8F1FE";
   const appStyleBg = isAppStyle ? mobileBg : undefined;
-  const headerContrast = appStyleBg ? getContrastColor(appStyleBg) : null;
+  const headerContrast = getContrastColor(mobileBg);
 
   const isTrackingPage = location.pathname.startsWith("/instructor/tracking") || location.pathname.startsWith("/instructor/traccar");
   
