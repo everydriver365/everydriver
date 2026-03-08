@@ -439,6 +439,9 @@ export default function ParentPortal() {
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
+          <div className="px-4">
+            <PupilRouteHistory pupilId={selectedChild.id} />
+          </div>
           <ParentMessageCard
             instructorId={selectedChild.instructor_id}
             instructorName={selectedChild.instructor_name}
