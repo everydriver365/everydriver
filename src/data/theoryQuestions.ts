@@ -7,7 +7,18 @@ export interface Question {
   category: string;
 }
 
-export const theoryQuestions: Question[] = [
+import { theoryQuestionsExtra } from "./theoryQuestionsExtra";
+
+export interface Question {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  category: string;
+}
+
+const baseQuestions: Question[] = [
   // Speed Limits
   {
     id: 1,
