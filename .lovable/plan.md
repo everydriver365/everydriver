@@ -47,3 +47,28 @@ All 6 features + security hardening have been built and deployed.
 - **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
 - **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
 - **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
+
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
+
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
+
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
