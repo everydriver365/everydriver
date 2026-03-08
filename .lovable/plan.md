@@ -1,74 +1,68 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+# Desktop Sidebar Redesign — Implementation Plan
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+## What We're Building
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+Replace the current desktop instructor portal layout (navy header with tab bar + collapsible aside) with a proper Shadcn `Sidebar` component that provides a persistent, collapsible navigation experience similar to Notion or Linear.
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+## Current State
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+- `InstructorPortalLayout.tsx` (1,057 lines) handles both mobile and desktop layouts
+- Desktop: navy `#142040` header with 9 horizontal nav tabs + a collapsible `<aside>` sidebar with grouped links
+- Mobile: separate mobile header + bottom nav (`InstructorBottomNav.tsx`)
+- Sidebar groups: TEACHING, BUSINESS, COMMUNICATION, TOOLS, VEHICLE INTELLIGENCE
+- Already has `sidebarCollapsed` state and `openGroups` accordion logic
+- `src/components/ui/sidebar.tsx` already exists (Shadcn sidebar primitive)
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+## Plan
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+### 1. Create `InstructorDesktopSidebar.tsx`
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+New component using the Shadcn `Sidebar` primitive with `collapsible="icon"`:
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+- Reuse existing `sidebarGroups` definition (TEACHING, BUSINESS, COMMUNICATION, TOOLS, VEHICLE INTELLIGENCE)
+- Each group as a `SidebarGroup` with collapsible content
+- Active route highlighting using `useLocation`
+- Instructor avatar + name at the top, sign-out at the bottom
+- Plan badge, notification counts on Messages/Visitor Chats items
+- Icon-only mode when collapsed (tooltips on hover)
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### 2. Refactor `InstructorPortalLayout.tsx` — Desktop Section
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+Replace the desktop return block (lines ~734–1057) to:
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+- Wrap in `SidebarProvider` with `min-h-screen flex w-full`
+- Render `<InstructorDesktopSidebar />` on the left
+- Slim header (no horizontal tab bar) — just search, notifications, theme toggle, avatar dropdown
+- Keep breadcrumb bar below header
+- `SidebarTrigger` in the header for collapse/expand (always visible)
+- Content area as `<main className="flex-1">`
+
+### 3. Keep Mobile Layout Untouched
+
+The `if (isMobile)` branch (lines 376–696) stays exactly as-is. Only the desktop `else` branch changes.
+
+### 4. Remove Redundant Desktop Nav Tabs
+
+The `desktopNavTabs` array and horizontal tab bar in the header become unnecessary — all navigation moves to the sidebar. The header becomes a slim utility bar.
+
+### 5. Styling
+
+- Sidebar background: `bg-card` with `border-r`
+- Header: keep `#142040` navy but slimmer, no nav tabs
+- Active item: `bg-primary/10 text-primary font-medium` with left border accent
+- Group labels: uppercase tracking-wide muted text
+- Collapsed width: icon strip (~56px) with tooltips
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `src/components/instructor/InstructorDesktopSidebar.tsx` | **New** — Shadcn Sidebar with grouped nav |
+| `src/components/layout/InstructorPortalLayout.tsx` | Refactor desktop branch to use SidebarProvider + new sidebar |
+
+## No Database Changes Required
+
+This is a purely frontend layout refactor.
+
