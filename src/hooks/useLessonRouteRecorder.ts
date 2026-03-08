@@ -35,6 +35,23 @@ export function useLessonRouteRecorder(
   const startTimeRef = useRef<Date | null>(null);
   const coordsRef = useRef<RecordedCoordinate[]>([]);
   const distanceRef = useRef(0);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if ("wakeLock" in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request("screen");
+        console.log("[RouteRecorder] Wake lock acquired");
+      }
+    } catch (e) {
+      console.warn("[RouteRecorder] Wake lock failed:", e);
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  }, []);
 
   const startRecording = useCallback(() => {
     if (!navigator.geolocation) {
