@@ -6632,6 +6632,84 @@ export type Database = {
           },
         ]
       }
+      lesson_routes: {
+        Row: {
+          coordinates: Json
+          created_at: string
+          distance_km: number | null
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          pupil_id: string | null
+          started_at: string | null
+          telematics_id: string | null
+        }
+        Insert: {
+          coordinates?: Json
+          created_at?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          pupil_id?: string | null
+          started_at?: string | null
+          telematics_id?: string | null
+        }
+        Update: {
+          coordinates?: Json
+          created_at?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          pupil_id?: string | null
+          started_at?: string | null
+          telematics_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_routes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_routes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_routes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_routes_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_routes_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_syllabus_updates: {
         Row: {
           comment: string | null
@@ -11374,6 +11452,47 @@ export type Database = {
             columns: ["test_request_id"]
             isOneToOne: false
             referencedRelation: "test_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theory_mock_results: {
+        Row: {
+          category_breakdown: Json | null
+          created_at: string
+          id: string
+          passed: boolean
+          pupil_id: string
+          score: number
+          time_taken_seconds: number | null
+          total_questions: number
+        }
+        Insert: {
+          category_breakdown?: Json | null
+          created_at?: string
+          id?: string
+          passed?: boolean
+          pupil_id: string
+          score: number
+          time_taken_seconds?: number | null
+          total_questions: number
+        }
+        Update: {
+          category_breakdown?: Json | null
+          created_at?: string
+          id?: string
+          passed?: boolean
+          pupil_id?: string
+          score?: number
+          time_taken_seconds?: number | null
+          total_questions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theory_mock_results_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]

@@ -699,6 +699,24 @@ export function ExpandablePupilCard({
             className="border-t border-border"
           >
             <div className="p-4 space-y-4">
+              {/* Profile Photo Upload */}
+              <div className="flex justify-center">
+                <PupilAvatarUpload
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  currentImageUrl={pupil.profile_image_url}
+                  onImageUploaded={async (url) => {
+                    try {
+                      await supabase.from("pupils").update({ profile_image_url: url }).eq("id", pupil.id);
+                    } catch {}
+                  }}
+                  onImageRemoved={async () => {
+                    try {
+                      await supabase.from("pupils").update({ profile_image_url: null }).eq("id", pupil.id);
+                    } catch {}
+                  }}
+                />
+              </div>
               {/* Full Address & What3Words */}
               <div className="space-y-2">
                 <div className="flex items-start gap-2 text-sm">
