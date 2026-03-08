@@ -73,6 +73,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { InstructorDesktopSidebar } from "@/components/instructor/InstructorDesktopSidebar";
+import { DesktopQuickActionBar } from "@/components/instructor/DesktopQuickActionBar";
 
 function getContrastColor(hex: string): string {
   const c = hex.replace("#", "");
