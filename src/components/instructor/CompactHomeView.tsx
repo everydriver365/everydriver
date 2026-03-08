@@ -26,17 +26,17 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
-import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
+
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
 
-import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
+
+
 
 
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
@@ -186,7 +186,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
       {/* Content sections — identical to dashboard */}
       <div className="px-4">
         
-        <SmartNudgesCard instructorId={instructorId} />
+        
 
         {alerts.length > 0 && (
           <DrivingAlertsStrip
@@ -248,19 +248,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
 
-        {gapSuggestions && gapSuggestions.length > 0 && (
-          <div className="mt-4">
-            <GapFillerCard gaps={gapSuggestions} />
-          </div>
-        )}
-
-        {authInstructor?.id && (
-          <div className="mt-4">
-            <VehicleHealthStrip instructorId={authInstructor.id} />
-          </div>
-        )}
-
-        <DormantPupilsCard instructorId={instructorId} />
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         
 
