@@ -1,43 +1,81 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time & Recurring Subscriptions
 
-All 6 features have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Cleanup Plan: Security, RLS, and Data Protection Hardening
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+The security scan found **28 issues** across 3 categories. Here is a prioritized remediation plan.
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+---
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+### Priority 1 (CRITICAL) --- Fix Dangerous RLS Policies
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+These tables expose sensitive data to **anyone on the internet** without authentication:
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+| Table | Problem | Fix |
+|-------|---------|-----|
+| `instructors` | Anon SELECT exposes emails, phones, home addresses, OAuth tokens | Remove anon SELECT policy; route public lookups through existing `public_instructors` view |
+| `scheduled_lessons` | Anon SELECT exposes pickup addresses, pupil IDs, payment info | Restrict anon SELECT to only `lesson_date`, `start_time`, `duration_minutes`, `instructor_id` |
+| `reflective_logs` | Public ALL (read+write) for everyone | Replace with authenticated pupil-only policy |
+| `notes` | 4 anon policies give full CRUD on pupil notes | Remove anon policies; require authenticated instructor/pupil ownership |
+| `lesson_feedback` | UPDATE uses tautology `pupil_id = pupil_id` (always true) | Fix to validate against authenticated pupil identity |
+| `quotes` | Anon SELECT exposes all quotes (name, email, phone) despite "by token" name | Add actual token filter to USING clause |
+| `pupil_subscriptions` | Anon SELECT exposes pickup addresses | Remove anon SELECT; restrict to instructor + pupil owners |
+| `pupils` (password_hash) | Instructors can SELECT password_hash column | Move password_hash to separate `pupil_credentials` table with service-role-only access |
+| `instructor_health_logs` + blood pressure/glucose/water logs | Publicly readable medical data | Restrict to owning instructor only |
+
+---
+
+### Priority 2 (HIGH) --- Fix Permissive Write Policies
+
+These tables have `WITH CHECK (true)` on INSERT, allowing **anyone** to insert arbitrary data:
+
+| Table | Current Policy | Fix |
+|-------|---------------|-----|
+| `live_chat_messages` | Anyone can INSERT | Keep public INSERT but add session_id validation |
+| `live_chat_sessions` | Anyone can INSERT | Acceptable for visitor chat --- add rate limiting instead |
+| `lesson_feedback` | Public can INSERT | Restrict to authenticated instructors |
+| `lesson_reminders_log` | Public can INSERT (named "Service role") | Restrict to service_role only |
+| `payment_reminder_log` | Public can INSERT (named "Service can insert") | Restrict to service_role only |
+| `pre_lesson_checklist_completions` | Public can INSERT | Restrict to authenticated pupils |
+| `live_chat_typing` | Public ALL | Keep for realtime typing, acceptable |
+
+---
+
+### Priority 3 (HIGH) --- Additional Security Fixes
+
+1. **Enable leaked password protection** --- currently disabled in auth settings
+2. **Move pupil password_hash** to a separate `pupil_credentials` table accessible only via service role, preventing instructor-side hash extraction
+3. **Restrict Google Places API key endpoint** (`get-google-maps-key`) --- add JWT auth check so only authenticated users can retrieve it
+4. **Add `geotab_session_cache` RLS policy** --- RLS is enabled but no policies exist (table is inaccessible)
+
+---
+
+### Priority 4 (MEDIUM) --- Data Exposure Reduction
+
+| Table | Problem | Fix |
+|-------|---------|-----|
+| `live_chat_sessions` | Public SELECT exposes visitor name/email/phone | Restrict to instructor + admin |
+| `live_chat_messages` | Public SELECT exposes all messages | Restrict to session participants |
+| `platform_commissions` | Public SELECT exposes all instructor financials | Restrict to owning instructor + admin |
+| `instructor_calendar_events` | Public SELECT exposes personal calendar titles | Restrict to owning instructor |
+| `lesson_syllabus_updates` | Anon SELECT exposes all pupil progress | Remove anon policy; keep authenticated policies |
+
+---
+
+### Priority 5 (LOW) --- Console Warnings
+
+- `RunningLateSheet` passes a ref to a function component without `forwardRef` --- cosmetic React warning, no user impact
+
+---
+
+### Summary
+
+| Priority | Issues | Impact |
+|----------|--------|--------|
+| P1 Critical | 9 tables with exposed PII/credentials | Data breach risk |
+| P2 High | 7 tables with permissive writes | Spam/data pollution |
+| P3 High | 4 config/auth fixes | Key leakage, weak passwords |
+| P4 Medium | 5 tables over-exposing data | Privacy violations |
+| P5 Low | 1 React warning | None |
+
+All fixes are **database migration only** (RLS policy updates) except the Google Maps key fix (edge function edit) and leaked password protection (auth config). No UI changes needed. No routes are broken or 404ing --- the issues are all at the data access layer.
+
