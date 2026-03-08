@@ -126,12 +126,27 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                           </Badge>
                         </div>
 
-                        {/* Bottom row: time range + amount + status */}
+                        {/* Bottom row: time range + amount + status + record */}
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-[12px] text-muted-foreground">
                             {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                           </span>
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setRecordingLessonId(recordingLessonId === lesson.id ? null : lesson.id);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors"
+                              style={{
+                                background: recordingLessonId === lesson.id ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.1)",
+                                color: recordingLessonId === lesson.id ? "#DC2626" : "#16A34A",
+                              }}
+                            >
+                              <Navigation className="h-[10px] w-[10px]" />
+                              GPS
+                            </button>
                             {lesson.amountDue != null && (
                               <span className="text-[13px] font-bold text-foreground">
                                 £{lesson.amountDue}
@@ -151,6 +166,18 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                         </div>
                       </div>
                     </Link>
+
+                    {/* Route recorder for this lesson */}
+                    {recordingLessonId === lesson.id && (
+                      <div className="flex-1 min-w-0 mt-2" onClick={(e) => e.stopPropagation()}>
+                        <LessonRouteRecorder
+                          instructorId={instructorId}
+                          pupilId={lesson.pupilId}
+                          lessonId={lesson.id}
+                          onRouteRecorded={() => setRecordingLessonId(null)}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* End time marker for last lesson */}
