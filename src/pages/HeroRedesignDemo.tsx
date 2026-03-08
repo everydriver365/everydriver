@@ -487,6 +487,12 @@ export default function HeroRedesignDemo() {
     { id: "D", title: "Gradient Chip Row", desc: "Image hero with stat chips", component: <OptionD /> },
     { id: "E", title: "Minimal Dots", desc: "Large text greeting with dot progress", component: <OptionE /> },
     { id: "F", title: "iOS Widget Stack", desc: "Two-column widget grid below greeting", component: <OptionF /> },
+    { id: "G", title: "Dark Glass Overlay", desc: "Blurred dark photo hero with glass progress bar", component: <OptionG /> },
+    { id: "H", title: "Stacked Timeline", desc: "Timeline segments with next lesson preview", component: <OptionH /> },
+    { id: "I", title: "Dual-Tone Card", desc: "Primary header fused with card stats below", component: <OptionI /> },
+    { id: "J", title: "Radial Dashboard", desc: "Nested concentric rings with legend", component: <OptionJ /> },
+    { id: "K", title: "Notification Banners", desc: "Stacked alert-style stat banners", component: <OptionK /> },
+    { id: "L", title: "Map Peek Hero", desc: "Bottom-gradient image with floating stat pills", component: <OptionL /> },
   ];
 
   return (
