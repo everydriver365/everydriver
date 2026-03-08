@@ -610,7 +610,7 @@ export default function InstructorPupils() {
                   paymentQrUrl={getActivePaymentQrUrl(instructor)}
                   commissionPayer={instructor?.commission_payer}
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
