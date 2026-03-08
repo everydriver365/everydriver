@@ -8966,6 +8966,38 @@ export type Database = {
           },
         ]
       }
+      pupil_credentials: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+          pupil_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+          pupil_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+          pupil_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_credentials_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_leaderboard: {
         Row: {
           created_at: string
@@ -9705,7 +9737,6 @@ export type Database = {
           parent_email: string | null
           parent_name: string | null
           parent_phone: string | null
-          password_hash: string | null
           payment_type: string | null
           phone: string | null
           pickup_address: string | null
@@ -9786,7 +9817,6 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
-          password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
           pickup_address?: string | null
@@ -9867,7 +9897,6 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
-          password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
           pickup_address?: string | null

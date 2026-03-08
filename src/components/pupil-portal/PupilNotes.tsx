@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, ArrowLeft, Pin, Search, MoreVertical, Trash2, StickyNote, User } from "lucide-react";
@@ -38,6 +37,12 @@ interface PupilNotesProps {
   instructorName?: string;
 }
 
+async function invokeNotes(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke("pupil-notes", { body });
+  if (error) throw error;
+  return data;
+}
+
 export function PupilNotes({ pupilId, instructorId, brandColour, instructorName }: PupilNotesProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
@@ -49,27 +54,13 @@ export function PupilNotes({ pupilId, instructorId, brandColour, instructorName 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const fetchNotes = useCallback(async () => {
-    // Pupil's own notes
-    const { data: own } = await supabase
-      .from("notes")
-      .select("*")
-      .eq("owner_type", "pupil")
-      .eq("owner_id", pupilId)
-      .is("deleted_at", null)
-      .order("is_pinned", { ascending: false })
-      .order("updated_at", { ascending: false });
-
-    // Notes shared by instructor
-    const { data: shared } = await supabase
-      .from("notes")
-      .select("*")
-      .eq("owner_type", "instructor")
-      .eq("shared_with_id", pupilId)
-      .is("deleted_at", null)
-      .order("updated_at", { ascending: false });
-
-    setNotes((own as Note[]) || []);
-    setSharedNotes((shared as Note[]) || []);
+    try {
+      const result = await invokeNotes({ action: "list", pupil_id: pupilId });
+      setNotes((result.own as Note[]) || []);
+      setSharedNotes((result.shared as Note[]) || []);
+    } catch (err) {
+      console.error("Error fetching notes:", err);
+    }
   }, [pupilId]);
 
   useEffect(() => {
@@ -83,15 +74,14 @@ export function PupilNotes({ pupilId, instructorId, brandColour, instructorName 
   });
 
   const createNote = async () => {
-    const { data, error } = await supabase
-      .from("notes")
-      .insert({ owner_type: "pupil", owner_id: pupilId, title: "Untitled", content: "" })
-      .select()
-      .single();
-    if (error) { toast.error("Failed to create note"); return; }
-    const n = data as Note;
-    setNotes((prev) => [n, ...prev]);
-    selectNote(n);
+    try {
+      const result = await invokeNotes({ action: "create", pupil_id: pupilId });
+      const n = result.note as Note;
+      setNotes((prev) => [n, ...prev]);
+      selectNote(n);
+    } catch {
+      toast.error("Failed to create note");
+    }
   };
 
   const selectNote = (note: Note) => {
@@ -117,22 +107,34 @@ export function PupilNotes({ pupilId, instructorId, brandColour, instructorName 
 
   const saveNote = async (updates: Partial<Note>) => {
     if (!selectedNote || isReadOnly) return;
-    await supabase.from("notes").update(updates).eq("id", selectedNote.id);
-    setNotes((prev) => prev.map((n) => n.id === selectedNote.id ? { ...n, ...updates } : n));
+    try {
+      await invokeNotes({ action: "update", pupil_id: pupilId, note_id: selectedNote.id, ...updates });
+      setNotes((prev) => prev.map((n) => n.id === selectedNote.id ? { ...n, ...updates } : n));
+    } catch {
+      toast.error("Failed to save");
+    }
   };
 
   const deleteNote = async (id: string) => {
-    await supabase.from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-    if (selectedNote?.id === id) { setSelectedNote(null); setView("list"); }
-    toast.success("Note deleted");
+    try {
+      await invokeNotes({ action: "delete", pupil_id: pupilId, note_id: id });
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+      if (selectedNote?.id === id) { setSelectedNote(null); setView("list"); }
+      toast.success("Note deleted");
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
 
   const togglePin = async (id: string) => {
     const note = notes.find((n) => n.id === id);
     if (!note) return;
-    await supabase.from("notes").update({ is_pinned: !note.is_pinned }).eq("id", id);
-    setNotes((prev) => prev.map((n) => n.id === id ? { ...n, is_pinned: !n.is_pinned } : n));
+    try {
+      await invokeNotes({ action: "update", pupil_id: pupilId, note_id: id, is_pinned: !note.is_pinned });
+      setNotes((prev) => prev.map((n) => n.id === id ? { ...n, is_pinned: !n.is_pinned } : n));
+    } catch {
+      toast.error("Failed to update");
+    }
   };
 
   if (view === "editor" && selectedNote) {
