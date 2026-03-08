@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
+import { LessonRouteViewer } from "@/components/instructor/LessonRouteViewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Phone, 
@@ -698,6 +700,24 @@ export function ExpandablePupilCard({
             className="border-t border-border"
           >
             <div className="p-4 space-y-4">
+              {/* Profile Photo Upload */}
+              <div className="flex justify-center">
+                <PupilAvatarUpload
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  currentImageUrl={pupil.profile_image_url}
+                  onImageUploaded={async (url) => {
+                    try {
+                      await supabase.from("pupils").update({ profile_image_url: url }).eq("id", pupil.id);
+                    } catch {}
+                  }}
+                  onImageRemoved={async () => {
+                    try {
+                      await supabase.from("pupils").update({ profile_image_url: null }).eq("id", pupil.id);
+                    } catch {}
+                  }}
+                />
+              </div>
               {/* Full Address & What3Words */}
               <div className="space-y-2">
                 <div className="flex items-start gap-2 text-sm">
@@ -1028,8 +1048,9 @@ export function ExpandablePupilCard({
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-3 pt-0">
+                      <div className="p-3 pt-0 space-y-3">
                         <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
+                        <LessonRouteViewer pupilId={pupil.id} pupilName={pupil.name} />
                       </div>
                     </motion.div>
                   )}

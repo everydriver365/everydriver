@@ -44,6 +44,7 @@ import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import TheoryProgressChart from "@/components/pupil-portal/TheoryProgressChart";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
+import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 
 interface InstructorBranding {
   id: string;
@@ -520,6 +521,7 @@ export default function BrandedPupilPortal() {
                   darkMode={instructor.pupil_app_dark_mode}
                 />
                 <div className="px-4 pb-4 space-y-4">
+                  <TheoryMockTest pupilId={pupil.id} />
                   <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
                   <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
                 </div>

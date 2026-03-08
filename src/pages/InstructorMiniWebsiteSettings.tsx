@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code } from "lucide-react";
+import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code, Car } from "lucide-react";
+import { CarStickerGenerator } from "@/components/instructor/CarStickerGenerator";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
@@ -119,7 +120,7 @@ export default function InstructorMiniWebsiteSettings() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="pages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
               <Layout className="h-4 w-4" />
               <span className="hidden sm:inline">Pages</span>
@@ -131,6 +132,10 @@ export default function InstructorMiniWebsiteSettings() {
             <TabsTrigger value="share" className="gap-1.5 text-xs sm:text-sm">
               <Share2 className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
+            </TabsTrigger>
+            <TabsTrigger value="sticker" className="gap-1.5 text-xs sm:text-sm">
+              <Car className="h-4 w-4" />
+              <span className="hidden sm:inline">Sticker</span>
             </TabsTrigger>
             <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm">
               <Code className="h-4 w-4" />
@@ -218,6 +223,17 @@ export default function InstructorMiniWebsiteSettings() {
                 <MiniWebsiteShare instructorId={instructorId} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Sticker Tab */}
+          <TabsContent value="sticker">
+            <CarStickerGenerator
+              instructorName={authInstructor?.name || ""}
+              instructorPhone={authInstructor?.phone || null}
+              instructorSlug={authInstructor?.app_slug || null}
+              logoUrl={authInstructor?.logo_url || null}
+              brandColour={authInstructor?.brand_colour || null}
+            />
           </TabsContent>
 
           {/* Embed Tab */}

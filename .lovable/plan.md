@@ -1,71 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Competitor Feature Gap Analysis
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-### What You Already Have (vs competitors)
-Your app already covers: diary management, recurring lessons, syllabus tracking, reflective logs, waitlist/gap filling, theory practice, QR payments, parent portal, pupil portal, booking system, pipeline CRM, broadcast messaging, expenses, mileage, tax, mini-website, referrals, reviews, automations, voice assistant, Geotab vehicle tracking, health logging, document templates, digital waivers, and more. You're well ahead of most competitors.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### Features Competitors Have That You're Missing
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-| # | Feature | Who Has It | Effort |
-|---|---------|-----------|--------|
-| 1 | **Pupil Selfie / Profile Photo** | TotalDrive | Small |
-| 2 | **Lesson Route Recording** (GPS trace per lesson) | MyDriveTime | Medium |
-| 3 | **Full Theory Mock Tests** (timed, 50-question DVSA format) | TotalDrive, ADI Book | Medium |
-| 4 | **Hazard Perception Practice** (video clips) | TotalDrive | Large |
-| 5 | **Printable Car Stickers** (branded QR code stickers for car window) | TotalDrive | Small |
-| 6 | **ADI Job Board** (receive enquiries from a marketplace) | ADI Network | Large |
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
----
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-### Recommended Builds (High Value, Feasible)
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-#### 1. Pupil Selfie / Profile Photo Capture
-TotalDrive lets instructors snap a photo of each pupil on their first lesson. Helps identify pupils, adds a personal touch to the pupil card.
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-- Add camera capture button to pupil card and add-pupil flow
-- Store in file storage, display as avatar throughout the app
-- **Files**: Update `ExpandablePupilCard.tsx`, `AddPupilSheet.tsx`, add camera component
-- **DB**: Add `photo_url` column to `pupils` table, create storage bucket
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-#### 2. Lesson Route Recording
-MyDriveTime's "Journey Tracking" logs the GPS route during each lesson automatically, showing the pupil their progress over time (from quiet estates to dual carriageways to motorways).
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-- Record GPS coordinates during a lesson (start/stop from the "Live Lesson" view)
-- Store as GeoJSON in a `lesson_routes` table
-- Display route on a Leaflet map in lesson history (pupil portal + instructor view)
-- **DB**: New `lesson_routes` table (`id`, `lesson_id`, `instructor_id`, `coordinates` jsonb, `distance_km`, `duration_minutes`)
-- **Files**: New `LessonRouteRecorder.tsx` component, update `InstructorLiveSession.tsx`, new route replay viewer
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-#### 3. Full Theory Mock Tests (Timed, 50 Questions)
-Your current Theory page has a basic quiz with a small question bank. Competitors offer full DVSA-format mock tests: 50 random questions, 57-minute timer, pass mark 43/50.
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-- Expand the question bank (use AI to generate DVSA-style questions by category)
-- Add timed mock test mode: 50 random questions, countdown timer, auto-submit
-- Track results history: date, score, pass/fail, weak categories
-- Show in pupil portal so pupils can self-practice
-- **DB**: New `theory_mock_results` table, expand `theory_questions` data
-- **Files**: Update `Theory.tsx`, new `TheoryMockTest.tsx` component
-
-#### 4. Branded Car Window Stickers (PDF Generator)
-TotalDrive sells branded car stickers with QR codes linking to the instructor's booking page. You already have QR code generation and PDF generation (jspdf) — this is a quick win.
-
-- Generate a printable A5/A6 PDF with instructor branding, logo, phone number, and QR code linking to their mini-website or booking page
-- Include "Book your lessons at..." text
-- Downloadable from the mini-website settings page
-- **Files**: New `CarStickerGenerator.tsx` component, add to `InstructorMiniWebsiteSettings.tsx`
-- **No DB changes needed**
-
----
-
-### Summary
-
-| Feature | DB Changes | New Components | Priority |
-|---------|-----------|----------------|----------|
-| Pupil Selfie | 1 column + storage bucket | 1 | Quick win |
-| Lesson Route Recording | 1 table | 3 | High value |
-| Theory Mock Tests | 1 table + data expansion | 2 | High value |
-| Car Window Stickers | None | 1 | Quick win |
-
-The two quick wins (selfie + stickers) can be done in one pass. Route recording and theory mocks are meatier but high-value differentiators that pupils actually use daily.
-
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
