@@ -423,6 +423,7 @@ export default function InstructorSatNav() {
                           Go
                         </Button>
                       </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
