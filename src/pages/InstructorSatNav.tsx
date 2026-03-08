@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { SatNavMap } from "@/components/instructor/SatNavMap";
 import { SavedRoutesList } from "@/components/instructor/SavedRoutesList";
 import { FavouriteLocationsList } from "@/components/instructor/FavouriteLocationsList";
+import { OnMyWayButton } from "@/components/instructor/OnMyWayButton";
 
 interface UpcomingLesson {
   id: string;
@@ -20,7 +21,9 @@ interface UpcomingLesson {
   pickup_postcode: string;
   pickup_location: string | null;
   pupils: {
+    id: string;
     name: string;
+    phone: string | null;
   } | null;
 }
 
@@ -53,7 +56,7 @@ export default function InstructorSatNav() {
             start_time,
             pickup_postcode,
             pickup_location,
-            pupils(name)
+            pupils(id, name, phone)
           `)
           .eq("instructor_id", instructor.id)
           .eq("status", "scheduled")
@@ -399,17 +402,27 @@ export default function InstructorSatNav() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => openNativeNavigation(
-                          lesson.pickup_location || '',
-                          lesson.pickup_postcode
-                        )}
-                        className="shrink-0 gap-2"
-                        size="sm"
-                      >
-                        <Navigation className="h-4 w-4" />
-                        Go
-                      </Button>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <OnMyWayButton
+                          instructorId={instructor.id}
+                          pupilName={lesson.pupils?.name || "Student"}
+                          pupilPhone={lesson.pupils?.phone || null}
+                          pupilId={lesson.pupils?.id}
+                          lessonId={lesson.id}
+                          size="sm"
+                        />
+                        <Button
+                          onClick={() => openNativeNavigation(
+                            lesson.pickup_location || '',
+                            lesson.pickup_postcode
+                          )}
+                          className="shrink-0 gap-2"
+                          size="sm"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          Go
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

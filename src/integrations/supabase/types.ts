@@ -3307,6 +3307,57 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_automations: {
+        Row: {
+          action_config: Json
+          action_type: Database["public"]["Enums"]["automation_action"]
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          name: string
+          trigger_type: Database["public"]["Enums"]["automation_trigger"]
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: Database["public"]["Enums"]["automation_action"]
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          name: string
+          trigger_type: Database["public"]["Enums"]["automation_trigger"]
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: Database["public"]["Enums"]["automation_action"]
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          name?: string
+          trigger_type?: Database["public"]["Enums"]["automation_trigger"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_automations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_automations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_bank_details: {
         Row: {
           account_holder_name: string
@@ -5628,6 +5679,7 @@ export type Database = {
           adi_badge_number: string | null
           adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
+          ai_receptionist_enabled: boolean
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
@@ -5749,6 +5801,7 @@ export type Database = {
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          ai_receptionist_enabled?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
@@ -5870,6 +5923,7 @@ export type Database = {
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          ai_receptionist_enabled?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
@@ -7575,6 +7629,62 @@ export type Database = {
           },
         ]
       }
+      on_my_way_notifications: {
+        Row: {
+          eta_minutes: number | null
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          pupil_id: string | null
+          sent_at: string
+        }
+        Insert: {
+          eta_minutes?: number | null
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          pupil_id?: string | null
+          sent_at?: string
+        }
+        Update: {
+          eta_minutes?: number | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          pupil_id?: string | null
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "on_my_way_notifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_my_way_notifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_my_way_notifications_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_my_way_notifications_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_steps: {
         Row: {
           created_at: string
@@ -7874,6 +7984,63 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_leads: {
+        Row: {
+          course_type: string | null
+          created_at: string
+          email: string | null
+          id: string
+          instructor_id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          postcode: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          updated_at: string
+        }
+        Insert: {
+          course_type?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          instructor_id: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          postcode?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          updated_at?: string
+        }
+        Update: {
+          course_type?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          instructor_id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          postcode?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_leads_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_leads_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -11951,7 +12118,28 @@ export type Database = {
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil"
+      automation_action:
+        | "send_sms"
+        | "send_email"
+        | "add_note"
+        | "move_pipeline"
+        | "create_todo"
+      automation_trigger:
+        | "lesson_completed"
+        | "cancellation"
+        | "no_show"
+        | "test_passed"
+        | "payment_overdue"
+        | "new_enquiry"
       friendship_status: "pending" | "accepted" | "declined"
+      pipeline_stage:
+        | "new_lead"
+        | "contacted"
+        | "quoted"
+        | "booked"
+        | "active"
+        | "test_passed"
+        | "lost"
       service_type:
         | "oil_change"
         | "full_service"
@@ -12090,7 +12278,31 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["instructor", "admin", "pupil"],
+      automation_action: [
+        "send_sms",
+        "send_email",
+        "add_note",
+        "move_pipeline",
+        "create_todo",
+      ],
+      automation_trigger: [
+        "lesson_completed",
+        "cancellation",
+        "no_show",
+        "test_passed",
+        "payment_overdue",
+        "new_enquiry",
+      ],
       friendship_status: ["pending", "accepted", "declined"],
+      pipeline_stage: [
+        "new_lead",
+        "contacted",
+        "quoted",
+        "booked",
+        "active",
+        "test_passed",
+        "lost",
+      ],
       service_type: [
         "oil_change",
         "full_service",

@@ -123,6 +123,8 @@ const additionalTiles: QuickAction[] = [
   { id: "referrals", title: "Referrals", icon: "Users", route: "/instructor/referrals", display_order: 106 },
   { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 106 },
   { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
+  { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
+  { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
 ];
 
 interface QuickActionTilesProps {
