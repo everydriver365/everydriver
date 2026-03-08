@@ -235,6 +235,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   const { overdueLesson, dismiss: dismissLessonAlert } = useLessonEndAlert(instructor?.id);
   const [endWizardLesson, setEndWizardLesson] = useState<OverdueLesson | null>(null);
+  useOfflinePrefetch({ instructorId: instructor?.id });
 
   const handleCompleteLessonAlert = (lesson: OverdueLesson) => {
     dismissLessonAlert(lesson.id);
