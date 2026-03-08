@@ -7614,6 +7614,229 @@ export type Database = {
           },
         ]
       }
+      mtd_instructor_settings: {
+        Row: {
+          accounting_type: string | null
+          business_name: string | null
+          business_start_date: string | null
+          created_at: string
+          flat_rate_expenses: boolean | null
+          hmrc_nino: string | null
+          id: string
+          instructor_id: string
+          is_mtd_enrolled: boolean | null
+          updated_at: string
+          utr: string | null
+        }
+        Insert: {
+          accounting_type?: string | null
+          business_name?: string | null
+          business_start_date?: string | null
+          created_at?: string
+          flat_rate_expenses?: boolean | null
+          hmrc_nino?: string | null
+          id?: string
+          instructor_id: string
+          is_mtd_enrolled?: boolean | null
+          updated_at?: string
+          utr?: string | null
+        }
+        Update: {
+          accounting_type?: string | null
+          business_name?: string | null
+          business_start_date?: string | null
+          created_at?: string
+          flat_rate_expenses?: boolean | null
+          hmrc_nino?: string | null
+          id?: string
+          instructor_id?: string
+          is_mtd_enrolled?: boolean | null
+          updated_at?: string
+          utr?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mtd_instructor_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mtd_instructor_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mtd_quarterly_periods: {
+        Row: {
+          created_at: string
+          deadline: string
+          hmrc_response: Json | null
+          hmrc_submission_id: string | null
+          id: string
+          instructor_id: string
+          period_end: string
+          period_start: string
+          quarter: number
+          status: string
+          submitted_at: string | null
+          tax_year: number
+          total_expenses: number | null
+          total_income: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline: string
+          hmrc_response?: Json | null
+          hmrc_submission_id?: string | null
+          id?: string
+          instructor_id: string
+          period_end: string
+          period_start: string
+          quarter: number
+          status?: string
+          submitted_at?: string | null
+          tax_year: number
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string
+          hmrc_response?: Json | null
+          hmrc_submission_id?: string | null
+          id?: string
+          instructor_id?: string
+          period_end?: string
+          period_start?: string
+          quarter?: number
+          status?: string
+          submitted_at?: string | null
+          tax_year?: number
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mtd_quarterly_periods_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mtd_quarterly_periods_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mtd_sa103_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          expense_category: string
+          hmrc_category: string
+          id: string
+          sa103_box: string
+          sa103_label: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expense_category: string
+          hmrc_category: string
+          id?: string
+          sa103_box: string
+          sa103_label: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expense_category?: string
+          hmrc_category?: string
+          id?: string
+          sa103_box?: string
+          sa103_label?: string
+        }
+        Relationships: []
+      }
+      mtd_submission_log: {
+        Row: {
+          error_message: string | null
+          hmrc_correlation_id: string | null
+          hmrc_response: Json | null
+          id: string
+          instructor_id: string
+          payload: Json
+          period_id: string | null
+          quarter: number | null
+          status: string
+          submission_type: string
+          submitted_at: string
+          tax_year: number
+        }
+        Insert: {
+          error_message?: string | null
+          hmrc_correlation_id?: string | null
+          hmrc_response?: Json | null
+          id?: string
+          instructor_id: string
+          payload: Json
+          period_id?: string | null
+          quarter?: number | null
+          status?: string
+          submission_type: string
+          submitted_at?: string
+          tax_year: number
+        }
+        Update: {
+          error_message?: string | null
+          hmrc_correlation_id?: string | null
+          hmrc_response?: Json | null
+          id?: string
+          instructor_id?: string
+          payload?: Json
+          period_id?: string | null
+          quarter?: number | null
+          status?: string
+          submission_type?: string
+          submitted_at?: string
+          tax_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mtd_submission_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mtd_submission_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mtd_submission_log_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "mtd_quarterly_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: string
