@@ -1,6 +1,6 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time & Recurring Subscriptions
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features have been built and deployed.
+All 6 features + security hardening have been built and deployed.
 
 ### Feature 1: Pipeline Board ✅
 - DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
@@ -41,3 +41,9 @@ All 6 features have been built and deployed.
 - `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
 - Tile added to home screen dashboard
 - Route added to App.tsx
+
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
