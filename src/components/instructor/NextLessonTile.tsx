@@ -259,22 +259,49 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             />
           </div>
 
-          {/* ETA row */}
-          <div className="flex items-center gap-1.5 text-[12px]" style={{ color: "#9CA3AF" }}>
-            {etaLoading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : durationMinutes ? (
-              <>
-                <Car className="h-3.5 w-3.5" />
-                <span>ETA {getArrivalTime()} ({durationText})</span>
-                {trafficCondition && (
-                  <span className="text-[11px]">{getTrafficEmoji()}</span>
-                )}
-              </>
-            ) : null}
+          {/* ETA + Record Route row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[12px]" style={{ color: "#9CA3AF" }}>
+              {etaLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : durationMinutes ? (
+                <>
+                  <Car className="h-3.5 w-3.5" />
+                  <span>ETA {getArrivalTime()} ({durationText})</span>
+                  {trafficCondition && (
+                    <span className="text-[11px]">{getTrafficEmoji()}</span>
+                  )}
+                </>
+              ) : null}
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowRecorder(!showRecorder);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold transition-colors"
+              style={{
+                background: showRecorder ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.1)",
+                color: showRecorder ? "#DC2626" : "#16A34A",
+              }}
+            >
+              <Navigation className="h-[11px] w-[11px]" />
+              {showRecorder ? "Hide Recorder" : "Record Route"}
+            </button>
           </div>
         </div>
       </div>
     </Link>
+
+    {showRecorder && (
+      <LessonRouteRecorder
+        instructorId={instructorId}
+        pupilId={nextLesson.pupil.id}
+        lessonId={nextLesson.id}
+        onRouteRecorded={() => setShowRecorder(false)}
+      />
+    )}
+    </div>
   );
 }
