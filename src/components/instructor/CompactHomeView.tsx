@@ -249,19 +249,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
 
-        {gapSuggestions && gapSuggestions.length > 0 && (
-          <div className="mt-4">
-            <GapFillerCard gaps={gapSuggestions} />
-          </div>
-        )}
-
-        {authInstructor?.id && (
-          <div className="mt-4">
-            <VehicleHealthStrip instructorId={authInstructor.id} />
-          </div>
-        )}
-
-        <DormantPupilsCard instructorId={instructorId} />
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         
 
