@@ -150,7 +150,10 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     }
   };
 
+  const [showRecorder, setShowRecorder] = useState(false);
+
   return (
+    <div className="space-y-2">
     <Link
       to={`/instructor/schedule?date=${nextLesson.lesson_date}`}
       className="block"
