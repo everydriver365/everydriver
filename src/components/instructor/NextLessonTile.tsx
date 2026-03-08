@@ -152,7 +152,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     }
   };
 
-  const [showRecorder, setShowRecorder] = useState(false);
+
 
   return (
     <div className="space-y-2">
