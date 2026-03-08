@@ -611,6 +611,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <main className="h-[100dvh] overflow-hidden">{children}</main>
         ) : (
           <>
+            <OfflineBanner />
             <main className={`overflow-x-hidden ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
