@@ -23,7 +23,8 @@ const typeColors: Record<string, { bg: string; text: string }> = {
   "Pass Plus": { bg: "bg-emerald-500/10", text: "text-emerald-600" },
 };
 
-export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListProps) {
+export function TodayLessonsList({ lessons, instructorId, className = "" }: TodayLessonsListProps) {
+  const [recordingLessonId, setRecordingLessonId] = useState<string | null>(null);
   const formatTime = (time: string) => {
     try {
       return format(parse(time, "HH:mm:ss", new Date()), "HH:mm");
