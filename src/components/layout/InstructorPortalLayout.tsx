@@ -260,7 +260,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const isAppStyle = isHomePage && layoutStyle === "schedule";
   const mobileBg = wallpaperColor || "#E8F1FE";
   const appStyleBg = isAppStyle ? mobileBg : undefined;
-  const headerContrast = appStyleBg ? getContrastColor(appStyleBg) : null;
+  const headerContrast = getContrastColor(mobileBg);
 
   const isTrackingPage = location.pathname.startsWith("/instructor/tracking") || location.pathname.startsWith("/instructor/traccar");
   
@@ -404,8 +404,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <IOSInstallBanner />
 
             {/* Mobile Header */}
-            <header className="sticky top-0 z-40 backdrop-blur-xl backdrop-saturate-150 bg-primary/85 pt-[env(safe-area-inset-top)]">
-              <div className="text-primary-foreground relative overflow-hidden">
+            <header
+              className="sticky top-0 z-40 backdrop-blur-xl backdrop-saturate-150 pt-[env(safe-area-inset-top)]"
+              style={{ backgroundColor: mobileBg }}
+            >
+              <div className="relative overflow-hidden" style={{ color: headerContrast || 'hsl(var(--primary-foreground))' }}>
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Hamburger + Title */}
