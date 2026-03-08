@@ -526,7 +526,7 @@ export function InstructorMobileHome({
         </div>
 
         {/* 8. Today's Lessons Full List */}
-        <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
+        <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
 
         {/* Insights Tiles */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
