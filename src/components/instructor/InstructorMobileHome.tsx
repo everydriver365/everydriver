@@ -81,7 +81,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
 import { LockScreenHomeView } from "@/components/instructor/LockScreenHomeView";
@@ -473,12 +473,6 @@ export function InstructorMobileHome({
 
       {/* 4. Your Day */}
       <div className="px-4">
-        {/* Streak Badge */}
-        {streak && streak.currentStreak >= 2 && (
-          <div className="mb-3">
-            <StreakBadge currentStreak={streak.currentStreak} isActiveToday={streak.isActiveToday} />
-          </div>
-        )}
 
         {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (

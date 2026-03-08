@@ -37,7 +37,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
@@ -161,17 +161,9 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             >
               {getGreeting(firstName)}
             </motion.h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-sm text-muted-foreground">
-                {format(new Date(), "EEEE d MMMM")}
-              </p>
-              {streak && (
-                <StreakBadge
-                  currentStreak={streak.currentStreak}
-                  isActiveToday={streak.isActiveToday}
-                />
-              )}
-            </div>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {format(new Date(), "EEEE d MMMM")}
+            </p>
           </div>
           {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
             <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${

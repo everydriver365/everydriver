@@ -36,7 +36,7 @@ import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 
@@ -176,15 +176,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           <div className="flex items-center justify-between px-5 pb-3">
             <div>
               <h1 className="text-[24px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
-              <div className="flex items-center gap-2">
-                <p className="text-[15px] text-white/80">Welcome</p>
-                {streak && (
-                  <StreakBadge
-                    currentStreak={streak.currentStreak}
-                    isActiveToday={streak.isActiveToday}
-                  />
-                )}
-              </div>
+              <p className="text-[15px] text-white/80">Welcome</p>
             </div>
             <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
               <Car className="h-6 w-6 text-white/90" />
