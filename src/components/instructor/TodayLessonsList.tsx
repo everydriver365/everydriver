@@ -1,6 +1,6 @@
 import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { Clock, CalendarOff } from "lucide-react";
+import { CalendarOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
@@ -43,12 +43,8 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
       <div className="flex items-center gap-2 mb-3">
         <h3 className="text-[18px] font-bold text-foreground">Today's Lessons</h3>
         <span
-          className="text-[14px] font-semibold px-2.5 py-0.5"
-          style={{
-            color: "#AEAEB2",
-            backgroundColor: "#F0F0F4",
-            borderRadius: 10,
-          }}
+          className="text-[14px] font-semibold px-2.5 py-0.5 text-muted-foreground bg-muted"
+          style={{ borderRadius: 10 }}
         >
           {lessons.length}
         </span>
@@ -65,76 +61,109 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
           <p className="text-[13px] text-muted-foreground mt-1">Enjoy your day off!</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {lessons.map((lesson, idx) => {
-            const isCancelled = lesson.status === "cancelled";
-            const isPaid = lesson.paymentStatus === "paid";
-            const colors = typeColors[lesson.lessonType] || typeColors.Standard;
+        <div className="relative">
+          {/* Timeline track */}
+          <div className="absolute left-[19px] top-3 bottom-3 w-[2px] bg-border rounded-full" />
 
-            return (
-              <Link key={lesson.id} to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}>
+          <div className="space-y-0">
+            {lessons.map((lesson, idx) => {
+              const isCancelled = lesson.status === "cancelled";
+              const isPaid = lesson.paymentStatus === "paid";
+              const colors = typeColors[lesson.lessonType] || typeColors.Standard;
+              const isLast = idx === lessons.length - 1;
+
+              return (
                 <motion.div
+                  key={lesson.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: isCancelled ? 0.5 : 1, y: 0 }}
                   transition={{ delay: idx * 0.04 }}
-                  className="p-4 active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
-                  style={{
-                    background: "rgba(255,255,255,0.65)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    borderRadius: 22,
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-                    border: "1px solid rgba(255,255,255,0.5)",
-                  }}
                 >
-                  {/* Top row: Avatar + Name + Type badge */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <PupilAvatar
-                      name={lesson.pupilName}
-                      imageUrl={lesson.pupilProfileImageUrl}
-                      size="sm"
-                    />
-                    <p className="text-[16px] font-semibold text-foreground leading-tight flex-1 truncate">
-                      {lesson.pupilName}
-                    </p>
-                    <Badge
-                      variant="outline"
-                      className={`${colors.bg} ${colors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`}
-                    >
-                      {lesson.lessonType}
-                    </Badge>
-                  </div>
-
-                  {/* Time */}
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1.5">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="text-[13px]">
-                      {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
+                  {/* Time label + dot row */}
+                  <div className="flex items-center gap-2 pl-0 mb-1.5">
+                    <div className="relative flex items-center justify-center w-[38px] shrink-0">
+                      {/* Timeline dot */}
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary border-2 border-background shadow-sm z-10" />
+                    </div>
+                    <span className="text-[12px] font-semibold text-muted-foreground tracking-wide">
+                      {formatTime(lesson.startTime)}
                     </span>
                   </div>
 
-                  {/* Bottom row: amount + status */}
-                  <div className="flex items-center justify-between mt-2">
-                    {lesson.amountDue != null && (
-                      <span className="text-[14px] font-bold text-foreground">
-                        £{lesson.amountDue}
-                      </span>
-                    )}
-                    <Badge
-                      variant="outline"
-                      className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
-                        isPaid
-                          ? "bg-emerald-500/10 text-emerald-600"
-                          : "bg-amber-500/10 text-amber-600"
-                      }`}
+                  {/* Lesson card — offset to the right of the timeline */}
+                  <div className="flex gap-2 pl-0 mb-4">
+                    {/* Spacer for timeline column */}
+                    <div className="w-[38px] shrink-0" />
+
+                    {/* Card */}
+                    <Link
+                      to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}
+                      className="flex-1 min-w-0"
                     >
-                      {isPaid ? "Done" : "Unpaid"}
-                    </Badge>
+                      <div
+                        className="p-3 active:scale-[0.98] transition-transform bg-card dark:bg-card border border-border"
+                        style={{ borderRadius: 16 }}
+                      >
+                        {/* Top row: Avatar + Name + Type badge */}
+                        <div className="flex items-center gap-2.5">
+                          <PupilAvatar
+                            name={lesson.pupilName}
+                            imageUrl={lesson.pupilProfileImageUrl}
+                            size="sm"
+                          />
+                          <p className="text-[15px] font-semibold text-foreground leading-tight flex-1 truncate">
+                            {lesson.pupilName}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={`${colors.bg} ${colors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`}
+                          >
+                            {lesson.lessonType}
+                          </Badge>
+                        </div>
+
+                        {/* Bottom row: time range + amount + status */}
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-[12px] text-muted-foreground">
+                            {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {lesson.amountDue != null && (
+                              <span className="text-[13px] font-bold text-foreground">
+                                £{lesson.amountDue}
+                              </span>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className={`text-[11px] font-medium px-2 py-0.5 border-0 ${
+                                isPaid
+                                  ? "bg-emerald-500/10 text-emerald-600"
+                                  : "bg-amber-500/10 text-amber-600"
+                              }`}
+                            >
+                              {isPaid ? "Done" : "Unpaid"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                   </div>
+
+                  {/* End time marker for last lesson */}
+                  {isLast && (
+                    <div className="flex items-center gap-2 pl-0">
+                      <div className="relative flex items-center justify-center w-[38px] shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30 border-2 border-background z-10" />
+                      </div>
+                      <span className="text-[12px] text-muted-foreground">
+                        {getEndTime(lesson.startTime, lesson.durationMinutes)} · Day ends
+                      </span>
+                    </div>
+                  )}
                 </motion.div>
-              </Link>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
