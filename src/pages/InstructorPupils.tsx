@@ -487,17 +487,17 @@ export default function InstructorPupils() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-3 pb-6">
-        {/* Header row */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Pupils</h1>
-            <p className="text-[13px] text-muted-foreground">{stats.total} total · {stats.active} active</p>
-          </div>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-3" onClick={() => setIsAddOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-        </div>
+        {/* iOS Large Title Header */}
+        <IOSLargeTitle
+          title="Pupils"
+          subtitle={`${stats.total} total · ${stats.active} active`}
+          action={
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-3" onClick={() => setIsAddOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          }
+        />
 
         {/* Compact stats strip */}
         <div className="grid grid-cols-4 gap-2">
@@ -507,47 +507,39 @@ export default function InstructorPupils() {
             { label: "Lessons", value: stats.totalLessons, icon: BookOpen, color: "text-amber-600 dark:text-amber-400" },
             { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, icon: Target, color: "text-violet-600 dark:text-violet-400" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-card rounded-xl border p-2.5 text-center">
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="bg-card rounded-xl border p-2.5 text-center"
+            >
               <stat.icon className={`h-4 w-4 ${stat.color} mx-auto mb-1`} />
               <p className="text-base font-bold text-foreground leading-none">{stat.value}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search pupils..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 rounded-xl bg-card border text-sm"
-          />
-        </div>
+        {/* iOS Search Bar */}
+        <IOSSearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search pupils..."
+        />
 
-        {/* Status filter tabs */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1 no-scrollbar">
-          {[
-            { key: "all" as const, label: "All", count: pupils.length },
-            { key: "active" as const, label: "Active", count: statusCounts.active },
-            { key: "passed" as const, label: "Passed", count: statusCounts.passed },
-            { key: "on_hold" as const, label: "On Hold", count: statusCounts.on_hold },
-            { key: "inactive" as const, label: "Inactive", count: statusCounts.inactive },
-          ].filter(t => t.key === "all" || t.count > 0).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
-                activeTab === tab.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {tab.label} {tab.count > 0 && <span className="ml-0.5 opacity-70">{tab.count}</span>}
-            </button>
-          ))}
-        </div>
+        {/* iOS Segmented Control */}
+        <IOSSegmentedControl
+          segments={[
+            { key: "all", label: "All", count: pupils.length },
+            { key: "active", label: "Active", count: statusCounts.active },
+            { key: "passed", label: "Passed", count: statusCounts.passed },
+            ...(statusCounts.on_hold > 0 ? [{ key: "on_hold", label: "On Hold", count: statusCounts.on_hold }] : []),
+            ...(statusCounts.inactive > 0 ? [{ key: "inactive", label: "Inactive", count: statusCounts.inactive }] : []),
+          ]}
+          selected={activeTab}
+          onSelect={(key) => setActiveTab(key as any)}
+        />
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
