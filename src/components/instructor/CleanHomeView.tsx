@@ -390,6 +390,13 @@ export function CleanHomeView({
           />
         </div>
 
+        {/* ── Daily Manifest (desktop only) ── */}
+        {!isMobile && instructorId && (
+          <div className="mt-4">
+            <DailyManifest instructorId={instructorId} />
+          </div>
+        )}
+
         {/* ── Widgets ── */}
         <div className="mt-2 space-y-3">
           {authInstructor?.id && <VehicleHealthStrip instructorId={authInstructor.id} />}
