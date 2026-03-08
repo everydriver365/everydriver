@@ -490,6 +490,15 @@ export default function InstructorPupils() {
     );
   }
 
+  // Desktop: Split-pane master-detail view
+  if (!isMobile && instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <PupilSplitPane instructorId={instructorId} />
+      </InstructorPortalLayout>
+    );
+  }
+
   return (
     <InstructorPortalLayout>
       <div className="space-y-3 pb-6">
