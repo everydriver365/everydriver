@@ -65,6 +65,7 @@ export function NextUpTile({
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
