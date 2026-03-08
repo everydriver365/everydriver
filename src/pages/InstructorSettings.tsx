@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft, Mic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 
@@ -99,6 +99,9 @@ export default function InstructorSettings() {
   const [uploading, setUploading] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [openCategories, setOpenCategories] = useState<string[]>(["profile"]);
+  const [heyEdEnabled, setHeyEdEnabled] = useState<boolean>(() => {
+    return localStorage.getItem(`hey-ed-always-listen-${instructorId}`) === "true";
+  });
   const [selectedCategory, setSelectedCategory] = useState<string>("profile");
   
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -360,6 +363,31 @@ export default function InstructorSettings() {
               />
             </div>
             <div className="ml-[56px] border-b border-border/40" />
+            {/* Hey ED always-listening toggle */}
+            <div className="flex items-center justify-between px-4 py-3 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                  <Mic className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">"Hey ED" Always Listening</p>
+                  <p className="text-xs text-muted-foreground">Activate ED hands-free by saying "Hey ED"</p>
+                </div>
+              </div>
+              <Switch
+                checked={heyEdEnabled}
+                onCheckedChange={(checked) => {
+                  setHeyEdEnabled(checked);
+                  localStorage.setItem(`hey-ed-always-listen-${instructorId}`, String(checked));
+                  toast({
+                    title: checked ? '"Hey ED" enabled' : '"Hey ED" disabled',
+                    description: checked
+                      ? "ED will listen for your voice in the background"
+                      : "Tap the Ask ED button to activate",
+                  });
+                }}
+              />
+            </div>
             {/* Feature toggles */}
             <div className="px-3">
               <FeatureTogglesSettings instructorId={instructorId} />
