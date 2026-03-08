@@ -532,6 +532,8 @@ export function InstructorMobileHome({
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
+        <div className="h-6" />
+
         {/* Tomorrow Preview */}
         {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
           <div className="mt-4">
