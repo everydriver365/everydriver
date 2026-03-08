@@ -961,6 +961,312 @@ function OptionX() {
   );
 }
 
+const timelineLessons = [
+  { time: "09:00", name: "Sarah M.", done: true },
+  { time: "11:00", name: "James K.", done: true },
+  { time: "13:30", name: "Priya S.", done: false },
+  { time: "15:00", name: "Tom W.", done: false },
+  { time: "17:00", name: "Lucy B.", done: false },
+];
+
+function TimelineBar() {
+  return (
+    <div className="flex items-center gap-1.5 mb-3">
+      {timelineLessons.map((l, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <div className={`w-full h-1.5 rounded-full ${l.done ? "bg-emerald-500" : "bg-muted"}`} />
+          <span className="text-[9px] text-muted-foreground">{l.time}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Option Y1: K-style banners + H-style timeline ───
+function OptionY1() {
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground mb-0.5">{dateStr}</p>
+      <h1 className="text-2xl font-bold text-foreground">{greeting} 👋</h1>
+      <div className="mt-3">
+        <TimelineBar />
+        <div className="space-y-2">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3.5 py-2.5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <CheckCircle className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">{todayCompleted} lessons completed</p>
+              <p className="text-[11px] text-muted-foreground">{todayTotal - todayCompleted} more today</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3.5 py-2.5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Next: 13:30 — Priya S.</p>
+              <p className="text-[11px] text-muted-foreground">Wildern Lane pickup</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-2.5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">{weekCompleted}/{weekTotal} this week</p>
+              <p className="text-[11px] text-muted-foreground">{weekTotal - weekCompleted} to go</p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Y2: Compact notification feed with inline schedule ───
+function OptionY2() {
+  const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-xl font-bold text-foreground">{greeting}, {firstName}</h1>
+        <span className="text-xs font-bold text-emerald-600 bg-emerald-500/10 rounded-full px-2.5 py-1">{pct}%</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">{dateStr}</p>
+      {/* Schedule bar integrated into a card */}
+      <div className="bg-card rounded-2xl border border-border/40 shadow-sm overflow-hidden">
+        <div className="px-3.5 pt-3 pb-2">
+          <div className="flex items-center gap-1.5">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1">
+                <div className={`h-2 rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400 animate-pulse" : "bg-muted"}`} />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[9px] text-muted-foreground">09:00</span>
+            <span className="text-[9px] text-muted-foreground">17:00</span>
+          </div>
+        </div>
+        <div className="divide-y divide-border/30">
+          {[
+            { icon: Clock, iconColor: "text-amber-500", bg: "bg-amber-500/10", label: "Next: Priya S. at 13:30", sub: "Wildern Lane" },
+            { icon: CheckCircle, iconColor: "text-emerald-500", bg: "bg-emerald-500/10", label: `${todayCompleted} done, ${todayTotal - todayCompleted} remaining`, sub: "Today's progress" },
+            { icon: PoundSterling, iconColor: "text-primary", bg: "bg-primary/10", label: "£175 expected", sub: "5 hrs scheduled" },
+          ].map((item, i) => (
+            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 * i }}
+              className="flex items-center gap-3 px-3.5 py-2.5">
+              <div className={`w-7 h-7 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
+                <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-[10px] text-muted-foreground">{item.sub}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Y3: iOS grouped + timeline header ───
+function OptionY3() {
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground mb-0.5">{dateStr}</p>
+      <h1 className="text-2xl font-bold text-foreground mb-3">{greeting} 👋</h1>
+      {/* Schedule group */}
+      <div className="mb-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Today's Schedule</p>
+        <div className="bg-card rounded-2xl border border-border/40 overflow-hidden shadow-sm p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className={`w-full h-2 rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted"}`} />
+                <span className="text-[8px] text-muted-foreground">{l.time}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-foreground">Next: 13:30 — Priya S.</span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+          </div>
+        </div>
+      </div>
+      {/* Stats group */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Summary</p>
+        <div className="bg-card rounded-2xl border border-border/40 overflow-hidden shadow-sm divide-y divide-border/30">
+          {[
+            { icon: CheckCircle, iconBg: "bg-emerald-500", label: `${todayCompleted} of ${todayTotal} completed`, sub: `${todayTotal - todayCompleted} remaining` },
+            { icon: TrendingUp, iconBg: "bg-primary", label: `${weekCompleted} of ${weekTotal} this week`, sub: `${weekTotal - weekCompleted} lessons to go` },
+            { icon: PoundSterling, iconBg: "bg-amber-500", label: "£175 expected today", sub: "5 hours scheduled" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 px-3.5 py-2.5">
+              <div className={`w-7 h-7 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0`}>
+                <item.icon className="h-3.5 w-3.5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-[10px] text-muted-foreground">{item.sub}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Y4: Metric tickers with lesson progress strip ───
+function OptionY4() {
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">{greeting}, {firstName}</h1>
+          <p className="text-xs text-muted-foreground">{dateStr}</p>
+        </div>
+      </div>
+      {/* Timeline strip */}
+      <div className="bg-card rounded-2xl border border-border/40 p-3 shadow-sm mb-2">
+        <div className="flex items-center gap-1">
+          {timelineLessons.map((l, i) => (
+            <div key={i} className="flex-1 relative">
+              <div className={`h-6 rounded-lg flex items-center justify-center ${l.done ? "bg-emerald-500/15" : i === todayCompleted ? "bg-amber-500/15 border border-amber-500/30" : "bg-muted/50"}`}>
+                <span className={`text-[10px] font-semibold ${l.done ? "text-emerald-600" : i === todayCompleted ? "text-amber-600" : "text-muted-foreground"}`}>{l.time}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Ticker banners */}
+      <div className="space-y-1.5">
+        {[
+          { value: todayCompleted, label: "completed", suffix: `of ${todayTotal} today`, color: "text-emerald-500", bg: "bg-emerald-500" },
+          { value: `£175`, label: "expected", suffix: "earnings today", color: "text-primary", bg: "bg-primary" },
+          { value: weekCompleted, label: "lessons", suffix: "delivered this week", color: "text-amber-500", bg: "bg-amber-500" },
+        ].map((item, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * i, type: "spring", stiffness: 200 }}
+            className="flex items-center gap-3 bg-card rounded-xl border border-border/40 px-3.5 py-2 shadow-sm">
+            <div className={`w-1 h-8 ${item.bg} rounded-full shrink-0`} />
+            <span className={`text-2xl font-bold ${item.color} leading-none`}>{item.value}</span>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">{item.label}</p>
+              <p className="text-[10px] text-muted-foreground">{item.suffix}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Y5: Gradient banners topped with timeline ───
+function OptionY5() {
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <p className="text-[11px] text-muted-foreground mb-0.5">{dateStr}</p>
+      <h1 className="text-2xl font-bold text-foreground mb-3">{greeting} 👋</h1>
+      {/* Inline timeline */}
+      <div className="flex items-center gap-1 mb-3">
+        {timelineLessons.map((l, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+            <div className={`w-full h-1.5 rounded-full ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400 animate-pulse" : "bg-muted"}`} />
+            <span className="text-[8px] text-muted-foreground font-medium">{l.name.split(" ")[0]}</span>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {[
+          { icon: Clock, label: "Next: Priya S.", sub: "13:30 · Wildern Lane", gradient: "from-amber-500/15 to-amber-500/5", border: "border-amber-500/25", iconColor: "text-amber-500" },
+          { icon: CheckCircle, label: `${todayCompleted}/${todayTotal} lessons`, sub: "completed today", gradient: "from-emerald-500/15 to-emerald-500/5", border: "border-emerald-500/25", iconColor: "text-emerald-500" },
+          { icon: TrendingUp, label: `${weekCompleted}/${weekTotal} this week`, sub: `${weekTotal - weekCompleted} to go`, gradient: "from-primary/15 to-primary/5", border: "border-primary/25", iconColor: "text-primary" },
+          { icon: PoundSterling, label: "£175 expected", sub: "5 hours · £35/hr", gradient: "from-violet-500/15 to-violet-500/5", border: "border-violet-500/25", iconColor: "text-violet-500" },
+        ].map((item, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
+            className={`bg-gradient-to-r ${item.gradient} border ${item.border} rounded-xl px-3.5 py-2.5 flex items-center gap-3`}>
+            <item.icon className={`h-5 w-5 ${item.iconColor} shrink-0`} />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">{item.label}</p>
+              <p className="text-[11px] text-muted-foreground">{item.sub}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Option Y6: Single full-day card ───
+function OptionY6() {
+  const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+  return (
+    <div className="px-4 pt-3 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">{greeting}, {firstName}</h1>
+          <p className="text-xs text-muted-foreground">{dateStr}</p>
+        </div>
+        <div className="bg-emerald-500/10 text-emerald-600 rounded-full px-3 py-1">
+          <span className="text-sm font-bold">{pct}%</span>
+        </div>
+      </div>
+      <div className="bg-card rounded-2xl border border-border/40 shadow-sm overflow-hidden">
+        {/* Timeline */}
+        <div className="px-3.5 pt-3 pb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Today's Schedule</p>
+          <div className="flex items-center gap-1">
+            {timelineLessons.map((l, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className={`w-full h-2 rounded-full transition-colors ${l.done ? "bg-emerald-500" : i === todayCompleted ? "bg-amber-400" : "bg-muted"}`} />
+                <span className="text-[8px] text-muted-foreground">{l.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Stats rows */}
+        <div className="divide-y divide-border/30">
+          <div className="flex items-center gap-3 px-3.5 py-2.5">
+            <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-amber-500" /></div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Next: 13:30 — Priya S.</p>
+              <p className="text-[10px] text-muted-foreground">Wildern Lane</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex items-center gap-3 px-3.5 py-2.5">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><CheckCircle className="h-3.5 w-3.5 text-emerald-500" /></div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">{todayCompleted} of {todayTotal} completed</p>
+              <p className="text-[10px] text-muted-foreground">{todayTotal - todayCompleted} remaining · {pct}% done</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-3.5 py-2.5">
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><PoundSterling className="h-3.5 w-3.5 text-primary" /></div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">£175 expected</p>
+              <p className="text-[10px] text-muted-foreground">5 hours · £35/hr</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HeroRedesignDemo() {
   const [selected, setSelected] = useState<string | null>(null);
   const options = [
