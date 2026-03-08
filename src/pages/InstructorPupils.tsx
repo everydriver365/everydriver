@@ -534,14 +534,14 @@ export default function InstructorPupils() {
         {/* iOS Segmented Control */}
         <IOSSegmentedControl
           segments={[
-            { key: "all", label: "All", count: pupils.length },
-            { key: "active", label: "Active", count: statusCounts.active },
-            { key: "passed", label: "Passed", count: statusCounts.passed },
-            ...(statusCounts.on_hold > 0 ? [{ key: "on_hold", label: "On Hold", count: statusCounts.on_hold }] : []),
-            ...(statusCounts.inactive > 0 ? [{ key: "inactive", label: "Inactive", count: statusCounts.inactive }] : []),
+            { value: "all", label: "All" },
+            { value: "active", label: "Active" },
+            { value: "passed", label: "Passed" },
+            ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "On Hold" }] : []),
+            ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
           ]}
-          selected={activeTab}
-          onSelect={(key) => setActiveTab(key as any)}
+          value={activeTab}
+          onChange={(val) => setActiveTab(val as any)}
         />
 
         {/* Pupils List */}
