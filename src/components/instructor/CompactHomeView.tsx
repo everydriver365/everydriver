@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import {
@@ -8,6 +9,7 @@ import {
   TrendingUp,
   Calendar,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
@@ -20,6 +22,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
+import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
@@ -27,18 +30,17 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-
-
-
-
-
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { StreakBadge } from "@/components/instructor/StreakBadge";
+import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
+import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
+import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
@@ -63,6 +65,7 @@ const getGreeting = (firstName: string) => {
 
 export function CompactHomeView({ instructorId, instructor }: CompactHomeViewProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { instructor: authInstructor } = useInstructorAuth();
   const { data: todayOverview } = useTodayOverview(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
@@ -75,12 +78,44 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
   const { total: combinedNotifCount, messageCount: pupilMsgCount, swapCount: testSwapCount } = useCombinedNotificationCount(instructorId);
   const { alerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
   const { isConnected: isGPSConnected } = useGPSConnectionStatus(instructorId || null);
+  const { data: streak } = useInstructorStreak(instructorId);
+  const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
 
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const lessonsToday = todayOverview?.lessonCount || 0;
   const hoursToday = todayOverview?.totalHours || 0;
   const earningsToday = todayOverview?.expectedEarnings || 0;
   const progressPercent = weeklyGoals?.progressPercent || 0;
+
+  // End-of-day auto-prompt logic
+  const hour = new Date().getHours();
+  const today = format(new Date(), "yyyy-MM-dd");
+  const eodDismissKey = `eod-dismissed-${today}`;
+  const [eodDismissed, setEodDismissed] = useState(() => localStorage.getItem(eodDismissKey) === "true");
+  const noLessonsRemaining = !todayLessons || todayLessons.length === 0;
+  const showEndOfDay = hour >= 17 && noLessonsRemaining && lessonsToday > 0 && !eodDismissed;
+
+  const handleDismissEod = () => {
+    localStorage.setItem(eodDismissKey, "true");
+    setEodDismissed(true);
+  };
+
+  // Empty state: no lessons at all today
+  const isQuietDay = !nextLesson && (!todayLessons || todayLessons.length === 0) && lessonsToday === 0;
+
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["today-overview"] }),
+      queryClient.invalidateQueries({ queryKey: ["weekly-goals"] }),
+      queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }),
+      queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }),
+      queryClient.invalidateQueries({ queryKey: ["gap-suggestions"] }),
+      queryClient.invalidateQueries({ queryKey: ["instructor-streak"] }),
+      queryClient.invalidateQueries({ queryKey: ["tomorrow-preview"] }),
+      queryClient.invalidateQueries({ queryKey: ["last-week-comparison"] }),
+    ]);
+  };
 
   const stats = [
     {
@@ -114,7 +149,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
   ];
 
   return (
-    <>
+    <PullToRefresh onRefresh={handleRefresh}>
       {/* Compact Header — greeting + date */}
       <div className="px-5 pt-[calc(env(safe-area-inset-top)+16px)] pb-3">
         <div className="flex items-center justify-between">
@@ -126,9 +161,17 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             >
               {getGreeting(firstName)}
             </motion.h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {format(new Date(), "EEEE d MMMM")}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(), "EEEE d MMMM")}
+              </p>
+              {streak && (
+                <StreakBadge
+                  currentStreak={streak.currentStreak}
+                  isActiveToday={streak.isActiveToday}
+                />
+              )}
+            </div>
           </div>
           {lastWeekComparison && lastWeekComparison.percentChange !== 0 && (
             <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -185,8 +228,18 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
       {/* Content sections — identical to dashboard */}
       <div className="px-4">
-        
-        
+        {/* End-of-Day Auto-Prompt */}
+        {showEndOfDay && (
+          <div className="mt-4 relative">
+            <button
+              onClick={handleDismissEod}
+              className="absolute top-2 right-2 z-10 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Dismiss
+            </button>
+            <EndOfDaySummary instructorId={instructorId} />
+          </div>
+        )}
 
         {alerts.length > 0 && (
           <DrivingAlertsStrip
@@ -204,42 +257,49 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
           />
         )}
 
-        {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
-        )}
+        {/* Your Day section */}
+        {isQuietDay ? (
+          <QuietDayEmpty className="mt-6" />
+        ) : (
+          <>
+            {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+            )}
 
-        {nextLesson && (
-          <div className="mt-2">
-            <NextUpTile
-              lessonId={nextLesson.lessonId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
-              pupilProfileImage={nextLesson.pupilProfileImage}
-              pupilPhone={nextLesson.pupilPhone}
-              lessonDate={nextLesson.lessonDate}
-              pickupPostcode={nextLesson.pickupPostcode}
-              pickupLocation={nextLesson.pickupLocation}
-              startTime={nextLesson.startTime}
-              minutesUntil={nextLesson.minutesUntil}
-              accountBalance={nextLesson.accountBalance}
-              prepaidHours={nextLesson.prepaidHours}
-              durationMinutes={nextLesson.durationMinutes}
+            {nextLesson && (
+              <div className="mt-2">
+                <NextUpTile
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
+              </div>
+            )}
+
+            {todayLessons && todayLessons.length > 0 && (
+              <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
+            )}
+
+            <TodayRoutePreview
               instructorId={instructorId}
-              checkInStatus={nextLesson.checkInStatus}
-              lastLessonPlan={nextLesson.lastLessonPlan}
+              onTap={() => navigate("/instructor/diary")}
+              className="mt-4"
             />
-          </div>
+          </>
         )}
-
-        {todayLessons && todayLessons.length > 0 && (
-          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
-        )}
-
-        <TodayRoutePreview
-          instructorId={instructorId}
-          onTap={() => navigate("/instructor/diary")}
-          className="mt-4"
-        />
 
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
         <div className="pb-4">
@@ -251,7 +311,21 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
-        
+        {/* Tomorrow Preview */}
+        {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+          <div className="mt-4">
+            <TomorrowPreviewCard
+              lessonCount={tomorrowPreview.lessonCount}
+              totalHours={tomorrowPreview.totalHours}
+              expectedEarnings={tomorrowPreview.expectedEarnings}
+              firstLessonTime={tomorrowPreview.firstLessonTime}
+              lastLessonTime={tomorrowPreview.lastLessonTime}
+              hasGaps={tomorrowPreview.hasGaps}
+              instructorId={instructorId}
+              lessons={tomorrowPreview.lessons}
+            />
+          </div>
+        )}
 
         {instructorId && (
           <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
@@ -263,6 +337,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <FloatingSessionBar instructorId={instructorId} />
       </div>
-    </>
+    </PullToRefresh>
   );
 }

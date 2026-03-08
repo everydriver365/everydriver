@@ -659,6 +659,13 @@ export function NextUpTile({
           onCompleted={handleCancelled}
         />
       )}
+      <RunningLateSheet
+        open={lateSheetOpen}
+        onOpenChange={setLateSheetOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+      />
     </>
   );
 }
