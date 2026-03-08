@@ -114,6 +114,7 @@ export default function InstructorPupils() {
   const navigate = useNavigate();
   const { pupilId } = useParams<{ pupilId?: string }>();
   const instructorId = instructor?.id;
+  const isMobile = useIsMobile();
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
   const handleVisibilityToggle = async (isVisible: boolean) => {
