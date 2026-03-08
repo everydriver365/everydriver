@@ -608,7 +608,20 @@ export function EarningsDashboard() {
                   fillOpacity={1} 
                   fill="url(#colorAmount)" 
                   strokeWidth={2}
+                  name="This Period"
                 />
+                {showComparison && (
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    data={previousChartData}
+                    stroke="hsl(var(--muted-foreground))"
+                    fillOpacity={0}
+                    strokeWidth={1.5}
+                    strokeDasharray="5 5"
+                    name="Previous Period"
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>
