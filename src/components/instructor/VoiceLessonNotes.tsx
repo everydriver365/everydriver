@@ -33,6 +33,7 @@ const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
   placeholder = 'Start speaking or type your lesson notes...',
   className,
   autoFocus = false,
+  handsFree = false,
 }) => {
   const [notes, setNotes] = useState(initialValue);
   const [isEditing, setIsEditing] = useState(false);
