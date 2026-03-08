@@ -15,6 +15,7 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { EndLessonWizard } from "./EndLessonWizard";
 import { RunningLateSheet } from "./RunningLateSheet";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonRouteRecorder } from "./LessonRouteRecorder";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
