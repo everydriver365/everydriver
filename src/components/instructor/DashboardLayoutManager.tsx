@@ -84,6 +84,8 @@ const additionalTiles: QuickAction[] = [
   { id: "weekly-report", title: "Weekly Report", icon: "BarChart3", route: "/instructor/weekly-report", display_order: 110 },
   { id: "tasks-due", title: "Tasks Due", icon: "ClipboardCheck", route: "/instructor/outstanding-tasks", display_order: 111 },
   { id: "end-of-day", title: "End of Day", icon: "Moon", route: "/instructor/end-of-day", display_order: 112 },
+  { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
+  { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
 ];
 
 interface DashboardLayoutManagerProps {
