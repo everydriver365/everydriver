@@ -1849,6 +1849,51 @@ export type Database = {
           },
         ]
       }
+      expo_push_tokens: {
+        Row: {
+          created_at: string | null
+          device_name: string | null
+          id: string
+          instructor_id: string
+          platform: string | null
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_name?: string | null
+          id?: string
+          instructor_id: string
+          platform?: string | null
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_name?: string | null
+          id?: string
+          instructor_id?: string
+          platform?: string | null
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expo_push_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expo_push_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favourite_locations: {
         Row: {
           address: string | null
