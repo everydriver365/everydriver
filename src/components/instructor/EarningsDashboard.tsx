@@ -379,12 +379,23 @@ export function EarningsDashboard() {
         .sort((a, b) => b.total - a.total)
         .slice(0, 5);
 
+      // Calculate total lesson hours
+      const { data: lessonData } = await supabase
+        .from("scheduled_lessons")
+        .select("duration_minutes")
+        .eq("instructor_id", instructor.id)
+        .eq("status", "completed")
+        .gte("lesson_date", format(monthStart, 'yyyy-MM-dd'));
+      
+      const totalHours = (lessonData || []).reduce((sum, l) => sum + (l.duration_minutes || 60), 0) / 60;
+
       setEarnings({
         today: { amount: todayAmount, lessons: todayPayments.length },
         thisWeek: { amount: weekAmount, lessons: weekPayments.length, change: weekChange },
         thisMonth: { amount: monthAmount, lessons: monthPayments.length, change: monthChange },
         outstanding: totalOutstanding,
         projectedMonth,
+        totalHours,
       });
       setChartData(chartPoints);
       setTopPupils(sortedPupils);
