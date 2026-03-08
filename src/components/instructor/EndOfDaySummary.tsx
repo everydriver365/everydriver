@@ -92,6 +92,11 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
         </div>
         <div className="flex items-center gap-1">
           {summary && (
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowShareCard(!showShareCard)}>
+              <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          )}
+          {summary && (
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={readAloud} disabled={speaking}>
               <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
