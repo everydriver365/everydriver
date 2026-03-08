@@ -187,7 +187,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
       {/* Content sections — identical to dashboard */}
       <div className="px-4">
         
-        <SmartNudgesCard instructorId={instructorId} />
+        
 
         {alerts.length > 0 && (
           <DrivingAlertsStrip
