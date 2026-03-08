@@ -34,7 +34,7 @@ import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { SmartNudgesCard } from "@/components/instructor/SmartNudgesCard";
+
 
 import { DormantPupilsCard } from "@/components/instructor/DormantPupilsCard";
 
