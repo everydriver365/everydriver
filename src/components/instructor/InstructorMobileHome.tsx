@@ -473,43 +473,57 @@ export function InstructorMobileHome({
 
       {/* 4. Your Day */}
       <div className="px-4">
-        {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
-        )}
-
-        {nextLesson && (
-          <div className="mt-2">
-            <NextUpTile
-              lessonId={nextLesson.lessonId}
-              pupilId={nextLesson.pupilId}
-              pupilName={nextLesson.pupilName}
-              pupilProfileImage={nextLesson.pupilProfileImage}
-              pupilPhone={nextLesson.pupilPhone}
-              lessonDate={nextLesson.lessonDate}
-              pickupPostcode={nextLesson.pickupPostcode}
-              pickupLocation={nextLesson.pickupLocation}
-              startTime={nextLesson.startTime}
-              minutesUntil={nextLesson.minutesUntil}
-              accountBalance={nextLesson.accountBalance}
-              prepaidHours={nextLesson.prepaidHours}
-              durationMinutes={nextLesson.durationMinutes}
-              instructorId={instructorId}
-              checkInStatus={nextLesson.checkInStatus}
-              lastLessonPlan={nextLesson.lastLessonPlan}
-            />
+        {/* Streak Badge */}
+        {streak && streak.currentStreak >= 2 && (
+          <div className="mb-3">
+            <StreakBadge currentStreak={streak.currentStreak} isActiveToday={streak.isActiveToday} />
           </div>
         )}
 
-        {todayLessons && todayLessons.length > 0 && (
-          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
-        )}
+        {/* Empty state or lessons */}
+        {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
+          <QuietDayEmpty className="mt-4" />
+        ) : (
+          <>
+            {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+            )}
 
-        {/* 5. Today's Route Map Preview */}
-        <TodayRoutePreview
-          instructorId={instructorId}
-          onTap={() => navigate("/instructor/diary")}
-          className="mt-4"
-        />
+            {nextLesson && (
+              <div className="mt-2">
+                <NextUpTile
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
+              </div>
+            )}
+
+            {todayLessons && todayLessons.length > 0 && (
+              <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
+            )}
+
+            {/* 5. Today's Route Map Preview */}
+            <TodayRoutePreview
+              instructorId={instructorId}
+              onTap={() => navigate("/instructor/diary")}
+              className="mt-4"
+            />
+          </>
+        )}
 
         {/* 7. Quick Access — Swipeable Grid */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
@@ -523,6 +537,22 @@ export function InstructorMobileHome({
         {/* Insights Tiles */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+
+        {/* Tomorrow Preview */}
+        {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+          <div className="mt-4">
+            <TomorrowPreviewCard
+              lessonCount={tomorrowPreview.lessonCount}
+              totalHours={tomorrowPreview.totalHours}
+              expectedEarnings={tomorrowPreview.expectedEarnings}
+              firstLessonTime={tomorrowPreview.firstLessonTime}
+              lastLessonTime={tomorrowPreview.lastLessonTime}
+              hasGaps={tomorrowPreview.hasGaps}
+              instructorId={instructorId}
+              lessons={tomorrowPreview.lessons}
+            />
+          </div>
+        )}
 
         {/* Setup Checklist for new instructors */}
         {instructorId && (
