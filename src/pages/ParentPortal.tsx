@@ -587,18 +587,21 @@ export default function ParentPortal() {
 
           {activeSection === 'feedback' && (
             <motion.div key="feedback" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <InstructorCard>
-                <InstructorPageHeader lucideIcon={MessageSquare} title="Instructor Feedback" className="mb-4" />
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                  Instructor Feedback
+                </h2>
                 {recentFeedback.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4 text-sm">No feedback yet.</p>
+                  <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet.</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {recentFeedback.map((feedback) => (
-                      <div key={feedback.id} className="rounded-xl border border-border p-4">
+                      <div key={feedback.id} className="rounded-xl bg-secondary/50 p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{feedback.pupil_name}</span>
-                            <span className="text-xs text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
+                            <span className="font-medium text-xs text-foreground">{feedback.pupil_name}</span>
+                            <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
                           </div>
                           {feedback.rating && (
                             <div className="flex items-center gap-0.5">
@@ -608,53 +611,60 @@ export default function ParentPortal() {
                             </div>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{feedback.notes}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{feedback.notes}</p>
                       </div>
                     ))}
                   </div>
                 )}
-              </InstructorCard>
+              </div>
             </motion.div>
           )}
 
           {activeSection === 'children' && !selectedChild && (
-            <motion.div key="children" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+            <motion.div key="children" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
               {children.map((child) => (
-                <InstructorCard key={child.id} interactive onClick={() => setSelectedChild(child)}>
+                <div 
+                  key={child.id} 
+                  className="bg-card rounded-2xl border border-border shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedChild(child)}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shrink-0">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shrink-0">
                       {child.name.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold">{child.name}</div>
-                      <p className="text-xs text-muted-foreground">{child.instructor_name} · {child.lessons_completed} lessons · {child.progress}%</p>
+                      <div className="font-bold text-sm text-foreground">{child.name}</div>
+                      <p className="text-[11px] text-muted-foreground">{child.instructor_name} · {child.lessons_completed} lessons · {child.progress}%</p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
                   </div>
-                </InstructorCard>
+                </div>
               ))}
             </motion.div>
           )}
 
           {activeSection === 'settings' && (
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <InstructorCard>
-                <InstructorPageHeader lucideIcon={Users} title="Settings" className="mb-4" />
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Settings
+                </h2>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Phone</span>
-                    <span className="font-medium">{parentPhone}</span>
+                    <span className="font-medium text-foreground">{parentPhone}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Children</span>
-                    <span className="font-medium">{children.length}</span>
+                    <span className="font-medium text-foreground">{children.length}</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full mt-6" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full mt-4 h-9 text-xs" onClick={handleLogout}>
+                  <LogOut className="h-3.5 w-3.5 mr-2" />
                   Sign Out
                 </Button>
-              </InstructorCard>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
