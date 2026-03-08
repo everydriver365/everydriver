@@ -48,7 +48,7 @@ import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
-import { HomepageHeroZ2 } from "@/components/instructor/HomepageHeroZ2";
+import { HomepageHero } from "@/components/instructor/HomepageHero";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
@@ -393,19 +393,19 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Hero — iOS Stacked Widgets (Z2) */}
-      <HomepageHeroZ2
+      {/* 1. Hero Banner */}
+      <HomepageHero
         firstName={firstName}
+        heroImageUrl={personalHeroUrl || content?.hero_image_url}
+        profileImageUrl={instructor?.profile_image_url}
+        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
+        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
+        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
         todayCompleted={todayOverview?.completedCount || 0}
         todayTotal={todayOverview?.lessonCount || 0}
-        weekCompleted={weeklyGoals?.lessonsCompleted || 0}
-        weekTotal={weeklyGoals?.lessonsThisWeek || 0}
-        expectedEarnings={todayOverview?.expectedEarnings || 0}
-        totalHours={todayOverview?.totalHours || 0}
-        nextLessonTime={todayOverview?.nextLessonTime}
-        nextPupilName={todayOverview?.nextPupilName}
-        nextPickupLocation={todayOverview?.firstPickupLocation}
-        onNextLessonClick={() => navigate("/instructor/schedule")}
+        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
+        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
+        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
       />
 
       {/* Sticky next-up bar */}
