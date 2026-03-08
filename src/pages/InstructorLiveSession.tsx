@@ -642,6 +642,13 @@ export default function InstructorLiveSession() {
         await supabase
           .from("saved_routes")
           .insert(routeData as any);
+
+        // Auto-capture lesson route (GPS trace for pupil portal)
+        await autoCaptureLessonRoute({
+          telematicsId: device.current_session_id,
+          instructorId: instructor.id,
+          pupilId: device.current_pupil_id,
+        });
       }
 
       // Clear live position
