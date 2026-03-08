@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Volume2, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Moon, Volume2, Loader2, ChevronDown, ChevronUp, Share2 } from "lucide-react";
+import { ShareableEODCard } from "@/components/instructor/ShareableEODCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,7 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
   const [speaking, setSpeaking] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   const hour = new Date().getHours();
   const isEvening = hour >= 17 && hour < 23;
@@ -90,6 +92,11 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
         </div>
         <div className="flex items-center gap-1">
           {summary && (
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowShareCard(!showShareCard)}>
+              <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          )}
+          {summary && (
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={readAloud} disabled={speaking}>
               <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
@@ -145,6 +152,13 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
           >
             Dismiss
           </button>
+        </motion.div>
+      )}
+
+      {/* Share card */}
+      {showShareCard && summary && data && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+          <ShareableEODCard summary={summary} data={data} />
         </motion.div>
       )}
     </motion.div>

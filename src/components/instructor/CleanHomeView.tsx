@@ -48,6 +48,7 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { DailyManifest } from "@/components/instructor/dashboard/DailyManifest";
+import { CommunityAlertReporter } from "@/components/instructor/CommunityAlertReporter";
 import { triggerHaptic } from "@/lib/haptics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
@@ -435,6 +436,7 @@ export function CleanHomeView({
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />
+        <CommunityAlertReporter instructorId={instructorId} />
       </div>
     </div>
   );

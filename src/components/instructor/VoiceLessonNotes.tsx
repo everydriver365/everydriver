@@ -23,6 +23,7 @@ interface VoiceLessonNotesProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  handsFree?: boolean;
 }
 
 const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
@@ -32,6 +33,7 @@ const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
   placeholder = 'Start speaking or type your lesson notes...',
   className,
   autoFocus = false,
+  handsFree = false,
 }) => {
   const [notes, setNotes] = useState(initialValue);
   const [isEditing, setIsEditing] = useState(false);
@@ -69,6 +71,29 @@ const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
       });
     }
   }, [transcript, isListening]);
+
+  // Hands-free: auto-start listening on mount
+  useEffect(() => {
+    if (handsFree && isSupported && !isListening) {
+      resetTranscript();
+      startListening();
+    }
+  }, [handsFree, isSupported]);
+
+  // Hands-free: auto-save after 3s of silence
+  const silenceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (!handsFree || !isListening) return;
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (interimTranscript) return; // still receiving speech
+    if (notes.trim()) {
+      silenceTimerRef.current = setTimeout(() => {
+        stopListening();
+        onSave(notes.trim());
+      }, 3000);
+    }
+    return () => { if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current); };
+  }, [handsFree, isListening, interimTranscript, notes]);
 
   const handleToggleVoice = () => {
     if (isListening) {

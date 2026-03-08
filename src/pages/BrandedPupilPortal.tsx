@@ -46,6 +46,8 @@ import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
 import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
+import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTracker";
+import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 
 interface InstructorBranding {
   id: string;
@@ -498,19 +500,26 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalPayments 
+                <PupilPaymentFeed
                   pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  instructorSlug={slug}
                   brandColour={instructor.brand_colour}
-                  darkMode={instructor.pupil_app_dark_mode}
-                  accountBalance={pupil.account_balance}
-                  prepaidHours={pupil.prepaid_hours}
-                  pupilName={pupil.name}
-                  pupilEmail={pupil.email}
-                  pupilPhone={pupil.phone}
-                  onBalanceUpdate={() => fetchPupil(pupil.id)}
+                  currentBalance={pupil.account_balance}
                 />
+                <div className="px-4 pt-4">
+                  <PupilPortalPayments 
+                    pupilId={pupil.id}
+                    instructorId={instructor.id}
+                    instructorSlug={slug}
+                    brandColour={instructor.brand_colour}
+                    darkMode={instructor.pupil_app_dark_mode}
+                    accountBalance={pupil.account_balance}
+                    prepaidHours={pupil.prepaid_hours}
+                    pupilName={pupil.name}
+                    pupilEmail={pupil.email}
+                    pupilPhone={pupil.phone}
+                    onBalanceUpdate={() => fetchPupil(pupil.id)}
+                  />
+                </div>
               </motion.div>
             )}
 
@@ -524,6 +533,7 @@ export default function BrandedPupilPortal() {
                   darkMode={instructor.pupil_app_dark_mode}
                 />
                 <div className="px-4 pb-4 space-y-4">
+                  <TheoryStreakTracker pupilId={pupil.id} brandColour={instructor.brand_colour} />
                   <TheoryMockTest pupilId={pupil.id} />
                   <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
                   <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
