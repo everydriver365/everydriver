@@ -636,6 +636,39 @@ export type Database = {
         }
         Relationships: []
       }
+      community_road_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          description: string | null
+          expires_at: string
+          id: string
+          latitude: number
+          longitude: number
+          reporter_id: string
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          reporter_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          reporter_id?: string
+        }
+        Relationships: []
+      }
       compliance_reminders: {
         Row: {
           days_before: number
@@ -11888,6 +11921,39 @@ export type Database = {
           is_active?: boolean
           options?: Json
           question?: string
+        }
+        Relationships: []
+      }
+      theory_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_practice_date: string | null
+          longest_streak: number
+          pupil_id: string
+          total_xp: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_practice_date?: string | null
+          longest_streak?: number
+          pupil_id: string
+          total_xp?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_practice_date?: string | null
+          longest_streak?: number
+          pupil_id?: string
+          total_xp?: number
+          updated_at?: string
         }
         Relationships: []
       }
