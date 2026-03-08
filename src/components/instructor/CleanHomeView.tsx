@@ -86,6 +86,7 @@ export function CleanHomeView({
 }: CleanHomeViewProps) {
   const navigate = useNavigate();
   const { instructor: authInstructor } = useInstructorAuth();
+  const isMobile = useIsMobile();
   const now = new Date();
   const dateStr = format(now, "EEEE d MMMM");
 
