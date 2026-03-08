@@ -4,9 +4,11 @@ import { Sun, Volume2, VolumeX, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BriefingActionCards } from "./BriefingActionCards";
 
 interface MorningBriefingCardProps {
   instructorId: string | undefined;
+  onNavigate?: (section: string) => void;
 }
 
 // Typewriter text component
@@ -28,11 +30,12 @@ function TypewriterText({ text }: { text: string }) {
   );
 }
 
-export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) {
+export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefingCardProps) {
   const [briefing, setBriefing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [todayStats, setTodayStats] = useState<{ lessons: number; earnings: number }>({ lessons: 0, earnings: 0 });
 
   const hour = new Date().getHours();
   const isMorning = true;
@@ -46,7 +49,30 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
       return;
     }
     fetchBriefing();
+    fetchTodayStats();
   }, [instructorId]);
+
+  const fetchTodayStats = async () => {
+    if (!instructorId) return;
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data: lessons } = await supabase
+        .from("scheduled_lessons")
+        .select("id, amount_due")
+        .eq("instructor_id", instructorId)
+        .eq("lesson_date", today)
+        .is("deleted_at", null);
+      
+      if (lessons) {
+        setTodayStats({
+          lessons: lessons.length,
+          earnings: lessons.reduce((sum, l) => sum + (l.amount_due || 0), 0),
+        });
+      }
+    } catch {
+      // Silent fail
+    }
+  };
 
   const fetchBriefing = async () => {
     if (!instructorId) return;
@@ -107,6 +133,10 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
     setDismissed(true);
   };
 
+  const handleActionClick = (actionId: string) => {
+    onNavigate?.(actionId);
+  };
+
   if (!isMorning || dismissed || (!briefing && !loading)) return null;
 
   return (
@@ -149,7 +179,17 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Action Cards + Stats */}
+          {briefing && (
+            <BriefingActionCards
+              briefingText={briefing}
+              todayLessons={todayStats.lessons}
+              expectedEarnings={todayStats.earnings}
+              onActionClick={handleActionClick}
+            />
+          )}
+
+          <div className="flex items-center gap-2 mt-3">
             <Button
               variant="outline"
               size="sm"
