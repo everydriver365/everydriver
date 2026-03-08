@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/hooks/useInterpolatedPosition";
 
@@ -35,6 +35,23 @@ export function useLessonRouteRecorder(
   const startTimeRef = useRef<Date | null>(null);
   const coordsRef = useRef<RecordedCoordinate[]>([]);
   const distanceRef = useRef(0);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if ("wakeLock" in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request("screen");
+        console.log("[RouteRecorder] Wake lock acquired");
+      }
+    } catch (e) {
+      console.warn("[RouteRecorder] Wake lock failed:", e);
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  }, []);
 
   const startRecording = useCallback(() => {
     if (!navigator.geolocation) {
@@ -50,6 +67,7 @@ export function useLessonRouteRecorder(
     distanceRef.current = 0;
     startTimeRef.current = new Date();
     setIsRecording(true);
+    acquireWakeLock();
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
@@ -101,6 +119,7 @@ export function useLessonRouteRecorder(
       timerRef.current = null;
     }
 
+    releaseWakeLock();
     setIsRecording(false);
     const finalCoords = coordsRef.current;
 
@@ -132,7 +151,21 @@ export function useLessonRouteRecorder(
       console.error("[RouteRecorder] Save error:", err);
       setError("Failed to save route");
     }
-  }, [instructorId, pupilId, lessonId]);
+  }, [instructorId, pupilId, lessonId, releaseWakeLock]);
+
+  // Re-acquire wake lock when page becomes visible during recording
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && watchIdRef.current !== null) {
+        acquireWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      releaseWakeLock();
+    };
+  }, [acquireWakeLock, releaseWakeLock]);
 
   return {
     isRecording,
