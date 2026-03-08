@@ -35,6 +35,12 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
   const speak = useCallback(async (text: string) => {
     try {
       setState("speaking");
+
+      // Create and unlock Audio element immediately (preserves user gesture context on mobile)
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.play().catch(() => {});
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-tts`,
         {
@@ -59,10 +65,18 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      audio.src = audioUrl;
       audioRef.current = audio;
       audio.onended = () => {
         setState("idle");
+        URL.revokeObjectURL(audioUrl);
+      };
+      audio.onerror = () => {
+        // Fallback to browser TTS if audio fails
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.1;
+        utterance.onend = () => setState("idle");
+        speechSynthesis.speak(utterance);
         URL.revokeObjectURL(audioUrl);
       };
       await audio.play();
