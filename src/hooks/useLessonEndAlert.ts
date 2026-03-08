@@ -14,7 +14,7 @@ export interface OverdueLesson {
 
 export function useLessonEndAlert(instructorId: string | undefined) {
   const [overdueLesson, setOverdueLesson] = useState<OverdueLesson | null>(null);
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const dismissedIdsRef = useRef<Set<string>>(new Set());
 
   const checkLessons = useCallback(async () => {
     if (!instructorId) return;
@@ -37,10 +37,9 @@ export function useLessonEndAlert(instructorId: string | undefined) {
     const now = new Date();
 
     for (const lesson of data) {
-      if (dismissedIds.has(lesson.id)) continue;
+      if (dismissedIdsRef.current.has(lesson.id)) continue;
       if (!lesson.start_time || !lesson.duration_minutes) continue;
 
-      // Parse the TIME string and combine with today's date
       const startDate = parse(lesson.start_time, "HH:mm:ss", new Date());
       const endDate = addMinutes(startDate, lesson.duration_minutes);
 
@@ -60,7 +59,7 @@ export function useLessonEndAlert(instructorId: string | undefined) {
     }
 
     setOverdueLesson(null);
-  }, [instructorId, dismissedIds]);
+  }, [instructorId]);
 
   useEffect(() => {
     checkLessons();
@@ -69,7 +68,7 @@ export function useLessonEndAlert(instructorId: string | undefined) {
   }, [checkLessons]);
 
   const dismiss = useCallback((lessonId: string) => {
-    setDismissedIds((prev) => new Set(prev).add(lessonId));
+    dismissedIdsRef.current.add(lessonId);
     setOverdueLesson(null);
   }, []);
 
