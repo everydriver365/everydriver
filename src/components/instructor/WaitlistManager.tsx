@@ -99,7 +99,7 @@ const TIME_LABELS: Record<string, string> = {
   evening: "Evening",
 };
 
-export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
+export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistManagerProps) {
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [pendingOffers, setPendingOffers] = useState<PendingSlotOffer[]>([]);
   const [loading, setLoading] = useState(true);
