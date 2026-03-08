@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, Clock, Bell, Phone, LogOut, Star, 
-  MessageSquare, ChevronRight, Loader2, CheckCircle2 
+  MessageSquare, ChevronRight, Loader2, CheckCircle2, Car, TrendingUp, Shield, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
