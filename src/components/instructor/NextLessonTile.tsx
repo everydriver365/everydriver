@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Clock, MapPin, ChevronRight, Car, Loader2, Calendar, Hourglass } from "lucide-react";
+import { Clock, MapPin, ChevronRight, Car, Loader2, Calendar, Hourglass, Navigation } from "lucide-react";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
+import { LessonRouteRecorder } from "./LessonRouteRecorder";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
