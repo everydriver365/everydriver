@@ -1,4 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Mic, Loader2, Volume2 } from "lucide-react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { useLessonEndAlert, OverdueLesson } from "@/hooks/useLessonEndAlert";
