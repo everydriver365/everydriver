@@ -9118,6 +9118,79 @@ export type Database = {
           },
         ]
       }
+      pupil_subscriptions: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          duration_minutes: number
+          id: string
+          instructor_id: string
+          next_lesson_date: string | null
+          payment_method: string
+          pickup_address: string | null
+          pickup_postcode: string | null
+          price_per_lesson: number
+          pupil_id: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          duration_minutes?: number
+          id?: string
+          instructor_id: string
+          next_lesson_date?: string | null
+          payment_method?: string
+          pickup_address?: string | null
+          pickup_postcode?: string | null
+          price_per_lesson?: number
+          pupil_id: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          duration_minutes?: number
+          id?: string
+          instructor_id?: string
+          next_lesson_date?: string | null
+          payment_method?: string
+          pickup_address?: string | null
+          pickup_postcode?: string | null
+          price_per_lesson?: number
+          pupil_id?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_subscriptions_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_syllabus_progress: {
         Row: {
           competency_id: string

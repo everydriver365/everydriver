@@ -86,6 +86,7 @@ const additionalTiles: QuickAction[] = [
   { id: "end-of-day", title: "End of Day", icon: "Moon", route: "/instructor/end-of-day", display_order: 112 },
   { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
   { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
+  { id: "subscriptions", title: "Subscriptions", icon: "RefreshCw", route: "/instructor/subscriptions", display_order: 115 },
 ];
 
 interface DashboardLayoutManagerProps {

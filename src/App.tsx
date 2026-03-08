@@ -96,6 +96,7 @@ const InstructorCPD = lazy(() => import("./pages/InstructorCPD"));
 const InstructorReferrals = lazy(() => import("./pages/InstructorReferrals"));
 const InstructorPipeline = lazy(() => import("./pages/InstructorPipeline"));
 const InstructorAutomations = lazy(() => import("./pages/InstructorAutomations"));
+const InstructorSubscriptions = lazy(() => import("./pages/InstructorSubscriptions"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -295,6 +296,7 @@ const App = () => (
                 <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
+                <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />

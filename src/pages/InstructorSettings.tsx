@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft, Mic } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft, Mic, Timer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 
@@ -34,6 +34,7 @@ import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestions
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
+import { SmartBufferSettings } from "@/components/instructor/SmartBufferSettings";
 
 
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
@@ -1037,7 +1038,19 @@ export default function InstructorSettings() {
                 iconColor="text-sky-600"
                 iconBg="bg-sky-100 dark:bg-sky-900/30"
               >
-                <ReminderSettings instructorId={instructorId} />
+              <ReminderSettings instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Smart Buffer Time */}
+              <SettingsTile
+                id="smart-buffer"
+                icon={Timer}
+                title="Smart Buffer Time"
+                description="Travel-aware gaps between lessons"
+                iconColor="text-violet-600"
+                iconBg="bg-violet-100 dark:bg-violet-900/30"
+              >
+                <SmartBufferSettings instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>
