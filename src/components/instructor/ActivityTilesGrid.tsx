@@ -100,8 +100,9 @@ export function ActivityTilesGrid({
     },
   ];
 
-  // Filter to only show tiles with count > 0
-  const activeTiles = allTiles.filter((t) => t.count > 0);
+  // Filter: always show Messages and Fill Gaps, hide others if count is 0
+  const alwaysShowTitles = ["Messages", "Fill Gaps"];
+  const activeTiles = allTiles.filter((t) => alwaysShowTitles.includes(t.title) || t.count > 0);
 
   // All clear state
   if (activeTiles.length === 0) {
