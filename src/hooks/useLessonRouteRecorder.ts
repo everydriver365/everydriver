@@ -119,6 +119,7 @@ export function useLessonRouteRecorder(
       timerRef.current = null;
     }
 
+    releaseWakeLock();
     setIsRecording(false);
     const finalCoords = coordsRef.current;
 
