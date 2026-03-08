@@ -676,6 +676,7 @@ export default function BrandedPupilPortal() {
           onNavigate={(section) => setActiveSection(section as ActiveSection)}
           brandColour={instructor.brand_colour}
           wallpaperColor={wallpaperColor}
+          courseProgress={pupil.progress || 0}
         />
       )}
 
