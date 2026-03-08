@@ -402,18 +402,27 @@ export default function InstructorSatNav() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => openNativeNavigation(
-                          lesson.pickup_location || '',
-                          lesson.pickup_postcode
-                        )}
-                        className="shrink-0 gap-2"
-                        size="sm"
-                      >
-                        <Navigation className="h-4 w-4" />
-                        Go
-                      </Button>
-                    </div>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <OnMyWayButton
+                          instructorId={instructor.id}
+                          pupilName={lesson.pupils?.name || "Student"}
+                          pupilPhone={lesson.pupils?.phone || null}
+                          pupilId={lesson.pupils?.id}
+                          lessonId={lesson.id}
+                          size="sm"
+                        />
+                        <Button
+                          onClick={() => openNativeNavigation(
+                            lesson.pickup_location || '',
+                            lesson.pickup_postcode
+                          )}
+                          className="shrink-0 gap-2"
+                          size="sm"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          Go
+                        </Button>
+                      </div>
                   </CardContent>
                 </Card>
               ))}
