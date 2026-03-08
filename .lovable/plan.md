@@ -1,74 +1,143 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+# Redesign Plan — All 8 Feature Upgrades
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+## Overview
+Redesign and enhance 8 existing features across the instructor and pupil apps, drawing from industry patterns (Google Calendar, Square, Airbnb, Apple, Calendly, Monzo).
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+---
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+## 1. Calendar Redesign (`InstructorCalendar.tsx` — 1038 lines)
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**Current state**: Already has drag-to-reschedule, resize, color coding, mini sidebar, day/week/month views.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+**Enhancements**:
+- Add **drag-to-create**: click and drag on empty time slots to create a new event spanning that duration (Google Calendar style)
+- Add **current time indicator**: red horizontal line showing "now" that auto-scrolls into view
+- Add **multi-event overlap columns**: when events overlap, render them side-by-side instead of stacking
+- Add **quick-preview popover**: hover/tap on event shows a small card with key details without opening the full sheet
+- Polish: smoother drag ghost, snap-to-15min grid lines
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+**Files**: `InstructorCalendar.tsx` (enhance existing)
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+---
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+## 2. Earnings Analytics Upgrade (`EarningsDashboard.tsx` — 576 lines)
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+**Current state**: 4 summary cards, area chart, top pupils list, CSV/PDF export.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**Enhancements**:
+- Add **comparison overlay toggle**: show this week vs last week as overlaid lines on the chart
+- Add **animated counters**: numbers count up on load using framer-motion
+- Add **expense vs income bar chart**: stacked bar chart showing earnings minus expenses per period
+- Add **profit/loss summary row**: net profit card with color-coded indicator
+- Add **hourly rate calculator**: auto-calculate effective hourly rate from total earnings / total lesson hours
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+**Files**: `EarningsDashboard.tsx` (enhance existing)
+
+---
+
+## 3. Pupil CRM Cards Enhancement (`PupilCardStack.tsx` — 918 lines)
+
+**Current state**: iOS contact-style cards with tabs, full-screen sheet on mobile, action buttons.
+
+**Enhancements**:
+- Add **smart sort options**: sort by next lesson date, overdue balance, days since last lesson, test countdown
+- Add **risk indicators**: colored dots/badges for at-risk pupils (no lesson booked, overdue payment, test in <7 days)
+- Add **quick-filter chips**: "Overdue", "Test Soon", "No Booking", "New" filter chips above the list
+- Add **bulk actions bar**: select multiple pupils for batch messaging or payment reminders
+
+**Files**: `PupilCardStack.tsx` (enhance existing), may add `PupilSmartFilters.tsx` (new)
+
+---
+
+## 4. Waitlist Smart Matching (`WaitlistManager.tsx` — 484 lines)
+
+**Current state**: Lists waitlist entries and pending offers with approve/reject actions. Uses Supabase realtime.
+
+**Enhancements**:
+- Add **match score calculation**: score each waitlist entry based on how well their preferences align with available gaps (day match, time match, duration fit) — display as percentage badge
+- Add **visual gap-to-waitlist pipeline**: show open gaps on one side, matching waitlist pupils on the other, with connecting lines
+- Add **auto-suggest notifications**: when a lesson is cancelled, automatically highlight best-match waitlist entries
+- Add **priority ranking**: rank waitlist entries by wait time + match score
+
+**Files**: `WaitlistManager.tsx` (enhance existing)
+
+---
+
+## 5. Morning Briefing Intelligence (`MorningBriefingCard.tsx` — 181 lines)
+
+**Current state**: AI-generated text briefing with TTS and typewriter animation.
+
+**Enhancements**:
+- Add **contextual action cards**: parse briefing into actionable items (e.g., "3 payments overdue" → tap to view, "Rain expected" → tap to send weather alerts)
+- Add **priority-ranked task list**: extract and display top 3 tasks from the briefing as tappable items
+- Add **quick stats strip**: show today's lesson count, expected earnings, and weather icon inline above the briefing text
+- Add **persistent daily tips**: rotate driving instruction tips below the briefing
+
+**Files**: `MorningBriefingCard.tsx` (enhance existing), may create `BriefingActionCards.tsx` (new)
+
+---
+
+## 6. Self-Booking Calendar Redesign (`SelfBookingCalendar.tsx` — 447 lines)
+
+**Current state**: Week-based grid with available slots, duration selector, confirm dialog.
+
+**Enhancements**:
+- Replace week grid with **horizontal scrolling day strip** (Calendly-style): dates as horizontal pills, tap to see that day's time slots below
+- Add **slot popularity indicators**: show "Popular" or "Last slot" badges
+- Add **smooth booking animation**: slot shrinks into a checkmark with confetti on confirmation
+- Add **time-of-day sections**: group slots into Morning / Afternoon / Evening headers
+- Add **booking summary card**: show selected date + time + duration in a sticky bottom bar before confirming
+
+**Files**: `SelfBookingCalendar.tsx` (rewrite UI, keep data logic)
+
+---
+
+## 7. Dynamic Pupil Bottom Nav (`PupilBottomNav.tsx` — 73 lines)
+
+**Current state**: 5 static tabs (Home, Lessons, Payments, Theory, More) with sliding indicator.
+
+**Enhancements**:
+- Add **contextual badges**: show upcoming lesson countdown on Lessons tab, unread count on Theory, balance on Payments
+- Add **course progress ring**: replace the Home icon with a tiny circular progress indicator showing overall course completion %
+- Add **long-press menu**: long-press on More to show a quick-access sheet with all secondary sections
+- Add **animated tab transitions**: scale-up micro-animation on active icon
+
+**Files**: `PupilBottomNav.tsx` (enhance existing)
+
+---
+
+## 8. Apple Health-Style Pupil Dashboard (`BrandedPupilPortal.tsx` — 689 lines)
+
+**Current state**: Section-based portal with various components rendered based on activeSection.
+
+**Enhancements to home section**:
+- Redesign home as **widget card grid**: each feature (next lesson, balance, theory progress, achievements) as a distinct rounded card with its own gradient/icon
+- Add **journey timeline**: vertical timeline showing key milestones (first lesson, theory passed, mock test, test date) with completed/upcoming states
+- Add **daily goal ring**: Apple Watch-style activity ring showing lessons this week vs target
+- Add **personalized greeting**: time-based greeting with next lesson countdown and weather
+
+**Files**: `BrandedPupilPortal.tsx` (enhance home section), create `PupilWidgetGrid.tsx` and `PupilJourneyTimeline.tsx` (new)
+
+---
+
+## Summary of Files
+
+| File | Action |
+|------|--------|
+| `src/components/instructor/InstructorCalendar.tsx` | Enhance with drag-to-create, now-line, overlap columns, preview popover |
+| `src/components/instructor/EarningsDashboard.tsx` | Add comparison overlay, animated counters, profit/loss, hourly rate |
+| `src/components/instructor/PupilCardStack.tsx` | Add smart sort, risk indicators, filter chips, bulk actions |
+| `src/components/instructor/PupilSmartFilters.tsx` | **New** — filter chip bar component |
+| `src/components/instructor/WaitlistManager.tsx` | Add match scoring, visual pipeline, auto-suggest |
+| `src/components/instructor/MorningBriefingCard.tsx` | Add action cards, stats strip, priority tasks |
+| `src/components/instructor/BriefingActionCards.tsx` | **New** — tappable action items from briefing |
+| `src/components/pupil-portal/SelfBookingCalendar.tsx` | Redesign with horizontal day strip, slot sections, animations |
+| `src/components/pupil-portal/PupilBottomNav.tsx` | Add badges, progress ring, long-press, animations |
+| `src/pages/BrandedPupilPortal.tsx` | Redesign home section with widget grid |
+| `src/components/pupil-portal/PupilWidgetGrid.tsx` | **New** — widget card layout for home |
+| `src/components/pupil-portal/PupilJourneyTimeline.tsx` | **New** — milestone timeline |
+
+No database migrations required. All enhancements use existing data sources.
+
