@@ -478,52 +478,15 @@ export function ExpandablePupilCard({
     setDragX(0);
   };
 
-  return (
+   return (
     <div className="relative overflow-hidden rounded-xl">
-      {/* Swipe Action Buttons - revealed on swipe left */}
-      <div className="absolute inset-y-0 right-0 flex items-stretch">
-        <motion.button
-          onClick={handleSwipeMessage}
-          className="w-[70px] flex flex-col items-center justify-center gap-1 bg-primary text-primary-foreground"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: dragX < -20 ? 1 : 0 }}
-        >
-          <MessageSquare className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Message</span>
-        </motion.button>
-        <motion.button
-          onClick={handleSwipeCall}
-          className="w-[70px] flex flex-col items-center justify-center gap-1 bg-emerald-500 text-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: dragX < -20 ? 1 : 0 }}
-        >
-          <Phone className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Call</span>
-        </motion.button>
-      </div>
-      
-      {/* Main Card - Swipeable */}
+      {/* Main Card */}
       <motion.div
         layout
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0, x: dragX }}
-        drag="x"
-        dragConstraints={{ left: -maxSwipe, right: 0 }}
-        dragElastic={0.1}
-        onDrag={(_, info) => {
-          setIsDragging(true);
-          setDragX(Math.max(-maxSwipe, Math.min(0, info.offset.x)));
-        }}
-        onDragEnd={handleDragEnd}
-        onClick={() => {
-          if (!isDragging && dragX === 0) {
-            setIsExpanded(!isExpanded);
-          } else if (dragX !== 0) {
-            setDragX(0);
-          }
-        }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => setIsExpanded(!isExpanded)}
         className="bg-card rounded-xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow relative z-10"
-        style={{ touchAction: "pan-y" }}
       >
       {/* Main Card - Always Visible */}
       <button
