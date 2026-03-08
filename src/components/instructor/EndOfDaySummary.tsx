@@ -16,6 +16,7 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
   const [speaking, setSpeaking] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   const hour = new Date().getHours();
   const isEvening = hour >= 17 && hour < 23;
