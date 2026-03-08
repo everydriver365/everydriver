@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { SatNavMap } from "@/components/instructor/SatNavMap";
 import { SavedRoutesList } from "@/components/instructor/SavedRoutesList";
 import { FavouriteLocationsList } from "@/components/instructor/FavouriteLocationsList";
+import { OnMyWayButton } from "@/components/instructor/OnMyWayButton";
 
 interface UpcomingLesson {
   id: string;
