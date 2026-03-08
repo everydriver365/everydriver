@@ -48,6 +48,8 @@ import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTracker";
 import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
+import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
+import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
 
 interface InstructorBranding {
   id: string;
@@ -397,23 +399,25 @@ export default function BrandedPupilPortal() {
                   darkMode={instructor.pupil_app_dark_mode}
                 />
 
-                {/* 4-Column Stats Strip */}
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { label: "Lessons", value: pupil.lessons_completed || 0, icon: <Car className="h-3.5 w-3.5" /> },
-                    { label: "Hours", value: Math.round((pupil.lessons_completed || 0) * 1.5), icon: <Clock className="h-3.5 w-3.5" /> },
-                    { label: "Progress", value: `${pupil.progress || 0}%`, icon: <TrendingUp className="h-3.5 w-3.5" /> },
-                    { label: "Balance", value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, icon: <CreditCard className="h-3.5 w-3.5" />, negative: (pupil.account_balance || 0) < 0 },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-card rounded-2xl p-2.5 text-center border border-border shadow-sm">
-                      <div className="flex justify-center mb-1 text-muted-foreground">{stat.icon}</div>
-                      <div className={`text-base font-bold ${stat.negative ? 'text-destructive' : 'text-foreground'}`}>
-                        {stat.negative ? '-' : ''}{stat.value}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
+                {/* Widget Grid — replaces static stats strip */}
+                <PupilWidgetGrid
+                  pupil={{
+                    lessons_completed: pupil.lessons_completed,
+                    progress: pupil.progress,
+                    account_balance: pupil.account_balance,
+                    prepaid_hours: pupil.prepaid_hours,
+                  }}
+                  brandColour={instructor.brand_colour}
+                  onNavigate={(section) => setActiveSection(section as ActiveSection)}
+                />
+
+                {/* Journey Timeline */}
+                <PupilJourneyTimeline
+                  lessonsCompleted={pupil.lessons_completed || 0}
+                  progress={pupil.progress || 0}
+                  hasTestDate={false}
+                  brandColour={instructor.brand_colour}
+                />
 
                 {/* Achievement Badges */}
                 <AchievementBadges
@@ -672,6 +676,7 @@ export default function BrandedPupilPortal() {
           onNavigate={(section) => setActiveSection(section as ActiveSection)}
           brandColour={instructor.brand_colour}
           wallpaperColor={wallpaperColor}
+          courseProgress={pupil.progress || 0}
         />
       )}
 

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download, FileText, FileSpreadsheet } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download, FileText, FileSpreadsheet, Clock, Layers } from "lucide-react";
+import { AnimatedCounter, CurrencyCounter } from "@/components/ui/AnimatedCounter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,14 +46,17 @@ export function EarningsDashboard() {
   const { instructor } = useInstructorAuth();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [showComparison, setShowComparison] = useState(false);
   const [earnings, setEarnings] = useState({
     today: { amount: 0, lessons: 0 },
     thisWeek: { amount: 0, lessons: 0, change: 0 },
     thisMonth: { amount: 0, lessons: 0, change: 0 },
     outstanding: 0,
     projectedMonth: 0,
+    totalHours: 0,
   });
   const [chartData, setChartData] = useState<DailyEarning[]>([]);
+  const [previousChartData, setPreviousChartData] = useState<DailyEarning[]>([]);
   const [topPupils, setTopPupils] = useState<{ name: string; total: number }[]>([]);
   const [allPayments, setAllPayments] = useState<any[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
@@ -375,12 +379,23 @@ export function EarningsDashboard() {
         .sort((a, b) => b.total - a.total)
         .slice(0, 5);
 
+      // Calculate total lesson hours
+      const { data: lessonData } = await supabase
+        .from("scheduled_lessons")
+        .select("duration_minutes")
+        .eq("instructor_id", instructor.id)
+        .eq("status", "completed")
+        .gte("lesson_date", format(monthStart, 'yyyy-MM-dd'));
+      
+      const totalHours = (lessonData || []).reduce((sum, l) => sum + (l.duration_minutes || 60), 0) / 60;
+
       setEarnings({
         today: { amount: todayAmount, lessons: todayPayments.length },
         thisWeek: { amount: weekAmount, lessons: weekPayments.length, change: weekChange },
         thisMonth: { amount: monthAmount, lessons: monthPayments.length, change: monthChange },
         outstanding: totalOutstanding,
         projectedMonth,
+        totalHours,
       });
       setChartData(chartPoints);
       setTopPupils(sortedPupils);
@@ -411,6 +426,11 @@ export function EarningsDashboard() {
     );
   }
 
+  // Computed metrics
+  const totalExpenseAmount = allExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const netProfit = earnings.thisMonth.amount - totalExpenseAmount;
+  const hourlyRate = earnings.totalHours > 0 ? earnings.thisMonth.amount / earnings.totalHours : 0;
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -421,7 +441,9 @@ export function EarningsDashboard() {
               <div className="text-sm text-muted-foreground">{t('time.today')}</div>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.today.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.today.amount} />
+            </div>
             <div className="text-xs text-muted-foreground">{earnings.today.lessons} payments</div>
           </CardContent>
         </Card>
@@ -436,7 +458,9 @@ export function EarningsDashboard() {
                   <ArrowDownRight className="h-4 w-4 text-red-500" />
               )}
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.thisWeek.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.thisWeek.amount} />
+            </div>
             {earnings.thisWeek.change !== 0 && (
               <div className={`text-xs ${earnings.thisWeek.change > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {earnings.thisWeek.change > 0 ? '+' : ''}{earnings.thisWeek.change.toFixed(0)}% vs last week
@@ -455,7 +479,9 @@ export function EarningsDashboard() {
                   <TrendingDown className="h-4 w-4 text-red-500" />
               )}
             </div>
-            <div className="text-2xl font-bold mt-1">{formatCurrency(earnings.thisMonth.amount)}</div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={earnings.thisMonth.amount} />
+            </div>
             {earnings.thisMonth.change !== 0 && (
               <div className={`text-xs ${earnings.thisMonth.change > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {earnings.thisMonth.change > 0 ? '+' : ''}{earnings.thisMonth.change.toFixed(0)}% vs last month
@@ -470,8 +496,43 @@ export function EarningsDashboard() {
               <div className="text-sm text-muted-foreground">{t('instructor.outstanding')}</div>
               <PiggyBank className="h-4 w-4 text-amber-500" />
             </div>
-            <div className="text-2xl font-bold mt-1 text-amber-600">{formatCurrency(earnings.outstanding)}</div>
+            <div className="text-2xl font-bold mt-1 text-amber-600">
+              <CurrencyCounter value={earnings.outstanding} />
+            </div>
             <div className="text-xs text-muted-foreground">Projected: {formatCurrency(earnings.projectedMonth)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Profit/Loss + Hourly Rate Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Net Profit</div>
+              <Layers className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+              <CurrencyCounter value={netProfit} />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Income {formatCurrency(earnings.thisMonth.amount)} − Expenses {formatCurrency(totalExpenseAmount)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Hourly Rate</div>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold mt-1">
+              <CurrencyCounter value={hourlyRate} showPence />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {earnings.totalHours.toFixed(1)}h this month
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -507,6 +568,15 @@ export function EarningsDashboard() {
                   <TabsTrigger value="year" className="text-xs px-3">Year</TabsTrigger>
                 </TabsList>
               </Tabs>
+              <Button 
+                variant={showComparison ? "default" : "outline"}
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                <Layers className="h-3 w-3" />
+                Compare
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -538,7 +608,20 @@ export function EarningsDashboard() {
                   fillOpacity={1} 
                   fill="url(#colorAmount)" 
                   strokeWidth={2}
+                  name="This Period"
                 />
+                {showComparison && (
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    data={previousChartData}
+                    stroke="hsl(var(--muted-foreground))"
+                    fillOpacity={0}
+                    strokeWidth={1.5}
+                    strokeDasharray="5 5"
+                    name="Previous Period"
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>
