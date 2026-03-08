@@ -20,8 +20,8 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
 
   useEffect(() => {
     if (!instructorId) return;
-    const key = `briefing-dismissed-${new Date().toDateString()}`;
-    if (sessionStorage.getItem(key)) {
+    const key = `briefing-shown-${instructorId}`;
+    if (localStorage.getItem(key)) {
       setDismissed(true);
       return;
     }
@@ -82,8 +82,8 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
   };
 
   const dismiss = () => {
-    const key = `briefing-dismissed-${new Date().toDateString()}`;
-    sessionStorage.setItem(key, "1");
+    const key = `briefing-shown-${instructorId}`;
+    localStorage.setItem(key, "1");
     setDismissed(true);
   };
 
