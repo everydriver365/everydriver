@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download, FileText, FileSpreadsheet } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download, FileText, FileSpreadsheet, Clock, Layers } from "lucide-react";
+import { AnimatedCounter, CurrencyCounter } from "@/components/ui/AnimatedCounter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
