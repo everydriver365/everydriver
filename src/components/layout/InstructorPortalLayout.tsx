@@ -98,7 +98,8 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
-
+import { OfflineBanner } from "@/components/instructor/OfflineBanner";
+import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -234,6 +235,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   const { overdueLesson, dismiss: dismissLessonAlert } = useLessonEndAlert(instructor?.id);
   const [endWizardLesson, setEndWizardLesson] = useState<OverdueLesson | null>(null);
+  useOfflinePrefetch({ instructorId: instructor?.id });
 
   const handleCompleteLessonAlert = (lesson: OverdueLesson) => {
     dismissLessonAlert(lesson.id);
@@ -609,6 +611,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <main className="h-[100dvh] overflow-hidden">{children}</main>
         ) : (
           <>
+            <OfflineBanner />
             <main className={`overflow-x-hidden ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
