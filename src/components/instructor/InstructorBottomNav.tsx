@@ -1,17 +1,17 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { 
   Home, 
   CalendarDays, 
   Users, 
   Radio,
-  MessageCircle,
   PoundSterling,
   Grid3X3,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
-
+import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 function getContrastColor(hex: string, activeOpacity = "1", inactiveOpacity = "0.6"): { active: string; inactive: string } {
@@ -24,7 +24,6 @@ function getContrastColor(hex: string, activeOpacity = "1", inactiveOpacity = "0
   return { active: `rgba(${base},${activeOpacity})`, inactive: `rgba(${base},${inactiveOpacity})` };
 }
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,12 +116,12 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
   }, [instructor?.id]);
 
   const handleNavClick = (path: string) => {
+    haptics.selection();
     navigate(path);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const contrast = wallpaperColor ? getContrastColor(wallpaperColor) : null;
-
 
   return (
     <nav
@@ -132,7 +131,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
       )}
       style={wallpaperColor ? { backgroundColor: `${wallpaperColor}e6` } : undefined}
     >
-      <div className="flex items-center justify-around h-16 w-full px-1">
+      <div className="flex items-center justify-around h-16 w-full px-1 relative">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
@@ -149,6 +148,11 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           
           // Check if More menu needs a dot indicator
           const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
+
+          // Track icon color override when tracking is active
+          const trackIconColor = isTrack && isTrackingActive && !isActive
+            ? "#10b981" // emerald-500
+            : undefined;
           
           return (
             <button
@@ -157,19 +161,28 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full"
             >
               <div className="relative">
-                {/* Filled tile for active icon */}
+                {/* Animated active pill */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className={cn(
+                      "absolute inset-0 rounded-lg",
+                      !contrast && "bg-primary"
+                    )}
+                    style={contrast ? { backgroundColor: contrast.active } : undefined}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
                 <div
-                  className={cn(
-                    "flex items-center justify-center rounded-lg w-8 h-8 transition-colors",
-                    isActive && !contrast ? "bg-primary" : ""
-                  )}
-                  style={isActive && contrast ? { backgroundColor: contrast.active } : undefined}
+                  className="flex items-center justify-center rounded-lg w-8 h-8 relative z-10"
                 >
                   <item.icon
                     className="h-5 w-5 transition-all duration-200"
                     strokeWidth={isActive ? 2 : 1.8}
                     color={
-                      contrast
+                      trackIconColor
+                        ? trackIconColor
+                        : contrast
                         ? (isActive ? (wallpaperColor || "#ffffff") : contrast.inactive)
                         : (isActive ? "#ffffff" : "#8e8e93")
                     }

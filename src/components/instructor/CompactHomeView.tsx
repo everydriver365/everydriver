@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   PoundSterling,
   Target,
   Timer,
   TrendingUp,
-  Calendar,
+  ChevronDown,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
@@ -21,7 +21,6 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
-import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
@@ -86,6 +85,10 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
   const hoursToday = todayOverview?.totalHours || 0;
   const earningsToday = todayOverview?.expectedEarnings || 0;
   const progressPercent = weeklyGoals?.progressPercent || 0;
+
+  // Hero promotion: next lesson within 2 hours
+  const isNextLessonImminent = nextLesson && nextLesson.minutesUntil <= 120;
+  const [statsExpanded, setStatsExpanded] = useState(!isNextLessonImminent);
 
   // End-of-day auto-prompt logic
   const hour = new Date().getHours();
@@ -178,39 +181,121 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="px-4 grid grid-cols-4 gap-2.5 mb-4">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-card rounded-[14px] p-3 text-center border border-border/40"
-              style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
-            >
-              <div className={`w-8 h-8 rounded-full ${stat.bgColor} flex items-center justify-center mx-auto mb-1.5`}>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
-              </div>
-              <p className="text-[15px] font-bold text-foreground leading-none">
-                {typeof stat.value === "number" ? (
-                  <AnimatedCounter value={stat.value} />
-                ) : (
-                  stat.value
-                )}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-            </motion.div>
-          );
-        })}
-      </div>
+      {/* Hero: NextUp tile when imminent */}
+      {isNextLessonImminent && nextLesson && (
+        <div className="px-4 mb-3">
+          <NextUpTile
+            lessonId={nextLesson.lessonId}
+            pupilId={nextLesson.pupilId}
+            pupilName={nextLesson.pupilName}
+            pupilProfileImage={nextLesson.pupilProfileImage}
+            pupilPhone={nextLesson.pupilPhone}
+            lessonDate={nextLesson.lessonDate}
+            pickupPostcode={nextLesson.pickupPostcode}
+            pickupLocation={nextLesson.pickupLocation}
+            startTime={nextLesson.startTime}
+            minutesUntil={nextLesson.minutesUntil}
+            accountBalance={nextLesson.accountBalance}
+            prepaidHours={nextLesson.prepaidHours}
+            durationMinutes={nextLesson.durationMinutes}
+            instructorId={instructorId}
+            checkInStatus={nextLesson.checkInStatus}
+            lastLessonPlan={nextLesson.lastLessonPlan}
+          />
+        </div>
+      )}
 
-      {/* Morning Briefing — prominent position above activity tiles */}
+      {/* Stats Grid — collapsible when NextUp is hero */}
+      {isNextLessonImminent ? (
+        <div className="px-4 mb-4">
+          <button
+            onClick={() => setStatsExpanded(!statsExpanded)}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-card border border-border/40"
+          >
+            <span className="text-[13px] font-medium text-muted-foreground">
+              {lessonsToday} lessons · {hoursToday}h · £{earningsToday} · {progressPercent}% goal
+            </span>
+            <motion.div
+              animate={{ rotate: statsExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {statsExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-4 gap-2.5 mt-2">
+                  {stats.map((stat, idx) => {
+                    const Icon = stat.icon;
+                    return (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="bg-card rounded-[14px] p-3 text-center border border-border/40"
+                        style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+                      >
+                        <div className={`w-8 h-8 rounded-full ${stat.bgColor} flex items-center justify-center mx-auto mb-1.5`}>
+                          <Icon className={`h-4 w-4 ${stat.color}`} />
+                        </div>
+                        <p className="text-[15px] font-bold text-foreground leading-none">
+                          {typeof stat.value === "number" ? (
+                            <AnimatedCounter value={stat.value} />
+                          ) : (
+                            stat.value
+                          )}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="px-4 grid grid-cols-4 gap-2.5 mb-4">
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-card rounded-[14px] p-3 text-center border border-border/40"
+                style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+              >
+                <div className={`w-8 h-8 rounded-full ${stat.bgColor} flex items-center justify-center mx-auto mb-1.5`}>
+                  <Icon className={`h-4 w-4 ${stat.color}`} />
+                </div>
+                <p className="text-[15px] font-bold text-foreground leading-none">
+                  {typeof stat.value === "number" ? (
+                    <AnimatedCounter value={stat.value} />
+                  ) : (
+                    stat.value
+                  )}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Morning Briefing */}
       <MorningBriefingCard instructorId={instructorId} />
 
-      {/* Activity Tiles (same as dashboard) */}
+      {/* Activity Tiles */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
         unreadMessagesCount={pupilMsgCount}
@@ -218,7 +303,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
         gapSlotsCount={gapSuggestions?.length || 0}
       />
 
-      {/* Content sections — identical to dashboard */}
+      {/* Content sections */}
       <div className="px-4">
         {/* End-of-Day Auto-Prompt */}
         {showEndOfDay && (
@@ -258,7 +343,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
               <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
             )}
 
-            {nextLesson && (
+            {/* Show NextUp here only when NOT imminent (not promoted to hero) */}
+            {nextLesson && !isNextLessonImminent && (
               <div className="mt-2">
                 <NextUpTile
                   lessonId={nextLesson.lessonId}

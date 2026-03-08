@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { CheckCircle2 } from "lucide-react";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
 import messagesIcon from "@/assets/messages-icon.png";
 import testRequestsIcon from "@/assets/test-requests-icon.png";
@@ -32,7 +33,7 @@ export function ActivityTilesGrid({
 }: ActivityTilesGridProps) {
   const navigate = useNavigate();
 
-  const tiles: ActivityTile[] = [
+  const allTiles: ActivityTile[] = [
     {
       title: "Job Offers",
       subtitle: "Available",
@@ -99,9 +100,30 @@ export function ActivityTilesGrid({
     },
   ];
 
+  // Filter to only show tiles with count > 0
+  const activeTiles = allTiles.filter((t) => t.count > 0);
+
+  // All clear state
+  if (activeTiles.length === 0) {
+    return (
+      <div className="px-4 mt-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-emerald-500/10"
+        >
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            All clear — no actions needed
+          </span>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 mt-4 grid grid-cols-2 gap-4">
-      {tiles.map((tile, idx) => (
+      {activeTiles.map((tile, idx) => (
         <motion.div
           key={tile.title}
           initial={{ opacity: 0, y: 8 }}
