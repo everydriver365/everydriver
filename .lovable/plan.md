@@ -1,74 +1,90 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+# Mobile Enhancements — Implementation Plan
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+The user selected items 4, 5, 6, 7, 9, 10, 11 from the suggestion list. After reviewing the codebase, several already have partial implementations. Here's what each needs:
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+## Existing vs. New
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+| # | Feature | Status | Work Needed |
+|---|---------|--------|-------------|
+| 4 | Waze-style community road alerts | `RoadAlertsRow` exists but is read-only, sourced from edge function | Add pupil/instructor reporting UI + community alert submission |
+| 5 | Offline-first write queue | `useOfflineMutation` + `useOfflineSync` already exist | Extend to cover lesson notes and payments specifically; add visible sync status indicator |
+| 6 | Voice-first lesson notes | `VoiceLessonNotes` component (257 lines) already exists | Add hands-free auto-start mode and integration into end-lesson flow on mobile |
+| 7 | Shareable EOD summary card | `EndOfDaySummary` exists with TTS | Add share-as-image/link capability using canvas/screenshot |
+| 9 | Monzo-style payment feed (pupil) | `PupilPaymentHistory` exists as a basic table | Redesign as a vertical timeline feed with icons, running balance, and category colors |
+| 10 | Theory gamification (streaks/XP) | `TheoryMockTest` + `RedeemPointsSheet` exist | Add streak tracking, daily XP, progress animations, and streak-loss warnings |
+| 11 | Pre-lesson checklist (pupil) | `LessonPrepChecklist` already exists with contextual items | Enhance with progress ring, push reminder, and instructor-customizable items |
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+## Implementation Details
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+### 4. Community Road Alerts (`CommunityAlertReporter.tsx`)
+- New floating "Report" button on instructor mobile home (similar to Waze)
+- Quick-tap categories: Roadworks, Accident, Speed Camera, Hazard
+- Stores to new `community_road_alerts` table with lat/lng + expiry (2 hours)
+- `useDrivingAlerts` hook extended to merge community alerts with existing weather/traffic alerts
+- DB migration: `community_road_alerts` table with RLS (authenticated insert, public read within radius)
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+### 5. Offline Sync Status Indicator (`SyncStatusIndicator.tsx`)
+- Small pill/badge showing pending sync count from IndexedDB `syncQueue` store
+- Visible in mobile header when offline or items pending
+- Pulse animation during active sync
+- Tap to expand: shows queued items by type (notes, payments, GPS)
+- Wire into existing `useOfflineMutation` — no new sync logic needed, just visibility
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### 6. Hands-Free Voice Notes Mode
+- Add "Hands-Free" toggle to existing `VoiceLessonNotes` that auto-starts listening on mount
+- Add voice notes shortcut button to `EndLessonWizard` mobile flow
+- Auto-save after 3 seconds of silence (use existing `interimTranscript` gap detection)
+- No new components — enhance existing `VoiceLessonNotes.tsx`
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+### 7. Shareable EOD Summary Card (`ShareableEODCard.tsx`)
+- New component that renders summary data as a styled card with instructor branding
+- "Share" button on `EndOfDaySummary` that generates a shareable image via html2canvas or renders a branded card view
+- Uses Web Share API (`navigator.share`) for native share sheet on mobile
+- Fallback: copy-to-clipboard as text summary
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### 9. Monzo-Style Payment Feed (`PupilPaymentFeed.tsx`)
+- Replace basic `PupilPaymentHistory` table in pupil portal with vertical timeline
+- Each entry: icon (lesson/top-up/refund), amount with +/- coloring, running balance line
+- Group by month with sticky headers
+- Pull from existing `payment_history` table — no schema changes
+- Integrate into `BrandedPupilPortal.tsx`
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+### 10. Theory Gamification (`TheoryStreakTracker.tsx`)
+- New component showing daily streak counter and XP points
+- DB migration: `theory_streaks` table (pupil_id, current_streak, longest_streak, last_practice_date, total_xp)
+- Award XP: 10 per question answered, 50 bonus for passing mock, streak multiplier
+- Streak flame animation (framer-motion), streak-loss warning if no practice today
+- Integrate above `TheoryMockTest` in pupil portal
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+### 11. Enhanced Lesson Prep Checklist
+- Add circular progress ring showing completion percentage
+- Allow instructors to set custom checklist items per lesson type (stored in `instructor_checklist_templates` or instructor settings JSON)
+- Add "Ready!" confetti animation when all items checked
+- Schedule push notification reminder 2 hours before lesson
+- Enhance existing `LessonPrepChecklist.tsx` — no new component
+
+## Database Migrations
+
+1. `community_road_alerts` — id, reporter_id, alert_type, lat, lng, description, created_at, expires_at + RLS
+2. `theory_streaks` — id, pupil_id (unique), current_streak, longest_streak, last_practice_date, total_xp + RLS
+
+## Files
+
+| File | Action |
+|------|--------|
+| `src/components/instructor/CommunityAlertReporter.tsx` | **New** |
+| `src/components/instructor/SyncStatusIndicator.tsx` | **New** |
+| `src/components/instructor/ShareableEODCard.tsx` | **New** |
+| `src/components/pupil-portal/PupilPaymentFeed.tsx` | **New** |
+| `src/components/pupil-portal/TheoryStreakTracker.tsx` | **New** |
+| `src/components/instructor/VoiceLessonNotes.tsx` | Enhance with hands-free mode |
+| `src/components/instructor/EndOfDaySummary.tsx` | Add share button |
+| `src/components/pupil-portal/LessonPrepChecklist.tsx` | Add progress ring, confetti, custom items |
+| `src/components/pupil-portal/TheoryMockTest.tsx` | Wire XP awards on completion |
+| `src/hooks/useDrivingAlerts.ts` | Merge community alerts |
+| `src/components/instructor/CleanHomeView.tsx` | Add CommunityAlertReporter |
+| `src/pages/BrandedPupilPortal.tsx` | Swap payment history, add streak tracker |
+| `src/components/instructor/InstructorMobileHeader.tsx` | Add SyncStatusIndicator |
+
