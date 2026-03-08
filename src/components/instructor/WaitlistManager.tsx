@@ -55,6 +55,32 @@ interface PendingSlotOffer {
 
 interface WaitlistManagerProps {
   instructorId: string;
+  availableGaps?: { date: string; dayOfWeek: string; timeSlot: string; durationMins: number }[];
+}
+
+function calculateMatchScore(
+  entry: WaitlistEntry,
+  gap: { dayOfWeek: string; timeSlot: string; durationMins: number }
+): number {
+  let score = 0;
+  const maxScore = 3;
+
+  // Day match
+  if (entry.preferred_days.length === 0 || entry.preferred_days.includes(gap.dayOfWeek)) {
+    score += 1;
+  }
+
+  // Time match
+  if (entry.preferred_times.length === 0 || entry.preferred_times.includes(gap.timeSlot)) {
+    score += 1;
+  }
+
+  // Duration match
+  if (gap.durationMins >= entry.min_duration_mins && gap.durationMins <= entry.max_duration_mins) {
+    score += 1;
+  }
+
+  return Math.round((score / maxScore) * 100);
 }
 
 const DAY_LABELS: Record<string, string> = {
