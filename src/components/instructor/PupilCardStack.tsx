@@ -777,6 +777,109 @@ export function PupilCardStack({
                 </div>
               </div>
 
+              {/* ── Stats Strip ── */}
+              <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
+                <div className="grid grid-cols-4 divide-x divide-border py-4">
+                  {[
+                    { value: pupil.lessons_completed || 0, label: "Lessons" },
+                    { value: `${pupil.prepaid_hours || 0}h`, label: "Hours" },
+                    { value: `${pupil.progress || 0}%`, label: "Progress" },
+                    { value: pupil.account_balance ? `£${Math.abs(Number(pupil.account_balance)).toFixed(0)}` : "£0", label: hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance", highlight: hasDebt },
+                  ].map(({ value, label, highlight }) => (
+                    <div key={label} className="text-center">
+                      <div className={cn("text-lg font-bold", highlight ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{value}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Test Date Banner ── */}
+              {pupil.test_date && (() => {
+                const testDate = new Date(pupil.test_date);
+                const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
+                return (
+                  <div className={cn(
+                    "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
+                    isUrgent
+                      ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
+                      : "bg-card border border-border"
+                  )}>
+                    <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
+                      <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-foreground">{format(new Date(pupil.test_date), "EEE, d MMM yyyy")}</p>
+                      <p className={cn("text-xs font-medium", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
+                        {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Quick Actions ── */}
+              <div className="mx-4 mt-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Quick Actions</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: ClipboardList, label: "Syllabus", color: "bg-blue-500/10 text-blue-600", action: () => setShowSyllabusSheet(true) },
+                    { icon: History, label: "History", color: "bg-violet-500/10 text-violet-600", action: () => onViewHistory(pupil) },
+                    { icon: Gauge, label: "Report", color: "bg-emerald-500/10 text-emerald-600", action: () => onViewReport(pupil) },
+                    { icon: Award, label: "Test Result", color: "bg-amber-500/10 text-amber-600", action: () => onRecordTestResult?.(pupil, false) },
+                    { icon: PoundSterling, label: "Payment", color: "bg-rose-500/10 text-rose-600", action: () => setShowRecordPaymentModal(true) },
+                    { icon: Share2, label: "Share", color: "bg-sky-500/10 text-sky-600", action: () => {} },
+                  ].map(({ icon: Icon, label, color, action }) => (
+                    <button key={label} onClick={action} className={`${color} rounded-xl p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform`}>
+                      <Icon className="h-5 w-5" />
+                      <span className="text-[11px] font-medium">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Contact Info ── */}
+              <div className="mx-4 mt-3">
+                <SectionPanel title="Details">
+                  <div className="space-y-3">
+                    {pupil.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground">{pupil.phone}</span>
+                      </div>
+                    )}
+                    {pupil.email && (
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground truncate">{pupil.email}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm text-foreground">{pupil.postcode}</span>
+                    </div>
+                  </div>
+                </SectionPanel>
+              </div>
+
+              {/* ── Action buttons ── */}
+              <div className="mx-4 mt-3 space-y-2 pb-4">
+                {onViewTerms && (
+                  <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
+                    {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                  <Button variant="ghost" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+                  <Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
+
       {/* Modals */}
       {instructorId && (
         <RecordPaymentModal
