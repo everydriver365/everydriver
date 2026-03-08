@@ -448,6 +448,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                         {/* Navigation Links */}
                         <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                          {/* Search & Voice in sidebar */}
+                          <button
+                            onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
+                          >
+                            <Search className="h-5 w-5" />
+                            Search
+                          </button>
+                          <button
+                            onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
+                          >
+                            <Headphones className="h-5 w-5" />
+                            Voice Assistant
+                          </button>
+                          <div className="h-px bg-border my-2" />
                           {sidebarLinks.map((link) => {
                             const isActive = location.pathname === link.href;
                             const isMessages = link.href === "/instructor/messages";

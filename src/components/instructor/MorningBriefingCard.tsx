@@ -1,11 +1,31 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Sun, Volume2, VolumeX, Loader2, RefreshCw, X } from "lucide-react";
+import { Sun, Volume2, VolumeX, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MorningBriefingCardProps {
   instructorId: string | undefined;
+}
+
+// Typewriter text component
+function TypewriterText({ text }: { text: string }) {
+  const words = text.split(" ");
+  return (
+    <motion.p className="text-[13px] leading-[1.65] text-foreground/80">
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, filter: "blur(4px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          transition={{ delay: i * 0.025, duration: 0.15 }}
+        >
+          {word}{" "}
+        </motion.span>
+      ))}
+    </motion.p>
+  );
 }
 
 export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) {
@@ -119,13 +139,14 @@ export function MorningBriefingCard({ instructorId }: MorningBriefingCardProps) 
 
           <div className="bg-white/80 dark:bg-black/20 rounded-2xl p-3.5 mb-3 ring-1 ring-stone-200/50 dark:ring-stone-700/30">
             {loading ? (
-              <div className="flex items-center gap-2.5 py-3">
-                <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
-                <span className="text-sm text-muted-foreground font-medium">Preparing your briefing...</span>
+              <div className="space-y-2.5 py-1">
+                <Skeleton className="h-3.5 w-full" />
+                <Skeleton className="h-3.5 w-[90%]" />
+                <Skeleton className="h-3.5 w-[75%]" />
               </div>
-            ) : (
-              <p className="text-[13px] leading-[1.65] text-foreground/80">{briefing}</p>
-            )}
+            ) : briefing ? (
+              <TypewriterText text={briefing} />
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">

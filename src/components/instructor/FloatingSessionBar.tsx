@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Car, Clock, Activity, ChevronUp } from "lucide-react";
@@ -37,10 +37,19 @@ function LiveWaveform() {
 export function FloatingSessionBar({ instructorId, className }: FloatingSessionBarProps) {
   const navigate = useNavigate();
   const { activeSession, hasActiveSession } = useActiveSession(instructorId);
+  const y = useMotionValue(0);
 
   const handleTap = () => {
     haptics.selection();
     navigate("/instructor/tracking");
+  };
+
+  // Swipe-up gesture to navigate
+  const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
+    if (info.offset.y < -50 || info.velocity.y < -300) {
+      haptics.medium();
+      navigate("/instructor/tracking");
+    }
   };
 
   const getInitials = (name: string | null) => {
@@ -62,7 +71,6 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
 
   const formatSpeed = (speedKmh: number | null) => {
     if (speedKmh === null) return "--";
-    // Convert km/h to mph
     const mph = Math.round(speedKmh * 0.621371);
     return `${mph} mph`;
   };
@@ -75,6 +83,11 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.3}
+          onDragEnd={handleDragEnd}
+          style={{ y }}
           className={cn(
             "fixed bottom-20 left-4 right-4 z-30",
             className
@@ -86,7 +99,8 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
               "w-full flex items-center gap-3 p-3",
               "backdrop-blur-xl bg-card/90 dark:bg-card/80",
               "border border-primary/20 dark:border-primary/30",
-              "rounded-none shadow-lg",
+              "border-l-4 border-l-emerald-500",
+              "rounded-2xl shadow-lg",
               "active:scale-[0.98] transition-transform"
             )}
             whileTap={{ scale: 0.98 }}

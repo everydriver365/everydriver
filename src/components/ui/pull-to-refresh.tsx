@@ -1,5 +1,6 @@
 import { useState, useRef, ReactNode } from "react";
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Car, Flag, Home } from "lucide-react";
 import { haptics } from "@/lib/haptics";
 
 interface PullToRefreshProps {
@@ -16,7 +17,6 @@ function DrivingRefreshAnimation({
   progress: number; 
   isRefreshing: boolean;
 }) {
-  // Car moves from left to right based on pull progress
   const carPosition = Math.min(progress * 100, 85);
   
   return (
@@ -42,9 +42,9 @@ function DrivingRefreshAnimation({
         }}
         transition={{ duration: 0.3 }}
       >
-        <div className={`text-lg ${progress >= 1 ? 'opacity-100' : 'opacity-30'}`}>
-          🏁
-        </div>
+        <Flag 
+          className={`h-5 w-5 ${progress >= 1 ? 'text-emerald-500' : 'text-muted-foreground/30'}`} 
+        />
       </motion.div>
       
       {/* Car */}
@@ -59,12 +59,12 @@ function DrivingRefreshAnimation({
           repeat: Infinity,
         } : {}}
       >
-        <span className="text-xl">🚗</span>
+        <Car className="h-5 w-5 text-primary" />
       </motion.div>
       
       {/* Start point */}
       <div className="absolute left-4">
-        <span className="text-sm opacity-50">🏠</span>
+        <Home className="h-4 w-4 text-muted-foreground/50" />
       </div>
     </div>
   );
