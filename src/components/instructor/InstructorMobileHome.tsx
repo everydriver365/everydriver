@@ -473,12 +473,6 @@ export function InstructorMobileHome({
 
       {/* 4. Your Day */}
       <div className="px-4">
-        {/* Streak Badge */}
-        {streak && streak.currentStreak >= 2 && (
-          <div className="mb-3">
-            <StreakBadge currentStreak={streak.currentStreak} isActiveToday={streak.isActiveToday} />
-          </div>
-        )}
 
         {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
