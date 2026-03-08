@@ -67,6 +67,7 @@ export function NextUpTile({
   const [expanded, setExpanded] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
+  const [showGPSRecorder, setShowGPSRecorder] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
