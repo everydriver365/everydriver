@@ -772,6 +772,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
                 </div>
 
+                {/* Center: Quick Actions */}
+                <DesktopQuickActionBar />
+
                 {/* Right: Voice + Notifications + Theme + Avatar */}
                 <div className="flex items-center gap-1">
                   <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />

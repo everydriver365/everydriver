@@ -40,7 +40,7 @@ const InstructorSatNav = lazy(() => import("./pages/InstructorSatNav"));
 const InstructorFindMyCar = lazy(() => import("./pages/InstructorFindMyCar"));
 const InstructorAccounts = lazy(() => import("./pages/InstructorAccounts"));
 const InstructorDomainsManagement = lazy(() => import("./pages/InstructorDomainsManagement"));
-const InstructorMessages = lazy(() => import("./pages/InstructorMessages"));
+const InstructorMessages = lazy(() => import("./pages/InstructorUnifiedInbox"));
 const InstructorVisitorChats = lazy(() => import("./pages/InstructorVisitorChats"));
 const InstructorAdminChat = lazy(() => import("./pages/InstructorAdminChat"));
 const InstructorFAQs = lazy(() => import("./pages/InstructorFAQs"));
