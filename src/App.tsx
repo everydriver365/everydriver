@@ -138,6 +138,7 @@ const OnboardingPreview = lazy(() => import("./pages/instructor-app/onboarding/O
 const DemoPupilProfile = lazy(() => import("./pages/DemoPupilProfile"));
 const SmartNudgesDemo = lazy(() => import("./pages/SmartNudgesDemo"));
 const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
+const DemoPortals = lazy(() => import("./pages/DemoPortals"));
 
 
 // Lazy-load ConditionalRoutes
@@ -322,6 +323,7 @@ const App = () => (
                 <Route path="/demo/pupil-profile" element={<DemoPupilProfile />} />
                 <Route path="/demo/smart-nudges" element={<SmartNudgesDemo />} />
                 <Route path="/demo/homepage-redesign" element={<HomepageRedesignDemo />} />
+                <Route path="/demo/portals" element={<DemoPortals />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
