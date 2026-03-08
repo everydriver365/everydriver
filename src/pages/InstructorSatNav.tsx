@@ -56,7 +56,7 @@ export default function InstructorSatNav() {
             start_time,
             pickup_postcode,
             pickup_location,
-            pupils(name)
+            pupils(id, name, phone)
           `)
           .eq("instructor_id", instructor.id)
           .eq("status", "scheduled")
