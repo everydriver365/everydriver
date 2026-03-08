@@ -71,6 +71,8 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { InstructorDesktopSidebar } from "@/components/instructor/InstructorDesktopSidebar";
 
 function getContrastColor(hex: string): string {
   const c = hex.replace("#", "");
