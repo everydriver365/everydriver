@@ -225,6 +225,17 @@ export default function InstructorMiniWebsiteSettings() {
             </Card>
           </TabsContent>
 
+          {/* Sticker Tab */}
+          <TabsContent value="sticker">
+            <CarStickerGenerator
+              instructorName={authInstructor?.name || ""}
+              instructorPhone={authInstructor?.phone || null}
+              instructorSlug={authInstructor?.app_slug || null}
+              logoUrl={authInstructor?.logo_url || null}
+              brandColour={authInstructor?.brand_colour || null}
+            />
+          </TabsContent>
+
           {/* Embed Tab */}
           <TabsContent value="embed">
             {authInstructor?.app_slug && (
