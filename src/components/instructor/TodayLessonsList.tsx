@@ -10,6 +10,7 @@ import { LessonRouteRecorder } from "./LessonRouteRecorder";
 
 interface TodayLessonsListProps {
   lessons: TodayLesson[];
+  instructorId: string;
   className?: string;
 }
 
