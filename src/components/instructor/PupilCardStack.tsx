@@ -679,7 +679,7 @@ export function PupilCardStack({
 
           {/* Chevron */}
           <motion.div
-            animate={{ rotate: isExpanded ? 90 : 0 }}
+            animate={{ rotate: (!isMobile && isExpanded) ? 90 : 0 }}
             transition={{ duration: 0.2 }}
           >
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
