@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { CalendarOff } from "lucide-react";
+import { CalendarOff, Navigation } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
 import { PupilAvatar } from "./PupilAvatar";
+import { LessonRouteRecorder } from "./LessonRouteRecorder";
 
 interface TodayLessonsListProps {
   lessons: TodayLesson[];
+  instructorId: string;
   className?: string;
 }
 
@@ -20,7 +23,8 @@ const typeColors: Record<string, { bg: string; text: string }> = {
   "Pass Plus": { bg: "bg-emerald-500/10", text: "text-emerald-600" },
 };
 
-export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListProps) {
+export function TodayLessonsList({ lessons, instructorId, className = "" }: TodayLessonsListProps) {
+  const [recordingLessonId, setRecordingLessonId] = useState<string | null>(null);
   const formatTime = (time: string) => {
     try {
       return format(parse(time, "HH:mm:ss", new Date()), "HH:mm");
@@ -122,12 +126,27 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
                           </Badge>
                         </div>
 
-                        {/* Bottom row: time range + amount + status */}
+                        {/* Bottom row: time range + amount + status + record */}
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-[12px] text-muted-foreground">
                             {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                           </span>
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setRecordingLessonId(recordingLessonId === lesson.id ? null : lesson.id);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors"
+                              style={{
+                                background: recordingLessonId === lesson.id ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.1)",
+                                color: recordingLessonId === lesson.id ? "#DC2626" : "#16A34A",
+                              }}
+                            >
+                              <Navigation className="h-[10px] w-[10px]" />
+                              GPS
+                            </button>
                             {lesson.amountDue != null && (
                               <span className="text-[13px] font-bold text-foreground">
                                 £{lesson.amountDue}
@@ -147,6 +166,18 @@ export function TodayLessonsList({ lessons, className = "" }: TodayLessonsListPr
                         </div>
                       </div>
                     </Link>
+
+                    {/* Route recorder for this lesson */}
+                    {recordingLessonId === lesson.id && (
+                      <div className="flex-1 min-w-0 mt-2" onClick={(e) => e.stopPropagation()}>
+                        <LessonRouteRecorder
+                          instructorId={instructorId}
+                          pupilId={lesson.pupilId}
+                          lessonId={lesson.id}
+                          onRouteRecorded={() => setRecordingLessonId(null)}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* End time marker for last lesson */}
