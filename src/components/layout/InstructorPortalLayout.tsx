@@ -515,16 +515,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </p>
                     </div>
                     <MobileNotificationBell instructorId={instructor?.id} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 h-7 w-7 sm:h-8 sm:w-8 shrink-0"
-                      title="Search"
-                    >
-                      <Search className="h-4 w-4" />
-                    </Button>
-                    <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
                   </div>
 
                   {/* Right: Action buttons */}
