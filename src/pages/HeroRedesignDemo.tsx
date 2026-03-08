@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { ChevronRight, MapPin, Clock, CheckCircle, Zap, TrendingUp, Calendar, Bell, Settings, Star, Sun } from "lucide-react";
+import { ChevronRight, MapPin, Clock, CheckCircle, Zap, TrendingUp, Calendar, Bell, Settings, Star, Sun, PoundSterling, Users, Target, Flame, Award } from "lucide-react";
 import instructorHeroImg from "@/assets/hero-instructor.jpg";
 
 const firstName = "Kenneth";
