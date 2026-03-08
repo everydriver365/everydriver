@@ -46,14 +46,17 @@ export function EarningsDashboard() {
   const { instructor } = useInstructorAuth();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [showComparison, setShowComparison] = useState(false);
   const [earnings, setEarnings] = useState({
     today: { amount: 0, lessons: 0 },
     thisWeek: { amount: 0, lessons: 0, change: 0 },
     thisMonth: { amount: 0, lessons: 0, change: 0 },
     outstanding: 0,
     projectedMonth: 0,
+    totalHours: 0,
   });
   const [chartData, setChartData] = useState<DailyEarning[]>([]);
+  const [previousChartData, setPreviousChartData] = useState<DailyEarning[]>([]);
   const [topPupils, setTopPupils] = useState<{ name: string; total: number }[]>([]);
   const [allPayments, setAllPayments] = useState<any[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
