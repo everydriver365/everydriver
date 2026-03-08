@@ -226,8 +226,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
         {/* ─── EXISTING DASHBOARD CONTENT ─── */}
         <div className="px-4 space-y-4">
-          
-          <SmartNudgesCard instructorId={instructorId} />
 
           {alerts.length > 0 && (
             <DrivingAlertsStrip
@@ -276,15 +274,8 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
           <TodayLessonsList lessons={todayLessons || []} />
 
-          {gapSuggestions && gapSuggestions.length > 0 && (
-            <GapFillerCard gaps={gapSuggestions} />
-          )}
-
-          {authInstructorId && (
-            <VehicleHealthStrip instructorId={authInstructorId} />
-          )}
-
-          <DormantPupilsCard instructorId={instructorId} />
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-2 mb-2">Insights</p>
+          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
           
         </div>
 

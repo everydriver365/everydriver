@@ -518,19 +518,9 @@ export function InstructorMobileHome({
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} className="mt-4" />
 
-        {/* 9. Gap Filler */}
-        {gapSuggestions && gapSuggestions.length > 0 && (
-          <div className="mt-4">
-            <GapFillerCard gaps={gapSuggestions} />
-          </div>
-        )}
-
-        {/* 9. Vehicle Health Strip */}
-        {authInstructor?.id && (
-          <div className="mt-4">
-            <VehicleHealthStrip instructorId={authInstructor.id} />
-          </div>
-        )}
+        {/* Insights Tiles */}
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         {/* Setup Checklist for new instructors */}
         {instructorId && (
@@ -539,9 +529,6 @@ export function InstructorMobileHome({
             variant="mobile"
           />
         )}
-
-        <SmartNudgesCard instructorId={instructorId} />
-        <DormantPupilsCard instructorId={instructorId} />
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
