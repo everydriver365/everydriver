@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, AlertCircle,
-  Loader2, MapPin, User, StickyNote, Sparkles
+  Loader2, MapPin, User, StickyNote, Sparkles, TrendingUp
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -357,6 +357,12 @@ export default function BrandedPupilPortal() {
                 exit={{ opacity: 0, x: -20 }}
                 className="p-4 space-y-4"
               >
+                {/* iOS Greeting */}
+                <div className="pt-1">
+                  <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
+                  <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
+                </div>
+
                 {/* Lesson Check-In */}
                 <PupilCheckInCard pupilId={pupil.id} />
 
@@ -389,6 +395,24 @@ export default function BrandedPupilPortal() {
                   darkMode={instructor.pupil_app_dark_mode}
                 />
 
+                {/* 4-Column Stats Strip */}
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { label: "Lessons", value: pupil.lessons_completed || 0, icon: <Car className="h-3.5 w-3.5" /> },
+                    { label: "Hours", value: Math.round((pupil.lessons_completed || 0) * 1.5), icon: <Clock className="h-3.5 w-3.5" /> },
+                    { label: "Progress", value: `${pupil.progress || 0}%`, icon: <TrendingUp className="h-3.5 w-3.5" /> },
+                    { label: "Balance", value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, icon: <CreditCard className="h-3.5 w-3.5" />, negative: (pupil.account_balance || 0) < 0 },
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-card rounded-2xl p-2.5 text-center border border-border shadow-sm">
+                      <div className="flex justify-center mb-1 text-muted-foreground">{stat.icon}</div>
+                      <div className={`text-base font-bold ${stat.negative ? 'text-destructive' : 'text-foreground'}`}>
+                        {stat.negative ? '-' : ''}{stat.value}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Achievement Badges */}
                 <AchievementBadges
                   pupilId={pupil.id}
@@ -398,26 +422,6 @@ export default function BrandedPupilPortal() {
                 {/* What's New */}
                 <WhatsNewModal portalType="pupil" userId={pupil.id} />
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  <InstructorCard>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }}>
-                        {pupil.lessons_completed || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Lessons Done</div>
-                    </div>
-                  </InstructorCard>
-                  <InstructorCard>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }}>
-                        {pupil.progress || 0}%
-                      </div>
-                      <div className="text-xs text-muted-foreground">Progress</div>
-                    </div>
-                  </InstructorCard>
-                </div>
-
                 {/* AI Driving Insights */}
                 <PupilDashboardInsights
                   pupilId={pupil.id}
@@ -425,41 +429,39 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                 />
 
-                {/* Navigation Menu */}
-                <div className="space-y-2">
+                {/* Navigation Menu — iOS List Style */}
+                <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
                   {[
                     { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
-                    { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage lessons' },
-                    ...(instructor.pupil_self_booking_enabled ? [{ id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots & book' }] : []),
-                    { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
-                    { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
-                    ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on your lessons' }] : []),
-                    { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
-                    { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
-                    { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised driving insights' },
+                    { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage' },
+                    ...(instructor.pupil_self_booking_enabled ? [{ id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots' }] : []),
+                    { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with instructor' },
+                    { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal & shared notes' },
+                    ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on lessons' }] : []),
+                    { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & history' },
+                    { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
+                    { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
-                    { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap a driving test' },
+                    { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap test' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
-                    <InstructorCard
+                    <button
                       key={item.id}
-                      interactive
                       onClick={() => setActiveSection(item.id)}
+                      className="w-full flex items-center gap-3.5 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                     >
-                      <div className="flex items-center gap-4">
-                        <div 
-                          className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${instructor.brand_colour || 'hsl(var(--primary))'}20` }}
-                        >
-                          <item.icon className="h-5 w-5" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground">{item.label}</div>
-                          <div className="text-xs text-muted-foreground">{item.desc}</div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <div 
+                        className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${instructor.brand_colour || 'hsl(var(--primary))'}15` }}
+                      >
+                        <item.icon className="h-4.5 w-4.5" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }} />
                       </div>
-                    </InstructorCard>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground">{item.label}</div>
+                        <div className="text-[11px] text-muted-foreground">{item.desc}</div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                    </button>
                   ))}
                 </div>
 

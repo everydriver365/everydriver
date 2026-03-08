@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, Clock, Bell, Phone, LogOut, Star, 
-  MessageSquare, ChevronRight, Loader2, CheckCircle2 
+  MessageSquare, ChevronRight, Loader2, CheckCircle2, Car, TrendingUp, Shield, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -349,46 +349,51 @@ export default function ParentPortal() {
           onBackClick={() => { setSelectedChild(null); setActiveSection('dashboard'); }}
         />
         <main className="p-4 pb-20 space-y-4">
-          {/* Child Info */}
-          <InstructorCard>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground shrink-0">
+          {/* Child Info Card — iOS Style */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-lg font-bold text-primary-foreground shrink-0">
                 {selectedChild.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{selectedChild.name}</h2>
-                <p className="text-sm text-muted-foreground">Instructor: {selectedChild.instructor_name}</p>
+                <h2 className="text-lg font-bold text-foreground">{selectedChild.name}</h2>
+                <p className="text-xs text-muted-foreground">with {selectedChild.instructor_name}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* 4-Column Stats Strip */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
               {[
                 { label: "Lessons", value: selectedChild.lessons_completed },
                 { label: "Progress", value: `${selectedChild.progress}%` },
-                { label: "Credit", value: `${selectedChild.prepaid_hours}h`, color: "text-emerald-600" },
-                { label: "Balance", value: `£${selectedChild.account_balance.toFixed(0)}`, color: "text-amber-600" },
-              ].map(stat => (
-                <div key={stat.label} className="text-center p-3 rounded-xl bg-secondary">
-                  <div className={`text-2xl font-bold ${stat.color || ''}`}>{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                { label: "Credit", value: `${selectedChild.prepaid_hours}h` },
+                { label: "Balance", value: `£${Math.abs(selectedChild.account_balance).toFixed(0)}`, negative: selectedChild.account_balance < 0 },
+              ].map((stat, i) => (
+                <div key={i} className="bg-secondary/50 rounded-xl p-2.5 text-center">
+                  <div className={`text-base font-bold ${stat.negative ? 'text-destructive' : 'text-foreground'}`}>
+                    {stat.negative ? '-' : ''}{stat.value}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span>Learning Progress</span>
-                <span>{selectedChild.progress}%</span>
+            {/* Progress Bar */}
+            <div className="mb-3">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground">Learning Progress</span>
+                <span className="font-medium text-foreground">{selectedChild.progress}%</span>
               </div>
-              <Progress value={selectedChild.progress} className="h-3" />
+              <Progress value={selectedChild.progress} className="h-2" />
             </div>
 
+            {/* Next Lesson */}
             {selectedChild.next_lesson_date && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 mb-3">
-                <Clock className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-primary/10 mb-2 text-xs">
+                <Clock className="h-4 w-4 text-primary" />
                 <div>
-                  <div className="font-medium text-sm">Next Lesson</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground">Next Lesson</div>
+                  <div className="text-muted-foreground">
                     {format(parseISO(selectedChild.next_lesson_date), 'EEEE, d MMMM')}
                     {selectedChild.next_lesson_time && ` at ${formatTime(selectedChild.next_lesson_time)}`}
                   </div>
@@ -396,30 +401,36 @@ export default function ParentPortal() {
               </div>
             )}
 
+            {/* Test Date */}
             {selectedChild.test_date && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10">
-                <Calendar className="h-5 w-5 text-amber-600" />
-                <div>
-                  <div className="font-medium text-sm">Test Date</div>
-                  <div className="text-xs text-muted-foreground">
-                    {format(parseISO(selectedChild.test_date), 'EEEE, d MMMM yyyy')}
+              <div className="rounded-xl p-2.5 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-white/80" />
+                    <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
                   </div>
+                  <span className="font-bold text-sm">
+                    {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
+                  </span>
                 </div>
               </div>
             )}
-          </InstructorCard>
+          </div>
 
-          {/* Feedback */}
-          <InstructorCard>
-            <InstructorPageHeader lucideIcon={MessageSquare} title="Instructor Feedback" className="mb-4" />
+          {/* Instructor Feedback */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+            <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              Instructor Feedback
+            </h2>
             {recentFeedback.filter(f => f.pupil_name === selectedChild.name).length === 0 ? (
-              <p className="text-muted-foreground text-center py-4 text-sm">No feedback yet for {selectedChild.name}</p>
+              <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet for {selectedChild.name}</p>
             ) : (
               <div className="space-y-3">
                 {recentFeedback.filter(f => f.pupil_name === selectedChild.name).map((feedback) => (
-                  <div key={feedback.id} className="p-3 rounded-xl border border-border">
+                  <div key={feedback.id} className="p-3 rounded-xl bg-secondary/50">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
+                      <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
                       {feedback.rating && (
                         <div className="flex gap-0.5">
                           {[1,2,3,4,5].map((star) => (
@@ -428,18 +439,18 @@ export default function ParentPortal() {
                         </div>
                       )}
                     </div>
-                    <p className="text-sm">{feedback.notes}</p>
+                    <p className="text-xs text-foreground leading-relaxed">{feedback.notes}</p>
                   </div>
                 ))}
               </div>
             )}
-          </InstructorCard>
+          </div>
 
           <ParentUpcomingLessons childId={selectedChild.id} />
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
-          <div className="px-4">
+          <div className="px-0">
             <PupilRouteHistory pupilId={selectedChild.id} />
           </div>
           <ParentMessageCard
@@ -464,95 +475,133 @@ export default function ParentPortal() {
         <AnimatePresence mode="wait">
           {activeSection === 'dashboard' && (
             <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              {/* iOS Greeting */}
+              <div className="pt-1">
+                <p className="text-xs text-muted-foreground">Welcome back</p>
+                <h1 className="text-xl font-bold text-foreground">Parent Dashboard</h1>
+              </div>
+
               {/* Children Overview */}
               {children.map((child, index) => (
                 <motion.div key={child.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-                  <InstructorCard interactive onClick={() => { setSelectedChild(child); setActiveSection('children'); }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shrink-0">
-                          {child.name.split(" ").map((n) => n[0]).join("")}
+                  <div 
+                    className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => { setSelectedChild(child); setActiveSection('children'); }}
+                  >
+                    <div className="p-4">
+                      {/* Child Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shrink-0">
+                            {child.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div>
+                            <div className="font-bold text-foreground">{child.name}</div>
+                            <p className="text-[11px] text-muted-foreground">with {child.instructor_name}</p>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-bold text-lg">{child.name}</div>
-                          <p className="text-xs text-muted-foreground">{child.instructor_name}</p>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                      </div>
+
+                      {/* 3-Column Stats Strip */}
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="bg-secondary/50 rounded-xl p-2.5 text-center">
+                          <div className="text-base font-bold text-foreground">{child.lessons_completed}</div>
+                          <div className="text-[10px] text-muted-foreground">Lessons</div>
+                        </div>
+                        <div className="bg-secondary/50 rounded-xl p-2.5 text-center">
+                          <div className="text-base font-bold text-foreground">{child.progress}%</div>
+                          <div className="text-[10px] text-muted-foreground">Progress</div>
+                        </div>
+                        <div className="bg-secondary/50 rounded-xl p-2.5 text-center">
+                          <div className={`text-base font-bold ${child.account_balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                            {child.account_balance < 0 ? '-' : ''}£{Math.abs(child.account_balance).toFixed(0)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Balance</div>
                         </div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+
+                      {/* Progress Bar */}
+                      <Progress value={child.progress} className="h-2 mb-3" />
+
+                      {/* Next Lesson */}
+                      {child.next_lesson_date && (
+                        <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-2.5 text-xs mb-2">
+                          <Clock className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-foreground">
+                            <strong>Next:</strong>{' '}
+                            {format(parseISO(child.next_lesson_date), 'EEE d MMM')}
+                            {child.next_lesson_time && ` at ${formatTime(child.next_lesson_time)}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Test Countdown */}
+                      {child.test_date && (
+                        <div className="rounded-xl p-2.5 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-white/80" />
+                              <span className="text-white/80">Test: {format(parseISO(child.test_date), 'd MMM yyyy')}</span>
+                            </div>
+                            <span className="font-bold text-sm">
+                              {Math.max(0, Math.ceil((new Date(child.test_date).getTime() - Date.now()) / 86400000))} days
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="grid grid-cols-3 gap-3 text-center mb-3">
-                      <div className="rounded-xl bg-secondary p-3">
-                        <div className="text-xl font-bold">{child.lessons_completed}</div>
-                        <div className="text-xs text-muted-foreground">Lessons</div>
-                      </div>
-                      <div className="rounded-xl bg-secondary p-3">
-                        <div className="text-xl font-bold">{child.progress}%</div>
-                        <div className="text-xs text-muted-foreground">Progress</div>
-                      </div>
-                      <div className="rounded-xl bg-emerald-500/10 p-3">
-                        <div className="text-xl font-bold text-emerald-600">{child.prepaid_hours}h</div>
-                        <div className="text-xs text-muted-foreground">Credit</div>
-                      </div>
-                    </div>
-
-                    <Progress value={child.progress} className="h-2 mb-3" />
-
-                    {child.next_lesson_date && (
-                      <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-3">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span className="text-sm">
-                          <strong>Next:</strong>{' '}
-                          {format(parseISO(child.next_lesson_date), 'EEE d MMM')}
-                          {child.next_lesson_time && ` at ${formatTime(child.next_lesson_time)}`}
-                        </span>
-                      </div>
-                    )}
-                  </InstructorCard>
+                  </div>
                 </motion.div>
               ))}
 
-              {/* Recent Activity */}
-              <InstructorCard>
-                <InstructorPageHeader lucideIcon={Bell} title="Recent Activity" className="mb-4" />
+              {/* Recent Activity — iOS Card Style */}
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-primary" />
+                  Recent Activity
+                </h2>
                 {activities.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4 text-sm">No recent activity yet.</p>
+                  <p className="text-muted-foreground text-center py-4 text-xs">No recent activity yet.</p>
                 ) : (
                   <div className="space-y-3">
                     {activities.map((activity) => {
                       const Icon = getActivityIcon(activity.type);
                       return (
-                        <div key={activity.id} className="flex items-start gap-3 text-sm">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
+                        <div key={activity.id} className="flex items-start gap-2.5 text-xs">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                            <Icon className="h-3.5 w-3.5 text-primary" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-foreground truncate">{activity.text}</div>
-                            <div className="text-xs text-muted-foreground">{activity.time}</div>
+                            <div className="text-foreground">{activity.text}</div>
+                            <div className="text-[10px] text-muted-foreground">{activity.time}</div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
-              </InstructorCard>
+              </div>
             </motion.div>
           )}
 
           {activeSection === 'feedback' && (
             <motion.div key="feedback" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <InstructorCard>
-                <InstructorPageHeader lucideIcon={MessageSquare} title="Instructor Feedback" className="mb-4" />
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                  Instructor Feedback
+                </h2>
                 {recentFeedback.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4 text-sm">No feedback yet.</p>
+                  <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet.</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {recentFeedback.map((feedback) => (
-                      <div key={feedback.id} className="rounded-xl border border-border p-4">
+                      <div key={feedback.id} className="rounded-xl bg-secondary/50 p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{feedback.pupil_name}</span>
-                            <span className="text-xs text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
+                            <span className="font-medium text-xs text-foreground">{feedback.pupil_name}</span>
+                            <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
                           </div>
                           {feedback.rating && (
                             <div className="flex items-center gap-0.5">
@@ -562,53 +611,60 @@ export default function ParentPortal() {
                             </div>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{feedback.notes}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{feedback.notes}</p>
                       </div>
                     ))}
                   </div>
                 )}
-              </InstructorCard>
+              </div>
             </motion.div>
           )}
 
           {activeSection === 'children' && !selectedChild && (
-            <motion.div key="children" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+            <motion.div key="children" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
               {children.map((child) => (
-                <InstructorCard key={child.id} interactive onClick={() => setSelectedChild(child)}>
+                <div 
+                  key={child.id} 
+                  className="bg-card rounded-2xl border border-border shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedChild(child)}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shrink-0">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shrink-0">
                       {child.name.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold">{child.name}</div>
-                      <p className="text-xs text-muted-foreground">{child.instructor_name} · {child.lessons_completed} lessons · {child.progress}%</p>
+                      <div className="font-bold text-sm text-foreground">{child.name}</div>
+                      <p className="text-[11px] text-muted-foreground">{child.instructor_name} · {child.lessons_completed} lessons · {child.progress}%</p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
                   </div>
-                </InstructorCard>
+                </div>
               ))}
             </motion.div>
           )}
 
           {activeSection === 'settings' && (
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <InstructorCard>
-                <InstructorPageHeader lucideIcon={Users} title="Settings" className="mb-4" />
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Settings
+                </h2>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Phone</span>
-                    <span className="font-medium">{parentPhone}</span>
+                    <span className="font-medium text-foreground">{parentPhone}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Children</span>
-                    <span className="font-medium">{children.length}</span>
+                    <span className="font-medium text-foreground">{children.length}</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full mt-6" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full mt-4 h-9 text-xs" onClick={handleLogout}>
+                  <LogOut className="h-3.5 w-3.5 mr-2" />
                   Sign Out
                 </Button>
-              </InstructorCard>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
