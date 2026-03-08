@@ -559,8 +559,14 @@ export default function InstructorPupils() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {displayedPupils.map((pupil) => (
-              <div key={pupil.id} id={`pupil-card-${pupil.id}`}>
+            {displayedPupils.map((pupil, idx) => (
+              <motion.div
+                key={pupil.id}
+                id={`pupil-card-${pupil.id}`}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
+              >
                 <PupilCardStack
                   pupil={pupil}
                   defaultExpanded={expandedPupilId === pupil.id}
