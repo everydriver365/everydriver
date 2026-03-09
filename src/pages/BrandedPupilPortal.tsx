@@ -79,6 +79,13 @@ interface Pupil {
   account_balance: number | null;
   prepaid_hours: number | null;
   profile_image_url: string | null;
+  date_of_birth: string | null;
+  driver_number: string | null;
+  theory_cert_number: string | null;
+  address: string | null;
+  postcode: string | null;
+  pickup_address: string | null;
+  what3words: string | null;
 }
 
 type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book';
