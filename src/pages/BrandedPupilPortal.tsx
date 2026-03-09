@@ -502,6 +502,7 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                   instructorPhone={instructor.phone}
+                  initialShowBooking={bookingRequested}
                 />
               </motion.div>
             )}
