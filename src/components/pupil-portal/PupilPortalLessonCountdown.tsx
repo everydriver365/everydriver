@@ -136,9 +136,19 @@ export function PupilPortalLessonCountdown({
         <CardContent className="p-6 text-center">
           <Calendar className="h-12 w-12 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
           <p className="font-medium" style={{ color: 'var(--brand-text)' }}>No Upcoming Lessons</p>
-          <p className="text-sm" style={{ color: 'var(--brand-muted)' }}>
-            Book a lesson to get started
+          <p className="text-sm mb-4" style={{ color: 'var(--brand-muted)' }}>
+            Browse your instructor's diary to find an available slot
           </p>
+          {onBookLesson && (
+            <Button
+              className="min-h-[44px] text-sm font-medium"
+              onClick={onBookLesson}
+              style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+            >
+              <CalendarPlus className="h-4 w-4 mr-2" />
+              View Available Slots
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
