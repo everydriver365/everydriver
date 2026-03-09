@@ -7,12 +7,9 @@ import { InlineEditField } from "@/components/ui/InlineEditField";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
 
 interface PupilData {
   id: string;
