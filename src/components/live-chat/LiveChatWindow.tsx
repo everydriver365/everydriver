@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TypingIndicator } from "./TypingIndicator";
 import { QuickReplySuggestions, TOTAL_QUICK_REPLY_STEPS } from "./QuickReplySuggestions";
 import { InstructorChatCards, parseCardsFromMessage } from "./InstructorChatCards";
+import { CourseChatCards, parseCourseCardsFromMessage } from "./CourseChatCards";
 import { useLiveChat, LiveChatMessage } from "@/hooks/useLiveChat";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
