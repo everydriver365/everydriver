@@ -1287,3 +1287,5 @@ const baseQuestions: Question[] = [
     category: "Lane Discipline"
   }
 ];
+
+export const theoryQuestions: Question[] = [...baseQuestions, ...theoryQuestionsExtra];
