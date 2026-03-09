@@ -253,7 +253,7 @@ export function MobileHomepage() {
         <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>
         
         <div className="grid grid-cols-2 gap-3">
-          {includedFeatures.slice(0, 6).map((feature, i) => {
+          {includedFeatures.slice(0, 5).map((feature, i) => {
             const IconComponent = feature.icon;
             return (
               <motion.div 
@@ -285,6 +285,27 @@ export function MobileHomepage() {
               </motion.div>
             );
           })}
+          
+          {/* Earlier Test Guaranteed tile */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 1.25 }}
+            onClick={() => navigate("/benefits")}
+            className="bg-card border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-all hover:shadow-xl overflow-hidden"
+          >
+            <div className="h-24 w-full overflow-hidden">
+              <img 
+                src={earlierTestGuaranteedBadge} 
+                alt="Earlier Test Guaranteed" 
+                className="w-full h-full object-contain p-3 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30"
+              />
+            </div>
+            <div className="p-3">
+              <h4 className="font-semibold text-sm text-foreground">Earlier Test Guaranteed</h4>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">We'll find you an earlier date — guaranteed</p>
+            </div>
+          </motion.div>
         </div>
       </div>
 
