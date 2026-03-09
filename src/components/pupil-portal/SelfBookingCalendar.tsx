@@ -449,9 +449,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
               <DialogHeader>
                 <DialogTitle>Confirm Booking</DialogTitle>
                 <DialogDescription>
-                  {(!settings?.allow_self_booking || settings?.require_approval)
-                    ? 'Your booking will be sent to your instructor for approval.'
-                    : 'Confirm your lesson booking.'}
+                  Confirm your lesson booking.
                 </DialogDescription>
               </DialogHeader>
 
