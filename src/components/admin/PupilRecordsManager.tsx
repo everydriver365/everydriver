@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,12 @@ interface Pupil {
   instructor_id: string;
   phone: string | null;
   email: string | null;
+  address: string | null;
+  postcode: string | null;
+  date_of_birth: string | null;
+  driver_number: string | null;
+  transmission_type: string | null;
+  status: string;
   test_date: string | null;
   test_time: string | null;
   notes: string | null;
@@ -32,6 +38,11 @@ interface Pupil {
   account_balance: number | null;
   theory_test_date: string | null;
   theory_test_passed: boolean | null;
+  pickup_address: string | null;
+  pickup_postcode: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  custom_hourly_rate: number | null;
 }
 
 interface LessonHistory {
@@ -96,6 +107,16 @@ export function PupilRecordsManager() {
   const [addingLesson, setAddingLesson] = useState(false);
   const [newLesson, setNewLesson] = useState({ date: "", time: "09:00", duration: "60", type: "Standard" });
 
+  // Pupil details edit state
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [detailsForm, setDetailsForm] = useState({
+    name: "", email: "", phone: "", address: "", postcode: "",
+    date_of_birth: "", driver_number: "", transmission_type: "",
+    status: "", pickup_address: "", pickup_postcode: "",
+    emergency_contact_name: "", emergency_contact_phone: "",
+    custom_hourly_rate: "",
+  });
+
   useEffect(() => {
     fetchInstructorsAndPupils();
   }, []);
@@ -112,7 +133,8 @@ export function PupilRecordsManager() {
 
       const { data: pupilData } = await supabase
         .from("pupils")
-        .select("id, name, instructor_id, phone, email, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed")
+        .select("id, name, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
+        .is("deleted_at", null)
         .order("name");
 
       const grouped: Record<string, Pupil[]> = {};
@@ -150,6 +172,8 @@ export function PupilRecordsManager() {
     setEditingTheory(false);
     setEditingTest(false);
     setAddingLesson(false);
+    setEditingDetails(false);
+    populateDetailsForm(pupil);
     setDetailLoading(true);
 
     try {
@@ -190,7 +214,74 @@ export function PupilRecordsManager() {
     }
   };
 
-  // Save notes
+  const populateDetailsForm = (pupil: Pupil) => {
+    setDetailsForm({
+      name: pupil.name || "",
+      email: pupil.email || "",
+      phone: pupil.phone || "",
+      address: pupil.address || "",
+      postcode: pupil.postcode || "",
+      date_of_birth: pupil.date_of_birth || "",
+      driver_number: pupil.driver_number || "",
+      transmission_type: pupil.transmission_type || "",
+      status: pupil.status || "active",
+      pickup_address: pupil.pickup_address || "",
+      pickup_postcode: pupil.pickup_postcode || "",
+      emergency_contact_name: pupil.emergency_contact_name || "",
+      emergency_contact_phone: pupil.emergency_contact_phone || "",
+      custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+    });
+  };
+
+  const saveDetails = async () => {
+    if (!selectedPupil) return;
+    try {
+      const updates: Record<string, any> = {
+        name: detailsForm.name,
+        email: detailsForm.email || null,
+        phone: detailsForm.phone || null,
+        address: detailsForm.address || null,
+        postcode: detailsForm.postcode || null,
+        date_of_birth: detailsForm.date_of_birth || null,
+        driver_number: detailsForm.driver_number || null,
+        transmission_type: detailsForm.transmission_type || null,
+        status: detailsForm.status || "active",
+        pickup_address: detailsForm.pickup_address || null,
+        pickup_postcode: detailsForm.pickup_postcode || null,
+        emergency_contact_name: detailsForm.emergency_contact_name || null,
+        emergency_contact_phone: detailsForm.emergency_contact_phone || null,
+        custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+      };
+
+      const { error } = await supabase
+        .from("pupils")
+        .update(updates)
+        .eq("id", selectedPupil.id);
+
+      if (error) throw error;
+
+      const updatedPupil = { ...selectedPupil, ...updates };
+      setSelectedPupil(updatedPupil);
+      
+      // Update in the grouped list too
+      setPupils(prev => {
+        const updated = { ...prev };
+        const list = updated[selectedPupil.instructor_id] || [];
+        updated[selectedPupil.instructor_id] = list.map(p => 
+          p.id === selectedPupil.id ? updatedPupil : p
+        );
+        return updated;
+      });
+
+      setEditingDetails(false);
+      toast.success("Pupil details saved");
+    } catch (error) {
+      console.error("Error saving details:", error);
+      toast.error("Failed to save pupil details");
+    }
+  };
+
+
   const saveNotes = async () => {
     if (!selectedPupil) return;
     try {
@@ -413,6 +504,161 @@ export function PupilRecordsManager() {
         ) : (
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
+              {/* Pupil Details Section */}
+              <DetailSection
+                title="Pupil Details"
+                icon={<UserCog className="h-4 w-4" />}
+                onEdit={() => {
+                  populateDetailsForm(selectedPupil);
+                  setEditingDetails(true);
+                }}
+              >
+                {editingDetails ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Name *</label>
+                        <Input value={detailsForm.name} onChange={(e) => setDetailsForm({ ...detailsForm, name: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Status</label>
+                        <Select value={detailsForm.status} onValueChange={(v) => setDetailsForm({ ...detailsForm, status: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Email</label>
+                        <Input type="email" value={detailsForm.email} onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Phone</label>
+                        <Input value={detailsForm.phone} onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Address</label>
+                        <Input value={detailsForm.address} onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Postcode</label>
+                        <Input value={detailsForm.postcode} onChange={(e) => setDetailsForm({ ...detailsForm, postcode: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Date of Birth</label>
+                        <Input type="date" value={detailsForm.date_of_birth} onChange={(e) => setDetailsForm({ ...detailsForm, date_of_birth: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Driver Number</label>
+                        <Input value={detailsForm.driver_number} onChange={(e) => setDetailsForm({ ...detailsForm, driver_number: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Transmission</label>
+                        <Select value={detailsForm.transmission_type} onValueChange={(v) => setDetailsForm({ ...detailsForm, transmission_type: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="manual">Manual</SelectItem>
+                            <SelectItem value="automatic">Automatic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Custom Hourly Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_hourly_rate} onChange={(e) => setDetailsForm({ ...detailsForm, custom_hourly_rate: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Pickup Postcode</label>
+                        <Input value={detailsForm.pickup_postcode} onChange={(e) => setDetailsForm({ ...detailsForm, pickup_postcode: e.target.value })} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Pickup Address</label>
+                        <Input value={detailsForm.pickup_address} onChange={(e) => setDetailsForm({ ...detailsForm, pickup_address: e.target.value })} />
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Emergency Contact</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Name</label>
+                        <Input value={detailsForm.emergency_contact_name} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_name: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Phone</label>
+                        <Input value={detailsForm.emergency_contact_phone} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_phone: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveDetails}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingDetails(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Email:</span>
+                        <span className="truncate">{selectedPupil.email || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span>{selectedPupil.phone || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Address:</span>
+                        <span className="truncate">{selectedPupil.address || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Postcode:</span>
+                        <span>{selectedPupil.postcode || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">DOB:</span>
+                        <span>{selectedPupil.date_of_birth ? format(new Date(selectedPupil.date_of_birth), "dd-MMM-yyyy") : "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Car className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Transmission:</span>
+                        <span className="capitalize">{selectedPupil.transmission_type || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Driver No:</span>
+                        <span>{selectedPupil.driver_number || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={selectedPupil.status === "active" ? "default" : "secondary"} className={selectedPupil.status === "active" ? "bg-emerald-600" : ""}>
+                          {selectedPupil.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    {selectedPupil.custom_hourly_rate && (
+                      <p className="text-sm text-muted-foreground">Custom rate: £{selectedPupil.custom_hourly_rate}/hr</p>
+                    )}
+                    {(selectedPupil.emergency_contact_name || selectedPupil.emergency_contact_phone) && (
+                      <div className="mt-2 pt-2 border-t text-sm">
+                        <span className="text-muted-foreground">Emergency: </span>
+                        {selectedPupil.emergency_contact_name} {selectedPupil.emergency_contact_phone && `(${selectedPupil.emergency_contact_phone})`}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </DetailSection>
+
               {/* Journey Timeline */}
               <DetailSection
                 title="Journey"
