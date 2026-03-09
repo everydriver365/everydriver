@@ -87,7 +87,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: inst.transmission_type || "Manual",
+          transmission: "Manual/Automatic",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
         });
