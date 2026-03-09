@@ -273,18 +273,10 @@ Guidelines:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Please try browsing our website or contacting support.";
 
-    // Build stored content with optional instructor cards
+    // Build stored content with optional course cards
     let storedContent = `🤖 ${reply}`;
-    if (cachedSearchResult && cachedSearchResult.instructors.length > 0) {
-      const cardsData = cachedSearchResult.instructors.map((i: any) => ({
-        name: i.name,
-        slug: i.slug,
-        hourlyRate: i.hourlyRate,
-        distance: i.distance,
-        profileImage: i.profileImage,
-        transmission: i.transmission,
-      }));
-      storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
+    if (cachedSearchResult && cachedSearchResult.courses && cachedSearchResult.courses.length > 0) {
+      storedContent += `<!--COURSES:${JSON.stringify(cachedSearchResult.courses)}-->`;
     }
 
     // Insert AI response as a chat message
