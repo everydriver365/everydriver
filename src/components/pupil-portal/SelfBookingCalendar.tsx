@@ -104,17 +104,24 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     },
   });
 
-  // Fetch instructor availability
+  // Fetch instructor working hours
   const { data: availability, isLoading: availabilityLoading } = useQuery({
     queryKey: ['instructor-availability', instructorId, weekStart],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('instructor_availability' as never)
-        .select('id, day_of_week, start_time, end_time, is_available')
-        .eq('instructor_id', instructorId);
+        .from('instructor_working_hours')
+        .select('id, day_of_week, start_time, end_time, is_active')
+        .eq('instructor_id', instructorId)
+        .eq('is_active', true);
 
       if (error) throw error;
-      return (data || []) as { id: string; day_of_week: string; start_time: string; end_time: string; is_available: boolean }[];
+      return (data || []).map(h => ({
+        id: h.id,
+        day_of_week: h.day_of_week,
+        start_time: h.start_time,
+        end_time: h.end_time,
+        is_available: h.is_active,
+      }));
     },
     enabled: true,
   });
@@ -201,22 +208,32 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   });
 
   // Generate available slots
+  const DEFAULT_SETTINGS: BookingSettings = {
+    allow_self_booking: true,
+    require_approval: false,
+    min_notice_hours: 2,
+    max_advance_days: 56,
+    allowed_durations: [60, 90, 120],
+  };
+
+  const effectiveSettings = settings || DEFAULT_SETTINGS;
+
   const availableSlots = useMemo(() => {
-    if (!availability || !settings) return {};
+    if (!availability) return {};
 
     const slots: Record<string, AvailableSlot[]> = {};
-    const minNoticeDate = addDays(new Date(), settings.min_notice_hours / 24);
-    const maxAdvanceDate = addDays(new Date(), settings.max_advance_days);
+    const minNoticeDate = addDays(new Date(), effectiveSettings.min_notice_hours / 24);
+    const maxAdvanceDate = addDays(new Date(), effectiveSettings.max_advance_days);
 
     for (let i = 0; i < 14; i++) {
       const date = addDays(weekStart, i);
       const dateStr = format(date, 'yyyy-MM-dd');
-      const dayOfWeek = format(date, 'EEEE').toLowerCase();
+      const dayOfWeekNum = date.getDay(); // 0=Sun, 1=Mon, ...
 
       if (isBefore(date, minNoticeDate) || isBefore(maxAdvanceDate, date)) continue;
 
       const dayAvailability = availability.filter(
-        (a) => a.day_of_week?.toLowerCase() === dayOfWeek && a.is_available
+        (a) => a.day_of_week === dayOfWeekNum && a.is_available
       );
 
       slots[dateStr] = [];
@@ -245,7 +262,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
 
     return slots;
-  }, [availability, existingBookings, weekStart, settings]);
+  }, [availability, existingBookings, weekStart, effectiveSettings]);
 
   const handlePrevWeek = () => setWeekStart((prev) => addDays(prev, -7));
   const handleNextWeek = () => setWeekStart((prev) => addDays(prev, 7));
