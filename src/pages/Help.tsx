@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { MessageCircle, Book, Video, FileText } from "lucide-react";
+import { MessageCircle, Book, Video, FileText, Headphones } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -32,6 +32,10 @@ const helpTopics = [
 ];
 
 export default function Help() {
+  const openLiveChat = () => {
+    window.dispatchEvent(new CustomEvent("open-live-chat"));
+  };
+
   return (
     <MainLayout>
       <div className="container py-8 pb-24">
@@ -43,6 +47,24 @@ export default function Help() {
               We're here to help you on your journey to becoming a confident driver
             </p>
           </div>
+
+          {/* Live Chat Tile */}
+          <button
+            onClick={openLiveChat}
+            className="mb-6 w-full rounded-xl border-2 border-accent bg-accent/10 p-5 text-left transition-all hover:bg-accent/20 hover:shadow-md active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg">
+                <Headphones className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Live Chat</h3>
+                <p className="text-sm text-muted-foreground">
+                  Chat with our support team in real-time — we're here to help!
+                </p>
+              </div>
+            </div>
+          </button>
 
           <div className="grid gap-4 sm:grid-cols-2">
             {helpTopics.map((topic) => (
