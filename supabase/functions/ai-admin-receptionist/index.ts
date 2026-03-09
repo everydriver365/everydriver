@@ -122,6 +122,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           homeAddress: inst.home_address || null,
           bio: inst.bio || null,
           schoolSkimAmount: inst.school_skim_amount || 0,
+          availableFrom: inst.available_from || null,
         });
       }
     }
