@@ -68,6 +68,10 @@ interface InstructorBranding {
   reflective_logs_enabled: boolean | null;
   pupil_self_booking_enabled: boolean | null;
   lesson_feedback_enabled: boolean | null;
+  payment_qr_url: string | null;
+  payment_qr_url_pupil_pays: string | null;
+  payment_qr_url_instructor_pays: string | null;
+  commission_payer: string | null;
 }
 
 interface Pupil {
