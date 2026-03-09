@@ -82,32 +82,32 @@ export function InlineEditField({
     return (
       <div className={cn("flex items-center gap-1.5", className)}>
         {icon && <div className="shrink-0">{icon}</div>}
-        <div className="flex-1 flex items-center gap-1">
-          {type === "textarea" ? (
-            <Textarea
-              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder}
-              className="text-sm min-h-[60px]"
-              disabled={saving}
-            />
-          ) : (
-            <Input
-              ref={inputRef as React.RefObject<HTMLInputElement>}
-              type={type}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleSave}
-              placeholder={placeholder}
-              className="h-7 text-sm"
-              disabled={saving}
-            />
-          )}
-          {type === "textarea" && (
-            <div className="flex flex-col gap-1 shrink-0">
+        <div className="flex-1 min-w-0">
+          {label && <span className="text-[10px] text-muted-foreground block">{label}</span>}
+          <div className="flex items-center gap-1">
+            {type === "textarea" ? (
+              <Textarea
+                ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                className="text-sm min-h-[60px]"
+                disabled={saving}
+              />
+            ) : (
+              <Input
+                ref={inputRef as React.RefObject<HTMLInputElement>}
+                type={type}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                className="h-7 text-sm"
+                disabled={saving}
+              />
+            )}
+            <div className="flex gap-1 shrink-0">
               <button onClick={handleSave} disabled={saving} className="h-6 w-6 rounded flex items-center justify-center bg-primary/10 text-primary hover:bg-primary/20">
                 <Check className="h-3.5 w-3.5" />
               </button>
@@ -115,7 +115,7 @@ export function InlineEditField({
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-          )}
+          </div>
         </div>
       </div>
     );
