@@ -668,6 +668,7 @@ export function PupilRecordsManager() {
                 <PupilJourneyTimeline
                   pupilId={selectedPupil.id}
                   pupil={{
+                    created_at: selectedPupil.created_at,
                     instructor_id: selectedPupil.instructor_id,
                     theory_test_date: selectedPupil.theory_test_date,
                     theory_test_passed: selectedPupil.theory_test_passed,
