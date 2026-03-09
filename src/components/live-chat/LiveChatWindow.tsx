@@ -273,6 +273,15 @@ export function LiveChatWindow({
         </AnimatePresence>
       </ScrollArea>
 
+      {/* Quick Reply Suggestions */}
+      {userType === "visitor" && !quickReplyDone && quickReplyStep < TOTAL_QUICK_REPLY_STEPS && (
+        <QuickReplySuggestions
+          currentStep={quickReplyStep}
+          onSelect={handleQuickReplySelect}
+          disabled={sending}
+        />
+      )}
+
       {/* Input */}
       <div className="p-4 border-t bg-background space-y-2">
         {showAgentButton && userType === "visitor" && (
