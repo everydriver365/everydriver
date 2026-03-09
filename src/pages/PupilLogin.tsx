@@ -577,7 +577,10 @@ export default function PupilLogin() {
                   </TabsContent>
 
                   <TabsContent value="register">
-                    <PupilRegister />
+                    <PupilRegister
+                      instructorId={slugInstructorId}
+                      instructorName={slugInstructorName}
+                    />
                   </TabsContent>
                 </Tabs>
 
