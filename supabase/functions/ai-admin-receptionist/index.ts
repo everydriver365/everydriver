@@ -133,17 +133,18 @@ serve(async (req) => {
     // Check if message contains a UK postcode
     const postcodeMatch = message.match(UK_POSTCODE_REGEX);
     let instructorContext = "";
+    let cachedSearchResult: any = null;
 
     if (postcodeMatch) {
-      const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
-      if (searchResult) {
-        if (searchResult.instructors.length > 0) {
-          const list = searchResult.instructors.map((i: any) =>
+      cachedSearchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
+      if (cachedSearchResult) {
+        if (cachedSearchResult.instructors.length > 0) {
+          const list = cachedSearchResult.instructors.map((i: any) =>
             `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
           ).join("\n");
-          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
+          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
         } else {
-          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
+          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
         }
       }
     }
