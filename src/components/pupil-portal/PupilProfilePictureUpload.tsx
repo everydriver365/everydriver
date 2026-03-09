@@ -68,11 +68,11 @@ export function PupilProfilePictureUpload({
 
       const newUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
 
-      // Update pupil record
-      const { error: updateError } = await supabase
-        .from("pupils")
-        .update({ profile_image_url: newUrl })
-        .eq("id", pupilId);
+      // Update pupil record via RPC
+      const { error: updateError } = await supabase.rpc("update_pupil_profile", {
+        p_pupil_id: pupilId,
+        p_updates: { profile_image_url: newUrl },
+      });
 
       if (updateError) throw updateError;
 
