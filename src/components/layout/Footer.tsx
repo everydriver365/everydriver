@@ -87,7 +87,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/drive365" className="hover:text-accent">Drive365 Learners</Link></li>
               <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
-              <li><Link to="/instructor-app" className="hover:text-accent">Instructor Portal</Link></li>
+              <li><a href="https://everydriver.co.uk/instructor-app" className="hover:text-accent">Instructor Portal</a></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
             </ul>
           </div>
