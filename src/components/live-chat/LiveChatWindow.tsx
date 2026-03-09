@@ -30,6 +30,8 @@ export function LiveChatWindow({
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [showAgentButton, setShowAgentButton] = useState(false);
+  const [quickReplyStep, setQuickReplyStep] = useState(0);
+  const [quickReplyDone, setQuickReplyDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
