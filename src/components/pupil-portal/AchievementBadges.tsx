@@ -5,10 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Achievement {
   id: string;
-  badge_key: string;
-  badge_label: string;
-  badge_icon: string;
-  badge_color: string;
+  achievement_type: string;
+  achievement_name: string;
+  icon_name: string | null;
   earned_at: string;
 }
 
@@ -28,6 +27,14 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   medal: Medal,
 };
 
+const typeColorMap: Record<string, string> = {
+  milestone: "#f59e0b",
+  skill: "#3b82f6",
+  challenge: "#8b5cf6",
+  streak: "#ef4444",
+  default: "#10b981",
+};
+
 export function AchievementBadges({ pupilId, brandColour }: AchievementBadgesProps) {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +47,7 @@ export function AchievementBadges({ pupilId, brandColour }: AchievementBadgesPro
     try {
       const { data, error } = await (supabase as any)
         .from('pupil_achievements')
-        .select('id, badge_key, badge_label, badge_icon, badge_color, earned_at')
+        .select('id, achievement_type, achievement_name, icon_name, earned_at')
         .eq('pupil_id', pupilId)
         .order('earned_at', { ascending: false });
 
@@ -67,21 +74,22 @@ export function AchievementBadges({ pupilId, brandColour }: AchievementBadgesPro
       <CardContent>
         <div className="flex flex-wrap gap-3">
           {achievements.map((a) => {
-            const IconComp = iconMap[a.badge_icon] || Award;
+            const IconComp = iconMap[a.icon_name || 'award'] || Award;
+            const color = typeColorMap[a.achievement_type] || typeColorMap.default;
             return (
               <div
                 key={a.id}
                 className="flex flex-col items-center gap-1 p-2 rounded-lg"
-                style={{ backgroundColor: `${a.badge_color}15` }}
+                style={{ backgroundColor: `${color}15` }}
               >
                 <div
                   className="h-10 w-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${a.badge_color}25`, color: a.badge_color }}
+                  style={{ backgroundColor: `${color}25`, color }}
                 >
                   <IconComp className="h-5 w-5" />
                 </div>
                 <span className="text-[10px] font-medium text-center max-w-[70px] leading-tight" style={{ color: 'var(--brand-text)' }}>
-                  {a.badge_label}
+                  {a.achievement_name}
                 </span>
               </div>
             );
