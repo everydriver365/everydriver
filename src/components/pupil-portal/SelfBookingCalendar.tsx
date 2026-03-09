@@ -208,8 +208,24 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
   });
 
   // Generate available slots
+  const DEFAULT_SETTINGS: BookingSettings = {
+    allow_self_booking: true,
+    allow_self_cancel: false,
+    allow_self_reschedule: false,
+    require_approval: false,
+    cancel_notice_hours: 24,
+    reschedule_notice_hours: 24,
+    min_notice_hours: 2,
+    max_advance_days: 56,
+    allowed_durations: [60, 90, 120],
+    booking_message: null,
+    allow_extra_hours_request: false,
+  };
+
+  const effectiveSettings = settings || DEFAULT_SETTINGS;
+
   const availableSlots = useMemo(() => {
-    if (!availability || !settings) return {};
+    if (!availability) return {};
 
     const slots: Record<string, AvailableSlot[]> = {};
     const minNoticeDate = addDays(new Date(), settings.min_notice_hours / 24);
