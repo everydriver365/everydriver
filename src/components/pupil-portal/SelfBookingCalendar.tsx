@@ -150,7 +150,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
       if (pupilError) throw pupilError;
 
-      const bookingStatus = (!settings?.allow_self_booking || settings?.require_approval) ? 'pending_approval' : 'confirmed';
+      const bookingStatus = 'confirmed';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
       const { error } = await supabase
@@ -187,10 +187,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       setTimeout(() => setBookingSuccess(false), 3000);
       
       toast({
-        title: bookingStatus === 'pending_approval' ? 'Booking Requested! 🎉' : 'Lesson Booked! 🎉',
-        description: bookingStatus === 'pending_approval'
-          ? 'Your instructor will confirm your booking soon.'
-          : 'Your lesson has been confirmed.',
+        title: 'Lesson Booked! 🎉',
+        description: 'Your lesson has been confirmed.',
       });
     },
     onError: (error) => {
@@ -263,8 +261,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
   };
 
-  // Determine if bookings require approval (default to true if self-booking not explicitly enabled)
-  const requiresApproval = !settings?.allow_self_booking || settings?.require_approval;
 
   if (settingsLoading || availabilityLoading) {
     return (
@@ -442,11 +438,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
         {/* Legend */}
         <div className="px-4 flex items-center gap-3 text-xs text-muted-foreground">
-          {(!settings?.allow_self_booking || settings?.require_approval) && (
-            <Badge variant="secondary" className="text-xs">
-              Requires approval
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -458,9 +449,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
               <DialogHeader>
                 <DialogTitle>Confirm Booking</DialogTitle>
                 <DialogDescription>
-                  {(!settings?.allow_self_booking || settings?.require_approval)
-                    ? 'Your booking will be sent to your instructor for approval.'
-                    : 'Confirm your lesson booking.'}
+                  Confirm your lesson booking.
                 </DialogDescription>
               </DialogHeader>
 
@@ -511,7 +500,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
                   ) : (
                     <Check className="h-4 w-4 mr-2" />
                   )}
-                  {(!settings?.allow_self_booking || settings?.require_approval) ? 'Request Booking' : 'Confirm Booking'}
+                  Confirm Booking
                 </Button>
               </DialogFooter>
             </DialogContent>
