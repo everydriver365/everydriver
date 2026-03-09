@@ -214,7 +214,74 @@ export function PupilRecordsManager() {
     }
   };
 
-  // Save notes
+  const populateDetailsForm = (pupil: Pupil) => {
+    setDetailsForm({
+      name: pupil.name || "",
+      email: pupil.email || "",
+      phone: pupil.phone || "",
+      address: pupil.address || "",
+      postcode: pupil.postcode || "",
+      date_of_birth: pupil.date_of_birth || "",
+      driver_number: pupil.driver_number || "",
+      transmission_type: pupil.transmission_type || "",
+      status: pupil.status || "active",
+      pickup_address: pupil.pickup_address || "",
+      pickup_postcode: pupil.pickup_postcode || "",
+      emergency_contact_name: pupil.emergency_contact_name || "",
+      emergency_contact_phone: pupil.emergency_contact_phone || "",
+      custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+    });
+  };
+
+  const saveDetails = async () => {
+    if (!selectedPupil) return;
+    try {
+      const updates: Record<string, any> = {
+        name: detailsForm.name,
+        email: detailsForm.email || null,
+        phone: detailsForm.phone || null,
+        address: detailsForm.address || null,
+        postcode: detailsForm.postcode || null,
+        date_of_birth: detailsForm.date_of_birth || null,
+        driver_number: detailsForm.driver_number || null,
+        transmission_type: detailsForm.transmission_type || null,
+        status: detailsForm.status || "active",
+        pickup_address: detailsForm.pickup_address || null,
+        pickup_postcode: detailsForm.pickup_postcode || null,
+        emergency_contact_name: detailsForm.emergency_contact_name || null,
+        emergency_contact_phone: detailsForm.emergency_contact_phone || null,
+        custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+      };
+
+      const { error } = await supabase
+        .from("pupils")
+        .update(updates)
+        .eq("id", selectedPupil.id);
+
+      if (error) throw error;
+
+      const updatedPupil = { ...selectedPupil, ...updates };
+      setSelectedPupil(updatedPupil);
+      
+      // Update in the grouped list too
+      setPupils(prev => {
+        const updated = { ...prev };
+        const list = updated[selectedPupil.instructor_id] || [];
+        updated[selectedPupil.instructor_id] = list.map(p => 
+          p.id === selectedPupil.id ? updatedPupil : p
+        );
+        return updated;
+      });
+
+      setEditingDetails(false);
+      toast.success("Pupil details saved");
+    } catch (error) {
+      console.error("Error saving details:", error);
+      toast.error("Failed to save pupil details");
+    }
+  };
+
+
   const saveNotes = async () => {
     if (!selectedPupil) return;
     try {
