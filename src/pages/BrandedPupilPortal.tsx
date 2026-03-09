@@ -544,6 +544,10 @@ export default function BrandedPupilPortal() {
                     pupilEmail={pupil.email}
                     pupilPhone={pupil.phone}
                     onBalanceUpdate={() => fetchPupil(pupil.id)}
+                    paymentQrUrl={instructor.payment_qr_url}
+                    paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
+                    paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
+                    commissionPayer={instructor.commission_payer}
                   />
                 </div>
               </motion.div>
