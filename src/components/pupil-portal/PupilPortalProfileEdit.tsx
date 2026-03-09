@@ -37,6 +37,10 @@ interface PupilPortalProfileEditProps {
 
 export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: PupilPortalProfileEditProps) {
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
+  const [pendingDob, setPendingDob] = useState<Date | undefined>(
+    pupil.date_of_birth ? new Date(pupil.date_of_birth) : undefined
+  );
+  const [dobOpen, setDobOpen] = useState(false);
 
   const updateField = async (field: string, value: string | null) => {
     const { error } = await supabase.rpc("update_pupil_profile", {
