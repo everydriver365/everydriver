@@ -46,6 +46,13 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
       return { areaName, instructors: [], courses: [] };
     }
 
+    console.log(`Found ${instructors?.length || 0} active instructors. User coords: ${userLat}, ${userLng}`);
+    if (instructors) {
+      for (const inst of instructors) {
+        console.log(`Instructor: ${inst.name}, postcode: ${inst.home_postcode}, lat: ${inst.lat}, lng: ${inst.lng}`);
+      }
+    }
+
     if (!instructors || instructors.length === 0) return { areaName, instructors: [], courses: [] };
 
     // Geocode instructors missing lat/lng
