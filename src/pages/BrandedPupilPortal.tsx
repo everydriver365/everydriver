@@ -51,6 +51,7 @@ import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTrack
 import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
 import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
+import { SlotOfferNotification } from "@/components/pupil-portal/SlotOfferNotification";
 
 interface InstructorBranding {
   id: string;
