@@ -187,10 +187,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       setTimeout(() => setBookingSuccess(false), 3000);
       
       toast({
-        title: bookingStatus === 'pending_approval' ? 'Booking Requested! 🎉' : 'Lesson Booked! 🎉',
-        description: bookingStatus === 'pending_approval'
-          ? 'Your instructor will confirm your booking soon.'
-          : 'Your lesson has been confirmed.',
+        title: 'Lesson Booked! 🎉',
+        description: 'Your lesson has been confirmed.',
       });
     },
     onError: (error) => {
