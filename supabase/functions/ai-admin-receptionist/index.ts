@@ -189,8 +189,11 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(3);
 
-    // If the most recent message is from admin (human), skip AI
-    if (recentMessages && recentMessages.length > 0 && recentMessages[0].sender_type === "admin") {
+    // If the most recent message is from a HUMAN admin (not AI bot), skip AI
+    const isHumanAdminReply = recentMessages && recentMessages.length > 0 && 
+      recentMessages[0].sender_type === "admin" && 
+      !recentMessages[0].content.startsWith("🤖");
+    if (isHumanAdminReply) {
       return new Response(JSON.stringify({ reply: null, reason: "human_replied" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
