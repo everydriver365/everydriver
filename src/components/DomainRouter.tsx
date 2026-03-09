@@ -31,6 +31,9 @@ const LEARNER_ALLOWED_ROUTES = [
   "/availability/",      // Public availability calendar
   "/sign/",              // Remote signing
   "/i/",                 // Mini-website path routes (public)
+  "/drive365",           // Drive365 homepage
+  "/learner-app/",       // Learner app routes
+  "/benefits",           // Benefits page
 ];
 
 // Routes that should stay on their current domain (shared routes)
