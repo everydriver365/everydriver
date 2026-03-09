@@ -7,6 +7,7 @@ import { InlineEditField } from "@/components/ui/InlineEditField";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
