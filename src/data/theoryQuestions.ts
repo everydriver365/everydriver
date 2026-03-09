@@ -1,12 +1,3 @@
-export interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  category: string;
-}
-
 import { theoryQuestionsExtra } from "./theoryQuestionsExtra";
 
 export interface Question {
@@ -1287,3 +1278,5 @@ const baseQuestions: Question[] = [
     category: "Lane Discipline"
   }
 ];
+
+export const theoryQuestions: Question[] = [...baseQuestions, ...theoryQuestionsExtra];
