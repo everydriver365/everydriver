@@ -27,6 +27,7 @@ import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
+import { PupilPortalProfileEdit } from "@/components/pupil-portal/PupilPortalProfileEdit";
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
