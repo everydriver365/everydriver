@@ -77,7 +77,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, email, password, name, code } = await req.json();
+    const { action, email, password, name, code, instructorId } = await req.json();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -169,25 +169,65 @@ serve(async (req) => {
         return jsonResponse({ error: "Password must be at least 6 characters" });
       }
 
+      // Try to find existing pupil by email
       const { data: pupils, error: pupilError } = await supabase
         .from("pupils")
         .select("id, name, instructor:instructors!inner(id, app_slug, pupil_app_enabled)")
         .ilike("email", cleanEmail)
         .limit(1);
 
-      if (pupilError || !pupils || pupils.length === 0) {
-        return jsonResponse({ error: "Email not found. Your instructor must add you to the system first." });
-      }
+      let pupilId: string;
 
-      const pupil = pupils[0] as any;
-      const existingHash = await getCredentials(supabase, pupil.id);
+      if (pupils && pupils.length > 0) {
+        // Existing pupil — check if already registered
+        const pupil = pupils[0] as any;
+        const existingHash = await getCredentials(supabase, pupil.id);
+        if (existingHash) {
+          return jsonResponse({ error: "Account already registered. Please sign in instead." });
+        }
+        pupilId = pupil.id;
+      } else if (instructorId) {
+        // No existing pupil but instructor provided — create new pupil record
+        if (!name?.trim()) {
+          return jsonResponse({ error: "Name is required for new registrations" });
+        }
 
-      if (existingHash) {
-        return jsonResponse({ error: "Account already registered. Please sign in instead." });
+        // Validate instructor exists and has pupil app enabled
+        const { data: instructor } = await supabase
+          .from("instructors")
+          .select("id, pupil_app_enabled")
+          .eq("id", instructorId)
+          .single();
+
+        if (!instructor) {
+          return jsonResponse({ error: "Instructor not found" });
+        }
+        if (!instructor.pupil_app_enabled) {
+          return jsonResponse({ error: "Pupil portal is not enabled for this instructor" });
+        }
+
+        // Create the pupil
+        const { data: newPupil, error: createError } = await supabase
+          .from("pupils")
+          .insert({
+            name: name.trim(),
+            email: cleanEmail,
+            instructor_id: instructorId,
+          })
+          .select("id")
+          .single();
+
+        if (createError || !newPupil) {
+          console.error("Error creating pupil:", createError);
+          return jsonResponse({ error: "Failed to create account. Please try again." });
+        }
+        pupilId = newPupil.id;
+      } else {
+        return jsonResponse({ error: "Email not found. Your instructor must add you to the system first, or register via your instructor's direct link." });
       }
 
       const { hash } = await hashPassword(password);
-      await setCredentials(supabase, pupil.id, hash);
+      await setCredentials(supabase, pupilId, hash);
 
       return jsonResponse({ success: true, message: "Account registered successfully" });
 

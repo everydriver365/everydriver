@@ -1,18 +1,53 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export default function PupilRegister() {
+interface PupilRegisterProps {
+  instructorId?: string | null;
+  instructorName?: string | null;
+}
+
+export default function PupilRegister({ instructorId, instructorName }: PupilRegisterProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [selectedInstructorId, setSelectedInstructorId] = useState(instructorId || "");
+  const [instructors, setInstructors] = useState<{ id: string; name: string }[]>([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
+
+  const showSelector = !instructorId;
+
+  useEffect(() => {
+    if (!showSelector) return;
+    const fetchInstructors = async () => {
+      setLoadingInstructors(true);
+      const { data } = await supabase
+        .from("public_instructors" as any)
+        .select("id, name")
+        .eq("pupil_app_enabled", true)
+        .eq("is_active", true)
+        .order("name");
+      if (data) setInstructors(data as any);
+      setLoadingInstructors(false);
+    };
+    fetchInstructors();
+  }, [showSelector]);
+
+  useEffect(() => {
+    if (instructorId) setSelectedInstructorId(instructorId);
+  }, [instructorId]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,11 +72,21 @@ export default function PupilRegister() {
       toast.error("Passwords do not match");
       return;
     }
+    if (showSelector && !selectedInstructorId) {
+      toast.error("Please select your instructor");
+      return;
+    }
 
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
-        body: { action: "register", email: email.trim(), password, name: name.trim() },
+        body: {
+          action: "register",
+          email: email.trim(),
+          password,
+          name: name.trim(),
+          instructorId: selectedInstructorId || undefined,
+        },
       });
 
       if (error) throw error;
@@ -53,7 +98,6 @@ export default function PupilRegister() {
       }
 
       toast.success("Registration successful! You can now sign in.");
-      // Switch back to login - parent will handle this via callback
       window.dispatchEvent(new CustomEvent("pupil-registered"));
     } catch (error) {
       console.error("Registration error:", error);
@@ -65,60 +109,85 @@ export default function PupilRegister() {
   return (
     <form onSubmit={handleRegister} className="space-y-4">
       <div className="space-y-3">
+        {instructorName && (
+          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-sm text-emerald-300 text-center">
+            Registering with <span className="font-semibold">{instructorName}</span>
+          </div>
+        )}
+
+        {showSelector && (
+          <div>
+            <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
+              <SelectTrigger className="h-12 bg-white/10 border-white/20 text-white [&>span]:text-slate-400 data-[state=open]:ring-emerald-500">
+                <SelectValue placeholder={loadingInstructors ? "Loading instructors..." : "Select your instructor"} />
+              </SelectTrigger>
+              <SelectContent>
+                {instructors.map((inst) => (
+                  <SelectItem key={inst.id} value={inst.id}>
+                    {inst.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="relative">
-          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             type="text"
             placeholder="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="pl-10 text-lg h-12"
+            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
             autoComplete="name"
-            autoFocus
+            autoFocus={!!instructorId}
           />
         </div>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             type="email"
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 text-lg h-12"
+            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
             autoComplete="email"
           />
         </div>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             type="password"
             placeholder="Password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="pl-10 text-lg h-12"
+            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
             autoComplete="new-password"
           />
         </div>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="pl-10 text-lg h-12"
+            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
             autoComplete="new-password"
           />
         </div>
-        <p className="text-xs text-muted-foreground">
-          Your instructor must have your email on file for registration to work.
+        <p className="text-xs text-slate-500">
+          {showSelector
+            ? "Select your instructor and create your account to get started."
+            : "Your instructor must have your email on file for registration to work."}
         </p>
       </div>
 
       <Button
         type="submit"
-        className="w-full h-12 text-base"
-        disabled={loading || !name.trim() || !email.trim() || !password || !confirmPassword}
+        className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600 text-white"
+        disabled={loading || !name.trim() || !email.trim() || !password || !confirmPassword || (showSelector && !selectedInstructorId)}
       >
         {loading ? (
           <>

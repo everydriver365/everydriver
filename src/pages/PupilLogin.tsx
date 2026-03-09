@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Loader2, ArrowRight, Lock, ScanFace, Car, Shield, Award, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,29 @@ export default function PupilLogin() {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [slugInstructorId, setSlugInstructorId] = useState<string | null>(null);
+  const [slugInstructorName, setSlugInstructorName] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { instructorSlug } = useParams<{ instructorSlug: string }>();
+
+  // Look up instructor from slug
+  useEffect(() => {
+    if (!instructorSlug) return;
+    const fetchInstructor = async () => {
+      const { data } = await supabase
+        .from("public_instructors" as any)
+        .select("id, name")
+        .eq("app_slug", instructorSlug)
+        .eq("pupil_app_enabled", true)
+        .single();
+      if (data) {
+        setSlugInstructorId((data as any).id);
+        setSlugInstructorName((data as any).name);
+        setActiveTab("register");
+      }
+    };
+    fetchInstructor();
+  }, [instructorSlug]);
 
   useEffect(() => {
     if ((window as any).PasswordCredential) {
@@ -555,7 +577,10 @@ export default function PupilLogin() {
                   </TabsContent>
 
                   <TabsContent value="register">
-                    <PupilRegister />
+                    <PupilRegister
+                      instructorId={slugInstructorId}
+                      instructorName={slugInstructorName}
+                    />
                   </TabsContent>
                 </Tabs>
 
