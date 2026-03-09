@@ -51,6 +51,7 @@ const SHARED_ROUTES = [
   "/services",
   "/reviews",
   "/benefits",
+  "/admin",
 ];
 
 /**
