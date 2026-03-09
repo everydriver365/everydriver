@@ -35,6 +35,7 @@ export function LiveChatWindow({
   const storageKey = `quick_reply_step_${sessionId}`;
   const [quickReplyStep, setQuickReplyStep] = useState(0);
   const [quickReplyDone, setQuickReplyDone] = useState(false);
+  const quickReplyInitialized = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -50,8 +51,10 @@ export function LiveChatWindow({
     handleTyping,
   } = useLiveChat(sessionId);
 
-  // Initialize and persist quick reply step from localStorage / message count
+  // Initialize quick reply step once (from localStorage or message count)
   useEffect(() => {
+    if (quickReplyInitialized.current) return;
+    
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       const val = parseInt(stored, 10);
@@ -59,8 +62,9 @@ export function LiveChatWindow({
       if (val >= TOTAL_QUICK_REPLY_STEPS) {
         setQuickReplyDone(true);
       }
-    } else if (messages.length > 0 && userType === "visitor") {
-      // For sessions without stored state, calculate from visitor message count
+      quickReplyInitialized.current = true;
+    } else if (!loading && userType === "visitor") {
+      // Wait until messages have loaded, then calculate from visitor message count
       const visitorCount = messages.filter(m => m.sender_type === "visitor").length;
       if (visitorCount >= TOTAL_QUICK_REPLY_STEPS) {
         setQuickReplyStep(TOTAL_QUICK_REPLY_STEPS);
@@ -68,14 +72,13 @@ export function LiveChatWindow({
       } else {
         setQuickReplyStep(visitorCount);
       }
+      quickReplyInitialized.current = true;
     }
-  }, [storageKey, messages.length, userType]);
+  }, [storageKey, loading, messages, userType]);
 
   // Save step changes to localStorage
   useEffect(() => {
-    if (quickReplyStep > 0) {
-      localStorage.setItem(storageKey, String(quickReplyStep));
-    }
+    localStorage.setItem(storageKey, String(quickReplyStep));
   }, [quickReplyStep, storageKey]);
 
   // Auto-scroll to bottom on new messages
