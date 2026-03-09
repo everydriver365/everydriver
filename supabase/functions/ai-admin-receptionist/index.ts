@@ -144,7 +144,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
       // Fetch course templates for is_popular/is_intensive flags
       const { data: templates } = await supabase
         .from("course_templates")
-        .select("course_hours, course_name, is_popular, is_intensive")
+        .select("course_hours, course_name, is_popular, is_intensive, features")
         .eq("is_active", true);
 
       if (instructorCourses && instructorCourses.length > 0) {
