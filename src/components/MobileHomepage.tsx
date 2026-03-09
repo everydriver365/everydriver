@@ -255,16 +255,21 @@ export function MobileHomepage() {
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 1.0 }}
           onClick={() => navigate("/earlier-test-guarantee")}
-          className="relative rounded-2xl shadow-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer active:scale-[0.98] transition-transform overflow-visible"
+          className="rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
-          <div className="p-4 flex items-center gap-4">
-            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-28 h-28 -my-4 drop-shadow-lg object-contain shrink-0" />
-            <div className="flex-1">
-              <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
-              <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
+          <div className="flex">
+            <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5">
+              <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-full max-w-[120px] object-contain drop-shadow-lg" />
             </div>
-            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
+            <div className="flex-1 bg-card p-4 flex flex-col justify-center">
+              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">✓ Guaranteed</span>
+              <h4 className="font-bold text-foreground text-sm mt-1">Earlier Driving Test</h4>
+              <p className="text-xs text-muted-foreground mt-1">Or your £62 test fee refunded in full</p>
+              <div className="mt-2 flex items-center gap-1 text-emerald-600">
+                <span className="text-xs font-semibold">Find out more</span>
+                <ChevronRight className="h-3 w-3" />
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
