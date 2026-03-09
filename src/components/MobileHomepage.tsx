@@ -152,7 +152,7 @@ export function MobileHomepage() {
                 EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
               </h3>
               <p className="text-xs text-primary-foreground/80 mt-0.5">
-                Find your nearest instructor
+                Search, Compare and Book Direct
               </p>
             </div>
             <form onSubmit={handleSearch} className="flex items-center gap-0 bg-white rounded-xl overflow-hidden shadow-sm">
