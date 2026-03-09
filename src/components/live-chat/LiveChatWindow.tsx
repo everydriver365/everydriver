@@ -225,42 +225,54 @@ export function LiveChatWindow({
                         isOwnMessage(msg) ? "justify-end" : "justify-start"
                       )}
                     >
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-2xl px-4 py-2",
-                          isOwnMessage(msg)
-                            ? "bg-primary text-primary-foreground rounded-br-md"
-                            : "bg-muted rounded-bl-md"
-                        )}
-                      >
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {msg.content}
-                        </p>
-                        <div
-                          className={cn(
-                            "flex items-center gap-1 mt-1",
-                            isOwnMessage(msg) ? "justify-end" : "justify-start"
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "text-xs",
-                              isOwnMessage(msg)
-                                ? "text-primary-foreground/70"
-                                : "text-muted-foreground"
-                            )}
-                          >
-                            {format(new Date(msg.created_at), "HH:mm")}
-                          </span>
-                          {isOwnMessage(msg) && (
-                            msg.read_at ? (
-                              <CheckCheck className="h-3 w-3 text-primary-foreground/70" />
-                            ) : (
-                              <Check className="h-3 w-3 text-primary-foreground/70" />
-                            )
-                          )}
-                        </div>
-                      </div>
+                      {(() => {
+                        const isOwn = isOwnMessage(msg);
+                        const parsed = !isOwn ? parseCardsFromMessage(msg.content) : null;
+                        const displayText = parsed ? parsed.text : msg.content;
+                        const cards = parsed?.cards || null;
+
+                        return (
+                          <div className={cn("max-w-[80%] space-y-2")}>
+                            <div
+                              className={cn(
+                                "rounded-2xl px-4 py-2",
+                                isOwn
+                                  ? "bg-primary text-primary-foreground rounded-br-md"
+                                  : "bg-muted rounded-bl-md"
+                              )}
+                            >
+                              <p className="text-sm whitespace-pre-wrap break-words">
+                                {displayText}
+                              </p>
+                              <div
+                                className={cn(
+                                  "flex items-center gap-1 mt-1",
+                                  isOwn ? "justify-end" : "justify-start"
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "text-xs",
+                                    isOwn
+                                      ? "text-primary-foreground/70"
+                                      : "text-muted-foreground"
+                                  )}
+                                >
+                                  {format(new Date(msg.created_at), "HH:mm")}
+                                </span>
+                                {isOwn && (
+                                  msg.read_at ? (
+                                    <CheckCheck className="h-3 w-3 text-primary-foreground/70" />
+                                  ) : (
+                                    <Check className="h-3 w-3 text-primary-foreground/70" />
+                                  )
+                                )}
+                              </div>
+                            </div>
+                            {cards && <InstructorChatCards instructors={cards} />}
+                          </div>
+                        );
+                      })()}
                     </motion.div>
                   ))}
                 </div>

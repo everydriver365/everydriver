@@ -229,11 +229,33 @@ Guidelines:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Please try browsing our website or contacting support.";
 
+    // Build stored content with optional instructor cards
+    let storedContent = `🤖 ${reply}`;
+    if (postcodeMatch && instructorContext) {
+      // Extract nearby instructor data for frontend cards
+      try {
+        const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
+        if (searchResult && searchResult.instructors.length > 0) {
+          const cardsData = searchResult.instructors.map((i: any) => ({
+            name: i.name,
+            slug: i.slug,
+            hourlyRate: i.hourlyRate,
+            distance: i.distance,
+            profileImage: i.profileImage,
+            transmission: i.transmission,
+          }));
+          storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
+        }
+      } catch (e) {
+        console.error("Cards data error:", e);
+      }
+    }
+
     // Insert AI response as a chat message
     await supabase.from("live_chat_messages").insert({
       session_id,
       sender_type: "admin",
-      content: `🤖 ${reply}`,
+      content: storedContent,
     });
 
     return new Response(JSON.stringify({ reply }), {
