@@ -647,39 +647,11 @@ export default function BrandedPupilPortal() {
               <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-4">
                 <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 
-                <InstructorCard>
-                  <div className="text-center mb-4">
-                    <h2 className="text-lg font-bold text-foreground">My Profile</h2>
-                    <p className="text-sm text-muted-foreground">Update your profile picture</p>
-                  </div>
-                  <PupilProfilePictureUpload
-                    pupilId={pupil.id}
-                    pupilName={pupil.name}
-                    currentImageUrl={pupil.profile_image_url}
-                    onImageUpdated={(newUrl) => {
-                      setPupil(prev => prev ? { ...prev, profile_image_url: newUrl } : null);
-                    }}
-                  />
-                  
-                  <div className="mt-6 pt-6 border-t border-border space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name</span>
-                      <span className="font-medium text-foreground">{pupil.name}</span>
-                    </div>
-                    {pupil.email && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Email</span>
-                        <span className="font-medium text-foreground">{pupil.email}</span>
-                      </div>
-                    )}
-                    {pupil.phone && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Phone</span>
-                        <span className="font-medium text-foreground">{pupil.phone}</span>
-                      </div>
-                    )}
-                  </div>
-                </InstructorCard>
+                <PupilPortalProfileEdit
+                  pupil={pupil}
+                  onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
+                  brandColour={instructor.brand_colour}
+                />
               </motion.div>
             )}
           </AnimatePresence>
