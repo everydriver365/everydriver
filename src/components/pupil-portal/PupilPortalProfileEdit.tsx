@@ -7,12 +7,9 @@ import { InlineEditField } from "@/components/ui/InlineEditField";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
 
 interface PupilData {
   id: string;
@@ -107,33 +104,15 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="text-[10px] text-muted-foreground block">Date of Birth</span>
-            <Popover open={dobOpen} onOpenChange={setDobOpen}>
-              <PopoverTrigger asChild>
-                <button className="group flex items-center gap-2 text-left rounded-md py-0.5 transition-colors hover:bg-muted/50 cursor-pointer w-full">
-                  <span className={cn("text-sm", pupil.date_of_birth ? "text-foreground" : "text-muted-foreground italic")}>
-                    {pupil.date_of_birth ? format(new Date(pupil.date_of_birth), "dd/MM/yyyy") : "Click to add"}
-                  </span>
-                  <CalendarIcon className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={pendingDob}
-                  onSelect={setPendingDob}
-                  disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                  captionLayout="dropdown-buttons"
-                  fromYear={1940}
-                  toYear={new Date().getFullYear()}
-                />
-                <div className="flex justify-end gap-2 p-3 pt-0">
-                  <Button size="sm" variant="ghost" onClick={() => setDobOpen(false)}>Cancel</Button>
-                  <Button size="sm" onClick={handleDobSave} disabled={!pendingDob}>Save</Button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <DobCalendarPicker
+              value={pendingDob}
+              onChange={setPendingDob}
+              onSave={handleDobSave}
+              onCancel={() => setDobOpen(false)}
+              open={dobOpen}
+              onOpenChange={setDobOpen}
+              displayValue={pupil.date_of_birth ? format(new Date(pupil.date_of_birth), "dd/MM/yyyy") : ""}
+            />
           </div>
         </div>
 
