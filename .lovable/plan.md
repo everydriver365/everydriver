@@ -1,74 +1,43 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Plan: Instructor-Linked Pupil Registration (Both Options)
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+### Current State
+- Pupils register at `/pupil/login` with no instructor association — the edge function (`pupil-email-auth`) finds the instructor by looking up which instructor already has that email on file.
+- Instructors already have an `app_slug` field used for branded portals (`/p/:slug`).
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+### What We'll Build
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+**Option A — Unique login URL per instructor:**
+- Route: `/pupil/login/:instructorSlug` — when a pupil visits this URL, the instructor is pre-selected automatically. No dropdown shown. The instructor's name is displayed so the pupil knows who they're registering with.
+- Instructors can share this link (e.g., `everydriver.lovable.app/pupil/login/jane-smith`).
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**Option B — Dropdown selector on default page:**
+- On the generic `/pupil/login` page, the register tab gets an instructor selector (dropdown of active instructors with `pupil_app_enabled = true`).
+- The selector is hidden when arriving via a direct instructor link.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+### Changes
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+1. **`src/pages/PupilLogin.tsx`**
+   - Accept optional `instructorSlug` route param via `useParams()`
+   - If slug present, fetch instructor name from `public_instructors` view and display it as a banner ("Registering with Jane Smith")
+   - Pass `instructorSlug` or selected `instructorId` down to `PupilRegister`
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+2. **`src/components/pupil/PupilRegister.tsx`**
+   - Accept optional `instructorId` prop
+   - If no `instructorId` provided, fetch active instructors (`pupil_app_enabled = true`) from `public_instructors` view and show a `<Select>` dropdown
+   - Pass the selected instructor ID to the edge function
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+3. **`supabase/functions/pupil-email-auth/index.ts`**
+   - For `register` action: accept optional `instructorId` parameter
+   - If provided and the email doesn't exist yet in `pupils`, create the pupil record linked to that instructor (removing the requirement that the instructor must add them first)
+   - If email already exists, proceed with existing flow
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+4. **`src/App.tsx`**
+   - Add route: `/pupil/login/:instructorSlug`  pointing to `PupilLogin`
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+### Security
+- The instructor list only uses the existing `public_instructors` view (no sensitive data exposed)
+- Registration still validates instructor exists and is active
+- RLS policies unchanged — new pupils inherit existing row-level security
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
