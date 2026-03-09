@@ -54,10 +54,10 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
 
   const handlePostcodeSelect = async (postcode: string) => {
     setPostcodeValue(postcode);
-    const { error } = await supabase
-      .from("pupils")
-      .update({ postcode })
-      .eq("id", pupil.id);
+    const { error } = await supabase.rpc("update_pupil_profile", {
+      p_pupil_id: pupil.id,
+      p_updates: { postcode },
+    });
 
     if (error) {
       toast.error("Failed to update postcode");

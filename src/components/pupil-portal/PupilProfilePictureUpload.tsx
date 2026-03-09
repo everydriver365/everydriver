@@ -95,11 +95,11 @@ export function PupilProfilePictureUpload({
         .from("pupil-avatars")
         .remove([`${pupilId}/avatar.jpg`, `${pupilId}/avatar.png`, `${pupilId}/avatar.jpeg`, `${pupilId}/avatar.webp`]);
 
-      // Update pupil record
-      const { error: updateError } = await supabase
-        .from("pupils")
-        .update({ profile_image_url: null })
-        .eq("id", pupilId);
+      // Update pupil record via RPC
+      const { error: updateError } = await supabase.rpc("update_pupil_profile", {
+        p_pupil_id: pupilId,
+        p_updates: { profile_image_url: null },
+      });
 
       if (updateError) throw updateError;
 
