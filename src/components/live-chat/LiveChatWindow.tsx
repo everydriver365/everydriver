@@ -6,6 +6,7 @@ import { Send, Loader2, CheckCheck, Check, UserRound } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypingIndicator } from "./TypingIndicator";
+import { QuickReplySuggestions, TOTAL_QUICK_REPLY_STEPS } from "./QuickReplySuggestions";
 import { useLiveChat, LiveChatMessage } from "@/hooks/useLiveChat";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,8 @@ export function LiveChatWindow({
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [showAgentButton, setShowAgentButton] = useState(false);
+  const [quickReplyStep, setQuickReplyStep] = useState(0);
+  const [quickReplyDone, setQuickReplyDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -81,10 +84,32 @@ export function LiveChatWindow({
     await sendMessage(agentMessage, userType, userId);
   };
 
+  const handleQuickReplySelect = async (text: string) => {
+    if (sending) return;
+    const success = await sendMessage(text, userType, userId);
+    if (success) {
+      const nextStep = quickReplyStep + 1;
+      setQuickReplyStep(nextStep);
+      if (nextStep >= TOTAL_QUICK_REPLY_STEPS) {
+        setQuickReplyDone(true);
+      }
+      // Trigger AI receptionist
+      if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+      aiTimeoutRef.current = setTimeout(() => {
+        triggerAIReceptionist(text);
+      }, 5000);
+    }
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
     const messageText = newMessage.trim();
+
+    // Free-text message hides quick replies
+    if (userType === "visitor" && !quickReplyDone) {
+      setQuickReplyDone(true);
+    }
 
     // Check if message contains "agent" keyword
     if (userType === "visitor" && /\bagent\b/i.test(messageText)) {
@@ -247,6 +272,15 @@ export function LiveChatWindow({
           {otherTyping && <TypingIndicator name={otherPartyName} />}
         </AnimatePresence>
       </ScrollArea>
+
+      {/* Quick Reply Suggestions */}
+      {userType === "visitor" && !quickReplyDone && quickReplyStep < TOTAL_QUICK_REPLY_STEPS && (
+        <QuickReplySuggestions
+          currentStep={quickReplyStep}
+          onSelect={handleQuickReplySelect}
+          disabled={sending}
+        />
+      )}
 
       {/* Input */}
       <div className="p-4 border-t bg-background space-y-2">
