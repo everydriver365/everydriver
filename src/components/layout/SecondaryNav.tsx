@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { BookOpen, FileEdit, Phone, User } from "lucide-react";
 
 const secondaryLinks = [
-  { href: "/theory", label: "Theory Practice", icon: BookOpen },
-  { href: "/contact?type=bespoke", label: "Bespoke Course Request", icon: FileEdit },
-  { href: "/contact?type=callback", label: "Request a Callback", icon: Phone },
+  { href: "/theory", label: "Theory Practice", icon: BookOpen, external: false },
+  { href: "/contact?type=bespoke", label: "Bespoke Course Request", icon: FileEdit, external: false },
+  { href: "/contact?type=callback", label: "Request a Callback", icon: Phone, external: false },
   { href: "https://everydriver.co.uk/instructor/login", label: "Instructor Login", icon: User, external: true },
-  { href: "/pupil/login", label: "Pupil Login", icon: User },
+  { href: "/pupil/login", label: "Pupil Login", icon: User, external: false },
 ];
 
 export function SecondaryNav() {
