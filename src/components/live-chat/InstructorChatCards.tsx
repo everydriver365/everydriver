@@ -1,4 +1,5 @@
-import { MapPin, Car } from "lucide-react";
+import { MapPin, Car, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface InstructorCard {
   name: string;
@@ -17,54 +18,66 @@ export function InstructorChatCards({ instructors }: InstructorChatCardsProps) {
   if (!instructors.length) return null;
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 pt-2 scrollbar-hide">
+    <div className="flex gap-2.5 overflow-x-auto pb-2 pt-2 scrollbar-hide -mx-1 px-1">
       {instructors.map((inst, i) => (
-        <a
+        <motion.a
           key={i}
           href={inst.slug ? `/i/${inst.slug}/courses` : "/courses"}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-shrink-0 w-40 rounded-xl border border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
+          initial={{ opacity: 0, scale: 0.9, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: i * 0.08, duration: 0.3, type: "spring", stiffness: 350, damping: 25 }}
+          className="flex-shrink-0 w-44 rounded-2xl border border-border/40 bg-gradient-to-b from-background to-muted/30 shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group"
         >
-          {/* Avatar / header */}
-          <div className="h-12 bg-primary/10 flex items-center justify-center">
-            {inst.profileImage ? (
-              <img
-                src={inst.profileImage}
-                alt={inst.name}
-                className="h-10 w-10 rounded-full object-cover border-2 border-background"
-              />
-            ) : (
-              <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                {inst.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-              </div>
-            )}
+          {/* Gradient header with avatar */}
+          <div className="relative h-16 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-end justify-center pb-0">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.15),transparent_70%)]" />
+            <div className="relative -mb-5 z-10">
+              {inst.profileImage ? (
+                <img
+                  src={inst.profileImage}
+                  alt={inst.name}
+                  className="h-12 w-12 rounded-full object-cover border-[3px] border-background shadow-lg ring-2 ring-primary/20"
+                />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-lg ring-2 ring-primary/20 border-[3px] border-background">
+                  {inst.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="p-2 space-y-1">
-            <p className="text-xs font-semibold truncate">{inst.name}</p>
+          <div className="px-3 pt-7 pb-3 space-y-2">
+            <p className="text-xs font-bold truncate text-center">{inst.name}</p>
 
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              <span>{inst.distance} mi</span>
-            </div>
-
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Car className="h-3 w-3" />
-              <span>{inst.transmission}</span>
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <MapPin className="h-3 w-3 text-primary/60" />
+                <span>{inst.distance} mi</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Car className="h-3 w-3 text-primary/60" />
+                <span>{inst.transmission}</span>
+              </div>
             </div>
 
             {inst.hourlyRate && (
-              <p className="text-xs font-semibold text-primary">£{inst.hourlyRate}/hr</p>
+              <div className="text-center">
+                <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  £{inst.hourlyRate}/hr
+                </span>
+              </div>
             )}
 
             <div className="pt-1">
-              <span className="block text-center text-[10px] font-medium text-primary group-hover:underline">
-                View Courses →
+              <span className="flex items-center justify-center gap-1 text-[11px] font-semibold text-primary group-hover:gap-2 transition-all duration-200">
+                View Courses
+                <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
           </div>
-        </a>
+        </motion.a>
       ))}
     </div>
   );
