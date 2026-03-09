@@ -500,7 +500,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
                   ) : (
                     <Check className="h-4 w-4 mr-2" />
                   )}
-                  {(!settings?.allow_self_booking || settings?.require_approval) ? 'Request Booking' : 'Confirm Booking'}
+                  Confirm Booking
                 </Button>
               </DialogFooter>
             </DialogContent>
