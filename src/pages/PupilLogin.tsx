@@ -28,7 +28,29 @@ export default function PupilLogin() {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [slugInstructorId, setSlugInstructorId] = useState<string | null>(null);
+  const [slugInstructorName, setSlugInstructorName] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { instructorSlug } = useParams<{ instructorSlug: string }>();
+
+  // Look up instructor from slug
+  useEffect(() => {
+    if (!instructorSlug) return;
+    const fetchInstructor = async () => {
+      const { data } = await supabase
+        .from("public_instructors" as any)
+        .select("id, name")
+        .eq("app_slug", instructorSlug)
+        .eq("pupil_app_enabled", true)
+        .single();
+      if (data) {
+        setSlugInstructorId((data as any).id);
+        setSlugInstructorName((data as any).name);
+        setActiveTab("register");
+      }
+    };
+    fetchInstructor();
+  }, [instructorSlug]);
 
   useEffect(() => {
     if ((window as any).PasswordCredential) {
