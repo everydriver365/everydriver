@@ -36,6 +36,7 @@ export function LiveChatWindow({
   const [quickReplyDone, setQuickReplyDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
