@@ -167,7 +167,7 @@ export default function BrandedPupilPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled")
+        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer")
         .eq("app_slug", slug)
         .single();
 
