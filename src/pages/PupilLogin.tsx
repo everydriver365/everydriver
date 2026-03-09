@@ -175,6 +175,64 @@ export default function PupilLogin() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email first");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "forgot_password", email: email.trim() },
+      });
+      if (error) {
+        toast.error("Something went wrong. Please try again.");
+      } else {
+        toast.success("If an account exists, a reset code has been sent to your email.");
+        setLoginView("reset-code");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  const handleConfirmReset = async () => {
+    if (!resetCode.trim()) {
+      toast.error("Please enter the reset code");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "confirm_reset", email: email.trim(), code: resetCode.trim(), password: newPassword },
+      });
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (error) {
+        toast.error("Something went wrong. Please try again.");
+      } else {
+        toast.success("Password reset successfully! Please sign in.");
+        setLoginView("login");
+        setResetCode("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setPassword("");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  };
+
   if (autoLoggingIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
