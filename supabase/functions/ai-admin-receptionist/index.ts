@@ -26,14 +26,22 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postcodes: [postcode.replace(/\s+/g, "").toUpperCase()] }),
     });
-    if (!geoRes.ok) return null;
+    if (!geoRes.ok) {
+      console.error("Geocoding failed:", geoRes.status);
+      return null;
+    }
     const geoData = await geoRes.json();
+    console.log("Geocoding response:", JSON.stringify(geoData.result?.[0]));
     const result = geoData.result?.[0]?.result;
-    if (!result) return null;
+    if (!result) {
+      console.error("No geocoding result for postcode:", postcode);
+      return null;
+    }
 
     const userLat = result.latitude;
     const userLng = result.longitude;
     const areaName = result.admin_district || null;
+    console.log(`User location: ${userLat}, ${userLng} (${areaName})`);
 
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
