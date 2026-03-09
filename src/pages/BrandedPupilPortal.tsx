@@ -658,7 +658,36 @@ export default function BrandedPupilPortal() {
               </motion.div>
             )}
 
-            {activeSection === 'profile' && (
+            {activeSection === 'lesson-tracks' && (
+              <motion.div key="lesson-tracks" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <div className="px-4 pb-4">
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeSection === 'lesson-videos' && (
+              <motion.div key="lesson-videos" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <PupilLessonVideos pupilId={pupil.id} brandColour={instructor.brand_colour} />
+              </motion.div>
+            )}
+
+            {activeSection === 'driving-style' && (
+              <motion.div key="driving-style" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <PupilDrivingStyleReport pupilId={pupil.id} brandColour={instructor.brand_colour} />
+              </motion.div>
+            )}
+
+
               <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-4">
                 <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 
