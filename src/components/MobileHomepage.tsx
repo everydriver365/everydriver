@@ -489,13 +489,13 @@ export function MobileHomepage() {
             <SheetTitle className="text-left">Menu</SheetTitle>
           </SheetHeader>
           <div className="p-4 space-y-1">
-            <Link to="/learner-app/login" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/pupil/login" onClick={() => setIsMenuOpen(false)}>
               <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
                 <LogIn className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Sign In</span>
               </div>
             </Link>
-            <Link to="/learner-app/signup" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/pupil/login" onClick={() => setIsMenuOpen(false)}>
               <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Create Account</span>
