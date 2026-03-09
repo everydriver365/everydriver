@@ -37,6 +37,10 @@ interface PupilPortalProfileEditProps {
 
 export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: PupilPortalProfileEditProps) {
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
+  const [pendingDob, setPendingDob] = useState<Date | undefined>(
+    pupil.date_of_birth ? new Date(pupil.date_of_birth) : undefined
+  );
+  const [dobOpen, setDobOpen] = useState(false);
 
   const updateField = async (field: string, value: string | null) => {
     const { error } = await supabase.rpc("update_pupil_profile", {
@@ -67,10 +71,11 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
     toast.success("Postcode updated");
   };
 
-  const handleDobSelect = async (date: Date | undefined) => {
-    if (!date) return;
-    const dateStr = format(date, "yyyy-MM-dd");
+  const handleDobSave = async () => {
+    if (!pendingDob) return;
+    const dateStr = format(pendingDob, "yyyy-MM-dd");
     await updateField("date_of_birth", dateStr);
+    setDobOpen(false);
   };
 
   return (
@@ -102,7 +107,7 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="text-[10px] text-muted-foreground block">Date of Birth</span>
-            <Popover>
+            <Popover open={dobOpen} onOpenChange={setDobOpen}>
               <PopoverTrigger asChild>
                 <button className="group flex items-center gap-2 text-left rounded-md py-0.5 transition-colors hover:bg-muted/50 cursor-pointer w-full">
                   <span className={cn("text-sm", pupil.date_of_birth ? "text-foreground" : "text-muted-foreground italic")}>
@@ -114,8 +119,8 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
               <PopoverContent className="w-auto p-0" align="start">
                 <CalendarComponent
                   mode="single"
-                  selected={pupil.date_of_birth ? new Date(pupil.date_of_birth) : undefined}
-                  onSelect={handleDobSelect}
+                  selected={pendingDob}
+                  onSelect={setPendingDob}
                   disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
@@ -123,6 +128,10 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
                   fromYear={1940}
                   toYear={new Date().getFullYear()}
                 />
+                <div className="flex justify-end gap-2 p-3 pt-0">
+                  <Button size="sm" variant="ghost" onClick={() => setDobOpen(false)}>Cancel</Button>
+                  <Button size="sm" onClick={handleDobSave} disabled={!pendingDob}>Save</Button>
+                </div>
               </PopoverContent>
             </Popover>
           </div>
