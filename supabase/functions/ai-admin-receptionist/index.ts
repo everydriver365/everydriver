@@ -38,21 +38,21 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
+      .select("id, name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
       .eq("is_active", true);
 
     if (instructorsError) {
       console.error("Instructor query error:", instructorsError.message);
-      return { areaName, instructors: [] };
+      return { areaName, instructors: [], courses: [] };
     }
 
-    if (!instructors || instructors.length === 0) return { areaName, instructors: [] };
+    if (!instructors || instructors.length === 0) return { areaName, instructors: [], courses: [] };
 
-    // Geocode any instructors missing lat/lng
-    const needsGeocoding = instructors.filter(i => (!i.lat || !i.lng) && i.home_postcode && i.home_postcode !== "N/A");
+    // Geocode instructors missing lat/lng
+    const needsGeocoding = instructors.filter((i: any) => !i.lat && i.home_postcode);
     if (needsGeocoding.length > 0) {
-      const postcodes = needsGeocoding.map(i => i.home_postcode.replace(/\s+/g, "").toUpperCase());
       try {
+        const postcodes = needsGeocoding.map((i: any) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
         const bulkRes = await fetch("https://api.postcodes.io/postcodes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           const bulkData = await bulkRes.json();
           for (const item of (bulkData.result || [])) {
             if (item.result) {
-              const inst = needsGeocoding.find(i => 
+              const inst = needsGeocoding.find((i: any) => 
                 i.home_postcode.replace(/\s+/g, "").toUpperCase() === item.query
               );
               if (inst) {
@@ -78,12 +78,13 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     }
 
     // Find instructors within 15 miles
-    const nearby = [];
+    const nearby: any[] = [];
     for (const inst of instructors) {
       if (!inst.lat || !inst.lng) continue;
       const dist = calculateDistance(userLat, userLng, inst.lat, inst.lng);
       if (dist <= 15) {
         nearby.push({
+          id: inst.id,
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
@@ -97,9 +98,50 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     }
 
     // Sort by distance
-    nearby.sort((a, b) => a.distance - b.distance);
+    nearby.sort((a: any, b: any) => a.distance - b.distance);
+    const topInstructors = nearby.slice(0, 5);
 
-    return { areaName, instructors: nearby.slice(0, 5) };
+    // Fetch courses for nearby instructors
+    let courses: any[] = [];
+    if (topInstructors.length > 0) {
+      const instructorIds = topInstructors.map((i: any) => i.id);
+      const { data: instructorCourses } = await supabase
+        .from("instructor_courses")
+        .select("course_name, course_hours, discounted_price, instructor_id, is_active")
+        .in("instructor_id", instructorIds)
+        .eq("is_active", true);
+
+      // Fetch course templates for is_popular/is_intensive flags
+      const { data: templates } = await supabase
+        .from("course_templates")
+        .select("course_hours, course_name, is_popular, is_intensive")
+        .eq("is_active", true);
+
+      if (instructorCourses && instructorCourses.length > 0) {
+        for (const ic of instructorCourses) {
+          const inst = topInstructors.find((i: any) => i.id === ic.instructor_id);
+          const template = templates?.find((t: any) => t.course_hours === ic.course_hours);
+          courses.push({
+            courseName: ic.course_name,
+            courseHours: ic.course_hours,
+            price: ic.discounted_price || (inst?.hourlyRate ? inst.hourlyRate * ic.course_hours : null),
+            instructorName: inst?.name || "Instructor",
+            instructorSlug: inst?.slug || null,
+            isIntensive: template?.is_intensive || false,
+            isPopular: template?.is_popular || false,
+          });
+        }
+        // Sort: popular first, then by hours
+        courses.sort((a: any, b: any) => {
+          if (a.isPopular !== b.isPopular) return a.isPopular ? -1 : 1;
+          return a.courseHours - b.courseHours;
+        });
+        // Limit to 6 courses
+        courses = courses.slice(0, 6);
+      }
+    }
+
+    return { areaName, instructors: topInstructors, courses };
   } catch (e) {
     console.error("Instructor search error:", e);
     return null;
