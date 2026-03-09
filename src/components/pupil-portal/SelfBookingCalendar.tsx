@@ -228,12 +228,12 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     for (let i = 0; i < 14; i++) {
       const date = addDays(weekStart, i);
       const dateStr = format(date, 'yyyy-MM-dd');
-      const dayOfWeek = format(date, 'EEEE').toLowerCase();
+      const dayOfWeekNum = date.getDay(); // 0=Sun, 1=Mon, ...
 
       if (isBefore(date, minNoticeDate) || isBefore(maxAdvanceDate, date)) continue;
 
       const dayAvailability = availability.filter(
-        (a) => a.day_of_week?.toLowerCase() === dayOfWeek && a.is_available
+        (a) => a.day_of_week === dayOfWeekNum && a.is_available
       );
 
       slots[dateStr] = [];
