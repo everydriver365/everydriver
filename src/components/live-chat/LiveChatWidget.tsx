@@ -102,11 +102,8 @@ export function LiveChatWidget({
             <Button
               size="lg"
               onClick={() => setIsOpen(true)}
-              className={cn(
-                "h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow",
-                primaryColor && "hover:opacity-90"
-              )}
-              style={primaryColor ? { backgroundColor: primaryColor } : {}}
+              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow hover:opacity-90"
+              style={{ backgroundColor: chatColor }}
             >
               <MessageCircle className="h-6 w-6" />
             </Button>
