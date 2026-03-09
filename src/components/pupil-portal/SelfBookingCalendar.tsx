@@ -263,20 +263,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
   };
 
-  // If self-booking is not enabled
-  if (!settingsLoading && !settings?.allow_self_booking) {
-    return (
-      <Card className={className}>
-        <CardContent className="p-6 text-center">
-          <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="font-medium mb-1">Self-Booking Not Available</h3>
-          <p className="text-sm text-muted-foreground">
-            Contact your instructor directly to book lessons.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Determine if bookings require approval (default to true if self-booking not explicitly enabled)
+  const requiresApproval = !settings?.allow_self_booking || settings?.require_approval;
 
   if (settingsLoading || availabilityLoading) {
     return (
