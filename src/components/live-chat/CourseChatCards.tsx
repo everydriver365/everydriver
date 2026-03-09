@@ -23,6 +23,7 @@ interface CourseCard {
   isIntensive: boolean;
   isPopular: boolean;
   features?: string[] | null;
+  availableFrom?: string | null;
 }
 
 interface CourseChatCardsProps {
@@ -63,6 +64,7 @@ export function CourseChatCards({ courses }: CourseChatCardsProps) {
             distance={course.distance ?? undefined}
             discountedPrice={course.discountedPrice}
             features={course.features}
+            availableFrom={course.availableFrom}
           />
         </motion.div>
       ))}
