@@ -23,6 +23,7 @@ interface CourseCard {
   isIntensive: boolean;
   isPopular: boolean;
   features?: string[] | null;
+  availableFrom?: string | null;
 }
 
 interface CourseChatCardsProps {
