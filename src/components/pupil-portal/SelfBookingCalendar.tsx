@@ -116,7 +116,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       if (error) throw error;
       return (data || []) as { id: string; day_of_week: string; start_time: string; end_time: string; is_available: boolean }[];
     },
-    enabled: !!settings?.allow_self_booking,
+    enabled: true,
   });
 
   // Fetch existing bookings for the week
@@ -136,7 +136,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       if (error) throw error;
       return data || [];
     },
-    enabled: !!settings?.allow_self_booking,
+    enabled: true,
   });
 
   // Create booking mutation
@@ -150,7 +150,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
       if (pupilError) throw pupilError;
 
-      const bookingStatus = settings?.require_approval ? 'pending_approval' : 'confirmed';
+      const bookingStatus = (!settings?.allow_self_booking || settings?.require_approval) ? 'pending_approval' : 'confirmed';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
       const { error } = await supabase
@@ -263,20 +263,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
   };
 
-  // If self-booking is not enabled
-  if (!settingsLoading && !settings?.allow_self_booking) {
-    return (
-      <Card className={className}>
-        <CardContent className="p-6 text-center">
-          <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="font-medium mb-1">Self-Booking Not Available</h3>
-          <p className="text-sm text-muted-foreground">
-            Contact your instructor directly to book lessons.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Determine if bookings require approval (default to true if self-booking not explicitly enabled)
+  const requiresApproval = !settings?.allow_self_booking || settings?.require_approval;
 
   if (settingsLoading || availabilityLoading) {
     return (
@@ -454,7 +442,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
         {/* Legend */}
         <div className="px-4 flex items-center gap-3 text-xs text-muted-foreground">
-          {settings?.require_approval && (
+          {(!settings?.allow_self_booking || settings?.require_approval) && (
             <Badge variant="secondary" className="text-xs">
               Requires approval
             </Badge>
@@ -470,7 +458,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
               <DialogHeader>
                 <DialogTitle>Confirm Booking</DialogTitle>
                 <DialogDescription>
-                  {settings?.require_approval
+                  {(!settings?.allow_self_booking || settings?.require_approval)
                     ? 'Your booking will be sent to your instructor for approval.'
                     : 'Confirm your lesson booking.'}
                 </DialogDescription>
@@ -523,7 +511,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
                   ) : (
                     <Check className="h-4 w-4 mr-2" />
                   )}
-                  {settings?.require_approval ? 'Request Booking' : 'Confirm Booking'}
+                  {(!settings?.allow_self_booking || settings?.require_approval) ? 'Request Booking' : 'Confirm Booking'}
                 </Button>
               </DialogFooter>
             </DialogContent>
