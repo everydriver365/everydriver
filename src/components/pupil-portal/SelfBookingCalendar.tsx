@@ -104,17 +104,24 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     },
   });
 
-  // Fetch instructor availability
+  // Fetch instructor working hours
   const { data: availability, isLoading: availabilityLoading } = useQuery({
     queryKey: ['instructor-availability', instructorId, weekStart],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('instructor_availability' as never)
-        .select('id, day_of_week, start_time, end_time, is_available')
-        .eq('instructor_id', instructorId);
+        .from('instructor_working_hours')
+        .select('id, day_of_week, start_time, end_time, is_active')
+        .eq('instructor_id', instructorId)
+        .eq('is_active', true);
 
       if (error) throw error;
-      return (data || []) as { id: string; day_of_week: string; start_time: string; end_time: string; is_available: boolean }[];
+      return (data || []).map(h => ({
+        id: h.id,
+        day_of_week: h.day_of_week,
+        start_time: h.start_time,
+        end_time: h.end_time,
+        is_available: h.is_active,
+      }));
     },
     enabled: true,
   });
