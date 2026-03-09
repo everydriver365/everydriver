@@ -83,6 +83,7 @@ export function LiveChatWidget({
     setIsOpen(false);
   };
 
+  const chatColor = primaryColor || "#10b981"; // Emerald green, distinct from site navy blue
   const brandStyles = primaryColor
     ? { "--widget-primary": primaryColor } as React.CSSProperties
     : {};
@@ -101,11 +102,8 @@ export function LiveChatWidget({
             <Button
               size="lg"
               onClick={() => setIsOpen(true)}
-              className={cn(
-                "h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow",
-                primaryColor && "hover:opacity-90"
-              )}
-              style={primaryColor ? { backgroundColor: primaryColor } : {}}
+              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow hover:opacity-90"
+              style={{ backgroundColor: chatColor }}
             >
               <MessageCircle className="h-6 w-6" />
             </Button>
@@ -136,7 +134,7 @@ export function LiveChatWidget({
               {/* Header */}
               <div
                 className="flex items-center justify-between px-4 py-3 text-white"
-                style={{ backgroundColor: primaryColor || "hsl(var(--primary))" }}
+                style={{ backgroundColor: chatColor }}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
