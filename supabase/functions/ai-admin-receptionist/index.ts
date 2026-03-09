@@ -38,21 +38,21 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
+      .select("id, name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
       .eq("is_active", true);
 
     if (instructorsError) {
       console.error("Instructor query error:", instructorsError.message);
-      return { areaName, instructors: [] };
+      return { areaName, instructors: [], courses: [] };
     }
 
-    if (!instructors || instructors.length === 0) return { areaName, instructors: [] };
+    if (!instructors || instructors.length === 0) return { areaName, instructors: [], courses: [] };
 
-    // Geocode any instructors missing lat/lng
-    const needsGeocoding = instructors.filter(i => (!i.lat || !i.lng) && i.home_postcode && i.home_postcode !== "N/A");
+    // Geocode instructors missing lat/lng
+    const needsGeocoding = instructors.filter((i: any) => !i.lat && i.home_postcode);
     if (needsGeocoding.length > 0) {
-      const postcodes = needsGeocoding.map(i => i.home_postcode.replace(/\s+/g, "").toUpperCase());
       try {
+        const postcodes = needsGeocoding.map((i: any) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
         const bulkRes = await fetch("https://api.postcodes.io/postcodes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           const bulkData = await bulkRes.json();
           for (const item of (bulkData.result || [])) {
             if (item.result) {
-              const inst = needsGeocoding.find(i => 
+              const inst = needsGeocoding.find((i: any) => 
                 i.home_postcode.replace(/\s+/g, "").toUpperCase() === item.query
               );
               if (inst) {
@@ -78,12 +78,13 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     }
 
     // Find instructors within 15 miles
-    const nearby = [];
+    const nearby: any[] = [];
     for (const inst of instructors) {
       if (!inst.lat || !inst.lng) continue;
       const dist = calculateDistance(userLat, userLng, inst.lat, inst.lng);
       if (dist <= 15) {
         nearby.push({
+          id: inst.id,
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
@@ -97,9 +98,50 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     }
 
     // Sort by distance
-    nearby.sort((a, b) => a.distance - b.distance);
+    nearby.sort((a: any, b: any) => a.distance - b.distance);
+    const topInstructors = nearby.slice(0, 5);
 
-    return { areaName, instructors: nearby.slice(0, 5) };
+    // Fetch courses for nearby instructors
+    let courses: any[] = [];
+    if (topInstructors.length > 0) {
+      const instructorIds = topInstructors.map((i: any) => i.id);
+      const { data: instructorCourses } = await supabase
+        .from("instructor_courses")
+        .select("course_name, course_hours, discounted_price, instructor_id, is_active")
+        .in("instructor_id", instructorIds)
+        .eq("is_active", true);
+
+      // Fetch course templates for is_popular/is_intensive flags
+      const { data: templates } = await supabase
+        .from("course_templates")
+        .select("course_hours, course_name, is_popular, is_intensive")
+        .eq("is_active", true);
+
+      if (instructorCourses && instructorCourses.length > 0) {
+        for (const ic of instructorCourses) {
+          const inst = topInstructors.find((i: any) => i.id === ic.instructor_id);
+          const template = templates?.find((t: any) => t.course_hours === ic.course_hours);
+          courses.push({
+            courseName: ic.course_name,
+            courseHours: ic.course_hours,
+            price: ic.discounted_price || (inst?.hourlyRate ? inst.hourlyRate * ic.course_hours : null),
+            instructorName: inst?.name || "Instructor",
+            instructorSlug: inst?.slug || null,
+            isIntensive: template?.is_intensive || false,
+            isPopular: template?.is_popular || false,
+          });
+        }
+        // Sort: popular first, then by hours
+        courses.sort((a: any, b: any) => {
+          if (a.isPopular !== b.isPopular) return a.isPopular ? -1 : 1;
+          return a.courseHours - b.courseHours;
+        });
+        // Limit to 6 courses
+        courses = courses.slice(0, 6);
+      }
+    }
+
+    return { areaName, instructors: topInstructors, courses };
   } catch (e) {
     console.error("Instructor search error:", e);
     return null;
@@ -140,13 +182,15 @@ serve(async (req) => {
     if (postcodeMatch) {
       cachedSearchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
       if (cachedSearchResult) {
-        if (cachedSearchResult.instructors.length > 0) {
-          const list = cachedSearchResult.instructors.map((i: any) =>
-            `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
+        if (cachedSearchResult.courses.length > 0) {
+          const courseList = cachedSearchResult.courses.map((c: any) =>
+            `- ${c.courseName} (${c.courseHours} hours${c.price ? `, £${c.price}` : ""}) with ${c.instructorName}${c.isIntensive ? " [Intensive]" : ""}${c.isPopular ? " [Popular]" : ""}`
           ).join("\n");
-          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these instructors warmly to the visitor. Include names, distance, transmission type, and hourly rate. The visitor will see clickable instructor cards below your message — do NOT tell them to visit another page or provide any links. Just summarise who's available nearby.`;
+          instructorContext = `\n\nCOURSE SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${courseList}\n\nPresent these courses warmly to the visitor. Mention course names, hours, pricing, and the instructor offering them. The visitor will see clickable course cards below your message — do NOT tell them to visit another page or provide any links. Just summarise available courses nearby.`;
+        } else if (cachedSearchResult.instructors.length > 0) {
+          instructorContext = `\n\nFound instructors near "${postcodeMatch[1]}" but no specific courses listed yet. Let the visitor know instructors are available in their area and suggest they get in touch for course details.`;
         } else {
-          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area yet and suggest they try a different postcode or check back soon.`;
+          instructorContext = `\n\nCOURSE SEARCH: No instructors or courses found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have coverage in that area yet and suggest they try a different postcode or check back soon.`;
         }
       }
     }
@@ -167,13 +211,12 @@ serve(async (req) => {
     const systemPrompt = `You are a friendly, helpful receptionist for EveryDriver (Drive365), an online platform that connects learner drivers with qualified driving instructors across the UK.
 
 Key information:
-- EveryDriver helps learners find local driving instructors
+- EveryDriver helps learners find local driving instructors and book courses
 - Instructors offer manual and automatic lessons
-- Learners can search by postcode to find instructors in their area
+- Learners can search by postcode to find available courses near them
 - Courses range from regular weekly lessons to intensive crash courses
-- Pricing varies by instructor and location
-- Learners can view instructor details, read reviews, and book directly from the chat
-- Learners can compare instructors by price, distance, and transmission type
+- Pricing varies by instructor, location, and course type
+- Learners can view available courses, compare options, and book directly from the chat
 
 Guidelines:
 - Be warm, professional, and concise (2-3 sentences max)
@@ -229,18 +272,10 @@ Guidelines:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Please try browsing our website or contacting support.";
 
-    // Build stored content with optional instructor cards
+    // Build stored content with optional course cards
     let storedContent = `🤖 ${reply}`;
-    if (cachedSearchResult && cachedSearchResult.instructors.length > 0) {
-      const cardsData = cachedSearchResult.instructors.map((i: any) => ({
-        name: i.name,
-        slug: i.slug,
-        hourlyRate: i.hourlyRate,
-        distance: i.distance,
-        profileImage: i.profileImage,
-        transmission: i.transmission,
-      }));
-      storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
+    if (cachedSearchResult && cachedSearchResult.courses && cachedSearchResult.courses.length > 0) {
+      storedContent += `<!--COURSES:${JSON.stringify(cachedSearchResult.courses)}-->`;
     }
 
     // Insert AI response as a chat message

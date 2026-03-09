@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TypingIndicator } from "./TypingIndicator";
 import { QuickReplySuggestions, TOTAL_QUICK_REPLY_STEPS } from "./QuickReplySuggestions";
 import { InstructorChatCards, parseCardsFromMessage } from "./InstructorChatCards";
+import { CourseChatCards, parseCourseCardsFromMessage } from "./CourseChatCards";
 import { useLiveChat, LiveChatMessage } from "@/hooks/useLiveChat";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -227,9 +228,11 @@ export function LiveChatWindow({
                     >
                       {(() => {
                         const isOwn = isOwnMessage(msg);
-                        const parsed = !isOwn ? parseCardsFromMessage(msg.content) : null;
-                        const displayText = parsed ? parsed.text : msg.content;
-                        const cards = parsed?.cards || null;
+                        const parsedInstructor = !isOwn ? parseCardsFromMessage(msg.content) : null;
+                        const parsedCourse = !isOwn ? parseCourseCardsFromMessage(parsedInstructor?.text || msg.content) : null;
+                        const displayText = parsedCourse ? parsedCourse.text : (parsedInstructor ? parsedInstructor.text : msg.content);
+                        const instructorCards = parsedInstructor?.cards || null;
+                        const courseCards = parsedCourse?.courseCards || null;
 
                         return (
                           <div className={cn("max-w-[80%] space-y-2")}>
@@ -269,7 +272,8 @@ export function LiveChatWindow({
                                 )}
                               </div>
                             </div>
-                            {cards && <InstructorChatCards instructors={cards} />}
+                            {courseCards && <CourseChatCards courses={courseCards} />}
+                            {!courseCards && instructorCards && <InstructorChatCards instructors={instructorCards} />}
                           </div>
                         );
                       })()}
