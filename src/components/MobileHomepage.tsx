@@ -255,7 +255,7 @@ export function MobileHomepage() {
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 1.0 }}
           onClick={() => navigate("/earlier-test-guarantee")}
-          className="rounded-3xl overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
+          className="rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
         >
           <div className="flex">
             <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5">
@@ -265,8 +265,8 @@ export function MobileHomepage() {
               <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">✓ Guaranteed</span>
               <h4 className="font-bold text-foreground text-sm mt-1">Earlier Driving Test</h4>
               <p className="text-xs text-muted-foreground mt-1">Or your £62 test fee refunded in full</p>
-              <div className="mt-2.5 inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-semibold px-3.5 py-1.5 rounded-full w-fit">
-                Find out more
+              <div className="mt-2 flex items-center gap-1 text-emerald-600">
+                <span className="text-xs font-semibold">Find out more</span>
                 <ChevronRight className="h-3 w-3" />
               </div>
             </div>
