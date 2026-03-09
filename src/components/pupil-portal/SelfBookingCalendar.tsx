@@ -150,7 +150,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
       if (pupilError) throw pupilError;
 
-      const bookingStatus = (!settings?.allow_self_booking || settings?.require_approval) ? 'pending_approval' : 'confirmed';
+      const bookingStatus = 'confirmed';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
       const { error } = await supabase
