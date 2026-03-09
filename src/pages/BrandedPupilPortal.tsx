@@ -54,6 +54,8 @@ import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
 import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
 import { SlotOfferNotification } from "@/components/pupil-portal/SlotOfferNotification";
+import { PupilLessonVideos } from "@/components/pupil-portal/PupilLessonVideos";
+import { PupilDrivingStyleReport } from "@/components/pupil-portal/PupilDrivingStyleReport";
 
 interface InstructorBranding {
   id: string;
