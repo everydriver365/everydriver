@@ -27,6 +27,7 @@ import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
+import { PupilPortalProfileEdit } from "@/components/pupil-portal/PupilPortalProfileEdit";
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
@@ -79,6 +80,13 @@ interface Pupil {
   account_balance: number | null;
   prepaid_hours: number | null;
   profile_image_url: string | null;
+  date_of_birth: string | null;
+  driver_number: string | null;
+  theory_cert_number: string | null;
+  address: string | null;
+  postcode: string | null;
+  pickup_address: string | null;
+  what3words: string | null;
 }
 
 type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book';
@@ -200,7 +208,7 @@ export default function BrandedPupilPortal() {
   const fetchPupil = async (pupilId: string) => {
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url")
+      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url, date_of_birth, driver_number, theory_cert_number, address, postcode, pickup_address, what3words")
       .eq("id", pupilId)
       .single();
 
@@ -640,39 +648,11 @@ export default function BrandedPupilPortal() {
               <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-4">
                 <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 
-                <InstructorCard>
-                  <div className="text-center mb-4">
-                    <h2 className="text-lg font-bold text-foreground">My Profile</h2>
-                    <p className="text-sm text-muted-foreground">Update your profile picture</p>
-                  </div>
-                  <PupilProfilePictureUpload
-                    pupilId={pupil.id}
-                    pupilName={pupil.name}
-                    currentImageUrl={pupil.profile_image_url}
-                    onImageUpdated={(newUrl) => {
-                      setPupil(prev => prev ? { ...prev, profile_image_url: newUrl } : null);
-                    }}
-                  />
-                  
-                  <div className="mt-6 pt-6 border-t border-border space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name</span>
-                      <span className="font-medium text-foreground">{pupil.name}</span>
-                    </div>
-                    {pupil.email && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Email</span>
-                        <span className="font-medium text-foreground">{pupil.email}</span>
-                      </div>
-                    )}
-                    {pupil.phone && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Phone</span>
-                        <span className="font-medium text-foreground">{pupil.phone}</span>
-                      </div>
-                    )}
-                  </div>
-                </InstructorCard>
+                <PupilPortalProfileEdit
+                  pupil={pupil}
+                  onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
+                  brandColour={instructor.brand_colour}
+                />
               </motion.div>
             )}
           </AnimatePresence>
