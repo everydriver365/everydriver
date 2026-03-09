@@ -38,7 +38,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug, transmission_type")
+      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
       .eq("is_active", true);
 
     if (instructorsError) {
@@ -87,7 +87,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: inst.transmission_type || "Manual",
+          transmission: "Manual/Automatic",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
           slug: inst.app_slug || null,
@@ -135,17 +135,18 @@ serve(async (req) => {
     // Check if message contains a UK postcode
     const postcodeMatch = message.match(UK_POSTCODE_REGEX);
     let instructorContext = "";
+    let cachedSearchResult: any = null;
 
     if (postcodeMatch) {
-      const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
-      if (searchResult) {
-        if (searchResult.instructors.length > 0) {
-          const list = searchResult.instructors.map((i: any) =>
+      cachedSearchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
+      if (cachedSearchResult) {
+        if (cachedSearchResult.instructors.length > 0) {
+          const list = cachedSearchResult.instructors.map((i: any) =>
             `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
           ).join("\n");
-          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
+          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
         } else {
-          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
+          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
         }
       }
     }
@@ -231,24 +232,16 @@ Guidelines:
 
     // Build stored content with optional instructor cards
     let storedContent = `🤖 ${reply}`;
-    if (postcodeMatch && instructorContext) {
-      // Extract nearby instructor data for frontend cards
-      try {
-        const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
-        if (searchResult && searchResult.instructors.length > 0) {
-          const cardsData = searchResult.instructors.map((i: any) => ({
-            name: i.name,
-            slug: i.slug,
-            hourlyRate: i.hourlyRate,
-            distance: i.distance,
-            profileImage: i.profileImage,
-            transmission: i.transmission,
-          }));
-          storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
-        }
-      } catch (e) {
-        console.error("Cards data error:", e);
-      }
+    if (cachedSearchResult && cachedSearchResult.instructors.length > 0) {
+      const cardsData = cachedSearchResult.instructors.map((i: any) => ({
+        name: i.name,
+        slug: i.slug,
+        hourlyRate: i.hourlyRate,
+        distance: i.distance,
+        profileImage: i.profileImage,
+        transmission: i.transmission,
+      }));
+      storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
     }
 
     // Insert AI response as a chat message
