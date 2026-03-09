@@ -424,9 +424,7 @@ export default function BrandedPupilPortal() {
 
                 {/* Journey Timeline */}
                 <PupilJourneyTimeline
-                  lessonsCompleted={pupil.lessons_completed || 0}
-                  progress={pupil.progress || 0}
-                  hasTestDate={false}
+                  pupilId={pupil.id}
                   brandColour={instructor.brand_colour}
                 />
 

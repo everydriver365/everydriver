@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Circle, BookOpen, Car, Award, Flag, GraduationCap } from "lucide-react";
+import { Check, UserPlus, BookOpen, GraduationCap, Clock, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface Milestone {
   id: string;
@@ -12,56 +15,121 @@ interface Milestone {
 }
 
 interface PupilJourneyTimelineProps {
-  lessonsCompleted: number;
-  progress: number;
-  hasTestDate: boolean;
+  pupilId: string;
   brandColour?: string | null;
 }
 
-export function PupilJourneyTimeline({ lessonsCompleted, progress, hasTestDate, brandColour }: PupilJourneyTimelineProps) {
-  const milestones: Milestone[] = [
-    {
-      id: "first-lesson",
-      icon: Car,
-      label: "First Lesson",
-      detail: "Started learning",
-      completed: lessonsCompleted >= 1,
-    },
-    {
-      id: "theory",
-      icon: BookOpen,
-      label: "Theory Practice",
-      detail: "Study & mock tests",
-      completed: lessonsCompleted >= 5,
-      current: lessonsCompleted >= 1 && lessonsCompleted < 5,
-    },
-    {
-      id: "10-lessons",
-      icon: Award,
-      label: "10 Lessons",
-      detail: "Building confidence",
-      completed: lessonsCompleted >= 10,
-      current: lessonsCompleted >= 5 && lessonsCompleted < 10,
-    },
-    {
-      id: "test-ready",
-      icon: Flag,
-      label: "Test Ready",
-      detail: progress >= 80 ? "Ready!" : `${progress}% progress`,
-      completed: progress >= 80,
-      current: lessonsCompleted >= 10 && progress < 80,
-    },
-    {
-      id: "test-day",
-      icon: GraduationCap,
-      label: "Test Day",
-      detail: hasTestDate ? "Booked" : "Coming soon",
-      completed: false,
-      current: progress >= 80,
-    },
-  ];
+export function PupilJourneyTimeline({ pupilId, brandColour }: PupilJourneyTimelineProps) {
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const build = async () => {
+      try {
+        const [pupilRes, firstLessonRes, testResultRes] = await Promise.all([
+          supabase
+            .from("pupils")
+            .select("created_at, theory_test_date, theory_test_passed, test_date")
+            .eq("id", pupilId)
+            .single(),
+          supabase
+            .from("scheduled_lessons")
+            .select("lesson_date")
+            .eq("pupil_id", pupilId)
+            .eq("status", "completed")
+            .order("lesson_date", { ascending: true })
+            .limit(1),
+          supabase
+            .from("driving_test_results")
+            .select("test_date, result")
+            .eq("pupil_id", pupilId)
+            .eq("is_mock", false)
+            .order("test_date", { ascending: false })
+            .limit(1),
+        ]);
+
+        const pupil = pupilRes.data;
+        const firstLesson = firstLessonRes.data?.[0];
+        const practicalResult = testResultRes.data?.[0];
+
+        if (!pupil) return;
+
+        const hasFirstLesson = !!firstLesson;
+        const theoryPassed = pupil.theory_test_passed === true;
+        const hasTheoryDate = !!pupil.theory_test_date;
+        const hasTestDate = !!pupil.test_date;
+        const passedPractical = practicalResult?.result === "pass";
+
+        const items: Milestone[] = [
+          {
+            id: "registered",
+            icon: UserPlus,
+            label: "Registered",
+            detail: pupil.created_at ? format(new Date(pupil.created_at), "dd MMM yyyy") : undefined,
+            completed: true,
+          },
+          {
+            id: "first-lesson",
+            icon: BookOpen,
+            label: "First Lesson",
+            detail: hasFirstLesson
+              ? format(new Date(firstLesson.lesson_date), "dd MMM yyyy")
+              : "Not yet",
+            completed: hasFirstLesson,
+            current: !hasFirstLesson,
+          },
+          {
+            id: "theory-test",
+            icon: GraduationCap,
+            label: "Theory Test",
+            detail: theoryPassed
+              ? "Passed ✓"
+              : hasTheoryDate
+                ? format(new Date(pupil.theory_test_date!), "dd MMM yyyy")
+                : "Not yet",
+            completed: theoryPassed,
+            current: hasFirstLesson && !theoryPassed,
+          },
+          {
+            id: "practical-booked",
+            icon: Clock,
+            label: "Practical Test Booked",
+            detail: hasTestDate
+              ? format(new Date(pupil.test_date!), "dd MMM yyyy")
+              : "Not yet",
+            completed: hasTestDate,
+            current: theoryPassed && !hasTestDate,
+          },
+          {
+            id: "practical-result",
+            icon: Car,
+            label: "Practical Test Result",
+            detail: passedPractical
+              ? "Passed! 🎉"
+              : practicalResult
+                ? "Not yet passed"
+                : "Coming soon",
+            completed: passedPractical,
+            current: hasTestDate && !passedPractical,
+          },
+        ];
+
+        setMilestones(items);
+      } catch (error) {
+        console.error("Error building timeline:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    build();
+  }, [pupilId]);
 
   const color = brandColour || "hsl(var(--primary))";
+
+  if (loading) {
+    return <div className="animate-pulse h-40 bg-muted rounded-2xl" />;
+  }
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
