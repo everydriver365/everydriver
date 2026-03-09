@@ -136,7 +136,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       if (error) throw error;
       return data || [];
     },
-    enabled: !!settings?.allow_self_booking,
+    enabled: true,
   });
 
   // Create booking mutation
