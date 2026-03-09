@@ -83,6 +83,7 @@ export function LiveChatWidget({
     setIsOpen(false);
   };
 
+  const chatColor = primaryColor || "#10b981"; // Emerald green, distinct from site navy blue
   const brandStyles = primaryColor
     ? { "--widget-primary": primaryColor } as React.CSSProperties
     : {};
