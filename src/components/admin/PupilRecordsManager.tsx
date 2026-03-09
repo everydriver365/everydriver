@@ -21,6 +21,7 @@ interface Instructor {
 interface Pupil {
   id: string;
   name: string;
+  created_at: string;
   instructor_id: string;
   phone: string | null;
   email: string | null;
@@ -133,7 +134,7 @@ export function PupilRecordsManager() {
 
       const { data: pupilData } = await supabase
         .from("pupils")
-        .select("id, name, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
+        .select("id, name, created_at, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
         .is("deleted_at", null)
         .order("name");
 
@@ -667,6 +668,7 @@ export function PupilRecordsManager() {
                 <PupilJourneyTimeline
                   pupilId={selectedPupil.id}
                   pupil={{
+                    created_at: selectedPupil.created_at,
                     instructor_id: selectedPupil.instructor_id,
                     theory_test_date: selectedPupil.theory_test_date,
                     theory_test_passed: selectedPupil.theory_test_passed,
