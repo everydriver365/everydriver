@@ -41,7 +41,7 @@ import videoThumbnail from "@/assets/video-thumbnail.jpg";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
-import featureRetestFallback from "@/assets/feature-retest.jpg";
+import featureRetestFallback from "@/assets/failed-driving-test.png";
 import featureAvailabilityFallback from "@/assets/feature-availability.jpg";
 import featureTheoryFallback from "@/assets/feature-theory.jpg";
 import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
