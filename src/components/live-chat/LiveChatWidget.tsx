@@ -42,6 +42,16 @@ export function LiveChatWidget({
     }
   }, [sessionType, instructorId]);
 
+  // Listen for custom event to open the chat widget
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+    window.addEventListener("open-live-chat", handleOpen);
+    return () => window.removeEventListener("open-live-chat", handleOpen);
+  }, []);
+
   const handlePreChatSubmit = async (data: PreChatFormData) => {
     const newSessionId = await createSession({
       sessionType,
