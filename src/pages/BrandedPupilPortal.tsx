@@ -245,7 +245,7 @@ export default function BrandedPupilPortal() {
   const isSubPage = activeSection !== 'home';
 
   // Section back handler
-  const handleBack = () => setActiveSection('home');
+  const handleBack = () => { setBookingRequested(false); setActiveSection('home'); };
 
   // Render a sub-page wrapper with back button
   const renderSubPage = (content: React.ReactNode) => (
