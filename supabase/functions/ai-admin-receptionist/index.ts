@@ -35,13 +35,42 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     const userLng = result.longitude;
     const areaName = result.admin_district || null;
 
-    // Fetch active instructors with coordinates
+    // Fetch active instructors
     const { data: instructors } = await supabase
       .from("instructors")
       .select("name, home_postcode, hourly_rate, lat, lng, transmission_type, profile_image_url, special_skills, location_name")
       .eq("is_active", true);
 
     if (!instructors || instructors.length === 0) return { areaName, instructors: [] };
+
+    // Geocode any instructors missing lat/lng
+    const needsGeocoding = instructors.filter(i => (!i.lat || !i.lng) && i.home_postcode && i.home_postcode !== "N/A");
+    if (needsGeocoding.length > 0) {
+      const postcodes = needsGeocoding.map(i => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      try {
+        const bulkRes = await fetch("https://api.postcodes.io/postcodes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postcodes }),
+        });
+        if (bulkRes.ok) {
+          const bulkData = await bulkRes.json();
+          for (const item of (bulkData.result || [])) {
+            if (item.result) {
+              const inst = needsGeocoding.find(i => 
+                i.home_postcode.replace(/\s+/g, "").toUpperCase() === item.query
+              );
+              if (inst) {
+                inst.lat = item.result.latitude;
+                inst.lng = item.result.longitude;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Bulk geocoding error:", e);
+      }
+    }
 
     // Find instructors within 15 miles
     const nearby = [];
