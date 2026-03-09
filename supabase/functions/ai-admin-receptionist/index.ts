@@ -230,24 +230,16 @@ Guidelines:
 
     // Build stored content with optional instructor cards
     let storedContent = `🤖 ${reply}`;
-    if (postcodeMatch && instructorContext) {
-      // Extract nearby instructor data for frontend cards
-      try {
-        const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
-        if (searchResult && searchResult.instructors.length > 0) {
-          const cardsData = searchResult.instructors.map((i: any) => ({
-            name: i.name,
-            slug: i.slug,
-            hourlyRate: i.hourlyRate,
-            distance: i.distance,
-            profileImage: i.profileImage,
-            transmission: i.transmission,
-          }));
-          storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
-        }
-      } catch (e) {
-        console.error("Cards data error:", e);
-      }
+    if (cachedSearchResult && cachedSearchResult.instructors.length > 0) {
+      const cardsData = cachedSearchResult.instructors.map((i: any) => ({
+        name: i.name,
+        slug: i.slug,
+        hourlyRate: i.hourlyRate,
+        distance: i.distance,
+        profileImage: i.profileImage,
+        transmission: i.transmission,
+      }));
+      storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
     }
 
     // Insert AI response as a chat message
