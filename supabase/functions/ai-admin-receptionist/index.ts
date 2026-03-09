@@ -38,7 +38,8 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slugtive", true);
+      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
+      .eq("is_active", true);
 
     if (instructorsError) {
       console.error("Instructor query error:", instructorsError.message);
