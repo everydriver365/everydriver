@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
 
+type LoginView = "login" | "forgot" | "reset-code" | "new-password";
+
 export default function PupilLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +24,10 @@ export default function PupilLogin() {
   const [faceIdAvailable, setFaceIdAvailable] = useState(false);
   const [autoLoggingIn, setAutoLoggingIn] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [loginView, setLoginView] = useState<LoginView>("login");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {

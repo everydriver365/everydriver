@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,13 +62,22 @@ async function setCredentials(supabase: any, pupilId: string, hash: string) {
     .upsert({ pupil_id: pupilId, password_hash: hash, updated_at: new Date().toISOString() }, { onConflict: "pupil_id" });
 }
 
+function generateResetCode(): string {
+  const digits = '0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += digits[Math.floor(Math.random() * 10)];
+  }
+  return code;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, email, password, name } = await req.json();
+    const { action, email, password, name, code } = await req.json();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -180,6 +190,110 @@ serve(async (req) => {
       await setCredentials(supabase, pupil.id, hash);
 
       return jsonResponse({ success: true, message: "Account registered successfully" });
+
+    } else if (action === "forgot_password") {
+      // Look up the pupil
+      const { data: pupils } = await supabase
+        .from("pupils")
+        .select("id, name")
+        .ilike("email", cleanEmail)
+        .limit(1);
+
+      // Always return success to prevent email enumeration
+      if (!pupils || pupils.length === 0) {
+        return jsonResponse({ success: true, message: "If an account exists with that email, a reset code has been sent." });
+      }
+
+      const pupil = pupils[0];
+      const resetCode = generateResetCode();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
+
+      // Store reset code in pupil_otp_codes table (reusing existing table)
+      await supabase
+        .from("pupil_otp_codes")
+        .upsert({
+          phone: cleanEmail, // using phone column to store email for reset codes
+          otp_code: resetCode,
+          expires_at: expiresAt,
+          verified: false,
+        }, { onConflict: "phone" });
+
+      // Send email via Resend
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const firstName = pupil.name?.split(" ")[0] || "there";
+
+        await resend.emails.send({
+          from: "EveryDriver <noreply@everydriver.co.uk>",
+          to: cleanEmail,
+          subject: "Your Password Reset Code",
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                <h1 style="color: #10b981; font-size: 24px; margin: 0;">EveryDriver</h1>
+              </div>
+              <p style="color: #334155; font-size: 16px;">Hi ${firstName},</p>
+              <p style="color: #475569; font-size: 14px;">You requested a password reset. Use the code below to set a new password:</p>
+              <div style="text-align: center; margin: 24px 0;">
+                <span style="display: inline-block; background: #f1f5f9; padding: 16px 32px; font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #0f172a; border-radius: 12px;">${resetCode}</span>
+              </div>
+              <p style="color: #94a3b8; font-size: 13px; text-align: center;">This code expires in 15 minutes.</p>
+              <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-top: 24px;">If you didn't request this, you can safely ignore this email.</p>
+            </div>
+          `,
+        });
+      }
+
+      return jsonResponse({ success: true, message: "If an account exists with that email, a reset code has been sent." });
+
+    } else if (action === "confirm_reset") {
+      if (!code) {
+        return jsonResponse({ error: "Reset code is required" });
+      }
+      if (!password || password.length < 6) {
+        return jsonResponse({ error: "Password must be at least 6 characters" });
+      }
+
+      // Look up the reset code
+      const { data: otpRecord } = await supabase
+        .from("pupil_otp_codes")
+        .select("*")
+        .eq("phone", cleanEmail)
+        .eq("otp_code", code)
+        .eq("verified", false)
+        .single();
+
+      if (!otpRecord) {
+        return jsonResponse({ error: "Invalid or expired reset code" });
+      }
+
+      if (new Date(otpRecord.expires_at) < new Date()) {
+        return jsonResponse({ error: "Reset code has expired. Please request a new one." });
+      }
+
+      // Find the pupil
+      const { data: pupils } = await supabase
+        .from("pupils")
+        .select("id")
+        .ilike("email", cleanEmail)
+        .limit(1);
+
+      if (!pupils || pupils.length === 0) {
+        return jsonResponse({ error: "Account not found" });
+      }
+
+      // Set new password
+      const { hash } = await hashPassword(password);
+      await setCredentials(supabase, pupils[0].id, hash);
+
+      // Mark OTP as used
+      await supabase
+        .from("pupil_otp_codes")
+        .update({ verified: true })
+        .eq("phone", cleanEmail);
+
+      return jsonResponse({ success: true, message: "Password has been reset successfully" });
 
     } else {
       return jsonResponse({ error: "Invalid action" });
