@@ -369,6 +369,9 @@ export default function BrandedPupilPortal() {
                   <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
                 </div>
 
+                {/* Live Slot Offers */}
+                <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
+
                 {/* Lesson Check-In */}
                 <PupilCheckInCard pupilId={pupil.id} />
 
