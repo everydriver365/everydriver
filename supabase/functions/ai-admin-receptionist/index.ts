@@ -36,10 +36,15 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     const areaName = result.admin_district || null;
 
     // Fetch active instructors
-    const { data: instructors } = await supabase
+    const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, transmission_type, profile_image_url, special_skills, location_name")
+      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name")
       .eq("is_active", true);
+
+    if (instructorsError) {
+      console.error("Instructor query error:", instructorsError.message);
+      return { areaName, instructors: [] };
+    }
 
     if (!instructors || instructors.length === 0) return { areaName, instructors: [] };
 
@@ -82,7 +87,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: inst.transmission_type || "Manual",
+          transmission: "Manual/Automatic",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
         });
