@@ -258,7 +258,7 @@ export function MobileHomepage() {
           className="rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
         >
           <div className="flex">
-            <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5">
+            <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5 rounded-l-2xl">
               <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-full max-w-[120px] object-contain drop-shadow-lg" />
             </div>
             <div className="flex-1 bg-card p-4 flex flex-col justify-center">
