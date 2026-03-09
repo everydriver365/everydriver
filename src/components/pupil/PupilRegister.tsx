@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
-import { Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -26,6 +33,7 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
   const [selectedInstructorId, setSelectedInstructorId] = useState(instructorId || "");
   const [instructors, setInstructors] = useState<{ id: string; name: string }[]>([]);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const showSelector = !instructorId;
 
@@ -116,20 +124,51 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
         )}
 
         {showSelector && (
-          <div>
-            <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
-              <SelectTrigger className="h-12 bg-white/10 border-white/20 text-white [&>span]:text-slate-400 data-[state=open]:ring-emerald-500">
-                <SelectValue placeholder={loadingInstructors ? "Loading instructors..." : "Select your instructor"} />
-              </SelectTrigger>
-              <SelectContent>
-                {instructors.map((inst) => (
-                  <SelectItem key={inst.id} value={inst.id}>
-                    {inst.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={comboboxOpen}
+                className="w-full h-12 justify-between bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+              >
+                {selectedInstructorId
+                  ? instructors.find((i) => i.id === selectedInstructorId)?.name
+                  : loadingInstructors
+                    ? "Loading instructors..."
+                    : "Search for your instructor..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Type to search..." />
+                <CommandList>
+                  <CommandEmpty>No instructor found.</CommandEmpty>
+                  <CommandGroup>
+                    {instructors.map((inst) => (
+                      <CommandItem
+                        key={inst.id}
+                        value={inst.name}
+                        onSelect={() => {
+                          setSelectedInstructorId(inst.id);
+                          setComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedInstructorId === inst.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {inst.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         )}
 
         <div className="relative">
