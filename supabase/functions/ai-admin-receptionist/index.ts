@@ -174,6 +174,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
             isIntensive: template?.is_intensive || false,
             isPopular: template?.is_popular || false,
             features: template?.features || null,
+            availableFrom: inst?.availableFrom || null,
           });
         }
         // Sort: popular first, then by hours
