@@ -32,8 +32,15 @@ export function LiveChatWindow({
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [showAgentButton, setShowAgentButton] = useState(false);
-  const [quickReplyStep, setQuickReplyStep] = useState(0);
-  const [quickReplyDone, setQuickReplyDone] = useState(false);
+  const storageKey = `quick_reply_step_${sessionId}`;
+  const [quickReplyStep, setQuickReplyStep] = useState(() => {
+    const stored = localStorage.getItem(storageKey);
+    return stored ? parseInt(stored, 10) : 0;
+  });
+  const [quickReplyDone, setQuickReplyDone] = useState(() => {
+    const stored = localStorage.getItem(storageKey);
+    return stored ? parseInt(stored, 10) >= TOTAL_QUICK_REPLY_STEPS : false;
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,18 +56,10 @@ export function LiveChatWindow({
     handleTyping,
   } = useLiveChat(sessionId);
 
-  // Resume quick reply step based on existing visitor messages
+  // Persist quick reply step
   useEffect(() => {
-    if (userType === "visitor" && messages.length > 0 && quickReplyStep === 0 && !quickReplyDone) {
-      const visitorMessages = messages.filter(m => m.sender_type === "visitor");
-      const count = visitorMessages.length;
-      if (count >= TOTAL_QUICK_REPLY_STEPS) {
-        setQuickReplyDone(true);
-      } else if (count > 0) {
-        setQuickReplyStep(count);
-      }
-    }
-  }, [messages, userType, quickReplyStep, quickReplyDone]);
+    localStorage.setItem(storageKey, String(quickReplyStep));
+  }, [quickReplyStep, storageKey]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
