@@ -268,7 +268,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
 
     return slots;
-  }, [availability, existingBookings, weekStart, settings]);
+  }, [availability, existingBookings, weekStart, effectiveSettings]);
 
   const handlePrevWeek = () => setWeekStart((prev) => addDays(prev, -7));
   const handleNextWeek = () => setWeekStart((prev) => addDays(prev, 7));
