@@ -87,8 +87,12 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Find instructors within 15 miles
     const nearby: any[] = [];
     for (const inst of instructors) {
-      if (!inst.lat || !inst.lng) continue;
+      if (!inst.lat || !inst.lng) {
+        console.log(`Skipping ${inst.name} - no lat/lng`);
+        continue;
+      }
       const dist = calculateDistance(userLat, userLng, inst.lat, inst.lng);
+      console.log(`Distance to ${inst.name}: ${dist.toFixed(2)} miles (lat: ${inst.lat}, lng: ${inst.lng})`);
       if (dist <= 15) {
         nearby.push({
           id: inst.id,
@@ -103,6 +107,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
         });
       }
     }
+    console.log(`Found ${nearby.length} nearby instructors`);
 
     // Sort by distance
     nearby.sort((a: any, b: any) => a.distance - b.distance);
