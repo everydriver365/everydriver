@@ -30,9 +30,29 @@ export function SlotOfferNotification({ pupilId, onAccept }: SlotOfferNotificati
   const [respondingId, setRespondingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (pupilId) {
-      fetchOffers();
-    }
+    if (!pupilId) return;
+    fetchOffers();
+
+    // Realtime subscription for instant updates
+    const channel = supabase
+      .channel(`slot-offers-${pupilId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'slot_offers',
+          filter: `pupil_id=eq.${pupilId}`,
+        },
+        () => {
+          fetchOffers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [pupilId]);
 
   const fetchOffers = async () => {

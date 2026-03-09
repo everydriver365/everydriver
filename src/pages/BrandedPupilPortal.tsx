@@ -51,6 +51,7 @@ import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTrack
 import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
 import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
+import { SlotOfferNotification } from "@/components/pupil-portal/SlotOfferNotification";
 
 interface InstructorBranding {
   id: string;
@@ -368,6 +369,9 @@ export default function BrandedPupilPortal() {
                   <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
                   <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
                 </div>
+
+                {/* Live Slot Offers */}
+                <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
 
                 {/* Lesson Check-In */}
                 <PupilCheckInCard pupilId={pupil.id} />
