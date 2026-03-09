@@ -28,6 +28,7 @@ export function LiveChatWindow({
   instructorId,
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
+  const [showAgentButton, setShowAgentButton] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,6 +50,15 @@ export function LiveChatWindow({
     }
   }, [messages, otherTyping]);
 
+  // Check if "agent" was ever mentioned in the conversation (persist across re-renders)
+  useEffect(() => {
+    if (userType === "visitor" && messages.some(m => 
+      m.sender_type === "visitor" && /\bagent\b/i.test(m.content)
+    )) {
+      setShowAgentButton(true);
+    }
+  }, [messages, userType]);
+
   const triggerAIReceptionist = async (visitorMessage: string) => {
     if (userType !== "visitor") return;
     try {
@@ -66,10 +76,21 @@ export function LiveChatWindow({
     }
   };
 
+  const handleSendAgentRequest = async () => {
+    const agentMessage = "I'd like to speak to a real person please";
+    await sendMessage(agentMessage, userType, userId);
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
     const messageText = newMessage.trim();
+
+    // Check if message contains "agent" keyword
+    if (userType === "visitor" && /\bagent\b/i.test(messageText)) {
+      setShowAgentButton(true);
+    }
+
     const success = await sendMessage(messageText, userType, userId);
     if (success) {
       setNewMessage("");
