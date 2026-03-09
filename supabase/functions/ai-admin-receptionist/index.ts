@@ -182,13 +182,15 @@ serve(async (req) => {
     if (postcodeMatch) {
       cachedSearchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
       if (cachedSearchResult) {
-        if (cachedSearchResult.instructors.length > 0) {
-          const list = cachedSearchResult.instructors.map((i: any) =>
-            `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
+        if (cachedSearchResult.courses.length > 0) {
+          const courseList = cachedSearchResult.courses.map((c: any) =>
+            `- ${c.courseName} (${c.courseHours} hours${c.price ? `, £${c.price}` : ""}) with ${c.instructorName}${c.isIntensive ? " [Intensive]" : ""}${c.isPopular ? " [Popular]" : ""}`
           ).join("\n");
-          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these instructors warmly to the visitor. Include names, distance, transmission type, and hourly rate. The visitor will see clickable instructor cards below your message — do NOT tell them to visit another page or provide any links. Just summarise who's available nearby.`;
+          instructorContext = `\n\nCOURSE SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${courseList}\n\nPresent these courses warmly to the visitor. Mention course names, hours, pricing, and the instructor offering them. The visitor will see clickable course cards below your message — do NOT tell them to visit another page or provide any links. Just summarise available courses nearby.`;
+        } else if (cachedSearchResult.instructors.length > 0) {
+          instructorContext = `\n\nFound instructors near "${postcodeMatch[1]}" but no specific courses listed yet. Let the visitor know instructors are available in their area and suggest they get in touch for course details.`;
         } else {
-          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area yet and suggest they try a different postcode or check back soon.`;
+          instructorContext = `\n\nCOURSE SEARCH: No instructors or courses found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have coverage in that area yet and suggest they try a different postcode or check back soon.`;
         }
       }
     }
