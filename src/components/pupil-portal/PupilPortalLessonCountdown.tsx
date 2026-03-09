@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin, Calendar, CalendarPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays, differenceInHours, differenceInMinutes, parseISO } from "date-fns";
@@ -10,6 +11,7 @@ interface PupilPortalLessonCountdownProps {
   instructorId: string;
   brandColour: string | null;
   darkMode: boolean;
+  onBookLesson?: () => void;
 }
 
 interface NextLesson {
@@ -26,7 +28,8 @@ export function PupilPortalLessonCountdown({
   pupilId, 
   instructorId, 
   brandColour, 
-  darkMode 
+  darkMode,
+  onBookLesson
 }: PupilPortalLessonCountdownProps) {
   const [nextLesson, setNextLesson] = useState<NextLesson | null>(null);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
@@ -91,7 +94,7 @@ export function PupilPortalLessonCountdown({
         .order("lesson_date", { ascending: true })
         .order("start_time", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         setNextLesson(data);
@@ -133,9 +136,19 @@ export function PupilPortalLessonCountdown({
         <CardContent className="p-6 text-center">
           <Calendar className="h-12 w-12 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
           <p className="font-medium" style={{ color: 'var(--brand-text)' }}>No Upcoming Lessons</p>
-          <p className="text-sm" style={{ color: 'var(--brand-muted)' }}>
-            Book a lesson to get started
+          <p className="text-sm mb-4" style={{ color: 'var(--brand-muted)' }}>
+            Browse your instructor's diary to find an available slot
           </p>
+          {onBookLesson && (
+            <Button
+              className="min-h-[44px] text-sm font-medium"
+              onClick={onBookLesson}
+              style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+            >
+              <CalendarPlus className="h-4 w-4 mr-2" />
+              View Available Slots
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
