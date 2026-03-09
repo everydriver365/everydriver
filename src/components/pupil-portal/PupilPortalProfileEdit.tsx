@@ -160,14 +160,22 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
         />
 
         {/* Home Address */}
-        <InlineEditField
-          value={pupil.address || ""}
-          onSave={(v) => updateField("address", v)}
-          icon={<Home className="h-4 w-4 text-muted-foreground" />}
-          label="Home Address"
-          emptyText="Click to add"
-          placeholder="Enter your full address"
-        />
+        <div className="flex items-center gap-2 px-1 py-1.5">
+          <Home className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] text-muted-foreground block">Home Address</span>
+            <GoogleAddressAutocomplete
+              value={pupil.address || ""}
+              onChange={(address) => updateField("address", address)}
+              onPostcodeChange={(postcode) => {
+                setPostcodeValue(postcode);
+                updateField("postcode", postcode);
+              }}
+              placeholder="Search your address..."
+              className="h-7 text-sm border-0 shadow-none px-0 focus-visible:ring-0"
+            />
+          </div>
+        </div>
 
         {/* Postcode with autocomplete */}
         <div className="flex items-center gap-2 px-1 py-1.5">
