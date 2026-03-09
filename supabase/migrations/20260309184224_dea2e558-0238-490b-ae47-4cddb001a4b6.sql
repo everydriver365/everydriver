@@ -1,0 +1,2 @@
+ALTER TABLE public.pupils ALTER COLUMN address DROP NOT NULL;
+ALTER TABLE public.pupils ALTER COLUMN postcode DROP NOT NULL;

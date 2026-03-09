@@ -9774,7 +9774,7 @@ export type Database = {
       pupils: {
         Row: {
           account_balance: number | null
-          address: string
+          address: string | null
           balance_due_date: string | null
           best_driving_score: number | null
           checklist_completed_at: string | null
@@ -9819,7 +9819,7 @@ export type Database = {
           phone: string | null
           pickup_address: string | null
           pickup_postcode: string | null
-          postcode: string
+          postcode: string | null
           preferred_days: string[] | null
           preferred_language: string | null
           preferred_times: string[] | null
@@ -9854,7 +9854,7 @@ export type Database = {
         }
         Insert: {
           account_balance?: number | null
-          address: string
+          address?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
@@ -9899,7 +9899,7 @@ export type Database = {
           phone?: string | null
           pickup_address?: string | null
           pickup_postcode?: string | null
-          postcode: string
+          postcode?: string | null
           preferred_days?: string[] | null
           preferred_language?: string | null
           preferred_times?: string[] | null
@@ -9934,7 +9934,7 @@ export type Database = {
         }
         Update: {
           account_balance?: number | null
-          address?: string
+          address?: string | null
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
@@ -9979,7 +9979,7 @@ export type Database = {
           phone?: string | null
           pickup_address?: string | null
           pickup_postcode?: string | null
-          postcode?: string
+          postcode?: string | null
           preferred_days?: string[] | null
           preferred_language?: string | null
           preferred_times?: string[] | null
