@@ -147,12 +147,12 @@ export function MobileHomepage() {
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
-            <div className="text-center mb-3">
+           <div className="text-center mb-3">
               <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
                 EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
               </h3>
               <p className="text-xs text-primary-foreground/80 mt-0.5">
-                Search, Compare and Book Direct
+                Find your nearest instructor
               </p>
             </div>
             <form onSubmit={handleSearch} className="flex items-center gap-0 bg-white rounded-xl overflow-hidden shadow-sm">
