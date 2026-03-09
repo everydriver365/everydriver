@@ -851,7 +851,7 @@ export default function Courses() {
             className="mx-auto max-w-4xl"
           >
             <h1 className="mb-6 text-2xl font-bold md:text-3xl">
-              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find Driving Courses Near You"}
+              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
             </h1>
 
             <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
