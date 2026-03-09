@@ -312,6 +312,7 @@ export function LiveChatWindow({
         <AnimatePresence>
           {otherTyping && <TypingIndicator name={otherPartyName} />}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </ScrollArea>
 
       {/* Quick Reply Suggestions */}
