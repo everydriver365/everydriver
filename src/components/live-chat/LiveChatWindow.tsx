@@ -48,6 +48,19 @@ export function LiveChatWindow({
     handleTyping,
   } = useLiveChat(sessionId);
 
+  // Resume quick reply step based on existing visitor messages
+  useEffect(() => {
+    if (userType === "visitor" && messages.length > 0 && quickReplyStep === 0 && !quickReplyDone) {
+      const visitorMessages = messages.filter(m => m.sender_type === "visitor");
+      const count = visitorMessages.length;
+      if (count >= TOTAL_QUICK_REPLY_STEPS) {
+        setQuickReplyDone(true);
+      } else if (count > 0) {
+        setQuickReplyStep(count);
+      }
+    }
+  }, [messages, userType, quickReplyStep, quickReplyDone]);
+
   // Auto-scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
