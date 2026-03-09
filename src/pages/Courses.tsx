@@ -1121,60 +1121,66 @@ export default function Courses() {
                     </p>
                   </div>
 
-                  {/* Transmission Filter + Sort buttons */}
+                   {/* Transmission Filter + Sort buttons */}
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Transmission Pills */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Transmission:</span>
+                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
                       {[
                         { value: "all", label: "All" },
                         { value: "manual", label: "Manual" },
-                        { value: "automatic", label: "Auto" },
+                        { value: "automatic", label: "Automatic" },
                       ].map((option) => (
                         <button
                           key={option.value}
                           onClick={() => setTransmission(option.value)}
-                          className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                             transmission === option.value
                               ? "bg-primary text-primary-foreground shadow-sm"
-                              : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                              : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           {option.label}
                         </button>
                       ))}
-                      
-                      {/* Nearest button - inline on mobile */}
-                      <Button
-                        variant={sortBy === "nearest" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("nearest")}
-                        className="gap-1 h-7 text-xs px-2 rounded-full"
-                        disabled={!userLocation}
-                      >
-                        <Navigation className="h-3 w-3" />
-                        Nearest
-                      </Button>
                     </div>
-                    
-                    {/* Price sort - desktop only */}
-                    {!isMobile && (
-                      <>
-                        <div className="h-4 w-px bg-border" />
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-muted-foreground">Sort:</span>
-                          <Button
-                            variant={sortBy === "price-low" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSortBy("price-low")}
-                            className="gap-1 h-7 text-xs px-2"
-                          >
-                            <PoundSterling className="h-3 w-3" />
-                            Price
-                          </Button>
-                        </div>
-                      </>
-                    )}
+
+                    {/* Sort Pills */}
+                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                      <button
+                        onClick={() => setSortBy("soonest")}
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                          sortBy === "soonest"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <CalendarIcon className="h-3.5 w-3.5" />
+                        Soonest
+                      </button>
+                      <button
+                        onClick={() => setSortBy("nearest")}
+                        disabled={!userLocation}
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                          sortBy === "nearest"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        } ${!userLocation ? "opacity-40 cursor-not-allowed" : ""}`}
+                      >
+                        <Navigation className="h-3.5 w-3.5" />
+                        Nearest
+                      </button>
+                      <button
+                        onClick={() => setSortBy("price-low")}
+                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                          sortBy === "price-low"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <PoundSterling className="h-3.5 w-3.5" />
+                        Price
+                      </button>
+                    </div>
                   </div>
                 </div>
 
