@@ -170,7 +170,7 @@ export function PupilPortalSchedule({
   const today = startOfDay(new Date());
   const upcomingLessons = lessons.filter(l => !isBefore(parseISO(l.lesson_date), today));
 
-  if (showBooking && settings?.allow_self_booking) {
+  if (showBooking) {
     return (
       <div className="px-4 space-y-4">
         <Button
