@@ -33,13 +33,14 @@ export function CourseChatCards({ courses }: CourseChatCardsProps) {
   if (!courses.length) return null;
 
   return (
-    <div className="flex flex-col gap-4 pt-2 pb-1">
+    <div className="flex flex-col gap-3 pt-2 pb-1 [&_.group]:hover\:translate-y-0 [&_img]:h-28 [&_.relative.h-48]:h-28 [&_.min-w-\[80px\]]:min-w-[60px] [&_.min-w-\[80px\]]:px-3 [&_.text-3xl]:text-xl [&_.text-lg]:text-sm [&_.text-2xl]:text-lg [&_.p-4]:p-2.5 [&_.p-5]:p-3 [&_.px-5]:px-3 [&_.space-y-2\.5]:space-y-1.5 [&_.mt-4]:mt-2 [&_.mt-3]:mt-2 [&_.h-10]:h-8 [&_.w-10]:w-8">
       {courses.map((course, i) => (
         <motion.div
           key={i}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1, duration: 0.3, type: "spring", stiffness: 300, damping: 25 }}
+          className="w-full"
         >
           <DynamicCourseCard
             instructor={{
