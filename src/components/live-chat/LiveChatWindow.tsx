@@ -76,7 +76,7 @@ export function LiveChatWindow({
       inputRef.current?.focus();
 
       // If visitor, trigger AI receptionist after 5 seconds if no human reply
-      if (userType === "visitor" && instructorId) {
+      if (userType === "visitor") {
         if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
         aiTimeoutRef.current = setTimeout(() => {
           triggerAIReceptionist(messageText);
