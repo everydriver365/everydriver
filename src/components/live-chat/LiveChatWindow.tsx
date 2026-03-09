@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, CheckCheck, Check } from "lucide-react";
+import { Send, Loader2, CheckCheck, Check, UserRound } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypingIndicator } from "./TypingIndicator";
@@ -28,6 +28,7 @@ export function LiveChatWindow({
   instructorId,
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
+  const [showAgentButton, setShowAgentButton] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,6 +50,15 @@ export function LiveChatWindow({
     }
   }, [messages, otherTyping]);
 
+  // Check if "agent" was ever mentioned in the conversation (persist across re-renders)
+  useEffect(() => {
+    if (userType === "visitor" && messages.some(m => 
+      m.sender_type === "visitor" && /\bagent\b/i.test(m.content)
+    )) {
+      setShowAgentButton(true);
+    }
+  }, [messages, userType]);
+
   const triggerAIReceptionist = async (visitorMessage: string) => {
     if (userType !== "visitor") return;
     try {
@@ -66,10 +76,21 @@ export function LiveChatWindow({
     }
   };
 
+  const handleSendAgentRequest = async () => {
+    const agentMessage = "I'd like to speak to a real person please";
+    await sendMessage(agentMessage, userType, userId);
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
     const messageText = newMessage.trim();
+
+    // Check if message contains "agent" keyword
+    if (userType === "visitor" && /\bagent\b/i.test(messageText)) {
+      setShowAgentButton(true);
+    }
+
     const success = await sendMessage(messageText, userType, userId);
     if (success) {
       setNewMessage("");
@@ -228,7 +249,19 @@ export function LiveChatWindow({
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t bg-background">
+      <div className="p-4 border-t bg-background space-y-2">
+        {showAgentButton && userType === "visitor" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 text-sm"
+            onClick={handleSendAgentRequest}
+            disabled={sending}
+          >
+            <UserRound className="h-4 w-4" />
+            Speak to an Agent
+          </Button>
+        )}
         <div className="flex items-center gap-2">
           <Input
             ref={inputRef}
