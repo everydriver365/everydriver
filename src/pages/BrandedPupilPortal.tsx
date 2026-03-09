@@ -37,6 +37,7 @@ import { PupilTestRequests } from "@/components/test-requests/PupilTestRequests"
 import { RefreshCw, PenLine, CalendarPlus } from "lucide-react";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
+import { PupilEndOfLessonWizard } from "@/components/pupil-portal/PupilEndOfLessonWizard";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
 import { LessonPrepChecklist } from "@/components/pupil-portal/LessonPrepChecklist";
