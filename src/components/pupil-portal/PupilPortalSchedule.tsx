@@ -17,6 +17,7 @@ interface PupilPortalScheduleProps {
   brandColour: string | null;
   darkMode: boolean;
   instructorPhone: string | null;
+  initialShowBooking?: boolean;
 }
 
 interface ScheduledLesson {
@@ -50,14 +51,15 @@ export function PupilPortalSchedule({
   instructorId, 
   brandColour, 
   darkMode,
-  instructorPhone 
+  instructorPhone,
+  initialShowBooking = false
 }: PupilPortalScheduleProps) {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [showBooking, setShowBooking] = useState(false);
+  const [showBooking, setShowBooking] = useState(initialShowBooking);
 
   const queryClient = useQueryClient();
 

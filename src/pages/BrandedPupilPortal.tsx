@@ -90,6 +90,7 @@ export default function BrandedPupilPortal() {
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
+  const [bookingRequested, setBookingRequested] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -244,7 +245,7 @@ export default function BrandedPupilPortal() {
   const isSubPage = activeSection !== 'home';
 
   // Section back handler
-  const handleBack = () => setActiveSection('home');
+  const handleBack = () => { setBookingRequested(false); setActiveSection('home'); };
 
   // Render a sub-page wrapper with back button
   const renderSubPage = (content: React.ReactNode) => (
@@ -402,7 +403,7 @@ export default function BrandedPupilPortal() {
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
-                  onBookLesson={() => setActiveSection('schedule')}
+                  onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
                 />
 
                 {/* Widget Grid — replaces static stats strip */}
@@ -501,6 +502,7 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                   instructorPhone={instructor.phone}
+                  initialShowBooking={bookingRequested}
                 />
               </motion.div>
             )}
