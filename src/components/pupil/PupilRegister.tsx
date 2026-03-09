@@ -33,6 +33,7 @@ export default function PupilRegister({ instructorId, instructorName }: PupilReg
   const [selectedInstructorId, setSelectedInstructorId] = useState(instructorId || "");
   const [instructors, setInstructors] = useState<{ id: string; name: string }[]>([]);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const showSelector = !instructorId;
 
