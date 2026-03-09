@@ -71,10 +71,11 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
     toast.success("Postcode updated");
   };
 
-  const handleDobSelect = async (date: Date | undefined) => {
-    if (!date) return;
-    const dateStr = format(date, "yyyy-MM-dd");
+  const handleDobSave = async () => {
+    if (!pendingDob) return;
+    const dateStr = format(pendingDob, "yyyy-MM-dd");
     await updateField("date_of_birth", dateStr);
+    setDobOpen(false);
   };
 
   return (
