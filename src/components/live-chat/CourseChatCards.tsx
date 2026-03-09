@@ -1,5 +1,5 @@
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { motion } from "framer-motion";
+import { MapPin, Zap, TrendingUp, Car } from "lucide-react";
 
 interface CourseCard {
   courseName: string;
@@ -30,44 +30,120 @@ interface CourseChatCardsProps {
   courses: CourseCard[];
 }
 
+function parseAvailableFrom(availableFrom?: string | null) {
+  if (!availableFrom) return { day: "TBC", month: "" };
+  const date = new Date(availableFrom);
+  if (isNaN(date.getTime())) return { day: "TBC", month: "" };
+  return {
+    day: date.getDate().toString(),
+    month: date.toLocaleString("en-GB", { month: "short" }),
+  };
+}
+
 export function CourseChatCards({ courses }: CourseChatCardsProps) {
   if (!courses.length) return null;
 
   return (
-    <div className="flex flex-col gap-3 pt-2 pb-1 [&_.group]:hover\:translate-y-0 [&_.group]:[perspective:none] [&_\[transform\:rotateY\(180deg\)\]]:hidden [&_img]:h-28 [&_.relative.h-48]:h-28 [&_.min-w-\[80px\]]:min-w-[60px] [&_.min-w-\[80px\]]:px-3 [&_.text-3xl]:text-xl [&_.text-lg]:text-sm [&_.text-2xl]:text-lg [&_.p-4]:p-2.5 [&_.p-5]:p-3 [&_.px-5]:px-3 [&_.space-y-2\.5]:space-y-1.5 [&_.mt-4]:mt-2 [&_.mt-3]:mt-2 [&_.h-10]:h-8 [&_.w-10]:w-8">
-      {courses.map((course, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1, duration: 0.3, type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full"
-        >
-          <DynamicCourseCard
-            instructor={{
-              id: course.instructorId || "unknown",
-              name: course.instructorName,
-              profile_image_url: course.instructorProfileImage || null,
-              car_type: course.instructorCarType || "Manual",
-              car_make: course.instructorCarMake || null,
-              car_model: course.instructorCarModel || null,
-              home_postcode: course.instructorPostcode || "",
-              home_address: course.instructorAddress || null,
-              hourly_rate: course.instructorHourlyRate || null,
-              bio: course.instructorBio || null,
-              brand_colour: course.instructorBrandColour || null,
-              school_skim_amount: course.instructorSchoolSkim || 0,
-            }}
-            hours={course.courseHours}
-            isPopular={course.isPopular}
-            isIntensive={course.isIntensive}
-            distance={course.distance ?? undefined}
-            discountedPrice={course.discountedPrice}
-            features={course.features}
-            availableFrom={course.availableFrom}
-          />
-        </motion.div>
-      ))}
+    <div className="flex flex-col gap-2 pt-2 pb-1">
+      {courses.map((course, i) => {
+        const { day, month } = parseAvailableFrom(course.availableFrom);
+        const brandColour = course.instructorBrandColour || "#10b981";
+        const isAuto = (course.instructorCarType || "").toLowerCase() === "automatic";
+        const hasDiscount = course.discountedPrice != null && course.price != null;
+        const displayPrice = hasDiscount ? course.discountedPrice : course.price;
+        const initials = course.instructorName
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .slice(0, 2);
+
+        return (
+          <motion.a
+            key={i}
+            href={`/book/${course.instructorId}?hours=${course.courseHours}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.25, type: "spring", stiffness: 300, damping: 25 }}
+            className="flex items-stretch rounded-lg border border-border/60 bg-card shadow-sm hover:shadow-md hover:border-border transition-all duration-200 overflow-hidden cursor-pointer no-underline group"
+          >
+            {/* Date strip */}
+            <div
+              className="flex flex-col items-center justify-center px-3 py-2 min-w-[52px] text-white"
+              style={{ backgroundColor: brandColour }}
+            >
+              {course.instructorProfileImage ? (
+                <img
+                  src={course.instructorProfileImage}
+                  alt={course.instructorName}
+                  className="w-8 h-8 rounded-full object-cover border-2 border-white/30"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">
+                  {initials}
+                </div>
+              )}
+              <span className="text-[9px] font-medium mt-1 opacity-80 leading-none">
+                {day} {month}
+              </span>
+            </div>
+
+            {/* Centre info */}
+            <div className="flex-1 py-2 px-2.5 min-w-0 flex flex-col justify-center gap-0.5">
+              <div className="flex items-center gap-1 flex-wrap">
+                <span className="text-xs font-semibold text-foreground truncate">
+                  {course.courseName}
+                </span>
+                {course.isPopular && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-px text-[9px] font-semibold leading-none dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <TrendingUp className="h-2.5 w-2.5" />
+                    Popular
+                  </span>
+                )}
+                {course.isIntensive && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-700 px-1.5 py-px text-[9px] font-semibold leading-none dark:bg-amber-900/40 dark:text-amber-300">
+                    <Zap className="h-2.5 w-2.5" />
+                    Intensive
+                  </span>
+                )}
+                {isAuto && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-100 text-blue-700 px-1.5 py-px text-[9px] font-semibold leading-none dark:bg-blue-900/40 dark:text-blue-300">
+                    <Car className="h-2.5 w-2.5" />
+                    Auto
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] text-muted-foreground truncate">
+                {course.instructorName}
+              </span>
+              {(course.instructorPostcode || course.distance != null) && (
+                <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5 truncate">
+                  <MapPin className="h-2.5 w-2.5 shrink-0" />
+                  {course.distance != null
+                    ? `${course.distance.toFixed(1)} miles away`
+                    : course.instructorPostcode}
+                </span>
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="flex flex-col items-end justify-center pr-3 pl-1 py-2 shrink-0">
+              {hasDiscount && (
+                <span className="text-[10px] text-muted-foreground line-through">
+                  £{course.price}
+                </span>
+              )}
+              <span className="text-sm font-bold text-foreground">
+                {displayPrice != null ? `£${displayPrice}` : "POA"}
+              </span>
+              <span className="text-[9px] text-primary font-medium group-hover:underline mt-0.5">
+                View →
+              </span>
+            </div>
+          </motion.a>
+        );
+      })}
     </div>
   );
 }
