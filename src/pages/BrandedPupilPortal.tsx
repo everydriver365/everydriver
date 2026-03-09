@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, AlertCircle,
-  Loader2, MapPin, User, StickyNote, Sparkles, TrendingUp
+  Loader2, MapPin, User, StickyNote, Sparkles, TrendingUp,
+  Route, Video, Gauge
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,8 @@ import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
 import { PupilWidgetGrid } from "@/components/pupil-portal/PupilWidgetGrid";
 import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTimeline";
 import { SlotOfferNotification } from "@/components/pupil-portal/SlotOfferNotification";
+import { PupilLessonVideos } from "@/components/pupil-portal/PupilLessonVideos";
+import { PupilDrivingStyleReport } from "@/components/pupil-portal/PupilDrivingStyleReport";
 
 interface InstructorBranding {
   id: string;
@@ -93,7 +96,7 @@ interface Pupil {
   what3words: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -469,6 +472,9 @@ export default function BrandedPupilPortal() {
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
+                    { id: 'lesson-tracks' as const, icon: Route, label: 'Lesson Tracks', desc: 'View your lesson routes' },
+                    { id: 'lesson-videos' as const, icon: Video, label: 'Lesson Videos', desc: 'Watch lesson recordings' },
+                    { id: 'driving-style' as const, icon: Gauge, label: 'Driving Style', desc: 'Speeds, braking & reports' },
                     { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap test' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
@@ -649,6 +655,35 @@ export default function BrandedPupilPortal() {
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+              </motion.div>
+            )}
+
+            {activeSection === 'lesson-tracks' && (
+              <motion.div key="lesson-tracks" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <div className="px-4 pb-4">
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeSection === 'lesson-videos' && (
+              <motion.div key="lesson-videos" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <PupilLessonVideos pupilId={pupil.id} brandColour={instructor.brand_colour} />
+              </motion.div>
+            )}
+
+            {activeSection === 'driving-style' && (
+              <motion.div key="driving-style" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                </div>
+                <PupilDrivingStyleReport pupilId={pupil.id} brandColour={instructor.brand_colour} />
               </motion.div>
             )}
 
