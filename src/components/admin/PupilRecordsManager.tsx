@@ -24,6 +24,12 @@ interface Pupil {
   instructor_id: string;
   phone: string | null;
   email: string | null;
+  address: string | null;
+  postcode: string | null;
+  date_of_birth: string | null;
+  driver_number: string | null;
+  transmission_type: string | null;
+  status: string;
   test_date: string | null;
   test_time: string | null;
   notes: string | null;
@@ -32,6 +38,11 @@ interface Pupil {
   account_balance: number | null;
   theory_test_date: string | null;
   theory_test_passed: boolean | null;
+  pickup_address: string | null;
+  pickup_postcode: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  custom_hourly_rate: number | null;
 }
 
 interface LessonHistory {
