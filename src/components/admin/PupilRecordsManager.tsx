@@ -172,6 +172,8 @@ export function PupilRecordsManager() {
     setEditingTheory(false);
     setEditingTest(false);
     setAddingLesson(false);
+    setEditingDetails(false);
+    populateDetailsForm(pupil);
     setDetailLoading(true);
 
     try {
