@@ -261,8 +261,6 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     }
   };
 
-  // Determine if bookings require approval (default to true if self-booking not explicitly enabled)
-  const requiresApproval = !settings?.allow_self_booking || settings?.require_approval;
 
   if (settingsLoading || availabilityLoading) {
     return (
