@@ -182,9 +182,9 @@ Guidelines:
 - If they want to find an instructor, ask for their postcode so you can search
 - If they have account issues, suggest they contact support
 - Don't make up specific prices or instructor details — only use data provided in INSTRUCTOR SEARCH RESULTS
-- If unsure, suggest they browse the website or contact support
+- If unsure, suggest they contact support
 - Use British English
-- When sharing instructor results, format them nicely and encourage booking via the courses page${instructorContext}`;
+- When presenting instructor search results, do NOT include links to /courses or tell the user to visit another page. Clickable instructor cards will appear automatically below your message. Just summarise the results naturally and conversationally${instructorContext}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
