@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
 
+type LoginView = "login" | "forgot" | "reset-code" | "new-password";
+
 export default function PupilLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +24,10 @@ export default function PupilLogin() {
   const [faceIdAvailable, setFaceIdAvailable] = useState(false);
   const [autoLoggingIn, setAutoLoggingIn] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [loginView, setLoginView] = useState<LoginView>("login");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -169,6 +175,64 @@ export default function PupilLogin() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email first");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "forgot_password", email: email.trim() },
+      });
+      if (error) {
+        toast.error("Something went wrong. Please try again.");
+      } else {
+        toast.success("If an account exists, a reset code has been sent to your email.");
+        setLoginView("reset-code");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  const handleConfirmReset = async () => {
+    if (!resetCode.trim()) {
+      toast.error("Please enter the reset code");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "confirm_reset", email: email.trim(), code: resetCode.trim(), password: newPassword },
+      });
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (error) {
+        toast.error("Something went wrong. Please try again.");
+      } else {
+        toast.success("Password reset successfully! Please sign in.");
+        setLoginView("login");
+        setResetCode("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setPassword("");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  };
+
   if (autoLoggingIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
@@ -260,90 +324,234 @@ export default function PupilLogin() {
                   </TabsList>
 
                   <TabsContent value="login">
-                    <form onSubmit={handleLogin} className="space-y-4">
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                            <Input
-                              id="email"
-                              type="email"
-                              placeholder="your@email.com"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
-                              autoComplete="username"
-                              autoFocus
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="password" className="text-sm font-medium text-slate-300">Password</Label>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                            <Input
-                              id="password"
-                              type="password"
-                              placeholder="••••••••"
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
-                              className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
-                              autoComplete="current-password"
-                            />
-                          </div>
-                        </div>
-                        <p className="text-xs text-slate-500">
-                          First time? Use the Register tab to set up your password.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="remember"
-                          checked={rememberMe}
-                          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                          className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                        />
-                        <label
-                          htmlFor="remember"
-                          className="text-sm font-medium leading-none text-slate-300"
+                    <AnimatePresence mode="wait">
+                      {loginView === "login" && (
+                        <motion.form
+                          key="login-form"
+                          initial={{ opacity: 0, x: 0 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          onSubmit={handleLogin}
+                          className="space-y-4"
                         >
-                          Remember me on this device
-                        </label>
-                      </div>
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Input
+                                  id="email"
+                                  type="email"
+                                  placeholder="your@email.com"
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
+                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  autoComplete="username"
+                                  autoFocus
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="password" className="text-sm font-medium text-slate-300">Password</Label>
+                                <button
+                                  type="button"
+                                  onClick={() => setLoginView("forgot")}
+                                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                >
+                                  Forgot password?
+                                </button>
+                              </div>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Input
+                                  id="password"
+                                  type="password"
+                                  placeholder="••••••••"
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                  autoComplete="current-password"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-500">
+                              First time? Use the Register tab to set up your password.
+                            </p>
+                          </div>
 
-                      <Button
-                        type="submit"
-                        className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600 text-white"
-                        disabled={loading || !email.trim() || !password}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Signing in...
-                          </>
-                        ) : (
-                          <>
-                            Sign In
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="remember"
+                              checked={rememberMe}
+                              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                              className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                            />
+                            <label
+                              htmlFor="remember"
+                              className="text-sm font-medium leading-none text-slate-300"
+                            >
+                              Remember me on this device
+                            </label>
+                          </div>
 
-                      {faceIdAvailable && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full h-12 text-base bg-white/5 border-white/20 text-white hover:bg-white/10"
-                          onClick={handleFaceIdLogin}
-                          disabled={loading}
-                        >
-                          <ScanFace className="mr-2 h-5 w-5" />
-                          Sign in with Face ID
-                        </Button>
+                          <Button
+                            type="submit"
+                            className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600 text-white"
+                            disabled={loading || !email.trim() || !password}
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Signing in...
+                              </>
+                            ) : (
+                              <>
+                                Sign In
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                              </>
+                            )}
+                          </Button>
+
+                          {faceIdAvailable && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full h-12 text-base bg-white/5 border-white/20 text-white hover:bg-white/10"
+                              onClick={handleFaceIdLogin}
+                              disabled={loading}
+                            >
+                              <ScanFace className="mr-2 h-5 w-5" />
+                              Sign in with Face ID
+                            </Button>
+                          )}
+                        </motion.form>
                       )}
-                    </form>
+
+                      {loginView === "forgot" && (
+                        <motion.div
+                          key="forgot-form"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="space-y-4"
+                        >
+                          <div className="text-center mb-2">
+                            <h3 className="text-lg font-semibold text-white">Reset Password</h3>
+                            <p className="text-sm text-slate-400">We'll send a 6-digit code to your email</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-slate-300">Email</Label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                              <Input
+                                type="email"
+                                placeholder="your@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600 text-white"
+                            disabled={loading || !email.trim()}
+                            onClick={handleForgotPassword}
+                          >
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Send Reset Code
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="w-full text-slate-400 hover:text-white"
+                            onClick={() => setLoginView("login")}
+                          >
+                            Back to sign in
+                          </Button>
+                        </motion.div>
+                      )}
+
+                      {loginView === "reset-code" && (
+                        <motion.div
+                          key="reset-form"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="space-y-4"
+                        >
+                          <div className="text-center mb-2">
+                            <h3 className="text-lg font-semibold text-white">Enter Reset Code</h3>
+                            <p className="text-sm text-slate-400">Check your email for the 6-digit code</p>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-slate-300">Reset Code</Label>
+                              <Input
+                                type="text"
+                                placeholder="000000"
+                                value={resetCode}
+                                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                                className="h-12 bg-white/10 border-white/20 text-white text-center text-xl tracking-[0.5em] placeholder:text-slate-500 placeholder:tracking-[0.5em]"
+                                maxLength={6}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-slate-300">New Password</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-slate-300">Confirm Password</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  value={confirmPassword}
+                                  onChange={(e) => setConfirmPassword(e.target.value)}
+                                  className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600 text-white"
+                            disabled={loading || resetCode.length !== 6 || !newPassword}
+                            onClick={handleConfirmReset}
+                          >
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Reset Password
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="flex-1 text-slate-400 hover:text-white"
+                              onClick={() => setLoginView("forgot")}
+                            >
+                              Resend code
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="flex-1 text-slate-400 hover:text-white"
+                              onClick={() => setLoginView("login")}
+                            >
+                              Back to sign in
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </TabsContent>
 
                   <TabsContent value="register">
