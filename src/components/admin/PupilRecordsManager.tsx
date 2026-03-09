@@ -134,7 +134,7 @@ export function PupilRecordsManager() {
 
       const { data: pupilData } = await supabase
         .from("pupils")
-        .select("id, name, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
+        .select("id, name, created_at, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
         .is("deleted_at", null)
         .order("name");
 
