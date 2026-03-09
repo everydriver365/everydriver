@@ -27,7 +27,8 @@ export function PupilPortalLessonCountdown({
   pupilId, 
   instructorId, 
   brandColour, 
-  darkMode 
+  darkMode,
+  onBookLesson
 }: PupilPortalLessonCountdownProps) {
   const [nextLesson, setNextLesson] = useState<NextLesson | null>(null);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
