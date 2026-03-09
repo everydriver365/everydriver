@@ -442,7 +442,7 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
 
         {/* Legend */}
         <div className="px-4 flex items-center gap-3 text-xs text-muted-foreground">
-          {settings?.require_approval && (
+          {(!settings?.allow_self_booking || settings?.require_approval) && (
             <Badge variant="secondary" className="text-xs">
               Requires approval
             </Badge>
