@@ -9,7 +9,7 @@ import { useHomepageStats } from "@/hooks/useHomepageStats";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import heroLearnerMobile from "@/assets/hero-learner.jpg";
+import heroLearnerMobile from "@/assets/drive365-hero-learner.webp";
 import drive365Logo from "@/assets/drive365-logo.png";
 
 import logoKlarna from "@/assets/logo-klarna.png";
