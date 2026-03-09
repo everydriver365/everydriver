@@ -26,14 +26,22 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postcodes: [postcode.replace(/\s+/g, "").toUpperCase()] }),
     });
-    if (!geoRes.ok) return null;
+    if (!geoRes.ok) {
+      console.error("Geocoding failed:", geoRes.status);
+      return null;
+    }
     const geoData = await geoRes.json();
+    console.log("Geocoding response:", JSON.stringify(geoData.result?.[0]));
     const result = geoData.result?.[0]?.result;
-    if (!result) return null;
+    if (!result) {
+      console.error("No geocoding result for postcode:", postcode);
+      return null;
+    }
 
     const userLat = result.latitude;
     const userLng = result.longitude;
     const areaName = result.admin_district || null;
+    console.log(`User location: ${userLat}, ${userLng} (${areaName})`);
 
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
@@ -44,6 +52,13 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     if (instructorsError) {
       console.error("Instructor query error:", instructorsError.message);
       return { areaName, instructors: [], courses: [] };
+    }
+
+    console.log(`Found ${instructors?.length || 0} active instructors. User coords: ${userLat}, ${userLng}`);
+    if (instructors) {
+      for (const inst of instructors) {
+        console.log(`Instructor: ${inst.name}, postcode: ${inst.home_postcode}, lat: ${inst.lat}, lng: ${inst.lng}`);
+      }
     }
 
     if (!instructors || instructors.length === 0) return { areaName, instructors: [], courses: [] };
@@ -80,8 +95,14 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Find instructors within 15 miles
     const nearby: any[] = [];
     for (const inst of instructors) {
-      if (!inst.lat || !inst.lng) continue;
-      const dist = calculateDistance(userLat, userLng, inst.lat, inst.lng);
+      const instLat = inst.lat ? Number(inst.lat) : null;
+      const instLng = inst.lng ? Number(inst.lng) : null;
+      if (!instLat || !instLng) {
+        console.log(`Skipping ${inst.name} - no lat/lng (raw: ${inst.lat}, ${inst.lng})`);
+        continue;
+      }
+      const dist = calculateDistance(userLat, userLng, instLat, instLng);
+      console.log(`Distance to ${inst.name}: ${dist.toFixed(2)} miles (lat: ${instLat}, lng: ${instLng})`);
       if (dist <= 15) {
         nearby.push({
           id: inst.id,
@@ -96,6 +117,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
         });
       }
     }
+    console.log(`Found ${nearby.length} nearby instructors`);
 
     // Sort by distance
     nearby.sort((a: any, b: any) => a.distance - b.distance);
@@ -167,8 +189,11 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(3);
 
-    // If the most recent message is from admin (human), skip AI
-    if (recentMessages && recentMessages.length > 0 && recentMessages[0].sender_type === "admin") {
+    // If the most recent message is from a HUMAN admin (not AI bot), skip AI
+    const isHumanAdminReply = recentMessages && recentMessages.length > 0 && 
+      recentMessages[0].sender_type === "admin" && 
+      !recentMessages[0].content.startsWith("🤖");
+    if (isHumanAdminReply) {
       return new Response(JSON.stringify({ reply: null, reason: "human_replied" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
