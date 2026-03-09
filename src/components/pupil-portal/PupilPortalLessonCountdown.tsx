@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin, Calendar, CalendarPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays, differenceInHours, differenceInMinutes, parseISO } from "date-fns";
