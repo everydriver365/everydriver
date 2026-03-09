@@ -36,6 +36,7 @@ export function LiveChatWindow({
   const [quickReplyDone, setQuickReplyDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -63,9 +64,11 @@ export function LiveChatWindow({
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Small delay to ensure DOM has updated
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(timer);
   }, [messages, otherTyping]);
 
   // Check if "agent" was ever mentioned in the conversation (persist across re-renders)
@@ -309,6 +312,7 @@ export function LiveChatWindow({
         <AnimatePresence>
           {otherTyping && <TypingIndicator name={otherPartyName} />}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </ScrollArea>
 
       {/* Quick Reply Suggestions */}
