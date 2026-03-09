@@ -504,6 +504,161 @@ export function PupilRecordsManager() {
         ) : (
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
+              {/* Pupil Details Section */}
+              <DetailSection
+                title="Pupil Details"
+                icon={<UserCog className="h-4 w-4" />}
+                onEdit={() => {
+                  populateDetailsForm(selectedPupil);
+                  setEditingDetails(true);
+                }}
+              >
+                {editingDetails ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Name *</label>
+                        <Input value={detailsForm.name} onChange={(e) => setDetailsForm({ ...detailsForm, name: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Status</label>
+                        <Select value={detailsForm.status} onValueChange={(v) => setDetailsForm({ ...detailsForm, status: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Email</label>
+                        <Input type="email" value={detailsForm.email} onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Phone</label>
+                        <Input value={detailsForm.phone} onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Address</label>
+                        <Input value={detailsForm.address} onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Postcode</label>
+                        <Input value={detailsForm.postcode} onChange={(e) => setDetailsForm({ ...detailsForm, postcode: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Date of Birth</label>
+                        <Input type="date" value={detailsForm.date_of_birth} onChange={(e) => setDetailsForm({ ...detailsForm, date_of_birth: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Driver Number</label>
+                        <Input value={detailsForm.driver_number} onChange={(e) => setDetailsForm({ ...detailsForm, driver_number: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Transmission</label>
+                        <Select value={detailsForm.transmission_type} onValueChange={(v) => setDetailsForm({ ...detailsForm, transmission_type: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="manual">Manual</SelectItem>
+                            <SelectItem value="automatic">Automatic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Custom Hourly Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_hourly_rate} onChange={(e) => setDetailsForm({ ...detailsForm, custom_hourly_rate: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Pickup Postcode</label>
+                        <Input value={detailsForm.pickup_postcode} onChange={(e) => setDetailsForm({ ...detailsForm, pickup_postcode: e.target.value })} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Pickup Address</label>
+                        <Input value={detailsForm.pickup_address} onChange={(e) => setDetailsForm({ ...detailsForm, pickup_address: e.target.value })} />
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Emergency Contact</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Name</label>
+                        <Input value={detailsForm.emergency_contact_name} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_name: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Phone</label>
+                        <Input value={detailsForm.emergency_contact_phone} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_phone: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveDetails}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingDetails(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Email:</span>
+                        <span className="truncate">{selectedPupil.email || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span>{selectedPupil.phone || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Address:</span>
+                        <span className="truncate">{selectedPupil.address || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Postcode:</span>
+                        <span>{selectedPupil.postcode || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">DOB:</span>
+                        <span>{selectedPupil.date_of_birth ? format(new Date(selectedPupil.date_of_birth), "dd-MMM-yyyy") : "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Car className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Transmission:</span>
+                        <span className="capitalize">{selectedPupil.transmission_type || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Driver No:</span>
+                        <span>{selectedPupil.driver_number || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={selectedPupil.status === "active" ? "default" : "secondary"} className={selectedPupil.status === "active" ? "bg-emerald-600" : ""}>
+                          {selectedPupil.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    {selectedPupil.custom_hourly_rate && (
+                      <p className="text-sm text-muted-foreground">Custom rate: £{selectedPupil.custom_hourly_rate}/hr</p>
+                    )}
+                    {(selectedPupil.emergency_contact_name || selectedPupil.emergency_contact_phone) && (
+                      <div className="mt-2 pt-2 border-t text-sm">
+                        <span className="text-muted-foreground">Emergency: </span>
+                        {selectedPupil.emergency_contact_name} {selectedPupil.emergency_contact_phone && `(${selectedPupil.emergency_contact_phone})`}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </DetailSection>
+
               {/* Journey Timeline */}
               <DetailSection
                 title="Journey"
