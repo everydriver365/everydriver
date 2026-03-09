@@ -228,8 +228,8 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
     if (!availability) return {};
 
     const slots: Record<string, AvailableSlot[]> = {};
-    const minNoticeDate = addDays(new Date(), settings.min_notice_hours / 24);
-    const maxAdvanceDate = addDays(new Date(), settings.max_advance_days);
+    const minNoticeDate = addDays(new Date(), effectiveSettings.min_notice_hours / 24);
+    const maxAdvanceDate = addDays(new Date(), effectiveSettings.max_advance_days);
 
     for (let i = 0; i < 14; i++) {
       const date = addDays(weekStart, i);
