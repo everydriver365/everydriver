@@ -1,0 +1,1 @@
+UPDATE site_images SET image_url = 'https://qyqeibovdhyohkfagujv.supabase.co/storage/v1/object/public/instructor-images/site-images/site-feature_retest-failed.png', updated_at = now() WHERE image_key = 'feature_retest';
