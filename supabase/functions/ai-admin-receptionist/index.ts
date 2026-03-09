@@ -38,8 +38,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
-      .eq("is_active", true);
+      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slugtive", true);
 
     if (instructorsError) {
       console.error("Instructor query error:", instructorsError.message);
@@ -87,8 +86,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: inst.transmission_type || "Manual",
-          area: inst.location_name || null,
+          transmission: inst.transmission_t"Manual/Automaticinst.location_name || null,
           specialSkills: inst.special_skills || null,
           slug: inst.app_slug || null,
           profileImage: inst.profile_image_url || null,
