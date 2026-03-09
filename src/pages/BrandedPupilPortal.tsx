@@ -397,6 +397,7 @@ export default function BrandedPupilPortal() {
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
+                  onBookLesson={() => setActiveSection('schedule')}
                 />
 
                 {/* Widget Grid — replaces static stats strip */}
