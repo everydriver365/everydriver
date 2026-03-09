@@ -10,6 +10,7 @@ interface PupilPortalLessonCountdownProps {
   instructorId: string;
   brandColour: string | null;
   darkMode: boolean;
+  onBookLesson?: () => void;
 }
 
 interface NextLesson {
