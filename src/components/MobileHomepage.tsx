@@ -248,6 +248,27 @@ export function MobileHomepage() {
         </div>
       </div>
       
+      {/* Guaranteed Earlier Test Promotion */}
+      <div className="px-4 pt-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 1.0 }}
+          onClick={() => navigate("/earlier-test-guarantee")}
+          className="relative rounded-2xl shadow-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer active:scale-[0.98] transition-transform overflow-visible"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+          <div className="p-4 flex items-center gap-4">
+            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-28 h-28 -my-4 drop-shadow-lg object-contain shrink-0" />
+            <div className="flex-1">
+              <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
+              <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
+          </div>
+        </motion.div>
+      </div>
+
       {/* What's Included Section */}
       <div className="px-4 pt-6">
         <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>
@@ -260,7 +281,7 @@ export function MobileHomepage() {
                 key={feature.id} 
                 initial={{ opacity: 0, y: 20 }} 
                 animate={{ opacity: 1, y: 0 }} 
-                transition={{ delay: 1 + i * 0.05 }}
+                transition={{ delay: 1.05 + i * 0.05 }}
                 onClick={() => setSelectedFeature(feature)} 
                 className="bg-card border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-all hover:shadow-xl overflow-hidden"
               >
@@ -286,27 +307,6 @@ export function MobileHomepage() {
             );
           })}
         </div>
-      </div>
-
-      {/* Guaranteed Earlier Test Promotion */}
-      <div className="px-4 pt-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 1.1 }}
-          onClick={() => navigate("/earlier-test-guarantee")}
-          className="relative rounded-2xl shadow-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer active:scale-[0.98] transition-transform overflow-visible"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
-          <div className="p-4 flex items-center gap-4">
-            <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-28 h-28 -my-4 drop-shadow-lg object-contain shrink-0" />
-            <div className="flex-1">
-              <h4 className="font-bold text-white text-sm">Earlier Test Guarantee</h4>
-              <p className="text-xs text-white/90 mt-0.5">We'll find you an earlier test date — or you get your test fee back.</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
-          </div>
-        </motion.div>
       </div>
 
       {/* Guest Pass / Promo Banner - Full Width with Image */}
