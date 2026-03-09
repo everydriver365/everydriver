@@ -274,18 +274,16 @@ export function PupilPortalSchedule({
           <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
             <CardContent className="p-6 text-center">
               <Calendar className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
-              <p style={{ color: 'var(--brand-muted)' }}>No upcoming lessons</p>
-              {settings?.allow_self_booking && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => setShowBooking(true)}
-                  style={{ borderColor: brandColour || '#1e3a5f', color: brandColour || '#1e3a5f' }}
-                >
-                  Book a Lesson
-                </Button>
-              )}
+              <p className="font-medium mb-1" style={{ color: 'var(--brand-text)' }}>No upcoming lessons</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--brand-muted)' }}>Browse your instructor's diary to find an available slot</p>
+              <Button
+                className="min-h-[44px] text-sm font-medium"
+                onClick={() => setShowBooking(true)}
+                style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                View Available Slots
+              </Button>
             </CardContent>
           </Card>
         ) : (
