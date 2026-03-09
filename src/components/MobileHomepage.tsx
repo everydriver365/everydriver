@@ -255,7 +255,7 @@ export function MobileHomepage() {
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 1.0 }}
           onClick={() => navigate("/earlier-test-guarantee")}
-          className="overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
+          className="etg-rounded-tile overflow-hidden shadow-xl cursor-pointer active:scale-[0.98] transition-transform"
           style={{ borderRadius: '16px' }}
         >
           <div className="flex">
