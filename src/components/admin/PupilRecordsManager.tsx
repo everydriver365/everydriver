@@ -107,6 +107,16 @@ export function PupilRecordsManager() {
   const [addingLesson, setAddingLesson] = useState(false);
   const [newLesson, setNewLesson] = useState({ date: "", time: "09:00", duration: "60", type: "Standard" });
 
+  // Pupil details edit state
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [detailsForm, setDetailsForm] = useState({
+    name: "", email: "", phone: "", address: "", postcode: "",
+    date_of_birth: "", driver_number: "", transmission_type: "",
+    status: "", pickup_address: "", pickup_postcode: "",
+    emergency_contact_name: "", emergency_contact_phone: "",
+    custom_hourly_rate: "",
+  });
+
   useEffect(() => {
     fetchInstructorsAndPupils();
   }, []);
