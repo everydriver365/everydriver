@@ -21,6 +21,7 @@ interface Instructor {
 interface Pupil {
   id: string;
   name: string;
+  created_at: string;
   instructor_id: string;
   phone: string | null;
   email: string | null;
