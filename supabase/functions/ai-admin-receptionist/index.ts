@@ -109,11 +109,19 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: "Manual/Automatic",
+          transmission: inst.transmission_type || "Manual",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
           slug: inst.app_slug || null,
           profileImage: inst.profile_image_url || null,
+          carType: inst.car_type || inst.transmission_type || "Manual",
+          carMake: inst.car_make || null,
+          carModel: inst.car_model || null,
+          brandColour: inst.brand_colour || null,
+          homePostcode: inst.home_postcode || null,
+          homeAddress: inst.home_address || null,
+          bio: inst.bio || null,
+          schoolSkimAmount: inst.school_skim_amount || 0,
         });
       }
     }
