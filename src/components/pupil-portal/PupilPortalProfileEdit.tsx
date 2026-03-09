@@ -39,10 +39,10 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
 
   const updateField = async (field: string, value: string | null) => {
-    const { error } = await supabase
-      .from("pupils")
-      .update({ [field]: value || null })
-      .eq("id", pupil.id);
+    const { error } = await supabase.rpc("update_pupil_profile", {
+      p_pupil_id: pupil.id,
+      p_updates: { [field]: value || null },
+    });
 
     if (error) {
       toast.error("Failed to update");
