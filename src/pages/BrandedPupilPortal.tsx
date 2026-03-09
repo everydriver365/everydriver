@@ -472,6 +472,9 @@ export default function BrandedPupilPortal() {
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
+                    { id: 'lesson-tracks' as const, icon: Route, label: 'Lesson Tracks', desc: 'View your lesson routes' },
+                    { id: 'lesson-videos' as const, icon: Video, label: 'Lesson Videos', desc: 'Watch lesson recordings' },
+                    { id: 'driving-style' as const, icon: Gauge, label: 'Driving Style', desc: 'Speeds, braking & reports' },
                     { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap test' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
