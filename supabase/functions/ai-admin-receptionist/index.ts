@@ -144,9 +144,9 @@ serve(async (req) => {
           const list = cachedSearchResult.instructors.map((i: any) =>
             `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
           ).join("\n");
-          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
+          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}:\n${list}\n\nPresent these instructors warmly to the visitor. Include names, distance, transmission type, and hourly rate. The visitor will see clickable instructor cards below your message — do NOT tell them to visit another page or provide any links. Just summarise who's available nearbycards below your message — do NOT tell them to visit another page or provide any links. Just summarise who's available nearbycards below your message — do NOT tell them to visit another page or provide any links. Just summarise who's available nearby.`;
         } else {
-          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${cachedSearchResult.areaName ? ` (${cachedSearchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
+      yet and suggest they try a different postcode or check back soon${postcodeMatch[1]}"${cachedSearchResuyet and suggest they try a different postcode or check back soonrrently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
         }
       }
     }
@@ -172,7 +172,7 @@ Key information:
 - Learners can search by postcode to find instructors in their area
 - Courses range from regular weekly lessons to intensive crash courses
 - Pricing varies by instructor and location
-- The platform offers online booking and secure payments
+- The plaLearners can view and book directly from the chatpayments
 - Learners can read reviews and compare instructors
 - The website URL for courses is /courses
 
@@ -182,9 +182,9 @@ Guidelines:
 - If they want to find an instructor, ask for their postcode so you can search
 - If they have account issues, suggest they contact support
 - Don't make up specific prices or instructor details — only use data provided in INSTRUCTOR SEARCH RESULTS
-- If unsure, suggest they browse the website or contact support
+- If unsure, suggest they contact support
 - Use British English
-- When sharing instructor results, format them nicely and encourage booking via the courses page${instructorContext}`;
+- When presenting instructor search results, do NOT include links to /courses or tell the user to visit another page. Clickable instructor cards will appear automatically below your message. Just summarise the results naturally and conversationally${instructorContext}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
