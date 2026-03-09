@@ -93,7 +93,7 @@ export function PupilPortalLessonCountdown({
         .order("lesson_date", { ascending: true })
         .order("start_time", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         setNextLesson(data);
