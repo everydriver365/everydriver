@@ -1,38 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Fix: Pupil Profile Updates Blocked by RLS
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-**Root Cause**: The pupil portal is accessed anonymously (no auth, just a URL slug). The `pupils` table RLS policies only allow:
-- **SELECT** for anonymous users ("Anon can select pupil by id")
-- **UPDATE** for authenticated instructors ("Instructors manage own pupils")
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-So all profile updates — profile picture, DOB, phone, email, address, etc. — silently fail.
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-### Solution: Create a SECURITY DEFINER function for pupil self-updates
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-Rather than adding a broad anonymous UPDATE policy (security risk), create a database function that:
-1. Takes the pupil ID and a JSONB of allowed field updates
-2. Validates only safe fields can be updated (whitelist)
-3. Runs as SECURITY DEFINER to bypass RLS
-4. Is callable by anonymous users
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-### Changes
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-**1. Database migration** — Create `update_pupil_profile` function:
-- Accepts `p_pupil_id UUID` and `p_updates JSONB`
-- Whitelists only: `profile_image_url`, `date_of_birth`, `driver_number`, `theory_cert_number`, `phone`, `email`, `address`, `postcode`, `pickup_address`, `what3words`
-- Uses SECURITY DEFINER to bypass RLS safely
-- Returns success/failure
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-**2. `src/components/pupil-portal/PupilPortalProfileEdit.tsx`** — Update `updateField` to call the RPC function instead of direct `.update()`:
-```ts
-await supabase.rpc('update_pupil_profile', { 
-  p_pupil_id: pupil.id, 
-  p_updates: { [field]: value } 
-});
-```
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-**3. `src/components/pupil-portal/PupilProfilePictureUpload.tsx`** — Same change for the `profile_image_url` update and removal calls.
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-This keeps security tight (only whitelisted fields, no broad RLS opening) while allowing anonymous pupil portal users to edit their own profile.
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`

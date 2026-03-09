@@ -12670,6 +12670,10 @@ export type Database = {
             }
             Returns: string
           }
+      update_pupil_profile: {
+        Args: { p_pupil_id: string; p_updates: Json }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil"
