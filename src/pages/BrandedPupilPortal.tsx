@@ -90,6 +90,7 @@ export default function BrandedPupilPortal() {
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
+  const [bookingRequested, setBookingRequested] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
