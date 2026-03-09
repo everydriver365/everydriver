@@ -249,7 +249,19 @@ export function LiveChatWindow({
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t bg-background">
+      <div className="p-4 border-t bg-background space-y-2">
+        {showAgentButton && userType === "visitor" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 text-sm"
+            onClick={handleSendAgentRequest}
+            disabled={sending}
+          >
+            <UserRound className="h-4 w-4" />
+            Speak to an Agent
+          </Button>
+        )}
         <div className="flex items-center gap-2">
           <Input
             ref={inputRef}
