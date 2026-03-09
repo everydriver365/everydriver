@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, AlertCircle, ArrowLeft, Shield, Lock, Award, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { useAdminAuth } from '@/context/AdminAuthContext';
@@ -154,7 +154,7 @@ export default function AdminLogin() {
       case 'signup': return 'Admin Sign Up';
       case 'forgot': return 'Reset Password';
       case 'reset': return 'Set New Password';
-      default: return 'Admin Login';
+      default: return 'Sign in to Admin Portal';
     }
   };
 
@@ -163,182 +163,257 @@ export default function AdminLogin() {
       case 'signup': return 'Create an account to request admin access';
       case 'forgot': return 'Enter your email to receive a reset link';
       case 'reset': return 'Enter your new password';
-      default: return 'Sign in with your admin credentials';
+      default: return 'Enter your credentials to access the admin dashboard';
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-primary">
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          <Card className="border-0 shadow-xl">
-            <CardHeader className="text-center">
-              <div className="mb-4 mx-auto inline-block">
-                <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-12 mx-auto" />
-              </div>
-              <CardTitle>{getTitle()}</CardTitle>
-              <CardDescription>{getDescription()}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+      {/* Left Panel - Branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent" />
+        
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+              <Car className="w-7 h-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white">EveryDriver</span>
+          </div>
+          
+          <div className="max-w-md">
+            <h1 className="text-4xl font-bold text-white mb-6">
+              Admin Control Centre
+            </h1>
+            <p className="text-lg text-slate-300 mb-8">
+              Manage instructors, monitor bookings, and oversee the entire 
+              platform from one powerful dashboard.
+            </p>
+            
+            <div className="space-y-4">
+              {[
+                { icon: Shield, text: "Full platform oversight" },
+                { icon: Lock, text: "Role-based access control" },
+                { icon: Award, text: "Real-time analytics" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <span className="text-slate-300">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <p className="text-sm text-slate-500">
+            © 2025 EveryDriver. All rights reserved.
+          </p>
+        </div>
+      </div>
 
-                {success && (
-                  <Alert>
-                    <AlertDescription>{success}</AlertDescription>
-                  </Alert>
-                )}
+      {/* Right Panel - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+          >
+            <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Car className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">EveryDriver</span>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-white/5 backdrop-blur border-white/10">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl text-white">
+                  {getTitle()}
+                </CardTitle>
+                <p className="text-slate-400 text-sm mt-1">
+                  {getDescription()}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <AnimatePresence mode="wait">
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                        <Alert variant="destructive" className="py-2 bg-red-500/10 border-red-500/20">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription className="text-sm">{error}</AlertDescription>
+                        </Alert>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {viewMode === 'reset' ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="admin@example.com"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
+                  {success && (
+                    <Alert className="bg-emerald-500/10 border-emerald-500/20">
+                      <AlertDescription className="text-emerald-300 text-sm">{success}</AlertDescription>
+                    </Alert>
+                  )}
 
-                    {viewMode !== 'forgot' && (
+                  {viewMode === 'reset' ? (
+                    <>
                       <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="newPassword" className="text-sm font-medium text-slate-300">New Password</Label>
                         <Input
-                          id="password"
+                          id="newPassword"
                           type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="••••••••"
                           required
                           disabled={loading}
+                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
                         />
                       </div>
-                    )}
-                  </>
-                )}
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {viewMode === 'signup' ? 'Creating account...' : 
-                       viewMode === 'forgot' ? 'Sending...' :
-                       viewMode === 'reset' ? 'Updating...' : 'Signing in...'}
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-300">Confirm Password</Label>
+                        <Input
+                          id="confirmPassword"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                          disabled={loading}
+                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                        />
+                      </div>
                     </>
                   ) : (
-                    viewMode === 'signup' ? 'Sign Up' : 
-                    viewMode === 'forgot' ? 'Send Reset Link' :
-                    viewMode === 'reset' ? 'Update Password' : 'Sign In'
-                  )}
-                </Button>
-
-                <div className="text-center text-sm text-muted-foreground space-y-2">
-                  {viewMode === 'login' && (
                     <>
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => { setViewMode('forgot'); setError(''); setSuccess(''); }}
-                          className="text-primary hover:underline"
-                        >
-                          Forgot password?
-                        </button>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="admin@example.com"
+                          required
+                          disabled={loading}
+                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                          autoComplete="email"
+                        />
                       </div>
+
+                      {viewMode !== 'forgot' && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="password" className="text-sm font-medium text-slate-300">Password</Label>
+                            <button
+                              type="button"
+                              onClick={() => { setViewMode('forgot'); setError(''); setSuccess(''); }}
+                              className="text-sm text-emerald-400 hover:text-emerald-300"
+                            >
+                              Forgot password?
+                            </button>
+                          </div>
+                          <Input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            required
+                            disabled={loading}
+                            className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                            autoComplete="current-password"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-medium" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {viewMode === 'signup' ? 'Creating account...' : 
+                         viewMode === 'forgot' ? 'Sending...' :
+                         viewMode === 'reset' ? 'Updating...' : 'Signing in...'}
+                      </>
+                    ) : (
+                      viewMode === 'signup' ? 'Sign Up' : 
+                      viewMode === 'forgot' ? 'Send Reset Link' :
+                      viewMode === 'reset' ? 'Update Password' : 'Sign In'
+                    )}
+                  </Button>
+
+                  <div className="text-center text-sm space-y-2">
+                    {viewMode === 'login' && (
                       <div>
-                        Need an account?{' '}
+                        <span className="text-slate-400">Need an account? </span>
                         <button
                           type="button"
                           onClick={() => { setViewMode('signup'); setError(''); setSuccess(''); }}
-                          className="text-primary hover:underline"
+                          className="text-emerald-400 hover:text-emerald-300"
                         >
                           Sign up
                         </button>
                       </div>
-                    </>
-                  )}
+                    )}
 
-                  {viewMode === 'signup' && (
-                    <div>
-                      Already have an account?{' '}
-                      <button
-                        type="button"
-                        onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
-                        className="text-primary hover:underline"
-                      >
-                        Sign in
-                      </button>
-                    </div>
-                  )}
+                    {viewMode === 'signup' && (
+                      <div>
+                        <span className="text-slate-400">Already have an account? </span>
+                        <button
+                          type="button"
+                          onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
+                          className="text-emerald-400 hover:text-emerald-300"
+                        >
+                          Sign in
+                        </button>
+                      </div>
+                    )}
 
-                  {(viewMode === 'forgot' || viewMode === 'reset') && (
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
-                        className="inline-flex items-center text-primary hover:underline"
-                      >
-                        <ArrowLeft className="mr-1 h-3 w-3" />
-                        Back to sign in
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+                    {(viewMode === 'forgot' || viewMode === 'reset') && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
+                          className="inline-flex items-center text-emerald-400 hover:text-emerald-300"
+                        >
+                          <ArrowLeft className="mr-1 h-3 w-3" />
+                          Back to sign in
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-      {/* Portal Links Footer */}
-      <div className="py-4 text-center text-xs text-white/40 space-y-2">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link to="/drive365" className="hover:text-white/70 transition-colors">Drive365 Learners</Link>
-          <span>·</span>
-          <Link to="/pupil/login" className="hover:text-white/70 transition-colors">Pupil Portal</Link>
-          <span>·</span>
-          <Link to="/instructor-app" className="hover:text-white/70 transition-colors">Instructor Home</Link>
-          <span>·</span>
-          <Link to="/instructor-app/login" className="hover:text-white/70 transition-colors">Instructor Login</Link>
+          {/* Portal Links Footer */}
+          <div className="mt-8 text-center text-xs text-slate-500 space-y-2">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link to="/drive365" className="hover:text-slate-300 transition-colors">Drive365 Learners</Link>
+              <span>·</span>
+              <Link to="/pupil/login" className="hover:text-slate-300 transition-colors">Pupil Portal</Link>
+              <span>·</span>
+              <Link to="/instructor-app" className="hover:text-slate-300 transition-colors">Instructor Home</Link>
+              <span>·</span>
+              <Link to="/instructor-app/login" className="hover:text-slate-300 transition-colors">Instructor Login</Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
