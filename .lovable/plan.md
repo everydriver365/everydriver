@@ -1,31 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Plan: Use DynamicCourseCard in Live Chat
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-The chat currently shows courses as tiny horizontal mini-cards (`CourseChatCards`). The goal is to replace these with the same `DynamicCourseCard` component used on the course search page, showing dates, prices, instructor info, brand colours, transmission, etc.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### What needs to change
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-**1. Edge function: Enrich course data** (`supabase/functions/ai-admin-receptionist/index.ts`)
-- Add `car_type`, `brand_colour`, `home_postcode`, `home_address`, `bio`, `school_skim_amount` to the instructor query (line 49)
-- Include these fields in each course object embedded in `<!--COURSES:...-->`:
-  - `instructorId`, `instructorProfileImage`, `instructorCarType`, `instructorBrandColour`, `instructorPostcode`, `instructorAddress`, `instructorBio`, `instructorHourlyRate`, `instructorSchoolSkim`
-  - `distance` from the nearby instructor data
-  - `discountedPrice` from `instructor_courses`
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-**2. Update `CourseChatCards` component** (`src/components/live-chat/CourseChatCards.tsx`)
-- Replace the minimal card UI with a vertical scrolling list of `DynamicCourseCard` components
-- Update the `CourseCard` interface to include all the new fields from the edge function
-- Map the flat course data into the `DynamicCourseCardProps` shape (constructing the `instructor` object)
-- Since the chat panel is narrow (~350px), render cards stacked vertically with no flip animation (click navigates to booking instead)
-- Use `DynamicCourseCard` directly but wrapped in a container that constrains width
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-**3. Parse function update** (`parseCourseCardsFromMessage`)
-- Update the `CourseCard` interface to match the new enriched shape from the edge function
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-### Technical details
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-The `DynamicCourseCard` requires an `instructor` object with: `id`, `name`, `profile_image_url`, `car_type`, `car_make`, `car_model`, `home_postcode`, `home_address`, `hourly_rate`, `bio`, `brand_colour`, `school_skim_amount`. The edge function currently only fetches `id, name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug`. We need to add `car_type, brand_colour, home_address, bio, school_skim_amount` to the select query and pass them through to the course JSON.
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-The chat widget is ~350px wide so cards will render full-width stacked vertically, which matches the mobile course search layout. The flip interaction works on hover so it will still function in the chat context.
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
+
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`

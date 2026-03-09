@@ -46,7 +46,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("id, name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug")
+      .select("id, name, home_postcode, home_address, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug, car_type, car_make, car_model, brand_colour, bio, school_skim_amount, transmission_type")
       .eq("is_active", true);
 
     if (instructorsError) {
@@ -109,11 +109,19 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: "Manual/Automatic",
+          transmission: inst.transmission_type || "Manual",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
           slug: inst.app_slug || null,
           profileImage: inst.profile_image_url || null,
+          carType: inst.car_type || inst.transmission_type || "Manual",
+          carMake: inst.car_make || null,
+          carModel: inst.car_model || null,
+          brandColour: inst.brand_colour || null,
+          homePostcode: inst.home_postcode || null,
+          homeAddress: inst.home_address || null,
+          bio: inst.bio || null,
+          schoolSkimAmount: inst.school_skim_amount || 0,
         });
       }
     }
@@ -136,7 +144,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
       // Fetch course templates for is_popular/is_intensive flags
       const { data: templates } = await supabase
         .from("course_templates")
-        .select("course_hours, course_name, is_popular, is_intensive")
+        .select("course_hours, course_name, is_popular, is_intensive, features")
         .eq("is_active", true);
 
       if (instructorCourses && instructorCourses.length > 0) {
@@ -147,10 +155,24 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
             courseName: ic.course_name,
             courseHours: ic.course_hours,
             price: ic.discounted_price || (inst?.hourlyRate ? inst.hourlyRate * ic.course_hours : null),
+            discountedPrice: ic.discounted_price || null,
             instructorName: inst?.name || "Instructor",
             instructorSlug: inst?.slug || null,
+            instructorId: inst?.id || null,
+            instructorProfileImage: inst?.profileImage || null,
+            instructorCarType: inst?.carType || "Manual",
+            instructorCarMake: inst?.carMake || null,
+            instructorCarModel: inst?.carModel || null,
+            instructorBrandColour: inst?.brandColour || null,
+            instructorPostcode: inst?.homePostcode || null,
+            instructorAddress: inst?.homeAddress || null,
+            instructorBio: inst?.bio || null,
+            instructorHourlyRate: inst?.hourlyRate || null,
+            instructorSchoolSkim: inst?.schoolSkimAmount || 0,
+            distance: inst?.distance || null,
             isIntensive: template?.is_intensive || false,
             isPopular: template?.is_popular || false,
+            features: template?.features || null,
           });
         }
         // Sort: popular first, then by hours
