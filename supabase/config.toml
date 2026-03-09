@@ -239,3 +239,6 @@ verify_jwt = false
 
 [functions.accounting-sync]
 verify_jwt = false
+
+[functions.ai-admin-receptionist]
+verify_jwt = false

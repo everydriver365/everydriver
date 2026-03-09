@@ -50,11 +50,17 @@ export function LiveChatWindow({
   }, [messages, otherTyping]);
 
   const triggerAIReceptionist = async (visitorMessage: string) => {
-    if (!instructorId || userType !== "visitor") return;
+    if (userType !== "visitor") return;
     try {
-      await supabase.functions.invoke("ai-receptionist", {
-        body: { session_id: sessionId, message: visitorMessage, instructor_id: instructorId },
-      });
+      if (instructorId) {
+        await supabase.functions.invoke("ai-receptionist", {
+          body: { session_id: sessionId, message: visitorMessage, instructor_id: instructorId },
+        });
+      } else {
+        await supabase.functions.invoke("ai-admin-receptionist", {
+          body: { session_id: sessionId, message: visitorMessage },
+        });
+      }
     } catch (e) {
       console.error("AI receptionist error:", e);
     }
@@ -70,7 +76,7 @@ export function LiveChatWindow({
       inputRef.current?.focus();
 
       // If visitor, trigger AI receptionist after 5 seconds if no human reply
-      if (userType === "visitor" && instructorId) {
+      if (userType === "visitor") {
         if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
         aiTimeoutRef.current = setTimeout(() => {
           triggerAIReceptionist(messageText);
