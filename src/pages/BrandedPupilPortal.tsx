@@ -377,9 +377,13 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                 />
 
-                {/* Feedback Prompt */}
+                {/* End-of-Lesson Wizard (replaces simple feedback prompt) */}
                 {instructor.lesson_feedback_enabled !== false && (
-                  <PupilFeedbackPrompt pupilId={pupil.id} />
+                  <PupilEndOfLessonWizard
+                    pupilId={pupil.id}
+                    instructorId={instructor.id}
+                    brandColour={instructor.brand_colour}
+                  />
                 )}
 
                 {/* Last Lesson Summary */}
