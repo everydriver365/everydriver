@@ -6,6 +6,70 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const UK_POSTCODE_REGEX = /\b([A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2})\b/i;
+
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3959; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function findNearbyInstructors(supabase: any, postcode: string) {
+  try {
+    // Geocode the visitor's postcode
+    const geoRes = await fetch("https://api.postcodes.io/postcodes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postcodes: [postcode.replace(/\s+/g, "").toUpperCase()] }),
+    });
+    if (!geoRes.ok) return null;
+    const geoData = await geoRes.json();
+    const result = geoData.result?.[0]?.result;
+    if (!result) return null;
+
+    const userLat = result.latitude;
+    const userLng = result.longitude;
+    const areaName = result.admin_district || null;
+
+    // Fetch active instructors with coordinates
+    const { data: instructors } = await supabase
+      .from("instructors")
+      .select("name, home_postcode, hourly_rate, lat, lng, transmission_type, profile_image_url, special_skills, location_name")
+      .eq("is_active", true);
+
+    if (!instructors || instructors.length === 0) return { areaName, instructors: [] };
+
+    // Find instructors within 15 miles
+    const nearby = [];
+    for (const inst of instructors) {
+      if (!inst.lat || !inst.lng) continue;
+      const dist = calculateDistance(userLat, userLng, inst.lat, inst.lng);
+      if (dist <= 15) {
+        nearby.push({
+          name: inst.name,
+          distance: Math.round(dist * 10) / 10,
+          hourlyRate: inst.hourly_rate,
+          transmission: inst.transmission_type || "Manual",
+          area: inst.location_name || null,
+          specialSkills: inst.special_skills || null,
+        });
+      }
+    }
+
+    // Sort by distance
+    nearby.sort((a, b) => a.distance - b.distance);
+
+    return { areaName, instructors: nearby.slice(0, 5) };
+  } catch (e) {
+    console.error("Instructor search error:", e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -32,6 +96,24 @@ serve(async (req) => {
       });
     }
 
+    // Check if message contains a UK postcode
+    const postcodeMatch = message.match(UK_POSTCODE_REGEX);
+    let instructorContext = "";
+
+    if (postcodeMatch) {
+      const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
+      if (searchResult) {
+        if (searchResult.instructors.length > 0) {
+          const list = searchResult.instructors.map((i: any) =>
+            `- ${i.name} (${i.transmission}, ${i.distance} miles away${i.hourlyRate ? `, £${i.hourlyRate}/hr` : ""})`
+          ).join("\n");
+          instructorContext = `\n\nINSTRUCTOR SEARCH RESULTS for postcode "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}:\n${list}\n\nPresent these results helpfully to the visitor. Include names, distance, transmission type, and hourly rate. Suggest they visit the courses page to book.`;
+        } else {
+          instructorContext = `\n\nINSTRUCTOR SEARCH: No instructors found within 15 miles of "${postcodeMatch[1]}"${searchResult.areaName ? ` (${searchResult.areaName})` : ""}. Let the visitor know we don't currently have instructors in that area but they can check back or try a different postcode. Suggest they browse the courses page.`;
+        }
+      }
+    }
+
     // Get conversation history for context
     const { data: history } = await supabase
       .from("live_chat_messages")
@@ -40,7 +122,7 @@ serve(async (req) => {
       .order("created_at", { ascending: true })
       .limit(20);
 
-    const conversationHistory = (history || []).map(m => ({
+    const conversationHistory = (history || []).map((m: any) => ({
       role: m.sender_type === "visitor" ? "user" : "assistant",
       content: m.content,
     }));
@@ -55,15 +137,17 @@ Key information:
 - Pricing varies by instructor and location
 - The platform offers online booking and secure payments
 - Learners can read reviews and compare instructors
+- The website URL for courses is /courses
 
 Guidelines:
 - Be warm, professional, and concise (2-3 sentences max)
 - Answer questions about finding instructors, booking lessons, pricing, and how the platform works
-- If they want to find an instructor, suggest they use the search feature or browse courses
+- If they want to find an instructor, ask for their postcode so you can search
 - If they have account issues, suggest they contact support
-- Don't make up specific prices or instructor details
+- Don't make up specific prices or instructor details — only use data provided in INSTRUCTOR SEARCH RESULTS
 - If unsure, suggest they browse the website or contact support
-- Use British English`;
+- Use British English
+- When sharing instructor results, format them nicely and encourage booking via the courses page${instructorContext}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
