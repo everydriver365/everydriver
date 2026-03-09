@@ -17,6 +17,7 @@ interface PupilPortalScheduleProps {
   brandColour: string | null;
   darkMode: boolean;
   instructorPhone: string | null;
+  initialShowBooking?: boolean;
 }
 
 interface ScheduledLesson {
