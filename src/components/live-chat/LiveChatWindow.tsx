@@ -84,10 +84,32 @@ export function LiveChatWindow({
     await sendMessage(agentMessage, userType, userId);
   };
 
+  const handleQuickReplySelect = async (text: string) => {
+    if (sending) return;
+    const success = await sendMessage(text, userType, userId);
+    if (success) {
+      const nextStep = quickReplyStep + 1;
+      setQuickReplyStep(nextStep);
+      if (nextStep >= TOTAL_QUICK_REPLY_STEPS) {
+        setQuickReplyDone(true);
+      }
+      // Trigger AI receptionist
+      if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+      aiTimeoutRef.current = setTimeout(() => {
+        triggerAIReceptionist(text);
+      }, 5000);
+    }
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
     const messageText = newMessage.trim();
+
+    // Free-text message hides quick replies
+    if (userType === "visitor" && !quickReplyDone) {
+      setQuickReplyDone(true);
+    }
 
     // Check if message contains "agent" keyword
     if (userType === "visitor" && /\bagent\b/i.test(messageText)) {
