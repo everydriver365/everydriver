@@ -166,11 +166,18 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
           <div className="flex-1 min-w-0">
             <span className="text-[10px] text-muted-foreground block">Home Address</span>
             <GoogleAddressAutocomplete
-              value={pupil.address || ""}
-              onChange={(address) => updateField("address", address)}
+              value={addressValue}
+              onChange={setAddressValue}
               onPostcodeChange={(postcode) => {
                 setPostcodeValue(postcode);
                 updateField("postcode", postcode);
+              }}
+              onAddressVerified={(verified, details) => {
+                if (verified && details) {
+                  const finalAddress = details.streetAddress || details.formattedAddress;
+                  setAddressValue(finalAddress);
+                  updateField("address", finalAddress);
+                }
               }}
               placeholder="Search your address..."
               className="h-7 text-sm border-0 shadow-none px-0 focus-visible:ring-0"
