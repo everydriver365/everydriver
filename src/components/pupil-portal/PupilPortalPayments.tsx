@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Clock, PoundSterling, ExternalLink } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CreditCard, Clock, PoundSterling, ExternalLink, Share2, Copy, Check } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { PupilPaymentModal } from "./PupilPaymentModal";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
+import { useToast } from "@/hooks/use-toast";
 
 interface PupilPortalPaymentsProps {
   pupilId: string;
@@ -19,6 +21,10 @@ interface PupilPortalPaymentsProps {
   pupilEmail?: string | null;
   pupilPhone?: string | null;
   onBalanceUpdate?: () => void;
+  paymentQrUrl?: string | null;
+  paymentQrUrlPupilPays?: string | null;
+  paymentQrUrlInstructorPays?: string | null;
+  commissionPayer?: string | null;
 }
 
 interface PaymentRecord {
@@ -40,11 +46,24 @@ export function PupilPortalPayments({
   pupilName = "Pupil",
   pupilEmail,
   pupilPhone,
-  onBalanceUpdate
+  onBalanceUpdate,
+  paymentQrUrl,
+  paymentQrUrlPupilPays,
+  paymentQrUrlInstructorPays,
+  commissionPayer,
 }: PupilPortalPaymentsProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const activePaymentUrl = getActivePaymentQrUrl({
+    commission_payer: commissionPayer,
+    payment_qr_url_pupil_pays: paymentQrUrlPupilPays,
+    payment_qr_url_instructor_pays: paymentQrUrlInstructorPays,
+    payment_qr_url: paymentQrUrl,
+  });
 
   useEffect(() => {
     fetchPayments();
@@ -72,6 +91,22 @@ export function PupilPortalPayments({
 
   const formatDate = (dateStr: string) => {
     return format(parseISO(dateStr), 'd MMM yyyy');
+  };
+
+  const handleShareLink = async () => {
+    if (!activePaymentUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Payment Link", url: activePaymentUrl });
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(activePaymentUrl);
+      setCopied(true);
+      toast({ title: "Link copied to clipboard" });
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const balance = accountBalance || 0;
@@ -115,8 +150,40 @@ export function PupilPortalPayments({
         </CardContent>
       </Card>
 
-      {/* Make Payment CTA */}
-      {hasDebt && (
+      {/* Pay Now Link Card */}
+      {activePaymentUrl && (
+        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+          <CardContent className="p-4 space-y-3">
+            <p className="text-sm font-medium" style={{ color: 'var(--brand-text)' }}>
+              Pay securely online
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1"
+                style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+                onClick={() => window.open(activePaymentUrl, '_blank', 'noopener')}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Pay Now
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleShareLink}
+                title="Share payment link"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--brand-muted)' }}>
+              Share this link with a parent or guardian to pay on your behalf
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Make Payment CTA (existing modal-based) */}
+      {hasDebt && !activePaymentUrl && (
         <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
           <CardContent className="p-4">
             <p className="text-sm mb-3" style={{ color: 'var(--brand-text)' }}>
