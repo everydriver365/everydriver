@@ -147,12 +147,6 @@ export function MobileHomepage() {
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
-            {/* Badge overlapping left edge */}
-            <img 
-              src={earlierTestGuaranteedBadge} 
-              alt="Earlier Test Guaranteed" 
-              className="absolute -top-14 -left-4 w-36 z-20 drop-shadow-lg"
-            />
             <div className="text-center mb-3">
               <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
                 EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
