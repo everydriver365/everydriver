@@ -172,9 +172,8 @@ Key information:
 - Learners can search by postcode to find instructors in their area
 - Courses range from regular weekly lessons to intensive crash courses
 - Pricing varies by instructor and location
-- The plaLearners can view and book directly from the chatpayments
-- Learners can read reviews and compare instructors
-- The website URL for courses is /courses
+- Learners can view instructor details, read reviews, and book directly from the chat
+- Learners can compare instructors by price, distance, and transmission type
 
 Guidelines:
 - Be warm, professional, and concise (2-3 sentences max)
