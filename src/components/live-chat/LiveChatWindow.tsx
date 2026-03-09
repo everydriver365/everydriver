@@ -50,9 +50,32 @@ export function LiveChatWindow({
     handleTyping,
   } = useLiveChat(sessionId);
 
-  // Persist quick reply step
+  // Initialize and persist quick reply step from localStorage / message count
   useEffect(() => {
-    localStorage.setItem(storageKey, String(quickReplyStep));
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const val = parseInt(stored, 10);
+      setQuickReplyStep(val);
+      if (val >= TOTAL_QUICK_REPLY_STEPS) {
+        setQuickReplyDone(true);
+      }
+    } else if (messages.length > 0 && userType === "visitor") {
+      // For sessions without stored state, calculate from visitor message count
+      const visitorCount = messages.filter(m => m.sender_type === "visitor").length;
+      if (visitorCount >= TOTAL_QUICK_REPLY_STEPS) {
+        setQuickReplyStep(TOTAL_QUICK_REPLY_STEPS);
+        setQuickReplyDone(true);
+      } else {
+        setQuickReplyStep(visitorCount);
+      }
+    }
+  }, [storageKey, messages.length, userType]);
+
+  // Save step changes to localStorage
+  useEffect(() => {
+    if (quickReplyStep > 0) {
+      localStorage.setItem(storageKey, String(quickReplyStep));
+    }
   }, [quickReplyStep, storageKey]);
 
   // Auto-scroll to bottom on new messages
