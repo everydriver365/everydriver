@@ -202,8 +202,16 @@ export function LiveChatWindow({
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground text-sm py-8">
-            <p>Start the conversation by sending a message!</p>
+          <div className="text-center py-8 px-4 space-y-3">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mx-auto">
+              <span className="text-2xl">👋</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Welcome to EveryDriver!</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Looking for driving lessons near you? Pop in your <span className="font-medium text-primary">postcode</span> and we'll show you available courses in your area — or just ask us anything!
+              </p>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
