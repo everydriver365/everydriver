@@ -38,7 +38,7 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
     // Fetch active instructors
     const { data: instructors, error: instructorsError } = await supabase
       .from("instructors")
-      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name")
+      .select("name, home_postcode, hourly_rate, lat, lng, profile_image_url, special_skills, location_name, app_slug, transmission_type")
       .eq("is_active", true);
 
     if (instructorsError) {
@@ -87,9 +87,11 @@ async function findNearbyInstructors(supabase: any, postcode: string) {
           name: inst.name,
           distance: Math.round(dist * 10) / 10,
           hourlyRate: inst.hourly_rate,
-          transmission: "Manual/Automatic",
+          transmission: inst.transmission_type || "Manual",
           area: inst.location_name || null,
           specialSkills: inst.special_skills || null,
+          slug: inst.app_slug || null,
+          profileImage: inst.profile_image_url || null,
         });
       }
     }
@@ -227,11 +229,33 @@ Guidelines:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Please try browsing our website or contacting support.";
 
+    // Build stored content with optional instructor cards
+    let storedContent = `🤖 ${reply}`;
+    if (postcodeMatch && instructorContext) {
+      // Extract nearby instructor data for frontend cards
+      try {
+        const searchResult = await findNearbyInstructors(supabase, postcodeMatch[1]);
+        if (searchResult && searchResult.instructors.length > 0) {
+          const cardsData = searchResult.instructors.map((i: any) => ({
+            name: i.name,
+            slug: i.slug,
+            hourlyRate: i.hourlyRate,
+            distance: i.distance,
+            profileImage: i.profileImage,
+            transmission: i.transmission,
+          }));
+          storedContent += `<!--CARDS:${JSON.stringify(cardsData)}-->`;
+        }
+      } catch (e) {
+        console.error("Cards data error:", e);
+      }
+    }
+
     // Insert AI response as a chat message
     await supabase.from("live_chat_messages").insert({
       session_id,
       sender_type: "admin",
-      content: `🤖 ${reply}`,
+      content: storedContent,
     });
 
     return new Response(JSON.stringify({ reply }), {
