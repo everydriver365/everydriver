@@ -115,7 +115,10 @@ export function PupilRecordsManager() {
     date_of_birth: "", driver_number: "", transmission_type: "",
     status: "", pickup_address: "", pickup_postcode: "",
     emergency_contact_name: "", emergency_contact_phone: "",
-    custom_hourly_rate: "",
+    custom_hourly_rate: "", instructor_id: "",
+    theory_test_date: "", theory_test_passed: "",
+    prepaid_hours: "", account_balance: "", lessons_completed: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -231,12 +234,23 @@ export function PupilRecordsManager() {
       emergency_contact_name: pupil.emergency_contact_name || "",
       emergency_contact_phone: pupil.emergency_contact_phone || "",
       custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+      instructor_id: pupil.instructor_id || "",
+      theory_test_date: pupil.theory_test_date || "",
+      theory_test_passed: pupil.theory_test_passed === true ? "yes" : pupil.theory_test_passed === false ? "no" : "",
+      prepaid_hours: pupil.prepaid_hours != null ? String(pupil.prepaid_hours) : "",
+      account_balance: pupil.account_balance != null ? String(pupil.account_balance) : "",
+      lessons_completed: pupil.lessons_completed != null ? String(pupil.lessons_completed) : "",
+      notes: pupil.notes || "",
     });
   };
 
   const saveDetails = async () => {
     if (!selectedPupil) return;
     try {
+      const oldInstructorId = selectedPupil.instructor_id;
+      const newInstructorId = detailsForm.instructor_id || oldInstructorId;
+      const instructorChanged = newInstructorId !== oldInstructorId;
+
       const updates: Record<string, any> = {
         name: detailsForm.name,
         email: detailsForm.email || null,
@@ -252,6 +266,13 @@ export function PupilRecordsManager() {
         emergency_contact_name: detailsForm.emergency_contact_name || null,
         emergency_contact_phone: detailsForm.emergency_contact_phone || null,
         custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+        instructor_id: newInstructorId,
+        theory_test_date: detailsForm.theory_test_date || null,
+        theory_test_passed: detailsForm.theory_test_passed === "yes" ? true : detailsForm.theory_test_passed === "no" ? false : null,
+        prepaid_hours: detailsForm.prepaid_hours ? parseFloat(detailsForm.prepaid_hours) : null,
+        account_balance: detailsForm.account_balance ? parseFloat(detailsForm.account_balance) : null,
+        lessons_completed: detailsForm.lessons_completed ? parseInt(detailsForm.lessons_completed) : 0,
+        notes: detailsForm.notes || null,
       };
 
       const { error } = await supabase
@@ -261,18 +282,33 @@ export function PupilRecordsManager() {
 
       if (error) throw error;
 
-      const updatedPupil = { ...selectedPupil, ...updates };
+      const updatedPupil = { ...selectedPupil, ...updates } as Pupil;
       setSelectedPupil(updatedPupil);
       
-      // Update in the grouped list too
+      // Update in the grouped list — re-bucket if instructor changed
       setPupils(prev => {
         const updated = { ...prev };
-        const list = updated[selectedPupil.instructor_id] || [];
-        updated[selectedPupil.instructor_id] = list.map(p => 
-          p.id === selectedPupil.id ? updatedPupil : p
-        );
+        if (instructorChanged) {
+          // Remove from old instructor
+          updated[oldInstructorId] = (updated[oldInstructorId] || []).filter(p => p.id !== selectedPupil.id);
+          // Add to new instructor
+          updated[newInstructorId] = [...(updated[newInstructorId] || []), updatedPupil];
+        } else {
+          const list = updated[oldInstructorId] || [];
+          updated[oldInstructorId] = list.map(p => 
+            p.id === selectedPupil.id ? updatedPupil : p
+          );
+        }
         return updated;
       });
+
+      if (instructorChanged) {
+        setExpandedInstructors(prev => {
+          const next = new Set(prev);
+          next.add(newInstructorId);
+          return next;
+        });
+      }
 
       setEditingDetails(false);
       toast.success("Pupil details saved");
@@ -581,6 +617,55 @@ export function PupilRecordsManager() {
                       </div>
                     </div>
                     <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Instructor</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Assigned Instructor</label>
+                        <Select value={detailsForm.instructor_id} onValueChange={(v) => setDetailsForm({ ...detailsForm, instructor_id: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select instructor..." /></SelectTrigger>
+                          <SelectContent>
+                            {instructors.map((inst) => (
+                              <SelectItem key={inst.id} value={inst.id}>{inst.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Theory & Test</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Theory Test Date</label>
+                        <Input type="date" value={detailsForm.theory_test_date} onChange={(e) => setDetailsForm({ ...detailsForm, theory_test_date: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Theory Passed</label>
+                        <Select value={detailsForm.theory_test_passed} onValueChange={(v) => setDetailsForm({ ...detailsForm, theory_test_passed: v })}>
+                          <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Financial & Progress</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Prepaid Hours</label>
+                        <Input type="number" step="0.5" value={detailsForm.prepaid_hours} onChange={(e) => setDetailsForm({ ...detailsForm, prepaid_hours: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Account Balance (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.account_balance} onChange={(e) => setDetailsForm({ ...detailsForm, account_balance: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Lessons Completed</label>
+                        <Input type="number" value={detailsForm.lessons_completed} onChange={(e) => setDetailsForm({ ...detailsForm, lessons_completed: e.target.value })} />
+                      </div>
+                    </div>
+                    <Separator />
                     <p className="text-xs font-medium text-muted-foreground">Emergency Contact</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -592,6 +677,9 @@ export function PupilRecordsManager() {
                         <Input value={detailsForm.emergency_contact_phone} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_phone: e.target.value })} />
                       </div>
                     </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Notes</p>
+                    <Textarea rows={3} value={detailsForm.notes} onChange={(e) => setDetailsForm({ ...detailsForm, notes: e.target.value })} placeholder="Internal notes..." />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={saveDetails}>
                         <Save className="h-3 w-3 mr-1" /> Save
