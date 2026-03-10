@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
@@ -208,7 +208,7 @@ const App = () => (
 
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
-                <Route path="/instructor-app" element={<HomepageRedesignDemo />} />
+                <Route path="/instructor-app" element={<Navigate to="/" replace />} />
                 <Route path="/instructor-app/features" element={<InstructorFeatures />} />
                 <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
                 <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
