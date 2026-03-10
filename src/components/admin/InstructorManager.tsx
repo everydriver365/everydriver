@@ -112,6 +112,8 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
 
 export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [deletedInstructors, setDeletedInstructors] = useState<Instructor[]>([]);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("active");
