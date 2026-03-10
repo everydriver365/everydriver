@@ -424,7 +424,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                   onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
                 />
