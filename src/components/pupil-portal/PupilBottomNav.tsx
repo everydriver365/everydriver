@@ -35,11 +35,7 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
   const [showQuickMenu, setShowQuickMenu] = useState(false);
 
   const handleNavClick = (id: string) => {
-    if (id === "more") {
-      onNavigate("home");
-    } else {
-      onNavigate(id);
-    }
+    onNavigate(id);
   };
 
   const handleLongPressStart = (id: string) => {
