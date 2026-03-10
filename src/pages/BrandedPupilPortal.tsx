@@ -576,7 +576,7 @@ export default function BrandedPupilPortal() {
                 <div className="px-4 pb-4 space-y-4">
                   <TheoryStreakTracker pupilId={pupil.id} brandColour={drive365Blue} />
                   <TheoryMockTest pupilId={pupil.id} />
-                  <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
+                  <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                   <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
                 </div>
               </motion.div>
