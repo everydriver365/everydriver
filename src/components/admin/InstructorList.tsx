@@ -62,19 +62,19 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
     try {
       const { error } = await supabase
         .from("instructors")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() } as any)
         .eq("id", deleteId);
 
       if (error) throw error;
 
-      toast.success("Instructor deleted successfully");
+      toast.success("Instructor archived — can be restored later");
       onRefresh();
     } catch (error: unknown) {
-      console.error("Error deleting instructor:", error);
+      console.error("Error archiving instructor:", error);
       const message =
         typeof error === "object" && error && "message" in error
           ? String((error as any).message)
-          : "Failed to delete instructor";
+          : "Failed to archive instructor";
       toast.error(message);
     } finally {
       setIsDeleting(false);
@@ -233,11 +233,9 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instructor</AlertDialogTitle>
+            <AlertDialogTitle>Archive Instructor</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this instructor? This will permanently remove all their data including pupils, lessons, and payment history. This action cannot be undone.
-              <br /><br />
-              <strong>Consider deactivating instead</strong> to keep historical data.
+              This instructor will be archived and hidden from all lists. Their data will be preserved and can be restored at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -247,7 +245,7 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete Permanently"}
+              {isDeleting ? "Archiving..." : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

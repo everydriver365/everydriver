@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Search, Plus, Edit2, Trash2, Users, Power, 
-  MoreVertical, Crown, Sparkles
+  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/adminLogger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ interface Instructor {
   hourly_rate: number | null;
   is_active: boolean;
   created_at: string;
+  deleted_at?: string | null;
   website_slug?: string | null;
   pupil_count?: number;
   completed_courses?: number;
@@ -111,6 +113,8 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
 
 export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [deletedInstructors, setDeletedInstructors] = useState<Instructor[]>([]);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("active");
@@ -126,6 +130,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
       const { data, error } = await supabase
         .from("instructors")
         .select("*")
+        .is("deleted_at", null)
         .order("name");
 
       if (error) throw error;
@@ -173,25 +178,51 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
     }
   }, []);
 
+  const fetchDeletedInstructors = useCallback(async () => {
+    const { data } = await supabase
+      .from("instructors")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    setDeletedInstructors((data || []) as any);
+  }, []);
+
   useEffect(() => {
     fetchInstructors();
-  }, [fetchInstructors]);
+    fetchDeletedInstructors();
+  }, [fetchInstructors, fetchDeletedInstructors]);
+
+  const handleRestore = async (id: string) => {
+    try {
+      const { error } = await supabase.from("instructors").update({ deleted_at: null } as any).eq("id", id);
+      if (error) throw error;
+      toast.success("Instructor restored");
+      logAdminAction({ actionType: "instructor_restore", description: `Restored instructor ${id}`, entityType: "instructor", entityId: id });
+      fetchInstructors();
+      fetchDeletedInstructors();
+    } catch {
+      toast.error("Failed to restore instructor");
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteId) return;
     setIsDeleting(true);
     try {
+      const deletedInstructor = instructors.find(i => i.id === deleteId);
       const { error } = await supabase
         .from("instructors")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() } as any)
         .eq("id", deleteId);
 
       if (error) throw error;
-      toast.success("Instructor deleted");
+      toast.success("Instructor archived — can be restored later");
+      logAdminAction({ actionType: "instructor_soft_delete", description: `Archived instructor ${deletedInstructor?.name || deleteId}`, entityType: "instructor", entityId: deleteId });
       fetchInstructors();
+      fetchDeletedInstructors();
     } catch (error) {
-      console.error("Error deleting instructor:", error);
-      toast.error("Failed to delete instructor");
+      console.error("Error archiving instructor:", error);
+      toast.error("Failed to archive instructor");
     } finally {
       setIsDeleting(false);
       setDeleteId(null);
@@ -447,20 +478,52 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
         </div>
       )}
 
+      {/* Deleted Instructors Section */}
+      {deletedInstructors.length > 0 && (
+        <div className="mt-6 rounded-md border border-dashed border-muted-foreground/30 bg-muted/20">
+          <button
+            onClick={() => setShowDeleted(!showDeleted)}
+            className="flex w-full items-center justify-between p-4 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              Archived Instructors ({deletedInstructors.length})
+            </span>
+            <ChevronDown className={cn("h-4 w-4 transition-transform", showDeleted && "rotate-180")} />
+          </button>
+          {showDeleted && (
+            <div className="border-t border-muted-foreground/20 p-4 space-y-2">
+              {deletedInstructors.map(inst => (
+                <div key={inst.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
+                  <div>
+                    <span className="font-medium">{inst.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      Archived {inst.deleted_at ? new Date(inst.deleted_at).toLocaleDateString() : ""}
+                    </span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleRestore(inst.id)} className="gap-1.5">
+                    <RotateCcw className="h-3.5 w-3.5" /> Restore
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instructor?</AlertDialogTitle>
+            <AlertDialogTitle>Archive Instructor?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the instructor
-              and all associated data.
+              This instructor will be archived and hidden from all lists. Their data will be preserved and can be restored at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Archiving..." : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -160,13 +160,13 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     if (!instructor) return;
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from("instructors").delete().eq("id", instructor.id);
+      const { error } = await supabase.from("instructors").update({ deleted_at: new Date().toISOString() } as any).eq("id", instructor.id);
       if (error) throw error;
-      toast.success("Instructor deleted");
-      logAdminAction({ actionType: "instructor_delete", description: `Deleted instructor ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+      toast.success("Instructor archived — can be restored later");
+      logAdminAction({ actionType: "instructor_soft_delete", description: `Archived instructor ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
       onBack();
     } catch {
-      toast.error("Failed to delete instructor");
+      toast.error("Failed to archive instructor");
     } finally {
       setIsDeleting(false);
       setShowDelete(false);
@@ -359,15 +359,15 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instructor?</AlertDialogTitle>
+            <AlertDialogTitle>Archive Instructor?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {instructor.name} and all associated data. This cannot be undone.
+              {instructor.name} will be archived and hidden from all lists. Their data will be preserved and can be restored at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Archiving..." : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
