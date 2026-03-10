@@ -30,6 +30,7 @@ export function InlineEditField({
   label,
   emptyText = "Click to add",
   disabled = false,
+  onPostcodeChange,
 }: InlineEditFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
