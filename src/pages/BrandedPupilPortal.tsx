@@ -554,6 +554,7 @@ export default function BrandedPupilPortal() {
                     paymentQrUrl={instructor.payment_qr_url}
                     paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
                     paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
+                    paymentLinkBaseUrl={instructor.payment_link_base_url}
                     commissionPayer={instructor.commission_payer}
                   />
                 </div>
