@@ -911,118 +911,68 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section — Split Panel */}
       <section className="container py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="mb-4 text-3xl font-bold md:text-4xl"
           >
-            Everything You Need to
-            <span className="text-accent"> Learn to Drive</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="text-lg text-muted-foreground"
-          >
-            Our platform connects learners, instructors, and parents in one seamless experience.
-          </motion.p>
-        </div>
-
-        {/* First Row - Portals */}
-        <div className="mt-16 grid gap-6 md:grid-cols-2">
-          {/* Pupil Portal */}
-          <Link to="/pupil/login">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0 }}
-              viewport={{ once: true }}
-              className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
-              style={{ backgroundColor: "#e9f4f9" }}
-            >
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-                <User className="h-6 w-6" />
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">All-in-One Platform</Badge>
+            <h2 className="text-4xl font-bold mb-4 leading-tight">
+              Everything You Need to
+              <span className="text-accent"> Learn to Drive</span>
+            </h2>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Our platform connects learners, instructors, and parents in one seamless experience.
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">5</div>
+                <div className="text-xs text-muted-foreground">Key Features</div>
               </div>
-              <h3 className="mb-2 font-semibold">Pupil Portal</h3>
-              <p className="text-sm text-muted-foreground">Track lessons, view progress, and manage payments all in one place.</p>
-            </motion.div>
-          </Link>
-
-          {/* Parent Portal */}
-          <Link to="/parent">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
-              style={{ backgroundColor: "#e9f4f9" }}
-            >
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-                <Users className="h-6 w-6" />
+              <div className="h-12 w-px bg-border" />
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">3</div>
+                <div className="text-xs text-muted-foreground">Portals</div>
               </div>
-              <h3 className="mb-2 font-semibold">Parent Portal</h3>
-              <p className="text-sm text-muted-foreground">Stay informed with lesson updates, progress reports, and payment visibility.</p>
-            </motion.div>
-          </Link>
-        </div>
-
-        {/* Second Row - Features (exactly 3: Live Availability, Local Instructors, Track Progress) */}
-        <div className="mt-6 grid gap-6 md:grid-cols-3">
-          {/* Live Availability */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-            style={{ backgroundColor: "#e9f4f9" }}
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <Calendar className="h-6 w-6" />
+              <div className="h-12 w-px bg-border" />
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">5★</div>
+                <div className="text-xs text-muted-foreground">Rated</div>
+              </div>
             </div>
-            <h3 className="mb-2 font-semibold">Live Availability</h3>
-            <p className="text-sm text-muted-foreground">Real-time calendar sync shows you exactly when instructors are free to book.</p>
           </motion.div>
-
-          {/* Local Instructors */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-            style={{ backgroundColor: "#e9f4f9" }}
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <MapPin className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Local Instructors</h3>
-            <p className="text-sm text-muted-foreground">Find certified instructors near you by postcode with adjustable search radius.</p>
-          </motion.div>
-
-          {/* Track Progress */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-            style={{ backgroundColor: "#e9f4f9" }}
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <Award className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Track Progress</h3>
-            <p className="text-sm text-muted-foreground">Monitor your learning journey with detailed progress reports and skill assessments.</p>
-          </motion.div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login", color: "from-blue-500 to-blue-600" },
+              { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent", color: "from-emerald-500 to-emerald-600" },
+              { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book.", color: "from-violet-500 to-violet-600" },
+              { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius.", color: "from-rose-500 to-rose-600" },
+              { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments.", color: "from-amber-500 to-amber-600" },
+            ].map((f, i) => {
+              const content = (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  viewport={{ once: true }}
+                  className="flex gap-4 rounded-xl border bg-card p-4 hover:shadow-md transition-shadow group cursor-pointer"
+                >
+                  <div className={`flex-shrink-0 rounded-lg bg-gradient-to-br ${f.color} p-2.5 h-fit`}>
+                    <f.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
+                  </div>
+                </motion.div>
+              );
+              return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
+            })}
+          </div>
         </div>
       </section>
 
