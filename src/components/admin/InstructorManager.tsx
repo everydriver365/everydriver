@@ -62,6 +62,7 @@ interface Instructor {
   hourly_rate: number | null;
   is_active: boolean;
   created_at: string;
+  deleted_at?: string | null;
   website_slug?: string | null;
   pupil_count?: number;
   completed_courses?: number;
