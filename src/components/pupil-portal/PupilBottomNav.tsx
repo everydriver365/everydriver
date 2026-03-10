@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Home, Clock, CreditCard, BookOpen, Grid3X3, LucideIcon } from "lucide-react";
+import { Home, Clock, CreditCard, BookOpen, MessageSquare, LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
   { id: "schedule", label: "Lessons", icon: Clock },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "theory", label: "Theory", icon: BookOpen },
-  { id: "more", label: "More", icon: Grid3X3 },
+  { id: "messages", label: "Messages", icon: MessageSquare },
 ];
 
 interface PupilBottomNavProps {
@@ -35,11 +35,7 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
   const [showQuickMenu, setShowQuickMenu] = useState(false);
 
   const handleNavClick = (id: string) => {
-    if (id === "more") {
-      onNavigate("home");
-    } else {
-      onNavigate(id);
-    }
+    onNavigate(id);
   };
 
   const handleLongPressStart = (id: string) => {
