@@ -2,19 +2,21 @@ import { useState, useRef, useEffect } from "react";
 import { Check, X, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { cn } from "@/lib/utils";
 
 interface InlineEditFieldProps {
   value: string;
   onSave: (newValue: string) => Promise<void> | void;
   placeholder?: string;
-  type?: "text" | "email" | "tel" | "date" | "textarea";
+  type?: "text" | "email" | "tel" | "date" | "textarea" | "address";
   className?: string;
   textClassName?: string;
   icon?: React.ReactNode;
   label?: string;
   emptyText?: string;
   disabled?: boolean;
+  onPostcodeChange?: (postcode: string) => void;
 }
 
 export function InlineEditField({
@@ -28,6 +30,7 @@ export function InlineEditField({
   label,
   emptyText = "Click to add",
   disabled = false,
+  onPostcodeChange,
 }: InlineEditFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -94,6 +97,14 @@ export function InlineEditField({
                 placeholder={placeholder}
                 className="text-sm min-h-[60px]"
                 disabled={saving}
+              />
+            ) : type === "address" ? (
+              <GoogleAddressAutocomplete
+                value={editValue}
+                onChange={(v) => setEditValue(v)}
+                onPostcodeChange={onPostcodeChange}
+                placeholder={placeholder || "Start typing an address..."}
+                className="flex-1"
               />
             ) : (
               <Input
