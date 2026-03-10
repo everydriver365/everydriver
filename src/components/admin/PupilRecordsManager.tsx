@@ -234,6 +234,13 @@ export function PupilRecordsManager() {
       emergency_contact_name: pupil.emergency_contact_name || "",
       emergency_contact_phone: pupil.emergency_contact_phone || "",
       custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+      instructor_id: pupil.instructor_id || "",
+      theory_test_date: pupil.theory_test_date || "",
+      theory_test_passed: pupil.theory_test_passed === true ? "yes" : pupil.theory_test_passed === false ? "no" : "",
+      prepaid_hours: pupil.prepaid_hours != null ? String(pupil.prepaid_hours) : "",
+      account_balance: pupil.account_balance != null ? String(pupil.account_balance) : "",
+      lessons_completed: pupil.lessons_completed != null ? String(pupil.lessons_completed) : "",
+      notes: pupil.notes || "",
     });
   };
 
