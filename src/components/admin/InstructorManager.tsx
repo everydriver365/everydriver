@@ -1,17 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { format } from "date-fns";
 import { 
-  Search, Plus, Eye, Edit2, Trash2, Users, Power, 
-  MoreVertical, ExternalLink, Mail, Phone, MapPin,
-  UserCheck, UserX, Globe, RotateCcw, Crown, Sparkles
+  Search, Plus, Edit2, Trash2, Users, Power, 
+  MoreVertical, Crown, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
   TableBody,
@@ -40,28 +36,14 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
-import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
 import { InstructorForm } from "./InstructorForm";
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  slug: string;
-  price_monthly: number;
-  price_yearly: number;
-  max_pupils: number | null;
-  sms_credits_monthly: number;
-  features: unknown; // JSON type
-  display_order: number;
-  is_active: boolean;
-}
 
 interface Instructor {
   id: string;
@@ -129,30 +111,14 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
 
 export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deactivateId, setDeactivateId] = useState<string | null>(null);
-  const [reassignInstructor, setReassignInstructor] = useState<Instructor | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
-  const [planDialogInstructor, setPlanDialogInstructor] = useState<Instructor | null>(null);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
-  const [savingPlan, setSavingPlan] = useState(false);
-
-  const fetchPlans = useCallback(async () => {
-    const { data } = await supabase
-      .from("subscription_plans")
-      .select("*")
-      .eq("is_active", true)
-      .order("display_order");
-    setPlans(data || []);
-  }, []);
 
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
@@ -208,13 +174,8 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   }, []);
 
   useEffect(() => {
-    fetchPlans();
     fetchInstructors();
-  }, [fetchInstructors, fetchPlans]);
-  useEffect(() => {
-    fetchPlans();
-    fetchInstructors();
-  }, [fetchInstructors, fetchPlans]);
+  }, [fetchInstructors]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -410,7 +371,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                         </div>
                         <button 
                           className="text-primary hover:underline text-left font-medium"
-                          onClick={() => onViewProfile ? onViewProfile(instructor.id) : setSelectedInstructor(instructor)}
+                          onClick={() => onViewProfile ? onViewProfile(instructor.id) : null}
                         >
                           {instructor.name}
                         </button>
@@ -432,16 +393,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                       {instructor.home_postcode}
                     </TableCell>
                     <TableCell className="text-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPlanDialogInstructor(instructor);
-                          setSelectedPlanId(instructor.subscription?.plan_id || "");
-                        }}
-                        className="hover:opacity-80 transition-opacity"
-                      >
-                        <PlanBadge planSlug={instructor.subscription?.plan_slug} planName={instructor.subscription?.plan_name} />
-                      </button>
+                      <PlanBadge planSlug={instructor.subscription?.plan_slug} planName={instructor.subscription?.plan_name} />
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
@@ -468,24 +420,9 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setSelectedInstructor(instructor)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditInstructor(instructor)}>
+                          <DropdownMenuItem onClick={() => onViewProfile?.(instructor.id)}>
                             <Edit2 className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setReassignInstructor(instructor)}>
-                            <Users className="mr-2 h-4 w-4" />
-                            Reassign Pupils
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setPlanDialogInstructor(instructor);
-                            setSelectedPlanId(instructor.subscription?.plan_id || "");
-                          }}>
-                            <Crown className="mr-2 h-4 w-4" />
-                            Change Plan
+                            View / Edit Profile
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleToggleActive(instructor)}>
@@ -510,116 +447,6 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
         </div>
       )}
 
-      {/* Instructor Details Dialog — Combined Layout */}
-      <Dialog open={!!selectedInstructor} onOpenChange={() => setSelectedInstructor(null)}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Instructor Details</DialogTitle>
-          </DialogHeader>
-          {selectedInstructor && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Left: Activity Timeline (1/3) */}
-              <div className="lg:col-span-1">
-                <div className="bg-muted/30 border border-border rounded-xl overflow-hidden">
-                  <div className="p-3 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
-                    <h4 className="text-sm font-semibold flex items-center gap-2">
-                      <Eye className="h-4 w-4 text-primary" />
-                      Overview
-                    </h4>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{selectedInstructor.email || "No email"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedInstructor.phone || "No phone"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedInstructor.home_postcode} ({selectedInstructor.radius_miles} mi)</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedInstructor.pupil_count || 0} pupils</span>
-                    </div>
-                    {selectedInstructor.car_type && (
-                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                        <p className="text-muted-foreground text-xs mb-1">Vehicle</p>
-                        <p className="font-medium">{selectedInstructor.car_make} {selectedInstructor.car_model} ({selectedInstructor.car_type})</p>
-                      </div>
-                    )}
-                    {selectedInstructor.bio && (
-                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                        <p className="text-muted-foreground text-xs mb-1">Bio</p>
-                        <p>{selectedInstructor.bio}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Dashboard Cards (2/3) */}
-              <div className="lg:col-span-2 space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                    {selectedInstructor.profile_image_url ? (
-                      <img src={selectedInstructor.profile_image_url} alt={selectedInstructor.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-xl font-medium text-primary">
-                        {selectedInstructor.name.split(" ").map(n => n[0]).join("")}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{selectedInstructor.name}</h3>
-                      <Badge variant={selectedInstructor.is_active ? "default" : "secondary"}>
-                        {selectedInstructor.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                      <PlanBadge planSlug={selectedInstructor.subscription?.plan_slug} planName={selectedInstructor.subscription?.plan_name} />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{selectedInstructor.email}</p>
-                  </div>
-                </div>
-
-                {/* Stat cards */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-4">
-                    <div className="text-xs text-muted-foreground mb-1">Pupils</div>
-                    <div className="text-2xl font-bold">{selectedInstructor.pupil_count || 0}</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                    <div className="text-xs text-muted-foreground mb-1">Rate</div>
-                    <div className="text-2xl font-bold">{selectedInstructor.hourly_rate ? `£${selectedInstructor.hourly_rate}/hr` : "—"}</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                    <div className="text-xs text-muted-foreground mb-1">Coverage</div>
-                    <div className="text-2xl font-bold">{selectedInstructor.radius_miles} mi</div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-2">
-                  <Button onClick={() => { handleEditInstructor(selectedInstructor); setSelectedInstructor(null); }}>
-                    <Edit2 className="mr-2 h-4 w-4" /> Edit Instructor
-                  </Button>
-                  {selectedInstructor.website_slug && (
-                    <Button variant="outline" asChild>
-                      <a href={`/instructor/${selectedInstructor.website_slug}`} target="_blank" rel="noopener noreferrer">
-                        <Globe className="mr-2 h-4 w-4" /> View Website
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
@@ -639,15 +466,6 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Reassign Pupils Dialog */}
-      <ReassignPupilsDialog
-        open={!!reassignInstructor}
-        onOpenChange={() => setReassignInstructor(null)}
-        sourceInstructor={reassignInstructor}
-        allInstructors={instructors}
-        onComplete={fetchInstructors}
-      />
-
       {/* Add/Edit Instructor Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -661,104 +479,6 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
             onCancel={() => setIsFormOpen(false)}
             initialData={editingInstructor || undefined}
           />
-        </DialogContent>
-      </Dialog>
-
-      {/* Change Plan Dialog */}
-      <Dialog open={!!planDialogInstructor} onOpenChange={() => setPlanDialogInstructor(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-accent" />
-              Change Subscription Plan
-            </DialogTitle>
-            <DialogDescription>
-              Select a plan for {planDialogInstructor?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <RadioGroup value={selectedPlanId} onValueChange={setSelectedPlanId} className="space-y-3">
-              {plans.map((plan) => (
-                <div 
-                  key={plan.id} 
-                  className={cn(
-                    "flex items-center space-x-3 rounded-lg border p-4 cursor-pointer transition-colors",
-                    selectedPlanId === plan.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                  )}
-                  onClick={() => setSelectedPlanId(plan.id)}
-                >
-                  <RadioGroupItem value={plan.id} id={plan.id} />
-                  <div className="flex-1">
-                    <Label htmlFor={plan.id} className="font-medium cursor-pointer flex items-center gap-2">
-                      {plan.name}
-                      {(plan.slug === "multi" || plan.slug === "enterprise") && (
-                        <Crown className="h-3.5 w-3.5 text-accent" />
-                      )}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.price_monthly === 0 ? "Free" : `£${plan.price_monthly}/month`}
-                      {plan.max_pupils ? ` • Up to ${plan.max_pupils} pupils` : " • Unlimited pupils"}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setPlanDialogInstructor(null)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={async () => {
-                if (!planDialogInstructor || !selectedPlanId) return;
-                setSavingPlan(true);
-                
-                // Check if subscription exists
-                const { data: existing } = await supabase
-                  .from("instructor_subscriptions")
-                  .select("id")
-                  .eq("instructor_id", planDialogInstructor.id)
-                  .single();
-                
-                if (existing) {
-                  // Update existing
-                  const { error } = await supabase
-                    .from("instructor_subscriptions")
-                    .update({ plan_id: selectedPlanId, status: "active" })
-                    .eq("instructor_id", planDialogInstructor.id);
-                  
-                  if (error) {
-                    toast.error("Failed to update plan");
-                  } else {
-                    toast.success("Plan updated successfully");
-                    fetchInstructors();
-                    setPlanDialogInstructor(null);
-                  }
-                } else {
-                  // Insert new
-                  const { error } = await supabase
-                    .from("instructor_subscriptions")
-                    .insert({
-                      instructor_id: planDialogInstructor.id,
-                      plan_id: selectedPlanId,
-                      status: "active",
-                    });
-                  
-                  if (error) {
-                    toast.error("Failed to assign plan");
-                  } else {
-                    toast.success("Plan assigned successfully");
-                    fetchInstructors();
-                    setPlanDialogInstructor(null);
-                  }
-                }
-                setSavingPlan(false);
-              }}
-              disabled={savingPlan || !selectedPlanId}
-            >
-              {savingPlan ? "Saving..." : "Save Plan"}
-            </Button>
-          </div>
         </DialogContent>
       </Dialog>
     </ArloPageLayout>
