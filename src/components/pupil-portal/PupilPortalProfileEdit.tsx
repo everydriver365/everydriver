@@ -231,14 +231,37 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
         />
 
         {/* Pick-up Address */}
-        <InlineEditField
-          value={pupil.pickup_address || ""}
-          onSave={(v) => updateField("pickup_address", v)}
-          icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
-          label="Pick-up Address"
-          emptyText="Click to add"
-          placeholder="Where should your instructor pick you up?"
-        />
+        <div className="flex items-center gap-2 px-1 py-1.5">
+          <Navigation className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] text-muted-foreground block">Pick-up Address</span>
+            <GoogleAddressAutocomplete
+              value={pickupAddressValue}
+              onChange={(v) => { setPickupAddressValue(v); setPickupDirty(true); }}
+              onAddressVerified={(verified, details) => {
+                if (verified && details) {
+                  const finalAddress = details.streetAddress || details.formattedAddress;
+                  setPickupAddressValue(finalAddress);
+                  setPickupDirty(true);
+                }
+              }}
+              placeholder="Search pick-up address..."
+              className="h-7 text-sm border-0 shadow-none px-0 focus-visible:ring-0"
+            />
+            {pickupDirty && pickupAddressValue !== (pupil.pickup_address || "") && (
+              <Button
+                size="sm"
+                className="mt-1 h-6 text-xs"
+                onClick={async () => {
+                  await updateField("pickup_address", pickupAddressValue);
+                  setPickupDirty(false);
+                }}
+              >
+                Save Pick-up Address
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </InstructorCard>
   );
