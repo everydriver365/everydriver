@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Search, Plus, Edit2, Trash2, Users, Power, 
-  MoreVertical, Crown, Sparkles
+  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/adminLogger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
