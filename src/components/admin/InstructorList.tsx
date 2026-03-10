@@ -62,19 +62,19 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
     try {
       const { error } = await supabase
         .from("instructors")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() } as any)
         .eq("id", deleteId);
 
       if (error) throw error;
 
-      toast.success("Instructor deleted successfully");
+      toast.success("Instructor archived — can be restored later");
       onRefresh();
     } catch (error: unknown) {
-      console.error("Error deleting instructor:", error);
+      console.error("Error archiving instructor:", error);
       const message =
         typeof error === "object" && error && "message" in error
           ? String((error as any).message)
-          : "Failed to delete instructor";
+          : "Failed to archive instructor";
       toast.error(message);
     } finally {
       setIsDeleting(false);
