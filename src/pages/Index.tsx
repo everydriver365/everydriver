@@ -246,7 +246,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Guaranteed Earlier Test Promotion Banner */}
+      {/* Guaranteed Earlier Test Promotion Banner — Feature Grid */}
       <section className="py-4">
         <div className="container">
           <Link to="/earlier-test-guarantee">
@@ -255,19 +255,38 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               viewport={{ once: true }}
-              className="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 cursor-pointer hover:shadow-2xl transition-shadow"
+              className="rounded-2xl border bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
             >
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
-              <div className="p-5 flex items-center gap-5">
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-28 h-28 drop-shadow-lg object-contain shrink-0" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-white text-lg leading-tight">Earlier Test Guarantee</h3>
-                  <p className="text-sm text-white/90 mt-1">We'll find you an earlier test date — or you get your test fee back.</p>
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-10 h-10 object-contain" />
+                  <h3 className="text-lg font-black text-white">Earlier Test Guarantee</h3>
                 </div>
-                <span className="inline-flex items-center gap-1.5 bg-white text-emerald-700 font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shrink-0 hover:bg-white/90 transition-colors">
-                  Learn More
-                  <ChevronRight className="h-4 w-4" />
-                </span>
+                <Badge className="bg-white/20 text-white border-0 hover:bg-white/20">Most Popular</Badge>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { icon: Timer, title: "4 Weeks Sooner", desc: "Average time saved" },
+                    { icon: Shield, title: "Money Back", desc: "If we can't find earlier" },
+                    { icon: CalendarCheck, title: "24/7 Monitoring", desc: "Automated scanning" },
+                    { icon: Zap, title: "Instant Alerts", desc: "SMS & app notifications" },
+                  ].map(f => (
+                    <div key={f.title} className="text-center">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mx-auto mb-2">
+                        <f.icon className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <p className="text-sm font-bold">{f.title}</p>
+                      <p className="text-xs text-muted-foreground">{f.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 pt-4 border-t flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Skip months of waiting — we do the hard work for you.</p>
+                  <span className="text-emerald-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Learn More <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
               </div>
             </motion.div>
           </Link>
