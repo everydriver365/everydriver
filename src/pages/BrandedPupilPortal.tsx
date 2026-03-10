@@ -48,6 +48,7 @@ import TheoryProgressChart from "@/components/pupil-portal/TheoryProgressChart";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
 import { TheoryMockScoreLogger } from "@/components/pupil-portal/TheoryMockScoreLogger";
 import { TheoryMockTest } from "@/components/pupil-portal/TheoryMockTest";
+import { ShowMeTellMeSection } from "@/components/pupil-portal/ShowMeTellMeSection";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 import { TheoryStreakTracker } from "@/components/pupil-portal/TheoryStreakTracker";
 import { PupilPaymentFeed } from "@/components/pupil-portal/PupilPaymentFeed";
@@ -97,7 +98,7 @@ interface Pupil {
   what3words: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -474,6 +475,7 @@ export default function BrandedPupilPortal() {
                     ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on lessons' }] : []),
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
+                    { id: 'show-tell' as const, icon: Car, label: 'Show Me / Tell Me', desc: 'Vehicle safety questions' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
                     { id: 'lesson-tracks' as const, icon: Route, label: 'Lesson Tracks', desc: 'View your lesson routes' },
@@ -614,6 +616,15 @@ export default function BrandedPupilPortal() {
                 <PupilPortalHistory pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4">
                   <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeSection === 'show-tell' && (
+              <motion.div key="show-tell" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="p-4">
+                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                  <ShowMeTellMeSection pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
