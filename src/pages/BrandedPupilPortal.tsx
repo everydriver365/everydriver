@@ -437,7 +437,7 @@ export default function BrandedPupilPortal() {
                     account_balance: pupil.account_balance,
                     prepaid_hours: pupil.prepaid_hours,
                   }}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   onNavigate={(section) => setActiveSection(section as ActiveSection)}
                 />
 
