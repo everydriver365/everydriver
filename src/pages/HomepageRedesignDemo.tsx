@@ -1,521 +1,522 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
-  Car, PoundSterling, MessageSquare, Calendar, Users, Briefcase,
-  BookOpen, MapPin, Settings, ChevronRight, Clock, Play, Navigation,
-  CheckCircle, Target, TrendingUp, Sparkles, Bell, Sun, Fuel,
-  Award, Heart, ListTodo, BarChart3, Timer,
+  ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
 } from "lucide-react";
+import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
+import featuresHeroImg from "@/assets/features/features-hero.png";
+import diaryAppImg from "@/assets/features/diary-app.png";
+import paymentsImg from "@/assets/features/pupil-making-payment.png";
+import websiteImg from "@/assets/features/website-showcase.png";
+import telematicsImg from "@/assets/features/telematics-showcase.png";
+import dashcamFeatureImg from "@/assets/dashcam-feature.png";
+import marketingImg from "@/assets/features/marketing-website-mockup.png";
+import lifestyleDiaryImg from "@/assets/features/diary-option-lifestyle.png";
+import websiteShowcaseImg from "@/assets/features/website-showcase.png";
+import telematicsShowcaseImg from "@/assets/features/telematics-showcase.png";
+import dashcamImg from "@/assets/features/dashcam-ai.png";
+import drivingSchool1 from "@/assets/driving-school-1.png";
+import drivingSchool2 from "@/assets/driving-school-2.png";
+import pupilAppHero from "@/assets/pupil-app-hero.png";
+import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
-// ─── Shared mock data ───
-const MOCK_INSTRUCTOR = { name: "James", initials: "JM" };
-const MOCK_NEXT = { pupil: "Sarah Mitchell", time: "10:30 AM", location: "High St, Bristol", duration: "2hr", type: "Standard" };
-const MOCK_STATS = { lessons: 4, earned: 156, hours: 6.5, completed: 2 };
-const MOCK_LESSONS = [
-  { time: "10:30", pupil: "Sarah M.", type: "Standard", done: false },
-  { time: "13:00", pupil: "Jake T.", type: "Motorway", done: false },
-  { time: "15:30", pupil: "Emma W.", type: "Test Prep", done: false },
-  { time: "17:00", pupil: "Tom R.", type: "Standard", done: false },
-];
-
-// ─── Phone Frame ───
-function PhoneFrame({ children, label, selected, onClick }: {
-  children: React.ReactNode; label: string; selected?: boolean; onClick?: () => void;
-}) {
+export default function HomepageRedesignDemo() {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <button onClick={onClick} className="focus:outline-none group">
-        <div className={`relative w-[320px] h-[640px] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-300 ${
-          selected ? "ring-4 ring-primary scale-[1.02]" : "ring-1 ring-border/30 group-hover:ring-2 group-hover:ring-primary/40"
-        }`}>
-          {/* Notch */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-black rounded-b-2xl z-30" />
-          {/* Status bar */}
-          <div className="absolute top-0 left-0 right-0 h-[44px] z-20 flex items-end justify-between px-8 pb-1">
-            <span className="text-[10px] font-semibold text-white/90">9:41</span>
-            <div className="flex gap-1 items-center">
-              <div className="w-4 h-2 rounded-sm border border-white/60 relative">
-                <div className="absolute inset-[1px] right-[3px] bg-white/80 rounded-[1px]" />
-              </div>
-            </div>
-          </div>
-          {/* Content */}
-          <div className="h-full overflow-y-auto scrollbar-hide">
-            {children}
-          </div>
-          {/* Home indicator */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[100px] h-[4px] bg-black/20 rounded-full z-30" />
-        </div>
-      </button>
-      <div className="text-center">
-        <p className={`text-sm font-semibold transition-colors ${selected ? "text-primary" : "text-foreground"}`}>{label}</p>
-        {selected && <span className="text-[10px] text-primary font-medium">✓ Selected</span>}
-      </div>
-    </div>
-  );
-}
+    <InstructorSaaSLayout>
+      {/* ─── HERO ─── */}
+      <section className="relative bg-background py-16 md:py-24 lg:py-32 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`,
+          backgroundSize: '32px 32px'
+        }} />
 
-// ──────────────────────────────────────
-// CONCEPT 1: Command Centre
-// ──────────────────────────────────────
-function CommandCentre() {
-  const progress = (MOCK_STATS.completed / MOCK_STATS.lessons) * 100;
-  return (
-    <div className="min-h-full" style={{ background: "linear-gradient(180deg, #0F172A 0%, #1E293B 40%, #F1F5F9 40.5%)" }}>
-      {/* Dark hero */}
-      <div className="pt-[52px] px-5 pb-8">
-        <p className="text-white/50 text-[11px] font-medium">GOOD MORNING</p>
-        <h1 className="text-white text-[22px] font-bold mt-0.5">{MOCK_INSTRUCTOR.name}</h1>
-        
-        {/* Progress ring */}
-        <div className="flex items-center justify-center mt-5">
-          <div className="relative w-[120px] h-[120px]">
-            <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
-              <circle cx="60" cy="60" r="52" fill="none" stroke="#3B82F6" strokeWidth="8"
-                strokeDasharray={`${progress * 3.267} 326.7`} strokeLinecap="round" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-white text-[28px] font-bold">{MOCK_STATS.completed}/{MOCK_STATS.lessons}</span>
-              <span className="text-white/50 text-[10px]">lessons today</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Stats row */}
-        <div className="flex justify-between mt-5 gap-2">
-          {[
-            { label: "Earned", value: `£${MOCK_STATS.earned}`, color: "#22C55E" },
-            { label: "Hours", value: `${MOCK_STATS.hours}h`, color: "#3B82F6" },
-            { label: "Messages", value: "3", color: "#F59E0B" },
-          ].map(s => (
-            <div key={s.label} className="flex-1 bg-white/5 rounded-2xl p-3 backdrop-blur-sm">
-              <p className="text-[10px] text-white/40">{s.label}</p>
-              <p className="text-[18px] font-bold" style={{ color: s.color }}>{s.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Light feed section */}
-      <div className="px-4 pt-4 pb-20 space-y-3">
-        {/* Next up */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">Next Up</span>
-            <span className="text-[10px] text-slate-400">{MOCK_NEXT.time}</span>
-          </div>
-          <p className="text-[15px] font-semibold text-slate-900">{MOCK_NEXT.pupil}</p>
-          <p className="text-[12px] text-slate-500 mt-0.5">{MOCK_NEXT.type} • {MOCK_NEXT.duration}</p>
-          <div className="flex gap-2 mt-3">
-            <button className="flex-1 bg-blue-600 text-white text-[12px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1">
-              <Navigation className="h-3.5 w-3.5" /> Navigate
-            </button>
-            <button className="flex-1 bg-slate-100 text-slate-700 text-[12px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1">
-              <MessageSquare className="h-3.5 w-3.5" /> Message
-            </button>
-          </div>
-        </div>
-        
-        {/* Timeline */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Today's Schedule</p>
-          {MOCK_LESSONS.map((l, i) => (
-            <div key={i} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
-              <span className="text-[12px] font-mono text-slate-400 w-[40px]">{l.time}</span>
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <div className="flex-1">
-                <p className="text-[13px] font-medium text-slate-800">{l.pupil}</p>
-                <p className="text-[10px] text-slate-400">{l.type}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Smart nudge */}
-        <div className="bg-amber-50 border border-amber-200/50 rounded-2xl p-3.5 flex items-center gap-3">
-          <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
-          <div className="flex-1">
-            <p className="text-[12px] font-semibold text-amber-900">Gap at 12:00 — fill it?</p>
-            <p className="text-[10px] text-amber-700/70">3 pupils nearby could book</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-amber-400" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────
-// CONCEPT 2: Widgets Board (iOS style)
-// ──────────────────────────────────────
-function WidgetsBoard() {
-  return (
-    <div className="min-h-full bg-[#F2F2F7] pt-[52px] px-4 pb-20">
-      {/* Greeting */}
-      <div className="mb-4">
-        <p className="text-[13px] text-[#8E8E93]">Friday, 7 March</p>
-        <h1 className="text-[26px] font-bold text-[#1C1C1E]">Good morning, {MOCK_INSTRUCTOR.name}</h1>
-      </div>
-
-      {/* Grid of widgets */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Large next lesson widget - full width */}
-        <div className="col-span-2 bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-              <Car className="h-4 w-4 text-white" />
-            </div>
+        <div className="container max-w-6xl relative">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <p className="text-[10px] font-semibold text-[#8E8E93] uppercase">Next Lesson</p>
-              <p className="text-[14px] font-semibold text-[#1C1C1E]">{MOCK_NEXT.time}</p>
-            </div>
-          </div>
-          <p className="text-[16px] font-semibold text-[#1C1C1E]">{MOCK_NEXT.pupil}</p>
-          <p className="text-[12px] text-[#8E8E93]">{MOCK_NEXT.location}</p>
-          <div className="flex gap-2 mt-3">
-            <button className="flex-1 bg-[#007AFF] text-white text-[12px] font-semibold py-2.5 rounded-[14px]">Start</button>
-            <button className="flex-1 bg-[#F2F2F7] text-[#007AFF] text-[12px] font-semibold py-2.5 rounded-[14px]">Navigate</button>
-          </div>
-        </div>
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
+                The Free Diary App
+                <br />
+                <span className="text-[#0075c9]">Built for ADIs</span>
+              </h1>
 
-        {/* Small stat widgets */}
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <PoundSterling className="h-5 w-5 text-[#34C759] mb-2" />
-          <p className="text-[22px] font-bold text-[#1C1C1E]">£{MOCK_STATS.earned}</p>
-          <p className="text-[11px] text-[#8E8E93]">Today's earnings</p>
-        </div>
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <BookOpen className="h-5 w-5 text-[#007AFF] mb-2" />
-          <p className="text-[22px] font-bold text-[#1C1C1E]">{MOCK_STATS.lessons}</p>
-          <p className="text-[11px] text-[#8E8E93]">Lessons today</p>
-        </div>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
+                Manage your lessons, track payments, and grow your business — all from one app. 
+                Free forever, no credit card required.
+              </p>
 
-        {/* Messages widget */}
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <MessageSquare className="h-5 w-5 text-[#FF9500] mb-2" />
-          <p className="text-[22px] font-bold text-[#1C1C1E]">3</p>
-          <p className="text-[11px] text-[#8E8E93]">Unread messages</p>
-        </div>
-        {/* Weekly progress */}
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <Target className="h-5 w-5 text-[#FF3B30] mb-2" />
-          <p className="text-[22px] font-bold text-[#1C1C1E]">72%</p>
-          <p className="text-[11px] text-[#8E8E93]">Weekly goal</p>
-        </div>
-
-        {/* Schedule widget - full width */}
-        <div className="col-span-2 bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <p className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-3">Schedule</p>
-          {MOCK_LESSONS.map((l, i) => (
-            <div key={i} className="flex items-center gap-3 py-2 border-b border-[#F2F2F7] last:border-0">
-              <span className="text-[12px] font-medium text-[#8E8E93] w-[42px]">{l.time}</span>
-              <div className="flex-1">
-                <p className="text-[13px] font-medium text-[#1C1C1E]">{l.pupil}</p>
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
+                  <Link to="/instructor-app/signup">
+                    Start Free Today
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
+                  <Link to="/instructor-app/features">
+                    <Play className="mr-2 h-4 w-4" />
+                    Watch Demo
+                  </Link>
+                </Button>
               </div>
-              <span className="text-[10px] bg-[#F2F2F7] text-[#8E8E93] px-2 py-0.5 rounded-full">{l.type}</span>
-            </div>
-          ))}
-        </div>
 
-        {/* Quick actions row - full width */}
-        <div className="col-span-2 bg-white rounded-[20px] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              { icon: Calendar, label: "Schedule", color: "#FF3B30" },
-              { icon: Users, label: "Pupils", color: "#5856D6" },
-              { icon: PoundSterling, label: "Payments", color: "#34C759" },
-              { icon: Settings, label: "Settings", color: "#8E8E93" },
-            ].map(a => (
-              <div key={a.label} className="flex flex-col items-center gap-1.5">
-                <div className="w-[44px] h-[44px] rounded-[12px] flex items-center justify-center" style={{ backgroundColor: a.color + "15" }}>
-                  <a.icon className="h-5 w-5" style={{ color: a.color }} />
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  No credit card
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  Free forever
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  GDPR compliant
+                </span>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border">
+                <img
+                  src={featuresHeroImg}
+                  alt="EveryDriver instructor diary app showing calendar and vehicle tracking"
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-emerald-600" />
                 </div>
-                <span className="text-[10px] text-[#8E8E93]">{a.label}</span>
+                <div>
+                  <p className="text-sm font-bold text-foreground">500+</p>
+                  <p className="text-xs text-muted-foreground">Active instructors</p>
+                </div>
+              </div>
+
+              <div className="absolute -top-3 -right-3 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-[#0075c9]/10 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-[#0075c9]" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">98%</p>
+                  <p className="text-xs text-muted-foreground">Fill rate</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── WHAT WE DO ─── */}
+      <section className="relative py-16 md:py-24 overflow-hidden bg-[#0a1628]">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-1/4 w-72 h-72 bg-[#0075c9] rounded-full blur-[120px]" />
+          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#0075c9] rounded-full blur-[150px]" />
+        </div>
+        <div className="container max-w-6xl relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div>
+              <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
+                No contracts · No tie-in · Leave any time
+              </span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                Your Diary, Your Way —{" "}
+                <span className="bg-gradient-to-r from-[#0075c9] to-[#00a3ff] bg-clip-text text-transparent">
+                  Free for Life
+                </span>
+              </h2>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                EveryDriver gives every driving instructor a powerful diary and business management app — completely free, forever.
+                Manage your schedule, track pupil progress, handle payments, and communicate with learners all in one place.
+              </p>
+              <p className="text-lg text-gray-300 leading-relaxed mt-4">
+                Want even more? Optional paid extras like telematics, dashcam integration, and custom websites are available
+                when you're ready — but the core app is yours to keep at absolutely no cost.
+              </p>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 text-sm font-medium text-gray-400">
+                {["✓ Free forever", "✓ No credit card", "✓ No hidden fees", "✓ Cancel any time"].map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-2xl aspect-video flex items-center justify-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white/50 gap-3">
+                  <div className="h-16 w-16 rounded-full border-2 border-white/30 flex items-center justify-center">
+                    <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white/50 border-b-[10px] border-b-transparent ml-1" />
+                  </div>
+                  <span className="text-sm font-medium">Explainer Video</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SOCIAL PROOF BAR ─── */}
+      <section className="py-6 bg-muted/30 border-y border-border">
+        <div className="container max-w-5xl">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 text-center">
+            {[
+              { value: "500+", label: "Active Instructors" },
+              { value: "50,000+", label: "Lessons Managed" },
+              { value: "4.9★", label: "Average Rating" },
+              { value: "£0", label: "To Get Started" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-// ──────────────────────────────────────
-// CONCEPT 3: Stories + Feed
-// ──────────────────────────────────────
-function StoriesFeed() {
-  const stories = [
-    { name: "Sarah", color: "#3B82F6", alert: true },
-    { name: "Jake", color: "#10B981", alert: false },
-    { name: "Emma", color: "#8B5CF6", alert: true },
-    { name: "Tom", color: "#F59E0B", alert: false },
-    { name: "Lucy", color: "#EC4899", alert: false },
-  ];
-  return (
-    <div className="min-h-full bg-white pt-[52px] pb-20">
-      {/* Header */}
-      <div className="px-5 pb-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-[#1C1C1E]">Home</h1>
-          <p className="text-[12px] text-[#8E8E93]">4 lessons today • £156 expected</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-          <span className="text-white text-[13px] font-bold">{MOCK_INSTRUCTOR.initials}</span>
-        </div>
-      </div>
+      {/* ─── PRODUCT DEMO SECTION ─── */}
+      <section className="py-20 md:py-28 bg-background">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 text-[#0075c9] border-[#0075c9]/30">
+              Product Tour
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4">
+              See It in Action
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              From diary management to live telematics — everything you need in one platform.
+            </p>
+          </div>
 
-      {/* Stories row */}
-      <div className="px-4 py-3 flex gap-4 overflow-x-auto scrollbar-hide border-b border-[#F2F2F7]">
-        {stories.map(s => (
-          <div key={s.name} className="flex flex-col items-center gap-1 shrink-0">
-            <div className={`w-[56px] h-[56px] rounded-full p-[2px] ${s.alert ? "bg-gradient-to-br from-blue-500 to-purple-500" : "bg-[#E5E5EA]"}`}>
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                <span className="text-[14px] font-bold" style={{ color: s.color }}>{s.name[0]}</span>
-              </div>
-            </div>
-            <span className="text-[10px] text-[#8E8E93]">{s.name}</span>
-          </div>
-        ))}
-        <div className="flex flex-col items-center gap-1 shrink-0">
-          <div className="w-[56px] h-[56px] rounded-full border-2 border-dashed border-[#C7C7CC] flex items-center justify-center">
-            <span className="text-[20px] text-[#C7C7CC]">+</span>
-          </div>
-          <span className="text-[10px] text-[#8E8E93]">Add</span>
-        </div>
-      </div>
-
-      {/* Feed cards */}
-      <div className="px-4 pt-4 space-y-3">
-        {/* Now playing / Next up */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl p-4 text-white">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Play className="h-3.5 w-3.5" />
-            <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">Up Next</span>
-          </div>
-          <p className="text-[17px] font-bold">{MOCK_NEXT.pupil}</p>
-          <p className="text-[12px] opacity-80 mt-0.5">{MOCK_NEXT.time} • {MOCK_NEXT.location}</p>
-          <div className="flex gap-2 mt-3">
-            <button className="flex-1 bg-white/20 backdrop-blur text-white text-[12px] font-semibold py-2 rounded-xl">Navigate</button>
-            <button className="flex-1 bg-white text-blue-600 text-[12px] font-semibold py-2 rounded-xl">Start</button>
-          </div>
-        </div>
-
-        {/* Stats strip */}
-        <div className="flex gap-2">
+          {/* Feature showcase — alternating layout */}
           {[
-            { icon: PoundSterling, value: `£${MOCK_STATS.earned}`, label: "Earned", bg: "#F0FDF4", color: "#16A34A" },
-            { icon: Clock, value: `${MOCK_STATS.hours}h`, label: "Hours", bg: "#EFF6FF", color: "#2563EB" },
-            { icon: Target, value: "72%", label: "Goal", bg: "#FFF7ED", color: "#EA580C" },
-          ].map(s => (
-            <div key={s.label} className="flex-1 rounded-2xl p-3" style={{ backgroundColor: s.bg }}>
-              <s.icon className="h-4 w-4 mb-1" style={{ color: s.color }} />
-              <p className="text-[16px] font-bold text-[#1C1C1E]">{s.value}</p>
-              <p className="text-[10px]" style={{ color: s.color }}>{s.label}</p>
+            {
+              icon: Calendar,
+              title: "Smart Diary Management",
+              description: "Drag-and-drop scheduling, automatic gap detection, and Google Calendar sync. Never miss a booking or double-book again.",
+              features: ["Drag & drop calendar", "Google Calendar sync", "Automatic gap filling", "SMS reminders"],
+              image: diaryAppImg,
+              reverse: false,
+              link: "/instructor-app/features",
+            },
+            {
+              icon: CreditCard,
+              title: "Effortless Payment Tracking",
+              description: "Track every payment, chase outstanding balances, and generate professional invoices — all built into your diary.",
+              features: ["Payment status tracking", "Automatic reminders", "PDF invoices", "Revenue reports"],
+              image: paymentsImg,
+              reverse: true,
+              link: "/instructor-app/payments",
+            },
+            {
+              icon: Globe,
+              title: "Your Own Professional Website",
+              description: "Get a branded .co.uk website with direct pupil booking. Show up in Google searches and stand out from the competition.",
+              features: ["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"],
+              image: websiteImg,
+              reverse: false,
+              link: "/instructor-app/domains",
+            },
+            {
+              icon: Smartphone,
+              title: "Apps for Everyone",
+              description: "Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions. Track progress, stay informed, and manage your business from anywhere.",
+              features: ["Pupil progress dashboard", "Parent lesson notifications", "AI coaching tips", "Mock theory tests"],
+              image: pupilAppHero,
+              reverse: true,
+              link: "/instructor-app/features",
+            },
+            {
+              icon: Megaphone,
+              title: "Free Marketing & Promotion",
+              description: "We help you get found by new learners — for free. Google-optimised profiles, area page listings, and social sharing tools to grow your business.",
+              features: ["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing"],
+              image: marketingImg,
+              reverse: false,
+              link: "/instructor-app/marketing",
+            },
+            {
+              icon: Gauge,
+              title: "Telematics & Driving Data",
+              description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
+              features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
+              image: telematicsImg,
+              reverse: true,
+              link: "/instructor-app/telematics",
+            },
+            {
+              icon: Camera,
+              title: "Dashcam & Incident Protection",
+              description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
+              features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
+              image: dashcamFeatureImg,
+              reverse: false,
+              link: "/instructor-app/dashcam",
+            },
+            {
+              icon: Users,
+              title: "Built for Driving Schools",
+              description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
+              features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
+              images: [drivingSchool1, drivingSchool2],
+              reverse: true,
+              link: "/driving-schools",
+            },
+          ].map((feature) => (
+            <div
+              key={feature.title}
+              className={`grid md:grid-cols-2 gap-12 items-center mb-20 last:mb-0 ${
+                feature.reverse ? "md:[&>*:first-child]:order-2" : ""
+              }`}
+            >
+              {/* Text side */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
+                    <feature.icon className="h-5 w-5 text-[#0075c9]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground">{feature.title}</h3>
+                </div>
+                <p className="text-muted-foreground leading-relaxed mb-6">{feature.description}</p>
+                <ul className="space-y-3">
+                  {feature.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm text-foreground">
+                      <div className="h-5 w-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                        <Check className="h-3 w-3 text-emerald-600" />
+                      </div>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button variant="link" className="text-[#0075c9] p-0 mt-4 h-auto" asChild>
+                  <Link to={feature.link}>
+                    Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Image side */}
+              <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-muted/20">
+                {'images' in feature && feature.images ? (
+                  <CrossfadeImages images={feature.images} alt={feature.title} />
+                ) : (
+                  <img src={(feature as any).image} alt={feature.title} className="w-full" />
+                )}
+              </div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Lesson feed */}
-        <div className="bg-[#F9FAFB] rounded-2xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-[#F2F2F7]">
-            <p className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Today's Lessons</p>
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-20 md:py-28 bg-muted/20">
+        <div className="container max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4">
+              Up and Running in 3 Minutes
+            </h2>
+            <p className="text-lg text-muted-foreground">No downloads. No setup fees. No hassle.</p>
           </div>
-          {MOCK_LESSONS.map((l, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-[#F2F2F7] last:border-0">
-              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-[12px] font-bold text-blue-600">{l.pupil.split(" ").map(w => w[0]).join("")}</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold text-[#1C1C1E]">{l.pupil}</p>
-                <p className="text-[11px] text-[#8E8E93]">{l.time} • {l.type}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-[#C7C7CC]" />
-            </div>
-          ))}
-        </div>
 
-        {/* Nudge */}
-        <div className="bg-purple-50 border border-purple-100 rounded-2xl p-3.5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-purple-500" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[12px] font-semibold text-purple-900">Jake hasn't booked in 3 weeks</p>
-            <p className="text-[10px] text-purple-600/70">Tap to send a check-in</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-purple-300" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────
-// CONCEPT 4: Notion-style Blocks
-// ──────────────────────────────────────
-function NotionBlocks() {
-  return (
-    <div className="min-h-full bg-[#FAFAFA] pt-[52px] px-5 pb-20">
-      {/* Minimal header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-[24px] font-bold text-[#1C1C1E] tracking-tight">Today</h1>
-          <p className="text-[13px] text-[#86868B]">Fri 7 Mar • 4 lessons</p>
-        </div>
-        <div className="flex gap-2">
-          <div className="w-9 h-9 rounded-full bg-[#F2F2F7] flex items-center justify-center">
-            <Bell className="h-4 w-4 text-[#8E8E93]" />
-          </div>
-          <div className="w-9 h-9 rounded-full bg-[#1C1C1E] flex items-center justify-center">
-            <span className="text-white text-[11px] font-bold">{MOCK_INSTRUCTOR.initials}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats blocks */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-white rounded-[16px] p-3 border border-[#E5E5EA]/50">
-          <p className="text-[10px] text-[#86868B] mb-0.5">Earned</p>
-          <p className="text-[20px] font-bold text-[#1C1C1E]">£{MOCK_STATS.earned}</p>
-        </div>
-        <div className="bg-white rounded-[16px] p-3 border border-[#E5E5EA]/50">
-          <p className="text-[10px] text-[#86868B] mb-0.5">Hours</p>
-          <p className="text-[20px] font-bold text-[#1C1C1E]">{MOCK_STATS.hours}</p>
-        </div>
-        <div className="bg-white rounded-[16px] p-3 border border-[#E5E5EA]/50">
-          <p className="text-[10px] text-[#86868B] mb-0.5">Goal</p>
-          <p className="text-[20px] font-bold text-[#1C1C1E]">72%</p>
-        </div>
-      </div>
-
-      {/* Focus block - Next lesson */}
-      <div className="bg-white rounded-[16px] p-4 mb-3 border border-[#E5E5EA]/50">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1.5 h-5 rounded-full bg-blue-500" />
-          <span className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Focus</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-[14px] bg-blue-50 flex items-center justify-center">
-            <Car className="h-5 w-5 text-blue-500" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[15px] font-semibold text-[#1C1C1E]">{MOCK_NEXT.pupil}</p>
-            <p className="text-[12px] text-[#86868B]">{MOCK_NEXT.time} • {MOCK_NEXT.type}</p>
-          </div>
-          <button className="bg-[#1C1C1E] text-white text-[11px] font-semibold px-4 py-2 rounded-[10px]">Go</button>
-        </div>
-      </div>
-
-      {/* Schedule block */}
-      <div className="bg-white rounded-[16px] p-4 mb-3 border border-[#E5E5EA]/50">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1.5 h-5 rounded-full bg-orange-400" />
-          <span className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Schedule</span>
-        </div>
-        <div className="space-y-0">
-          {MOCK_LESSONS.map((l, i) => (
-            <div key={i} className="flex items-center gap-3 py-2.5 border-b border-[#F2F2F7] last:border-0">
-              <div className="w-8 h-8 rounded-[10px] bg-[#F2F2F7] flex items-center justify-center">
-                <span className="text-[10px] font-bold text-[#8E8E93]">{l.pupil.split(" ").map(w => w[0]).join("")}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-[#1C1C1E]">{l.pupil}</p>
-                <p className="text-[11px] text-[#86868B]">{l.time}</p>
-              </div>
-              <span className="text-[10px] text-[#86868B] bg-[#F2F2F7] px-2 py-0.5 rounded-md">{l.type}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick links block */}
-      <div className="bg-white rounded-[16px] p-4 mb-3 border border-[#E5E5EA]/50">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1.5 h-5 rounded-full bg-emerald-400" />
-          <span className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Quick Links</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { icon: Calendar, label: "Schedule" },
-            { icon: Users, label: "Pupils" },
-            { icon: PoundSterling, label: "Payments" },
-            { icon: MessageSquare, label: "Messages" },
-            { icon: Briefcase, label: "Jobs" },
-            { icon: Settings, label: "Settings" },
-          ].map(q => (
-            <div key={q.label} className="flex items-center gap-2.5 py-2 px-2.5 rounded-[10px] hover:bg-[#F9F9F9]">
-              <q.icon className="h-4 w-4 text-[#86868B]" />
-              <span className="text-[13px] text-[#1C1C1E]">{q.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Insight nudge */}
-      <div className="bg-[#FEF9C3] rounded-[16px] p-3.5 flex items-center gap-3 border border-[#FDE68A]/50">
-        <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
-        <div className="flex-1">
-          <p className="text-[12px] font-medium text-amber-900">You're 28% ahead of last week</p>
-          <p className="text-[10px] text-amber-700/70">Keep it up — 3 more lessons to hit your goal</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────
-// DEMO PAGE
-// ──────────────────────────────────────
-export default function HomepageRedesignDemo() {
-  const [selected, setSelected] = useState<number | null>(null);
-
-  const concepts = [
-    { label: "Command Centre", component: <CommandCentre /> },
-    { label: "iOS Widgets", component: <WidgetsBoard /> },
-    { label: "Stories + Feed", component: <StoriesFeed /> },
-    { label: "Notion Blocks", component: <NotionBlocks /> },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <h1 className="text-xl font-bold text-foreground">Homepage Redesign Concepts</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Tap a design to select it. All keep current functionality with an iOS-native aesthetic.</p>
-      </div>
-
-      {/* Concepts grid */}
-      <div className="px-6 py-8">
-        <div className="flex gap-8 overflow-x-auto pb-8 scrollbar-hide snap-x snap-mandatory">
-          {concepts.map((c, i) => (
-            <div key={i} className="snap-center shrink-0">
-              <PhoneFrame
-                label={c.label}
-                selected={selected === i}
-                onClick={() => setSelected(i)}
+          <div className="grid md:grid-cols-3 gap-8">
+            {([
+              { step: "01", icon: Zap, title: "Create Your Account", desc: "Sign up with your email in 60 seconds. No credit card needed.", bg: "bg-gradient-to-br from-amber-400/20 to-orange-500/10", iconColor: "text-amber-500", badgeBg: "bg-gradient-to-br from-amber-400 to-orange-500" },
+              { step: "02", icon: Calendar, title: "Set Up Your Diary", desc: "Add availability, import existing pupils, and configure your preferences.", bg: "bg-gradient-to-br from-[#0075c9]/20 to-blue-500/10", iconColor: "text-[#0075c9]", badgeBg: "bg-gradient-to-br from-[#0075c9] to-blue-600" },
+              { step: "03", icon: Users, title: "Start Teaching", desc: "Manage bookings, track payments, and grow your business from day one.", bg: "bg-gradient-to-br from-emerald-400/20 to-teal-500/10", iconColor: "text-emerald-500", badgeBg: "bg-gradient-to-br from-emerald-400 to-teal-500" },
+            ] as const).map((item, i) => (
+              <div
+                key={item.step}
+                className="relative text-center"
               >
-                {c.component}
-              </PhoneFrame>
-            </div>
-          ))}
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-[#0075c9]/20" />
+                )}
+                <div className={`relative z-10 mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-black/5`}>
+                  <item.icon className={`h-8 w-8 ${item.iconColor}`} />
+                  <span className={`absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full ${item.badgeBg} text-xs font-bold text-white shadow-lg`}>
+                    {item.step}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Selection indicator */}
-      <AnimatePresence>
-        {selected !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg flex items-center gap-2 z-50"
-          >
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm font-semibold">{concepts[selected].label} selected</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {/* ─── PRODUCT GRID ─── */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+              Start Free. Grow When Ready.
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              The diary is free forever. Add premium tools as your business grows.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            {[
+              { icon: Calendar, name: "Smart Diary", desc: "Your complete lesson management hub — scheduling, payments, and gap-filling in one place.", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", img: lifestyleDiaryImg },
+              { icon: Globe, name: "Website & Domain", desc: "Get found online with your own professional website, custom domain, and direct pupil bookings.", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", img: websiteShowcaseImg },
+              { icon: Gauge, name: "Telematics", desc: "Teach with real data — live speed monitoring, driver scoring, and visual progress reports.", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics", img: telematicsShowcaseImg },
+              { icon: Camera, name: "Dashcam", desc: "Record every lesson, share clips with pupils, and protect yourself with cloud-stored footage.", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam", img: dashcamImg },
+            ].map((product) => (
+              <Link
+                key={product.name}
+                to={product.link}
+                className={`group relative flex flex-col md:flex-row items-stretch rounded-2xl border overflow-hidden transition-all hover:shadow-xl ${
+                  product.free
+                    ? "border-[#0075c9]/20 bg-card"
+                    : "border-border bg-card hover:border-[#0075c9]/20"
+                }`}
+              >
+                {/* Image side */}
+                <div className="md:w-2/5 h-48 md:h-auto relative shrink-0">
+                  <img src={product.img} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card hidden md:block" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent md:hidden" />
+                </div>
+                {/* Content side */}
+                <div className="flex-1 p-7 md:p-9">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${
+                      product.free ? "bg-[#0075c9] text-white" : "bg-[#0075c9]/10"
+                    }`}>
+                      <product.icon className={`h-5 w-5 ${product.free ? "text-white" : "text-[#0075c9]"}`} />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground">{product.name}</h3>
+                    {product.free ? (
+                      <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase ml-auto">Free Forever</Badge>
+                    ) : (
+                      <span className="text-sm font-bold text-foreground ml-auto">
+                        {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground mb-5 text-sm md:text-base">{product.desc}</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-6">
+                    {product.benefits.map((b) => (
+                      <div key={b} className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className={`h-4 w-4 shrink-0 ${product.free ? "text-emerald-500" : "text-[#0075c9]"}`} />
+                        {b}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-[#0075c9] group-hover:gap-2.5 transition-all">
+                    {product.free ? "Get started free" : "Learn more"} <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* CTA to all features */}
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
+              <Link to="/instructor-app/all-features">
+                See All 50+ Features by Plan
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <section className="py-20 md:py-28 bg-muted/20">
+        <div className="container max-w-5xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+              Loved by Instructors
+            </h2>
+            <p className="text-muted-foreground text-lg">Real feedback from ADIs using EveryDriver every day.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { quote: "I used to spend Sunday evenings sorting my diary and chasing payments. Now the app does it all — I just teach.", name: "Sarah M.", role: "ADI, Manchester" },
+              { quote: "The telematics changed how I teach. Pupils can actually see their improvement in data — it's incredibly motivating.", name: "James T.", role: "ADI, Bristol" },
+              { quote: "Parents love the live tracking. It's given me a real edge over other instructors in my area.", name: "Priya K.", role: "ADI, Birmingham" },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow"
+              >
+                <Quote className="h-8 w-8 text-[#0075c9]/20 mb-4" />
+                <p className="text-foreground/90 leading-relaxed mb-6 text-sm">{t.quote}</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-[#0075c9]/10 flex items-center justify-center">
+                    <span className="text-sm font-bold text-[#0075c9]">{t.name.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+                <div className="flex gap-0.5 mt-4">
+                  {[...Array(5)].map((_, j) => (
+                    <Star key={j} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PLATFORM STRIP ─── */}
+      <section className="py-12 bg-background border-y border-border">
+        <div className="container max-w-4xl">
+          <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
+            {[
+              { icon: Smartphone, label: "iOS & Android" },
+              { icon: Monitor, label: "Desktop" },
+              { icon: Globe, label: "Web App" },
+              { icon: Clock, label: "24/7 Access" },
+              { icon: Shield, label: "GDPR Compliant" },
+            ].map((p) => (
+              <div key={p.label} className="flex items-center gap-2 text-sm">
+                <p.icon className="h-4 w-4" />
+                <span>{p.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA ─── */}
+      <section className="py-20 md:py-28 bg-primary">
+        <div className="container max-w-3xl text-center">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+              Ready to Simplify Your Business?
+            </h2>
+            <p className="text-lg text-primary-foreground/70 mb-8 max-w-xl mx-auto">
+              Join 500+ driving instructors who've ditched the paper diary. Start free today.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-white hover:bg-white/90 text-[#0075c9] h-13 px-8 text-base rounded-xl font-semibold" asChild>
+                <Link to="/instructor-app/signup">
+                  Create Free Account
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-13 px-8 text-base rounded-xl" asChild>
+                <Link to="/instructor-app/pricing">Compare Plans</Link>
+              </Button>
+            </div>
+            <p className="mt-6 text-sm text-primary-foreground/50">
+              No credit card required • Free plan available forever
+            </p>
+          </div>
+        </div>
+      </section>
+    </InstructorSaaSLayout>
   );
 }

@@ -3,7 +3,7 @@ import { lazy } from "react";
 
 const Index = lazy(() => import("@/pages/Index"));
 const MiniWebsiteHome = lazy(() => import("@/pages/mini-website/MiniWebsiteHome"));
-const InstructorAppHome = lazy(() => import("@/pages/instructor-app/InstructorAppHome"));
+const HomepageRedesignDemo = lazy(() => import("@/pages/HomepageRedesignDemo"));
 
 /**
  * Renders the appropriate homepage based on the current domain.
