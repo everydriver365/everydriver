@@ -699,7 +699,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalProfileEdit
                   pupil={pupil}
                   onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
               </motion.div>
             )}
