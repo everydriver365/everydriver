@@ -432,24 +432,9 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setSelectedInstructor(instructor)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditInstructor(instructor)}>
+                          <DropdownMenuItem onClick={() => onViewProfile?.(instructor.id)}>
                             <Edit2 className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setReassignInstructor(instructor)}>
-                            <Users className="mr-2 h-4 w-4" />
-                            Reassign Pupils
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setPlanDialogInstructor(instructor);
-                            setSelectedPlanId(instructor.subscription?.plan_id || "");
-                          }}>
-                            <Crown className="mr-2 h-4 w-4" />
-                            Change Plan
+                            View / Edit Profile
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleToggleActive(instructor)}>
