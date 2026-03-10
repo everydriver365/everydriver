@@ -248,24 +248,23 @@ export default function Index() {
 
       {/* Guaranteed Earlier Test Promotion Banner — Feature Grid */}
       <section className="py-4">
-        <div className="container">
           <Link to="/earlier-test-guarantee">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               viewport={{ once: true }}
-              className="rounded-2xl border bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
+              className="border-y bg-card shadow-lg hover:shadow-xl transition-shadow overflow-hidden group"
             >
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-10 h-10 object-contain" />
-                  <h3 className="text-lg font-black text-white">Earlier Test Guarantee</h3>
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 object-contain drop-shadow-lg" />
+                  <h3 className="text-2xl font-black text-white">Earlier Test Guarantee</h3>
                 </div>
-                <Badge className="bg-white/20 text-white border-0 hover:bg-white/20">Most Popular</Badge>
+                <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-4 gap-4">
+              <div className="px-8 py-6">
+                <div className="grid grid-cols-4 gap-6 max-w-5xl mx-auto">
                   {[
                     { icon: Timer, title: "4 Weeks Sooner", desc: "Average time saved" },
                     { icon: Shield, title: "Money Back", desc: "If we can't find earlier" },
@@ -281,7 +280,7 @@ export default function Index() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-5 pt-4 border-t flex items-center justify-between">
+                <div className="mt-5 pt-4 border-t flex items-center justify-between max-w-5xl mx-auto">
                   <p className="text-sm text-muted-foreground">Skip months of waiting — we do the hard work for you.</p>
                   <span className="text-emerald-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                     Learn More <ArrowRight className="h-4 w-4" />
@@ -290,7 +289,6 @@ export default function Index() {
               </div>
             </motion.div>
           </Link>
-        </div>
       </section>
 
       {/* Choose Your Learning Path Section */}
