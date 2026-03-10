@@ -309,26 +309,35 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     if (!instructor) return;
     const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
     const updateValue = numericFields.includes(field) ? (value ? Number(value) : null) : (value || null);
-    const { error } = await supabase.from("instructors").update({ [field]: updateValue } as any).eq("id", instructor.id);
-    if (error) { toast.error(`Failed to update ${field}`); throw error; }
-    toast.success("Updated successfully");
+    setPendingChanges(prev => ({ ...prev, [field]: updateValue }));
     setInstructor(prev => prev ? { ...prev, [field]: updateValue } : prev);
-    logAdminAction({ actionType: "instructor_update", description: `Updated ${field} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
   };
 
   const handleToggle = async (field: string, value: boolean) => {
     if (!instructor) return;
-    setSavingToggle(field);
+    setPendingChanges(prev => ({ ...prev, [field]: value }));
+    setInstructor(prev => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleSaveAll = async () => {
+    if (!instructor || !hasPendingChanges) return;
+    setSavingAll(true);
     try {
-      const { error } = await supabase.from("instructors").update({ [field]: value } as any).eq("id", instructor.id);
+      const { error } = await supabase.from("instructors").update(pendingChanges as any).eq("id", instructor.id);
       if (error) throw error;
-      setInstructor(prev => prev ? { ...prev, [field]: value } : prev);
-      toast.success(value ? "Enabled" : "Disabled");
+      toast.success(`Saved ${Object.keys(pendingChanges).length} change(s)`);
+      logAdminAction({ actionType: "instructor_bulk_update", description: `Updated ${Object.keys(pendingChanges).join(", ")} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id, metadata: pendingChanges });
+      setPendingChanges({});
     } catch {
-      toast.error("Failed to update");
+      toast.error("Failed to save changes");
     } finally {
-      setSavingToggle(null);
+      setSavingAll(false);
     }
+  };
+
+  const handleDiscardChanges = () => {
+    setPendingChanges({});
+    fetchInstructor();
   };
 
   const handleToggleActive = async () => {
