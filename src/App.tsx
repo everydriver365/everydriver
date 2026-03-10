@@ -140,6 +140,7 @@ const SmartNudgesDemo = lazy(() => import("./pages/SmartNudgesDemo"));
 const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
 const DemoPortals = lazy(() => import("./pages/DemoPortals"));
 const DemoETGDesigns = lazy(() => import("./pages/DemoETGDesigns"));
+const Drive365HeroDemo = lazy(() => import("./pages/Drive365HeroDemo"));
 
 
 // Lazy-load ConditionalRoutes
