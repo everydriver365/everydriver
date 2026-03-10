@@ -398,7 +398,7 @@ export default function BrandedPupilPortal() {
                 {/* Push Notification Banner */}
                 <PushNotificationBanner 
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* End-of-Lesson Wizard (replaces simple feedback prompt) */}
