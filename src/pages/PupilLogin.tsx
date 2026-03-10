@@ -275,10 +275,7 @@ export default function PupilLogin() {
         
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-              <Car className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">EveryDriver</span>
+            <img src={drive365Logo} alt="Drive365" className="h-12" />
           </div>
           
           <div className="max-w-md">
