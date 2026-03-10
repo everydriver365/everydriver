@@ -1,13 +1,14 @@
 import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from "./DomainRouter";
 import { lazy } from "react";
+import HomepageRedesignDemo from "@/pages/HomepageRedesignDemo";
+import MiniWebsiteHome from "@/pages/mini-website/MiniWebsiteHome";
 
 const Index = lazy(() => import("@/pages/Index"));
-const MiniWebsiteHome = lazy(() => import("@/pages/mini-website/MiniWebsiteHome"));
-const InstructorAppHome = lazy(() => import("@/pages/instructor-app/InstructorAppHome"));
 
 /**
  * Renders the appropriate homepage based on the current domain.
  * 
+ * SWAPPED CONFIGURATION:
  * - Instructor subdomains (e.g., jane-smith.everydriver.co.uk) -> Mini website
  * - drive365.co.uk -> Learner homepage (find instructors, book lessons)
  * - everydriver.co.uk -> Instructor marketing page
@@ -25,5 +26,5 @@ export function ConditionalHome() {
   }
   
   // EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
-  return <InstructorAppHome />;
+  return <HomepageRedesignDemo />;
 }
