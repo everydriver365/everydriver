@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,17 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { PupilJourneyTimeline } from "./PupilJourneyTimeline";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Instructor {
   id: string;
@@ -449,7 +460,30 @@ export function PupilRecordsManager() {
     }
   };
 
-  if (loading) {
+  // Soft delete pupil
+  const softDeletePupil = async (pupil: Pupil) => {
+    try {
+      const { softDelete } = await import("@/lib/auditLogger");
+      await softDelete("pupils", pupil.id, pupil.instructor_id, { name: pupil.name });
+
+      // Remove from local state
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil(null);
+      }
+
+      toast.success(`${pupil.name} has been deleted`);
+    } catch (error) {
+      console.error("Error deleting pupil:", error);
+      toast.error("Failed to delete pupil");
+    }
+  };
+
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -523,7 +557,36 @@ export function PupilRecordsManager() {
         <div className="bg-[#142040] text-white px-4 py-3 font-semibold text-sm flex items-center justify-between">
           <span>Detailed View</span>
           {selectedPupil && (
-            <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-6 w-6 text-white/60 hover:text-destructive hover:bg-white/10">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      Delete Pupil Record
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete <strong>{selectedPupil.name}</strong>? This will soft-delete the record (it can be restored from the database if needed).
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => softDeletePupil(selectedPupil)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
 
