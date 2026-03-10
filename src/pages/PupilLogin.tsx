@@ -304,7 +304,7 @@ export default function PupilLogin() {
           </div>
           
           <p className="text-sm text-slate-500">
-            © 2025 EveryDriver. All rights reserved.
+            © {new Date().getFullYear()} Drive365. All rights reserved.
           </p>
         </div>
       </div>
