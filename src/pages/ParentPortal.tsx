@@ -491,6 +491,9 @@ export default function ParentPortal() {
                 <h1 className="text-xl font-bold text-foreground">Parent Dashboard</h1>
               </div>
 
+              {/* Push Notification Banner */}
+              <ParentPushBanner parentPhone={parentPhone} />
+
               {/* Children Overview */}
               {children.map((child, index) => (
                 <motion.div key={child.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
