@@ -405,16 +405,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                       {instructor.home_postcode}
                     </TableCell>
                     <TableCell className="text-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPlanDialogInstructor(instructor);
-                          setSelectedPlanId(instructor.subscription?.plan_id || "");
-                        }}
-                        className="hover:opacity-80 transition-opacity"
-                      >
-                        <PlanBadge planSlug={instructor.subscription?.plan_slug} planName={instructor.subscription?.plan_name} />
-                      </button>
+                      <PlanBadge planSlug={instructor.subscription?.plan_slug} planName={instructor.subscription?.plan_name} />
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
