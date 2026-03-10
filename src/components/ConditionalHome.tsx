@@ -2,6 +2,7 @@ import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from 
 import { lazy } from "react";
 
 const Index = lazy(() => import("@/pages/Index"));
+const Drive365HomepageRedesign = lazy(() => import("@/pages/Drive365HomepageRedesign"));
 const MiniWebsiteHome = lazy(() => import("@/pages/mini-website/MiniWebsiteHome"));
 const HomepageRedesignDemo = lazy(() => import("@/pages/HomepageRedesignDemo"));
 
