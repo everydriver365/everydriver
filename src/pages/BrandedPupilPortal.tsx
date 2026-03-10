@@ -613,7 +613,7 @@ export default function BrandedPupilPortal() {
                 </div>
                 <PupilPortalHistory pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4">
-                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
