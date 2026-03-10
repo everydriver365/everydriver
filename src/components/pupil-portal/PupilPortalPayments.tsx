@@ -152,8 +152,8 @@ export function PupilPortalPayments({
         </CardContent>
       </Card>
 
-      {/* Pay Now Link Card */}
-      {activePaymentUrl && (
+      {/* Pay Now Button - uses payment link URL */}
+      {(paymentLinkBaseUrl || activePaymentUrl) && (
         <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
           <CardContent className="p-4 space-y-3">
             <p className="text-sm font-medium" style={{ color: 'var(--brand-text)' }}>
@@ -163,7 +163,10 @@ export function PupilPortalPayments({
               <Button 
                 className="flex-1"
                 style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
-                onClick={() => window.open(activePaymentUrl, '_blank', 'noopener')}
+                onClick={() => {
+                  const url = paymentLinkBaseUrl || activePaymentUrl;
+                  if (url) window.open(url, '_blank', 'noopener');
+                }}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Pay Now
@@ -171,7 +174,18 @@ export function PupilPortalPayments({
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handleShareLink}
+                onClick={() => {
+                  const url = paymentLinkBaseUrl || activePaymentUrl;
+                  if (!url) return;
+                  if (navigator.share) {
+                    navigator.share({ title: "Payment Link", url }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    setCopied(true);
+                    toast({ title: "Link copied to clipboard" });
+                    setTimeout(() => setCopied(false), 2000);
+                  }
+                }}
                 title="Share payment link"
               >
                 {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
