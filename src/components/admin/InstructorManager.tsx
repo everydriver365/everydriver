@@ -410,7 +410,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                         </div>
                         <button 
                           className="text-primary hover:underline text-left font-medium"
-                          onClick={() => setSelectedInstructor(instructor)}
+                          onClick={() => onViewProfile ? onViewProfile(instructor.id) : setSelectedInstructor(instructor)}
                         >
                           {instructor.name}
                         </button>
