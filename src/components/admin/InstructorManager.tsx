@@ -132,15 +132,6 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
 
-  const fetchPlans = useCallback(async () => {
-    const { data } = await supabase
-      .from("subscription_plans")
-      .select("*")
-      .eq("is_active", true)
-      .order("display_order");
-    setPlans(data || []);
-  }, []);
-
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
     try {
