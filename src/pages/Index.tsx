@@ -62,6 +62,7 @@ import heroInstructorNew from "@/assets/hero-instructor-new.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
