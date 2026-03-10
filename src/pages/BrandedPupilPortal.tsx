@@ -286,7 +286,7 @@ export default function BrandedPupilPortal() {
       <PortalIOSInstallBanner 
         appName={instructor.name}
         storageKey={`ios-install-pupil-${instructor.id}`}
-        primaryColor={instructor.brand_colour || '#1e3a5f'}
+        primaryColor={'#141b43'}
       />
 
       {/* Header */}
