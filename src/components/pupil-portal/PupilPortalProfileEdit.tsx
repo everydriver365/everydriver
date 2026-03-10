@@ -36,6 +36,9 @@ interface PupilPortalProfileEditProps {
 export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: PupilPortalProfileEditProps) {
   const [postcodeValue, setPostcodeValue] = useState(pupil.postcode || "");
   const [addressValue, setAddressValue] = useState(pupil.address || "");
+  const [pickupAddressValue, setPickupAddressValue] = useState(pupil.pickup_address || "");
+  const [addressDirty, setAddressDirty] = useState(false);
+  const [pickupDirty, setPickupDirty] = useState(false);
   const [pendingDob, setPendingDob] = useState<Date | undefined>(
     pupil.date_of_birth ? new Date(pupil.date_of_birth) : undefined
   );
