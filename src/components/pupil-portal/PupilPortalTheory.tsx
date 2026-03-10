@@ -293,6 +293,9 @@ export function PupilPortalTheory({ brandColour, darkMode }: PupilPortalTheoryPr
         </CardContent>
       </Card>
 
+      {/* Show Me / Tell Me */}
+      <ShowMeTellMeSection pupilId="theory-tab" brandColour={brandColour || '#141b43'} />
+
       {/* Resources */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
         <CardHeader>
