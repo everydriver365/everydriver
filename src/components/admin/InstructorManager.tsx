@@ -1,17 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { format } from "date-fns";
 import { 
-  Search, Plus, Eye, Edit2, Trash2, Users, Power, 
-  MoreVertical, ExternalLink, Mail, Phone, MapPin,
-  UserCheck, UserX, Globe, RotateCcw, Crown, Sparkles
+  Search, Plus, Edit2, Trash2, Users, Power, 
+  MoreVertical, Crown, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
   TableBody,
@@ -40,14 +36,12 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
-import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
 import { InstructorForm } from "./InstructorForm";
 
 interface SubscriptionPlan {
