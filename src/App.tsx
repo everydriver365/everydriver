@@ -208,7 +208,7 @@ const App = () => (
 
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
-                <Route path="/instructor-app" element={<HomepageRedesignDemo />} />
+                <Route path="/instructor-app" element={<Navigate to="/" replace />} />
                 <Route path="/instructor-app/features" element={<InstructorFeatures />} />
                 <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
                 <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
