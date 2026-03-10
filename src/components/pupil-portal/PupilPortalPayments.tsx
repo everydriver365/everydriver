@@ -51,6 +51,7 @@ export function PupilPortalPayments({
   paymentQrUrl,
   paymentQrUrlPupilPays,
   paymentQrUrlInstructorPays,
+  paymentLinkBaseUrl,
   commissionPayer,
 }: PupilPortalPaymentsProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
