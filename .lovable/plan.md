@@ -1,74 +1,49 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Plan: Restore Learner Sections to Drive365 Homepage
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+The current `Drive365HomepageRedesign.tsx` has instructor-specific content (ADI product tour, instructor testimonials, product grid, "How It Works" onboarding). The old `Index.tsx` has all the learner sections needed. The goal is to keep the current page structure (MainLayout wrapper, hero) but replace instructor sections with learner sections.
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+### Sections to Remove from Current Page
+- **"What We Do"** dark section (instructor diary pitch, lines 113-158)
+- **Product Tour** — 8 instructor feature showcases (lines 179-311)
+- **"How It Works"** — instructor onboarding steps (lines 314-349)
+- **Product Grid** — instructor pricing tiers (lines 351-428)
+- **Instructor Testimonials** (lines 431-469)
+- **Platform Strip** (lines 473-491)
+- **Instructor Final CTA** (lines 493-519)
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+### Sections to Insert (copied from Index.tsx)
+Inserted after the Hero section, in this order:
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+1. **Earlier Test Guarantee Banner** — emerald gradient with badge image and "Learn More" CTA (Index lines 325-351)
+2. **Choose Your Learning Path** — 3 course type cards: Intensive, Semi-Intensive, Weekly (Index lines 353-540)
+3. **What's Included** — dynamic grid from `useIncludedFeatures` with feature detail modal (Index lines 542-623)
+4. **Featured Courses** — live cards from `useFeaturedCourses` with `DynamicCourseCard` (Index lines 625-698)
+5. **From Nervous to Road Ready** — stats + testimonials split layout (Index lines 700-826)
+6. **Video Story** — video thumbnail with play modal (Index lines 828-911)
+7. **Latest News** — DVSA news feed with featured article layout (Index lines 913-1067)
+8. **Features Grid** — portals (Pupil/Parent) + feature cards (Live Availability, Local Instructors, Track Progress) (Index lines 1088-1201)
+9. **Learner Testimonials** — dynamic testimonials from `useHomepageTestimonials` (Index lines 1203-1251)
+10. **Final CTA** — learner-focused "Ready to Start Your Driving Journey?" (Index lines 1253-1283)
+11. **Trust Badges** — mobile text badges + desktop logo images (ADI Code, MSA, CPD, Klarna, Clearpay) (Index lines 1285-1369)
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+### Keep Unchanged
+- **Hero section** (current lines 28-111) — keep the existing hero with its current design
+- **Social Proof Bar** (current lines 160-177) — keep, update stats to learner numbers (pass rate, learners, etc.)
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+### Technical Changes
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+**File: `src/pages/Drive365HomepageRedesign.tsx`** — full rewrite:
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+- Add all learner hook imports: `useIncludedFeatures`, `useFeaturedCourses`, `useHomepageTestimonials`, `useHomepageStats`, `useHomepageHero`, `useDVSANews`, `useHomepageFeatures`, `useSiteImages`, `useBookingUpsells`
+- Add component imports: `DynamicCourseCard`, `FeatureDetailModal`, `PostcodeAutocomplete`, `SEOHead`
+- Add all learner asset imports (course images, testimonial photos, trust badge logos, earlier test badge, video thumbnail, news images)
+- Add `motion` from framer-motion for animations
+- Add `Dialog`/`DialogContent` for video modal
+- Add component state: `selectedFeature`, `featureModalOpen`, `videoModalOpen`
+- Replace instructor sections (lines 113-519) with the 11 learner sections listed above
+- Keep `MainLayout` wrapper
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+No database changes, no routing changes, no new files needed.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
-
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
