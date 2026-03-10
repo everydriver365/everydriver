@@ -186,13 +186,8 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   }, []);
 
   useEffect(() => {
-    fetchPlans();
     fetchInstructors();
-  }, [fetchInstructors, fetchPlans]);
-  useEffect(() => {
-    fetchPlans();
-    fetchInstructors();
-  }, [fetchInstructors, fetchPlans]);
+  }, [fetchInstructors]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
