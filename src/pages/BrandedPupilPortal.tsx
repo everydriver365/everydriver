@@ -649,7 +649,7 @@ export default function BrandedPupilPortal() {
               <motion.div key="reflections" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                  <ReflectiveLog pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <ReflectiveLog pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
