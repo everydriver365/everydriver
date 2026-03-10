@@ -1,37 +1,30 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge,
-  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard,
-  MapPin, BookOpen, GraduationCap, HeartHandshake, Search
+  ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
 } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
-import heroLearner from "@/assets/drive365-hero-learner.png";
-import courseIntensive from "@/assets/course-intensive.jpg";
-import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
-import courseWeekly from "@/assets/course-weekly.jpg";
-import featureTheory from "@/assets/feature-theory.jpg";
-import featurePayments from "@/assets/feature-payments.jpg";
-import featureAvailability from "@/assets/feature-availability.jpg";
+import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
+import featuresHeroImg from "@/assets/features/features-hero.png";
+import diaryAppImg from "@/assets/features/diary-app.png";
+import paymentsImg from "@/assets/features/pupil-making-payment.png";
+import websiteImg from "@/assets/features/website-showcase.png";
+import telematicsImg from "@/assets/features/telematics-showcase.png";
+import dashcamFeatureImg from "@/assets/dashcam-feature.png";
+import marketingImg from "@/assets/features/marketing-website-mockup.png";
+import lifestyleDiaryImg from "@/assets/features/diary-option-lifestyle.png";
+import websiteShowcaseImg from "@/assets/features/website-showcase.png";
+import telematicsShowcaseImg from "@/assets/features/telematics-showcase.png";
+import dashcamImg from "@/assets/features/dashcam-ai.png";
+import drivingSchool1 from "@/assets/driving-school-1.png";
+import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
-import etgBadge from "@/assets/earlier-test-guaranteed-badge.png";
-import featureCancellation from "@/assets/feature-cancellation.jpg";
-import featureRetest from "@/assets/feature-retest.jpg";
-import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
+import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
 export default function Drive365HomepageRedesign() {
-  const [postcode, setPostcode] = useState("");
-  const navigate = useNavigate();
-
-  const handlePostcodeSelect = (pc: string) => {
-    navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
-  };
-
   return (
-    <MainLayout>
+    <InstructorSaaSLayout>
       {/* ─── HERO ─── */}
       <section className="relative bg-background py-16 md:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -43,50 +36,43 @@ export default function Drive365HomepageRedesign() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
-                Find Your Perfect
+                The Free Diary App
                 <br />
-                <span className="text-primary">Driving Instructor</span>
+                <span className="text-[#0075c9]">Built for ADIs</span>
               </h1>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
-                Book lessons, track your progress, and pass your test faster — all in one place.
-                Earlier test dates guaranteed.
+                Manage your lessons, track payments, and grow your business — all from one app. 
+                Free forever, no credit card required.
               </p>
 
-              <div className="mb-8 max-w-md">
-                <label className="text-sm font-medium text-foreground mb-2 block">Enter your postcode to get started</label>
-                <div className="flex gap-3">
-                  <PostcodeAutocomplete
-                    value={postcode}
-                    onChange={setPostcode}
-                    onSelect={handlePostcodeSelect}
-                    placeholder="e.g. SW1A 1AA"
-                    className="flex-1"
-                    showGeolocation={true}
-                  />
-                  <Button 
-                    size="lg" 
-                    className="h-auto px-6 rounded-xl shadow-lg"
-                    onClick={() => postcode && handlePostcodeSelect(postcode)}
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
-                  </Button>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
+                  <Link to="/instructor-app/signup">
+                    Start Free Today
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
+                  <Link to="/instructor-app/features">
+                    <Play className="mr-2 h-4 w-4" />
+                    Watch Demo
+                  </Link>
+                </Button>
               </div>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  Earlier test dates
+                  No credit card
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  Book online 24/7
+                  Free forever
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  DVSA approved
+                  GDPR compliant
                 </span>
               </div>
             </div>
@@ -94,29 +80,29 @@ export default function Drive365HomepageRedesign() {
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border">
                 <img
-                  src={heroLearner}
-                  alt="Learner driver booking lessons on Drive365 app"
+                  src={featuresHeroImg}
+                  alt="EveryDriver instructor diary app showing calendar and vehicle tracking"
                   className="w-full"
                 />
               </div>
               
               <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <GraduationCap className="h-5 w-5 text-emerald-600" />
+                  <Users className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-foreground">10,000+</p>
-                  <p className="text-xs text-muted-foreground">Tests passed</p>
+                  <p className="text-sm font-bold text-foreground">500+</p>
+                  <p className="text-xs text-muted-foreground">Active instructors</p>
                 </div>
               </div>
 
               <div className="absolute -top-3 -right-3 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-primary" />
+                <div className="h-10 w-10 rounded-lg bg-[#0075c9]/10 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-[#0075c9]" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-foreground">Earlier</p>
-                  <p className="text-xs text-muted-foreground">Test dates</p>
+                  <p className="text-sm font-bold text-foreground">98%</p>
+                  <p className="text-xs text-muted-foreground">Fill rate</p>
                 </div>
               </div>
             </div>
@@ -124,34 +110,34 @@ export default function Drive365HomepageRedesign() {
         </div>
       </section>
 
-      {/* ─── ETG DARK SECTION ─── */}
+      {/* ─── WHAT WE DO ─── */}
       <section className="relative py-16 md:py-24 overflow-hidden bg-[#0a1628]">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-1/4 w-72 h-72 bg-emerald-500 rounded-full blur-[120px]" />
-          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-emerald-600 rounded-full blur-[150px]" />
+          <div className="absolute top-10 left-1/4 w-72 h-72 bg-[#0075c9] rounded-full blur-[120px]" />
+          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#0075c9] rounded-full blur-[150px]" />
         </div>
         <div className="container max-w-6xl relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                Exclusive · Only on Drive365
+              <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
+                No contracts · No tie-in · Leave any time
               </span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                Earlier Test{" "}
-                <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                  Guaranteed
+                Your Diary, Your Way —{" "}
+                <span className="bg-gradient-to-r from-[#0075c9] to-[#00a3ff] bg-clip-text text-transparent">
+                  Free for Life
                 </span>
               </h2>
               <p className="text-lg text-gray-300 leading-relaxed">
-                Tired of waiting months for a driving test? Our Earlier Test Guarantee finds you a sooner cancellation date
-                — or you get a full refund. No stress, no hassle.
+                EveryDriver gives every driving instructor a powerful diary and business management app — completely free, forever.
+                Manage your schedule, track pupil progress, handle payments, and communicate with learners all in one place.
               </p>
               <p className="text-lg text-gray-300 leading-relaxed mt-4">
-                Combine with an intensive course to go from zero to full licence in as little as two weeks.
-                We handle the test booking, you focus on learning.
+                Want even more? Optional paid extras like telematics, dashcam integration, and custom websites are available
+                when you're ready — but the core app is yours to keep at absolutely no cost.
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 text-sm font-medium text-gray-400">
-                {["✓ Earlier test dates", "✓ Money-back guarantee", "✓ No hidden fees", "✓ Works with any course"].map((item) => (
+                {["✓ Free forever", "✓ No credit card", "✓ No hidden fees", "✓ Cancel any time"].map((item) => (
                   <span key={item}>{item}</span>
                 ))}
               </div>
@@ -163,7 +149,7 @@ export default function Drive365HomepageRedesign() {
                   <div className="h-16 w-16 rounded-full border-2 border-white/30 flex items-center justify-center">
                     <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white/50 border-b-[10px] border-b-transparent ml-1" />
                   </div>
-                  <span className="text-sm font-medium">How ETG Works</span>
+                  <span className="text-sm font-medium">Explainer Video</span>
                 </div>
               </div>
             </div>
@@ -176,10 +162,10 @@ export default function Drive365HomepageRedesign() {
         <div className="container max-w-5xl">
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 text-center">
             {[
-              { value: "1,000+", label: "Approved Instructors" },
-              { value: "10,000+", label: "Tests Passed" },
-              { value: "4.8★", label: "Average Rating" },
-              { value: "Earlier", label: "Test Dates" },
+              { value: "500+", label: "Active Instructors" },
+              { value: "50,000+", label: "Lessons Managed" },
+              { value: "4.9★", label: "Average Rating" },
+              { value: "£0", label: "To Get Started" },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
@@ -190,93 +176,94 @@ export default function Drive365HomepageRedesign() {
         </div>
       </section>
 
-      {/* ─── FEATURE TOUR ─── */}
+      {/* ─── PRODUCT DEMO SECTION ─── */}
       <section className="py-20 md:py-28 bg-background">
         <div className="container max-w-6xl">
           <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 text-primary border-primary/30">
-              How It Works
+            <Badge variant="outline" className="mb-4 text-[#0075c9] border-[#0075c9]/30">
+              Product Tour
             </Badge>
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4">
-              Everything You Need to Pass
+              See It in Action
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From finding the right instructor to passing your test — we've got you covered every step of the way.
+              From diary management to live telematics — everything you need in one platform.
             </p>
           </div>
 
+          {/* Feature showcase — alternating layout */}
           {[
             {
-              icon: Search,
-              title: "Find Local Instructors",
-              description: "Search by postcode and instantly see approved instructors in your area. Compare prices, availability, ratings, and specialisms.",
-              features: ["Postcode-based search", "Verified reviews", "Price comparison", "Availability checker"],
-              image: featureAvailability,
-              reverse: false,
-              link: "/courses",
-            },
-            {
               icon: Calendar,
-              title: "Book Lessons Online",
-              description: "Choose your preferred time slots and book instantly — no phone calls needed. Manage your entire schedule from the app.",
-              features: ["24/7 online booking", "Flexible scheduling", "Automatic reminders", "Easy rescheduling"],
-              image: featurePayments,
-              reverse: true,
-              link: "/courses",
-            },
-            {
-              icon: BookOpen,
-              title: "Theory Practice & Mock Tests",
-              description: "Access hundreds of official DVSA theory questions and hazard perception clips. Track your progress and know when you're ready.",
-              features: ["Official DVSA questions", "Hazard perception", "Progress tracking", "Mock test mode"],
-              image: featureTheoryPro,
+              title: "Smart Diary Management",
+              description: "Drag-and-drop scheduling, automatic gap detection, and Google Calendar sync. Never miss a booking or double-book again.",
+              features: ["Drag & drop calendar", "Google Calendar sync", "Automatic gap filling", "SMS reminders"],
+              image: diaryAppImg,
               reverse: false,
-              link: "/theory",
-            },
-            {
-              icon: Smartphone,
-              title: "Track Your Progress",
-              description: "See exactly where you are in your learning journey. Your instructor marks off skills as you master them, so you always know what's next.",
-              features: ["Skills tracker", "Lesson history", "Instructor feedback", "Test readiness score"],
-              image: pupilAppHero,
-              reverse: true,
-              link: "/pupil",
-            },
-            {
-              icon: HeartHandshake,
-              title: "Parent Tracking",
-              description: "Parents can follow your progress, see upcoming lessons, and get peace of mind — all from their own dashboard.",
-              features: ["Live lesson tracking", "Progress notifications", "Payment overview", "Direct messaging"],
-              image: featureTheory,
-              reverse: false,
-              link: "/parent",
+              link: "/instructor-app/features",
             },
             {
               icon: CreditCard,
-              title: "Simple, Secure Payments",
-              description: "Pay online by card, spread the cost with finance options, or pay as you go. All payments are tracked automatically.",
-              features: ["Card payments", "Finance options", "Pay as you go", "Payment history"],
-              image: featurePayments,
+              title: "Effortless Payment Tracking",
+              description: "Track every payment, chase outstanding balances, and generate professional invoices — all built into your diary.",
+              features: ["Payment status tracking", "Automatic reminders", "PDF invoices", "Revenue reports"],
+              image: paymentsImg,
               reverse: true,
-              link: "/courses",
+              link: "/instructor-app/payments",
             },
             {
-              icon: Zap,
-              title: "Earlier Test Guaranteed",
-              description: "Don't wait months for a test date. Our ETG service finds earlier cancellation slots for you — guaranteed, or your money back.",
-              features: ["Cancellation monitoring", "Auto-booking", "Money-back guarantee", "Works with any course"],
-              image: featureRetest,
+              icon: Globe,
+              title: "Your Own Professional Website",
+              description: "Get a branded .co.uk website with direct pupil booking. Show up in Google searches and stand out from the competition.",
+              features: ["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"],
+              image: websiteImg,
               reverse: false,
-              link: "/courses",
+              link: "/instructor-app/domains",
             },
             {
-              icon: GraduationCap,
-              title: "Intensive & Semi-Intensive Courses",
-              description: "Need to pass fast? Choose an intensive course and go from beginner to test-ready in as little as one to two weeks.",
-              features: ["1-2 week courses", "Dedicated instructor", "Test included", "Flexible start dates"],
-              image: courseIntensive,
+              icon: Smartphone,
+              title: "Apps for Everyone",
+              description: "Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions. Track progress, stay informed, and manage your business from anywhere.",
+              features: ["Pupil progress dashboard", "Parent lesson notifications", "AI coaching tips", "Mock theory tests"],
+              image: pupilAppHero,
               reverse: true,
-              link: "/intensives",
+              link: "/instructor-app/features",
+            },
+            {
+              icon: Megaphone,
+              title: "Free Marketing & Promotion",
+              description: "We help you get found by new learners — for free. Google-optimised profiles, area page listings, and social sharing tools to grow your business.",
+              features: ["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing"],
+              image: marketingImg,
+              reverse: false,
+              link: "/instructor-app/marketing",
+            },
+            {
+              icon: Gauge,
+              title: "Telematics & Driving Data",
+              description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
+              features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
+              image: telematicsImg,
+              reverse: true,
+              link: "/instructor-app/telematics",
+            },
+            {
+              icon: Camera,
+              title: "Dashcam & Incident Protection",
+              description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
+              features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
+              image: dashcamFeatureImg,
+              reverse: false,
+              link: "/instructor-app/dashcam",
+            },
+            {
+              icon: Users,
+              title: "Built for Driving Schools",
+              description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
+              features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
+              images: [drivingSchool1, drivingSchool2],
+              reverse: true,
+              link: "/driving-schools",
             },
           ].map((feature) => (
             <div
@@ -285,10 +272,11 @@ export default function Drive365HomepageRedesign() {
                 feature.reverse ? "md:[&>*:first-child]:order-2" : ""
               }`}
             >
+              {/* Text side */}
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <feature.icon className="h-5 w-5 text-primary" />
+                  <div className="h-10 w-10 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
+                    <feature.icon className="h-5 w-5 text-[#0075c9]" />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground">{feature.title}</h3>
                 </div>
@@ -303,15 +291,20 @@ export default function Drive365HomepageRedesign() {
                     </li>
                   ))}
                 </ul>
-                <Button variant="link" className="text-primary p-0 mt-4 h-auto" asChild>
+                <Button variant="link" className="text-[#0075c9] p-0 mt-4 h-auto" asChild>
                   <Link to={feature.link}>
                     Learn more <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
               </div>
 
+              {/* Image side */}
               <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-muted/20">
-                <img src={feature.image} alt={feature.title} className="w-full" />
+                {'images' in feature && feature.images ? (
+                  <CrossfadeImages images={feature.images} alt={feature.title} />
+                ) : (
+                  <img src={(feature as any).image} alt={feature.title} className="w-full" />
+                )}
               </div>
             </div>
           ))}
@@ -323,20 +316,23 @@ export default function Drive365HomepageRedesign() {
         <div className="container max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4">
-              Start Learning in 3 Easy Steps
+              Up and Running in 3 Minutes
             </h2>
-            <p className="text-lg text-muted-foreground">No hassle. No hidden costs. Just great driving lessons.</p>
+            <p className="text-lg text-muted-foreground">No downloads. No setup fees. No hassle.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {([
-              { step: "01", icon: MapPin, title: "Search by Postcode", desc: "Enter your postcode and browse approved instructors near you.", bg: "bg-gradient-to-br from-amber-400/20 to-orange-500/10", iconColor: "text-amber-500", badgeBg: "bg-gradient-to-br from-amber-400 to-orange-500" },
-              { step: "02", icon: Calendar, title: "Book Your Course", desc: "Choose weekly lessons, semi-intensive, or intensive — then pick your start date.", bg: "bg-gradient-to-br from-primary/20 to-blue-500/10", iconColor: "text-primary", badgeBg: "bg-gradient-to-br from-primary to-blue-600" },
-              { step: "03", icon: GraduationCap, title: "Pass Your Test", desc: "Learn with a top-rated instructor and pass your test — with earlier dates available.", bg: "bg-gradient-to-br from-emerald-400/20 to-teal-500/10", iconColor: "text-emerald-500", badgeBg: "bg-gradient-to-br from-emerald-400 to-teal-500" },
+              { step: "01", icon: Zap, title: "Create Your Account", desc: "Sign up with your email in 60 seconds. No credit card needed.", bg: "bg-gradient-to-br from-amber-400/20 to-orange-500/10", iconColor: "text-amber-500", badgeBg: "bg-gradient-to-br from-amber-400 to-orange-500" },
+              { step: "02", icon: Calendar, title: "Set Up Your Diary", desc: "Add availability, import existing pupils, and configure your preferences.", bg: "bg-gradient-to-br from-[#0075c9]/20 to-blue-500/10", iconColor: "text-[#0075c9]", badgeBg: "bg-gradient-to-br from-[#0075c9] to-blue-600" },
+              { step: "03", icon: Users, title: "Start Teaching", desc: "Manage bookings, track payments, and grow your business from day one.", bg: "bg-gradient-to-br from-emerald-400/20 to-teal-500/10", iconColor: "text-emerald-500", badgeBg: "bg-gradient-to-br from-emerald-400 to-teal-500" },
             ] as const).map((item, i) => (
-              <div key={item.step} className="relative text-center">
+              <div
+                key={item.step}
+                className="relative text-center"
+              >
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-primary/20" />
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-[#0075c9]/20" />
                 )}
                 <div className={`relative z-10 mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-black/5`}>
                   <item.icon className={`h-8 w-8 ${item.iconColor}`} />
@@ -352,49 +348,51 @@ export default function Drive365HomepageRedesign() {
         </div>
       </section>
 
-      {/* ─── COURSE GRID ─── */}
+      {/* ─── PRODUCT GRID ─── */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
         <div className="container max-w-6xl">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
-              Choose Your Course
+              Start Free. Grow When Ready.
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Flexible options to suit every learner. Pay as you go or save with a package.
+              The diary is free forever. Add premium tools as your business grows.
             </p>
           </div>
 
           <div className="space-y-5">
             {[
-              { icon: Calendar, name: "Weekly Lessons", desc: "Learn at your own pace with regular weekly lessons. Perfect for fitting around work or school.", price: "From £35", suffix: "/hr", popular: true, benefits: ["Flexible scheduling", "Pay as you go", "Choose your instructor", "Progress tracking"], link: "/courses", img: courseWeekly },
-              { icon: Zap, name: "Semi-Intensive Course", desc: "Accelerate your learning with 2-3 lessons per week. Get test-ready in 6-8 weeks.", price: "From £799", suffix: "", popular: false, benefits: ["2-3 lessons per week", "Structured syllabus", "Test booking included", "Earlier test dates"], link: "/semi-intensive", img: courseSemiIntensive },
-              { icon: GraduationCap, name: "Intensive Course", desc: "Go from beginner to test-ready in 1-2 weeks. Includes test booking and earlier test guarantee.", price: "From £1,299", suffix: "", popular: false, benefits: ["1-2 week course", "30-40 hours tuition", "Test included", "Earlier test guaranteed"], link: "/intensives", img: courseIntensive },
-              { icon: Shield, name: "Earlier Test Guarantee", desc: "Add to any course. We monitor DVSA cancellations and book you an earlier test date — guaranteed.", price: "From £49", suffix: "", popular: false, benefits: ["Cancellation monitoring", "Auto-booking", "Money-back guarantee", "Average 6 weeks earlier"], link: "/courses", img: featureRetest },
+              { icon: Calendar, name: "Smart Diary", desc: "Your complete lesson management hub — scheduling, payments, and gap-filling in one place.", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", img: lifestyleDiaryImg },
+              { icon: Globe, name: "Website & Domain", desc: "Get found online with your own professional website, custom domain, and direct pupil bookings.", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", img: websiteShowcaseImg },
+              { icon: Gauge, name: "Telematics", desc: "Teach with real data — live speed monitoring, driver scoring, and visual progress reports.", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics", img: telematicsShowcaseImg },
+              { icon: Camera, name: "Dashcam", desc: "Record every lesson, share clips with pupils, and protect yourself with cloud-stored footage.", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam", img: dashcamImg },
             ].map((product) => (
               <Link
                 key={product.name}
                 to={product.link}
                 className={`group relative flex flex-col md:flex-row items-stretch rounded-2xl border overflow-hidden transition-all hover:shadow-xl ${
-                  product.popular
-                    ? "border-primary/20 bg-card"
-                    : "border-border bg-card hover:border-primary/20"
+                  product.free
+                    ? "border-[#0075c9]/20 bg-card"
+                    : "border-border bg-card hover:border-[#0075c9]/20"
                 }`}
               >
+                {/* Image side */}
                 <div className="md:w-2/5 h-48 md:h-auto relative shrink-0">
                   <img src={product.img} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card hidden md:block" />
                   <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent md:hidden" />
                 </div>
+                {/* Content side */}
                 <div className="flex-1 p-7 md:p-9">
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      product.popular ? "bg-primary text-primary-foreground" : "bg-primary/10"
+                      product.free ? "bg-[#0075c9] text-white" : "bg-[#0075c9]/10"
                     }`}>
-                      <product.icon className={`h-5 w-5 ${product.popular ? "text-primary-foreground" : "text-primary"}`} />
+                      <product.icon className={`h-5 w-5 ${product.free ? "text-white" : "text-[#0075c9]"}`} />
                     </div>
                     <h3 className="text-xl md:text-2xl font-bold text-foreground">{product.name}</h3>
-                    {product.popular ? (
-                      <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase ml-auto">Most Popular</Badge>
+                    {product.free ? (
+                      <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase ml-auto">Free Forever</Badge>
                     ) : (
                       <span className="text-sm font-bold text-foreground ml-auto">
                         {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
@@ -405,23 +403,24 @@ export default function Drive365HomepageRedesign() {
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-6">
                     {product.benefits.map((b) => (
                       <div key={b} className="flex items-center gap-2 text-sm text-foreground/80">
-                        <Check className={`h-4 w-4 shrink-0 ${product.popular ? "text-emerald-500" : "text-primary"}`} />
+                        <Check className={`h-4 w-4 shrink-0 ${product.free ? "text-emerald-500" : "text-[#0075c9]"}`} />
                         {b}
                       </div>
                     ))}
                   </div>
-                  <span className="inline-flex items-center gap-1.5 font-semibold text-primary group-hover:gap-2.5 transition-all">
-                    {product.popular ? "Find instructors" : "Learn more"} <ArrowRight className="h-4 w-4" />
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-[#0075c9] group-hover:gap-2.5 transition-all">
+                    {product.free ? "Get started free" : "Learn more"} <ArrowRight className="h-4 w-4" />
                   </span>
                 </div>
               </Link>
             ))}
           </div>
 
+          {/* CTA to all features */}
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
-              <Link to="/courses">
-                Browse All Courses
+              <Link to="/instructor-app/all-features">
+                See All 50+ Features by Plan
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -434,26 +433,26 @@ export default function Drive365HomepageRedesign() {
         <div className="container max-w-5xl">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
-              Loved by Learners
+              Loved by Instructors
             </h2>
-            <p className="text-muted-foreground text-lg">Real feedback from learners who passed with Drive365.</p>
+            <p className="text-muted-foreground text-lg">Real feedback from ADIs using EveryDriver every day.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { quote: "I was dreading the long wait for a test date, but Drive365 got me an earlier slot within a week. Passed first time!", name: "Emily R.", role: "Passed in Leeds" },
-              { quote: "The progress tracker was brilliant — I could see exactly what I needed to work on. My instructor was amazing too.", name: "Josh T.", role: "Passed in Manchester" },
-              { quote: "My mum loved being able to track my lessons. The whole experience was so easy compared to how my friends did it.", name: "Aisha K.", role: "Passed in Birmingham" },
+              { quote: "I used to spend Sunday evenings sorting my diary and chasing payments. Now the app does it all — I just teach.", name: "Sarah M.", role: "ADI, Manchester" },
+              { quote: "The telematics changed how I teach. Pupils can actually see their improvement in data — it's incredibly motivating.", name: "James T.", role: "ADI, Bristol" },
+              { quote: "Parents love the live tracking. It's given me a real edge over other instructors in my area.", name: "Priya K.", role: "ADI, Birmingham" },
             ].map((t) => (
               <div
                 key={t.name}
                 className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow"
               >
-                <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                <Quote className="h-8 w-8 text-[#0075c9]/20 mb-4" />
                 <p className="text-foreground/90 leading-relaxed mb-6 text-sm">{t.quote}</p>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-bold text-primary">{t.name.charAt(0)}</span>
+                  <div className="h-10 w-10 rounded-full bg-[#0075c9]/10 flex items-center justify-center">
+                    <span className="text-sm font-bold text-[#0075c9]">{t.name.charAt(0)}</span>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{t.name}</p>
@@ -477,10 +476,10 @@ export default function Drive365HomepageRedesign() {
           <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
             {[
               { icon: Smartphone, label: "iOS & Android" },
-              { icon: Monitor, label: "Online Booking" },
-              { icon: Shield, label: "DVSA Approved" },
-              { icon: CreditCard, label: "Secure Payments" },
+              { icon: Monitor, label: "Desktop" },
+              { icon: Globe, label: "Web App" },
               { icon: Clock, label: "24/7 Access" },
+              { icon: Shield, label: "GDPR Compliant" },
             ].map((p) => (
               <div key={p.label} className="flex items-center gap-2 text-sm">
                 <p.icon className="h-4 w-4" />
@@ -496,28 +495,28 @@ export default function Drive365HomepageRedesign() {
         <div className="container max-w-3xl text-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-              Ready to Start Driving?
+              Ready to Simplify Your Business?
             </h2>
             <p className="text-lg text-primary-foreground/70 mb-8 max-w-xl mx-auto">
-              Join thousands of learners who've passed their test with Drive365. Find your instructor today.
+              Join 500+ driving instructors who've ditched the paper diary. Start free today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white hover:bg-white/90 text-primary h-13 px-8 text-base rounded-xl font-semibold" asChild>
-                <Link to="/courses">
-                  Find Instructors
+              <Button size="lg" className="bg-white hover:bg-white/90 text-[#0075c9] h-13 px-8 text-base rounded-xl font-semibold" asChild>
+                <Link to="/instructor-app/signup">
+                  Create Free Account
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-13 px-8 text-base rounded-xl" asChild>
-                <Link to="/intensives">Intensive Courses</Link>
+                <Link to="/instructor-app/pricing">Compare Plans</Link>
               </Button>
             </div>
             <p className="mt-6 text-sm text-primary-foreground/50">
-              Earlier test dates available • DVSA approved instructors
+              No credit card required • Free plan available forever
             </p>
           </div>
         </div>
       </section>
-    </MainLayout>
+    </InstructorSaaSLayout>
   );
 }
