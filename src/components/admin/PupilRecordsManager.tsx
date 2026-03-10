@@ -483,6 +483,70 @@ export function PupilRecordsManager() {
     }
   };
 
+  // Mark pupil inactive
+  const markInactive = async (pupil: Pupil) => {
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ status: "inactive" })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).map(p =>
+          p.id === pupil.id ? { ...p, status: "inactive" } : p
+        );
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil({ ...pupil, status: "inactive" });
+      }
+
+      toast.success(`${pupil.name} marked as inactive`);
+    } catch (error) {
+      console.error("Error marking pupil inactive:", error);
+      toast.error("Failed to mark pupil as inactive");
+    }
+  };
+
+  // Reassign pupil to another instructor
+  const reassignPupil = async (pupil: Pupil, newInstructorId: string) => {
+    if (newInstructorId === pupil.instructor_id) return;
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ instructor_id: newInstructorId })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      const updatedPupil = { ...pupil, instructor_id: newInstructorId };
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
+        updated[newInstructorId] = [...(updated[newInstructorId] || []), updatedPupil];
+        return updated;
+      });
+
+      setSelectedPupil(updatedPupil);
+      setExpandedInstructors(prev => {
+        const next = new Set(prev);
+        next.add(newInstructorId);
+        return next;
+      });
+
+      const targetName = instructors.find(i => i.id === newInstructorId)?.name || "new instructor";
+      toast.success(`${pupil.name} reassigned to ${targetName}`);
+    } catch (error) {
+      console.error("Error reassigning pupil:", error);
+      toast.error("Failed to reassign pupil");
+    }
+  };
+
   // Archive pupil (set status to archived)
   const archivePupil = async (pupil: Pupil) => {
     try {
