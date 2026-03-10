@@ -25,5 +25,5 @@ export function ConditionalHome() {
   }
   
   // EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
-  return <InstructorAppHome />;
+  return <HomepageRedesignDemo />;
 }
