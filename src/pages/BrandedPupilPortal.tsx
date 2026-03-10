@@ -669,7 +669,7 @@ export default function BrandedPupilPortal() {
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <div className="px-4 pb-4">
-                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
