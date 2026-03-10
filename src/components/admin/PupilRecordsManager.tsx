@@ -617,6 +617,55 @@ export function PupilRecordsManager() {
                       </div>
                     </div>
                     <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Instructor</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label className="text-xs text-muted-foreground">Assigned Instructor</label>
+                        <Select value={detailsForm.instructor_id} onValueChange={(v) => setDetailsForm({ ...detailsForm, instructor_id: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select instructor..." /></SelectTrigger>
+                          <SelectContent>
+                            {instructors.map((inst) => (
+                              <SelectItem key={inst.id} value={inst.id}>{inst.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Theory & Test</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Theory Test Date</label>
+                        <Input type="date" value={detailsForm.theory_test_date} onChange={(e) => setDetailsForm({ ...detailsForm, theory_test_date: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Theory Passed</label>
+                        <Select value={detailsForm.theory_test_passed} onValueChange={(v) => setDetailsForm({ ...detailsForm, theory_test_passed: v })}>
+                          <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Financial & Progress</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Prepaid Hours</label>
+                        <Input type="number" step="0.5" value={detailsForm.prepaid_hours} onChange={(e) => setDetailsForm({ ...detailsForm, prepaid_hours: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Account Balance (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.account_balance} onChange={(e) => setDetailsForm({ ...detailsForm, account_balance: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Lessons Completed</label>
+                        <Input type="number" value={detailsForm.lessons_completed} onChange={(e) => setDetailsForm({ ...detailsForm, lessons_completed: e.target.value })} />
+                      </div>
+                    </div>
+                    <Separator />
                     <p className="text-xs font-medium text-muted-foreground">Emergency Contact</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -628,6 +677,9 @@ export function PupilRecordsManager() {
                         <Input value={detailsForm.emergency_contact_phone} onChange={(e) => setDetailsForm({ ...detailsForm, emergency_contact_phone: e.target.value })} />
                       </div>
                     </div>
+                    <Separator />
+                    <p className="text-xs font-medium text-muted-foreground">Notes</p>
+                    <Textarea rows={3} value={detailsForm.notes} onChange={(e) => setDetailsForm({ ...detailsForm, notes: e.target.value })} placeholder="Internal notes..." />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={saveDetails}>
                         <Save className="h-3 w-3 mr-1" /> Save
