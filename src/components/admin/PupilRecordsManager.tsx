@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { PupilJourneyTimeline } from "./PupilJourneyTimeline";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import {
   AlertDialog,
   AlertDialogAction,
