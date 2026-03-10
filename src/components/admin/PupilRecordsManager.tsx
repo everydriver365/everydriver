@@ -557,7 +557,36 @@ export function PupilRecordsManager() {
         <div className="bg-[#142040] text-white px-4 py-3 font-semibold text-sm flex items-center justify-between">
           <span>Detailed View</span>
           {selectedPupil && (
-            <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-6 w-6 text-white/60 hover:text-destructive hover:bg-white/10">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      Delete Pupil Record
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete <strong>{selectedPupil.name}</strong>? This will soft-delete the record (it can be restored from the database if needed).
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => softDeletePupil(selectedPupil)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
 
