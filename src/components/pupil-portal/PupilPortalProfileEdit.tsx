@@ -170,21 +170,37 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
             <span className="text-[10px] text-muted-foreground block">Home Address</span>
             <GoogleAddressAutocomplete
               value={addressValue}
-              onChange={setAddressValue}
+              onChange={(v) => { setAddressValue(v); setAddressDirty(true); }}
               onPostcodeChange={(postcode) => {
                 setPostcodeValue(postcode);
-                updateField("postcode", postcode);
               }}
               onAddressVerified={(verified, details) => {
                 if (verified && details) {
                   const finalAddress = details.streetAddress || details.formattedAddress;
                   setAddressValue(finalAddress);
-                  updateField("address", finalAddress);
+                  setAddressDirty(true);
+                  if (details.postalCode) setPostcodeValue(details.postalCode);
                 }
               }}
               placeholder="Search your address..."
               className="h-7 text-sm border-0 shadow-none px-0 focus-visible:ring-0"
             />
+            {addressDirty && addressValue !== (pupil.address || "") && (
+              <Button
+                size="sm"
+                className="mt-1 h-6 text-xs"
+                onClick={async () => {
+                  await updateField("address", addressValue);
+                  if (postcodeValue !== (pupil.postcode || "")) {
+                    await updateField("postcode", postcodeValue);
+                    onPupilUpdate({ postcode: postcodeValue });
+                  }
+                  setAddressDirty(false);
+                }}
+              >
+                Save Address
+              </Button>
+            )}
           </div>
         </div>
 
