@@ -380,6 +380,9 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.school_skim_amount?.toString() || ""} onSave={(v) => updateField("school_skim_amount", v)} label="School Skim (£ flat)" emptyText="Not set" />
             <InlineEditField value={instructor.school_skim_percentage?.toString() || ""} onSave={(v) => updateField("school_skim_percentage", v)} label="School Skim (%)" emptyText="Not set" />
             <InlineEditField value={instructor.bonus_earned?.toString() || "0"} onSave={(v) => updateField("bonus_earned", v)} label="Bonus Earned (£)" />
+          </div>
+        </SectionPanel>
+
         {/* Pupils */}
         <SectionPanel title="Linked Pupils" icon={<Users className="h-4 w-4 text-primary" />} badge={<Badge variant="secondary" className="text-xs">{instructorPupils.length}</Badge>} defaultOpen className="lg:col-span-2">
           {instructorPupils.length === 0 ? (
@@ -406,7 +409,6 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           )}
         </SectionPanel>
       </div>
-        </SectionPanel>
       </div>
 
       {/* Dialogs */}
