@@ -295,7 +295,7 @@ export default function BrandedPupilPortal() {
         pupilImageUrl={pupil?.profile_image_url}
         instructorName={instructor.name}
         instructorLogoUrl={instructor.logo_url}
-        brandColour={instructor.brand_colour}
+        brandColour="#141b43"
         showBackButton={isSubPage}
         title={activeSection !== 'home' ? activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/-/g, ' ') : undefined}
         darkMode={effectiveDarkMode}
