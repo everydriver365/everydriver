@@ -502,7 +502,7 @@ export default function Drive365HomepageRedesign() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-white hover:bg-white/90 text-[#0075c9] h-13 px-8 text-base rounded-xl font-semibold" asChild>
-                <Link to="/instructor-app/signup">
+                <Link to="/courses">
                   Create Free Account
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
