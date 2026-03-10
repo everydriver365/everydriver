@@ -460,7 +460,7 @@ export default function BrandedPupilPortal() {
                 <PupilDashboardInsights
                   pupilId={pupil.id}
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Navigation Menu — iOS List Style */}
