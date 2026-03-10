@@ -460,7 +460,30 @@ export function PupilRecordsManager() {
     }
   };
 
-  if (loading) {
+  // Soft delete pupil
+  const softDeletePupil = async (pupil: Pupil) => {
+    try {
+      const { softDelete } = await import("@/lib/auditLogger");
+      await softDelete("pupils", pupil.id, pupil.instructor_id, { name: pupil.name });
+
+      // Remove from local state
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil(null);
+      }
+
+      toast.success(`${pupil.name} has been deleted`);
+    } catch (error) {
+      console.error("Error deleting pupil:", error);
+      toast.error("Failed to delete pupil");
+    }
+  };
+
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
