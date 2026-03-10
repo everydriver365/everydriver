@@ -116,23 +116,29 @@ export function PupilMobileHeader({
                 {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             )}
-            {onLogout && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
-                    <Settings className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
+                  <Settings className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {onToggleDarkMode && (
+                  <DropdownMenuItem onClick={onToggleDarkMode}>
+                    {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                    {darkMode ? "Light Mode" : "Dark Mode"}
+                  </DropdownMenuItem>
+                )}
+                {onLogout && (
                   <DropdownMenuItem onClick={onLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
