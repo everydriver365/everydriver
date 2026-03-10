@@ -12,9 +12,12 @@ const DemoVideoSections = () => {
   const [activeVariant, setActiveVariant] = useState<string | null>(null);
 
   const variants = [
-    { id: "cinematic", label: "Cinematic Full-Width" },
-    { id: "editorial", label: "Editorial Split" },
-    { id: "minimal", label: "Minimal Card" },
+    { id: "cinematic", label: "Cinematic" },
+    { id: "editorial", label: "Editorial" },
+    { id: "minimal", label: "Minimal" },
+    { id: "brutalist", label: "Brutalist" },
+    { id: "testimonial", label: "Testimonial" },
+    { id: "magazine", label: "Magazine" },
   ];
 
   return (
