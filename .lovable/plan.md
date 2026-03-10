@@ -1,68 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Admin Portal Navigation Audit
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-### Current Problem: Three Duplicate Navigation Systems
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-The admin portal has **three independent navigation layers** that all point to the same sections, creating confusion about where to click:
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-```text
-┌─────────────────────────────────────────────────────┐
-│  LAYER 1: Top Header Bar (11 tabs)                  │
-│  Settings | Courses | Instructors | Subscribers |   │
-│  Plans | Websites | Domains | Pupils | Money |      │
-│  Stats | CMS                                        │
-├─────────────────────────────────────────────────────┤
-│  LAYER 2: Sidebar (7 groups, ~30 items)             │
-│  Dashboard / People / Learner Website /             │
-│  Instructor Platform / Products & Booking /         │
-│  Engagement & Rewards / System Settings             │
-├─────────────────────────────────────────────────────┤
-│  LAYER 3: Overview Dashboard Grid (8 groups, ~30    │
-│  tiles + 8 stat tiles)                              │
-│  Communications / People / Finance / Products /     │
-│  Learner Website / Instructor Platform /            │
-│  Engagement / System Settings                       │
-└─────────────────────────────────────────────────────┘
-```
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-### Specific Duplicates Found
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-| Function | Header Tab | Sidebar Item | Dashboard Tile | Stat Tile |
-|---|---|---|---|---|
-| Instructors | "Instructors" | People > Instructors | People > Instructors | "Instructors" stat |
-| Pupils/Enquiries | "Pupils" | People > Enquiries | People > Pupil Records + Comms > Enquiries | -- |
-| Payments | "Money" | Products > Payment History | Finance > Payment History | "Revenue" + "Pupil Payments" |
-| Bookings | "Stats" | Products > All Bookings | Finance > All Bookings | "Bookings" stat |
-| Courses | "Courses" | Products > Course Templates | Products > Course Templates | "Courses Booked" stat |
-| Websites | "Websites" | Instructor Platform > Mini Websites | Instructor Platform > Mini Websites | -- |
-| Domains | "Domains" | Instructor Platform > Domains | Instructor Platform > Domains | -- |
-| CMS | "CMS" | Learner Website > (9 items) | Learner Website > (7 items) | -- |
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-### Recommendation: Remove the Top Header Tabs
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-**Keep**: Sidebar (primary navigation) + Dashboard overview grid (landing page with quick access)
-**Remove**: The 11 top header tabs -- they are a flat, redundant duplicate of the sidebar
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-### Proposed Changes
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-1. **Remove `navTabs` from `AdminLayout.tsx`** -- delete the entire top nav bar rendering (both desktop and mobile). The sidebar already provides grouped, organized navigation to every section.
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-2. **Keep the header bar** but only for: logo, search box, and logout button. This makes it a clean utility bar.
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-3. **Keep the dashboard overview grid as-is** -- it serves as a useful "home screen" with stats and quick-access tiles. It's not redundant because it adds context (descriptions, badge counts, stats).
-
-4. **Consolidate the two duplicate stat tiles on the dashboard**:
-   - Remove "Pupil Payments" (duplicate of "Revenue" -- both go to payments)
-   - Remove "Subscribers" stat tile (it just says "View" with no count)
-   - Keep: Instructors, Revenue, Bookings, Courses Booked, Live Map, Analytics (6 tiles instead of 8)
-
-5. **Ensure the sidebar is always visible on desktop** with the collapse-to-icons behavior it already has.
-
-### Files to Change
-
-- **`src/components/admin/AdminLayout.tsx`** -- Remove the `navTabs` array and both desktop/mobile nav tab rendering blocks. Keep header with logo, search, and logout only.
-- **`src/components/admin/AdminSettingsGrid.tsx`** -- Remove the duplicate "Pupil Payments" and "Subscribers" stat tiles.
-
-This is a relatively small change that eliminates the "where do I click?" problem without losing any functionality.
-
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`

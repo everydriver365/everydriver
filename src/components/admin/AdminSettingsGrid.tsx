@@ -379,20 +379,6 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       variant: "primary",
       onClick: () => onNavigate("analytics"),
     },
-    {
-      icon: Users,
-      label: "Subscribers",
-      value: "View",
-      variant: "primary",
-      onClick: () => onNavigate("subscribers"),
-    },
-    {
-      icon: PoundSterling,
-      label: "Pupil Payments",
-      value: "View",
-      variant: "warning",
-      onClick: () => onNavigate("payments"),
-    },
   ];
 
   return (
