@@ -141,6 +141,7 @@ const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
 const DemoPortals = lazy(() => import("./pages/DemoPortals"));
 const DemoETGDesigns = lazy(() => import("./pages/DemoETGDesigns"));
 const DemoVideoSections = lazy(() => import("./pages/DemoVideoSections"));
+const DemoNervousToReady = lazy(() => import("./pages/DemoNervousToReady"));
 
 
 // Lazy-load ConditionalRoutes
