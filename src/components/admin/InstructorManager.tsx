@@ -127,7 +127,7 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
   );
 }
 
-export function InstructorManager({ onEdit }: InstructorManagerProps) {
+export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
