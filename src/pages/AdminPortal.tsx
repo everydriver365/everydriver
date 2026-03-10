@@ -77,6 +77,7 @@ import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
 import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
+import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
