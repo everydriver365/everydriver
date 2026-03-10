@@ -2,9 +2,8 @@ import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from 
 import { lazy } from "react";
 
 const Index = lazy(() => import("@/pages/Index"));
-const Drive365HomepageRedesign = lazy(() => import("@/pages/Drive365HomepageRedesign"));
 const MiniWebsiteHome = lazy(() => import("@/pages/mini-website/MiniWebsiteHome"));
-const HomepageRedesignDemo = lazy(() => import("@/pages/HomepageRedesignDemo"));
+const InstructorAppHome = lazy(() => import("@/pages/instructor-app/InstructorAppHome"));
 
 /**
  * Renders the appropriate homepage based on the current domain.
@@ -22,9 +21,9 @@ export function ConditionalHome() {
   
   // Drive365 = Learner site
   if (isDrive365Domain()) {
-    return <Drive365HomepageRedesign />;
+    return <Index />;
   }
   
   // EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
-  return <HomepageRedesignDemo />;
+  return <InstructorAppHome />;
 }
