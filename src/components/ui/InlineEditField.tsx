@@ -98,6 +98,14 @@ export function InlineEditField({
                 className="text-sm min-h-[60px]"
                 disabled={saving}
               />
+            ) : type === "address" ? (
+              <GoogleAddressAutocomplete
+                value={editValue}
+                onChange={(v) => setEditValue(v)}
+                onPostcodeChange={onPostcodeChange}
+                placeholder={placeholder || "Start typing an address..."}
+                className="flex-1"
+              />
             ) : (
               <Input
                 ref={inputRef as React.RefObject<HTMLInputElement>}
