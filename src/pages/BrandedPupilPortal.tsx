@@ -712,7 +712,7 @@ export default function BrandedPupilPortal() {
         <PupilBottomNav
           activeSection={activeSection}
           onNavigate={(section) => setActiveSection(section as ActiveSection)}
-          brandColour={instructor.brand_colour}
+          brandColour={drive365Blue}
           wallpaperColor={wallpaperColor}
           courseProgress={pupil.progress || 0}
         />
