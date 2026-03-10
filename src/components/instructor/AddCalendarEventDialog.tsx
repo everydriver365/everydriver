@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Clock, Palette } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -397,11 +398,10 @@ export function AddCalendarEventDialog({
 
             <div className="space-y-2">
               <Label htmlFor="pickup-address">Pickup Address (optional)</Label>
-              <Input
-                id="pickup-address"
-                placeholder="Enter pickup location"
+              <GoogleAddressAutocomplete
                 value={pickupAddress}
-                onChange={(e) => setPickupAddress(e.target.value)}
+                onChange={setPickupAddress}
+                placeholder="Enter pickup location"
               />
             </div>
           </TabsContent>

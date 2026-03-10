@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -149,11 +150,12 @@ export function BespokeEnquiryForm() {
 
       <div className="space-y-2">
         <Label htmlFor="address">Address *</Label>
-        <Input
-          id="address"
-          placeholder="123 High Street, London"
-          {...register("address")}
-          className={errors.address ? "border-destructive" : ""}
+        <GoogleAddressAutocomplete
+          value={watch("address") || ""}
+          onChange={(v) => setValue("address", v, { shouldValidate: true })}
+          onPostcodeChange={(pc) => setValue("postcode", pc, { shouldValidate: true })}
+          placeholder="Start typing an address..."
+          className={errors.address ? "[&_input]:border-destructive" : ""}
         />
         {errors.address && (
           <p className="text-sm text-destructive">{errors.address.message}</p>
