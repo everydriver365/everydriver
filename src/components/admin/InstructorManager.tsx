@@ -131,7 +131,7 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
