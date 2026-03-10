@@ -160,13 +160,13 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     if (!instructor) return;
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from("instructors").delete().eq("id", instructor.id);
+      const { error } = await supabase.from("instructors").update({ deleted_at: new Date().toISOString() } as any).eq("id", instructor.id);
       if (error) throw error;
-      toast.success("Instructor deleted");
-      logAdminAction({ actionType: "instructor_delete", description: `Deleted instructor ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+      toast.success("Instructor archived — can be restored later");
+      logAdminAction({ actionType: "instructor_soft_delete", description: `Archived instructor ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
       onBack();
     } catch {
-      toast.error("Failed to delete instructor");
+      toast.error("Failed to archive instructor");
     } finally {
       setIsDeleting(false);
       setShowDelete(false);
