@@ -444,7 +444,7 @@ export default function BrandedPupilPortal() {
                 {/* Journey Timeline */}
                 <PupilJourneyTimeline
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Achievement Badges */}
