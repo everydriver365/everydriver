@@ -156,22 +156,36 @@ export default function Index() {
                 Manage your lessons, track payments, and grow your business — all from one app. Free forever, no credit card required.
               </p>
               
-              {/* CTAs */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Button asChild size="xl" className="bg-[#0075c9] hover:bg-[#0063ab] text-white shadow-lg">
-                  <Link to="/instructor-app/signup">
-                    Start Free Today <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="xl" className="border-2">
-                  <Link to="#video">
-                    <Play className="mr-2 h-5 w-5" /> Watch Demo
-                  </Link>
-                </Button>
+              {/* Postcode Search */}
+              <div className="mt-8">
+                <p className="mb-3 text-sm font-medium text-muted-foreground">Find driving courses near you</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <PostcodeAutocomplete
+                    value={heroPostcode}
+                    onChange={setHeroPostcode}
+                    onSelect={(postcode) => {
+                      setHeroPostcode(postcode);
+                      navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                    }}
+                    placeholder="Enter your postcode..."
+                    className="flex-1"
+                    inputClassName="h-12 text-base"
+                    showGeolocation={true}
+                  />
+                  <Button 
+                    size="xl" 
+                    className="bg-[#0075c9] hover:bg-[#0063ab] text-white shadow-lg h-12"
+                    onClick={() => {
+                      if (heroPostcode) navigate(`/courses?postcode=${encodeURIComponent(heroPostcode)}`);
+                    }}
+                  >
+                    <Search className="mr-2 h-5 w-5" /> Find Courses
+                  </Button>
+                </div>
               </div>
               
               {/* Trust Row */}
-              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" /> No credit card
                 </span>
