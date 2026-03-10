@@ -846,11 +846,19 @@ export function PupilRecordsManager() {
                       </div>
                       <div className="col-span-2">
                         <label className="text-xs text-muted-foreground">Address</label>
-                        <Input value={detailsForm.address} onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })} />
+                        <GoogleAddressAutocomplete
+                          value={detailsForm.address}
+                          onChange={(v) => setDetailsForm({ ...detailsForm, address: v })}
+                          onPostcodeChange={(pc) => setDetailsForm(prev => ({ ...prev, postcode: pc }))}
+                        />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Postcode</label>
-                        <Input value={detailsForm.postcode} onChange={(e) => setDetailsForm({ ...detailsForm, postcode: e.target.value })} />
+                        <PostcodeAutocomplete
+                          value={detailsForm.postcode}
+                          onChange={(v) => setDetailsForm({ ...detailsForm, postcode: v })}
+                          showGeolocation={false}
+                        />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Date of Birth</label>
