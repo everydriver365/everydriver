@@ -549,6 +549,35 @@ export function PupilRecordsManager() {
     }
   };
 
+  // Reactivate pupil (set status back to active)
+  const reactivatePupil = async (pupil: Pupil) => {
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ status: "active" })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).map(p =>
+          p.id === pupil.id ? { ...p, status: "active" } : p
+        );
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil({ ...pupil, status: "active" });
+      }
+
+      toast.success(`${pupil.name} reactivated`);
+    } catch (error) {
+      console.error("Error reactivating pupil:", error);
+      toast.error("Failed to reactivate pupil");
+    }
+  };
+
   // Archive pupil (set status to archived)
   const archivePupil = async (pupil: Pupil) => {
     try {
