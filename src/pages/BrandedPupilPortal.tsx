@@ -507,7 +507,7 @@ export default function BrandedPupilPortal() {
                   pupilId={pupil.id}
                   instructorId={instructor.id}
                   instructorSlug={slug}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Contact Instructor */}
