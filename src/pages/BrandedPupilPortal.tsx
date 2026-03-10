@@ -98,7 +98,7 @@ interface Pupil {
   what3words: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
