@@ -192,9 +192,9 @@ export default function Index() {
               className="relative hidden md:flex items-center justify-center"
             >
               <img 
-                src={heroAdiComposite} 
-                alt="Driving instructor using the Every Driver app on phone and tablet" 
-                className="w-full max-w-lg rounded-2xl"
+                src={heroInstructorNew} 
+                alt="Driving instructor with DRIVE365 branded materials in a red learner car" 
+                className="w-full max-w-lg rounded-2xl shadow-2xl"
               />
               
               {/* Floating Badge - Fill Rate */}
