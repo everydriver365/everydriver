@@ -127,6 +127,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
       const { data, error } = await supabase
         .from("instructors")
         .select("*")
+        .is("deleted_at", null)
         .order("name");
 
       if (error) throw error;
