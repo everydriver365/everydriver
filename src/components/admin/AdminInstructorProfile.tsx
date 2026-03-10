@@ -648,7 +648,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
         <SectionPanel title="Google Calendar" icon={<Calendar className="h-4 w-4 text-primary" />}>
           <div className="space-y-2">
             <div className="flex items-center gap-2 px-1">
-              <div className={cn("h-2 w-2 rounded-full", instructor.google_calendar_id ? "bg-green-500" : "bg-muted-foreground/30")} />
+              <div className={cn("h-2 w-2 rounded-full", instructor.google_calendar_id ? "bg-primary" : "bg-muted-foreground/30")} />
               <span className="text-sm">{instructor.google_calendar_id ? "Connected" : "Not connected"}</span>
             </div>
             {instructor.google_calendar_id && (
