@@ -456,11 +456,18 @@ export default function ParentPortal() {
           <div className="px-0">
             <PupilRouteHistory pupilId={selectedChild.id} />
           </div>
-          <ParentMessageCard
+          <ParentPaymentTopUp
+            childId={selectedChild.id}
+            childName={selectedChild.name}
+            instructorId={selectedChild.instructor_id}
+            currentBalance={selectedChild.account_balance}
+          />
+          <ParentChat
+            parentPhone={parentPhone}
             instructorId={selectedChild.instructor_id}
             instructorName={selectedChild.instructor_name}
+            pupilId={selectedChild.id}
             childName={selectedChild.name}
-            parentPhone={parentPhone}
           />
         </main>
         <ParentBottomNav activeSection="children" onNavigate={(s) => { if (s !== 'children') { setSelectedChild(null); setActiveSection(s as ParentSection); } }} />
