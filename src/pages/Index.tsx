@@ -132,10 +132,10 @@ export default function Index() {
   return (
     <MainLayout>
       <SEOHead />
-      {/* Hero Section - Matching Reference Design */}
-      <section className="relative min-h-[600px] overflow-hidden bg-white py-12 lg:py-20">
+      {/* Hero Section - ADI Marketing */}
+      <section className="relative min-h-[600px] overflow-hidden bg-white py-16 lg:py-24">
         <div className="container relative">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -143,177 +143,85 @@ export default function Index() {
               transition={{ duration: 0.6 }}
               className="max-w-xl"
             >
-              {/* Free Re-test Badge */}
-              <div className="mb-6">
-                <span className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700">
-                  Free Re-test
-                </span>
-              </div>
-              
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]">
-                <span className="text-primary">Your Driving</span>
+                <span className="text-foreground">The Free Diary App</span>
                 <br />
-                <span className="text-primary">Success </span>
-                <span className="text-emerald-500">Story</span>
-                <br />
-                <span className="text-primary">Starts Here</span>
+                <span className="text-[#0075c9]">Built for ADIs</span>
               </h1>
               
               {/* Subtext */}
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                Join thousands who passed with Every Driver. Intensive courses designed to get you on the road faster.
+                Manage your lessons, track payments, and grow your business — all from one app. Free forever, no credit card required.
               </p>
               
-              {/* Search Form */}
-              <form onSubmit={handleSearch} className="mt-8 flex flex-col sm:flex-row gap-3">
-                <PostcodeAutocomplete
-                  value={postcode}
-                  onChange={setPostcode}
-                  placeholder="Enter postcode..."
-                  className="flex-1"
-                  inputClassName="h-14 rounded-xl border-2 border-border bg-white text-base"
-                />
-                <Button type="submit" size="lg" className="h-14 rounded-xl px-8 text-base font-semibold">
-                  Find Courses
+              {/* CTAs */}
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Button asChild size="xl" className="bg-[#0075c9] hover:bg-[#0063ab] text-white shadow-lg">
+                  <Link to="/instructor-app/signup">
+                    Start Free Today <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-              </form>
+                <Button asChild variant="outline" size="xl" className="border-2">
+                  <Link to="#video">
+                    <Play className="mr-2 h-5 w-5" /> Watch Demo
+                  </Link>
+                </Button>
+              </div>
               
-              {/* Social Proof Row */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
-                  ))}
-                  <span className="ml-2 font-semibold text-foreground">4.9</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
-                  <span className="rounded-md bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
-                  <span className="text-sm text-muted-foreground">0% Finance</span>
-                </div>
+              {/* Trust Row */}
+              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> No credit card
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Free forever
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> GDPR compliant
+                </span>
               </div>
             </motion.div>
 
-            {/* Mobile Hero Image - Only visible on mobile */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="md:hidden mt-8"
-            >
-              <img 
-                src={heroMobile} 
-                alt="Happy learner driver" 
-                className="w-full max-w-sm mx-auto rounded-2xl shadow-lg"
-              />
-            </motion.div>
-            
-            {/* Right Content - Scattered Polaroid Collage */}
+            {/* Right Content - Hero Image with Floating Badges */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative h-[480px] lg:h-[540px] hidden md:block"
+              className="relative hidden md:flex items-center justify-center"
             >
+              <img 
+                src={heroAdiComposite} 
+                alt="Driving instructor using the Every Driver app on phone and tablet" 
+                className="w-full max-w-lg rounded-2xl"
+              />
               
-              {/* Sarah - Top Left Polaroid */}
+              {/* Floating Badge - Fill Rate */}
               <motion.div
-                initial={{ opacity: 0, y: 30, rotate: -12 }}
-                animate={{ opacity: 1, y: 0, rotate: -12 }}
-                whileHover={{ scale: 1.05, zIndex: 50 }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="absolute top-0 left-0 lg:left-4 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-10"
-              >
-                <div className="relative w-40 lg:w-48">
-                  <img 
-                    src={testimonialSarah} 
-                    alt="Sarah" 
-                    className="w-full aspect-[4/5] object-cover"
-                  />
-                  <div className="pt-3 pb-1 text-center">
-                    <div className="text-foreground font-semibold text-sm">Sarah</div>
-                    <div className="text-muted-foreground text-xs">Passed 1st time! ✨</div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* James - Top Right Polaroid */}
-              <motion.div
-                initial={{ opacity: 0, y: 30, rotate: 8 }}
-                animate={{ opacity: 1, y: 0, rotate: 8 }}
-                whileHover={{ scale: 1.05, zIndex: 50 }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="absolute -top-4 right-24 lg:right-32 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-20"
-              >
-                <div className="relative w-36 lg:w-44">
-                  <img 
-                    src={testimonialJames} 
-                    alt="James" 
-                    className="w-full aspect-[4/5] object-cover"
-                  />
-                  <div className="pt-3 pb-1 text-center">
-                    <div className="text-foreground font-semibold text-sm">James</div>
-                    <div className="text-muted-foreground text-xs">Intensive Course 🚗</div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Emma - Bottom Center Polaroid (in front) */}
-              <motion.div
-                initial={{ opacity: 0, y: 30, rotate: -4 }}
-                animate={{ opacity: 1, y: 0, rotate: -4 }}
-                whileHover={{ scale: 1.05, zIndex: 50 }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="absolute bottom-0 left-16 lg:left-20 bg-white p-2 rounded-sm shadow-[0_15px_50px_-10px_rgba(0,0,0,0.35)] z-30"
-              >
-                <div className="relative w-44 lg:w-52">
-                  <img 
-                    src={testimonialEmma} 
-                    alt="Emma" 
-                    className="w-full aspect-[4/5] object-cover"
-                  />
-                  <div className="pt-3 pb-1 text-center">
-                    <div className="text-foreground font-semibold text-sm">Emma</div>
-                    <div className="text-muted-foreground text-xs">Weekly Lessons 💪</div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Priya - Bottom Right Polaroid */}
-              <motion.div
-                initial={{ opacity: 0, y: 30, rotate: 10 }}
-                animate={{ opacity: 1, y: 0, rotate: 10 }}
-                whileHover={{ scale: 1.05, zIndex: 50 }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="absolute bottom-16 right-8 lg:right-12 bg-white p-2 rounded-sm shadow-[0_12px_45px_-10px_rgba(0,0,0,0.32)] z-25"
-              >
-                <div className="relative w-32 lg:w-40">
-                  <img 
-                    src={testimonialPriya} 
-                    alt="Priya"
-                    className="w-full aspect-[4/5] object-cover"
-                  />
-                  <div className="pt-3 pb-1 text-center">
-                    <div className="text-foreground font-semibold text-sm">Priya</div>
-                    <div className="text-muted-foreground text-xs">Semi-Intensive 🎉</div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* 10k+ Learners Badge */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
-                animate={{ opacity: 1, scale: 1, rotate: 6 }}
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 120 }}
-                className="absolute bottom-0 right-0 lg:right-0 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl z-40"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, type: "spring" }}
+                className="absolute top-4 right-0 lg:-right-4 bg-white rounded-xl px-4 py-3 shadow-xl border border-border"
               >
                 <div className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 fill-current" />
+                  <Calendar className="h-5 w-5 text-[#0075c9]" />
                   <div>
-                    <div className="font-bold">10k+ Learners</div>
-                    <div className="text-sm opacity-80">And counting!</div>
+                    <div className="font-bold text-foreground text-sm">98% Fill rate</div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Floating Badge - Active Instructors */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, type: "spring" }}
+                className="absolute bottom-8 left-4 lg:-left-4 bg-white rounded-xl px-4 py-3 shadow-xl border border-border"
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-emerald-500" />
+                  <div>
+                    <div className="font-bold text-foreground text-sm">500+ Active instructors</div>
                   </div>
                 </div>
               </motion.div>
