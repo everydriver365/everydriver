@@ -24,7 +24,7 @@ import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
 export default function Drive365HomepageRedesign() {
   return (
-    <InstructorSaaSLayout>
+    <MainLayout>
       {/* ─── HERO ─── */}
       <section className="relative bg-background py-16 md:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{
