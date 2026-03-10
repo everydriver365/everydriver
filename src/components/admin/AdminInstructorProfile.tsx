@@ -2,8 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
   Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
-  Shield, Calendar, Star, ExternalLink, UserCheck, UserX
+  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight
 } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +98,8 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
 
+  const [instructorPupils, setInstructorPupils] = useState<{ id: string; name: string; profile_image_url: string | null }[]>([]);
+
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
@@ -135,6 +141,29 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   }, [instructorId]);
 
   useEffect(() => { fetchInstructor(); }, [fetchInstructor]);
+
+  const fetchPupils = useCallback(async () => {
+    const { data } = await supabase
+      .from("pupils")
+      .select("id, name, profile_image_url")
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
+      .order("name");
+    setInstructorPupils(data || []);
+  }, [instructorId]);
+
+  useEffect(() => { fetchPupils(); }, [fetchPupils]);
+
+  const handleReassignPupil = async (pupilId: string, newInstructorId: string) => {
+    const { error } = await supabase.from("pupils").update({ instructor_id: newInstructorId }).eq("id", pupilId);
+    if (error) { toast.error("Failed to reassign pupil"); return; }
+    const pupil = instructorPupils.find(p => p.id === pupilId);
+    const target = allInstructors.find(i => i.id === newInstructorId);
+    toast.success(`${pupil?.name} reassigned to ${target?.name}`);
+    logAdminAction({ actionType: "pupil_reassign", description: `Reassigned ${pupil?.name} to ${target?.name}`, entityType: "pupil", entityId: pupilId });
+    fetchPupils();
+    fetchInstructor();
+  };
 
   const updateField = async (field: string, value: string) => {
     if (!instructor) return;
@@ -351,7 +380,32 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.school_skim_amount?.toString() || ""} onSave={(v) => updateField("school_skim_amount", v)} label="School Skim (£ flat)" emptyText="Not set" />
             <InlineEditField value={instructor.school_skim_percentage?.toString() || ""} onSave={(v) => updateField("school_skim_percentage", v)} label="School Skim (%)" emptyText="Not set" />
             <InlineEditField value={instructor.bonus_earned?.toString() || "0"} onSave={(v) => updateField("bonus_earned", v)} label="Bonus Earned (£)" />
-          </div>
+        {/* Pupils */}
+        <SectionPanel title="Linked Pupils" icon={<Users className="h-4 w-4 text-primary" />} badge={<Badge variant="secondary" className="text-xs">{instructorPupils.length}</Badge>} defaultOpen className="lg:col-span-2">
+          {instructorPupils.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No pupils assigned to this instructor.</p>
+          ) : (
+            <div className="space-y-1">
+              {instructorPupils.map(pupil => (
+                <div key={pupil.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/30 transition-colors">
+                  <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="sm" />
+                  <span className="text-sm font-medium flex-1 truncate">{pupil.name}</span>
+                  <Select onValueChange={(v) => handleReassignPupil(pupil.id, v)}>
+                    <SelectTrigger className="w-[180px] h-8 text-xs">
+                      <SelectValue placeholder="Reassign to…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allInstructors.filter(i => i.id !== instructorId && i.is_active).map(i => (
+                        <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionPanel>
+      </div>
         </SectionPanel>
       </div>
 
