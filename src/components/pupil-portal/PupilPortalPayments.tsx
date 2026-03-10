@@ -24,6 +24,7 @@ interface PupilPortalPaymentsProps {
   paymentQrUrl?: string | null;
   paymentQrUrlPupilPays?: string | null;
   paymentQrUrlInstructorPays?: string | null;
+  paymentLinkBaseUrl?: string | null;
   commissionPayer?: string | null;
 }
 
