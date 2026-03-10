@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
   { id: "schedule", label: "Lessons", icon: Clock },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "theory", label: "Theory", icon: BookOpen },
-  { id: "more", label: "More", icon: Grid3X3 },
+  { id: "messages", label: "Messages", icon: MessageSquare },
 ];
 
 interface PupilBottomNavProps {
