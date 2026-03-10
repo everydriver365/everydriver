@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
   Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
-  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight, Camera
+  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight, Camera,
+  QrCode, CreditCard, ToggleRight, Palette, Clock, Upload, Link as LinkIcon
 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -11,12 +12,16 @@ import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InlineEditField } from "@/components/ui/InlineEditField";
 import { SectionPanel } from "@/components/ui/SectionPanel";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
+import { WorkingHoursEditor } from "./WorkingHoursEditor";
+import { AdminWebsiteManager } from "./AdminWebsiteManager";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -25,7 +30,6 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { logAdminAction } from "@/lib/adminLogger";
 
 interface AdminInstructorProfileProps {
@@ -64,6 +68,7 @@ interface InstructorData {
   personal_website_url: string | null;
   google_review_url: string | null;
   brand_colour: string | null;
+  secondary_colour: string | null;
   special_skills: string | null;
   extra_info: string | null;
   location_name: string | null;
@@ -80,6 +85,46 @@ interface InstructorData {
   school_skim_amount: number | null;
   school_skim_percentage: number | null;
   bonus_earned: number | null;
+  // Payment & QR
+  payment_qr_url: string | null;
+  payment_qr_url_pupil_pays: string | null;
+  payment_qr_url_instructor_pays: string | null;
+  payment_link_base_url: string | null;
+  commission_payer: string | null;
+  // Payment gateways
+  klarna_enabled: boolean | null;
+  clearpay_enabled: boolean | null;
+  stripe_account_id: string | null;
+  truelayer_enabled: boolean | null;
+  // Vehicle compliance
+  car_insurance_expiry: string | null;
+  car_mot_expiry: string | null;
+  car_tax_expiry: string | null;
+  // Calendar
+  google_calendar_id: string | null;
+  // Feature toggles
+  pupil_self_booking_enabled: boolean | null;
+  pupil_app_enabled: boolean | null;
+  intake_questions_enabled: boolean | null;
+  pricing_rules_enabled: boolean | null;
+  lesson_feedback_enabled: boolean | null;
+  ai_receptionist_enabled: boolean | null;
+  broadcast_messaging_enabled: boolean | null;
+  reflective_logs_enabled: boolean | null;
+  cancellation_analytics_enabled: boolean | null;
+  availability_paused: boolean | null;
+  drive_time_alerts_enabled: boolean | null;
+  quotes_enabled: boolean | null;
+  // Branding
+  website_theme: string | null;
+  website_font: string | null;
+  logo_url: string | null;
+  hero_image_url: string | null;
+  custom_domain: string | null;
+  custom_domain_verified: boolean | null;
+  // Additional compliance
+  adi_certificate_url: string | null;
+  cpd_certified: boolean | null;
 }
 
 interface SubscriptionPlan {
@@ -90,6 +135,34 @@ interface SubscriptionPlan {
   max_pupils: number | null;
 }
 
+function InlineToggle({ label, description, checked, onToggle, saving }: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onToggle: (v: boolean) => void;
+  saving: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2 px-1 gap-3">
+      <div className="flex-1 min-w-0">
+        <Label className="text-sm font-medium">{label}</Label>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </div>
+      <Switch checked={checked} onCheckedChange={onToggle} disabled={saving} />
+    </div>
+  );
+}
+
+function QrPreview({ url, label }: { url: string | null; label: string }) {
+  if (!url) return <p className="text-xs text-muted-foreground italic">{label}: Not set</p>;
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <img src={url} alt={label} className="h-16 w-16 rounded border border-border object-contain bg-white" />
+      <span className="text-xs text-muted-foreground truncate flex-1">{label}</span>
+    </div>
+  );
+}
+
 export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupils }: AdminInstructorProfileProps) {
   const [instructor, setInstructor] = useState<InstructorData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,8 +170,8 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [subscription, setSubscription] = useState<{ plan_id: string; plan_name: string; plan_slug: string; status: string } | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
-
   const [instructorPupils, setInstructorPupils] = useState<{ id: string; name: string; profile_image_url: string | null }[]>([]);
+  const [savingToggle, setSavingToggle] = useState<string | null>(null);
 
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
@@ -108,6 +181,8 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [savingPlan, setSavingPlan] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const qrUploadRef = useRef<HTMLInputElement>(null);
+  const [qrUploadTarget, setQrUploadTarget] = useState<string | null>(null);
 
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'car') => {
     const file = e.target.files?.[0];
@@ -143,9 +218,30 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     setInstructor({ ...instructor, [field]: urlData.publicUrl });
     toast.success(`${type === 'profile' ? 'Profile' : 'Car'} image updated`);
     await logAdminAction({ actionType: "instructor_image_update", description: `Updated ${type} image for ${instructor.name}`, entityId: instructor.id, entityType: "instructor" });
-
-    // Reset input
     e.target.value = '';
+  };
+
+  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !instructor || !qrUploadTarget) return;
+
+    const ext = file.name.split('.').pop();
+    const path = `${instructor.id}/qr-${qrUploadTarget}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("instructor-images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) { toast.error("Upload failed"); return; }
+
+    const { data: urlData } = supabase.storage.from("instructor-images").getPublicUrl(path);
+    const { error: updateError } = await supabase.from("instructors").update({ [qrUploadTarget]: urlData.publicUrl }).eq("id", instructor.id);
+    if (updateError) { toast.error("Failed to save QR"); return; }
+
+    setInstructor({ ...instructor, [qrUploadTarget]: urlData.publicUrl });
+    toast.success("QR code uploaded");
+    e.target.value = '';
+    setQrUploadTarget(null);
   };
 
   const fetchInstructor = useCallback(async () => {
@@ -209,11 +305,26 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     if (!instructor) return;
     const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
     const updateValue = numericFields.includes(field) ? (value ? Number(value) : null) : (value || null);
-    const { error } = await supabase.from("instructors").update({ [field]: updateValue }).eq("id", instructor.id);
+    const { error } = await supabase.from("instructors").update({ [field]: updateValue } as any).eq("id", instructor.id);
     if (error) { toast.error(`Failed to update ${field}`); throw error; }
     toast.success("Updated successfully");
     setInstructor(prev => prev ? { ...prev, [field]: updateValue } : prev);
     logAdminAction({ actionType: "instructor_update", description: `Updated ${field} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+  };
+
+  const handleToggle = async (field: string, value: boolean) => {
+    if (!instructor) return;
+    setSavingToggle(field);
+    try {
+      const { error } = await supabase.from("instructors").update({ [field]: value } as any).eq("id", instructor.id);
+      if (error) throw error;
+      setInstructor(prev => prev ? { ...prev, [field]: value } : prev);
+      toast.success(value ? "Enabled" : "Disabled");
+    } catch {
+      toast.error("Failed to update");
+    } finally {
+      setSavingToggle(null);
+    }
   };
 
   const handleToggleActive = async () => {
@@ -265,6 +376,21 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
       </div>
     );
   }
+
+  const featureToggles: { key: string; label: string; description: string }[] = [
+    { key: "pupil_self_booking_enabled", label: "Pupil Self-Booking", description: "Let pupils book available slots directly" },
+    { key: "pupil_app_enabled", label: "Pupil App Access", description: "Allow pupils to use the mobile app" },
+    { key: "intake_questions_enabled", label: "Intake Questions", description: "Collect custom info during booking" },
+    { key: "pricing_rules_enabled", label: "Dynamic Pricing", description: "Adjust price by time, day, or location" },
+    { key: "lesson_feedback_enabled", label: "Post-Lesson Feedback", description: "Request feedback after lessons" },
+    { key: "ai_receptionist_enabled", label: "AI Receptionist", description: "AI-powered phone answering" },
+    { key: "broadcast_messaging_enabled", label: "Broadcast Messaging", description: "Send messages to all pupils at once" },
+    { key: "reflective_logs_enabled", label: "Reflective Logs", description: "Let pupils write journal entries" },
+    { key: "cancellation_analytics_enabled", label: "Cancellation Analytics", description: "Show cancellation trends" },
+    { key: "drive_time_alerts_enabled", label: "Drive-Time Alerts", description: "Travel time warnings between lessons" },
+    { key: "quotes_enabled", label: "Bookable Quotes", description: "Send branded quotes pupils can accept" },
+    { key: "availability_paused", label: "Availability Paused", description: "Temporarily hide from new bookings" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -388,6 +514,74 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           </div>
         </SectionPanel>
 
+        {/* Payment & QR Codes */}
+        <SectionPanel title="Payment & QR Codes" icon={<QrCode className="h-4 w-4 text-primary" />} defaultOpen>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <InlineEditField value={instructor.payment_link_base_url || ""} onSave={(v) => updateField("payment_link_base_url", v)} icon={<LinkIcon className="h-4 w-4 text-muted-foreground" />} label="Payment Link URL" emptyText="Add payment link" />
+              <InlineEditField value={instructor.payment_qr_url || ""} onSave={(v) => updateField("payment_qr_url", v)} label="Legacy QR URL" emptyText="Add QR URL" />
+              <InlineEditField value={instructor.payment_qr_url_pupil_pays || ""} onSave={(v) => updateField("payment_qr_url_pupil_pays", v)} label="QR URL (Pupil Pays)" emptyText="Add QR URL" />
+              <InlineEditField value={instructor.payment_qr_url_instructor_pays || ""} onSave={(v) => updateField("payment_qr_url_instructor_pays", v)} label="QR URL (Instructor Pays)" emptyText="Add QR URL" />
+            </div>
+
+            {/* Commission payer selector */}
+            <div className="flex items-center gap-3 px-1 py-2">
+              <Label className="text-sm font-medium whitespace-nowrap">Commission Payer:</Label>
+              <Select value={instructor.commission_payer || "pupil"} onValueChange={(v) => updateField("commission_payer", v)}>
+                <SelectTrigger className="h-8 w-[160px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pupil">Pupil Pays</SelectItem>
+                  <SelectItem value="instructor">Instructor Pays</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* QR previews */}
+            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/40">
+              {[
+                { field: "payment_qr_url", label: "Legacy QR", url: instructor.payment_qr_url },
+                { field: "payment_qr_url_pupil_pays", label: "Pupil Pays", url: instructor.payment_qr_url_pupil_pays },
+                { field: "payment_qr_url_instructor_pays", label: "Instructor Pays", url: instructor.payment_qr_url_instructor_pays },
+              ].map(qr => (
+                <div key={qr.field} className="text-center space-y-1">
+                  {qr.url ? (
+                    <img src={qr.url} alt={qr.label} className="h-20 w-20 mx-auto rounded border border-border object-contain bg-white" />
+                  ) : (
+                    <div className="h-20 w-20 mx-auto rounded border border-dashed border-border flex items-center justify-center bg-muted/30">
+                      <QrCode className="h-6 w-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <p className="text-[10px] text-muted-foreground">{qr.label}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => { setQrUploadTarget(qr.field); qrUploadRef.current?.click(); }}
+                  >
+                    <Upload className="h-3 w-3 mr-1" /> Upload
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <input ref={qrUploadRef} type="file" accept="image/*" className="hidden" onChange={handleQrUpload} />
+          </div>
+        </SectionPanel>
+
+        {/* Payment Gateways */}
+        <SectionPanel title="Payment Gateways" icon={<CreditCard className="h-4 w-4 text-primary" />} defaultOpen>
+          <div className="space-y-1">
+            <InlineToggle label="Klarna" description="Buy now, pay later" checked={!!instructor.klarna_enabled} onToggle={(v) => handleToggle("klarna_enabled", v)} saving={savingToggle === "klarna_enabled"} />
+            <div className="border-b border-border/40" />
+            <InlineToggle label="Clearpay" description="Pay in instalments" checked={!!instructor.clearpay_enabled} onToggle={(v) => handleToggle("clearpay_enabled", v)} saving={savingToggle === "clearpay_enabled"} />
+            <div className="border-b border-border/40" />
+            <InlineToggle label="TrueLayer" description="Open banking payments" checked={!!instructor.truelayer_enabled} onToggle={(v) => handleToggle("truelayer_enabled", v)} saving={savingToggle === "truelayer_enabled"} />
+            <div className="border-b border-border/40" />
+            <InlineEditField value={instructor.stripe_account_id || ""} onSave={(v) => updateField("stripe_account_id", v)} label="Stripe Account ID" emptyText="Not connected" />
+          </div>
+        </SectionPanel>
+
         {/* Vehicle */}
         <SectionPanel title="Vehicle" icon={<Car className="h-4 w-4 text-primary" />} defaultOpen>
           <div className="space-y-1">
@@ -396,6 +590,12 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.car_model || ""} onSave={(v) => updateField("car_model", v)} label="Model" emptyText="Add model" />
             <InlineEditField value={instructor.fuel_cost_per_litre?.toString() || ""} onSave={(v) => updateField("fuel_cost_per_litre", v)} label="Fuel Cost (£/litre)" emptyText="Set cost" />
             <InlineEditField value={instructor.vehicle_mpg?.toString() || ""} onSave={(v) => updateField("vehicle_mpg", v)} label="Vehicle MPG" emptyText="Set MPG" />
+            <div className="border-t border-border/40 mt-2 pt-2">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Compliance Dates</p>
+              <InlineEditField value={instructor.car_insurance_expiry || ""} onSave={(v) => updateField("car_insurance_expiry", v)} label="Insurance Expiry" type="date" emptyText="Set date" />
+              <InlineEditField value={instructor.car_mot_expiry || ""} onSave={(v) => updateField("car_mot_expiry", v)} label="MOT Expiry" type="date" emptyText="Set date" />
+              <InlineEditField value={instructor.car_tax_expiry || ""} onSave={(v) => updateField("car_tax_expiry", v)} label="Tax Expiry" type="date" emptyText="Set date" />
+            </div>
           </div>
         </SectionPanel>
 
@@ -407,6 +607,10 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.instructor_grade || ""} onSave={(v) => updateField("instructor_grade", v)} label="Instructor Grade" emptyText="Set grade" />
             <InlineEditField value={instructor.dbs_certificate_expiry || ""} onSave={(v) => updateField("dbs_certificate_expiry", v)} label="DBS Certificate Expiry" type="date" emptyText="Set expiry" />
             <InlineEditField value={instructor.tax_code || ""} onSave={(v) => updateField("tax_code", v)} label="Tax Code" emptyText="Add tax code" />
+            <InlineEditField value={instructor.adi_certificate_url || ""} onSave={(v) => updateField("adi_certificate_url", v)} label="ADI Certificate URL" emptyText="Add certificate link" />
+            <div className="border-t border-border/40 mt-2 pt-2">
+              <InlineToggle label="CPD Certified" checked={!!instructor.cpd_certified} onToggle={(v) => handleToggle("cpd_certified", v)} saving={savingToggle === "cpd_certified"} />
+            </div>
           </div>
         </SectionPanel>
 
@@ -438,6 +642,68 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.school_skim_percentage?.toString() || ""} onSave={(v) => updateField("school_skim_percentage", v)} label="School Skim (%)" emptyText="Not set" />
             <InlineEditField value={instructor.bonus_earned?.toString() || "0"} onSave={(v) => updateField("bonus_earned", v)} label="Bonus Earned (£)" />
           </div>
+        </SectionPanel>
+
+        {/* Google Calendar */}
+        <SectionPanel title="Google Calendar" icon={<Calendar className="h-4 w-4 text-primary" />}>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <div className={cn("h-2 w-2 rounded-full", instructor.google_calendar_id ? "bg-primary" : "bg-muted-foreground/30")} />
+              <span className="text-sm">{instructor.google_calendar_id ? "Connected" : "Not connected"}</span>
+            </div>
+            {instructor.google_calendar_id && (
+              <p className="text-xs text-muted-foreground px-1 truncate">Calendar ID: {instructor.google_calendar_id}</p>
+            )}
+          </div>
+        </SectionPanel>
+
+        {/* Branding */}
+        <SectionPanel title="Branding & Website" icon={<Palette className="h-4 w-4 text-primary" />}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.brand_colour || ""} onSave={(v) => updateField("brand_colour", v)} label="Brand Colour" emptyText="Set colour" />
+            <InlineEditField value={instructor.secondary_colour || ""} onSave={(v) => updateField("secondary_colour", v)} label="Secondary Colour" emptyText="Set colour" />
+            <InlineEditField value={instructor.website_theme || ""} onSave={(v) => updateField("website_theme", v)} label="Website Theme" emptyText="Default" />
+            <InlineEditField value={instructor.website_font || ""} onSave={(v) => updateField("website_font", v)} label="Website Font" emptyText="Default" />
+            <InlineEditField value={instructor.custom_domain || ""} onSave={(v) => updateField("custom_domain", v)} label="Custom Domain" emptyText="No custom domain" />
+            {instructor.custom_domain && (
+              <div className="flex items-center gap-2 px-1">
+                <div className={cn("h-2 w-2 rounded-full", instructor.custom_domain_verified ? "bg-primary" : "bg-accent")} />
+                <span className="text-xs text-muted-foreground">{instructor.custom_domain_verified ? "Verified" : "Pending verification"}</span>
+              </div>
+            )}
+          </div>
+        </SectionPanel>
+
+        {/* Feature Toggles */}
+        <SectionPanel title="Feature Toggles" icon={<ToggleRight className="h-4 w-4 text-primary" />} defaultOpen>
+          <div>
+            {featureToggles.map((toggle, index) => (
+              <div key={toggle.key}>
+                <InlineToggle
+                  label={toggle.label}
+                  description={toggle.description}
+                  checked={!!(instructor as any)[toggle.key]}
+                  onToggle={(v) => handleToggle(toggle.key, v)}
+                  saving={savingToggle === toggle.key}
+                />
+                {index < featureToggles.length - 1 && <div className="border-b border-border/40" />}
+              </div>
+            ))}
+          </div>
+        </SectionPanel>
+
+        {/* Working Hours */}
+        <SectionPanel title="Working Hours" icon={<Clock className="h-4 w-4 text-primary" />}>
+          <WorkingHoursEditor instructorId={instructorId} />
+        </SectionPanel>
+
+        {/* Mini Website */}
+        <SectionPanel title="Mini Website" icon={<Globe className="h-4 w-4 text-primary" />} className="lg:col-span-2">
+          <AdminWebsiteManager
+            instructorId={instructorId}
+            instructorSlug={instructor.app_slug || ""}
+            instructorName={instructor.name}
+          />
         </SectionPanel>
 
         {/* Pupils */}
