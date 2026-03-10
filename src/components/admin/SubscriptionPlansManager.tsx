@@ -398,6 +398,7 @@ export function SubscriptionPlansManager() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
