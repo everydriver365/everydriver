@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
   Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
-  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight
+  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight, Camera
 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -107,6 +107,46 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [savingPlan, setSavingPlan] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'car') => {
+    const file = e.target.files?.[0];
+    if (!file || !instructor) return;
+
+    const ext = file.name.split('.').pop();
+    const path = `${instructor.id}/${type}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("instructor-images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Upload failed: " + uploadError.message);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("instructor-images")
+      .getPublicUrl(path);
+
+    const field = type === 'profile' ? 'profile_image_url' : 'car_image_url';
+    const { error: updateError } = await supabase
+      .from("instructors")
+      .update({ [field]: urlData.publicUrl })
+      .eq("id", instructor.id);
+
+    if (updateError) {
+      toast.error("Failed to save image");
+      return;
+    }
+
+    setInstructor({ ...instructor, [field]: urlData.publicUrl });
+    toast.success(`${type === 'profile' ? 'Profile' : 'Car'} image updated`);
+    await logAdminAction({ actionType: "instructor_image_update", description: `Updated ${type} image for ${instructor.name}`, entityId: instructor.id, entityType: "instructor" });
+
+    // Reset input
+    e.target.value = '';
+  };
 
   const fetchInstructor = useCallback(async () => {
     setLoading(true);
@@ -236,14 +276,31 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
       {/* Header */}
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-start gap-5">
-          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-primary/20">
-            {instructor.profile_image_url ? (
-              <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-2xl font-semibold text-primary">
-                {instructor.name.split(" ").map(n => n[0]).join("")}
-              </span>
-            )}
+          <div className="relative group shrink-0">
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
+              {instructor.profile_image_url ? (
+                <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl font-semibold text-primary">
+                  {instructor.name.split(" ").map(n => n[0]).join("")}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => profileImageInputRef.current?.click()}
+              className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              title="Change profile photo"
+            >
+              <Camera className="h-5 w-5 text-white" />
+            </button>
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleProfileImageUpload(e, 'profile')}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
