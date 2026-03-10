@@ -236,14 +236,31 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
       {/* Header */}
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-start gap-5">
-          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-primary/20">
-            {instructor.profile_image_url ? (
-              <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-2xl font-semibold text-primary">
-                {instructor.name.split(" ").map(n => n[0]).join("")}
-              </span>
-            )}
+          <div className="relative group shrink-0">
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
+              {instructor.profile_image_url ? (
+                <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl font-semibold text-primary">
+                  {instructor.name.split(" ").map(n => n[0]).join("")}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => profileImageInputRef.current?.click()}
+              className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              title="Change profile photo"
+            >
+              <Camera className="h-5 w-5 text-white" />
+            </button>
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleProfileImageUpload(e, 'profile')}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
