@@ -531,6 +531,8 @@ export function PupilRecordsManager() {
           <div className="divide-y">
             {instructors.map((instructor) => {
               const instructorPupils = pupils[instructor.id] || [];
+              const activePupils = instructorPupils.filter(p => p.status !== "inactive" && p.status !== "archived");
+              const inactivePupils = instructorPupils.filter(p => p.status === "inactive" || p.status === "archived");
               const isExpanded = expandedInstructors.has(instructor.id);
 
               return (
@@ -546,31 +548,59 @@ export function PupilRecordsManager() {
                     )}
                     <span className="font-medium text-sm text-emerald-700 dark:text-emerald-500">{instructor.name}</span>
                     <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-[10px] font-medium text-white">
-                      {instructorPupils.length}
+                      {activePupils.length}
                     </span>
                   </button>
 
                   {isExpanded && (
                     <div className="bg-muted/30">
-                      {instructorPupils.length === 0 ? (
+                      {activePupils.length === 0 && inactivePupils.length === 0 ? (
                         <div className="px-8 py-2 text-sm text-muted-foreground italic">
                           No pupils
                         </div>
                       ) : (
-                        instructorPupils.map((pupil) => (
-                          <button
-                            key={pupil.id}
-                            onClick={() => selectPupil(pupil)}
-                            className={`w-full flex items-center gap-2 px-8 py-1.5 hover:bg-primary/10 text-left text-sm ${
-                              selectedPupil?.id === pupil.id
-                                ? "bg-primary/20 text-primary font-medium"
-                                : ""
-                            }`}
-                          >
-                            <User className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{pupil.name}</span>
-                          </button>
-                        ))
+                        <>
+                          {activePupils.map((pupil) => (
+                            <button
+                              key={pupil.id}
+                              onClick={() => selectPupil(pupil)}
+                              className={`w-full flex items-center gap-2 px-8 py-1.5 hover:bg-primary/10 text-left text-sm ${
+                                selectedPupil?.id === pupil.id
+                                  ? "bg-primary/20 text-primary font-medium"
+                                  : ""
+                              }`}
+                            >
+                              <User className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{pupil.name}</span>
+                            </button>
+                          ))}
+
+                          {inactivePupils.length > 0 && (
+                            <Collapsible>
+                              <CollapsibleTrigger className="w-full flex items-center gap-2 px-6 py-1.5 text-xs text-muted-foreground hover:bg-muted/50">
+                                <ChevronRight className="h-3 w-3 transition-transform [[data-state=open]>svg&]:rotate-90" />
+                                <span>Inactive / Archived ({inactivePupils.length})</span>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                {inactivePupils.map((pupil) => (
+                                  <button
+                                    key={pupil.id}
+                                    onClick={() => selectPupil(pupil)}
+                                    className={`w-full flex items-center gap-2 px-10 py-1.5 hover:bg-primary/10 text-left text-sm text-muted-foreground ${
+                                      selectedPupil?.id === pupil.id
+                                        ? "bg-primary/20 text-primary font-medium"
+                                        : ""
+                                    }`}
+                                  >
+                                    <User className="h-3 w-3 flex-shrink-0 opacity-50" />
+                                    <span className="truncate">{pupil.name}</span>
+                                    <Badge variant="outline" className="ml-auto text-[9px] px-1 py-0">{pupil.status}</Badge>
+                                  </button>
+                                ))}
+                              </CollapsibleContent>
+                            </Collapsible>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
