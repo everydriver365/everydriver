@@ -332,12 +332,28 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "instructor-profile":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {profileInstructorId && (
+              <AdminInstructorProfile
+                instructorId={profileInstructorId}
+                onBack={() => { setActiveSection("instructors"); setProfileInstructorId(null); }}
+                onNavigateToPupils={() => setActiveSection("pupil-records")}
+              />
+            )}
+          </motion.div>
+        );
+
       case "instructors":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="instructors" className="mb-4" />
-            <InstructorManager onEdit={handleEdit} />
+            <InstructorManager
+              onEdit={handleEdit}
+              onViewProfile={(id) => { setProfileInstructorId(id); setActiveSection("instructor-profile"); }}
+            />
           </motion.div>
         );
 
