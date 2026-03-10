@@ -107,6 +107,46 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [savingPlan, setSavingPlan] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'car') => {
+    const file = e.target.files?.[0];
+    if (!file || !instructor) return;
+
+    const ext = file.name.split('.').pop();
+    const path = `${instructor.id}/${type}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("instructor-images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Upload failed: " + uploadError.message);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("instructor-images")
+      .getPublicUrl(path);
+
+    const field = type === 'profile' ? 'profile_image_url' : 'car_image_url';
+    const { error: updateError } = await supabase
+      .from("instructors")
+      .update({ [field]: urlData.publicUrl })
+      .eq("id", instructor.id);
+
+    if (updateError) {
+      toast.error("Failed to save image");
+      return;
+    }
+
+    setInstructor({ ...instructor, [field]: urlData.publicUrl });
+    toast.success(`${type === 'profile' ? 'Profile' : 'Car'} image updated`);
+    await logAdminAction("instructor_image_update", `Updated ${type} image for ${instructor.name}`, instructor.id, "instructor");
+
+    // Reset input
+    e.target.value = '';
+  };
 
   const fetchInstructor = useCallback(async () => {
     setLoading(true);
