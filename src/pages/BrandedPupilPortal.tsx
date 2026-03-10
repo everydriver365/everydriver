@@ -450,7 +450,7 @@ export default function BrandedPupilPortal() {
                 {/* Achievement Badges */}
                 <AchievementBadges
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* What's New */}
