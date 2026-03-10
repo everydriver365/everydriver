@@ -259,6 +259,7 @@ export default function InstructorPupils() {
         .from("pupils")
         .select("*")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -449,7 +450,10 @@ export default function InstructorPupils() {
       pupil.postcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pupil.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "all") {
+      const pupilStatus = pupil.status || 'active';
+      return matchesSearch && pupilStatus !== 'inactive' && pupilStatus !== 'archived';
+    }
     // Filter by the status field
     const pupilStatus = pupil.status || 'active';
     return matchesSearch && pupilStatus === activeTab;
