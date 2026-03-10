@@ -2,8 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
   Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
-  Shield, Calendar, Star, ExternalLink, UserCheck, UserX
+  Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight
 } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
