@@ -173,6 +173,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
 
 export default function AdminPortal() {
   const [activeSection, setActiveSection] = useState("overview");
+  const [profileInstructorId, setProfileInstructorId] = useState<string | null>(null);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const tabCounts = useAdminTabCounts();
   const [isLoading, setIsLoading] = useState(true);
