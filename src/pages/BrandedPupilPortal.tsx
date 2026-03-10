@@ -523,7 +523,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalSchedule 
                   pupilId={pupil.id}
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                   instructorPhone={instructor.phone}
                   initialShowBooking={bookingRequested}
