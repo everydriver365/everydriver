@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Loader2, ArrowRight, Lock, ScanFace, Car, Shield, Award, Users } from "lucide-react";
+import { Mail, Loader2, ArrowRight, Lock, ScanFace, Shield, Award, Users } from "lucide-react";
+import drive365Logo from "@/assets/drive365-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -274,10 +275,7 @@ export default function PupilLogin() {
         
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-              <Car className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">EveryDriver</span>
+            <img src={drive365Logo} alt="Drive365" className="h-12" />
           </div>
           
           <div className="max-w-md">
@@ -306,7 +304,7 @@ export default function PupilLogin() {
           </div>
           
           <p className="text-sm text-slate-500">
-            © 2025 EveryDriver. All rights reserved.
+            © {new Date().getFullYear()} Drive365. All rights reserved.
           </p>
         </div>
       </div>
@@ -318,12 +316,9 @@ export default function PupilLogin() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+            className="lg:hidden flex items-center justify-center mb-8"
           >
-            <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <Car className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">EveryDriver</span>
+            <img src={drive365Logo} alt="Drive365" className="h-10" />
           </motion.div>
           
           <motion.div
