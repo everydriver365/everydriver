@@ -162,11 +162,11 @@ export default function Index() {
                 <p className="mb-3 text-sm font-medium text-muted-foreground">Find driving courses near you</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <PostcodeAutocomplete
-                    value={heroPostcode}
-                    onChange={setHeroPostcode}
-                    onSelect={(postcode) => {
-                      setHeroPostcode(postcode);
-                      navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                    value={postcode}
+                    onChange={setPostcode}
+                    onSelect={(pc) => {
+                      setPostcode(pc);
+                      navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
                     }}
                     placeholder="Enter your postcode..."
                     className="flex-1"
@@ -177,7 +177,7 @@ export default function Index() {
                     size="xl" 
                     className="bg-[#0075c9] hover:bg-[#0063ab] text-white shadow-lg h-12"
                     onClick={() => {
-                      if (heroPostcode) navigate(`/courses?postcode=${encodeURIComponent(heroPostcode)}`);
+                      if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
                     }}
                   >
                     <Search className="mr-2 h-5 w-5" /> Find Courses
