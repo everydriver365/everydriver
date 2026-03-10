@@ -3,7 +3,8 @@ import {
   ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
   Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
   Shield, Calendar, Star, ExternalLink, UserCheck, UserX, ArrowRight, Camera,
-  QrCode, CreditCard, ToggleRight, Palette, Clock, Upload, Link as LinkIcon
+  QrCode, CreditCard, ToggleRight, Palette, Clock, Upload, Link as LinkIcon,
+  Save, Loader2
 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -172,6 +173,9 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
   const [instructorPupils, setInstructorPupils] = useState<{ id: string; name: string; profile_image_url: string | null }[]>([]);
   const [savingToggle, setSavingToggle] = useState<string | null>(null);
+  const [pendingChanges, setPendingChanges] = useState<Record<string, unknown>>({});
+  const [savingAll, setSavingAll] = useState(false);
+  const hasPendingChanges = Object.keys(pendingChanges).length > 0;
 
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
@@ -305,26 +309,35 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
     if (!instructor) return;
     const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
     const updateValue = numericFields.includes(field) ? (value ? Number(value) : null) : (value || null);
-    const { error } = await supabase.from("instructors").update({ [field]: updateValue } as any).eq("id", instructor.id);
-    if (error) { toast.error(`Failed to update ${field}`); throw error; }
-    toast.success("Updated successfully");
+    setPendingChanges(prev => ({ ...prev, [field]: updateValue }));
     setInstructor(prev => prev ? { ...prev, [field]: updateValue } : prev);
-    logAdminAction({ actionType: "instructor_update", description: `Updated ${field} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
   };
 
   const handleToggle = async (field: string, value: boolean) => {
     if (!instructor) return;
-    setSavingToggle(field);
+    setPendingChanges(prev => ({ ...prev, [field]: value }));
+    setInstructor(prev => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleSaveAll = async () => {
+    if (!instructor || !hasPendingChanges) return;
+    setSavingAll(true);
     try {
-      const { error } = await supabase.from("instructors").update({ [field]: value } as any).eq("id", instructor.id);
+      const { error } = await supabase.from("instructors").update(pendingChanges as any).eq("id", instructor.id);
       if (error) throw error;
-      setInstructor(prev => prev ? { ...prev, [field]: value } : prev);
-      toast.success(value ? "Enabled" : "Disabled");
+      toast.success(`Saved ${Object.keys(pendingChanges).length} change(s)`);
+      logAdminAction({ actionType: "instructor_bulk_update", description: `Updated ${Object.keys(pendingChanges).join(", ")} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id, metadata: pendingChanges });
+      setPendingChanges({});
     } catch {
-      toast.error("Failed to update");
+      toast.error("Failed to save changes");
     } finally {
-      setSavingToggle(null);
+      setSavingAll(false);
     }
+  };
+
+  const handleDiscardChanges = () => {
+    setPendingChanges({});
+    fetchInstructor();
   };
 
   const handleToggleActive = async () => {
@@ -793,6 +806,26 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Sticky Save Bar */}
+      {hasPendingChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm shadow-lg">
+          <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{Object.keys(pendingChanges).length}</span> unsaved change{Object.keys(pendingChanges).length !== 1 ? "s" : ""}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleDiscardChanges} disabled={savingAll}>
+                Discard
+              </Button>
+              <Button size="sm" onClick={handleSaveAll} disabled={savingAll} className="gap-2">
+                {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {savingAll ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
