@@ -478,20 +478,52 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
         </div>
       )}
 
+      {/* Deleted Instructors Section */}
+      {deletedInstructors.length > 0 && (
+        <div className="mt-6 rounded-md border border-dashed border-muted-foreground/30 bg-muted/20">
+          <button
+            onClick={() => setShowDeleted(!showDeleted)}
+            className="flex w-full items-center justify-between p-4 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              Archived Instructors ({deletedInstructors.length})
+            </span>
+            <ChevronDown className={cn("h-4 w-4 transition-transform", showDeleted && "rotate-180")} />
+          </button>
+          {showDeleted && (
+            <div className="border-t border-muted-foreground/20 p-4 space-y-2">
+              {deletedInstructors.map(inst => (
+                <div key={inst.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
+                  <div>
+                    <span className="font-medium">{inst.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      Archived {inst.deleted_at ? new Date(inst.deleted_at).toLocaleDateString() : ""}
+                    </span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleRestore(inst.id)} className="gap-1.5">
+                    <RotateCcw className="h-3.5 w-3.5" /> Restore
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instructor?</AlertDialogTitle>
+            <AlertDialogTitle>Archive Instructor?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the instructor
-              and all associated data.
+              This instructor will be archived and hidden from all lists. Their data will be preserved and can be restored at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Archiving..." : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
