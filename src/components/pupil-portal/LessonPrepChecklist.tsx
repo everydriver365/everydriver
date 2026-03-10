@@ -148,6 +148,12 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
 
   if (!hasUpcomingLesson || items.length === 0) return null;
 
+  const lessonTomorrow = (() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return format(tomorrow, 'yyyy-MM-dd');
+  })();
+
   return (
     <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
       <CardHeader className="pb-2">
@@ -163,6 +169,18 @@ export function LessonPrepChecklist({ pupilId, instructorId, brandColour }: Less
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
+        {/* Tomorrow reminder nudge */}
+        {!allDone && nextLessonType && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 p-2 rounded-lg text-xs font-medium"
+            style={{ backgroundColor: `${brandColour || '#3b82f6'}15`, color: brandColour || '#3b82f6' }}
+          >
+            <ClipboardList className="h-3.5 w-3.5 shrink-0" />
+            Complete your checklist before your {nextLessonType} lesson!
+          </motion.div>
+        )}
         {items.map((item) => (
           <button
             key={item.id}
