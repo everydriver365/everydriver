@@ -475,6 +475,7 @@ export default function BrandedPupilPortal() {
                     ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on lessons' }] : []),
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
+                    { id: 'show-tell' as const, icon: Car, label: 'Show Me / Tell Me', desc: 'Vehicle safety questions' },
                     { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
                     { id: 'lesson-tracks' as const, icon: Route, label: 'Lesson Tracks', desc: 'View your lesson routes' },
