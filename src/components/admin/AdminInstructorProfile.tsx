@@ -1,0 +1,420 @@
+import { useState, useEffect, useCallback } from "react";
+import {
+  ArrowLeft, Mail, Phone, MapPin, Users, Globe, Edit2, Power, Trash2, Crown,
+  Car, PoundSterling, Ruler, FileText, Facebook, Instagram, Linkedin, Twitter,
+  Shield, Calendar, Star, ExternalLink, UserCheck, UserX
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { InlineEditField } from "@/components/ui/InlineEditField";
+import { SectionPanel } from "@/components/ui/SectionPanel";
+import { PlanBadge } from "@/components/instructor/PlanBadge";
+import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { logAdminAction } from "@/lib/adminLogger";
+
+interface AdminInstructorProfileProps {
+  instructorId: string;
+  onBack: () => void;
+  onNavigateToPupils?: (instructorId: string) => void;
+}
+
+interface InstructorData {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  home_postcode: string;
+  home_address: string | null;
+  radius_miles: number;
+  car_type: string;
+  car_make: string | null;
+  car_model: string | null;
+  profile_image_url: string | null;
+  car_image_url: string | null;
+  bio: string | null;
+  hourly_rate: number | null;
+  is_active: boolean;
+  created_at: string;
+  website_slug?: string | null;
+  app_slug: string | null;
+  adi_badge_number: string | null;
+  adi_badge_expiry: string | null;
+  instructor_grade: string | null;
+  dbs_certificate_expiry: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  linkedin_url: string | null;
+  personal_website_url: string | null;
+  google_review_url: string | null;
+  brand_colour: string | null;
+  special_skills: string | null;
+  extra_info: string | null;
+  location_name: string | null;
+  tax_code: string | null;
+  fuel_cost_per_litre: number | null;
+  vehicle_mpg: number | null;
+  booking_mode: string | null;
+  preferred_lesson_length: number;
+  booking_advance_days: number | null;
+  buffer_minutes: number;
+  cancellation_policy_hours: number | null;
+  deposit_amount: number | null;
+  deposit_enabled: boolean | null;
+  school_skim_amount: number | null;
+  school_skim_percentage: number | null;
+  bonus_earned: number | null;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
+  price_monthly: number;
+  max_pupils: number | null;
+}
+
+export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupils }: AdminInstructorProfileProps) {
+  const [instructor, setInstructor] = useState<InstructorData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pupilCount, setPupilCount] = useState(0);
+  const [subscription, setSubscription] = useState<{ plan_id: string; plan_name: string; plan_slug: string; status: string } | null>(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
+
+  // Dialog states
+  const [showDelete, setShowDelete] = useState(false);
+  const [showReassign, setShowReassign] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchInstructor = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [{ data, error }, { count }, { data: subData }, { data: plansData }, { data: allInst }] = await Promise.all([
+        supabase.from("instructors").select("*").eq("id", instructorId).single(),
+        supabase.from("pupils").select("*", { count: "exact", head: true }).eq("instructor_id", instructorId),
+        supabase.from("instructor_subscriptions").select("plan_id, status, subscription_plans(name, slug)").eq("instructor_id", instructorId).maybeSingle(),
+        supabase.from("subscription_plans").select("id, name, slug, price_monthly, max_pupils").eq("is_active", true).order("display_order"),
+        supabase.from("instructors").select("id, name, is_active").order("name"),
+      ]);
+      if (error) throw error;
+      setInstructor(data as InstructorData);
+      setPupilCount(count || 0);
+      if (subData) {
+        const sp = subData as any;
+        setSubscription({
+          plan_id: sp.plan_id,
+          plan_name: sp.subscription_plans?.name || "Unknown",
+          plan_slug: sp.subscription_plans?.slug || "free",
+          status: sp.status,
+        });
+      }
+      setPlans(plansData || []);
+      setAllInstructors(allInst || []);
+    } catch (err) {
+      console.error("Error fetching instructor:", err);
+      toast.error("Failed to load instructor");
+    } finally {
+      setLoading(false);
+    }
+  }, [instructorId]);
+
+  useEffect(() => { fetchInstructor(); }, [fetchInstructor]);
+
+  const updateField = async (field: string, value: string) => {
+    if (!instructor) return;
+    const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
+    const updateValue = numericFields.includes(field) ? (value ? Number(value) : null) : (value || null);
+    const { error } = await supabase.from("instructors").update({ [field]: updateValue }).eq("id", instructor.id);
+    if (error) { toast.error(`Failed to update ${field}`); throw error; }
+    toast.success("Updated successfully");
+    setInstructor(prev => prev ? { ...prev, [field]: updateValue } : prev);
+    logAdminAction({ actionType: "instructor_update", description: `Updated ${field} for ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+  };
+
+  const handleToggleActive = async () => {
+    if (!instructor) return;
+    const { error } = await supabase.from("instructors").update({ is_active: !instructor.is_active }).eq("id", instructor.id);
+    if (error) { toast.error("Failed to update status"); return; }
+    toast.success(instructor.is_active ? "Instructor deactivated" : "Instructor activated");
+    setInstructor(prev => prev ? { ...prev, is_active: !prev.is_active } : prev);
+    logAdminAction({ actionType: instructor.is_active ? "instructor_deactivate" : "instructor_activate", description: `${instructor.is_active ? "Deactivated" : "Activated"} ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+  };
+
+  const handleDelete = async () => {
+    if (!instructor) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from("instructors").delete().eq("id", instructor.id);
+      if (error) throw error;
+      toast.success("Instructor deleted");
+      logAdminAction({ actionType: "instructor_delete", description: `Deleted instructor ${instructor.name}`, entityType: "instructor", entityId: instructor.id });
+      onBack();
+    } catch {
+      toast.error("Failed to delete instructor");
+    } finally {
+      setIsDeleting(false);
+      setShowDelete(false);
+    }
+  };
+
+  const handleSavePlan = async () => {
+    if (!instructor || !selectedPlanId) return;
+    setSavingPlan(true);
+    const { data: existing } = await supabase.from("instructor_subscriptions").select("id").eq("instructor_id", instructor.id).maybeSingle();
+    const op = existing
+      ? supabase.from("instructor_subscriptions").update({ plan_id: selectedPlanId, status: "active" }).eq("instructor_id", instructor.id)
+      : supabase.from("instructor_subscriptions").insert({ instructor_id: instructor.id, plan_id: selectedPlanId, status: "active" });
+    const { error } = await op;
+    if (error) { toast.error("Failed to update plan"); } else {
+      toast.success("Plan updated");
+      setShowPlanDialog(false);
+      fetchInstructor();
+    }
+    setSavingPlan(false);
+  };
+
+  if (loading || !instructor) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Back button */}
+      <Button variant="ghost" size="sm" onClick={onBack} className="gap-2 text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back to Instructors
+      </Button>
+
+      {/* Header */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="flex items-start gap-5">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-primary/20">
+            {instructor.profile_image_url ? (
+              <img src={instructor.profile_image_url} alt={instructor.name} className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-2xl font-semibold text-primary">
+                {instructor.name.split(" ").map(n => n[0]).join("")}
+              </span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold">{instructor.name}</h1>
+              <Badge variant={instructor.is_active ? "default" : "secondary"}>
+                {instructor.is_active ? "Active" : "Inactive"}
+              </Badge>
+              <PlanBadge planSlug={subscription?.plan_slug} onUpgradeClick={() => { setSelectedPlanId(subscription?.plan_id || ""); setShowPlanDialog(true); }} />
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{instructor.email || "No email"}</p>
+            <p className="text-xs text-muted-foreground">Joined {new Date(instructor.created_at).toLocaleDateString()}</p>
+          </div>
+          {/* Quick stats */}
+          <div className="hidden md:flex gap-4">
+            {[
+              { label: "Pupils", value: pupilCount, icon: Users },
+              { label: "Rate", value: instructor.hourly_rate ? `£${instructor.hourly_rate}/hr` : "—", icon: PoundSterling },
+              { label: "Coverage", value: `${instructor.radius_miles} mi`, icon: Ruler },
+            ].map(s => (
+              <div key={s.label} className="text-center px-4 py-2 bg-muted/30 rounded-lg border border-border">
+                <s.icon className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+                <div className="text-lg font-bold">{s.value}</div>
+                <div className="text-[10px] text-muted-foreground">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action bar */}
+        <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-border">
+          <Button variant="outline" size="sm" onClick={() => { setSelectedPlanId(subscription?.plan_id || ""); setShowPlanDialog(true); }}>
+            <Crown className="mr-1.5 h-3.5 w-3.5" /> Change Plan
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowReassign(true)}>
+            <Users className="mr-1.5 h-3.5 w-3.5" /> Reassign Pupils
+          </Button>
+          {onNavigateToPupils && (
+            <Button variant="outline" size="sm" onClick={() => onNavigateToPupils(instructorId)}>
+              <Users className="mr-1.5 h-3.5 w-3.5" /> View Pupils
+            </Button>
+          )}
+          {instructor.app_slug && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/instructor/${instructor.app_slug}`} target="_blank" rel="noopener noreferrer">
+                <Globe className="mr-1.5 h-3.5 w-3.5" /> View Website
+              </a>
+            </Button>
+          )}
+          <div className="flex-1" />
+          <Button variant={instructor.is_active ? "outline" : "default"} size="sm" onClick={handleToggleActive}>
+            <Power className="mr-1.5 h-3.5 w-3.5" />
+            {instructor.is_active ? "Deactivate" : "Activate"}
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => setShowDelete(true)}>
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+          </Button>
+        </div>
+      </div>
+
+      {/* Editable sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Contact & Location */}
+        <SectionPanel title="Contact & Location" icon={<MapPin className="h-4 w-4 text-primary" />} defaultOpen headerGradient collapsible={false}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.name} onSave={(v) => updateField("name", v)} icon={<UserCheck className="h-4 w-4 text-muted-foreground" />} label="Name" />
+            <InlineEditField value={instructor.email || ""} onSave={(v) => updateField("email", v)} icon={<Mail className="h-4 w-4 text-muted-foreground" />} label="Email" type="email" emptyText="Add email" />
+            <InlineEditField value={instructor.phone || ""} onSave={(v) => updateField("phone", v)} icon={<Phone className="h-4 w-4 text-muted-foreground" />} label="Phone" type="tel" emptyText="Add phone" />
+            <InlineEditField value={instructor.home_postcode} onSave={(v) => updateField("home_postcode", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Postcode" />
+            <InlineEditField value={instructor.home_address || ""} onSave={(v) => updateField("home_address", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Address" emptyText="Add address" />
+            <InlineEditField value={instructor.location_name || ""} onSave={(v) => updateField("location_name", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Location Name" emptyText="Add location name" />
+          </div>
+        </SectionPanel>
+
+        {/* Rates & Booking */}
+        <SectionPanel title="Rates & Booking" icon={<PoundSterling className="h-4 w-4 text-primary" />} defaultOpen headerGradient collapsible={false}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.hourly_rate?.toString() || ""} onSave={(v) => updateField("hourly_rate", v)} icon={<PoundSterling className="h-4 w-4 text-muted-foreground" />} label="Hourly Rate (£)" emptyText="Set rate" />
+            <InlineEditField value={instructor.radius_miles.toString()} onSave={(v) => updateField("radius_miles", v)} icon={<Ruler className="h-4 w-4 text-muted-foreground" />} label="Radius (miles)" />
+            <InlineEditField value={instructor.preferred_lesson_length.toString()} onSave={(v) => updateField("preferred_lesson_length", v)} label="Default Lesson Length (mins)" emptyText="Set length" />
+            <InlineEditField value={instructor.booking_advance_days?.toString() || ""} onSave={(v) => updateField("booking_advance_days", v)} label="Booking Advance (days)" emptyText="Set days" />
+            <InlineEditField value={instructor.buffer_minutes.toString()} onSave={(v) => updateField("buffer_minutes", v)} label="Buffer Between Lessons (mins)" />
+            <InlineEditField value={instructor.cancellation_policy_hours?.toString() || ""} onSave={(v) => updateField("cancellation_policy_hours", v)} label="Cancellation Notice (hours)" emptyText="Set hours" />
+            <InlineEditField value={instructor.deposit_amount?.toString() || ""} onSave={(v) => updateField("deposit_amount", v)} label="Deposit Amount (£)" emptyText="No deposit" />
+            <InlineEditField value={instructor.booking_mode || ""} onSave={(v) => updateField("booking_mode", v)} label="Booking Mode" emptyText="Default" />
+          </div>
+        </SectionPanel>
+
+        {/* Vehicle */}
+        <SectionPanel title="Vehicle" icon={<Car className="h-4 w-4 text-primary" />} defaultOpen>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.car_type} onSave={(v) => updateField("car_type", v)} label="Transmission" />
+            <InlineEditField value={instructor.car_make || ""} onSave={(v) => updateField("car_make", v)} label="Make" emptyText="Add make" />
+            <InlineEditField value={instructor.car_model || ""} onSave={(v) => updateField("car_model", v)} label="Model" emptyText="Add model" />
+            <InlineEditField value={instructor.fuel_cost_per_litre?.toString() || ""} onSave={(v) => updateField("fuel_cost_per_litre", v)} label="Fuel Cost (£/litre)" emptyText="Set cost" />
+            <InlineEditField value={instructor.vehicle_mpg?.toString() || ""} onSave={(v) => updateField("vehicle_mpg", v)} label="Vehicle MPG" emptyText="Set MPG" />
+          </div>
+        </SectionPanel>
+
+        {/* ADI & Compliance */}
+        <SectionPanel title="ADI & Compliance" icon={<Shield className="h-4 w-4 text-primary" />} defaultOpen>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.adi_badge_number || ""} onSave={(v) => updateField("adi_badge_number", v)} label="ADI Badge Number" emptyText="Add badge number" />
+            <InlineEditField value={instructor.adi_badge_expiry || ""} onSave={(v) => updateField("adi_badge_expiry", v)} label="ADI Badge Expiry" type="date" emptyText="Set expiry" />
+            <InlineEditField value={instructor.instructor_grade || ""} onSave={(v) => updateField("instructor_grade", v)} label="Instructor Grade" emptyText="Set grade" />
+            <InlineEditField value={instructor.dbs_certificate_expiry || ""} onSave={(v) => updateField("dbs_certificate_expiry", v)} label="DBS Certificate Expiry" type="date" emptyText="Set expiry" />
+            <InlineEditField value={instructor.tax_code || ""} onSave={(v) => updateField("tax_code", v)} label="Tax Code" emptyText="Add tax code" />
+          </div>
+        </SectionPanel>
+
+        {/* Bio & Skills */}
+        <SectionPanel title="Bio & Skills" icon={<FileText className="h-4 w-4 text-primary" />}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.bio || ""} onSave={(v) => updateField("bio", v)} label="Bio" type="textarea" emptyText="Add bio" />
+            <InlineEditField value={instructor.special_skills || ""} onSave={(v) => updateField("special_skills", v)} label="Special Skills" emptyText="Add skills" />
+            <InlineEditField value={instructor.extra_info || ""} onSave={(v) => updateField("extra_info", v)} label="Extra Info" type="textarea" emptyText="Add extra info" />
+          </div>
+        </SectionPanel>
+
+        {/* Social & Web */}
+        <SectionPanel title="Social & Web" icon={<Globe className="h-4 w-4 text-primary" />}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.personal_website_url || ""} onSave={(v) => updateField("personal_website_url", v)} icon={<Globe className="h-4 w-4 text-muted-foreground" />} label="Personal Website" emptyText="Add URL" />
+            <InlineEditField value={instructor.google_review_url || ""} onSave={(v) => updateField("google_review_url", v)} icon={<Star className="h-4 w-4 text-muted-foreground" />} label="Google Review URL" emptyText="Add URL" />
+            <InlineEditField value={instructor.facebook_url || ""} onSave={(v) => updateField("facebook_url", v)} icon={<Facebook className="h-4 w-4 text-muted-foreground" />} label="Facebook" emptyText="Add URL" />
+            <InlineEditField value={instructor.instagram_url || ""} onSave={(v) => updateField("instagram_url", v)} icon={<Instagram className="h-4 w-4 text-muted-foreground" />} label="Instagram" emptyText="Add URL" />
+            <InlineEditField value={instructor.twitter_url || ""} onSave={(v) => updateField("twitter_url", v)} icon={<Twitter className="h-4 w-4 text-muted-foreground" />} label="Twitter / X" emptyText="Add URL" />
+            <InlineEditField value={instructor.linkedin_url || ""} onSave={(v) => updateField("linkedin_url", v)} icon={<Linkedin className="h-4 w-4 text-muted-foreground" />} label="LinkedIn" emptyText="Add URL" />
+          </div>
+        </SectionPanel>
+
+        {/* Commission & School */}
+        <SectionPanel title="Commission & School" icon={<PoundSterling className="h-4 w-4 text-primary" />}>
+          <div className="space-y-1">
+            <InlineEditField value={instructor.school_skim_amount?.toString() || ""} onSave={(v) => updateField("school_skim_amount", v)} label="School Skim (£ flat)" emptyText="Not set" />
+            <InlineEditField value={instructor.school_skim_percentage?.toString() || ""} onSave={(v) => updateField("school_skim_percentage", v)} label="School Skim (%)" emptyText="Not set" />
+            <InlineEditField value={instructor.bonus_earned?.toString() || "0"} onSave={(v) => updateField("bonus_earned", v)} label="Bonus Earned (£)" />
+          </div>
+        </SectionPanel>
+      </div>
+
+      {/* Dialogs */}
+      <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Instructor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {instructor.name} and all associated data. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <ReassignPupilsDialog
+        open={showReassign}
+        onOpenChange={setShowReassign}
+        sourceInstructor={instructor}
+        allInstructors={allInstructors}
+        onComplete={fetchInstructor}
+      />
+
+      <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-accent" /> Change Plan
+            </DialogTitle>
+            <DialogDescription>Select a plan for {instructor.name}</DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={selectedPlanId} onValueChange={setSelectedPlanId} className="space-y-3 py-4">
+            {plans.map(plan => (
+              <div
+                key={plan.id}
+                className={cn("flex items-center space-x-3 rounded-lg border p-4 cursor-pointer transition-colors", selectedPlanId === plan.id ? "border-primary bg-primary/5" : "hover:bg-muted/50")}
+                onClick={() => setSelectedPlanId(plan.id)}
+              >
+                <RadioGroupItem value={plan.id} id={`plan-${plan.id}`} />
+                <Label htmlFor={`plan-${plan.id}`} className="flex-1 cursor-pointer">
+                  <span className="font-medium">{plan.name}</span>
+                  <p className="text-sm text-muted-foreground">
+                    {plan.price_monthly === 0 ? "Free" : `£${plan.price_monthly}/month`}
+                    {plan.max_pupils ? ` • Up to ${plan.max_pupils} pupils` : " • Unlimited"}
+                  </p>
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowPlanDialog(false)}>Cancel</Button>
+            <Button onClick={handleSavePlan} disabled={savingPlan || !selectedPlanId}>
+              {savingPlan ? "Saving..." : "Save Plan"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

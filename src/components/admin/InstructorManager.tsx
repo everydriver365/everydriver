@@ -92,6 +92,7 @@ interface Instructor {
 
 interface InstructorManagerProps {
   onEdit: (instructor: Instructor) => void;
+  onViewProfile?: (instructorId: string) => void;
 }
 
 // Plan badge component with color coding
