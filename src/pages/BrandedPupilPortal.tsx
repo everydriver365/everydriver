@@ -570,7 +570,7 @@ export default function BrandedPupilPortal() {
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalTheory 
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
                 <div className="px-4 pb-4 space-y-4">
