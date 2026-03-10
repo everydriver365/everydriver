@@ -173,6 +173,9 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
   const [instructorPupils, setInstructorPupils] = useState<{ id: string; name: string; profile_image_url: string | null }[]>([]);
   const [savingToggle, setSavingToggle] = useState<string | null>(null);
+  const [pendingChanges, setPendingChanges] = useState<Record<string, unknown>>({});
+  const [savingAll, setSavingAll] = useState(false);
+  const hasPendingChanges = Object.keys(pendingChanges).length > 0;
 
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
