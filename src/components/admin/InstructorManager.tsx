@@ -178,9 +178,32 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
     }
   }, []);
 
+  const fetchDeletedInstructors = useCallback(async () => {
+    const { data } = await supabase
+      .from("instructors")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    setDeletedInstructors((data || []) as any);
+  }, []);
+
   useEffect(() => {
     fetchInstructors();
-  }, [fetchInstructors]);
+    fetchDeletedInstructors();
+  }, [fetchInstructors, fetchDeletedInstructors]);
+
+  const handleRestore = async (id: string) => {
+    try {
+      const { error } = await supabase.from("instructors").update({ deleted_at: null } as any).eq("id", id);
+      if (error) throw error;
+      toast.success("Instructor restored");
+      logAdminAction({ actionType: "instructor_restore", description: `Restored instructor ${id}`, entityType: "instructor", entityId: id });
+      fetchInstructors();
+      fetchDeletedInstructors();
+    } catch {
+      toast.error("Failed to restore instructor");
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteId) return;
