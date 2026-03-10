@@ -143,6 +143,7 @@ const DemoETGDesigns = lazy(() => import("./pages/DemoETGDesigns"));
 const DemoVideoSections = lazy(() => import("./pages/DemoVideoSections"));
 const DemoNervousToReady = lazy(() => import("./pages/DemoNervousToReady"));
 const DemoETGBanner = lazy(() => import("./pages/DemoETGBanner"));
+const DemoNewsSections = lazy(() => import("./pages/DemoNewsSections"));
 
 
 // Lazy-load ConditionalRoutes
