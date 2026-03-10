@@ -44,18 +44,6 @@ import { cn } from "@/lib/utils";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
 import { InstructorForm } from "./InstructorForm";
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  slug: string;
-  price_monthly: number;
-  price_yearly: number;
-  max_pupils: number | null;
-  sms_credits_monthly: number;
-  features: unknown; // JSON type
-  display_order: number;
-  is_active: boolean;
-}
 
 interface Instructor {
   id: string;
