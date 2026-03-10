@@ -111,6 +111,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "live-map": { title: "Live Instructor Map", group: "Dashboard", icon: MapPin },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  "instructor-profile": { title: "Instructor Profile", group: "People", icon: Users },
   "pupil-records": { title: "Pupil Records", group: "People", icon: Users },
   subscribers: { title: "Subscribers", group: "People", icon: CreditCard },
   plans: { title: "Subscription Plans", group: "People", icon: CreditCard },
