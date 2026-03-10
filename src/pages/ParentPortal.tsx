@@ -24,6 +24,9 @@ import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
 import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
+import { ParentChat } from "@/components/parent/ParentChat";
+import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
+import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
 
 interface Child {
   id: string;
@@ -453,11 +456,18 @@ export default function ParentPortal() {
           <div className="px-0">
             <PupilRouteHistory pupilId={selectedChild.id} />
           </div>
-          <ParentMessageCard
+          <ParentPaymentTopUp
+            childId={selectedChild.id}
+            childName={selectedChild.name}
+            instructorId={selectedChild.instructor_id}
+            currentBalance={selectedChild.account_balance}
+          />
+          <ParentChat
+            parentPhone={parentPhone}
             instructorId={selectedChild.instructor_id}
             instructorName={selectedChild.instructor_name}
+            pupilId={selectedChild.id}
             childName={selectedChild.name}
-            parentPhone={parentPhone}
           />
         </main>
         <ParentBottomNav activeSection="children" onNavigate={(s) => { if (s !== 'children') { setSelectedChild(null); setActiveSection(s as ParentSection); } }} />
@@ -480,6 +490,9 @@ export default function ParentPortal() {
                 <p className="text-xs text-muted-foreground">Welcome back</p>
                 <h1 className="text-xl font-bold text-foreground">Parent Dashboard</h1>
               </div>
+
+              {/* Push Notification Banner */}
+              <ParentPushBanner parentPhone={parentPhone} />
 
               {/* Children Overview */}
               {children.map((child, index) => (

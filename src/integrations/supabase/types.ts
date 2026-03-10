@@ -6788,6 +6788,47 @@ export type Database = {
           },
         ]
       }
+      lesson_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_lesson_week: string | null
+          longest_streak: number
+          pupil_id: string
+          total_lessons_tracked: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_lesson_week?: string | null
+          longest_streak?: number
+          pupil_id: string
+          total_lessons_tracked?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_lesson_week?: string | null
+          longest_streak?: number
+          pupil_id?: string
+          total_lessons_tracked?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_streaks_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_syllabus_updates: {
         Row: {
           comment: string | null
@@ -8103,6 +8144,93 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          parent_phone: string
+          pupil_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          parent_phone: string
+          pupil_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          parent_phone?: string
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_conversations_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_type?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "parent_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_otp_codes: {
         Row: {
           code: string
@@ -8127,6 +8255,36 @@ export type Database = {
           id?: string
           phone?: string
           verified?: boolean | null
+        }
+        Relationships: []
+      }
+      parent_push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          parent_phone: string
+          updated_at: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          parent_phone: string
+          updated_at?: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          parent_phone?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -9071,6 +9229,53 @@ export type Database = {
             foreignKeyName: "pupil_credentials_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_goals: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          goal_type: string
+          id: string
+          pupil_id: string
+          status: string
+          target_date: string | null
+          target_value: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          goal_type?: string
+          id?: string
+          pupil_id: string
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          goal_type?: string
+          id?: string
+          pupil_id?: string
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_goals_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
             referencedRelation: "pupils"
             referencedColumns: ["id"]
           },

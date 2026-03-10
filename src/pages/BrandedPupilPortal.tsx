@@ -57,6 +57,8 @@ import { PupilJourneyTimeline } from "@/components/pupil-portal/PupilJourneyTime
 import { SlotOfferNotification } from "@/components/pupil-portal/SlotOfferNotification";
 import { PupilLessonVideos } from "@/components/pupil-portal/PupilLessonVideos";
 import { PupilDrivingStyleReport } from "@/components/pupil-portal/PupilDrivingStyleReport";
+import { PupilGoals } from "@/components/pupil-portal/PupilGoals";
+import { LessonStreakCard } from "@/components/pupil-portal/LessonStreakCard";
 
 interface InstructorBranding {
   id: string;
@@ -444,6 +446,20 @@ export default function BrandedPupilPortal() {
 
                 {/* Journey Timeline */}
                 <PupilJourneyTimeline
+                  pupilId={pupil.id}
+                  brandColour={drive365Blue}
+                />
+
+                {/* Personal Goals */}
+                <PupilGoals
+                  pupilId={pupil.id}
+                  brandColour={drive365Blue}
+                  lessonsCompleted={pupil.lessons_completed}
+                  progress={pupil.progress}
+                />
+
+                {/* Lesson Streak */}
+                <LessonStreakCard
                   pupilId={pupil.id}
                   brandColour={drive365Blue}
                 />
