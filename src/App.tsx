@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
