@@ -140,6 +140,7 @@ const SmartNudgesDemo = lazy(() => import("./pages/SmartNudgesDemo"));
 const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
 const DemoPortals = lazy(() => import("./pages/DemoPortals"));
 const DemoETGDesigns = lazy(() => import("./pages/DemoETGDesigns"));
+const Drive365HeroDemo = lazy(() => import("./pages/Drive365HeroDemo"));
 
 
 // Lazy-load ConditionalRoutes
@@ -327,6 +328,7 @@ const App = () => (
                 <Route path="/demo/homepage-redesign" element={<HomepageRedesignDemo />} />
                 <Route path="/demo/portals" element={<DemoPortals />} />
                 <Route path="/demo/etg-designs" element={<DemoETGDesigns />} />
+                <Route path="/demo/drive365-hero" element={<Drive365HeroDemo />} />
                 <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
 
                 {/* Catch-all */}
