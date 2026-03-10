@@ -258,7 +258,7 @@ export default function Index() {
             >
               <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-20 h-20 object-contain drop-shadow-lg" />
+                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-28 h-28 object-contain drop-shadow-lg" />
                   <h3 className="text-2xl font-black text-white">Earlier Test Guarantee</h3>
                 </div>
                 <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
