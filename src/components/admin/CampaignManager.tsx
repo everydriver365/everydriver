@@ -199,7 +199,17 @@ export function CampaignManager() {
                   <TableRow key={c.id}>
                     <TableCell className="text-sm whitespace-nowrap">
                       {format(new Date(c.sent_at || c.created_at), "dd MMM yyyy HH:mm")}
-...
+                    </TableCell>
+                    <TableCell>
+                      <span className="capitalize">{c.channel}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="capitalize">{c.audience_type}</span>
+                    </TableCell>
+                    <TableCell>{c.recipient_count}</TableCell>
+                    <TableCell>
+                      <span className="capitalize text-sm">{c.status}</span>
+                    </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">{c.message}</TableCell>
                   </TableRow>
                 ))}

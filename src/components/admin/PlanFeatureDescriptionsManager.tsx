@@ -149,7 +149,32 @@ export function PlanFeatureDescriptionsManager() {
               <TableRow>
                 <TableHead>Key</TableHead>
                 <TableHead>Display Name</TableHead>
-...
+                <TableHead>Short Desc</TableHead>
+                <TableHead>Icon</TableHead>
+                <TableHead>Order</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {features.map((f) => (
+                <TableRow key={f.id}>
+                  <TableCell className="font-mono text-sm">{f.feature_key}</TableCell>
+                  <TableCell className="font-medium">{f.display_name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{f.short_description}</TableCell>
+                  <TableCell className="text-sm">{f.icon_name || "—"}</TableCell>
+                  <TableCell>{f.display_order}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-1 justify-end">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(f)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(f.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           </div>
