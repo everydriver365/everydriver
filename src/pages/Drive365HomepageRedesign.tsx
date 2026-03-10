@@ -48,7 +48,7 @@ export default function Drive365HomepageRedesign() {
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
-                  <Link to="/instructor-app/signup">
+                  <Link to="/courses">
                     Start Free Today
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
