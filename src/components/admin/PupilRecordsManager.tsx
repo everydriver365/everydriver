@@ -752,6 +752,16 @@ export function PupilRecordsManager() {
               </AlertDialog>
             )}
 
+            {/* Reactivate */}
+            {(selectedPupil.status === "inactive" || selectedPupil.status === "archived") && (
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                onClick={() => reactivatePupil(selectedPupil)}
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Reactivate
+              </Button>
+            )}
+
             {/* Archive */}
             {selectedPupil.status !== "archived" && (
               <AlertDialog>
