@@ -588,10 +588,48 @@ export function PupilRecordsManager() {
           {selectedPupil && (
             <div className="flex items-center gap-2">
               <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+              {selectedPupil.status === "archived" && (
+                <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-[10px]">Archived</Badge>
+              )}
+
+              {/* Archive Button */}
+              {selectedPupil.status !== "archived" && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-amber-300 hover:text-amber-200 hover:bg-white/10 text-xs">
+                      <Archive className="h-3.5 w-3.5" />
+                      Archive
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <Archive className="h-5 w-5 text-amber-500" />
+                        Archive Pupil Record
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Archive <strong>{selectedPupil.name}</strong>? They will be marked as archived but all data is preserved. You can unarchive later.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-amber-600 text-white hover:bg-amber-700"
+                        onClick={() => archivePupil(selectedPupil)}
+                      >
+                        Archive
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {/* Delete Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="icon" variant="ghost" className="h-6 w-6 text-white/60 hover:text-destructive hover:bg-white/10">
+                  <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-red-300 hover:text-red-200 hover:bg-white/10 text-xs">
                     <Trash2 className="h-3.5 w-3.5" />
+                    Delete
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
