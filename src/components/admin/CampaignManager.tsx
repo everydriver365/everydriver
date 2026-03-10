@@ -182,6 +182,7 @@ export function CampaignManager() {
           ) : campaigns.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No campaigns sent yet</div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -200,25 +201,21 @@ export function CampaignManager() {
                       {format(new Date(c.sent_at || c.created_at), "dd MMM yyyy HH:mm")}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">{c.channel}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm capitalize">{c.audience_type.replace(/_/g, " ")}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {c.recipient_count}
-                      </div>
+                      <span className="capitalize">{c.channel}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={c.status === "sent" ? "default" : "secondary"} className={c.status === "sent" ? "bg-emerald-600" : ""}>
-                        {c.status}
-                      </Badge>
+                      <span className="capitalize">{c.audience_type}</span>
+                    </TableCell>
+                    <TableCell>{c.recipient_count}</TableCell>
+                    <TableCell>
+                      <span className="capitalize text-sm">{c.status}</span>
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">{c.message}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

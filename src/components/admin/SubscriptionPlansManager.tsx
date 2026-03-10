@@ -290,6 +290,7 @@ export function SubscriptionPlansManager() {
       {/* Plans Table */}
       <Card>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -397,6 +398,7 @@ export function SubscriptionPlansManager() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
