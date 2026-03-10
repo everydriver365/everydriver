@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Film, Sparkles, Quote, Star, ChevronRight, ArrowRight, Clock, Users, Award } from "lucide-react";
+import { Play, Film, Sparkles, Quote, Star, ChevronRight, ArrowRight, Clock, Users, Award, MapPin, Shield, Clapperboard, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
