@@ -623,7 +623,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
