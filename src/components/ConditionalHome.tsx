@@ -1,7 +1,9 @@
 import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from "./DomainRouter";
-import Drive365Home from "@/pages/Drive365Home";
+import { lazy } from "react";
 import HomepageRedesignDemo from "@/pages/HomepageRedesignDemo";
 import MiniWebsiteHome from "@/pages/mini-website/MiniWebsiteHome";
+
+const Index = lazy(() => import("@/pages/Index"));
 
 /**
  * Renders the appropriate homepage based on the current domain.
@@ -18,11 +20,11 @@ export function ConditionalHome() {
     return <MiniWebsiteHome subdomainSlug={slug} />;
   }
   
-  // SWAPPED: Drive365 = Learner site
+  // Drive365 = Learner site
   if (isDrive365Domain()) {
-    return <Drive365Home />;
+    return <Index />;
   }
   
-  // SWAPPED: EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
+  // EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
   return <HomepageRedesignDemo />;
 }
