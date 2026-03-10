@@ -77,6 +77,7 @@ import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
 import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
+import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -110,6 +111,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "live-map": { title: "Live Instructor Map", group: "Dashboard", icon: MapPin },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  "instructor-profile": { title: "Instructor Profile", group: "People", icon: Users },
   "pupil-records": { title: "Pupil Records", group: "People", icon: Users },
   subscribers: { title: "Subscribers", group: "People", icon: CreditCard },
   plans: { title: "Subscription Plans", group: "People", icon: CreditCard },
@@ -172,6 +174,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
 
 export default function AdminPortal() {
   const [activeSection, setActiveSection] = useState("overview");
+  const [profileInstructorId, setProfileInstructorId] = useState<string | null>(null);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const tabCounts = useAdminTabCounts();
   const [isLoading, setIsLoading] = useState(true);
@@ -330,12 +333,28 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "instructor-profile":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {profileInstructorId && (
+              <AdminInstructorProfile
+                instructorId={profileInstructorId}
+                onBack={() => { setActiveSection("instructors"); setProfileInstructorId(null); }}
+                onNavigateToPupils={() => setActiveSection("pupil-records")}
+              />
+            )}
+          </motion.div>
+        );
+
       case "instructors":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="instructors" className="mb-4" />
-            <InstructorManager onEdit={handleEdit} />
+            <InstructorManager
+              onEdit={handleEdit}
+              onViewProfile={(id) => { setProfileInstructorId(id); setActiveSection("instructor-profile"); }}
+            />
           </motion.div>
         );
 

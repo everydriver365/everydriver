@@ -92,6 +92,7 @@ interface Instructor {
 
 interface InstructorManagerProps {
   onEdit: (instructor: Instructor) => void;
+  onViewProfile?: (instructorId: string) => void;
 }
 
 // Plan badge component with color coding
@@ -126,7 +127,7 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
   );
 }
 
-export function InstructorManager({ onEdit }: InstructorManagerProps) {
+export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -409,7 +410,7 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
                         </div>
                         <button 
                           className="text-primary hover:underline text-left font-medium"
-                          onClick={() => setSelectedInstructor(instructor)}
+                          onClick={() => onViewProfile ? onViewProfile(instructor.id) : setSelectedInstructor(instructor)}
                         >
                           {instructor.name}
                         </button>
