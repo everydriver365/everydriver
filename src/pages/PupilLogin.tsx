@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Loader2, ArrowRight, Lock, ScanFace, Car, Shield, Award, Users } from "lucide-react";
+import { Mail, Loader2, ArrowRight, Lock, ScanFace, Shield, Award, Users } from "lucide-react";
+import drive365Logo from "@/assets/drive365-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
