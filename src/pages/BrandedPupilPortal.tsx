@@ -538,7 +538,7 @@ export default function BrandedPupilPortal() {
                 </div>
                 <PupilPaymentFeed
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   currentBalance={pupil.account_balance}
                 />
                 <div className="px-4 pt-4">
