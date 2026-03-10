@@ -806,6 +806,26 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Sticky Save Bar */}
+      {hasPendingChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm shadow-lg">
+          <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{Object.keys(pendingChanges).length}</span> unsaved change{Object.keys(pendingChanges).length !== 1 ? "s" : ""}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleDiscardChanges} disabled={savingAll}>
+                Discard
+              </Button>
+              <Button size="sm" onClick={handleSaveAll} disabled={savingAll} className="gap-2">
+                {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {savingAll ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
