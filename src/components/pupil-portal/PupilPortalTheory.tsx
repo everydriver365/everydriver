@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BookOpen, ExternalLink, Play, CheckCircle2, XCircle, ArrowRight, RotateCcw, Filter } from "lucide-react";
+import { ShowMeTellMeSection } from "./ShowMeTellMeSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -291,6 +292,9 @@ export function PupilPortalTheory({ brandColour, darkMode }: PupilPortalTheoryPr
           )}
         </CardContent>
       </Card>
+
+      {/* Show Me / Tell Me */}
+      <ShowMeTellMeSection pupilId="theory-tab" brandColour={brandColour || '#141b43'} />
 
       {/* Resources */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
