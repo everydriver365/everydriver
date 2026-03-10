@@ -667,7 +667,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.custom_domain || ""} onSave={(v) => updateField("custom_domain", v)} label="Custom Domain" emptyText="No custom domain" />
             {instructor.custom_domain && (
               <div className="flex items-center gap-2 px-1">
-                <div className={cn("h-2 w-2 rounded-full", instructor.custom_domain_verified ? "bg-green-500" : "bg-yellow-500")} />
+                <div className={cn("h-2 w-2 rounded-full", instructor.custom_domain_verified ? "bg-primary" : "bg-accent")} />
                 <span className="text-xs text-muted-foreground">{instructor.custom_domain_verified ? "Verified" : "Pending verification"}</span>
               </div>
             )}
