@@ -2,19 +2,21 @@ import { useState, useRef, useEffect } from "react";
 import { Check, X, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { cn } from "@/lib/utils";
 
 interface InlineEditFieldProps {
   value: string;
   onSave: (newValue: string) => Promise<void> | void;
   placeholder?: string;
-  type?: "text" | "email" | "tel" | "date" | "textarea";
+  type?: "text" | "email" | "tel" | "date" | "textarea" | "address";
   className?: string;
   textClassName?: string;
   icon?: React.ReactNode;
   label?: string;
   emptyText?: string;
   disabled?: boolean;
+  onPostcodeChange?: (postcode: string) => void;
 }
 
 export function InlineEditField({
