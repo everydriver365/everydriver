@@ -326,8 +326,8 @@ export default function BrandedPupilPortal() {
                 <Button 
                   className="w-full h-12 text-base"
                   onClick={() => navigate("/pupil/login")}
-                  style={{ 
-                    backgroundColor: instructor.brand_colour || 'hsl(var(--primary))',
+                    style={{ 
+                      backgroundColor: '#141b43',
                     color: '#ffffff'
                   }}
                 >
