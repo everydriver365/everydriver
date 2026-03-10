@@ -359,15 +359,15 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instructor?</AlertDialogTitle>
+            <AlertDialogTitle>Archive Instructor?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {instructor.name} and all associated data. This cannot be undone.
+              {instructor.name} will be archived and hidden from all lists. Their data will be preserved and can be restored at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Archiving..." : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

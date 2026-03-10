@@ -183,17 +183,20 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
     if (!deleteId) return;
     setIsDeleting(true);
     try {
+      const deletedInstructor = instructors.find(i => i.id === deleteId);
       const { error } = await supabase
         .from("instructors")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() } as any)
         .eq("id", deleteId);
 
       if (error) throw error;
-      toast.success("Instructor deleted");
+      toast.success("Instructor archived — can be restored later");
+      logAdminAction({ actionType: "instructor_soft_delete", description: `Archived instructor ${deletedInstructor?.name || deleteId}`, entityType: "instructor", entityId: deleteId });
       fetchInstructors();
+      fetchDeletedInstructors();
     } catch (error) {
-      console.error("Error deleting instructor:", error);
-      toast.error("Failed to delete instructor");
+      console.error("Error archiving instructor:", error);
+      toast.error("Failed to archive instructor");
     } finally {
       setIsDeleting(false);
       setDeleteId(null);

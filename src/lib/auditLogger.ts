@@ -33,7 +33,7 @@ export async function logAudit({
 
 /** Soft delete a record by setting deleted_at = now() and logging it */
 export async function softDelete(
-  tableName: "pupils" | "payment_history" | "lesson_history" | "scheduled_lessons" | "instructor_expenses",
+  tableName: "pupils" | "payment_history" | "lesson_history" | "scheduled_lessons" | "instructor_expenses" | "instructors",
   recordId: string,
   instructorId: string,
   oldRecord?: Record<string, unknown> | null,
