@@ -749,71 +749,104 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Video Story Section */}
-      <section className="bg-amber-50/60 py-16">
-        <div className="container">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            {/* Video Thumbnail */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              <div className="relative overflow-hidden rounded-2xl shadow-xl">
-                <img
-                  src={videoThumbnailImg}
-                  alt="Our Story Video"
-                  className="h-full w-full object-cover"
-                />
-                {/* Play Button Overlay */}
-                <button 
-                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors hover:bg-black/30 cursor-pointer"
-                  disabled={!welcomeVideoUrl}
+      {/* Video Story Section — Testimonial-Led */}
+      <section className="bg-gradient-to-b from-amber-50 to-background py-20">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="flex justify-center mb-4">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} className="h-5 w-5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <h2 className="text-4xl font-black mb-2">
+              "They Changed My Life"
+            </h2>
+            <p className="text-muted-foreground">— Sarah, passed first time after 30 hours</p>
+          </motion.div>
+
+          {/* Video with testimonial cards floating */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+              <img
+                src={videoThumbnailImg}
+                alt="Our Story Video"
+                className="aspect-video w-full object-cover"
+              />
+              <button
+                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                disabled={!welcomeVideoUrl}
+                className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-all cursor-pointer"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-xl backdrop-blur"
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110">
-                    <Play className="h-6 w-6 fill-primary text-primary ml-1" />
-                  </div>
-                </button>
+                  <Play className="h-8 w-8 fill-amber-500 text-amber-500 ml-1" />
+                </motion.div>
+              </button>
+            </div>
+
+            {/* Floating testimonial cards */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="absolute -bottom-6 -left-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border hidden lg:block"
+            >
+              <div className="flex gap-1 mb-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                ))}
               </div>
-              <p className="mt-4 text-center italic text-muted-foreground">
-                Our Story - Watch Now!
-              </p>
+              <p className="text-xs text-zinc-600 italic">"Best decision I ever made!"</p>
+              <p className="text-[10px] font-semibold text-zinc-400 mt-1">— James, Manchester</p>
             </motion.div>
 
-            {/* Content */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
               viewport={{ once: true }}
+              className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border hidden lg:block"
             >
-              <Badge className="mb-4 gap-1 border-0 bg-amber-500 text-white hover:bg-amber-500">
-                <Play className="h-3 w-3 fill-white" />
-                Watch Our Story
-              </Badge>
-              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-                Every Driver Has a Story
-              </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
-                From nervous first-timers to confident road users, we've been part of thousands of driving journeys. Watch our intro to see what makes us different.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Button 
-                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                  className="gap-2 bg-amber-500 hover:bg-amber-600"
-                  disabled={!welcomeVideoUrl}
-                >
-                  <Play className="h-4 w-4 fill-white" />
-                  Play Video
-                </Button>
-                <Button variant="outline" className="gap-2" asChild>
-                  <Link to="/about">Learn More</Link>
-                </Button>
+              <div className="flex gap-1 mb-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                ))}
               </div>
+              <p className="text-xs text-zinc-600 italic">"Passed first time, so happy!"</p>
+              <p className="text-[10px] font-semibold text-zinc-400 mt-1">— Priya, London</p>
             </motion.div>
+          </motion.div>
+
+          <div className="flex justify-center mt-12 gap-4">
+            <Button
+              onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+              disabled={!welcomeVideoUrl}
+              className="gap-2 bg-amber-500 hover:bg-amber-600 font-bold"
+            >
+              <Play className="h-4 w-4 fill-white" />
+              Watch Our Story
+            </Button>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link to="/about">
+                Read More Stories
+                <Heart className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
