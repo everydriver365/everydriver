@@ -123,21 +123,14 @@ function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: strin
 
 export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deactivateId, setDeactivateId] = useState<string | null>(null);
-  const [reassignInstructor, setReassignInstructor] = useState<Instructor | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
-  const [planDialogInstructor, setPlanDialogInstructor] = useState<Instructor | null>(null);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
-  const [savingPlan, setSavingPlan] = useState(false);
 
   const fetchPlans = useCallback(async () => {
     const { data } = await supabase
