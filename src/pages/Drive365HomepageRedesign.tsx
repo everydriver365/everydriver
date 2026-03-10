@@ -508,7 +508,7 @@ export default function Drive365HomepageRedesign() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-13 px-8 text-base rounded-xl" asChild>
-                <Link to="/instructor-app/pricing">Compare Plans</Link>
+                <Link to="/about">Learn More</Link>
               </Button>
             </div>
             <p className="mt-6 text-sm text-primary-foreground/50">
