@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Home, Clock, CreditCard, BookOpen, Grid3X3, LucideIcon } from "lucide-react";
+import { Home, Clock, CreditCard, BookOpen, MessageSquare, LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
