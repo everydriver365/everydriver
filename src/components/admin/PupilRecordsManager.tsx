@@ -247,6 +247,10 @@ export function PupilRecordsManager() {
   const saveDetails = async () => {
     if (!selectedPupil) return;
     try {
+      const oldInstructorId = selectedPupil.instructor_id;
+      const newInstructorId = detailsForm.instructor_id || oldInstructorId;
+      const instructorChanged = newInstructorId !== oldInstructorId;
+
       const updates: Record<string, any> = {
         name: detailsForm.name,
         email: detailsForm.email || null,
@@ -262,6 +266,13 @@ export function PupilRecordsManager() {
         emergency_contact_name: detailsForm.emergency_contact_name || null,
         emergency_contact_phone: detailsForm.emergency_contact_phone || null,
         custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+        instructor_id: newInstructorId,
+        theory_test_date: detailsForm.theory_test_date || null,
+        theory_test_passed: detailsForm.theory_test_passed === "yes" ? true : detailsForm.theory_test_passed === "no" ? false : null,
+        prepaid_hours: detailsForm.prepaid_hours ? parseFloat(detailsForm.prepaid_hours) : null,
+        account_balance: detailsForm.account_balance ? parseFloat(detailsForm.account_balance) : null,
+        lessons_completed: detailsForm.lessons_completed ? parseInt(detailsForm.lessons_completed) : 0,
+        notes: detailsForm.notes || null,
       };
 
       const { error } = await supabase
@@ -271,18 +282,33 @@ export function PupilRecordsManager() {
 
       if (error) throw error;
 
-      const updatedPupil = { ...selectedPupil, ...updates };
+      const updatedPupil = { ...selectedPupil, ...updates } as Pupil;
       setSelectedPupil(updatedPupil);
       
-      // Update in the grouped list too
+      // Update in the grouped list — re-bucket if instructor changed
       setPupils(prev => {
         const updated = { ...prev };
-        const list = updated[selectedPupil.instructor_id] || [];
-        updated[selectedPupil.instructor_id] = list.map(p => 
-          p.id === selectedPupil.id ? updatedPupil : p
-        );
+        if (instructorChanged) {
+          // Remove from old instructor
+          updated[oldInstructorId] = (updated[oldInstructorId] || []).filter(p => p.id !== selectedPupil.id);
+          // Add to new instructor
+          updated[newInstructorId] = [...(updated[newInstructorId] || []), updatedPupil];
+        } else {
+          const list = updated[oldInstructorId] || [];
+          updated[oldInstructorId] = list.map(p => 
+            p.id === selectedPupil.id ? updatedPupil : p
+          );
+        }
         return updated;
       });
+
+      if (instructorChanged) {
+        setExpandedInstructors(prev => {
+          const next = new Set(prev);
+          next.add(newInstructorId);
+          return next;
+        });
+      }
 
       setEditingDetails(false);
       toast.success("Pupil details saved");
