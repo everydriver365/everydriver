@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash, AlertTriangle, Archive } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash, AlertTriangle, Archive, UserX, ArrowRightLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -483,6 +483,70 @@ export function PupilRecordsManager() {
     }
   };
 
+  // Mark pupil inactive
+  const markInactive = async (pupil: Pupil) => {
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ status: "inactive" })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).map(p =>
+          p.id === pupil.id ? { ...p, status: "inactive" } : p
+        );
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil({ ...pupil, status: "inactive" });
+      }
+
+      toast.success(`${pupil.name} marked as inactive`);
+    } catch (error) {
+      console.error("Error marking pupil inactive:", error);
+      toast.error("Failed to mark pupil as inactive");
+    }
+  };
+
+  // Reassign pupil to another instructor
+  const reassignPupil = async (pupil: Pupil, newInstructorId: string) => {
+    if (newInstructorId === pupil.instructor_id) return;
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ instructor_id: newInstructorId })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      const updatedPupil = { ...pupil, instructor_id: newInstructorId };
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
+        updated[newInstructorId] = [...(updated[newInstructorId] || []), updatedPupil];
+        return updated;
+      });
+
+      setSelectedPupil(updatedPupil);
+      setExpandedInstructors(prev => {
+        const next = new Set(prev);
+        next.add(newInstructorId);
+        return next;
+      });
+
+      const targetName = instructors.find(i => i.id === newInstructorId)?.name || "new instructor";
+      toast.success(`${pupil.name} reassigned to ${targetName}`);
+    } catch (error) {
+      console.error("Error reassigning pupil:", error);
+      toast.error("Failed to reassign pupil");
+    }
+  };
+
   // Archive pupil (set status to archived)
   const archivePupil = async (pupil: Pupil) => {
     try {
@@ -613,79 +677,120 @@ export function PupilRecordsManager() {
 
       {/* Right Panel - Pupil Details */}
       <div className="flex-1 flex flex-col">
-        <div className="bg-[#142040] text-white px-4 py-3 font-semibold text-sm flex items-center justify-between">
+        <div className="bg-[#142040] text-white px-4 py-3 font-semibold text-sm flex items-center gap-2">
           <span>Detailed View</span>
           {selectedPupil && (
-            <div className="flex items-center gap-2">
-              <span className="text-white/80 font-normal">{selectedPupil.name}</span>
-              {selectedPupil.status === "archived" && (
-                <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-[10px]">Archived</Badge>
+            <>
+              <span className="text-white/80 font-normal ml-1">— {selectedPupil.name}</span>
+              {(selectedPupil.status === "archived" || selectedPupil.status === "inactive") && (
+                <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-[10px] capitalize">{selectedPupil.status}</Badge>
               )}
+            </>
+          )}
+        </div>
 
-              {/* Archive Button */}
-              {selectedPupil.status !== "archived" && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-amber-300 hover:text-amber-200 hover:bg-white/10 text-xs">
-                      <Archive className="h-3.5 w-3.5" />
-                      Archive
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2">
-                        <Archive className="h-5 w-5 text-amber-500" />
-                        Archive Pupil Record
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Archive <strong>{selectedPupil.name}</strong>? They will be marked as archived but all data is preserved. You can unarchive later.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-amber-600 text-white hover:bg-amber-700"
-                        onClick={() => archivePupil(selectedPupil)}
-                      >
-                        Archive
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-
-              {/* Delete Button */}
+        {/* Action Bar */}
+        {selectedPupil && (
+          <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/30 flex-wrap">
+            {/* Mark Inactive */}
+            {selectedPupil.status !== "inactive" && selectedPupil.status !== "archived" && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-red-300 hover:text-red-200 hover:bg-white/10 text-xs">
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
+                  <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs border-amber-500/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30">
+                    <UserX className="h-3.5 w-3.5" />
+                    Mark Inactive
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-destructive" />
-                      Delete Pupil Record
+                      <UserX className="h-5 w-5 text-amber-500" />
+                      Mark Pupil Inactive
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to delete <strong>{selectedPupil.name}</strong>? This will soft-delete the record (it can be restored from the database if needed).
+                      Mark <strong>{selectedPupil.name}</strong> as inactive? They will be moved to the Inactive section.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={() => softDeletePupil(selectedPupil)}
-                    >
-                      Delete
+                    <AlertDialogAction className="bg-amber-600 text-white hover:bg-amber-700" onClick={() => markInactive(selectedPupil)}>
+                      Mark Inactive
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            </div>
-          )}
-        </div>
+            )}
+
+            {/* Archive */}
+            {selectedPupil.status !== "archived" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs border-amber-500/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30">
+                    <Archive className="h-3.5 w-3.5" />
+                    Archive
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <Archive className="h-5 w-5 text-amber-500" />
+                      Archive Pupil Record
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Archive <strong>{selectedPupil.name}</strong>? They will be marked as archived but all data is preserved.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-amber-600 text-white hover:bg-amber-700" onClick={() => archivePupil(selectedPupil)}>
+                      Archive
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            {/* Reassign */}
+            <Select onValueChange={(val) => reassignPupil(selectedPupil, val)}>
+              <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs gap-1.5">
+                <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />
+                <SelectValue placeholder="Reassign to..." />
+              </SelectTrigger>
+              <SelectContent>
+                {instructors.filter(i => i.id !== selectedPupil.instructor_id).map(i => (
+                  <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Delete */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 ml-auto">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    Delete Pupil Record
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete <strong>{selectedPupil.name}</strong>? This will soft-delete the record.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => softDeletePupil(selectedPupil)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
 
         {!selectedPupil ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
