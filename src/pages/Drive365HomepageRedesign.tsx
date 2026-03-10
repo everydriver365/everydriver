@@ -54,7 +54,7 @@ export default function Drive365HomepageRedesign() {
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
-                  <Link to="/instructor-app/features">
+                  <Link to="/about">
                     <Play className="mr-2 h-4 w-4" />
                     Watch Demo
                   </Link>
