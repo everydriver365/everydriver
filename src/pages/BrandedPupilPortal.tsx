@@ -406,7 +406,7 @@ export default function BrandedPupilPortal() {
                   <PupilEndOfLessonWizard
                     pupilId={pupil.id}
                     instructorId={instructor.id}
-                    brandColour={instructor.brand_colour}
+                    brandColour={drive365Blue}
                   />
                 )}
 
