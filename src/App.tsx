@@ -330,6 +330,7 @@ const App = () => (
                 <Route path="/demo/portals" element={<DemoPortals />} />
                 <Route path="/demo/etg-designs" element={<DemoETGDesigns />} />
                 <Route path="/demo/video-sections" element={<DemoVideoSections />} />
+                <Route path="/demo/nervous-to-ready" element={<DemoNervousToReady />} />
                 <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
 
                 {/* Catch-all */}
