@@ -98,6 +98,8 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [allInstructors, setAllInstructors] = useState<{ id: string; name: string; is_active: boolean }[]>([]);
 
+  const [instructorPupils, setInstructorPupils] = useState<{ id: string; name: string; profile_image_url: string | null }[]>([]);
+
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
