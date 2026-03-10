@@ -260,6 +260,9 @@ export default function BrandedPupilPortal() {
   if (!instructor) return null;
 
   const isSubPage = activeSection !== 'home';
+  
+  // Drive365 standard blue for portal chrome; instructor colour for tile accents only
+  const drive365Blue = '#141b43';
 
   // Section back handler
   const handleBack = () => { setBookingRequested(false); setActiveSection('home'); };
