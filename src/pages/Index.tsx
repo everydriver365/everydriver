@@ -621,131 +621,56 @@ export default function Index() {
         </div>
       </section>
 
-      {/* From Nervous to Road Ready Section */}
-      <section className="bg-secondary/30 py-16">
-        <div className="container">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Badge className="mb-4 gap-1 border-0 bg-emerald-500 text-white hover:bg-emerald-500">
-                <Award className="h-3 w-3" />
-                Proven Results
-              </Badge>
-              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-                From Nervous to<br />
-                <span className="italic text-primary">Road Ready</span>
-              </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
-                Join thousands of learners who transformed their driving fears into confidence.
-              </p>
-
-              {/* Stats */}
-              <div className="mb-8 flex flex-wrap gap-6">
-                {stats.slice(0, 3).map((stat, index) => (
-                  <div key={index} className="rounded-xl border bg-card px-6 py-4 text-center shadow-lg">
-                    <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
-                ))}
+      {/* From Nervous to Road Ready Section — Warm Organic */}
+      <section className="bg-gradient-to-b from-orange-50 via-amber-50/40 to-background py-20">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="text-center mb-14">
+            <div className="flex justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <Heart className="h-6 w-6 text-amber-500 fill-amber-500" />
               </div>
+            </div>
+            <h2 className="text-4xl font-black">Every Learner's Journey<br /><span className="text-amber-600">Starts Here</span></h2>
+            <p className="text-muted-foreground mt-3">From first lesson nerves to passing-day celebrations</p>
+          </motion.div>
 
-              <Link to="/courses">
-                <Button className="gap-2">
-                  Start Your Journey
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            {/* Right Content - Testimonials */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="space-y-4"
-            >
-              {/* Testimonial 1 */}
-              <div className="rounded-xl bg-card p-4 shadow-md">
-                <div className="flex gap-4">
-                  <img
-                    src={testimonialSarahM}
-                    alt="Sarah M."
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="mb-1 flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      "The intensive course was exactly what I needed. My instructor was patient and really focused on my weak points."
-                    </p>
-                    <div className="text-sm">
-                      <span className="font-semibold">Sarah M.</span>
-                      <span className="text-muted-foreground"> • 5-Day Intensive</span>
-                    </div>
-                  </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { name: "Sarah M.", course: "5-Day Intensive", img: testimonialSarahM, text: "The intensive course was exactly what I needed. My instructor was patient and really focused on my weak points." },
+              { name: "Emily R.", course: "Semi-Intensive", img: testimonialEmily, text: "I went from being terrified of roundabouts to navigating them with ease. Best decision I ever made." },
+              { name: "Priya T.", course: "10-Day Course", img: testimonialPriya, text: "Working full-time made it hard to learn, but the flexible scheduling meant I could fit lessons around my job." },
+            ].map((t, i) => (
+              <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.15 }} viewport={{ once: true }}
+                className="text-center"
+              >
+                <img src={t.img} alt={t.name} className="h-20 w-20 rounded-full object-cover mx-auto mb-4 shadow-lg ring-4 ring-amber-100" />
+                <div className="flex justify-center gap-0.5 mb-3">
+                  {[...Array(5)].map((_, s) => (
+                    <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
                 </div>
-              </div>
-
-              {/* Testimonial 2 */}
-              <div className="rounded-xl bg-card p-4 shadow-md">
-                <div className="flex gap-4">
-                  <img
-                    src={testimonialEmily}
-                    alt="Emily R."
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="mb-1 flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      "I went from being terrified of roundabouts to navigating them with ease. Best decision I ever made."
-                    </p>
-                    <div className="text-sm">
-                      <span className="font-semibold">Emily R.</span>
-                      <span className="text-muted-foreground"> • Semi-Intensive</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 3 */}
-              <div className="rounded-xl bg-card p-4 shadow-md">
-                <div className="flex gap-4">
-                  <img
-                    src={testimonialPriya}
-                    alt="Priya T."
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="mb-1 flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      "Working full-time made it hard to learn, but the flexible scheduling meant I could fit lessons around my job."
-                    </p>
-                    <div className="text-sm">
-                      <span className="font-semibold">Priya T.</span>
-                      <span className="text-muted-foreground"> • 10-Day Course</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+                <p className="text-sm text-muted-foreground italic leading-relaxed">"{t.text}"</p>
+                <p className="mt-3 text-sm font-bold">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.course}</p>
+              </motion.div>
+            ))}
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} viewport={{ once: true }}
+            className="mt-14 bg-card rounded-3xl p-8 shadow-lg border flex items-center justify-between flex-wrap gap-6"
+          >
+            <div className="flex gap-8">
+              {stats.slice(0, 3).map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl font-black text-amber-600">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <Button className="gap-2 bg-amber-500 hover:bg-amber-600 font-bold" asChild>
+              <Link to="/courses">Start Your Journey <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
