@@ -1017,7 +1017,7 @@ export default function AdminPortal() {
         setIsFormOpen(open);
         if (!open) setEditingInstructor(null);
       }}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-[95vw] sm:max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingInstructor ? "Edit Instructor" : "Add New Instructor"}
