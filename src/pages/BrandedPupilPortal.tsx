@@ -723,7 +723,7 @@ export default function BrandedPupilPortal() {
           open={detailsOpen}
           onClose={() => setDetailsOpen(false)}
           pupilId={pupil.id}
-          brandColour={instructor.brand_colour}
+          brandColour={drive365Blue}
           darkMode={effectiveDarkMode}
         />
       )}
