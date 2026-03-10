@@ -517,6 +517,6 @@ export default function Drive365HomepageRedesign() {
           </div>
         </div>
       </section>
-    </InstructorSaaSLayout>
+    </MainLayout>
   );
 }
