@@ -142,7 +142,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
 
     setInstructor({ ...instructor, [field]: urlData.publicUrl });
     toast.success(`${type === 'profile' ? 'Profile' : 'Car'} image updated`);
-    await logAdminAction("instructor_image_update", `Updated ${type} image for ${instructor.name}`, instructor.id, "instructor");
+    await logAdminAction({ actionType: "instructor_image_update", description: `Updated ${type} image for ${instructor.name}`, entityId: instructor.id, entityType: "instructor" });
 
     // Reset input
     e.target.value = '';
