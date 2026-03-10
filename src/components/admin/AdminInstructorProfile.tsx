@@ -142,6 +142,29 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
 
   useEffect(() => { fetchInstructor(); }, [fetchInstructor]);
 
+  const fetchPupils = useCallback(async () => {
+    const { data } = await supabase
+      .from("pupils")
+      .select("id, name, profile_image_url")
+      .eq("instructor_id", instructorId)
+      .is("deleted_at", null)
+      .order("name");
+    setInstructorPupils(data || []);
+  }, [instructorId]);
+
+  useEffect(() => { fetchPupils(); }, [fetchPupils]);
+
+  const handleReassignPupil = async (pupilId: string, newInstructorId: string) => {
+    const { error } = await supabase.from("pupils").update({ instructor_id: newInstructorId }).eq("id", pupilId);
+    if (error) { toast.error("Failed to reassign pupil"); return; }
+    const pupil = instructorPupils.find(p => p.id === pupilId);
+    const target = allInstructors.find(i => i.id === newInstructorId);
+    toast.success(`${pupil?.name} reassigned to ${target?.name}`);
+    logAdminAction({ actionType: "pupil_reassign", description: `Reassigned ${pupil?.name} to ${target?.name}`, entityType: "pupil", entityId: pupilId });
+    fetchPupils();
+    fetchInstructor();
+  };
+
   const updateField = async (field: string, value: string) => {
     if (!instructor) return;
     const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
