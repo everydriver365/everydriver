@@ -58,7 +58,7 @@ import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
 import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
-import heroAdiComposite from "@/assets/hero-adi-composite.png";
+import heroInstructorNew from "@/assets/hero-instructor-new.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
@@ -192,9 +192,9 @@ export default function Index() {
               className="relative hidden md:flex items-center justify-center"
             >
               <img 
-                src={heroAdiComposite} 
-                alt="Driving instructor using the Every Driver app on phone and tablet" 
-                className="w-full max-w-lg rounded-2xl"
+                src={heroInstructorNew} 
+                alt="Driving instructor with DRIVE365 branded materials in a red learner car" 
+                className="w-full max-w-lg rounded-2xl shadow-2xl"
               />
               
               {/* Floating Badge - Fill Rate */}
