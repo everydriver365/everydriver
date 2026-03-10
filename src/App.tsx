@@ -168,7 +168,8 @@ const App = () => (
                 {/* Root route - conditional based on domain */}
                 <Route path="/" element={<ConditionalHome />} />
                 {/* Drive365 learner homepage preview (bypasses domain routing) */}
-                <Route path="/drive365" element={<Index />} />
+                <Route path="/drive365" element={<Drive365HomepageRedesign />} />
+                <Route path="/drive365-old" element={<Index />} />
                 {/* Learner-facing routes (EveryDriver branding) */}
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/book/:instructorId" element={<BookingSummary />} />

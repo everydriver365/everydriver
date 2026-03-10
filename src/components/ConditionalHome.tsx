@@ -22,7 +22,7 @@ export function ConditionalHome() {
   
   // Drive365 = Learner site
   if (isDrive365Domain()) {
-    return <Index />;
+    return <Drive365HomepageRedesign />;
   }
   
   // EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
