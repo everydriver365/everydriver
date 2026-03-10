@@ -141,6 +141,7 @@ const HomepageRedesignDemo = lazy(() => import("./pages/HomepageRedesignDemo"));
 const DemoPortals = lazy(() => import("./pages/DemoPortals"));
 const DemoETGDesigns = lazy(() => import("./pages/DemoETGDesigns"));
 const Drive365HeroDemo = lazy(() => import("./pages/Drive365HeroDemo"));
+const Drive365HomepageRedesign = lazy(() => import("./pages/Drive365HomepageRedesign"));
 
 
 // Lazy-load ConditionalRoutes
@@ -167,7 +168,8 @@ const App = () => (
                 {/* Root route - conditional based on domain */}
                 <Route path="/" element={<ConditionalHome />} />
                 {/* Drive365 learner homepage preview (bypasses domain routing) */}
-                <Route path="/drive365" element={<Index />} />
+                <Route path="/drive365" element={<Drive365HomepageRedesign />} />
+                <Route path="/drive365-old" element={<Index />} />
                 {/* Learner-facing routes (EveryDriver branding) */}
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/book/:instructorId" element={<BookingSummary />} />
