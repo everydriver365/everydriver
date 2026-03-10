@@ -260,6 +260,9 @@ export default function BrandedPupilPortal() {
   if (!instructor) return null;
 
   const isSubPage = activeSection !== 'home';
+  
+  // Drive365 standard blue for portal chrome; instructor colour for tile accents only
+  const drive365Blue = '#141b43';
 
   // Section back handler
   const handleBack = () => { setBookingRequested(false); setActiveSection('home'); };
@@ -286,7 +289,7 @@ export default function BrandedPupilPortal() {
       <PortalIOSInstallBanner 
         appName={instructor.name}
         storageKey={`ios-install-pupil-${instructor.id}`}
-        primaryColor={instructor.brand_colour || '#1e3a5f'}
+        primaryColor={'#141b43'}
       />
 
       {/* Header */}
@@ -295,7 +298,7 @@ export default function BrandedPupilPortal() {
         pupilImageUrl={pupil?.profile_image_url}
         instructorName={instructor.name}
         instructorLogoUrl={instructor.logo_url}
-        brandColour={instructor.brand_colour}
+        brandColour="#141b43"
         showBackButton={isSubPage}
         title={activeSection !== 'home' ? activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/-/g, ' ') : undefined}
         darkMode={effectiveDarkMode}
@@ -326,8 +329,8 @@ export default function BrandedPupilPortal() {
                 <Button 
                   className="w-full h-12 text-base"
                   onClick={() => navigate("/pupil/login")}
-                  style={{ 
-                    backgroundColor: instructor.brand_colour || 'hsl(var(--primary))',
+                    style={{ 
+                      backgroundColor: '#141b43',
                     color: '#ffffff'
                   }}
                 >
@@ -395,7 +398,7 @@ export default function BrandedPupilPortal() {
                 {/* Push Notification Banner */}
                 <PushNotificationBanner 
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* End-of-Lesson Wizard (replaces simple feedback prompt) */}
@@ -403,7 +406,7 @@ export default function BrandedPupilPortal() {
                   <PupilEndOfLessonWizard
                     pupilId={pupil.id}
                     instructorId={instructor.id}
-                    brandColour={instructor.brand_colour}
+                    brandColour={drive365Blue}
                   />
                 )}
 
@@ -414,14 +417,14 @@ export default function BrandedPupilPortal() {
                 <LessonPrepChecklist
                   pupilId={pupil.id}
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Lesson Countdown */}
                 <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                   onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
                 />
@@ -434,20 +437,20 @@ export default function BrandedPupilPortal() {
                     account_balance: pupil.account_balance,
                     prepaid_hours: pupil.prepaid_hours,
                   }}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   onNavigate={(section) => setActiveSection(section as ActiveSection)}
                 />
 
                 {/* Journey Timeline */}
                 <PupilJourneyTimeline
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Achievement Badges */}
                 <AchievementBadges
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* What's New */}
@@ -457,7 +460,7 @@ export default function BrandedPupilPortal() {
                 <PupilDashboardInsights
                   pupilId={pupil.id}
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Navigation Menu — iOS List Style */}
@@ -504,7 +507,7 @@ export default function BrandedPupilPortal() {
                   pupilId={pupil.id}
                   instructorId={instructor.id}
                   instructorSlug={slug}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
 
                 {/* Contact Instructor */}
@@ -520,7 +523,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalSchedule 
                   pupilId={pupil.id}
                   instructorId={instructor.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                   instructorPhone={instructor.phone}
                   initialShowBooking={bookingRequested}
@@ -535,7 +538,7 @@ export default function BrandedPupilPortal() {
                 </div>
                 <PupilPaymentFeed
                   pupilId={pupil.id}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   currentBalance={pupil.account_balance}
                 />
                 <div className="px-4 pt-4">
@@ -543,7 +546,7 @@ export default function BrandedPupilPortal() {
                     pupilId={pupil.id}
                     instructorId={instructor.id}
                     instructorSlug={slug}
-                    brandColour={instructor.brand_colour}
+                    brandColour={drive365Blue}
                     darkMode={instructor.pupil_app_dark_mode}
                     accountBalance={pupil.account_balance}
                     prepaidHours={pupil.prepaid_hours}
@@ -567,13 +570,13 @@ export default function BrandedPupilPortal() {
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <PupilPortalTheory 
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
                 <div className="px-4 pb-4 space-y-4">
-                  <TheoryStreakTracker pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <TheoryStreakTracker pupilId={pupil.id} brandColour={drive365Blue} />
                   <TheoryMockTest pupilId={pupil.id} />
-                  <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
+                  <TheoryProgressChart pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                   <TheoryMockScoreLogger pupilId={pupil.id} instructorId={instructor.id} />
                 </div>
               </motion.div>
@@ -584,7 +587,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalProgress pupilId={pupil.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilPortalProgress pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
@@ -593,7 +596,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilAICoaching pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilAICoaching pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
@@ -608,9 +611,9 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalHistory pupilId={pupil.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilPortalHistory pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4">
-                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
@@ -620,7 +623,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
@@ -629,7 +632,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilNotes pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} instructorName={instructor.name} />
+                <PupilNotes pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} instructorName={instructor.name} />
               </motion.div>
             )}
 
@@ -638,7 +641,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilTestRequests pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} />
+                <PupilTestRequests pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
@@ -646,7 +649,7 @@ export default function BrandedPupilPortal() {
               <motion.div key="reflections" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                  <ReflectiveLog pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <ReflectiveLog pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
@@ -656,7 +659,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={instructor.brand_colour} darkMode={instructor.pupil_app_dark_mode} />
+                <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
@@ -666,7 +669,7 @@ export default function BrandedPupilPortal() {
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
                 <div className="px-4 pb-4">
-                  <PupilRouteHistory pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                  <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
             )}
@@ -676,7 +679,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilLessonVideos pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                <PupilLessonVideos pupilId={pupil.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
@@ -685,7 +688,7 @@ export default function BrandedPupilPortal() {
                 <div className="p-4">
                   <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
                 </div>
-                <PupilDrivingStyleReport pupilId={pupil.id} brandColour={instructor.brand_colour} />
+                <PupilDrivingStyleReport pupilId={pupil.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
@@ -696,7 +699,7 @@ export default function BrandedPupilPortal() {
                 <PupilPortalProfileEdit
                   pupil={pupil}
                   onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
-                  brandColour={instructor.brand_colour}
+                  brandColour={drive365Blue}
                 />
               </motion.div>
             )}
@@ -709,7 +712,7 @@ export default function BrandedPupilPortal() {
         <PupilBottomNav
           activeSection={activeSection}
           onNavigate={(section) => setActiveSection(section as ActiveSection)}
-          brandColour={instructor.brand_colour}
+          brandColour={drive365Blue}
           wallpaperColor={wallpaperColor}
           courseProgress={pupil.progress || 0}
         />
@@ -720,7 +723,7 @@ export default function BrandedPupilPortal() {
           open={detailsOpen}
           onClose={() => setDetailsOpen(false)}
           pupilId={pupil.id}
-          brandColour={instructor.brand_colour}
+          brandColour={drive365Blue}
           darkMode={effectiveDarkMode}
         />
       )}
