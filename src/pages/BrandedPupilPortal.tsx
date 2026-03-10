@@ -450,6 +450,20 @@ export default function BrandedPupilPortal() {
                   brandColour={drive365Blue}
                 />
 
+                {/* Personal Goals */}
+                <PupilGoals
+                  pupilId={pupil.id}
+                  brandColour={drive365Blue}
+                  lessonsCompleted={pupil.lessons_completed}
+                  progress={pupil.progress}
+                />
+
+                {/* Lesson Streak */}
+                <LessonStreakCard
+                  pupilId={pupil.id}
+                  brandColour={drive365Blue}
+                />
+
                 {/* Achievement Badges */}
                 <AchievementBadges
                   pupilId={pupil.id}
