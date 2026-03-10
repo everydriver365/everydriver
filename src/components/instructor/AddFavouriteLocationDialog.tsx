@@ -234,11 +234,10 @@ export function AddFavouriteLocationDialog({
 
           <div className="space-y-2">
             <Label htmlFor="address">Full Address (optional)</Label>
-            <Input
-              id="address"
-              placeholder="123 High Street, London"
+            <GoogleAddressAutocomplete
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={setAddress}
+              placeholder="Start typing an address..."
             />
           </div>
 

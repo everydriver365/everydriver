@@ -264,16 +264,12 @@ export function DomainCheckoutModal({
 
           <div className="space-y-1.5">
             <Label htmlFor="address">Address *</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="address"
-                placeholder="123 High Street"
-                value={contact.address}
-                onChange={(e) => handleChange("address", e.target.value)}
-                className="pl-9"
-              />
-            </div>
+            <GoogleAddressAutocomplete
+              value={contact.address}
+              onChange={(v) => handleChange("address", v)}
+              onPostcodeChange={(pc) => handleChange("postcode", pc)}
+              placeholder="Start typing an address..."
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

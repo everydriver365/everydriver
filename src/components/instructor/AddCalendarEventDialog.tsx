@@ -397,11 +397,10 @@ export function AddCalendarEventDialog({
 
             <div className="space-y-2">
               <Label htmlFor="pickup-address">Pickup Address (optional)</Label>
-              <Input
-                id="pickup-address"
-                placeholder="Enter pickup location"
+              <GoogleAddressAutocomplete
                 value={pickupAddress}
-                onChange={(e) => setPickupAddress(e.target.value)}
+                onChange={setPickupAddress}
+                placeholder="Enter pickup location"
               />
             </div>
           </TabsContent>
