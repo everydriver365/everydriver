@@ -74,6 +74,7 @@ interface InstructorBranding {
   payment_qr_url: string | null;
   payment_qr_url_pupil_pays: string | null;
   payment_qr_url_instructor_pays: string | null;
+  payment_link_base_url: string | null;
   commission_payer: string | null;
 }
 
@@ -170,7 +171,7 @@ export default function BrandedPupilPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer")
+        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, payment_link_base_url, commission_payer")
         .eq("app_slug", slug)
         .single();
 
@@ -553,6 +554,7 @@ export default function BrandedPupilPortal() {
                     paymentQrUrl={instructor.payment_qr_url}
                     paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
                     paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
+                    paymentLinkBaseUrl={instructor.payment_link_base_url}
                     commissionPayer={instructor.commission_payer}
                   />
                 </div>
