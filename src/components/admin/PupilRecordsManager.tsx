@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map, UserCog, Phone, Mail, MapPin, Hash, AlertTriangle, Archive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -466,7 +466,6 @@ export function PupilRecordsManager() {
       const { softDelete } = await import("@/lib/auditLogger");
       await softDelete("pupils", pupil.id, pupil.instructor_id, { name: pupil.name });
 
-      // Remove from local state
       setPupils(prev => {
         const updated = { ...prev };
         updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
@@ -481,6 +480,35 @@ export function PupilRecordsManager() {
     } catch (error) {
       console.error("Error deleting pupil:", error);
       toast.error("Failed to delete pupil");
+    }
+  };
+
+  // Archive pupil (set status to archived)
+  const archivePupil = async (pupil: Pupil) => {
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ status: "archived" })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).map(p =>
+          p.id === pupil.id ? { ...p, status: "archived" } : p
+        );
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil({ ...pupil, status: "archived" });
+      }
+
+      toast.success(`${pupil.name} has been archived`);
+    } catch (error) {
+      console.error("Error archiving pupil:", error);
+      toast.error("Failed to archive pupil");
     }
   };
 
@@ -560,10 +588,48 @@ export function PupilRecordsManager() {
           {selectedPupil && (
             <div className="flex items-center gap-2">
               <span className="text-white/80 font-normal">{selectedPupil.name}</span>
+              {selectedPupil.status === "archived" && (
+                <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-[10px]">Archived</Badge>
+              )}
+
+              {/* Archive Button */}
+              {selectedPupil.status !== "archived" && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-amber-300 hover:text-amber-200 hover:bg-white/10 text-xs">
+                      <Archive className="h-3.5 w-3.5" />
+                      Archive
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <Archive className="h-5 w-5 text-amber-500" />
+                        Archive Pupil Record
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Archive <strong>{selectedPupil.name}</strong>? They will be marked as archived but all data is preserved. You can unarchive later.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-amber-600 text-white hover:bg-amber-700"
+                        onClick={() => archivePupil(selectedPupil)}
+                      >
+                        Archive
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {/* Delete Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="icon" variant="ghost" className="h-6 w-6 text-white/60 hover:text-destructive hover:bg-white/10">
+                  <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-red-300 hover:text-red-200 hover:bg-white/10 text-xs">
                     <Trash2 className="h-3.5 w-3.5" />
+                    Delete
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
