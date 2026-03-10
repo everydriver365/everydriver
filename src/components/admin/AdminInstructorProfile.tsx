@@ -409,7 +409,6 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           )}
         </SectionPanel>
       </div>
-      </div>
 
       {/* Dialogs */}
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
