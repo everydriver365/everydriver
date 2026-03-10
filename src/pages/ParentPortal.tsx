@@ -24,6 +24,9 @@ import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
 import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
 import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
+import { ParentChat } from "@/components/parent/ParentChat";
+import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
+import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
 
 interface Child {
   id: string;
