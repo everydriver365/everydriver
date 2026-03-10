@@ -466,7 +466,6 @@ export function PupilRecordsManager() {
       const { softDelete } = await import("@/lib/auditLogger");
       await softDelete("pupils", pupil.id, pupil.instructor_id, { name: pupil.name });
 
-      // Remove from local state
       setPupils(prev => {
         const updated = { ...prev };
         updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).filter(p => p.id !== pupil.id);
@@ -481,6 +480,35 @@ export function PupilRecordsManager() {
     } catch (error) {
       console.error("Error deleting pupil:", error);
       toast.error("Failed to delete pupil");
+    }
+  };
+
+  // Archive pupil (set status to archived)
+  const archivePupil = async (pupil: Pupil) => {
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ status: "archived" })
+        .eq("id", pupil.id);
+
+      if (error) throw error;
+
+      setPupils(prev => {
+        const updated = { ...prev };
+        updated[pupil.instructor_id] = (updated[pupil.instructor_id] || []).map(p =>
+          p.id === pupil.id ? { ...p, status: "archived" } : p
+        );
+        return updated;
+      });
+
+      if (selectedPupil?.id === pupil.id) {
+        setSelectedPupil({ ...pupil, status: "archived" });
+      }
+
+      toast.success(`${pupil.name} has been archived`);
+    } catch (error) {
+      console.error("Error archiving pupil:", error);
+      toast.error("Failed to archive pupil");
     }
   };
 
