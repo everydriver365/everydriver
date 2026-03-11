@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 
 interface MiniWebsiteHomeProps {
   subdomainSlug?: string | null;
