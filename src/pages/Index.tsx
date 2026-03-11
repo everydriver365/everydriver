@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { IOSCourseCard } from "@/components/IOSCourseCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
@@ -593,7 +593,7 @@ export default function Index() {
                   transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
                   viewport={{ once: true }}
                 >
-                  <DynamicCourseCard
+                  <IOSCourseCard
                     instructor={course.instructor}
                     hours={course.hours}
                     nextAvailable={course.bookableDate}
