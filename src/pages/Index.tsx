@@ -903,7 +903,7 @@ export default function Index() {
                   viewport={{ once: true }}
                   className="rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
                 >
-                  <div className="overflow-hidden h-36">
+                  <div className="overflow-hidden h-36 md:h-48">
                     <img 
                       src={f.image} 
                       alt={f.title} 
