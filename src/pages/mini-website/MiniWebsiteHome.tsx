@@ -199,8 +199,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 </Link>
                 <Link to={links.services}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-0 shadow-md">
-                    <div className="h-28 bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center">
-                      <BookOpen className="h-10 w-10 text-white" />
+                    <div className="h-28 overflow-hidden">
+                      <img src={weeklyLessonsTile} alt="Weekly Lessons" className="w-full h-full object-cover" />
                     </div>
                     <CardContent className="p-3">
                       <h3 className="font-bold text-sm text-gray-900 uppercase">Weekly Lessons</h3>
