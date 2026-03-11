@@ -31,7 +31,7 @@ import { useHomepageStats } from "@/hooks/useHomepageStats";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileHomepage } from "@/components/MobileHomepage";
-import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
+import testimonialSarahFallback from "@/assets/testimonial-sarah-new.png";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
