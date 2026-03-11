@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
