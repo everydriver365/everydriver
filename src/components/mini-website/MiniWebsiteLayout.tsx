@@ -176,28 +176,28 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
             <div>
               <h3 className="font-semibold text-lg mb-4">Contact</h3>
               <div className="space-y-2 text-sm text-gray-400">
-                {(footerOverrides?.phone || instructor.phone) && (
+                {(resolvedFooterOverrides?.phone || instructor.phone) && (
                   <a
-                    href={`tel:${footerOverrides?.phone || instructor.phone}`}
+                    href={`tel:${resolvedFooterOverrides?.phone || instructor.phone}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Phone className="h-4 w-4" />
-                    {footerOverrides?.phone || instructor.phone}
+                    {resolvedFooterOverrides?.phone || instructor.phone}
                   </a>
                 )}
-                {(footerOverrides?.email || instructor.email) && (
+                {(resolvedFooterOverrides?.email || instructor.email) && (
                   <a
-                    href={`mailto:${footerOverrides?.email || instructor.email}`}
+                    href={`mailto:${resolvedFooterOverrides?.email || instructor.email}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Mail className="h-4 w-4" />
-                    {footerOverrides?.email || instructor.email}
+                    {resolvedFooterOverrides?.email || instructor.email}
                   </a>
                 )}
-                {(footerOverrides?.location || instructor.home_postcode) && (
+                {(resolvedFooterOverrides?.location || instructor.home_postcode) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    {footerOverrides?.location || instructor.home_postcode}
+                    {resolvedFooterOverrides?.location || instructor.home_postcode}
                   </div>
                 )}
               </div>
