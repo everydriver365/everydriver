@@ -497,6 +497,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                         discountedPrice={course.discounted_price}
                         customFeatures={features}
                         features={features}
+                        availableFrom={instructor.available_from}
                       />
                     </motion.div>
                   );
