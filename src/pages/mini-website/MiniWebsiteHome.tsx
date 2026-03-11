@@ -299,7 +299,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               </div>
               <div className="text-center">
                 <div className="text-4xl font-black">{reviews.length}</div>
-                <div className="text-sm text-white/80 mt-1">Verified Reviews</div>
+                <div className="text-sm text-primary-foreground/80 mt-1">Verified Reviews</div>
               </div>
               {courses.length > 0 && (
                 <div className="text-center">
