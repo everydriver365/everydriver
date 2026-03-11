@@ -154,6 +154,7 @@ export function IOSCourseCard({
             <p className="text-[10px] text-muted-foreground">from £{Math.round(finalPrice / 4)}/mo</p>
           </div>
         </div>
+        <CompactPaymentBadges amount={finalPrice} />
         <Button className="w-full rounded-xl" onClick={handleBookNow}>
           Book Now <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
