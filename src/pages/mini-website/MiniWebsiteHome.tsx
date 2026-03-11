@@ -180,13 +180,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 className="flex gap-2"
               >
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Your postcode"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
-                    className="pl-10 h-12 rounded-full border-gray-200 shadow-sm"
+                    className="pl-10 h-12 rounded-full border-border shadow-sm"
                   />
                 </div>
                 <Button
