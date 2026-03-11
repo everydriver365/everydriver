@@ -30,14 +30,28 @@ interface Instructor {
   linkedin_url?: string | null;
 }
 
+interface FooterOverrides {
+  email?: string;
+  phone?: string;
+  location?: string;
+}
+
 interface MiniWebsiteLayoutProps {
   instructor: Instructor;
   children: React.ReactNode;
+  footerOverrides?: FooterOverrides;
 }
 
-export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutProps) {
+export function MiniWebsiteLayout({ instructor, children, footerOverrides }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
+
+  // Per-instructor footer contact overrides
+  const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {
+    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester" },
+  };
+  const resolvedFooterOverrides = { ...FOOTER_CONTACT_OVERRIDES[slug], ...footerOverrides };
+
   const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
   const headerBg = instructor.website_header_bg || "#0b4089";
@@ -162,28 +176,28 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
             <div>
               <h3 className="font-semibold text-lg mb-4">Contact</h3>
               <div className="space-y-2 text-sm text-gray-400">
-                {instructor.phone && (
+                {(resolvedFooterOverrides?.phone || instructor.phone) && (
                   <a
-                    href={`tel:${instructor.phone}`}
+                    href={`tel:${resolvedFooterOverrides?.phone || instructor.phone}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Phone className="h-4 w-4" />
-                    {instructor.phone}
+                    {resolvedFooterOverrides?.phone || instructor.phone}
                   </a>
                 )}
-                {instructor.email && (
+                {(resolvedFooterOverrides?.email || instructor.email) && (
                   <a
-                    href={`mailto:${instructor.email}`}
+                    href={`mailto:${resolvedFooterOverrides?.email || instructor.email}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Mail className="h-4 w-4" />
-                    {instructor.email}
+                    {resolvedFooterOverrides?.email || instructor.email}
                   </a>
                 )}
-                {instructor.home_postcode && (
+                {(resolvedFooterOverrides?.location || instructor.home_postcode) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    {instructor.home_postcode}
+                    {resolvedFooterOverrides?.location || instructor.home_postcode}
                   </div>
                 )}
               </div>
