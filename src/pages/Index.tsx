@@ -193,14 +193,26 @@ export default function Index() {
               </motion.div>
             </div>
             
-            {/* Right: 3-Image Gallery */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="grid grid-cols-3 gap-3">
-              {[
-                { src: heroInstructorNew, alt: "Driving instructor" },
-                { src: heroLearner, alt: "Happy learner" },
-                { src: testimonialSarah, alt: "Successful student" },
+            {/* Right: Polaroid Stack Gallery */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-80 lg:h-96">
+              {[ 
+                { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "5%", left: "5%", zIndex: 1 },
+                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "30%", zIndex: 2 },
+                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "8%", left: "55%", zIndex: 3 },
               ].map((img, i) => (
-                <img key={i} src={img.src} alt={img.alt} className="w-full aspect-[4/5] object-cover rounded-2xl shadow-lg ring-1 ring-border" />
+                <div 
+                  key={i} 
+                  className="absolute w-36 lg:w-44 bg-white p-2 pb-8 rounded-sm shadow-xl"
+                  style={{ 
+                    transform: `rotate(${img.rotation})`,
+                    top: img.top,
+                    left: img.left,
+                    zIndex: img.zIndex
+                  }}
+                >
+                  <img src={img.src} alt={img.alt} className="w-full aspect-square object-cover rounded-sm bg-muted" />
+                  <span className="absolute bottom-2 left-0 right-0 text-center text-xs font-medium text-muted-foreground font-handwriting">{img.caption}</span>
+                </div>
               ))}
             </motion.div>
           </div>
