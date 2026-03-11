@@ -907,66 +907,68 @@ export default function Index() {
       </section>
 
       {/* Features Section — Split Panel */}
-      <section className="container py-24">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">All-in-One Platform</Badge>
-            <h2 className="text-4xl font-bold mb-4 leading-tight">
-              Everything You Need to
-              <span className="text-accent"> Learn to Drive</span>
-            </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Our platform connects learners, instructors, and parents in one seamless experience.
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">5</div>
-                <div className="text-xs text-muted-foreground">Key Features</div>
+      <section className="bg-gradient-to-b from-muted/60 to-background py-24">
+        <div className="container">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
+              <h2 className="text-4xl font-bold mb-4 leading-tight text-foreground">
+                Everything You Need to
+                <span className="block text-primary"> Learn to Drive</span>
+              </h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Our platform connects learners, instructors, and parents in one seamless experience.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">5</div>
+                  <div className="text-xs text-muted-foreground">Key Features</div>
+                </div>
+                <div className="h-12 w-px bg-border" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">3</div>
+                  <div className="text-xs text-muted-foreground">Portals</div>
+                </div>
+                <div className="h-12 w-px bg-border" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">5★</div>
+                  <div className="text-xs text-muted-foreground">Rated</div>
+                </div>
               </div>
-              <div className="h-12 w-px bg-border" />
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">3</div>
-                <div className="text-xs text-muted-foreground">Portals</div>
-              </div>
-              <div className="h-12 w-px bg-border" />
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">5★</div>
-                <div className="text-xs text-muted-foreground">Rated</div>
-              </div>
+            </motion.div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login", bg: "bg-primary/10", iconColor: "text-primary" },
+                { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent", bg: "bg-accent/10", iconColor: "text-accent" },
+                { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book.", bg: "bg-secondary", iconColor: "text-primary" },
+                { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius.", bg: "bg-primary/10", iconColor: "text-primary" },
+                { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments.", bg: "bg-accent/10", iconColor: "text-accent" },
+              ].map((f, i) => {
+                const content = (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    viewport={{ once: true }}
+                    className="flex gap-4 rounded-xl border bg-card p-4 hover:shadow-md transition-shadow group cursor-pointer"
+                  >
+                    <div className={`flex-shrink-0 rounded-lg ${f.bg} p-2.5 h-fit`}>
+                      <f.icon className={`h-5 w-5 ${f.iconColor}`} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm mb-1 text-foreground">{f.title}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
+                    </div>
+                  </motion.div>
+                );
+                return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
+              })}
             </div>
-          </motion.div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login", color: "from-blue-500 to-blue-600" },
-              { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent", color: "from-emerald-500 to-emerald-600" },
-              { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book.", color: "from-violet-500 to-violet-600" },
-              { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius.", color: "from-rose-500 to-rose-600" },
-              { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments.", color: "from-amber-500 to-amber-600" },
-            ].map((f, i) => {
-              const content = (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  viewport={{ once: true }}
-                  className="flex gap-4 rounded-xl border bg-card p-4 hover:shadow-md transition-shadow group cursor-pointer"
-                >
-                  <div className={`flex-shrink-0 rounded-lg bg-gradient-to-br ${f.color} p-2.5 h-fit`}>
-                    <f.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
-                  </div>
-                </motion.div>
-              );
-              return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
-            })}
           </div>
         </div>
       </section>
