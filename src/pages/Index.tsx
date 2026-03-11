@@ -136,115 +136,65 @@ export default function Index() {
   return (
     <MainLayout>
       <SEOHead />
-      {/* Hero Section - ADI Marketing */}
-      <section className="relative min-h-[600px] overflow-hidden bg-white py-16 lg:py-24">
-        <div className="container relative">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-xl"
-            >
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]">
-                <span className="text-foreground">The Free Diary App</span>
-                <br />
-                <span className="text-[#0075c9]">Built for ADIs</span>
-              </h1>
-              
-              {/* Subtext */}
-              <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                Manage your lessons, track payments, and grow your business — all from one app. Free forever, no credit card required.
-              </p>
-              
-              {/* Postcode Search */}
-              <div className="mt-8">
-                <p className="mb-3 text-sm font-medium text-muted-foreground">Find driving courses near you</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <PostcodeAutocomplete
-                    value={postcode}
-                    onChange={setPostcode}
-                    onSelect={(pc) => {
-                      setPostcode(pc);
-                      navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
-                    }}
-                    placeholder="Enter your postcode..."
-                    className="flex-1"
-                    inputClassName="h-12 text-base"
-                    showGeolocation={true}
-                  />
-                  <Button 
-                    size="xl" 
-                    className="bg-[#0075c9] hover:bg-[#0063ab] text-white shadow-lg h-12"
-                    onClick={() => {
-                      if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
-                    }}
-                  >
-                    <Search className="mr-2 h-5 w-5" /> Find Courses
-                  </Button>
-                </div>
+      {/* Hero Section - Bold Typography (V24) */}
+      <section className="bg-background py-20 lg:py-24 border-b border-border">
+        <div className="container max-w-5xl text-center space-y-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
+            <h1 className="text-6xl lg:text-8xl font-black text-foreground tracking-tight leading-none">
+              PASS YOUR<br /><span className="text-primary">DRIVING TEST</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-lg mx-auto">Intensive courses from 5 days. Free re-test guarantee. DVSA approved instructors.</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="max-w-lg mx-auto">
+            <div className="flex items-center gap-2">
+              <div className="flex flex-1 items-center rounded-full bg-card px-4 py-3 shadow-lg ring-1 ring-border">
+                <MapPin className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => {
+                    setPostcode(pc);
+                    navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
+                  }}
+                  placeholder="Enter your postcode..."
+                  className="flex-1"
+                  inputClassName="h-8 border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                  showGeolocation={true}
+                />
               </div>
-              
-              {/* Trust Row */}
-              <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> No credit card
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Free forever
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> GDPR compliant
-                </span>
+              <Button 
+                size="lg" 
+                className="rounded-full h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
+                onClick={() => {
+                  if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                }}
+              >
+                <Search className="h-4 w-4 mr-2" /> Find Courses
+              </Button>
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
+            {[
+              { src: heroInstructorNew, alt: "Driving instructor" },
+              { src: heroLearner, alt: "Happy learner" },
+              { src: testimonialSarah, alt: "Successful student" },
+            ].map((img, i) => (
+              <img key={i} src={img.src} alt={img.alt} className="w-full aspect-[4/5] object-cover rounded-2xl shadow-lg ring-1 ring-border" />
+            ))}
+          </motion.div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-3">
+            <div className="flex -space-x-3">
+              {[testimonialSarah, testimonialJames, testimonialEmma].map((src, i) => (
+                <img key={i} src={src} className="h-10 w-10 rounded-full ring-2 ring-background object-cover" alt="" />
+              ))}
+            </div>
+            <div className="text-sm text-left">
+              <div className="flex items-center gap-1 text-amber-500">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
               </div>
-            </motion.div>
-
-            {/* Right Content - Hero Image with Floating Badges */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden md:flex items-center justify-center"
-            >
-              <img 
-                src={heroInstructorNew} 
-                alt="Driving instructor with DRIVE365 branded materials in a red learner car" 
-                className="w-full max-w-lg rounded-2xl shadow-2xl"
-              />
-              
-              {/* Floating Badge - Fill Rate */}
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, type: "spring" }}
-                className="absolute top-4 right-0 lg:-right-4 bg-white rounded-xl px-4 py-3 shadow-xl border border-border"
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-[#0075c9]" />
-                  <div>
-                    <div className="font-bold text-foreground text-sm">98% Fill rate</div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Floating Badge - Active Instructors */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, type: "spring" }}
-                className="absolute bottom-8 left-4 lg:-left-4 bg-white rounded-xl px-4 py-3 shadow-xl border border-border"
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-emerald-500" />
-                  <div>
-                    <div className="font-bold text-foreground text-sm">500+ Active instructors</div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
+              <span className="text-muted-foreground">10,000+ happy learners</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 
