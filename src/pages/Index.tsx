@@ -906,69 +906,80 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Features Section — Split Panel */}
-      <section className="bg-gradient-to-b from-muted/60 to-background py-24">
-        <div className="container">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
-              <h2 className="text-4xl font-bold mb-4 leading-tight text-foreground">
-                Everything You Need to
-                <span className="block text-primary"> Learn to Drive</span>
-              </h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                Our platform connects learners, instructors, and parents in one seamless experience.
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground">5</div>
-                  <div className="text-xs text-muted-foreground">Key Features</div>
-                </div>
-                <div className="h-12 w-px bg-border" />
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground">3</div>
-                  <div className="text-xs text-muted-foreground">Portals</div>
-                </div>
-                <div className="h-12 w-px bg-border" />
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground">5★</div>
-                  <div className="text-xs text-muted-foreground">Rated</div>
-                </div>
-              </div>
-            </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login", bg: "bg-primary/10", iconColor: "text-primary" },
-                { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent", bg: "bg-accent/10", iconColor: "text-accent" },
-                { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book.", bg: "bg-secondary", iconColor: "text-primary" },
-                { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius.", bg: "bg-primary/10", iconColor: "text-primary" },
-                { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments.", bg: "bg-accent/10", iconColor: "text-accent" },
-              ].map((f, i) => {
-                const content = (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    viewport={{ once: true }}
-                    className="flex gap-4 rounded-xl border bg-card p-4 hover:shadow-md transition-shadow group cursor-pointer"
-                  >
-                    <div className={`flex-shrink-0 rounded-lg ${f.bg} p-2.5 h-fit`}>
-                      <f.icon className={`h-5 w-5 ${f.iconColor}`} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-sm mb-1 text-foreground">{f.title}</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
-                    </div>
-                  </motion.div>
-                );
-                return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
-              })}
-            </div>
+      {/* Features Section — Bento Grid with Images */}
+      <section className="bg-background py-24">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
+            <h2 className="text-4xl font-bold text-foreground mb-3">
+              Everything You Need to <span className="text-primary">Learn to Drive</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Our platform connects learners, instructors, and parents in one seamless experience.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { 
+                title: "Pupil Portal", 
+                description: "Track lessons, view progress, and manage payments all in one place.", 
+                link: "/pupil/login", 
+                image: getImage("feature_pupil_portal", heroLearner),
+                large: true 
+              },
+              { 
+                title: "Parent Portal", 
+                description: "Stay informed with lesson updates and payment visibility.", 
+                link: "/parent", 
+                image: getImage("feature_parent_portal", referFriends) 
+              },
+              { 
+                title: "Live Availability", 
+                description: "Real-time calendar sync shows when instructors are free.", 
+                image: getImage("feature_availability", featureAvailabilityFallback) 
+              },
+              { 
+                title: "Local Instructors", 
+                description: "Find certified instructors near you by postcode.", 
+                image: getImage("feature_instructors", testimonialJamesFallback) 
+              },
+              { 
+                title: "Track Progress", 
+                description: "Monitor your journey with detailed progress reports.", 
+                image: getImage("feature_progress", featureTheoryFallback) 
+              },
+            ].map((f, i) => {
+              const isLarge = f.large;
+              const content = (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.06 }}
+                  viewport={{ once: true }}
+                  className={`rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group ${isLarge ? "col-span-2 md:row-span-2" : ""}`}
+                >
+                  <div className={`overflow-hidden ${isLarge ? "h-56" : "h-32"}`}>
+                    <img 
+                      src={f.image} 
+                      alt={f.title} 
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className={`font-bold text-foreground mb-2 ${isLarge ? "text-xl" : "text-sm"}`}>{f.title}</h3>
+                    <p className={`text-muted-foreground leading-relaxed ${isLarge ? "text-sm" : "text-xs line-clamp-2"}`}>{f.description}</p>
+                    {isLarge && (
+                      <Button className="mt-4 w-fit" size="sm">
+                        Get Started <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+              return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
+            })}
           </div>
         </div>
       </section>
