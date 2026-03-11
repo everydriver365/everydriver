@@ -43,6 +43,7 @@ export default function Benefits() {
   const location = useLocation();
   const navigate = useNavigate();
   const { features, loading } = useIncludedFeatures();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<IncludedFeatureData | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [postcode, setPostcode] = useState("");
