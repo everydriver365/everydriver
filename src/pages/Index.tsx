@@ -528,7 +528,7 @@ export default function Index() {
                   onClick={() => openFeatureModal(feature)}
                   className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
                 >
-                  <div className="h-28 md:h-36 overflow-hidden">
+                  <div className="h-36 md:h-48 overflow-hidden">
                     {featureImage ? (
                       <img
                         src={featureImage}
