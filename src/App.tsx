@@ -152,6 +152,7 @@ const DemoTestimonialSections = lazy(() => import("./pages/DemoTestimonialSectio
 const DemoTrustBadges = lazy(() => import("./pages/DemoTrustBadges"));
 const DemoIncludedFeatures = lazy(() => import("./pages/DemoIncludedFeatures"));
 const DemoEverythingYouNeed = lazy(() => import("./pages/DemoEverythingYouNeed"));
+const DemoMiniWebsiteHome = lazy(() => import("./pages/DemoMiniWebsiteHome"));
 const DemoHeroSections = lazy(() => import("./pages/DemoHeroSections"));
 const DemoHeroSections2 = lazy(() => import("./pages/DemoHeroSections2"));
 const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
@@ -354,6 +355,7 @@ const App = () => (
                 <Route path="/demo/trust-badges" element={<DemoTrustBadges />} />
                 <Route path="/demo/included-features" element={<DemoIncludedFeatures />} />
                 <Route path="/demo/everything-you-need" element={<DemoEverythingYouNeed />} />
+                <Route path="/demo/mini-website-home" element={<DemoMiniWebsiteHome />} />
                 <Route path="/demo/hero-sections" element={<DemoHeroSections />} />
                 <Route path="/demo/hero-sections-2" element={<DemoHeroSections2 />} />
                 <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
