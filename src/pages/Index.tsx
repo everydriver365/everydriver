@@ -763,38 +763,36 @@ export default function Index() {
           ) : dvsaNews.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-8">
               {dvsaNews.slice(0, 3).map((article, i) => (
-                <motion.a
-                  key={article.link}
-                  href={article.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <motion.div
+                  key={article.slug || article.link}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.15 }}
                   viewport={{ once: true }}
-                  className="group"
                 >
-                  <div className="rounded-2xl overflow-hidden shadow-md mb-4">
-                    <img
-                      src={article.imageUrl || (i === 0 ? newsFeatured : i === 1 ? newsArticle1 : newsArticle2)}
-                      alt={article.title}
-                      className="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
-                    {article.category || "DVSA News"}
-                  </Badge>
-                  <h3 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                    {article.description}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
-                  </div>
-                </motion.a>
+                  <Link to={`/news/${article.slug}`} className="group block">
+                    <div className="rounded-2xl overflow-hidden shadow-md mb-4">
+                      <img
+                        src={article.imageUrl || (i === 0 ? newsFeatured : i === 1 ? newsArticle1 : newsArticle2)}
+                        alt={article.title}
+                        className="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
+                      {article.category || "DVSA News"}
+                    </Badge>
+                    <h3 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                      {article.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
+                    </div>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           ) : (
