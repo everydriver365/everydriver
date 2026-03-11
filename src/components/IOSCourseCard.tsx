@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, Star, Car, Zap, TrendingUp, ArrowRight, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO } from "date-fns";
 
