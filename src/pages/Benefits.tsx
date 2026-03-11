@@ -159,7 +159,7 @@ export default function Benefits() {
                     <div className="flex flex-row items-center min-h-[80px]">
                       {/* Left: Image */}
                       {feature.image_url && (
-                        <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
+                        <div className="w-20 h-[208px] flex-shrink-0 overflow-hidden">
                           <img 
                             src={feature.image_url} 
                             alt={feature.title} 
