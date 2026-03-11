@@ -977,7 +977,7 @@ export default function Index() {
       </section>
 
       {/* Testimonials Section — Social Proof Wall */}
-      <section className="bg-secondary/50 py-24">
+      <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
         <div className="container">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-3 mb-4">
