@@ -512,18 +512,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </section>
       )}
 
-      {/* Page Content Blocks */}
-      {page.content_blocks && page.content_blocks.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 py-12">
-          <PageContentRenderer
-            blocks={page.content_blocks}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            headingColor={headingColor}
-            textColor={textColor}
-          />
-        </section>
-      )}
 
       {/* Quick Links */}
       <section className="bg-secondary/50 py-10">
