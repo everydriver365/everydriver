@@ -136,98 +136,74 @@ export default function Index() {
   return (
     <MainLayout>
       <SEOHead />
-      {/* Hero Section - Warm Gradient */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent py-16 lg:py-20">
-        <div className="container relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-6"
-            >
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
-                🎓 {hero.badge_text || 'Earlier Test Guarantee'}
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05]">
-                {hero.headline_line1}<br /><span className="text-accent-foreground">{hero.headline_line2} {hero.headline_highlight}</span>
-              </h1>
-              <p className="text-white/80 text-lg max-w-md">{hero.subtext}</p>
-              
-              {/* Postcode Search */}
-              <div className="flex items-center gap-2">
-                <div className="flex flex-1 items-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-3">
-                  <MapPin className="h-5 w-5 text-white/60 mr-2 shrink-0" />
-                  <PostcodeAutocomplete
-                    value={postcode}
-                    onChange={setPostcode}
-                    onSelect={(pc) => {
-                      setPostcode(pc);
-                      navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
-                    }}
-                    placeholder={hero.search_placeholder || "Enter your postcode..."}
-                    className="flex-1"
-                    inputClassName="h-8 border-0 bg-transparent text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    showGeolocation={true}
-                  />
-                </div>
-                <Button 
-                  size="lg" 
-                  className="rounded-xl h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90"
-                  onClick={() => {
-                    if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+      {/* Hero Section - Full-Bleed Warm Gradient */}
+      <section className="relative min-h-[560px] flex items-center overflow-hidden">
+        <img src={heroLearner} alt="Happy learner driver" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-accent/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="container relative z-10 py-16 lg:py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-xl space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
+              🎓 {hero.badge_text || 'Earlier Test Guarantee'}
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05]">
+              {hero.headline_line1}<br /><span className="text-accent-foreground">{hero.headline_line2} {hero.headline_highlight}</span>
+            </h1>
+            <p className="text-white/85 text-lg max-w-md">{hero.subtext}</p>
+            
+            {/* Postcode Search */}
+            <div className="flex items-center gap-2">
+              <div className="flex flex-1 items-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-3">
+                <MapPin className="h-5 w-5 text-white/60 mr-2 shrink-0" />
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => {
+                    setPostcode(pc);
+                    navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
                   }}
-                >
-                  <Search className="h-4 w-4 mr-2" /> {hero.search_button_text || 'Search'}
-                </Button>
+                  placeholder={hero.search_placeholder || "Enter your postcode..."}
+                  className="flex-1"
+                  inputClassName="h-8 border-0 bg-transparent text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  showGeolocation={true}
+                />
               </div>
-
-              {/* Social proof */}
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-2">
-                  {[testimonialSarah, testimonialJames, testimonialEmma].map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full ring-2 ring-white/30 object-cover" />
-                  ))}
-                </div>
-                <div className="text-sm text-white/70">
-                  <span className="text-white font-semibold">{hero.rating_value || '4.9'}★</span> from {hero.learners_count || '10,000+'} {hero.learners_label || 'learners'}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Hero Image - Smaller */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden md:block"
-            >
-              <div className="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 max-w-sm ml-auto">
-                <img src={heroLearner} alt="Happy learner driver" className="w-full aspect-[3/4] object-cover" />
-              </div>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, type: "spring" }}
-                className="absolute -bottom-4 left-0 right-8 bg-card rounded-2xl p-4 shadow-xl flex items-center justify-between"
+              <Button 
+                size="lg" 
+                className="rounded-xl h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => {
+                  if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-foreground text-sm">Sarah just passed!</div>
-                    <div className="text-xs text-muted-foreground">20-hour intensive course</div>
-                  </div>
-                </div>
-                <span className="text-xs text-muted-foreground">2 min ago</span>
-              </motion.div>
-            </motion.div>
-          </div>
+                <Search className="h-4 w-4 mr-2" /> {hero.search_button_text || 'Search'}
+              </Button>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {[testimonialSarah, testimonialJames, testimonialEmma].map((src, i) => (
+                  <img key={i} src={src} alt="" className="h-9 w-9 rounded-full ring-2 ring-white/30 object-cover" />
+                ))}
+              </div>
+              <div className="text-sm text-white/70">
+                <span className="text-white font-semibold">{hero.rating_value || '4.9'}★</span> from {hero.learners_count || '10,000+'} {hero.learners_label || 'learners'}
+              </div>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex items-center gap-5 text-white/60 text-sm pt-2">
+              <span className="flex items-center gap-1.5"><Shield className="h-4 w-4 text-accent" /> Free re-test</span>
+              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-accent" /> Fast-track available</span>
+              <span className="flex items-center gap-1.5"><Award className="h-4 w-4 text-accent" /> DVSA approved</span>
+            </div>
+          </motion.div>
         </div>
-        {/* Decorative blobs */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-accent/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
       </section>
 
       {/* Guaranteed Earlier Test Promotion Banner — Feature Grid */}
