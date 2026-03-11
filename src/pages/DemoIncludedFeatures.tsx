@@ -435,6 +435,394 @@ function V10({ features }: { features: IncludedFeatureData[] }) {
   );
 }
 
+// ─── V11: Alternating Image Rows ───
+function V11({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V11" title="Alternating Image Rows">
+      <div className="container max-w-4xl space-y-4">
+        {features.map((f, i) => {
+          const img = useFeatureImage(f);
+          const Icon = f.icon;
+          const imgLeft = i % 2 === 0;
+          return (
+            <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.98 }}
+              className={`w-full flex ${imgLeft ? "flex-row" : "flex-row-reverse"} items-stretch rounded-2xl overflow-hidden bg-card ring-1 ring-border shadow-sm text-left hover:shadow-md transition-shadow`}>
+              <div className="w-1/3 min-h-[100px]">
+                {img ? (
+                  <img src={img} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-primary/5 flex items-center justify-center">
+                    <Icon className="h-8 w-8 text-primary/30" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 p-5 flex flex-col justify-center">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-bold text-sm">{f.title}</h4>
+                  <Badge className="border-0 bg-emerald-500/10 text-emerald-600 text-[10px]">FREE</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">{f.description}</p>
+                <span className="text-xs text-primary mt-2">Tap for details →</span>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V12: Notification Centre Style ───
+function V12({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V12" title="Notification Centre">
+      <div className="container max-w-2xl">
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+            <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+          </div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Included with your course</span>
+        </div>
+        <div className="space-y-2">
+          {features.map((f) => {
+            const Icon = f.icon;
+            const img = useFeatureImage(f);
+            return (
+              <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.98 }}
+                className="w-full flex items-start gap-3.5 p-4 rounded-2xl bg-card/80 backdrop-blur-sm ring-1 ring-border/60 text-left hover:bg-card transition-colors">
+                {img ? (
+                  <img src={img} alt="" className="h-10 w-10 rounded-lg object-cover flex-shrink-0 mt-0.5" />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">{f.title}</h4>
+                    <span className="text-[10px] text-muted-foreground">Free</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{f.description}</p>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V13: Masonry Polaroid ───
+function V13({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  const heights = ["h-48", "h-56", "h-44", "h-52", "h-48", "h-56"];
+  return (
+    <Wrapper id="V13" title="Masonry Polaroid">
+      <div className="container max-w-4xl">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold">All Included, No Extras</h3>
+        </div>
+        <div className="columns-2 md:columns-3 gap-3 space-y-3">
+          {features.map((f, i) => (
+            <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.96 }}
+              className="w-full break-inside-avoid rounded-2xl overflow-hidden bg-card ring-1 ring-border shadow-sm text-left group">
+              <div className={`${heights[i % heights.length]} overflow-hidden`}>
+                <FeatureImage feature={f} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+              <div className="p-3.5">
+                <h4 className="font-semibold text-sm">{f.title}</h4>
+                <p className="text-[11px] text-muted-foreground mt-1">{f.description}</p>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V14: Glass Tiles (3-col) ───
+function V14({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V14" title="Glass Tiles">
+      <div className="bg-gradient-to-b from-primary/5 to-background py-10">
+        <div className="container max-w-4xl">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold">Included Free</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {features.map((f) => {
+              const Icon = f.icon;
+              const img = useFeatureImage(f);
+              return (
+                <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.95 }}
+                  className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group">
+                  <div className="h-28 overflow-hidden">
+                    {img ? (
+                      <img src={img} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
+                        <Icon className="h-10 w-10 text-primary/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h4 className="font-semibold text-xs">{f.title}</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{f.description}</p>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V15: Timeline / Steps ───
+function V15({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V15" title="Timeline Steps">
+      <div className="container max-w-2xl">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold">Everything's Included</h3>
+        </div>
+        <div className="relative">
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
+          <div className="space-y-1">
+            {features.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.98 }}
+                  className="w-full relative flex items-center gap-4 pl-12 pr-4 py-4 text-left hover:bg-muted/30 rounded-xl transition-colors">
+                  <div className="absolute left-3 h-7 w-7 rounded-full bg-primary flex items-center justify-center ring-4 ring-background z-10">
+                    <Icon className="h-3.5 w-3.5 text-primary-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm">{f.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
+                  </div>
+                  <Badge className="border-0 bg-emerald-500/10 text-emerald-600 text-[10px] flex-shrink-0">FREE</Badge>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V16: Dark Feature Showcase ───
+function V16({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V16" title="Dark Showcase">
+      <div className="bg-foreground py-12">
+        <div className="container max-w-4xl">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-background">What You Get</h3>
+            <p className="text-sm text-background/60 mt-1">All included at no extra cost</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {features.map((f) => {
+              const Icon = f.icon;
+              return (
+                <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.95 }}
+                  className="text-left p-5 rounded-2xl bg-background/5 ring-1 ring-background/10 hover:bg-background/10 transition-colors group">
+                  <Icon className="h-7 w-7 text-primary mb-3" />
+                  <h4 className="font-semibold text-sm text-background">{f.title}</h4>
+                  <p className="text-[11px] text-background/50 mt-1 line-clamp-2">{f.description}</p>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V17: Overlapping Image Stack ───
+function V17({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V17" title="Overlapping Image Stack">
+      <div className="container max-w-4xl">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold">What's Inside</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+          {features.map((f, i) => {
+            const img = useFeatureImage(f);
+            const Icon = f.icon;
+            return (
+              <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.97 }}
+                className={`flex items-center gap-4 text-left group ${i % 2 === 1 ? "mt-8" : ""}`}>
+                <div className="relative h-20 w-20 rounded-2xl overflow-hidden flex-shrink-0 ring-2 ring-background shadow-lg">
+                  {img ? (
+                    <img src={img} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                      <Icon className="h-8 w-8 text-primary/40" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm group-hover:text-primary transition-colors">{f.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{f.description}</p>
+                  <span className="text-[10px] text-emerald-600 font-medium mt-1 inline-block">Included free</span>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V18: Accordion Reveal ───
+function V18({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  const [expanded, setExpanded] = useState<string | null>(null);
+  return (
+    <Wrapper id="V18" title="Accordion Reveal">
+      <div className="container max-w-2xl">
+        <div className="bg-card rounded-2xl ring-1 ring-border overflow-hidden shadow-sm">
+          <div className="p-5 border-b border-border">
+            <h3 className="font-bold text-lg">What's Included</h3>
+          </div>
+          {features.map((f) => {
+            const Icon = f.icon;
+            const img = useFeatureImage(f);
+            const isOpen = expanded === f.id;
+            return (
+              <div key={f.id} className="border-b border-border last:border-0">
+                <button onClick={() => setExpanded(isOpen ? null : f.id)}
+                  className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-muted/30 transition-colors">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="flex-1 text-sm font-medium">{f.title}</span>
+                  <Badge className="border-0 bg-emerald-500/10 text-emerald-600 text-[10px] mr-2">FREE</Badge>
+                  <ChevronRight className={`h-4 w-4 text-muted-foreground/50 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                </button>
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }} className="overflow-hidden">
+                      <div className="px-5 pb-4 flex gap-4">
+                        {img && <img src={img} alt="" className="h-24 w-32 rounded-xl object-cover flex-shrink-0" />}
+                        <div>
+                          <p className="text-xs text-muted-foreground">{f.description}</p>
+                          <button onClick={() => openModal(f)} className="text-xs text-primary mt-2 hover:underline">View full details →</button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V19: Full-Width Stripe Rows ───
+function V19({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V19" title="Full-Width Stripe Rows">
+      <div>
+        {features.map((f, i) => {
+          const Icon = f.icon;
+          const img = useFeatureImage(f);
+          return (
+            <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.99 }}
+              className={`w-full flex items-center gap-5 px-8 py-5 text-left transition-colors ${i % 2 === 0 ? "bg-muted/20 hover:bg-muted/40" : "bg-background hover:bg-muted/20"}`}>
+              <div className="container max-w-4xl flex items-center gap-5">
+                {img ? (
+                  <img src={img} alt="" className="h-14 w-14 rounded-2xl object-cover flex-shrink-0" />
+                ) : (
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm">{f.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span className="text-xs font-medium text-emerald-600">Included</span>
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
+// ─── V20: Compact Tags + 3-col Image Grid ───
+function V20({ features }: { features: IncludedFeatureData[] }) {
+  const { selected, open, openModal, closeModal } = useModal();
+  return (
+    <Wrapper id="V20" title="Tags + Image Grid">
+      <div className="container max-w-4xl">
+        <div className="bg-card rounded-2xl ring-1 ring-border shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border">
+            <h3 className="font-bold text-lg mb-1">What's Included</h3>
+            <p className="text-xs text-muted-foreground">Every course comes packed with extras</p>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-border">
+            {features.map((f) => {
+              const img = useFeatureImage(f);
+              const Icon = f.icon;
+              return (
+                <motion.button key={f.id} onClick={() => openModal(f)} whileTap={{ scale: 0.96 }}
+                  className="text-center p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors border-b border-border group">
+                  <div className="h-20 w-full rounded-xl overflow-hidden mb-3 mx-auto">
+                    {img ? (
+                      <img src={img} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="h-full w-full bg-primary/5 flex items-center justify-center">
+                        <Icon className="h-8 w-8 text-primary/30" />
+                      </div>
+                    )}
+                  </div>
+                  <h4 className="font-semibold text-xs">{f.title}</h4>
+                  <Badge className="border-0 bg-emerald-500/10 text-emerald-600 text-[9px] mt-1.5">FREE</Badge>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <ModalPortal selected={selected} open={open} closeModal={closeModal} />
+    </Wrapper>
+  );
+}
+
 export default function DemoIncludedFeatures() {
   const { features, loading } = useIncludedFeatures();
 
@@ -450,7 +838,7 @@ export default function DemoIncludedFeatures() {
     <div className="min-h-screen bg-background">
       <div className="container max-w-6xl py-12">
         <h1 className="text-4xl font-bold mb-2">What's Included — Design Variants</h1>
-        <p className="text-muted-foreground mb-2">10 iOS-style redesigns with images & modal popups</p>
+        <p className="text-muted-foreground mb-2">20 iOS-style redesigns with images & modal popups</p>
         <p className="text-xs text-muted-foreground">Tap any card/row to open the feature detail modal</p>
       </div>
       <V1 features={features} />
@@ -463,6 +851,16 @@ export default function DemoIncludedFeatures() {
       <V8 features={features} />
       <V9 features={features} />
       <V10 features={features} />
+      <V11 features={features} />
+      <V12 features={features} />
+      <V13 features={features} />
+      <V14 features={features} />
+      <V15 features={features} />
+      <V16 features={features} />
+      <V17 features={features} />
+      <V18 features={features} />
+      <V19 features={features} />
+      <V20 features={features} />
     </div>
   );
 }
