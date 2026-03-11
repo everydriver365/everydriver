@@ -4,12 +4,18 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import pupilAppHero from "@/assets/pupil-app-hero.png";
+import referFriends from "@/assets/refer-friends.png";
+import featureAvailability from "@/assets/feature-availability.jpg";
+import heroLearner from "@/assets/hero-learner.jpg";
+import featureTheory from "@/assets/feature-theory.jpg";
+
 const features = [
-  { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login" },
-  { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent" },
-  { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book." },
-  { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius." },
-  { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments." },
+  { icon: User, title: "Pupil Portal", description: "Track lessons, view progress, and manage payments all in one place.", link: "/pupil/login", image: pupilAppHero },
+  { icon: Users, title: "Parent Portal", description: "Stay informed with lesson updates, progress reports, and payment visibility.", link: "/parent", image: referFriends },
+  { icon: Calendar, title: "Live Availability", description: "Real-time calendar sync shows you exactly when instructors are free to book.", image: featureAvailability },
+  { icon: MapPin, title: "Local Instructors", description: "Find certified instructors near you by postcode with adjustable search radius.", image: heroLearner },
+  { icon: Award, title: "Track Progress", description: "Monitor your learning journey with detailed progress reports and skill assessments.", image: featureTheory },
 ];
 
 function Wrapper({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
