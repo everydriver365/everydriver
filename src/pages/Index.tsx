@@ -480,15 +480,15 @@ export default function Index() {
         </div>
       </section>
 
-      {/* What's Included Section */}
-      <section className="bg-background py-16">
-        <div className="container">
+      {/* What's Included Section — V14 Glass Tiles */}
+      <section className="bg-gradient-to-b from-primary/5 to-background py-16">
+        <div className="container max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="text-center mb-10"
           >
             <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
               Why Learners Love Us
@@ -496,15 +496,14 @@ export default function Index() {
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
               What's Included With Every Course
             </h2>
-            <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
+            <p className="mx-auto max-w-2xl text-muted-foreground">
               Everything you need to pass your driving test, all included for free.
             </p>
           </motion.div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {includedFeatures.map((feature, index) => {
               const IconComponent = feature.icon;
-              // Use CMS image or fallback to local assets
               const featureImage = feature.image_url || (() => {
                 switch(feature.title.toLowerCase()) {
                   case 'theory test support': return featureTheory;
@@ -516,40 +515,36 @@ export default function Index() {
                   default: return null;
                 }
               })();
-              
+
               return (
-                <motion.div
+                <motion.button
                   key={feature.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                  transition={{ duration: 0.4, delay: index * 0.04 }}
                   viewport={{ once: true }}
-                  className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl cursor-pointer"
-                  style={{ backgroundColor: "#e9f4f9" }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => openFeatureModal(feature)}
+                  className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
                 >
-                  <div className="relative h-40 overflow-hidden">
+                  <div className="h-28 md:h-36 overflow-hidden">
                     {featureImage ? (
-                      <img 
-                        src={featureImage} 
-                        alt={feature.title} 
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                      <img
+                        src={featureImage}
+                        alt={feature.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                        <IconComponent className="h-16 w-16 text-primary/40 transition-transform duration-300 group-hover:scale-110" />
+                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
+                        <IconComponent className="h-10 w-10 text-primary/30" />
                       </div>
                     )}
                   </div>
-                  <div className="p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="font-bold text-primary">{feature.title}</h3>
-                      <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                    <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+                  <div className="p-3 md:p-4">
+                    <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
                   </div>
-                </motion.div>
+                </motion.button>
               );
             })}
           </div>
