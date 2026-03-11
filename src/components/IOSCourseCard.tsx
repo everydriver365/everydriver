@@ -105,7 +105,7 @@ export function IOSCourseCard({
       </div>
 
       {/* Course Image */}
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative h-52 overflow-hidden">
         <img
           src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
           alt={courseName}
