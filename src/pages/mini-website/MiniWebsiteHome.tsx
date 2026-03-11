@@ -229,9 +229,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   </Card>
                 </Link>
               </div>
-              <div className="flex items-center justify-center gap-3 mt-3">
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
                 <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-12 object-contain" />
-                <span className="text-sm font-semibold text-foreground">Spread the Cost</span>
               </div>
             </motion.div>
           </div>
