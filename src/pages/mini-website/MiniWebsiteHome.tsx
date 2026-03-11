@@ -280,7 +280,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       {avgRating && (
         <section className="py-8 bg-primary">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="flex flex-wrap items-center justify-center gap-12 text-white">
+            <div className="flex flex-wrap items-center justify-center gap-12 text-primary-foreground">
               <div className="text-center">
                 <div className="text-4xl font-black">{avgRating}</div>
                 <div className="flex items-center justify-center gap-1 mt-1">
