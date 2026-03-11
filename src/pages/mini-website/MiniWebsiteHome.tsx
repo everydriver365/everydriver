@@ -158,8 +158,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
               {/* Heading */}
               <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
-                Your journey starts<br />with{" "}
-                <span style={{ color: primaryColor }}>{instructorName}</span>
+                Learn to Drive in Winchester
               </h1>
 
               <p className="text-muted-foreground text-lg">
