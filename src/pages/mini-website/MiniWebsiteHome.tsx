@@ -430,6 +430,52 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       </section>
 
+      {/* Everything You Need Section */}
+      <section className="bg-background py-24">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
+            <h2 className="text-4xl font-bold text-foreground mb-3">
+              Everything You Need to <span className="text-primary">Learn to Drive</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Our platform connects learners, instructors, and parents in one seamless experience.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { title: "Search, Compare & Book", description: "Find and compare local instructors, check real-time availability, and book directly online.", image: drivingTestCentreImg, link: links.courses },
+              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends },
+              { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage },
+              { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg },
+              { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile },
+              { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile },
+            ].map((f, i) => {
+              const content = (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.06 }}
+                  viewport={{ once: true }}
+                  className="rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
+                >
+                  <div className="overflow-hidden h-36 md:h-48">
+                    <img src={f.image} alt={f.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-foreground text-sm mb-1">{f.title}</h3>
+                    <p className="text-muted-foreground text-xs line-clamp-2">{f.description}</p>
+                  </div>
+                </motion.div>
+              );
+              return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
+            })}
+          </div>
+        </div>
+      </section>
+
 
       {avgRating && (
         <section className="py-8 bg-primary">
