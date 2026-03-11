@@ -121,7 +121,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               animate={{ opacity: 1, x: 0 }}
               className="relative rounded-2xl overflow-hidden shadow-lg"
             >
-              <img src={heroImageUrl || defaultHeroImage} alt={instructorName} className="w-full h-[400px] lg:h-[520px] object-cover" />
+              <img src={defaultHeroImage} alt={instructorName} className="w-full h-[400px] lg:h-[520px] object-cover" />
               {/* Book Now Pay Later badge */}
               <img
                 src={earlyTestBadge}
