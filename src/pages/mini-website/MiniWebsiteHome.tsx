@@ -146,11 +146,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                       className={`h-5 w-5 ${
                         s <= Math.round(Number(avgRating))
                           ? "fill-amber-400 text-amber-400"
-                          : "text-gray-300"
+                          : "text-muted-foreground/30"
                       }`}
                     />
                   ))}
-                  <span className="font-bold text-gray-700">
+                  <span className="font-bold text-muted-foreground">
                     {avgRating} ({reviews.length} reviews)
                   </span>
                 </div>
