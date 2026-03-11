@@ -307,8 +307,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
 
   useEffect(() => {
-    // If instructorId param is explicitly passed but undefined, wait for it to resolve
-    if (arguments.length > 1 && !instructorId) return;
+    // If instructorId is null, the caller wants to filter by instructor but it hasn't loaded yet — skip
+    if (instructorId === null) return;
     fetchData();
   }, [instructorId]);
 
