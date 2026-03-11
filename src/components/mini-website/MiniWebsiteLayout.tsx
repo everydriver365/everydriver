@@ -6,6 +6,7 @@ import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 interface Instructor {
   id: string;
   name: string;
+  business_name?: string | null;
   app_slug: string;
   logo_url?: string | null;
   brand_colour?: string | null;
