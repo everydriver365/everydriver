@@ -199,7 +199,7 @@ function V2({ instructor, reviews, avgRating }: { instructor: InstructorData; re
               {instructor.profile_image_url && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
                   className="relative">
-                  <div className="w-72 h-72 rounded-full overflow-hidden ring-4" style={{ ringColor: primary }}>
+                  <div className="w-72 h-72 rounded-full overflow-hidden ring-4 ring-white/30">
                     <img src={instructor.profile_image_url} alt={instructor.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-full px-6 py-2 shadow-xl">
