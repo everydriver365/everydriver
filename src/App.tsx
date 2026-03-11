@@ -146,6 +146,7 @@ const DemoVideoSections = lazy(() => import("./pages/DemoVideoSections"));
 const DemoNervousToReady = lazy(() => import("./pages/DemoNervousToReady"));
 const DemoETGBanner = lazy(() => import("./pages/DemoETGBanner"));
 const DemoNewsSections = lazy(() => import("./pages/DemoNewsSections"));
+const DemoCTASections = lazy(() => import("./pages/DemoCTASections"));
 const DemoFeatureSections = lazy(() => import("./pages/DemoFeatureSections"));
 const DemoTestimonialSections = lazy(() => import("./pages/DemoTestimonialSections"));
 const DemoTrustBadges = lazy(() => import("./pages/DemoTrustBadges"));
