@@ -194,15 +194,15 @@ export default function Index() {
             </div>
             
             {/* Right: Polaroid Stack Gallery */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-80 lg:h-96">
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-96 lg:h-[28rem]">
               {[ 
-                { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "5%", left: "5%", zIndex: 1 },
-                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "30%", zIndex: 2 },
-                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "8%", left: "55%", zIndex: 3 },
+                { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "5%", left: "0%", zIndex: 1 },
+                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "25%", zIndex: 2 },
+                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "8%", left: "50%", zIndex: 3 },
               ].map((img, i) => (
                 <div 
                   key={i} 
-                  className="absolute w-36 lg:w-44 bg-white p-2 pb-8 rounded-sm shadow-xl"
+                  className="absolute w-52 lg:w-64 bg-background p-3 pb-10 rounded-md shadow-2xl"
                   style={{ 
                     transform: `rotate(${img.rotation})`,
                     top: img.top,
@@ -211,7 +211,7 @@ export default function Index() {
                   }}
                 >
                   <img src={img.src} alt={img.alt} className="w-full aspect-square object-cover rounded-sm bg-muted" />
-                  <span className="absolute bottom-2 left-0 right-0 text-center text-xs font-medium text-muted-foreground font-handwriting">{img.caption}</span>
+                  <span className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-muted-foreground font-handwriting">{img.caption}</span>
                 </div>
               ))}
             </motion.div>
