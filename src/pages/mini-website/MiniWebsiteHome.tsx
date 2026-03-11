@@ -240,44 +240,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       </section>
 
-      {/* Why Section - Benefits Grid */}
-      <section className="bg-muted/30 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-foreground mt-1">
-              Why choose {instructorName}?
-            </h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              Exclusive benefits you won't find anywhere else
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {benefits.map((benefit, i) => (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-2xl p-5 flex items-start gap-3"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-background shadow-sm">
-                  <benefit.icon
-                    className="h-5 w-5"
-                    style={{ color: primaryColor }}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-sm">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-muted-foreground text-xs mt-1">{benefit.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* What's Included Section */}
       <section className="bg-background py-16">
