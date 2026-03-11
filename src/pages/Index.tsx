@@ -35,6 +35,7 @@ import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialSarahNew from "@/assets/testimonial-sarah-new.png";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
+import localInstructorImg from "@/assets/local-instructor.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
@@ -878,7 +879,7 @@ export default function Index() {
               { 
                 title: "Local Instructors", 
                 description: "Find certified instructors near you by postcode.", 
-                image: getImage("feature_instructors", testimonialJamesFallback) 
+                image: localInstructorImg
               },
               { 
                 title: "Track Progress", 
