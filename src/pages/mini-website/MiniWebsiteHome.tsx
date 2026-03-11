@@ -337,7 +337,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               { to: links.contact, label: "Contact", sub: "Get in touch" },
             ].map((link) => (
               <Link key={link.to} to={link.to}>
-                <Card className="border-0 shadow-sm hover:shadow-md transition rounded-2xl cursor-pointer">
+                <Card className="border border-border shadow-sm hover:shadow-md transition rounded-2xl cursor-pointer">
                   <CardContent className="p-4 text-center">
                     <h3
                       className="font-bold text-sm"
