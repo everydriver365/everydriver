@@ -110,7 +110,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </div>
 
       {/* Hero Section - Warm & Approachable */}
-      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      <section style={{ background: 'linear-gradient(135deg, #414200 0%, #5a5b10 40%, #7a7c2a 70%, #9a9d44 100%)' }}>
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
