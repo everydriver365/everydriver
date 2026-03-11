@@ -115,7 +115,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
                 className="font-semibold text-lg hidden sm:block"
                 style={{ color: menuTextColor }}
               >
-                {instructor.name}
+                {instructor.business_name || instructor.name}
               </span>
             </Link>
 
