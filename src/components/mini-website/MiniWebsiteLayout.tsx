@@ -6,6 +6,7 @@ import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 interface Instructor {
   id: string;
   name: string;
+  business_name?: string | null;
   app_slug: string;
   logo_url?: string | null;
   brand_colour?: string | null;
@@ -115,7 +116,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
                 className="font-semibold text-lg hidden sm:block"
                 style={{ color: menuTextColor }}
               >
-                {instructor.name}
+                {instructor.business_name || instructor.name}
               </span>
             </Link>
 
