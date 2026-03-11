@@ -150,6 +150,7 @@ const DemoTrustBadges = lazy(() => import("./pages/DemoTrustBadges"));
 const DemoIncludedFeatures = lazy(() => import("./pages/DemoIncludedFeatures"));
 const DemoEverythingYouNeed = lazy(() => import("./pages/DemoEverythingYouNeed"));
 const DemoHeroSections = lazy(() => import("./pages/DemoHeroSections"));
+const DemoHeroSections2 = lazy(() => import("./pages/DemoHeroSections2"));
 
 
 // Lazy-load ConditionalRoutes
