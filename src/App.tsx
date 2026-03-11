@@ -60,6 +60,7 @@ const GoogleApiDisclosure = lazy(() => import("./pages/GoogleApiDisclosure"));
 const Benefits = lazy(() => import("./pages/Benefits"));
 const EarlierTestGuarantee = lazy(() => import("./pages/EarlierTestGuarantee"));
 const News = lazy(() => import("./pages/News"));
+const NewsArticle = lazy(() => import("./pages/NewsArticle"));
 const InstructorMiniWebsiteSettings = lazy(() => import("./pages/InstructorMiniWebsiteSettings"));
 const MiniWebsiteHome = lazy(() => import("./pages/mini-website/MiniWebsiteHome"));
 const MiniWebsiteAbout = lazy(() => import("./pages/mini-website/MiniWebsiteAbout"));
@@ -203,6 +204,7 @@ const App = () => (
                 <Route path="/benefits" element={<Benefits />} />
                 <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
                 <Route path="/news" element={<News />} />
+                <Route path="/news/:slug" element={<NewsArticle />} />
                 <Route path="/i/:slug" element={<MiniWebsiteHome />} />
                 <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
                 <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
