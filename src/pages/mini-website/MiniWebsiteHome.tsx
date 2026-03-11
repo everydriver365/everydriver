@@ -122,7 +122,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <img
                 src={defaultHeroImage}
                 alt={instructorName}
-                className="w-full h-[480px] object-cover rounded-3xl shadow-xl"
+                className="w-full h-[580px] object-cover rounded-3xl shadow-xl"
               />
               <img
                 src={earlyTestBadge}
