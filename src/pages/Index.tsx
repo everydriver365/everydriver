@@ -593,7 +593,7 @@ export default function Index() {
                   transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
                   viewport={{ once: true }}
                 >
-                  <DynamicCourseCard
+                  <IOSCourseCard
                     instructor={course.instructor}
                     hours={course.hours}
                     nextAvailable={course.bookableDate}
