@@ -25,6 +25,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const links = useMiniWebsiteLinks(slug);
   const [reviews, setReviews] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [postcode, setPostcode] = useState("");
 
   useEffect(() => {
     if (instructor?.id) {
