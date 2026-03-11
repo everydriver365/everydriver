@@ -348,6 +348,7 @@ const App = () => (
                 <Route path="/demo/nervous-to-ready" element={<DemoNervousToReady />} />
                 <Route path="/demo/etg-banner" element={<DemoETGBanner />} />
                 <Route path="/demo/news-sections" element={<DemoNewsSections />} />
+                <Route path="/demo/cta-sections" element={<DemoCTASections />} />
                 <Route path="/demo/feature-sections" element={<DemoFeatureSections />} />
                 <Route path="/demo/testimonial-sections" element={<DemoTestimonialSections />} />
                 <Route path="/demo/trust-badges" element={<DemoTrustBadges />} />
