@@ -58,7 +58,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-[500px] w-full rounded-2xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -69,11 +69,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   if (notFound || !instructor || !page) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Page Not Found</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Page Not Found</h1>
+          <p className="text-muted-foreground mb-6">
             Sorry, we couldn't find this instructor's website.
           </p>
           <Link to="/">
@@ -102,15 +102,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   return (
     <MiniWebsiteLayout instructor={instructor}>
       {/* Announcement Bar */}
-      <div className="bg-amber-50 border-b border-amber-200 py-2 px-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-center gap-8 text-sm font-medium text-amber-800">
+      <div className="bg-muted border-b border-border py-2 px-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-8 text-sm font-medium text-foreground">
           <span>🌟 Special Offer: 10% off your first lesson</span>
           <span className="hidden md:inline">💳 Pay in instalments with Klarna</span>
         </div>
       </div>
 
-      {/* Hero Section - Warm & Approachable */}
-      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      {/* Hero Section */}
+      <section className="bg-background">
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
@@ -146,23 +146,23 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                       className={`h-5 w-5 ${
                         s <= Math.round(Number(avgRating))
                           ? "fill-amber-400 text-amber-400"
-                          : "text-gray-300"
+                          : "text-muted-foreground/30"
                       }`}
                     />
                   ))}
-                  <span className="font-bold text-gray-700">
+                  <span className="font-bold text-muted-foreground">
                     {avgRating} ({reviews.length} reviews)
                   </span>
                 </div>
               )}
 
               {/* Heading */}
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
                 Your journey starts<br />with{" "}
                 <span style={{ color: primaryColor }}>{instructorName}</span>
               </h1>
 
-              <p className="text-gray-600 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Search, compare and book direct with {instructor.name}.{" "}
                 <strong>
                   Book through Every Driver for a range of exclusive benefits.
@@ -180,13 +180,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 className="flex gap-2"
               >
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Your postcode"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
-                    className="pl-10 h-12 rounded-full border-gray-200 shadow-sm"
+                    className="pl-10 h-12 rounded-full border-border shadow-sm"
                   />
                 </div>
                 <Button
@@ -210,10 +210,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-bold text-sm">Intensive Courses</h3>
-                      <p className="text-xs text-gray-500">Fast-track your test</p>
-                    </CardContent>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Intensive Courses</h3>
+                       <p className="text-xs text-muted-foreground">Fast-track your test</p>
+                     </CardContent>
                   </Card>
                 </Link>
                 <Link to={links.services}>
@@ -225,10 +225,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-bold text-sm">Weekly Lessons</h3>
-                      <p className="text-xs text-gray-500">At your own pace</p>
-                    </CardContent>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Weekly Lessons</h3>
+                       <p className="text-xs text-muted-foreground">At your own pace</p>
+                     </CardContent>
                   </Card>
                 </Link>
               </div>
@@ -238,13 +238,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Why Section - Benefits Grid */}
-      <section className="bg-white py-12">
+      <section className="bg-muted/30 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-gray-900 mt-1">
+            <h2 className="text-3xl font-extrabold text-foreground mt-1">
               Why choose {instructorName}?
             </h2>
-            <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
+            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
               Exclusive benefits you won't find anywhere else
             </p>
           </div>
@@ -256,19 +256,19 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 flex items-start gap-3"
+                className="bg-card border border-border rounded-2xl p-5 flex items-start gap-3"
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-background shadow-sm">
                   <benefit.icon
                     className="h-5 w-5"
                     style={{ color: primaryColor }}
                   />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">
+                  <h3 className="font-bold text-foreground text-sm">
                     {benefit.title}
                   </h3>
-                  <p className="text-gray-500 text-xs mt-1">{benefit.desc}</p>
+                  <p className="text-muted-foreground text-xs mt-1">{benefit.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -278,9 +278,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
       {/* Reviews Stats Bar */}
       {avgRating && (
-        <section className="py-8 bg-gradient-to-r from-amber-400 to-orange-500">
+        <section className="py-8 bg-primary">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="flex flex-wrap items-center justify-center gap-12 text-white">
+            <div className="flex flex-wrap items-center justify-center gap-12 text-primary-foreground">
               <div className="text-center">
                 <div className="text-4xl font-black">{avgRating}</div>
                 <div className="flex items-center justify-center gap-1 mt-1">
@@ -289,22 +289,22 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                       key={s}
                       className={`h-4 w-4 ${
                         s <= Math.round(Number(avgRating))
-                          ? "fill-white text-white"
-                          : "text-white/40"
+                          ? "fill-primary-foreground text-primary-foreground"
+                          : "text-primary-foreground/40"
                       }`}
                     />
                   ))}
                 </div>
-                <div className="text-sm text-white/80 mt-1">Average Rating</div>
+                <div className="text-sm text-primary-foreground/80 mt-1">Average Rating</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-black">{reviews.length}</div>
-                <div className="text-sm text-white/80 mt-1">Verified Reviews</div>
+                <div className="text-sm text-primary-foreground/80 mt-1">Verified Reviews</div>
               </div>
               {courses.length > 0 && (
                 <div className="text-center">
                   <div className="text-4xl font-black">{courses.length}</div>
-                  <div className="text-sm text-white/80 mt-1">Active Courses</div>
+                  <div className="text-sm text-primary-foreground/80 mt-1">Active Courses</div>
                 </div>
               )}
             </div>
@@ -326,7 +326,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Quick Links */}
-      <section className="bg-amber-50 py-10">
+      <section className="bg-secondary/50 py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
@@ -337,7 +337,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               { to: links.contact, label: "Contact", sub: "Get in touch" },
             ].map((link) => (
               <Link key={link.to} to={link.to}>
-                <Card className="border-0 shadow-sm hover:shadow-md transition rounded-2xl cursor-pointer">
+                <Card className="border border-border shadow-sm hover:shadow-md transition rounded-2xl cursor-pointer">
                   <CardContent className="p-4 text-center">
                     <h3
                       className="font-bold text-sm"
@@ -345,7 +345,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     >
                       {link.label}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">{link.sub}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{link.sub}</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -355,12 +355,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-gray-900">
+      <section className="py-12 bg-primary">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-white mb-3">
+          <h2 className="text-3xl font-black text-primary-foreground mb-3">
             Start your driving journey today! 🚗
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-primary-foreground/70 mb-6">
             Join thousands of happy learners. Pass your driving test with us!
           </p>
           <Link to={links.courses}>
