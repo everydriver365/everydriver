@@ -355,12 +355,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-gray-900">
+      <section className="py-12 bg-primary">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-white mb-3">
+          <h2 className="text-3xl font-black text-primary-foreground mb-3">
             Start your driving journey today! 🚗
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-primary-foreground/70 mb-6">
             Join thousands of happy learners. Pass your driving test with us!
           </p>
           <Link to={links.courses}>
