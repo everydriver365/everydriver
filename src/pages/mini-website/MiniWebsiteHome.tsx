@@ -163,10 +163,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               </h1>
 
               <p className="text-muted-foreground text-lg">
-                Search, compare and book direct with {instructor.name}.{" "}
-                <strong>
-                  Book through Every Driver for a range of exclusive benefits.
-                </strong>
+                Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
               </p>
 
               {/* Search Bar */}
