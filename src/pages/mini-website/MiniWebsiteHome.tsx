@@ -304,7 +304,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               {courses.length > 0 && (
                 <div className="text-center">
                   <div className="text-4xl font-black">{courses.length}</div>
-                  <div className="text-sm text-white/80 mt-1">Active Courses</div>
+                  <div className="text-sm text-primary-foreground/80 mt-1">Active Courses</div>
                 </div>
               )}
             </div>
