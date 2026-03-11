@@ -194,11 +194,11 @@ export default function Index() {
             </div>
             
             {/* Right: Polaroid Stack Gallery */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-96 lg:h-[28rem]">
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-96 lg:h-[30rem]">
               {[ 
                 { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "5%", left: "0%", zIndex: 1 },
-                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "25%", zIndex: 2 },
-                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "8%", left: "50%", zIndex: 3 },
+                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "30%", zIndex: 2 },
+                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "10%", left: "60%", zIndex: 3 },
               ].map((img, i) => (
                 <div 
                   key={i} 
