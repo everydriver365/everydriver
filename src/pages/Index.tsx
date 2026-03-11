@@ -1027,7 +1027,7 @@ export default function Index() {
       </section>
 
       {/* CTA Section */}
-      <section className="container py-24">
+      <section className="py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
