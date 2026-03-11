@@ -169,28 +169,28 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
             <div>
               <h3 className="font-semibold text-lg mb-4">Contact</h3>
               <div className="space-y-2 text-sm text-gray-400">
-                {instructor.phone && (
+                {(footerOverrides?.phone || instructor.phone) && (
                   <a
-                    href={`tel:${instructor.phone}`}
+                    href={`tel:${footerOverrides?.phone || instructor.phone}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Phone className="h-4 w-4" />
-                    {instructor.phone}
+                    {footerOverrides?.phone || instructor.phone}
                   </a>
                 )}
-                {instructor.email && (
+                {(footerOverrides?.email || instructor.email) && (
                   <a
-                    href={`mailto:${instructor.email}`}
+                    href={`mailto:${footerOverrides?.email || instructor.email}`}
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Mail className="h-4 w-4" />
-                    {instructor.email}
+                    {footerOverrides?.email || instructor.email}
                   </a>
                 )}
-                {instructor.home_postcode && (
+                {(footerOverrides?.location || instructor.home_postcode) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    {instructor.home_postcode}
+                    {footerOverrides?.location || instructor.home_postcode}
                   </div>
                 )}
               </div>
