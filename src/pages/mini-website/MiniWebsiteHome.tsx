@@ -107,7 +107,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         <div className="bg-gray-900 px-4 pb-6 -mt-1">
           <div className="max-w-2xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-3 flex items-center gap-3">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-2 flex items-center gap-3 shadow-[0px_8px_20px_rgba(0,0,0,0.2),0px_2px_6px_rgba(0,0,0,0.1)] ring-1 ring-inset ring-white/20">
                 <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-40 h-40 object-contain shrink-0" />
                 <form
                   onSubmit={(e) => {
