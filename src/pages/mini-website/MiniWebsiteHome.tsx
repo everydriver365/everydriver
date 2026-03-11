@@ -102,15 +102,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   return (
     <MiniWebsiteLayout instructor={instructor}>
       {/* Announcement Bar */}
-      <div className="bg-amber-50 border-b border-amber-200 py-2 px-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-center gap-8 text-sm font-medium text-amber-800">
+      <div className="bg-muted border-b border-border py-2 px-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-8 text-sm font-medium text-foreground">
           <span>🌟 Special Offer: 10% off your first lesson</span>
           <span className="hidden md:inline">💳 Pay in instalments with Klarna</span>
         </div>
       </div>
 
-      {/* Hero Section - Warm & Approachable */}
-      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      {/* Hero Section */}
+      <section className="bg-background">
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
