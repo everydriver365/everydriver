@@ -16,6 +16,7 @@ import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 import defaultHeroImage from "@/assets/frontpagesquare-4.png";
 import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
+import klarnaCleanpayLogos from "@/assets/klarna-clearpay-logos.png";
 
 interface MiniWebsiteHomeProps {
   subdomainSlug?: string | null;
@@ -227,6 +228,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                      </CardContent>
                   </Card>
                 </Link>
+              </div>
+              <div className="flex items-center justify-center mt-2">
+                <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-8 object-contain" />
               </div>
             </motion.div>
           </div>
