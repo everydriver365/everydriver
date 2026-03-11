@@ -279,7 +279,63 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       </section>
 
-      {/* Reviews Stats Bar */}
+      {/* What's Included Section */}
+      <section className="bg-background py-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
+              Why Learners Love Us
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold text-foreground">
+              What's Included With Every Course
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Everything you need to pass your driving test, all included for free.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {includedFeatures.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <motion.div
+                  key={feature.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.04 }}
+                  viewport={{ once: true }}
+                  className="rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
+                >
+                  <div className="h-36 md:h-48 overflow-hidden">
+                    {feature.image_url ? (
+                      <img
+                        src={feature.image_url}
+                        alt={feature.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
+                        <IconComponent className="h-10 w-10 text-primary/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 md:p-4">
+                    <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+
       {avgRating && (
         <section className="py-8 bg-primary">
           <div className="max-w-6xl mx-auto px-4">
