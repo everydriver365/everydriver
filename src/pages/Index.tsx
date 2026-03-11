@@ -1033,7 +1033,7 @@ export default function Index() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="overflow-hidden rounded-3xl gradient-hero p-8 text-center md:p-16"
+          className="gradient-hero p-8 text-center md:p-16"
         >
           <h2 className="mb-4 text-3xl font-bold text-primary-foreground md:text-4xl">
             Ready to Start Your Driving Journey?
