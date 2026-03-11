@@ -202,7 +202,7 @@ export default function Index() {
               ].map((img, i) => (
                 <div 
                   key={i} 
-                  className="absolute w-48 lg:w-56 bg-background p-3 pb-10 rounded-md shadow-2xl"
+                  className="absolute w-48 lg:w-56 bg-background p-2 pb-8 rounded-md shadow-2xl"
                   style={{ 
                     transform: `rotate(${img.rotation})`,
                     top: img.top,
@@ -210,8 +210,8 @@ export default function Index() {
                     zIndex: img.zIndex
                   }}
                 >
-                  <img src={img.src} alt={img.alt} className="w-full aspect-square object-cover rounded-sm bg-muted" />
-                  <span className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-muted-foreground font-handwriting">{img.caption}</span>
+                  <img src={img.src} alt={img.alt} className="w-full h-40 lg:h-48 object-cover rounded-sm bg-muted" />
+                  <span className="absolute bottom-2 left-0 right-0 text-center text-sm font-medium text-muted-foreground font-handwriting">{img.caption}</span>
                 </div>
               ))}
               {/* Second Row */}
@@ -221,7 +221,7 @@ export default function Index() {
               ].map((img, i) => (
                 <div 
                   key={`row2-${i}`} 
-                  className="absolute w-48 lg:w-56 bg-background p-3 pb-10 rounded-md shadow-2xl"
+                  className="absolute w-48 lg:w-56 bg-background p-2 pb-8 rounded-md shadow-2xl"
                   style={{ 
                     transform: `rotate(${img.rotation})`,
                     top: img.top,
@@ -229,8 +229,8 @@ export default function Index() {
                     zIndex: img.zIndex
                   }}
                 >
-                  <img src={img.src} alt={img.alt} className="w-full aspect-square object-cover rounded-sm bg-muted" />
-                  <span className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-muted-foreground font-handwriting">{img.caption}</span>
+                  <img src={img.src} alt={img.alt} className="w-full h-40 lg:h-48 object-cover rounded-sm bg-muted" />
+                  <span className="absolute bottom-2 left-0 right-0 text-center text-sm font-medium text-muted-foreground font-handwriting">{img.caption}</span>
                 </div>
               ))}
             </motion.div>
