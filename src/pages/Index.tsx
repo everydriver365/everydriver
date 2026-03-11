@@ -893,8 +893,8 @@ export default function Index() {
       </section>
 
       {/* Stats Section */}
-      <section className="container py-12">
-        <div className="grid grid-cols-2 gap-4 rounded-2xl bg-card p-6 shadow-lg md:grid-cols-4 md:gap-8 md:p-8">
+      <section className="py-12">
+        <div className="grid grid-cols-2 gap-4 bg-card p-6 shadow-lg md:grid-cols-4 md:gap-8 md:p-8">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
