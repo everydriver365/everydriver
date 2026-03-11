@@ -91,98 +91,106 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
-      {/* Hero Section */}
-      <section
-        className="relative overflow-hidden py-16 sm:py-24"
-        style={{ backgroundColor: primaryColor }}
-      >
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `radial-gradient(circle at 20% 50%, ${secondaryColor} 0%, transparent 50%)`,
-            }}
-          />
-        </div>
+      {/* Cinematic Full-Width Hero */}
+      <section className="relative min-h-[650px] flex items-center" style={{ backgroundColor: '#0a0a0a' }}>
+        {/* Background gradient */}
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 70% 50%, ${primaryColor}40 0%, transparent 70%)` }} />
 
         {heroImageUrl && (
           <div className="absolute inset-0">
-            <img
-              src={heroImageUrl}
-              alt="Hero"
-              className="w-full h-full object-cover"
-            />
-            <div 
-              className="absolute inset-0" 
-              style={{ backgroundColor: heroOverlayColor, opacity: heroOverlayOpacity }}
-            />
+            <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover opacity-20" />
+            <div className="absolute inset-0" style={{ backgroundColor: heroOverlayColor, opacity: heroOverlayOpacity }} />
           </div>
         )}
 
-        <div className="relative max-w-4xl mx-auto px-4 text-center text-white">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-          >
-            {instructor.logo_url && (instructor.hero_show_logo !== false) && (
-              <img
-                src={instructor.logo_url}
-                alt={instructor.name}
-                className="h-20 w-auto mx-auto mb-6 bg-white rounded-lg p-2"
-              />
-            )}
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              {page.hero_heading || `Welcome to ${instructor.name}`}
-            </h1>
-            <p className="text-xl text-white/90 mb-6 max-w-2xl mx-auto">
-              {page.hero_subheading}
-            </p>
+        <div className="max-w-6xl mx-auto px-4 relative z-10 py-16">
+          <div className="grid lg:grid-cols-5 gap-12 items-center">
+            <div className="lg:col-span-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                {/* Rating pill */}
+                {avgRating && (
+                  <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-3.5 w-3.5 fill-current text-amber-400" />
+                      ))}
+                    </div>
+                    <span className="text-white/70 text-sm">{avgRating} • {reviews.length} reviews</span>
+                  </div>
+                )}
 
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-              {avgRating && (
-                <Badge className="bg-white/20 text-white border-0 px-4 py-2">
-                  <Star className="h-4 w-4 mr-1 fill-current" style={{ color: secondaryColor }} />
-                  {avgRating} ({reviews.length} reviews)
-                </Badge>
-              )}
-              {instructor.instructor_grade && (
-                <Badge className="bg-white/20 text-white border-0 px-4 py-2">
-                  Grade {instructor.instructor_grade}
-                </Badge>
-              )}
-              {instructor.cpd_certified && (
-                <Badge className="bg-white/20 text-white border-0 px-4 py-2">
-                  <Award className="h-4 w-4 mr-1" /> CPD Certified
-                </Badge>
-              )}
-              <Badge className="bg-white/20 text-white border-0 px-4 py-2">
-                <MapPin className="h-4 w-4 mr-1" /> {instructor.home_postcode}
-              </Badge>
+                <h1 className="text-5xl lg:text-7xl font-black text-white leading-[0.9] mb-6 tracking-tight">
+                  {page.hero_heading ? (
+                    <span>{page.hero_heading}</span>
+                  ) : (
+                    <>
+                      LEARN TO<br />
+                      <span
+                        className="bg-clip-text text-transparent"
+                        style={{ backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${primaryColor})` }}
+                      >
+                        DRIVE WITH
+                      </span><br />
+                      CONFIDENCE
+                    </>
+                  )}
+                </h1>
+
+                <p className="text-white/60 text-lg mb-8 max-w-lg">
+                  {page.hero_subheading || instructor.bio}
+                </p>
+
+                <div className="flex flex-wrap gap-4 mb-10">
+                  <Link to={`/book/${instructor.id}`}>
+                    <Button size="lg" className="rounded-full px-10 text-lg font-bold shadow-2xl text-white" style={{ backgroundColor: primaryColor }}>
+                      <Calendar className="h-5 w-5 mr-2" /> Book Your Lesson
+                    </Button>
+                  </Link>
+                  {instructor.phone && (
+                    <a href={`tel:${instructor.phone}`}>
+                      <Button size="lg" variant="ghost" className="rounded-full text-white hover:bg-white/10">
+                        <Phone className="h-5 w-5 mr-2" /> Call Now
+                      </Button>
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex gap-8">
+                  {instructor.hourly_rate && (
+                    <div>
+                      <div className="text-2xl font-black text-white">£{instructor.hourly_rate}</div>
+                      <div className="text-xs text-white/40 uppercase tracking-wider">Hourly Rate</div>
+                    </div>
+                  )}
+                  {instructor.instructor_grade && (
+                    <div>
+                      <div className="text-2xl font-black text-white">{instructor.instructor_grade}</div>
+                      <div className="text-xs text-white/40 uppercase tracking-wider">Grade</div>
+                    </div>
+                  )}
+                  {instructor.car_type && (
+                    <div>
+                      <div className="text-2xl font-black text-white">{instructor.car_type}</div>
+                      <div className="text-xs text-white/40 uppercase tracking-wider">Transmission</div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to={`/book/${instructor.id}`}>
-                <Button
-                  size="lg"
-                  className="text-white shadow-lg"
-                  style={{ backgroundColor: secondaryColor }}
-                >
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Book a Lesson
-                </Button>
-              </Link>
-              {instructor.phone && (
-                <a href={`tel:${instructor.phone}`}>
-                  <Button variant="outline" size="lg" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
-                    <Phone className="h-5 w-5 mr-2" />
-                    Call Now
-                  </Button>
-                </a>
+            <div className="lg:col-span-2 flex justify-center">
+              {instructor.profile_image_url && (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative">
+                  <div className="w-72 h-72 rounded-full overflow-hidden ring-4 ring-white/20">
+                    <img src={instructor.profile_image_url} alt={instructor.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-full px-6 py-2 shadow-xl">
+                    <span className="font-bold text-sm">{instructor.name}</span>
+                  </div>
+                </motion.div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -196,60 +204,24 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           textColor={textColor}
         />
 
-        {/* Quick links to other pages */}
+        {/* Quick links */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-12">
-          <Link to={links.about}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
-              <CardContent className="p-4 text-center">
-                <h3 className="font-semibold" style={{ color: primaryColor }}>
-                  About Me
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">Learn more</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={links.services}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
-              <CardContent className="p-4 text-center">
-                <h3 className="font-semibold" style={{ color: primaryColor }}>
-                  Services
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">View options</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={links.courses}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
-              <CardContent className="p-4 text-center">
-                <h3 className="font-semibold" style={{ color: primaryColor }}>
-                  Courses
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">Search & book</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={links.reviews}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
-              <CardContent className="p-4 text-center">
-                <h3 className="font-semibold" style={{ color: primaryColor }}>
-                  Reviews
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {reviews.length} reviews
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={links.contact}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
-              <CardContent className="p-4 text-center">
-                <h3 className="font-semibold" style={{ color: primaryColor }}>
-                  Contact
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">Get in touch</p>
-              </CardContent>
-            </Card>
-          </Link>
+          {[
+            { to: links.about, label: "About Me", sub: "Learn more" },
+            { to: links.services, label: "Services", sub: "View options" },
+            { to: links.courses, label: "Courses", sub: "Search & book" },
+            { to: links.reviews, label: "Reviews", sub: `${reviews.length} reviews` },
+            { to: links.contact, label: "Contact", sub: "Get in touch" },
+          ].map((link) => (
+            <Link key={link.to} to={link.to}>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
+                <CardContent className="p-4 text-center">
+                  <h3 className="font-semibold" style={{ color: primaryColor }}>{link.label}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{link.sub}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </section>
     </MiniWebsiteLayout>
