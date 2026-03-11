@@ -258,17 +258,17 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 transition={{ delay: i * 0.05 }}
                 className="bg-card border border-border rounded-2xl p-5 flex items-start gap-3"
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-background shadow-sm">
                   <benefit.icon
                     className="h-5 w-5"
                     style={{ color: primaryColor }}
                   />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">
+                  <h3 className="font-bold text-foreground text-sm">
                     {benefit.title}
                   </h3>
-                  <p className="text-gray-500 text-xs mt-1">{benefit.desc}</p>
+                  <p className="text-muted-foreground text-xs mt-1">{benefit.desc}</p>
                 </div>
               </motion.div>
             ))}
