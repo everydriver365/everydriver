@@ -36,6 +36,7 @@ import testimonialSarahNew from "@/assets/testimonial-sarah-new.png";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
 import localInstructorImg from "@/assets/local-instructor.jpg";
+import drivingTestCentreImg from "@/assets/driving-test-centre.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
@@ -860,10 +861,10 @@ export default function Index() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { 
-                title: "Pupil Portal", 
-                description: "Track lessons, view progress, and manage payments all in one place.", 
-                link: "/pupil/login", 
-                image: getImage("feature_pupil_portal", heroLearner),
+                title: "Search, Compare & Book", 
+                description: "Find and compare local instructors, check real-time availability, and book directly online.", 
+                link: "/courses", 
+                image: drivingTestCentreImg,
               },
               { 
                 title: "Parent Portal", 
