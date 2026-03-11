@@ -159,6 +159,23 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     return allDays.filter((day) => !isBefore(day, today) && isDateAvailable(day));
   }, [selectedMonth, instructor, workingHours, dateOverrides]);
 
+  // Compute first available date across the next 12 months for card display
+  const firstAvailableDate = useMemo(() => {
+    if (!instructor) return null;
+    const today = startOfDay(new Date());
+    const searchStart = instructor.available_from && isAfter(parseISO(instructor.available_from), today)
+      ? parseISO(instructor.available_from)
+      : today;
+    
+    // Search up to 365 days ahead
+    for (let i = 0; i < 365; i++) {
+      const day = new Date(searchStart);
+      day.setDate(day.getDate() + i);
+      if (isDateAvailable(day)) return day;
+    }
+    return null;
+  }, [instructor, workingHours, dateOverrides]);
+
   // Calendar days for display
   const calendarDays = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
