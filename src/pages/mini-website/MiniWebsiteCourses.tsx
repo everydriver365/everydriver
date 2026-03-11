@@ -68,8 +68,9 @@ function getMonthOptions(): { value: string; label: string }[] {
 export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCoursesProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
-  const { page, instructor, loading, notFound } = useWebsitePage(slug, "services"); // Use services page data
+  const { page, instructor, loading, notFound } = useWebsitePage(slug, "services");
   const links = useMiniWebsiteLinks(slug);
+  const isMobile = useIsMobile();
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
