@@ -238,13 +238,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Why Section - Benefits Grid */}
-      <section className="bg-white py-12">
+      <section className="bg-muted/30 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-gray-900 mt-1">
+            <h2 className="text-3xl font-extrabold text-foreground mt-1">
               Why choose {instructorName}?
             </h2>
-            <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
+            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
               Exclusive benefits you won't find anywhere else
             </p>
           </div>
@@ -256,7 +256,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 flex items-start gap-3"
+                className="bg-card border border-border rounded-2xl p-5 flex items-start gap-3"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm">
                   <benefit.icon
