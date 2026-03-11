@@ -1,632 +1,403 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Film, Sparkles, Quote, Star, ChevronRight, ArrowRight, Clock, Users, Award, MapPin, Shield, Clapperboard, Heart } from "lucide-react";
+import { Play, Star, Heart, Quote, ArrowRight, Users, Award, CheckCircle2, Clock, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Link } from "react-router-dom";
 import videoThumbnail from "@/assets/video-thumbnail.jpg";
+import heroLearner from "@/assets/hero-learner.jpg";
+import testimonialSarah from "@/assets/testimonial-sarah.jpg";
+import testimonialJames from "@/assets/testimonial-james.jpg";
+import testimonialEmma from "@/assets/testimonial-emma.jpg";
+import testimonialEmily from "@/assets/testimonial-emily.jpg";
+import testimonialPriya from "@/assets/testimonial-priya.jpg";
+import courseIntensive from "@/assets/course-intensive.jpg";
 
-const DemoVideoSections = () => {
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [activeVariant, setActiveVariant] = useState<string | null>(null);
+const testimonials = [
+  { name: "Sarah", location: "Leeds", quote: "They changed my life!", avatar: testimonialSarah, hours: 30 },
+  { name: "James", location: "Manchester", quote: "Best decision I ever made!", avatar: testimonialJames, hours: 25 },
+  { name: "Emma", location: "Birmingham", quote: "Passed first time!", avatar: testimonialEmma, hours: 35 },
+  { name: "Emily", location: "Bristol", quote: "So supportive throughout!", avatar: testimonialEmily, hours: 20 },
+  { name: "Priya", location: "London", quote: "Passed first time, so happy!", avatar: testimonialPriya, hours: 28 },
+];
 
-  const variants = [
-    { id: "cinematic", label: "Cinematic" },
-    { id: "editorial", label: "Editorial" },
-    { id: "minimal", label: "Minimal" },
-    { id: "brutalist", label: "Brutalist" },
-    { id: "testimonial", label: "Testimonial" },
-    { id: "magazine", label: "Magazine" },
-  ];
+const stats = [
+  { value: "6,499+", label: "Learners passed" },
+  { value: "98%", label: "Pass rate" },
+  { value: "4.9", label: "Average rating" },
+];
 
+function PlayButton({ size = "lg" }: { size?: "sm" | "lg" }) {
+  const s = size === "lg" ? "h-20 w-20" : "h-14 w-14";
+  const icon = size === "lg" ? "h-8 w-8" : "h-6 w-6";
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-        <div className="container flex items-center justify-between py-4">
-          <div>
-            <h1 className="text-xl font-bold">Video Section Variants</h1>
-            <p className="text-sm text-muted-foreground">Choose a design for the Drive365 homepage</p>
+    <motion.div whileHover={{ scale: 1.1 }} className={`flex ${s} items-center justify-center rounded-full bg-white/90 shadow-xl backdrop-blur cursor-pointer`}>
+      <Play className={`${icon} fill-primary text-primary ml-1`} />
+    </motion.div>
+  );
+}
+
+function SectionWrapper({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="py-16 border-b border-border">
+      <div className="container max-w-6xl">
+        <div className="mb-8 flex items-center gap-3">
+          <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">{title}</span>
+        </div>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+// ─── V1: Cinematic Widescreen ───
+function V1() {
+  return (
+    <SectionWrapper title="V1 — Cinematic Widescreen">
+      <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+        <img src={videoThumbnail} alt="Video" className="w-full aspect-[21/9] object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
+          <div className="flex gap-1 mb-3">
+            {[1,2,3,4,5].map(i => <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />)}
           </div>
-          <div className="flex gap-2">
-            {variants.map((v) => (
-              <Button
-                key={v.id}
-                size="sm"
-                variant={activeVariant === v.id ? "default" : "outline"}
-                onClick={() => setActiveVariant(activeVariant === v.id ? null : v.id)}
-              >
-                {v.label}
-              </Button>
-            ))}
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-2">See Why Learners Love Us</h2>
+          <p className="text-white/70 text-lg mb-6 max-w-xl">Real stories from real learners who passed with flying colours.</p>
+          <div className="flex items-center gap-6">
+            <PlayButton />
+            <div className="flex -space-x-3">
+              {testimonials.slice(0, 4).map((t, i) => (
+                <img key={i} src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full border-2 border-white object-cover" />
+              ))}
+              <div className="h-10 w-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-xs font-bold text-white">+6k</div>
+            </div>
           </div>
         </div>
       </div>
+    </SectionWrapper>
+  );
+}
 
-      {/* Variant 1: Cinematic Full-Width */}
-      {(!activeVariant || activeVariant === "cinematic") && (
-        <section className="relative">
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 1 — Cinematic Full-Width</Badge>
+// ─── V2: Split Panel ───
+function V2() {
+  return (
+    <SectionWrapper title="V2 — Split Panel">
+      <div className="grid md:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-xl ring-1 ring-border">
+        <div className="relative">
+          <img src={videoThumbnail} alt="Video" className="w-full h-full min-h-[300px] object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+            <PlayButton />
           </div>
-          <div className="relative overflow-hidden bg-zinc-950 py-24">
-            {/* Background Video Thumbnail with overlay */}
-            <div className="absolute inset-0">
-              <img
-                src={videoThumbnail}
-                alt=""
-                className="h-full w-full object-cover opacity-30"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
-            </div>
-
-            <div className="container relative z-10">
-              <div className="grid items-center gap-16 lg:grid-cols-5">
-                {/* Content — wider */}
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7 }}
-                  viewport={{ once: true }}
-                  className="lg:col-span-2"
-                >
-                  <div className="mb-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500">
-                      <Film className="h-5 w-5 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold uppercase tracking-widest text-amber-400">
-                      Our Story
-                    </span>
-                  </div>
-                  <h2 className="mb-6 text-4xl font-black leading-tight text-white md:text-5xl">
-                    Every Driver
-                    <br />
-                    <span className="text-amber-400">Has a Story</span>
-                  </h2>
-                  <p className="mb-8 max-w-md text-lg leading-relaxed text-zinc-400">
-                    From nervous first-timers to confident road users. Watch how we've transformed thousands of driving journeys across the UK.
-                  </p>
-                  <div className="flex items-center gap-6">
-                    <Button
-                      size="lg"
-                      onClick={() => setVideoModalOpen(true)}
-                      className="gap-3 bg-amber-500 px-8 text-base font-bold hover:bg-amber-400 text-zinc-950"
-                    >
-                      <Play className="h-5 w-5 fill-current" />
-                      Watch Now
-                    </Button>
-                    <div className="flex items-center gap-2 text-zinc-500">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">2 min watch</span>
-                    </div>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="mt-12 flex gap-8 border-t border-zinc-800 pt-8">
-                    {[
-                      { icon: Users, value: "10,000+", label: "Drivers Trained" },
-                      { icon: Star, value: "4.9★", label: "Average Rating" },
-                      { icon: Award, value: "15+", label: "Years Experience" },
-                    ].map((stat) => (
-                      <div key={stat.label}>
-                        <div className="text-2xl font-black text-white">{stat.value}</div>
-                        <div className="text-xs text-zinc-500">{stat.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Video Player — narrower */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.7, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className="lg:col-span-3"
-                >
-                  <div className="relative overflow-hidden rounded-2xl border border-zinc-800 shadow-2xl shadow-amber-500/10">
-                    <img
-                      src={videoThumbnail}
-                      alt="Our Story Video"
-                      className="aspect-video w-full object-cover"
-                    />
-                    <button
-                      onClick={() => setVideoModalOpen(true)}
-                      className="absolute inset-0 flex items-center justify-center transition-all hover:bg-black/10"
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-500 shadow-xl shadow-amber-500/30"
-                      >
-                        <Play className="h-8 w-8 fill-white text-white ml-1" />
-                      </motion.div>
-                    </button>
-                    {/* Progress-style bar at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-800">
-                      <div className="h-full w-1/3 bg-amber-500" />
-                    </div>
-                  </div>
-                </motion.div>
+        </div>
+        <div className="bg-card p-8 md:p-12 flex flex-col justify-center">
+          <div className="flex gap-1 mb-4">
+            {[1,2,3,4,5].map(i => <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />)}
+          </div>
+          <h2 className="text-3xl font-black text-foreground mb-3">"They Changed My Life"</h2>
+          <p className="text-muted-foreground mb-6">Sarah passed first time after just 30 hours of intensive training. Watch her story and discover why thousands of learners choose us.</p>
+          <div className="flex flex-wrap gap-4 mb-8">
+            {stats.map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="text-2xl font-black text-primary">{s.value}</div>
+                <div className="text-xs text-muted-foreground">{s.label}</div>
               </div>
-            </div>
+            ))}
           </div>
-        </section>
-      )}
-
-      {/* Variant 2: Editorial Split */}
-      {(!activeVariant || activeVariant === "editorial") && (
-        <section>
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 2 — Editorial Split</Badge>
+          <div className="flex gap-3">
+            <Button className="gap-2"><Play className="h-4 w-4 fill-primary-foreground" /> Watch Story</Button>
+            <Button variant="outline" className="gap-2">More Stories <ArrowRight className="h-4 w-4" /></Button>
           </div>
-          <div className="bg-gradient-to-br from-stone-50 to-amber-50/40 py-20">
-            <div className="container">
-              <div className="grid items-stretch gap-0 overflow-hidden rounded-3xl shadow-2xl lg:grid-cols-2">
-                {/* Left — Video */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="relative"
-                >
-                  <img
-                    src={videoThumbnail}
-                    alt="Our Story Video"
-                    className="h-full w-full object-cover"
-                    style={{ minHeight: 400 }}
-                  />
-                  <button
-                    onClick={() => setVideoModalOpen(true)}
-                    className="absolute inset-0 flex items-center justify-center bg-black/10 transition-all hover:bg-black/20"
-                  >
-                    <div className="relative">
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="absolute inset-0 rounded-full bg-white/30"
-                      />
-                      <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg">
-                        <Play className="h-7 w-7 fill-amber-500 text-amber-500 ml-0.5" />
-                      </div>
-                    </div>
-                  </button>
-                  {/* Duration badge */}
-                  <div className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
-                    <Clock className="h-3 w-3" />
-                    2:14
-                  </div>
-                </motion.div>
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-                {/* Right — Content */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.15 }}
-                  viewport={{ once: true }}
-                  className="flex flex-col justify-center bg-white p-10 lg:p-14"
-                >
-                  <div className="mb-6 inline-flex items-center gap-2 self-start rounded-full bg-amber-100 px-4 py-1.5 text-sm font-semibold text-amber-700">
-                    <Sparkles className="h-4 w-4" />
-                    Our Story
-                  </div>
-                  <h2 className="mb-4 text-3xl font-black leading-tight text-zinc-900 lg:text-4xl">
-                    Built by Instructors,
-                    <br />
-                    <span className="text-amber-600">for Instructors</span>
-                  </h2>
-                  <p className="mb-6 text-base leading-relaxed text-zinc-600">
-                    We started as driving instructors ourselves. We know the early mornings, the nervous pupils, and the joy of seeing someone pass. That's why we built something different.
-                  </p>
-
-                  {/* Quote */}
-                  <div className="mb-8 rounded-xl border-l-4 border-amber-400 bg-amber-50/50 p-5">
-                    <Quote className="mb-2 h-5 w-5 text-amber-400" />
-                    <p className="text-sm italic text-zinc-700">
-                      "Every learner deserves an instructor who truly cares. That's the standard we set."
-                    </p>
-                    <p className="mt-2 text-xs font-semibold text-zinc-500">— Drive365 Founders</p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => setVideoModalOpen(true)}
-                      className="gap-2 bg-amber-500 font-bold hover:bg-amber-600"
-                    >
-                      <Play className="h-4 w-4 fill-white" />
-                      Watch Our Story
-                    </Button>
-                    <Button variant="ghost" className="gap-2 text-amber-700 hover:text-amber-800" asChild>
-                      <Link to="/about">
-                        Learn More
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
+// ─── V3: Stacked Testimonial Cards ───
+function V3() {
+  return (
+    <SectionWrapper title="V3 — Stacked Card Stack">
+      <div className="text-center mb-10">
+        <h2 className="text-4xl font-black text-foreground mb-2">Hear From Our Learners</h2>
+        <p className="text-muted-foreground">Real stories, real results</p>
+      </div>
+      <div className="relative max-w-3xl mx-auto">
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+          <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+            <PlayButton />
           </div>
-        </section>
-      )}
+        </div>
+        <div className="grid grid-cols-3 gap-3 mt-6">
+          {testimonials.slice(0, 3).map((t, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
+              className="bg-card rounded-2xl p-4 ring-1 ring-border shadow-sm text-center">
+              <img src={t.avatar} alt={t.name} className="h-14 w-14 rounded-full object-cover mx-auto mb-3 ring-2 ring-primary/20" />
+              <p className="text-sm font-medium text-foreground">"{t.quote}"</p>
+              <p className="text-xs text-muted-foreground mt-1">— {t.name}, {t.location}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-      {/* Variant 3: Minimal Card */}
-      {(!activeVariant || activeVariant === "minimal") && (
-        <section>
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 3 — Minimal Card</Badge>
-          </div>
-          <div className="bg-background py-20">
-            <div className="container max-w-4xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="text-center mb-10"
-              >
-                <h2 className="text-4xl font-black mb-3">
-                  See What Makes Us <span className="text-amber-500">Different</span>
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                  A 2-minute look at how we're changing driving education in the UK
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="group relative overflow-hidden rounded-3xl bg-zinc-950"
-              >
-                <img
-                  src={videoThumbnail}
-                  alt="Our Story Video"
-                  className="aspect-video w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
-                />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-
-                {/* Play button */}
-                <button
-                  onClick={() => setVideoModalOpen(true)}
-                  className="absolute inset-0 flex flex-col items-center justify-center"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm transition-colors hover:bg-white/20"
-                  >
-                    <Play className="h-8 w-8 fill-white text-white ml-1" />
-                  </motion.div>
-                  <span className="text-sm font-semibold text-white/80">Click to play</span>
-                </button>
-
-                {/* Bottom content bar */}
-                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Every Driver Has a Story</h3>
-                    <p className="text-sm text-zinc-400">Our founding journey • 2:14</p>
-                  </div>
-                  <Button
-                    onClick={() => setVideoModalOpen(true)}
-                    size="sm"
-                    className="gap-2 bg-amber-500 font-bold hover:bg-amber-400 text-zinc-950"
-                  >
-                    <Play className="h-3 w-3 fill-current" />
-                    Play
-                  </Button>
+// ─── V4: Magazine Editorial ───
+function V4() {
+  return (
+    <SectionWrapper title="V4 — Magazine Editorial">
+      <div className="grid md:grid-cols-5 gap-8 items-center">
+        <div className="md:col-span-2 space-y-6">
+          <Quote className="h-10 w-10 text-primary/30" />
+          <h2 className="text-4xl font-black text-foreground leading-tight">Real Learners.<br />Real Results.</h2>
+          <p className="text-muted-foreground leading-relaxed">We don't just teach driving — we transform nervous beginners into confident, road-ready drivers. Watch the stories that prove it.</p>
+          <div className="space-y-3">
+            {testimonials.slice(0, 3).map((t, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <img src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full object-cover" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.location} · {t.hours}hrs · Passed ✓</p>
                 </div>
-              </motion.div>
+              </div>
+            ))}
+          </div>
+          <Button className="gap-2"><Play className="h-4 w-4 fill-primary-foreground" /> Watch Stories</Button>
+        </div>
+        <div className="md:col-span-3 relative">
+          <div className="rounded-3xl overflow-hidden shadow-2xl">
+            <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+              <PlayButton />
+            </div>
+          </div>
+          <div className="absolute -bottom-4 left-6 right-6 bg-card/90 backdrop-blur-lg rounded-2xl p-4 ring-1 ring-border shadow-lg flex items-center justify-between">
+            <div className="flex -space-x-2">
+              {testimonials.map((t, i) => <img key={i} src={t.avatar} alt={t.name} className="h-8 w-8 rounded-full border-2 border-card object-cover" />)}
+            </div>
+            <span className="text-sm font-semibold text-foreground">6,499+ learners passed</span>
+          </div>
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-              {/* Feature pills below */}
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                {["Trusted by 10,000+ Drivers", "4.9★ Average Rating", "15+ Years Experience", "UK-Wide Coverage"].map((text) => (
-                  <div
-                    key={text}
-                    className="rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-600"
-                  >
-                    {text}
-                  </div>
-                ))}
+// ─── V5: Full-Bleed Hero ───
+function V5() {
+  return (
+    <SectionWrapper title="V5 — Full-Bleed Hero">
+      <div className="relative -mx-4 md:-mx-8 rounded-3xl overflow-hidden">
+        <img src={heroLearner} alt="Learner" className="w-full aspect-[16/7] object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent flex items-center">
+          <div className="p-8 md:p-16 max-w-lg">
+            <div className="flex gap-1 mb-4">
+              {[1,2,3,4,5].map(i => <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />)}
+              <span className="text-white/70 text-sm ml-2">4.9 from 6,499 reviews</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">Watch Our Story</h2>
+            <p className="text-white/70 text-lg mb-8">Discover why thousands of learners trust us with their driving journey.</p>
+            <div className="flex gap-4 items-center">
+              <Button size="lg" className="gap-2 bg-white text-foreground hover:bg-white/90"><Play className="h-5 w-5 fill-foreground" /> Play Video</Button>
+              <div className="flex -space-x-2">
+                {testimonials.slice(0, 3).map((t, i) => <img key={i} src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full border-2 border-white object-cover" />)}
               </div>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-      {/* Variant 4: Brutalist */}
-      {(!activeVariant || activeVariant === "brutalist") && (
-        <section>
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 4 — Brutalist</Badge>
+// ─── V6: Minimal Centered ───
+function V6() {
+  return (
+    <SectionWrapper title="V6 — Minimal Centered">
+      <div className="max-w-3xl mx-auto text-center">
+        <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Our Story</p>
+        <h2 className="text-4xl font-black text-foreground mb-4">Why Learners Choose Us</h2>
+        <p className="text-muted-foreground mb-10 max-w-xl mx-auto">Watch real stories from learners who went from nervous beginner to confident driver.</p>
+        <div className="relative rounded-2xl overflow-hidden shadow-lg ring-1 ring-border">
+          <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <PlayButton />
           </div>
-          <div className="bg-zinc-950 py-20">
-            <div className="container">
-              <div className="grid lg:grid-cols-12 gap-0">
-                {/* Left title strip */}
-                <motion.div
-                  initial={{ opacity: 0, x: -40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className="lg:col-span-4 bg-amber-500 p-10 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="text-xs font-mono uppercase tracking-[0.3em] text-amber-900 mb-6">
-                      // 001 — OUR STORY
-                    </div>
-                    <h2 className="text-5xl font-black leading-[0.9] text-zinc-950 mb-6">
-                      EVERY<br />DRIVER<br />HAS A<br />STORY.
-                    </h2>
-                  </div>
-                  <div>
-                    <p className="text-sm text-amber-900/80 mb-6 font-mono">
-                      From L-plates to full licence. We've been there for every moment.
-                    </p>
-                    <Button
-                      onClick={() => setVideoModalOpen(true)}
-                      className="gap-2 bg-zinc-950 text-amber-500 hover:bg-zinc-800 font-mono uppercase tracking-wider text-xs"
-                    >
-                      <Play className="h-3 w-3 fill-current" />
-                      Play Film — 02:14
-                    </Button>
-                  </div>
-                </motion.div>
+        </div>
+        <div className="flex justify-center gap-8 mt-8">
+          {stats.map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="text-2xl font-black text-foreground">{s.value}</div>
+              <div className="text-xs text-muted-foreground">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-                {/* Right video */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className="lg:col-span-8 relative"
-                >
-                  <img
-                    src={videoThumbnail}
-                    alt="Our Story"
-                    className="w-full h-full object-cover"
-                    style={{ minHeight: 450 }}
-                  />
-                  <button
-                    onClick={() => setVideoModalOpen(true)}
-                    className="absolute inset-0 flex items-center justify-center group"
-                  >
-                    <div className="h-24 w-24 border-4 border-white flex items-center justify-center transition-all group-hover:bg-white group-hover:border-white">
-                      <Play className="h-10 w-10 text-white fill-white group-hover:text-zinc-950 group-hover:fill-zinc-950 ml-1" />
-                    </div>
-                  </button>
-                  {/* Corner label */}
-                  <div className="absolute top-0 right-0 bg-amber-500 text-zinc-950 px-4 py-2 font-mono text-xs uppercase tracking-wider">
-                    Watch Now
-                  </div>
-                </motion.div>
+// ─── V7: Floating Cards Mosaic ───
+function V7() {
+  return (
+    <SectionWrapper title="V7 — Floating Cards Mosaic">
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 relative rounded-3xl overflow-hidden shadow-xl">
+          <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
+            <h2 className="text-2xl font-black text-white mb-1">Watch Our Story</h2>
+            <p className="text-white/70 text-sm">3 min · Real learner testimonials</p>
+          </div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <PlayButton />
+          </div>
+        </div>
+        <div className="flex flex-col gap-4">
+          {testimonials.slice(0, 3).map((t, i) => (
+            <motion.div key={i} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
+              className="bg-card rounded-2xl p-4 ring-1 ring-border shadow-sm flex items-start gap-3 group hover:shadow-md transition-all cursor-pointer">
+              <img src={t.avatar} alt={t.name} className="h-11 w-11 rounded-full object-cover shrink-0" />
+              <div className="min-w-0">
+                <div className="flex gap-0.5 mb-1">{[1,2,3,4,5].map(s => <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />)}</div>
+                <p className="text-sm text-foreground font-medium truncate">"{t.quote}"</p>
+                <p className="text-xs text-muted-foreground">{t.name} · {t.location}</p>
+              </div>
+              <Play className="h-4 w-4 text-muted-foreground shrink-0 mt-1 group-hover:text-primary transition-colors" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
+
+// ─── V8: Dark Immersive ───
+function V8() {
+  return (
+    <SectionWrapper title="V8 — Dark Immersive">
+      <div className="bg-foreground text-background rounded-3xl overflow-hidden p-8 md:p-12">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <Sparkles className="h-5 w-5 text-amber-400" />
+              <span className="text-sm font-semibold text-amber-400">Featured Story</span>
+            </div>
+            <h2 className="text-4xl font-black mb-4 leading-tight">"The Best Decision I Ever Made"</h2>
+            <p className="text-background/60 mb-6 leading-relaxed">Sarah was terrified of driving. After 30 hours with our patient, expert instructors, she passed first time. Watch her incredible journey.</p>
+            <div className="flex items-center gap-4 mb-8">
+              <img src={testimonials[0].avatar} alt="Sarah" className="h-14 w-14 rounded-full object-cover ring-2 ring-amber-400" />
+              <div>
+                <p className="font-bold">Sarah M.</p>
+                <p className="text-sm text-background/50">Leeds · 30hrs · First time pass</p>
               </div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Variant 5: Testimonial-Led */}
-      {(!activeVariant || activeVariant === "testimonial") && (
-        <section>
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 5 — Testimonial-Led</Badge>
-          </div>
-          <div className="bg-gradient-to-b from-amber-50 to-background py-20">
-            <div className="container max-w-5xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="text-center mb-12"
-              >
-                <div className="flex justify-center mb-4">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="h-5 w-5 fill-amber-400 text-amber-400" />
-                  ))}
+            <div className="flex gap-8 mb-8">
+              {stats.map((s, i) => (
+                <div key={i}>
+                  <div className="text-2xl font-black text-amber-400">{s.value}</div>
+                  <div className="text-xs text-background/50">{s.label}</div>
                 </div>
-                <h2 className="text-4xl font-black mb-2">
-                  "They Changed My Life"
-                </h2>
-                <p className="text-muted-foreground">— Sarah, passed first time after 30 hours</p>
-              </motion.div>
-
-              {/* Video with testimonial cards floating */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="relative"
-              >
-                <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-                  <img
-                    src={videoThumbnail}
-                    alt="Our Story"
-                    className="aspect-video w-full object-cover"
-                  />
-                  <button
-                    onClick={() => setVideoModalOpen(true)}
-                    className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-all"
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-xl backdrop-blur"
-                    >
-                      <Play className="h-8 w-8 fill-amber-500 text-amber-500 ml-1" />
-                    </motion.div>
-                  </button>
-                </div>
-
-                {/* Floating testimonial cards */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  viewport={{ once: true }}
-                  className="absolute -bottom-6 -left-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border"
-                >
-                  <div className="flex gap-1 mb-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-zinc-600 italic">"Best decision I ever made!"</p>
-                  <p className="text-[10px] font-semibold text-zinc-400 mt-1">— James, Manchester</p>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                  viewport={{ once: true }}
-                  className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border"
-                >
-                  <div className="flex gap-1 mb-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-zinc-600 italic">"Passed first time, so happy!"</p>
-                  <p className="text-[10px] font-semibold text-zinc-400 mt-1">— Priya, London</p>
-                </motion.div>
-              </motion.div>
-
-              <div className="flex justify-center mt-12 gap-4">
-                <Button
-                  onClick={() => setVideoModalOpen(true)}
-                  className="gap-2 bg-amber-500 hover:bg-amber-600 font-bold"
-                >
-                  <Play className="h-4 w-4 fill-white" />
-                  Watch Our Story
-                </Button>
-                <Button variant="outline" className="gap-2" asChild>
-                  <Link to="/about">
-                    Read More Stories
-                    <Heart className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+              ))}
+            </div>
+            <Button size="lg" className="gap-2 bg-amber-400 text-foreground hover:bg-amber-500"><Play className="h-5 w-5 fill-foreground" /> Watch Story</Button>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <PlayButton />
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-      {/* Variant 6: Magazine Layout */}
-      {(!activeVariant || activeVariant === "magazine") && (
-        <section>
-          <div className="py-8 container">
-            <Badge variant="outline" className="mb-4">Variant 6 — Magazine Layout</Badge>
+// ─── V9: Warm Organic with Scrolling Avatars ───
+function V9() {
+  return (
+    <SectionWrapper title="V9 — Warm Organic">
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-3xl p-8 md:p-12">
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="flex -space-x-3 mb-4">
+            {testimonials.map((t, i) => (
+              <motion.img key={i} src={t.avatar} alt={t.name}
+                initial={{ opacity: 0, scale: 0.5 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} viewport={{ once: true }}
+                className="h-12 w-12 rounded-full border-3 border-amber-50 object-cover ring-2 ring-amber-200" />
+            ))}
           </div>
-          <div className="bg-stone-100 py-20">
-            <div className="container">
-              <div className="grid lg:grid-cols-3 gap-6">
-                {/* Main video - spans 2 cols */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className="lg:col-span-2 relative overflow-hidden rounded-2xl group"
-                >
-                  <img
-                    src={videoThumbnail}
-                    alt="Our Story"
-                    className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <button
-                    onClick={() => setVideoModalOpen(true)}
-                    className="absolute inset-0"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-8">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center">
-                        <Clapperboard className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Featured Film</span>
-                    </div>
-                    <h2 className="text-3xl font-black text-white mb-2">Every Driver Has a Story</h2>
-                    <p className="text-zinc-300 text-sm max-w-lg mb-4">
-                      Our founding journey — from two instructors with a dream to the UK's most trusted driving platform.
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <Button
-                        onClick={() => setVideoModalOpen(true)}
-                        size="sm"
-                        className="gap-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold"
-                      >
-                        <Play className="h-3 w-3 fill-current" />
-                        Play 2:14
-                      </Button>
-                      <div className="flex items-center gap-1 text-zinc-400 text-xs">
-                        <Clock className="h-3 w-3" />
-                        2 min watch
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+          <h2 className="text-4xl font-black text-foreground mb-2">Hear Their Stories</h2>
+          <p className="text-muted-foreground max-w-md">From nervous to road-ready — watch how we helped 6,499+ learners pass their test.</p>
+        </div>
+        <div className="max-w-3xl mx-auto relative">
+          <div className="rounded-3xl overflow-hidden shadow-2xl ring-1 ring-amber-200">
+            <img src={videoThumbnail} alt="Video" className="w-full aspect-video object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <PlayButton />
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center mt-8 gap-3">
+          <Button className="gap-2 bg-amber-500 hover:bg-amber-600 text-white"><Play className="h-4 w-4 fill-white" /> Watch Now</Button>
+          <Button variant="outline" className="gap-2 border-amber-300 hover:bg-amber-50">Read Stories <Heart className="h-4 w-4 text-amber-500" /></Button>
+        </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-                {/* Side cards */}
-                <div className="flex flex-col gap-6">
-                  {[
-                    {
-                      icon: Shield,
-                      title: "DVSA Approved",
-                      desc: "All instructors are fully qualified and DVSA approved",
-                      color: "bg-emerald-500",
-                    },
-                    {
-                      icon: MapPin,
-                      title: "UK-Wide Coverage",
-                      desc: "Find an instructor near you, wherever you are",
-                      color: "bg-blue-500",
-                    },
-                    {
-                      icon: Award,
-                      title: "98% Pass Rate",
-                      desc: "Our intensive course students pass at nearly double the national average",
-                      color: "bg-amber-500",
-                    },
-                  ].map((card, i) => (
-                    <motion.div
-                      key={card.title}
-                      initial={{ opacity: 0, x: 20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: 0.1 * i }}
-                      viewport={{ once: true }}
-                      className="flex-1 rounded-2xl bg-white p-6 shadow-sm flex flex-col justify-center"
-                    >
-                      <div className={`h-10 w-10 rounded-xl ${card.color} flex items-center justify-center mb-3`}>
-                        <card.icon className="h-5 w-5 text-white" />
-                      </div>
-                      <h3 className="font-bold text-zinc-900 mb-1">{card.title}</h3>
-                      <p className="text-sm text-zinc-500">{card.desc}</p>
-                    </motion.div>
-                  ))}
+// ─── V10: Multi-Video Grid ───
+function V10() {
+  const videos = [
+    { thumb: videoThumbnail, name: "Sarah's Story", loc: "Leeds", duration: "3:24", main: true },
+    { thumb: courseIntensive, name: "James' Journey", loc: "Manchester", duration: "2:15" },
+    { thumb: heroLearner, name: "Emma's First Test", loc: "Birmingham", duration: "4:02" },
+    { thumb: testimonialSarah, name: "Behind the Wheel", loc: "Bristol", duration: "1:58" },
+  ];
+  return (
+    <SectionWrapper title="V10 — Multi-Video Grid">
+      <div className="text-center mb-8">
+        <h2 className="text-4xl font-black text-foreground mb-2">Stories That Inspire</h2>
+        <p className="text-muted-foreground">Watch our learners share their driving journeys</p>
+      </div>
+      <div className="grid md:grid-cols-4 gap-4">
+        {videos.map((v, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
+            className={`relative rounded-2xl overflow-hidden shadow-lg group cursor-pointer ${v.main ? "md:col-span-2 md:row-span-2" : ""}`}>
+            <img src={v.thumb} alt={v.name} className={`w-full object-cover transition-transform group-hover:scale-105 ${v.main ? "aspect-square" : "aspect-video"}`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex flex-col justify-end p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white font-bold text-sm">{v.name}</p>
+                  <p className="text-white/60 text-xs">{v.loc} · {v.duration}</p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                  <Play className="h-4 w-4 fill-white text-white ml-0.5" />
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </motion.div>
+        ))}
+      </div>
+    </SectionWrapper>
+  );
+}
 
-      {/* Spacer */}
-      <div className="h-20" />
-
-      {/* Video Modal */}
-      <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black">
-          <div className="aspect-video flex items-center justify-center text-zinc-500">
-            <p>Video player placeholder</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+export default function DemoVideoSections() {
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container max-w-6xl py-12">
+        <h1 className="text-5xl font-black text-foreground mb-2">Video Section Variants</h1>
+        <p className="text-muted-foreground text-lg mb-12">10 design options for the Drive365 homepage video section</p>
+      </div>
+      <V1 />
+      <V2 />
+      <V3 />
+      <V4 />
+      <V5 />
+      <V6 />
+      <V7 />
+      <V8 />
+      <V9 />
+      <V10 />
     </div>
   );
-};
-
-export default DemoVideoSections;
+}
