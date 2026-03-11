@@ -5770,6 +5770,7 @@ export type Database = {
           brand_colour: string | null
           broadcast_messaging_enabled: boolean | null
           buffer_minutes: number
+          business_name: string | null
           calendar_colors: Json | null
           cancellation_analytics_enabled: boolean | null
           cancellation_charge_percent: number | null
@@ -5893,6 +5894,7 @@ export type Database = {
           brand_colour?: string | null
           broadcast_messaging_enabled?: boolean | null
           buffer_minutes?: number
+          business_name?: string | null
           calendar_colors?: Json | null
           cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
@@ -6016,6 +6018,7 @@ export type Database = {
           brand_colour?: string | null
           broadcast_messaging_enabled?: boolean | null
           buffer_minutes?: number
+          business_name?: string | null
           calendar_colors?: Json | null
           cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
