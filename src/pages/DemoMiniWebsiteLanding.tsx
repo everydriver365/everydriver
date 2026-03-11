@@ -424,63 +424,24 @@ function V10({ instructor: i, reviews, avgRating }: any) {
   );
 }
 
-// ─── V11: Diagonal Split ───
-function V11({ instructor: i, reviews, avgRating }: any) {
+// ─── V12A: Soft White Fade ───
+function V12A({ instructor: i }: any) {
   return (
-    <Wrap id="V11" title="Diagonal Split">
-      <div className="relative min-h-[520px] overflow-hidden">
-        <img src={i.hero_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${i.brand_colour}f0 0%, ${i.brand_colour}f0 45%, transparent 45.5%)` }} />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 grid lg:grid-cols-2 items-center min-h-[520px]">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-emerald-500 rounded-xl p-2.5"><img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" /></div>
-              <span className="text-white font-bold">Earlier Test Guaranteed</span>
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-black text-white leading-[0.9] mb-4">{i.business_name || i.name}</h1>
-            <p className="text-white/70 text-lg mb-8">{i.bio}</p>
-            <SearchBox primary={i.secondary_colour} />
-            <div className="flex gap-6 mt-6">
-              {[{ l: "Rating", v: `${avgRating}★` }, { l: "Grade", v: i.instructor_grade }, { l: "Rate", v: `£${i.hourly_rate}` }].map(s => (
-                <div key={s.l}><div className="text-xl font-black text-white">{s.v}</div><div className="text-[10px] text-white/50 uppercase tracking-widest">{s.l}</div></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V12: Sticky Search Bar ───
-function V12({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V12" title="Tall Image + Sticky Search Strip">
+    <Wrap id="V12A" title="Soft White Fade">
       <div>
         <div className="relative h-[450px]">
           <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
-          <div className="absolute bottom-6 left-0 right-0 text-center">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
+          <div className="absolute bottom-8 left-0 right-0 text-center">
             <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg">{i.business_name || i.name}</h1>
           </div>
         </div>
-        <div className="bg-white shadow-lg border-b py-4 px-4">
-          <div className="max-w-4xl mx-auto flex items-center gap-4 flex-wrap justify-center">
-            <div className="flex items-center gap-2">
-              <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" />
-              <span className="font-bold text-emerald-700 text-sm">Earlier Test Guaranteed</span>
-            </div>
-            <div className="w-px h-8 bg-gray-200 hidden md:block" />
+        <div className="bg-white px-4 -mt-2">
+          <div className="max-w-xl mx-auto flex items-center gap-3 justify-center py-4">
+            <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" />
+            <span className="font-bold text-emerald-700 text-sm">Earlier Test Guaranteed</span>
+            <div className="w-px h-6 bg-gray-200" />
             <SearchBox primary={i.brand_colour} />
-          </div>
-        </div>
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className="text-gray-600 text-center text-lg mb-4">{i.bio}</p>
-          <div className="flex justify-center gap-4">
-            <Badge variant="secondary">⭐ {avgRating}</Badge>
-            <Badge variant="secondary">Grade {i.instructor_grade}</Badge>
-            <Badge variant="secondary">£{i.hourly_rate}/hr</Badge>
-            <Badge variant="secondary">{i.car_type}</Badge>
           </div>
         </div>
       </div>
@@ -488,43 +449,164 @@ function V12({ instructor: i, reviews, avgRating }: any) {
   );
 }
 
-// ─── V13: Boxed Asymmetric ───
-function V13({ instructor: i, reviews, avgRating }: any) {
+// ─── V12B: Overlapping Search Card ───
+function V12B({ instructor: i }: any) {
   return (
-    <Wrap id="V13" title="Boxed Asymmetric">
-      <div className="bg-gray-100 py-8 px-4">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-5 gap-4">
-          <div className="lg:col-span-3 relative rounded-3xl overflow-hidden min-h-[420px]">
-            <img src={i.hero_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="relative z-10 p-8 flex flex-col justify-end h-full">
-              <h1 className="text-4xl lg:text-5xl font-black text-white mb-3">{i.business_name || i.name}</h1>
-              <p className="text-white/70 mb-6 max-w-md">{i.bio}</p>
-              <SearchBox primary={i.brand_colour} />
+    <Wrap id="V12B" title="Overlapping Search Card">
+      <div>
+        <div className="relative h-[450px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white" />
+          <div className="absolute bottom-20 left-0 right-0 text-center">
+            <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg">{i.business_name || i.name}</h1>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto -mt-10 relative z-10 px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
+            <img src={earlyTestBadge} alt="ETG" className="w-11 h-11 object-contain shrink-0" />
+            <div className="flex-1 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input type="text" placeholder="Enter your postcode..." className="w-full pl-10 h-12 text-base rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+            </div>
+            <button className="h-12 px-6 rounded-xl text-white font-semibold" style={{ backgroundColor: i.brand_colour }}>
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        <div className="h-8 bg-white" />
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12C: Brand Color Blend ───
+function V12C({ instructor: i }: any) {
+  return (
+    <Wrap id="V12C" title="Brand Color Blend">
+      <div>
+        <div className="relative h-[450px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 40%, ${i.brand_colour} 100%)` }} />
+          <div className="absolute bottom-8 left-0 right-0 text-center">
+            <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg">{i.business_name || i.name}</h1>
+          </div>
+        </div>
+        <div className="px-4 py-6" style={{ backgroundColor: i.brand_colour }}>
+          <div className="max-w-xl mx-auto flex items-center gap-3 justify-center">
+            <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" />
+            <span className="text-white font-bold text-sm">Earlier Test Guaranteed</span>
+            <div className="w-px h-6 bg-white/20" />
+            <SearchBox primary={i.secondary_colour} />
+          </div>
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12D: Frosted Embedded Bar ───
+function V12D({ instructor: i }: any) {
+  return (
+    <Wrap id="V12D" title="Frosted Embedded Bar">
+      <div className="relative h-[520px]">
+        <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
+        <div className="absolute top-8 left-0 right-0 text-center">
+          <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg">{i.business_name || i.name}</h1>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20 px-4 py-5">
+          <div className="max-w-2xl mx-auto flex items-center gap-3 justify-center">
+            <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain drop-shadow" />
+            <span className="text-white font-bold text-sm hidden sm:block">Earlier Test Guaranteed</span>
+            <div className="flex-1 max-w-md relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input type="text" placeholder="Enter your postcode..." className="w-full pl-10 h-12 text-base rounded-xl bg-white/90 border-0 focus:outline-none" />
+            </div>
+            <button className="h-12 px-6 rounded-xl text-white font-semibold shadow-lg" style={{ backgroundColor: i.brand_colour }}>
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12E: Gradient Melt ───
+function V12E({ instructor: i }: any) {
+  return (
+    <Wrap id="V12E" title="Gradient Melt into Gray">
+      <div>
+        <div className="relative h-[450px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-60% to-gray-100" />
+          <div className="absolute bottom-16 left-0 right-0 text-center">
+            <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg mb-2">{i.business_name || i.name}</h1>
+            <div className="inline-flex items-center gap-2 bg-emerald-500/90 backdrop-blur rounded-full px-4 py-1.5">
+              <img src={earlyTestBadge} alt="ETG" className="w-6 h-6 object-contain" />
+              <span className="text-white font-semibold text-xs">Earlier Test Guaranteed</span>
             </div>
           </div>
-          <div className="lg:col-span-2 flex flex-col gap-4">
-            <div className="bg-emerald-600 rounded-3xl p-6 flex items-center gap-4 flex-1">
-              <img src={earlyTestBadge} alt="ETG" className="w-16 h-16 object-contain drop-shadow-lg" />
-              <div>
-                <h3 className="text-lg font-black text-white">Earlier Test Guaranteed</h3>
-                <p className="text-sm text-emerald-100">We find you a sooner date</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl p-6 flex-1">
-              <div className="flex items-center gap-1 mb-2">
-                {[...Array(5)].map((_, j) => <Star key={j} className="h-5 w-5 fill-current text-amber-400" />)}
-              </div>
-              <div className="text-3xl font-black" style={{ color: i.brand_colour }}>{avgRating}</div>
-              <p className="text-sm text-gray-500">{reviews.length} verified reviews</p>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {[{ l: "Grade", v: i.instructor_grade }, { l: "Rate", v: `£${i.hourly_rate}` }, { l: "Type", v: i.car_type }].map(s => (
-                <div key={s.l} className="bg-white rounded-2xl p-4 text-center">
-                  <div className="text-lg font-black" style={{ color: i.brand_colour }}>{s.v}</div>
-                  <div className="text-xs text-gray-500">{s.l}</div>
+        </div>
+        <div className="bg-gray-100 px-4 pb-6 -mt-2">
+          <div className="max-w-lg mx-auto">
+            <SearchBox primary={i.brand_colour} />
+          </div>
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12F: Bottom Dock ───
+function V12F({ instructor: i }: any) {
+  return (
+    <Wrap id="V12F" title="Bottom Dock">
+      <div className="relative h-[500px]">
+        <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+        <div className="absolute top-10 left-0 right-0 text-center">
+          <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg">{i.business_name || i.name}</h1>
+        </div>
+        <div className="absolute bottom-6 left-4 right-4 flex justify-center">
+          <div className="bg-white rounded-full shadow-2xl pl-4 pr-2 py-2 flex items-center gap-2 max-w-xl w-full">
+            <img src={earlyTestBadge} alt="ETG" className="w-9 h-9 object-contain shrink-0" />
+            <div className="w-px h-6 bg-gray-200" />
+            <MapPin className="h-5 w-5 text-gray-400 shrink-0" />
+            <input type="text" placeholder="Enter your postcode..." className="flex-1 h-10 text-base border-0 bg-transparent focus:outline-none" />
+            <button className="h-10 px-5 rounded-full text-white font-semibold text-sm" style={{ backgroundColor: i.brand_colour }}>
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12G: Split Fade with Inline Search ───
+function V12G({ instructor: i }: any) {
+  return (
+    <Wrap id="V12G" title="Split Fade — Inline Search">
+      <div>
+        <div className="relative h-[450px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 30%, white 100%)` }} />
+          <div className="absolute bottom-12 left-0 right-0 px-4">
+            <div className="max-w-2xl mx-auto">
+              <h1 className="text-3xl lg:text-4xl font-black mb-4 drop-shadow-lg" style={{ color: i.brand_colour }}>{i.business_name || i.name}</h1>
+              <div className="flex items-center gap-3">
+                <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain shrink-0" />
+                <div className="flex-1 bg-white rounded-2xl shadow-xl p-2 flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input type="text" placeholder="Enter your postcode..." className="w-full pl-10 h-11 text-base rounded-xl border-0 bg-gray-50 focus:outline-none" />
+                  </div>
+                  <button className="h-11 px-5 rounded-xl text-white font-semibold text-sm" style={{ backgroundColor: i.brand_colour }}>
+                    <Search className="h-4 w-4" />
+                  </button>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
@@ -533,28 +615,27 @@ function V13({ instructor: i, reviews, avgRating }: any) {
   );
 }
 
-// ─── V14: Retro Poster ───
-function V14({ instructor: i, reviews, avgRating }: any) {
+// ─── V12H: Dark Bottom Panel ───
+function V12H({ instructor: i }: any) {
   return (
-    <Wrap id="V14" title="Retro Poster">
-      <div className="relative min-h-[580px] flex items-center" style={{ backgroundColor: '#1a1a2e' }}>
-        <div className="absolute inset-0 opacity-30"><img src={i.hero_image_url} alt="" className="w-full h-full object-cover" /></div>
-        <div className="absolute inset-0" style={{ background: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)` }} />
-        <div className="relative z-10 max-w-3xl mx-auto px-4 py-16 text-center">
-          <div className="border-4 border-white/20 rounded-3xl p-10">
-            <div className="flex justify-center mb-6">
-              <div className="bg-emerald-500 rounded-full p-4 shadow-2xl"><img src={earlyTestBadge} alt="ETG" className="w-14 h-14 object-contain" /></div>
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-              {i.business_name || i.name}
-            </h1>
-            <div className="w-24 h-1 mx-auto my-4" style={{ backgroundColor: i.secondary_colour }} />
-            <p className="text-white/50 text-lg mb-8 italic">{i.bio}</p>
-            <SearchBox primary={i.brand_colour} />
-            <div className="flex justify-center gap-8 mt-8">
-              {[{ l: "Rating", v: `${avgRating}★` }, { l: "Grade", v: i.instructor_grade }, { l: "Per Hour", v: `£${i.hourly_rate}` }].map(s => (
-                <div key={s.l}><div className="text-2xl font-black text-white">{s.v}</div><div className="text-[10px] text-white/40 uppercase tracking-[0.3em]">{s.l}</div></div>
-              ))}
+    <Wrap id="V12H" title="Dark Bottom Panel">
+      <div>
+        <div className="relative h-[400px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900" />
+        </div>
+        <div className="bg-gray-900 px-4 pb-8 -mt-1">
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-3xl lg:text-4xl font-black text-white mb-5">{i.business_name || i.name}</h1>
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-4 flex items-center gap-3">
+              <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain shrink-0" />
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input type="text" placeholder="Enter your postcode..." className="w-full pl-10 h-12 text-base rounded-xl bg-white border-0 focus:outline-none" />
+              </div>
+              <button className="h-12 px-6 rounded-xl text-white font-semibold" style={{ backgroundColor: i.brand_colour }}>
+                <Search className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -563,225 +644,58 @@ function V14({ instructor: i, reviews, avgRating }: any) {
   );
 }
 
-// ─── V15: Bento Grid ───
-function V15({ instructor: i, reviews, avgRating }: any) {
+// ─── V12I: Seamless White with Shadow Line ───
+function V12I({ instructor: i }: any) {
   return (
-    <Wrap id="V15" title="Bento Grid">
-      <div className="bg-gray-950 p-4 lg:p-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-[140px]">
-          {/* Hero image - spans 4 cols, 2 rows */}
-          <div className="col-span-4 row-span-2 relative rounded-3xl overflow-hidden">
-            <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
-              <h1 className="text-3xl lg:text-4xl font-black text-white mb-3">{i.business_name || i.name}</h1>
-              <SearchBox primary={i.brand_colour} />
+    <Wrap id="V12I" title="Seamless White + Shadow Line">
+      <div>
+        <div className="relative h-[450px]">
+          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-70% to-white" />
+          <div className="absolute bottom-6 left-0 right-0 text-center">
+            <h1 className="text-4xl lg:text-5xl font-black drop-shadow-lg" style={{ color: i.brand_colour }}>{i.business_name || i.name}</h1>
+          </div>
+        </div>
+        <div className="bg-white border-t shadow-sm px-4 py-5">
+          <div className="max-w-xl mx-auto">
+            <div className="flex items-center gap-3 bg-gray-50 rounded-full p-2 pl-4 shadow-inner">
+              <img src={earlyTestBadge} alt="ETG" className="w-8 h-8 object-contain shrink-0" />
+              <MapPin className="h-5 w-5 text-gray-400 shrink-0" />
+              <input type="text" placeholder="Enter your postcode to get started..." className="flex-1 h-10 text-base border-0 bg-transparent focus:outline-none" />
+              <button className="h-10 px-6 rounded-full text-white font-semibold text-sm" style={{ backgroundColor: i.brand_colour }}>
+                Search
+              </button>
             </div>
           </div>
-          {/* ETG badge */}
-          <div className="col-span-2 bg-emerald-600 rounded-3xl p-5 flex flex-col items-center justify-center text-center">
-            <img src={earlyTestBadge} alt="ETG" className="w-14 h-14 object-contain mb-2" />
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ─── V12J: Full Bleed with Floating Pill ───
+function V12J({ instructor: i }: any) {
+  return (
+    <Wrap id="V12J" title="Full Bleed + Floating Pill">
+      <div className="relative h-[520px]">
+        <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white/90" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg mb-3">{i.business_name || i.name}</h1>
+          <div className="inline-flex items-center gap-2 bg-emerald-500 rounded-full px-4 py-2 mb-6 shadow-lg">
+            <img src={earlyTestBadge} alt="ETG" className="w-7 h-7 object-contain" />
             <span className="text-white font-bold text-sm">Earlier Test Guaranteed</span>
           </div>
-          {/* Rating */}
-          <div className="col-span-2 bg-gray-800 rounded-3xl p-5 flex flex-col justify-center">
-            <div className="flex gap-0.5 mb-1">{[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-current text-amber-400" />)}</div>
-            <div className="text-2xl font-black text-white">{avgRating}</div>
-            <div className="text-xs text-gray-500">{reviews.length} reviews</div>
-          </div>
-          {/* Stats */}
-          <div className="col-span-2 bg-gray-800 rounded-3xl p-5 flex flex-col justify-center">
-            <div className="text-2xl font-black text-white">£{i.hourly_rate}/hr</div>
-            <div className="text-xs text-gray-500">Grade {i.instructor_grade} • {i.car_type}</div>
-          </div>
-          {/* Bio */}
-          <div className="col-span-4 bg-gray-800 rounded-3xl p-6 flex items-center">
-            <p className="text-white/60 text-sm leading-relaxed">{i.bio}</p>
-          </div>
         </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V16: iOS Card Stack ───
-function V16({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V16" title="iOS Card Stack">
-      <div className="bg-gray-100 py-6 px-4">
-        <div className="max-w-lg mx-auto space-y-4">
-          {/* Hero card */}
-          <div className="relative rounded-3xl overflow-hidden h-[280px]">
-            <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5">
-              <h1 className="text-2xl font-black text-white">{i.business_name || i.name}</h1>
-              <p className="text-white/70 text-sm mt-1">{i.home_postcode} • {i.car_type}</p>
+        <div className="absolute bottom-8 left-4 right-4 flex justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-3 max-w-lg w-full flex items-center gap-2">
+            <div className="flex-1 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input type="text" placeholder="Enter your postcode..." className="w-full pl-10 h-12 text-base rounded-xl border-0 bg-gray-50 focus:outline-none" />
             </div>
-          </div>
-          {/* Search card */}
-          <div className="bg-white rounded-3xl p-5 shadow-sm">
-            <p className="text-sm text-gray-500 mb-3">Find lessons near you</p>
-            <SearchBox primary={i.brand_colour} />
-          </div>
-          {/* ETG card */}
-          <div className="bg-emerald-600 rounded-3xl p-5 flex items-center gap-4">
-            <img src={earlyTestBadge} alt="ETG" className="w-14 h-14 object-contain" />
-            <div>
-              <h3 className="font-bold text-white">Earlier Test Guaranteed</h3>
-              <p className="text-sm text-emerald-100">We'll find you a sooner test date</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-white/60 ml-auto" />
-          </div>
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
-            {[{ l: "Rating", v: `${avgRating}★` }, { l: "Grade", v: i.instructor_grade }, { l: "Per Hour", v: `£${i.hourly_rate}` }].map(s => (
-              <div key={s.l} className="bg-white rounded-2xl p-4 text-center shadow-sm">
-                <div className="text-xl font-black" style={{ color: i.brand_colour }}>{s.v}</div>
-                <div className="text-xs text-gray-500">{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V17: Horizontal Scroll Snap ───
-function V17({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V17" title="Side-by-Side Panels">
-      <div className="grid lg:grid-cols-3 min-h-[500px]">
-        <div className="relative lg:col-span-1">
-          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover min-h-[300px]" />
-        </div>
-        <div className="lg:col-span-1 flex flex-col justify-center p-8" style={{ backgroundColor: i.brand_colour }}>
-          <div className="flex items-center gap-2 mb-4">
-            <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" />
-            <Badge className="bg-white/20 text-white border-0 text-xs">Earlier Test Guaranteed</Badge>
-          </div>
-          <h1 className="text-3xl font-black text-white mb-3">{i.business_name || i.name}</h1>
-          <p className="text-white/70 text-sm mb-6">{i.bio}</p>
-          <div className="flex gap-4">
-            {[{ l: "Rate", v: `£${i.hourly_rate}` }, { l: "Grade", v: i.instructor_grade }].map(s => (
-              <div key={s.l}><div className="text-lg font-black text-white">{s.v}</div><div className="text-[10px] text-white/50 uppercase">{s.l}</div></div>
-            ))}
-          </div>
-        </div>
-        <div className="lg:col-span-1 flex flex-col justify-center p-8 bg-white">
-          <h2 className="text-xl font-bold mb-4" style={{ color: i.brand_colour }}>Start Your Journey</h2>
-          <SearchBox primary={i.brand_colour} />
-          <div className="mt-6 flex items-center gap-1">
-            {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-current text-amber-400" />)}
-            <span className="text-sm text-gray-500 ml-1">{avgRating} ({reviews.length})</span>
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V18: Bold Typography Hero ───
-function V18({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V18" title="Bold Typography Hero">
-      <div className="relative min-h-[550px] flex items-center" style={{ backgroundColor: '#fafafa' }}>
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#fafafa] to-transparent w-1/3" />
-        </div>
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-16">
-          <div className="max-w-xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3">
-                <img src={earlyTestBadge} alt="ETG" className="w-10 h-10 object-contain" />
-              </div>
-              <div>
-                <span className="font-bold text-emerald-700 text-sm">Earlier Test Guaranteed</span>
-                <p className="text-xs text-emerald-600">Sooner test dates or money back</p>
-              </div>
-            </div>
-            <h1 className="text-6xl lg:text-8xl font-black leading-[0.85] tracking-tight mb-6" style={{ color: i.brand_colour }}>
-              {(i.business_name || i.name).split(' ').map((w: string, idx: number) => <span key={idx} className="block">{w}</span>)}
-            </h1>
-            <p className="text-gray-500 text-lg mb-8">{i.bio}</p>
-            <SearchBox primary={i.brand_colour} />
-            <div className="flex gap-4 mt-6">
-              <Badge variant="outline" className="text-sm py-1.5">⭐ {avgRating}</Badge>
-              <Badge variant="outline" className="text-sm py-1.5">Grade {i.instructor_grade}</Badge>
-              <Badge variant="outline" className="text-sm py-1.5">£{i.hourly_rate}/hr</Badge>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V19: Gradient Wave ───
-function V19({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V19" title="Gradient Wave">
-      <div>
-        <div className="relative h-[350px]">
-          <img src={i.hero_image_url} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/30" />
-          <svg className="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 1440 120" preserveAspectRatio="none">
-            <path d="M0,80 C360,120 720,40 1440,80 L1440,120 L0,120 Z" fill={i.brand_colour} />
-          </svg>
-        </div>
-        <div className="py-12 px-4" style={{ backgroundColor: i.brand_colour }}>
-          <div className="max-w-3xl mx-auto text-center -mt-4">
-            <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-5 py-2.5 mb-6">
-              <img src={earlyTestBadge} alt="ETG" className="w-8 h-8 object-contain" />
-              <span className="text-white font-bold text-sm">Earlier Test Guaranteed</span>
-            </div>
-            <h1 className="text-4xl lg:text-5xl font-black text-white mb-3">{i.business_name || i.name}</h1>
-            <p className="text-white/70 mb-8 max-w-lg mx-auto">{i.bio}</p>
-            <div className="flex justify-center">
-              <SearchBox primary={i.secondary_colour} />
-            </div>
-            <div className="flex justify-center gap-6 mt-8">
-              {[{ l: "Reviews", v: `${avgRating}★` }, { l: "Grade", v: i.instructor_grade }, { l: "Per Hour", v: `£${i.hourly_rate}` }].map(s => (
-                <div key={s.l}><div className="text-xl font-black text-white">{s.v}</div><div className="text-xs text-white/50 uppercase">{s.l}</div></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
-}
-
-// ─── V20: Spotlight Circle ───
-function V20({ instructor: i, reviews, avgRating }: any) {
-  return (
-    <Wrap id="V20" title="Spotlight Circle">
-      <div className="relative min-h-[580px] flex items-center overflow-hidden" style={{ backgroundColor: '#111' }}>
-        <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 75% 50%, transparent 200px, rgba(0,0,0,0.8) 400px)` }} />
-        <img src={i.hero_image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-        <div className="relative z-10 max-w-5xl mx-auto px-4 py-16 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <img src={earlyTestBadge} alt="ETG" className="w-12 h-12 object-contain drop-shadow-2xl" />
-              <Badge className="bg-emerald-500/90 text-white border-0 backdrop-blur">Earlier Test Guaranteed</Badge>
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-black text-white leading-[0.9] mb-4">{i.business_name || i.name}</h1>
-            <p className="text-white/50 text-lg mb-8">{i.bio}</p>
-            <SearchBox primary={i.brand_colour} />
-            <div className="flex gap-6 mt-8">
-              {[{ l: "Rating", v: `${avgRating}★` }, { l: "Grade", v: i.instructor_grade }, { l: "Rate", v: `£${i.hourly_rate}/hr` }].map(s => (
-                <div key={s.l}><div className="text-xl font-black text-white">{s.v}</div><div className="text-[10px] text-white/40 uppercase tracking-widest">{s.l}</div></div>
-              ))}
-            </div>
-          </div>
-          <div className="hidden lg:flex justify-center">
-            {i.profile_image_url && (
-              <div className="w-64 h-64 rounded-full overflow-hidden ring-4 ring-white/10 shadow-2xl">
-                <img src={i.profile_image_url} alt={i.name} className="w-full h-full object-cover" />
-              </div>
-            )}
+            <button className="h-12 px-6 rounded-xl text-white font-semibold" style={{ backgroundColor: i.brand_colour }}>
+              <Search className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
@@ -801,29 +715,20 @@ export default function DemoMiniWebsiteLanding() {
   return (
     <div className="min-h-screen bg-muted/50">
       <div className="bg-gray-900 text-white px-4 py-6 text-center sticky top-0 z-50">
-        <h1 className="text-xl font-bold">Mini-Website Landing Page — 20 Variants</h1>
-        <p className="text-sm text-gray-400">Full-width hero image • Postcode search • Earlier Test Guaranteed badge</p>
+        <h1 className="text-xl font-bold">V12 Variations — Image Blending into Search</h1>
+        <p className="text-sm text-gray-400">Full-width hero image • Seamless blend • Postcode search • ETG badge</p>
       </div>
-      <V1 {...props} />
-      <V2 {...props} />
-      <V3 {...props} />
-      <V4 {...props} />
-      <V5 {...props} />
-      <V6 {...props} />
-      <V7 {...props} />
-      <V8 {...props} />
-      <V9 {...props} />
-      <V10 {...props} />
-      <V11 {...props} />
       <V12 {...props} />
-      <V13 {...props} />
-      <V14 {...props} />
-      <V15 {...props} />
-      <V16 {...props} />
-      <V17 {...props} />
-      <V18 {...props} />
-      <V19 {...props} />
-      <V20 {...props} />
+      <V12A {...props} />
+      <V12B {...props} />
+      <V12C {...props} />
+      <V12D {...props} />
+      <V12E {...props} />
+      <V12F {...props} />
+      <V12G {...props} />
+      <V12H {...props} />
+      <V12I {...props} />
+      <V12J {...props} />
     </div>
   );
 }
