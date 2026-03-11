@@ -12,17 +12,32 @@ import {
   MapPin
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { useIncludedFeatures, IncludedFeatureData } from "@/hooks/useIncludedFeatures";
+import { FeatureDetailModal } from "@/components/FeatureDetailModal";
+import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import drive365Logo from "@/assets/drive365-logo.png";
 import { EarlierTestRequestTile } from "@/components/benefits/EarlierTestRequestTile";
+import featureRetestFallback from "@/assets/failed-driving-test.png";
+import featureAvailabilityFallback from "@/assets/feature-availability.jpg";
+import featureTheoryFallback from "@/assets/feature-theory.jpg";
+import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
+import featureCancellationFallback from "@/assets/feature-cancellation.jpg";
+import featurePaymentsFallback from "@/assets/feature-payments.jpg";
+
+function useFeatureImage(feature: IncludedFeatureData): string | null {
+  if (feature.image_url) return feature.image_url;
+  switch (feature.title.toLowerCase()) {
+    case "theory test support": return featureTheoryFallback;
+    case "flexible payments": return featurePaymentsFallback;
+    case "free cancellation": return featureCancellationFallback;
+    case "free re-test": return featureRetestFallback;
+    case "live availability": return featureAvailabilityFallback;
+    case "theory test pro": return featureTheoryPro;
+    default: return null;
+  }
+}
 
 export default function Benefits() {
   const location = useLocation();
