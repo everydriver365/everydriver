@@ -422,72 +422,65 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                 ))}
               </div>
             ) : filteredCourses.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {filteredCourses.map((course) => {
+              <div className={isMobile ? "flex flex-col gap-3" : "grid grid-cols-1 sm:grid-cols-2 gap-6"}>
+                {filteredCourses.map((course, index) => {
                   const template = getTemplateForCourse(course.course_hours);
-                  const price = getCoursePrice(course);
-                  const features = course.custom_features || template?.features || [];
                   const imageUrl = course.course_image_url || template?.default_image_url;
+                  const features = course.custom_features || template?.features || [];
+                  const bookableDate = selectedDate || new Date();
+
+                  const cardInstructor = {
+                    id: instructor.id,
+                    name: instructor.name,
+                    profile_image_url: instructor.profile_image_url,
+                    car_type: instructor.car_type || "Manual",
+                    car_make: null,
+                    car_model: null,
+                    home_postcode: instructor.home_postcode || "",
+                    home_address: null,
+                    hourly_rate: instructor.hourly_rate,
+                    bio: instructor.bio || null,
+                    brand_colour: instructor.brand_colour || null,
+                    school_skim_amount: instructor.school_skim_amount || 0,
+                  };
+
+                  if (isMobile) {
+                    return (
+                      <MobileCourseCard
+                        key={course.id}
+                        course={{
+                          instructor: cardInstructor,
+                          hours: course.course_hours,
+                          bookableDate,
+                          courseImageUrl: imageUrl,
+                          isPopular: template?.is_popular || false,
+                          isIntensive: template?.is_intensive || false,
+                          discountedPrice: course.discounted_price,
+                          customFeatures: features,
+                        }}
+                        index={index}
+                      />
+                    );
+                  }
 
                   return (
                     <motion.div
                       key={course.id}
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
                     >
-                      <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-                        {imageUrl && (
-                          <div className="relative">
-                            <img
-                              src={imageUrl}
-                              alt={course.course_name}
-                              className="w-full h-40 object-cover"
-                            />
-                            {template?.is_popular && (
-                              <Badge className="absolute top-2 right-2 bg-amber-500 text-white border-0">
-                                <Star className="h-3 w-3 mr-1 fill-current" /> Popular
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                        <CardContent className="p-5 flex-1 flex flex-col">
-                          <h3 className="font-semibold text-lg mb-2">{course.course_name}</h3>
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="text-gray-600 flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {course.course_hours} hours
-                            </span>
-                            {price && (
-                              <span className="text-xl font-bold" style={{ color: primaryColor }}>
-                                £{price}
-                              </span>
-                            )}
-                          </div>
-
-                          {features.length > 0 && (
-                            <ul className="space-y-2 mb-4 flex-1">
-                              {features.slice(0, 3).map((feature, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                                  <CheckCircle2
-                                    className="h-4 w-4 mt-0.5 flex-shrink-0"
-                                    style={{ color: secondaryColor }}
-                                  />
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                          <Link to={`/book/${instructor.id}?course=${course.course_hours}${selectedDate ? `&date=${format(selectedDate, "yyyy-MM-dd")}` : ""}`}>
-                            <Button
-                              className="w-full text-white"
-                              style={{ backgroundColor: primaryColor }}
-                            >
-                              Book This Course
-                            </Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
+                      <DynamicCourseCard
+                        instructor={cardInstructor}
+                        hours={course.course_hours}
+                        nextAvailable={bookableDate}
+                        courseImageUrl={imageUrl}
+                        isPopular={template?.is_popular || false}
+                        isIntensive={template?.is_intensive || false}
+                        discountedPrice={course.discounted_price}
+                        customFeatures={features}
+                        features={features}
+                      />
                     </motion.div>
                   );
                 })}
