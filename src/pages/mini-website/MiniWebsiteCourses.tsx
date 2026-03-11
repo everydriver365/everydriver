@@ -127,8 +127,8 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                 ...c,
                 instructor: {
                   ...c.instructor,
-                  home_address: instructor.coverage_area || "Winchester",
-                  home_postcode: instructor.coverage_area || "Winchester",
+                  home_address: "Winchester",
+                  home_postcode: "Winchester",
                 },
               }))}
               sortBy={sortBy}
