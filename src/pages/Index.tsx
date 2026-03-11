@@ -982,10 +982,10 @@ export default function Index() {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-3 mb-4">
               <div className="flex -space-x-2">
-                <img src={testimonialSarah} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialJames} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialEmma} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
-                <img src={testimonialSarahM} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialSarah} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialJames} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialEmma} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialSarahM} alt="" className="h-11 w-11 rounded-full object-cover border-2 border-background" />
               </div>
               <span className="text-sm text-muted-foreground">6,499+ happy drivers</span>
             </div>
