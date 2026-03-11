@@ -1090,55 +1090,58 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Desktop Trust Badges */}
-      <section className="hidden md:block border-t bg-muted/30 py-6">
-        <div className="container">
+      {/* Desktop Trust Badges - V9 Stacked Compact Design */}
+      <section className="hidden md:block bg-card border-y border-border py-6">
+        <div className="container max-w-3xl space-y-4">
+          {/* Accreditations Row */}
           <div className="flex items-center justify-center gap-8">
-            {/* ADI Code of Practice */}
-            <img 
-              src={logoAdiCode} 
-              alt="ADI Code of Practice" 
-              className="h-10 object-contain"
-            />
-
-            {/* MSA GB */}
-            <img 
-              src={logoMsa} 
-              alt="MSA GB - For all driver trainers" 
-              className="h-10 object-contain"
-            />
-
-            {/* CPD */}
-            <img 
-              src={logoCpd} 
-              alt="Continuing Professional Development" 
-              className="h-10 object-contain"
-            />
-
-            {/* Divider */}
-            <div className="h-8 w-px bg-border" />
-
-            {/* Card Payments */}
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img 
+                src={logoAdiCode} 
+                alt="ADI Code of Practice" 
+                className="h-9 object-contain"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img 
+                src={logoMsa} 
+                alt="MSA GB - For all driver trainers" 
+                className="h-9 object-contain"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <img 
+                src={logoCpd} 
+                alt="Continuing Professional Development" 
+                className="h-9 object-contain"
+              />
+            </div>
+          </div>
+          
+          {/* Divider */}
+          <div className="h-px bg-border w-full" />
+          
+          {/* Payment Row */}
+          <div className="flex items-center justify-center gap-6">
+            <span className="text-sm text-muted-foreground">Pay with</span>
             <img 
               src={logoCardPayments} 
               alt="Visa, MasterCard, Maestro, JCB" 
-              className="h-7 object-contain"
+              className="h-6 object-contain"
             />
-
-            {/* Klarna */}
             <img 
               src={logoKlarna} 
               alt="Klarna" 
-              className="h-7 object-contain rounded-md"
+              className="h-6 object-contain rounded"
             />
-
-            {/* Clearpay */}
             <img 
               src={logoClearpay} 
               alt="Clearpay" 
-              className="h-7 object-contain rounded-md"
+              className="h-6 object-contain rounded"
             />
-
           </div>
         </div>
       </section>
