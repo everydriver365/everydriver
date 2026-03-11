@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import defaultHeroImage from "@/assets/frontpagesquare-4.png";
 
 interface MiniWebsiteHomeProps {
   subdomainSlug?: string | null;
@@ -118,11 +119,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               animate={{ opacity: 1, x: 0 }}
               className="relative rounded-2xl overflow-hidden shadow-lg"
             >
-              {heroImageUrl ? (
-                <img src={heroImageUrl} alt={instructorName} className="w-full h-[400px] lg:h-[520px] object-cover" />
-              ) : (
-                <div className="w-full h-[400px] lg:h-[520px] bg-gradient-to-br from-blue-400 to-blue-600" />
-              )}
+              <img src={heroImageUrl || defaultHeroImage} alt={instructorName} className="w-full h-[400px] lg:h-[520px] object-cover" />
               {/* Book Now Pay Later badge */}
               <img
                 src={earlyTestBadge}
