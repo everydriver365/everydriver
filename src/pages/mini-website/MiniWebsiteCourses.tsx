@@ -159,6 +159,23 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     return allDays.filter((day) => !isBefore(day, today) && isDateAvailable(day));
   }, [selectedMonth, instructor, workingHours, dateOverrides]);
 
+  // Compute first available date across the next 12 months for card display
+  const firstAvailableDate = useMemo(() => {
+    if (!instructor) return null;
+    const today = startOfDay(new Date());
+    const searchStart = instructor.available_from && isAfter(parseISO(instructor.available_from), today)
+      ? parseISO(instructor.available_from)
+      : today;
+    
+    // Search up to 365 days ahead
+    for (let i = 0; i < 365; i++) {
+      const day = new Date(searchStart);
+      day.setDate(day.getDate() + i);
+      if (isDateAvailable(day)) return day;
+    }
+    return null;
+  }, [instructor, workingHours, dateOverrides]);
+
   // Calendar days for display
   const calendarDays = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -427,7 +444,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                   const template = getTemplateForCourse(course.course_hours);
                   const imageUrl = course.course_image_url || template?.default_image_url;
                   const features = course.custom_features || template?.features || [];
-                  const bookableDate = selectedDate || new Date();
+                  const bookableDate = selectedDate || firstAvailableDate || new Date();
 
                   const cardInstructor = {
                     id: instructor.id,
@@ -480,6 +497,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                         discountedPrice={course.discounted_price}
                         customFeatures={features}
                         features={features}
+                        availableFrom={instructor.available_from}
                       />
                     </motion.div>
                   );
