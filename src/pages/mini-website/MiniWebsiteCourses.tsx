@@ -123,7 +123,14 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
           <div className="flex-1">
             <CourseGrid
               selectedDate={selectedDate}
-              filteredCourses={filteredCourses}
+              filteredCourses={filteredCourses.map(c => ({
+                ...c,
+                instructor: {
+                  ...c.instructor,
+                  home_address: instructor.coverage_area || "Winchester",
+                  home_postcode: instructor.coverage_area || "Winchester",
+                },
+              }))}
               sortBy={sortBy}
               setSortBy={setSortBy}
               userLocation={userLocation}
