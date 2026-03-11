@@ -136,65 +136,74 @@ export default function Index() {
   return (
     <MainLayout>
       <SEOHead />
-      {/* Hero Section - Bold Typography (V24) */}
-      <section className="bg-background py-20 lg:py-24 border-b border-border">
-        <div className="container max-w-5xl text-center space-y-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
-            <h1 className="text-6xl lg:text-8xl font-black text-foreground tracking-tight leading-none">
-              PASS YOUR<br /><span className="text-primary">DRIVING TEST</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-lg mx-auto">Intensive courses from 5 days. Free re-test guarantee. DVSA approved instructors.</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2">
-              <div className="flex flex-1 items-center rounded-full bg-card px-4 py-3 shadow-lg ring-1 ring-border">
-                <MapPin className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
-                <PostcodeAutocomplete
-                  value={postcode}
-                  onChange={setPostcode}
-                  onSelect={(pc) => {
-                    setPostcode(pc);
-                    navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
-                  }}
-                  placeholder="Enter your postcode..."
-                  className="flex-1"
-                  inputClassName="h-8 border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
-                  showGeolocation={true}
-                />
-              </div>
-              <Button 
-                size="lg" 
-                className="rounded-full h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
-                onClick={() => {
-                  if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
-                }}
-              >
-                <Search className="h-4 w-4 mr-2" /> Find Courses
-              </Button>
+      {/* Hero Section - Left/Right Split Layout */}
+      <section className="bg-background py-16 lg:py-24 border-b border-border">
+        <div className="container max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left: Text & Search */}
+            <div className="space-y-8">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
+                <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tight leading-[0.95]">
+                  PASS YOUR<br /><span className="text-primary">DRIVING TEST</span>
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-md">Intensive courses from 5 days. Free re-test guarantee. DVSA approved instructors.</p>
+              </motion.div>
+              
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }} className="max-w-md">
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-1 items-center rounded-full bg-card px-4 py-3 shadow-lg ring-1 ring-border">
+                    <MapPin className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
+                    <PostcodeAutocomplete
+                      value={postcode}
+                      onChange={setPostcode}
+                      onSelect={(pc) => {
+                        setPostcode(pc);
+                        navigate(`/courses?postcode=${encodeURIComponent(pc)}`);
+                      }}
+                      placeholder="Enter your postcode..."
+                      className="flex-1"
+                      inputClassName="h-8 border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                      showGeolocation={true}
+                    />
+                  </div>
+                  <Button 
+                    size="lg" 
+                    className="rounded-full h-12 px-6 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
+                    onClick={() => {
+                      if (postcode) navigate(`/courses?postcode=${encodeURIComponent(postcode)}`);
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2" /> Find
+                  </Button>
+                </div>
+              </motion.div>
+              
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex items-center gap-3">
+                <div className="flex -space-x-3">
+                  {[testimonialSarah, testimonialJames, testimonialEmma].map((src, i) => (
+                    <img key={i} src={src} className="h-10 w-10 rounded-full ring-2 ring-background object-cover" alt="" />
+                  ))}
+                </div>
+                <div className="text-sm">
+                  <div className="flex items-center gap-1 text-amber-500">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
+                  </div>
+                  <span className="text-muted-foreground">10,000+ happy learners</span>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
-            {[
-              { src: heroInstructorNew, alt: "Driving instructor" },
-              { src: heroLearner, alt: "Happy learner" },
-              { src: testimonialSarah, alt: "Successful student" },
-            ].map((img, i) => (
-              <img key={i} src={img.src} alt={img.alt} className="w-full aspect-[4/5] object-cover rounded-2xl shadow-lg ring-1 ring-border" />
-            ))}
-          </motion.div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-3">
-            <div className="flex -space-x-3">
-              {[testimonialSarah, testimonialJames, testimonialEmma].map((src, i) => (
-                <img key={i} src={src} className="h-10 w-10 rounded-full ring-2 ring-background object-cover" alt="" />
+            
+            {/* Right: 3-Image Gallery */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="grid grid-cols-3 gap-3">
+              {[
+                { src: heroInstructorNew, alt: "Driving instructor" },
+                { src: heroLearner, alt: "Happy learner" },
+                { src: testimonialSarah, alt: "Successful student" },
+              ].map((img, i) => (
+                <img key={i} src={img.src} alt={img.alt} className="w-full aspect-[4/5] object-cover rounded-2xl shadow-lg ring-1 ring-border" />
               ))}
-            </div>
-            <div className="text-sm text-left">
-              <div className="flex items-center gap-1 text-amber-500">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
-              </div>
-              <span className="text-muted-foreground">10,000+ happy learners</span>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
