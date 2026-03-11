@@ -345,7 +345,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     >
                       {link.label}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">{link.sub}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{link.sub}</p>
                   </CardContent>
                 </Card>
               </Link>
