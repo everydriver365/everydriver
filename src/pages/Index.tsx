@@ -982,13 +982,12 @@ export default function Index() {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-3 mb-4">
               <div className="flex -space-x-2">
-                {testimonials.filter(t => !t.is_featured).slice(0, 4).map(t => (
-                  <div key={t.id} className="h-8 w-8 rounded-full bg-primary border-2 border-background flex items-center justify-center text-primary-foreground text-[10px] font-bold">
-                    {t.avatar_initials || t.name.charAt(0)}
-                  </div>
-                ))}
+                <img src={testimonialSarah} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialJames} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialEmma} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
+                <img src={testimonialSarahM} alt="" className="h-8 w-8 rounded-full object-cover border-2 border-background" />
               </div>
-              <span className="text-sm text-muted-foreground">2,000+ happy drivers</span>
+              <span className="text-sm text-muted-foreground">6,499+ happy drivers</span>
             </div>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
