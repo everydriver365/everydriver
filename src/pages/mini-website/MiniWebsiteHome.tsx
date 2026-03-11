@@ -326,7 +326,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Quick Links */}
-      <section className="bg-amber-50 py-10">
+      <section className="bg-secondary/50 py-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
