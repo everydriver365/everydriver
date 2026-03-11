@@ -173,7 +173,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
                   window.location.href = `/i/${slug}/courses${params}`;
                 }}
-                }}
                 className="flex gap-2"
               >
                 <div className="flex-1 relative">
