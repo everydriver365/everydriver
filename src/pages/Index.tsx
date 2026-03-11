@@ -192,9 +192,8 @@ export default function Index() {
                 </div>
               </motion.div>
               
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center gap-4">
-                <img src={logoKlarna} alt="Klarna" className="h-7 object-contain" />
-                <img src={logoClearpay} alt="Clearpay" className="h-7 object-contain" />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center gap-3">
+                <img src={klarnaClearpayLogos} alt="Klarna & Clearpay - Pay in instalments" className="h-10 object-contain" />
                 <span className="text-sm text-muted-foreground">Pay in instalments</span>
               </motion.div>
             </div>
