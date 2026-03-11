@@ -45,6 +45,13 @@ interface MiniWebsiteLayoutProps {
 export function MiniWebsiteLayout({ instructor, children, footerOverrides }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
+
+  // Per-instructor footer contact overrides
+  const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {
+    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester" },
+  };
+  const resolvedFooterOverrides = { ...FOOTER_CONTACT_OVERRIDES[slug], ...footerOverrides };
+
   const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
   const headerBg = instructor.website_header_bg || "#0b4089";
