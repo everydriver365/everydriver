@@ -30,12 +30,19 @@ interface Instructor {
   linkedin_url?: string | null;
 }
 
+interface FooterOverrides {
+  email?: string;
+  phone?: string;
+  location?: string;
+}
+
 interface MiniWebsiteLayoutProps {
   instructor: Instructor;
   children: React.ReactNode;
+  footerOverrides?: FooterOverrides;
 }
 
-export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutProps) {
+export function MiniWebsiteLayout({ instructor, children, footerOverrides }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
   const primaryColor = instructor.brand_colour || "#1e3a5f";
