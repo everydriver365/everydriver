@@ -1,30 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Plan: Update Ken D Course Search to Match Drive365 Style
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-The current Ken D courses page (`/i/ken-d/courses`) uses a basic card layout with simple images, prices, and feature lists. The Drive365 main site uses `DynamicCourseCard` (desktop flip cards) and `MobileCourseCard` (accordion cards) with richer details like instructor avatars, transmission badges, payment badges, date boxes, and intensity labels.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### What Changes
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-**File: `src/pages/mini-website/MiniWebsiteCourses.tsx`**
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-Replace the custom course card grid (lines ~421-490) with the existing `DynamicCourseCard` (desktop) and `MobileCourseCard` (mobile) components, passing Ken D's instructor data and course details.
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-Key changes:
-1. **Import** `DynamicCourseCard`, `MobileCourseCard`, `useIsMobile`, and `CompactPaymentBadges`
-2. **Build course data** in the format expected by these components - map each `filteredCourses` entry to include the instructor object shape, template image, features, intensity flag, etc.
-3. **Desktop**: Render a 2-column grid of `DynamicCourseCard` with flip-on-hover behavior, date box in brand colour, transmission badge, payment options
-4. **Mobile**: Render `MobileCourseCard` accordion cards with course badge images, expandable details, instructor bio, and payment badges
-5. **Correct pricing**: Include `school_skim_amount` in price calculation (matching Drive365 logic)
-6. **Use template images**: Fall back to `course_templates.default_image_url` when instructor hasn't set a custom image
-7. **Pass `nextAvailable`**: Use `selectedDate` or first available date as the bookable date
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-This reuses the exact same card components as Drive365, ensuring visual consistency while showing only Ken D's courses.
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-### Technical Details
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-- The instructor object needs reshaping to match `DynamicCourseCardProps.instructor` (add `car_make`, `car_model`, `home_address` fields)
-- `MobileCourseCard` expects a `course` object with `bookableDate`, `distance`, `isPremium`, etc.
-- Both components handle their own navigation to `/book/:instructorId`
-- No database changes needed - all data is already fetched
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
+
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
