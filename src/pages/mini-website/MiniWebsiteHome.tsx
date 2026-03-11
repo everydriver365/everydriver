@@ -157,12 +157,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               )}
 
               {/* Heading */}
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
                 Your journey starts<br />with{" "}
                 <span style={{ color: primaryColor }}>{instructorName}</span>
               </h1>
 
-              <p className="text-gray-600 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Search, compare and book direct with {instructor.name}.{" "}
                 <strong>
                   Book through Every Driver for a range of exclusive benefits.
