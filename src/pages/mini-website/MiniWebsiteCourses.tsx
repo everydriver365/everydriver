@@ -444,7 +444,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                   const template = getTemplateForCourse(course.course_hours);
                   const imageUrl = course.course_image_url || template?.default_image_url;
                   const features = course.custom_features || template?.features || [];
-                  const bookableDate = selectedDate || new Date();
+                  const bookableDate = selectedDate || firstAvailableDate || new Date();
 
                   const cardInstructor = {
                     id: instructor.id,
