@@ -304,11 +304,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     } finally {
       setLoading(false);
     }
-  }, [findFirstAvailableDate, geocodePostcodes]);
+  }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
 
   useEffect(() => {
+    // If instructorId param is explicitly passed but undefined, wait for it to resolve
+    if (arguments.length > 1 && !instructorId) return;
     fetchData();
-  }, []);
+  }, [instructorId]);
 
   const handleSearch = async () => {
     if (!postcode.trim()) {
