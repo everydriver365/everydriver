@@ -36,6 +36,7 @@ import testimonialSarahNew from "@/assets/testimonial-sarah-new.png";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
 import localInstructorImg from "@/assets/local-instructor.jpg";
+import drivingTestCentreImg from "@/assets/driving-test-centre.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
