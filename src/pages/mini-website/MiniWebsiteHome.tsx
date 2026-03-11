@@ -104,13 +104,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900" />
         </div>
-        <div className="bg-gray-900 px-4 pb-8 -mt-1">
-          <div className="max-w-2xl mx-auto text-center">
+        <div className="bg-gray-900 px-4 pb-6 -mt-1">
+          <div className="max-w-2xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <h1 className="text-3xl lg:text-4xl font-black text-white mb-5">
-                {page.hero_heading || `${instructor.business_name || instructor.name}`}
-              </h1>
-              <div className="bg-white/10 backdrop-blur rounded-2xl p-4 flex items-center gap-4">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-3 flex items-center gap-3">
                 <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-40 h-40 object-contain shrink-0" />
                 <form
                   onSubmit={(e) => {
