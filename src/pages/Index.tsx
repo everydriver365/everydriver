@@ -879,7 +879,7 @@ export default function Index() {
               { 
                 title: "Local Instructors", 
                 description: "Find certified instructors near you by postcode.", 
-                image: getImage("feature_instructors", testimonialJamesFallback) 
+                image: localInstructorImg
               },
               { 
                 title: "Track Progress", 
