@@ -102,7 +102,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           ) : (
             <div className="w-full h-full" style={{ backgroundColor: primaryColor }} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/60" />
         </div>
         <div className="bg-gray-900 px-4 pb-6 -mt-1">
           <div className="max-w-2xl mx-auto">
