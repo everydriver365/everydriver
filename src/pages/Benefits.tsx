@@ -153,11 +153,11 @@ export default function Benefits() {
                 <Accordion type="single" collapsible>
                   <AccordionItem 
                     value={feature.id} 
-                    className="bg-card border overflow-hidden"
+                    className="bg-card border rounded-2xl overflow-hidden"
                   >
                     {/* Vertical layout: Image top, content below */}
                     {feature.image_url && (
-                      <div className="w-full h-[208px] overflow-hidden">
+                      <div className="relative h-52 overflow-hidden">
                         <img 
                           src={feature.image_url} 
                           alt={feature.title} 
