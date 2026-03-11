@@ -153,6 +153,7 @@ const DemoTrustBadges = lazy(() => import("./pages/DemoTrustBadges"));
 const DemoIncludedFeatures = lazy(() => import("./pages/DemoIncludedFeatures"));
 const DemoEverythingYouNeed = lazy(() => import("./pages/DemoEverythingYouNeed"));
 const DemoMiniWebsiteHome = lazy(() => import("./pages/DemoMiniWebsiteHome"));
+const DemoMiniWebsiteLanding = lazy(() => import("./pages/DemoMiniWebsiteLanding"));
 const DemoHeroSections = lazy(() => import("./pages/DemoHeroSections"));
 const DemoHeroSections2 = lazy(() => import("./pages/DemoHeroSections2"));
 const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
