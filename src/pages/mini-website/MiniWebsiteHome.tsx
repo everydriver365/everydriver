@@ -111,7 +111,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 {page.hero_heading || `${instructor.business_name || instructor.name}`}
               </h1>
               <div className="bg-white/10 backdrop-blur rounded-2xl p-4 flex items-center gap-4">
-                <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-20 h-20 object-contain shrink-0" />
+                <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-40 h-40 object-contain shrink-0" />
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
