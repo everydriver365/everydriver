@@ -126,7 +126,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
-                className="absolute top-4 left-4 w-28 h-28 object-contain drop-shadow-lg"
+                className="absolute top-4 left-4 w-40 h-40 object-contain drop-shadow-lg"
               />
             </motion.div>
 
