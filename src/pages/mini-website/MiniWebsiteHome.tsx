@@ -31,6 +31,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [reviews, setReviews] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [postcode, setPostcode] = useState("");
+  const { features: includedFeatures } = useIncludedFeatures();
 
   useEffect(() => {
     if (instructor?.id) {
