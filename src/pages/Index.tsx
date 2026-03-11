@@ -59,6 +59,8 @@ import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
 import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 import heroInstructorNew from "@/assets/hero-instructor-new.png";
+import heroLearner from "@/assets/hero-learner.jpg";
+import referFriends from "@/assets/refer-friends.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
