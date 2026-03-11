@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
 import defaultHeroImage from "@/assets/frontpagesquare-4.png";
+import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 
 interface MiniWebsiteHomeProps {
   subdomainSlug?: string | null;
@@ -178,8 +179,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <div className="grid grid-cols-2 gap-4">
                 <Link to={links.courses}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-0 shadow-md">
-                    <div className="h-28 bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
-                      <Clock className="h-10 w-10 text-white" />
+                    <div className="h-28 overflow-hidden">
+                      <img src={intensiveCourseTile} alt="Intensive Courses" className="w-full h-full object-cover" />
                     </div>
                     <CardContent className="p-3">
                       <h3 className="font-bold text-sm text-gray-900 uppercase">Intensive Courses</h3>
