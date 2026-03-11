@@ -21,6 +21,9 @@ import klarnaCleanpayLogos from "@/assets/klarna-clearpay-logos.png";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
+import drivingTestCentreImg from "@/assets/search-compare-book.avif";
+import localInstructorImg from "@/assets/local-instructor.jpg";
+import referFriends from "@/assets/refer-friends.png";
 
 interface MiniWebsiteHomeProps {
   subdomainSlug?: string | null;
