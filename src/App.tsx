@@ -146,6 +146,7 @@ const DemoVideoSections = lazy(() => import("./pages/DemoVideoSections"));
 const DemoNervousToReady = lazy(() => import("./pages/DemoNervousToReady"));
 const DemoETGBanner = lazy(() => import("./pages/DemoETGBanner"));
 const DemoNewsSections = lazy(() => import("./pages/DemoNewsSections"));
+const DemoCTASections = lazy(() => import("./pages/DemoCTASections"));
 const DemoFeatureSections = lazy(() => import("./pages/DemoFeatureSections"));
 const DemoTestimonialSections = lazy(() => import("./pages/DemoTestimonialSections"));
 const DemoTrustBadges = lazy(() => import("./pages/DemoTrustBadges"));
@@ -347,6 +348,7 @@ const App = () => (
                 <Route path="/demo/nervous-to-ready" element={<DemoNervousToReady />} />
                 <Route path="/demo/etg-banner" element={<DemoETGBanner />} />
                 <Route path="/demo/news-sections" element={<DemoNewsSections />} />
+                <Route path="/demo/cta-sections" element={<DemoCTASections />} />
                 <Route path="/demo/feature-sections" element={<DemoFeatureSections />} />
                 <Route path="/demo/testimonial-sections" element={<DemoTestimonialSections />} />
                 <Route path="/demo/trust-badges" element={<DemoTrustBadges />} />
