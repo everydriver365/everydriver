@@ -278,7 +278,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
       {/* Reviews Stats Bar */}
       {avgRating && (
-        <section className="py-8 bg-gradient-to-r from-amber-400 to-orange-500">
+        <section className="py-8 bg-primary">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex flex-wrap items-center justify-center gap-12 text-white">
               <div className="text-center">
