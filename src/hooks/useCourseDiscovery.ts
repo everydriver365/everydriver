@@ -111,7 +111,7 @@ interface AreaCache {
   [postcode: string]: string | null;
 }
 
-export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", instructorId?: string) {
+export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", instructorId?: string | null) {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
   const [transmission, setTransmission] = useState("all");
@@ -304,11 +304,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     } finally {
       setLoading(false);
     }
-  }, [findFirstAvailableDate, geocodePostcodes]);
+  }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
 
   useEffect(() => {
+    // If instructorId is null, the caller wants to filter by instructor but it hasn't loaded yet — skip
+    if (instructorId === null) return;
     fetchData();
-  }, []);
+  }, [instructorId]);
 
   const handleSearch = async () => {
     if (!postcode.trim()) {

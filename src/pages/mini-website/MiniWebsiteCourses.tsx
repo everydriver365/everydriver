@@ -35,7 +35,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     monthOptions,
     availableDatesInMonth,
     filteredCourses,
-  } = useCourseDiscovery("all", instructor?.id);
+  } = useCourseDiscovery("all", instructor?.id ?? null);
 
   if (pageLoading) {
     return (
