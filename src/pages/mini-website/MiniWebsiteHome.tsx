@@ -93,106 +93,103 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
-      {/* Cinematic Full-Width Hero */}
-      <section className="relative min-h-[650px] flex items-center" style={{ backgroundColor: '#0a0a0a' }}>
-        {/* Background gradient */}
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 70% 50%, ${primaryColor}40 0%, transparent 70%)` }} />
+      {/* Hero with Background Image & Postcode Search */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          {heroImageUrl ? (
+            <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full" style={{ backgroundColor: primaryColor }} />
+          )}
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: heroOverlayColor, opacity: heroOverlayOpacity }}
+          />
+        </div>
 
-        {heroImageUrl && (
-          <div className="absolute inset-0">
-            <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover opacity-20" />
-            <div className="absolute inset-0" style={{ backgroundColor: heroOverlayColor, opacity: heroOverlayOpacity }} />
-          </div>
-        )}
-
-        <div className="max-w-6xl mx-auto px-4 relative z-10 py-16">
-          <div className="grid lg:grid-cols-5 gap-12 items-center">
-            <div className="lg:col-span-3">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                {/* Rating pill */}
-                {avgRating && (
-                  <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-current text-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-white/70 text-sm">{avgRating} • {reviews.length} reviews</span>
-                  </div>
-                )}
-
-                <h1 className="text-5xl lg:text-7xl font-black text-white leading-[0.9] mb-6 tracking-tight">
-                  {page.hero_heading ? (
-                    <span>{page.hero_heading}</span>
-                  ) : (
-                    <>
-                      LEARN TO<br />
-                      <span
-                        className="bg-clip-text text-transparent"
-                        style={{ backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${primaryColor})` }}
-                      >
-                        DRIVE WITH
-                      </span><br />
-                      CONFIDENCE
-                    </>
-                  )}
-                </h1>
-
-                <p className="text-white/60 text-lg mb-8 max-w-lg">
-                  {page.hero_subheading || instructor.bio}
-                </p>
-
-                <div className="flex flex-wrap gap-4 mb-10">
-                  <Link to={`/book/${instructor.id}`}>
-                    <Button size="lg" className="rounded-full px-10 text-lg font-bold shadow-2xl text-white" style={{ backgroundColor: primaryColor }}>
-                      <Calendar className="h-5 w-5 mr-2" /> Book Your Lesson
-                    </Button>
-                  </Link>
-                  {instructor.phone && (
-                    <a href={`tel:${instructor.phone}`}>
-                      <Button size="lg" variant="ghost" className="rounded-full text-white hover:bg-white/10">
-                        <Phone className="h-5 w-5 mr-2" /> Call Now
-                      </Button>
-                    </a>
-                  )}
+        {/* Content */}
+        <div className="relative z-10 max-w-3xl mx-auto px-4 py-20 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Rating */}
+            {avgRating && (
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current text-amber-400" />
+                  ))}
                 </div>
+                <span className="text-white text-sm font-medium">{avgRating} • {reviews.length} reviews</span>
+              </div>
+            )}
 
-                <div className="flex gap-8">
-                  {instructor.hourly_rate && (
-                    <div>
-                      <div className="text-2xl font-black text-white">£{instructor.hourly_rate}</div>
-                      <div className="text-xs text-white/40 uppercase tracking-wider">Hourly Rate</div>
-                    </div>
-                  )}
-                  {instructor.instructor_grade && (
-                    <div>
-                      <div className="text-2xl font-black text-white">{instructor.instructor_grade}</div>
-                      <div className="text-xs text-white/40 uppercase tracking-wider">Grade</div>
-                    </div>
-                  )}
-                  {instructor.car_type && (
-                    <div>
-                      <div className="text-2xl font-black text-white">{instructor.car_type}</div>
-                      <div className="text-xs text-white/40 uppercase tracking-wider">Transmission</div>
-                    </div>
-                  )}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 drop-shadow-lg">
+              {page.hero_heading || `${instructor.business_name || instructor.name}`}
+            </h1>
+
+            <p className="text-white/90 text-lg sm:text-xl mb-10 max-w-xl mx-auto drop-shadow">
+              {page.hero_subheading || "Professional driving instruction tailored to your needs"}
+            </p>
+
+            {/* Postcode Search Box */}
+            <div className="bg-white rounded-2xl shadow-2xl p-3 max-w-lg mx-auto">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (postcode.trim()) {
+                    window.location.href = `/book/${instructor.id}?postcode=${encodeURIComponent(postcode.trim())}`;
+                  }
+                }}
+                className="flex items-center gap-2"
+              >
+                <div className="flex-1 relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Enter your postcode to get started..."
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    className="pl-10 h-12 text-base border-0 shadow-none focus-visible:ring-0"
+                  />
                 </div>
-              </motion.div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 px-6 rounded-xl text-white font-semibold"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Search
+                </Button>
+              </form>
             </div>
 
-            <div className="lg:col-span-2 flex justify-center">
-              {instructor.profile_image_url && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative">
-                  <div className="w-72 h-72 rounded-full overflow-hidden ring-4 ring-white/20">
-                    <img src={instructor.profile_image_url} alt={instructor.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-full px-6 py-2 shadow-xl">
-                    <span className="font-bold text-sm">{instructor.name}</span>
-                  </div>
-                </motion.div>
+            {/* Quick stats */}
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              {instructor.hourly_rate && (
+                <Badge className="bg-white/15 backdrop-blur-sm text-white border-0 px-4 py-2 text-sm">
+                  £{instructor.hourly_rate}/hr
+                </Badge>
+              )}
+              {instructor.instructor_grade && (
+                <Badge className="bg-white/15 backdrop-blur-sm text-white border-0 px-4 py-2 text-sm">
+                  <Award className="h-3.5 w-3.5 mr-1" /> Grade {instructor.instructor_grade}
+                </Badge>
+              )}
+              {instructor.car_type && (
+                <Badge className="bg-white/15 backdrop-blur-sm text-white border-0 px-4 py-2 text-sm">
+                  {instructor.car_type}
+                </Badge>
+              )}
+              {instructor.phone && (
+                <a href={`tel:${instructor.phone}`}>
+                  <Badge className="bg-white/15 backdrop-blur-sm text-white border-0 px-4 py-2 text-sm cursor-pointer hover:bg-white/25 transition-colors">
+                    <Phone className="h-3.5 w-3.5 mr-1" /> {instructor.phone}
+                  </Badge>
+                </a>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
