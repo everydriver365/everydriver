@@ -203,7 +203,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <Link to={links.courses}>
                   <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
-                    <div className="h-24 overflow-hidden">
+                    <div className="h-40 overflow-hidden">
                       <img
                         src={intensiveCourseTile}
                         alt="Intensive Courses"
@@ -218,7 +218,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 </Link>
                 <Link to={links.services}>
                   <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
-                    <div className="h-24 overflow-hidden">
+                    <div className="h-40 overflow-hidden">
                       <img
                         src={weeklyLessonsTile}
                         alt="Weekly Lessons"
