@@ -863,7 +863,6 @@ export default function Index() {
                 description: "Track lessons, view progress, and manage payments all in one place.", 
                 link: "/pupil/login", 
                 image: getImage("feature_pupil_portal", heroLearner),
-                large: true 
               },
               { 
                 title: "Parent Portal", 
@@ -886,8 +885,13 @@ export default function Index() {
                 description: "Monitor your journey with detailed progress reports.", 
                 image: getImage("feature_progress", featureTheoryFallback) 
               },
+              { 
+                title: "Theory Support", 
+                description: "Free theory test prep with practice questions and mock tests.", 
+                link: "/theory",
+                image: getImage("feature_theory", featureTheoryFallback) 
+              },
             ].map((f, i) => {
-              const isLarge = f.large;
               const content = (
                 <motion.div
                   key={i}
@@ -895,23 +899,18 @@ export default function Index() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.06 }}
                   viewport={{ once: true }}
-                  className={`rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group ${isLarge ? "col-span-2 md:row-span-2" : ""}`}
+                  className="rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
                 >
-                  <div className={`overflow-hidden ${isLarge ? "h-56" : "h-32"}`}>
+                  <div className="overflow-hidden h-36">
                     <img 
                       src={f.image} 
                       alt={f.title} 
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
                     />
                   </div>
-                  <div className="p-5">
-                    <h3 className={`font-bold text-foreground mb-2 ${isLarge ? "text-xl" : "text-sm"}`}>{f.title}</h3>
-                    <p className={`text-muted-foreground leading-relaxed ${isLarge ? "text-sm" : "text-xs line-clamp-2"}`}>{f.description}</p>
-                    {isLarge && (
-                      <Button className="mt-4 w-fit" size="sm">
-                        Get Started <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    )}
+                  <div className="p-4">
+                    <h3 className="font-bold text-foreground text-sm mb-1">{f.title}</h3>
+                    <p className="text-muted-foreground text-xs line-clamp-2">{f.description}</p>
                   </div>
                 </motion.div>
               );
