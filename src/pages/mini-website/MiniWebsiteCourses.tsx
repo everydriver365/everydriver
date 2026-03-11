@@ -12,6 +12,9 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay, parseISO } from "date-fns";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Course {
   id: string;
