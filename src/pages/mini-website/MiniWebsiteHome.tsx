@@ -225,10 +225,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-bold text-sm">Weekly Lessons</h3>
-                      <p className="text-xs text-gray-500">At your own pace</p>
-                    </CardContent>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Weekly Lessons</h3>
+                       <p className="text-xs text-muted-foreground">At your own pace</p>
+                     </CardContent>
                   </Card>
                 </Link>
               </div>
