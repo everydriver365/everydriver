@@ -10,31 +10,77 @@ interface NewsItem {
   title: string;
   link: string;
   description: string;
+  fullContent: string;
   pubDate: string;
   imageUrl: string | null;
   category: string;
+  slug: string;
 }
 
 function extractImageFromContent(content: string): string | null {
-  // Try to find an image URL in the content
   const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
   if (imgMatch) {
     return imgMatch[1];
   }
-  
-  // Try to find media:content or enclosure
   const mediaMatch = content.match(/url=["']([^"']+\.(?:jpg|jpeg|png|gif|webp)[^"']*)["']/i);
   if (mediaMatch) {
     return mediaMatch[1];
   }
-  
   return null;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 80);
+}
+
+function cleanHtmlToReadable(html: string): string {
+  // Remove CDATA wrappers
+  let clean = html.replace(/<!\[CDATA\[|\]\]>/g, '');
+  
+  // Remove script and style tags and their content
+  clean = clean.replace(/<script[\s\S]*?<\/script>/gi, '');
+  clean = clean.replace(/<style[\s\S]*?<\/style>/gi, '');
+  
+  // Keep paragraph structure by converting tags to markers
+  clean = clean.replace(/<\/p>/gi, '\n\n');
+  clean = clean.replace(/<br\s*\/?>/gi, '\n');
+  clean = clean.replace(/<\/h[1-6]>/gi, '\n\n');
+  clean = clean.replace(/<\/li>/gi, '\n');
+  clean = clean.replace(/<li[^>]*>/gi, '• ');
+  clean = clean.replace(/<\/ul>|<\/ol>/gi, '\n');
+  
+  // Remove all remaining HTML tags
+  clean = clean.replace(/<[^>]+>/g, '');
+  
+  // Decode HTML entities
+  clean = clean.replace(/&nbsp;/g, ' ');
+  clean = clean.replace(/&amp;/g, '&');
+  clean = clean.replace(/&lt;/g, '<');
+  clean = clean.replace(/&gt;/g, '>');
+  clean = clean.replace(/&quot;/g, '"');
+  clean = clean.replace(/&#8217;/g, "'");
+  clean = clean.replace(/&#8216;/g, "'");
+  clean = clean.replace(/&#8220;/g, '"');
+  clean = clean.replace(/&#8221;/g, '"');
+  clean = clean.replace(/&#8211;/g, '–');
+  clean = clean.replace(/&#8212;/g, '—');
+  clean = clean.replace(/&#\d+;/g, '');
+  
+  // Clean up whitespace
+  clean = clean.replace(/[ \t]+/g, ' ');
+  clean = clean.replace(/\n{3,}/g, '\n\n');
+  clean = clean.trim();
+  
+  return clean;
 }
 
 function parseRSSFeed(xmlText: string): NewsItem[] {
   const items: NewsItem[] = [];
   
-  // Parse items from the RSS/Atom feed
   const itemMatches = xmlText.matchAll(/<item>([\s\S]*?)<\/item>|<entry>([\s\S]*?)<\/entry>/gi);
   
   for (const match of itemMatches) {
@@ -49,10 +95,14 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
     const link = linkMatch ? (linkMatch[1] || linkMatch[2] || '').trim() : '';
     
     // Extract description/summary
-    const descMatch = itemContent.match(/<description[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>|<summary[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>|<content[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content>/i);
-    let description = descMatch ? (descMatch[1] || descMatch[2] || descMatch[3] || '').trim() : '';
+    const descMatch = itemContent.match(/<description[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>|<summary[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>/i);
+    let description = descMatch ? (descMatch[1] || descMatch[2] || '').trim() : '';
     
-    // Clean HTML from description for display
+    // Extract full content (content:encoded is typical in WordPress RSS)
+    const contentMatch = itemContent.match(/<content:encoded[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i);
+    const rawFullContent = contentMatch ? contentMatch[1].trim() : description;
+    
+    // Clean description for card display
     const cleanDescription = description
       .replace(/<!\[CDATA\[|\]\]>/g, '')
       .replace(/<[^>]+>/g, '')
@@ -64,6 +114,9 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
       .trim()
       .substring(0, 200);
     
+    // Clean full content to readable text
+    const fullContent = cleanHtmlToReadable(rawFullContent);
+    
     // Extract date
     const dateMatch = itemContent.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>|<published[^>]*>([\s\S]*?)<\/published>|<updated[^>]*>([\s\S]*?)<\/updated>/i);
     const pubDate = dateMatch ? (dateMatch[1] || dateMatch[2] || dateMatch[3] || '').trim() : '';
@@ -72,15 +125,15 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
     const categoryMatch = itemContent.match(/<category[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/category>/i);
     const category = categoryMatch ? categoryMatch[1].trim().replace(/<!\[CDATA\[|\]\]>/g, '') : 'Driving News';
     
-    // Try to extract image from content or media
+    // Try to extract image
     let imageUrl = extractImageFromContent(itemContent);
-    
-    // Also check the full description for images
     if (!imageUrl) {
       imageUrl = extractImageFromContent(description);
     }
+    if (!imageUrl) {
+      imageUrl = extractImageFromContent(rawFullContent);
+    }
     
-    // Check for media:thumbnail or media:content
     const mediaThumbnailMatch = itemContent.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
     if (mediaThumbnailMatch) {
       imageUrl = mediaThumbnailMatch[1];
@@ -91,7 +144,6 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
       imageUrl = mediaContentMatch[1];
     }
     
-    // Check for enclosure (common in RSS for images)
     const enclosureMatch = itemContent.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]*type=["']image/i);
     if (!imageUrl && enclosureMatch) {
       imageUrl = enclosureMatch[1];
@@ -101,9 +153,11 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
       title,
       link,
       description: cleanDescription,
+      fullContent,
       pubDate,
       imageUrl,
       category,
+      slug: slugify(title),
     });
   }
   
@@ -111,7 +165,6 @@ function parseRSSFeed(xmlText: string): NewsItem[] {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -119,7 +172,6 @@ serve(async (req) => {
   try {
     console.log('Fetching DVSA news from despatch.blog.gov.uk...');
     
-    // Fetch the DVSA Despatch blog RSS feed
     const feedUrl = 'https://despatch.blog.gov.uk/feed/';
     const response = await fetch(feedUrl, {
       headers: {
@@ -139,8 +191,7 @@ serve(async (req) => {
     const newsItems = parseRSSFeed(xmlText);
     console.log(`Parsed ${newsItems.length} news items`);
     
-    // Return the top 5 items
-    const topItems = newsItems.slice(0, 5);
+    const topItems = newsItems.slice(0, 10);
 
     return new Response(JSON.stringify({ 
       success: true, 

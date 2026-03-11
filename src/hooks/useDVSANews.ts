@@ -5,9 +5,11 @@ export interface NewsItem {
   title: string;
   link: string;
   description: string;
+  fullContent: string;
   pubDate: string;
   imageUrl: string | null;
   category: string;
+  slug: string;
 }
 
 export function useDVSANews() {
@@ -43,5 +45,9 @@ export function useDVSANews() {
     fetchNews();
   }, []);
 
-  return { news, loading, error };
+  const getArticleBySlug = (slug: string): NewsItem | undefined => {
+    return news.find(item => item.slug === slug);
+  };
+
+  return { news, loading, error, getArticleBySlug };
 }
