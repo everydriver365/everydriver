@@ -718,7 +718,7 @@ export default function DemoMiniWebsiteLanding() {
         <h1 className="text-xl font-bold">V12 Variations — Image Blending into Search</h1>
         <p className="text-sm text-gray-400">Full-width hero image • Seamless blend • Postcode search • ETG badge</p>
       </div>
-      <V12 {...props} />
+      <V12A {...props} />
       <V12A {...props} />
       <V12B {...props} />
       <V12C {...props} />
