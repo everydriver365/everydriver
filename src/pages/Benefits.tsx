@@ -12,44 +12,24 @@ import {
   MapPin
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useIncludedFeatures, IncludedFeatureData } from "@/hooks/useIncludedFeatures";
-import { FeatureDetailModal } from "@/components/FeatureDetailModal";
-import { FeatureData } from "@/hooks/useHomepageFeatures";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import drive365Logo from "@/assets/drive365-logo.png";
 import { EarlierTestRequestTile } from "@/components/benefits/EarlierTestRequestTile";
-import featureRetestFallback from "@/assets/failed-driving-test.png";
-import featureAvailabilityFallback from "@/assets/feature-availability.jpg";
-import featureTheoryFallback from "@/assets/feature-theory.jpg";
-import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
-import featureCancellationFallback from "@/assets/feature-cancellation.jpg";
-import featurePaymentsFallback from "@/assets/feature-payments.jpg";
-
-function useFeatureImage(feature: IncludedFeatureData): string | null {
-  if (feature.image_url) return feature.image_url;
-  switch (feature.title.toLowerCase()) {
-    case "theory test support": return featureTheoryFallback;
-    case "flexible payments": return featurePaymentsFallback;
-    case "free cancellation": return featureCancellationFallback;
-    case "free re-test": return featureRetestFallback;
-    case "live availability": return featureAvailabilityFallback;
-    case "theory test pro": return featureTheoryPro;
-    default: return null;
-  }
-}
 
 export default function Benefits() {
   const location = useLocation();
   const navigate = useNavigate();
   const { features, loading } = useIncludedFeatures();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedFeature, setSelectedFeature] = useState<IncludedFeatureData | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const [postcode, setPostcode] = useState("");
-
-  const openModal = (f: IncludedFeatureData) => { setSelectedFeature(f); setModalOpen(true); };
-  const closeModal = () => setModalOpen(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,52 +137,61 @@ export default function Benefits() {
         </div>
       )}
 
-      {/* V14 Glass Tiles */}
+      {/* Features List */}
       {!loading && (
-        <div className="px-4 space-y-4">
+        <div className="px-4 space-y-3">
           {/* Earlier Test Guarantee - Featured Tile */}
           <EarlierTestRequestTile />
 
-          <div className="grid grid-cols-3 gap-3">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              const img = useFeatureImage(feature);
-              return (
-                <motion.button
-                  key={feature.id}
-                  onClick={() => openModal(feature)}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="text-left rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
-                >
-                  <div className="h-28 overflow-hidden">
-                    {img ? (
-                      <img src={img} alt={feature.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
-                        <Icon className="h-10 w-10 text-primary/30" />
+          {features.map((feature, index) => (
+              <motion.div
+                key={feature.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Accordion type="single" collapsible>
+                  <AccordionItem 
+                    value={feature.id} 
+                    className="bg-card border overflow-hidden"
+                  >
+                    {/* Horizontal layout: Image left, content right */}
+                    <div className="flex flex-row items-center min-h-[80px]">
+                      {/* Left: Image */}
+                      {feature.image_url && (
+                        <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
+                          <img 
+                            src={feature.image_url} 
+                            alt={feature.title} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      {/* Right: Text Content */}
+                      <div className="flex-1 min-w-0 px-3 py-3">
+                        <h3 className="font-bold text-foreground text-sm leading-snug">{feature.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{feature.description}</p>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h4 className="font-semibold text-xs">{feature.title}</h4>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+                    </div>
+                    
+                    <AccordionTrigger className="hover:no-underline py-2 px-4 border-t border-border/30 bg-gradient-to-r from-primary/5 to-primary/10">
+                      <span className="text-xs text-primary/70">Tap to learn more</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4 px-4 pt-0">
+                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                        {(feature.detailed_content || feature.description)
+                          .split('\n\n')
+                          .map((paragraph, i) => (
+                            <p key={i}>{paragraph}</p>
+                          ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </motion.div>
+          ))}
         </div>
       )}
-
-      {/* Feature Detail Modal */}
-      <FeatureDetailModal
-        feature={selectedFeature as FeatureData | null}
-        open={modalOpen}
-        onClose={closeModal}
-      />
 
       {/* CTA Section */}
       <div className="px-4 pt-6">
