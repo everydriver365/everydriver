@@ -111,7 +111,7 @@ interface AreaCache {
   [postcode: string]: string | null;
 }
 
-export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
+export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", instructorId?: string) {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
   const [transmission, setTransmission] = useState("all");
@@ -137,6 +137,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
 
   // Get display hours based on course type filter
   const displayHours = useMemo(() => {
+    // When filtering by instructor, show all their course hours
+    if (instructorId) {
+      const instructorHours = instructorCourses
+        .filter(c => c.instructor_id === instructorId)
+        .map(c => c.course_hours);
+      return instructorHours.length > 0 ? instructorHours : [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
+    }
     switch (courseTypeFilter) {
       case "intensive":
         return INTENSIVE_HOURS;
@@ -145,7 +152,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
       default:
         return [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
     }
-  }, [courseTypeFilter]);
+  }, [courseTypeFilter, instructorId, instructorCourses]);
 
   const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
     const today = startOfDay(new Date());
@@ -235,12 +242,29 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      let instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      if (instructorId) {
+        instructorsQuery = instructorsQuery.eq("id", instructorId);
+      }
+      let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
+      if (instructorId) {
+        coursesQuery = coursesQuery.eq("instructor_id", instructorId);
+      }
+      let workingHoursQuery = supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active");
+      if (instructorId) {
+        workingHoursQuery = workingHoursQuery.eq("instructor_id", instructorId);
+      }
+      let overridesQuery = supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available");
+      if (instructorId) {
+        overridesQuery = overridesQuery.eq("instructor_id", instructorId);
+      }
+
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes, premiumRes] = await Promise.all([
-        supabase.from("instructors").select("*").eq("is_active", true),
-        supabase.from("instructor_courses").select("*").eq("is_active", true),
+        instructorsQuery,
+        coursesQuery,
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
-        supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
-        supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
+        workingHoursQuery,
+        overridesQuery,
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
