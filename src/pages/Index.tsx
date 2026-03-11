@@ -217,7 +217,7 @@ export default function Index() {
               ))}
               {/* Second Row */}
               {[ 
-                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "4deg", top: "52%", left: "15%", zIndex: 3 },
+                { src: testimonialSarahNew, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "4deg", top: "52%", left: "15%", zIndex: 3 },
                 { src: testimonialJames, alt: "Passed student", caption: "Intensive Course 🚗", rotation: "-2deg", top: "48%", left: "55%", zIndex: 4 },
               ].map((img, i) => (
                 <div 
