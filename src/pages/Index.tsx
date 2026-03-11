@@ -817,11 +817,11 @@ export default function Index() {
           )}
 
           <div className="text-center mt-10">
-            <a href="https://despatch.blog.gov.uk/" target="_blank" rel="noopener noreferrer">
+            <Link to="/news">
               <Button variant="outline" className="gap-2">
                 View All Articles <ArrowRight className="h-4 w-4" />
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </section>

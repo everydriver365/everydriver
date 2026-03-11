@@ -202,6 +202,7 @@ const App = () => (
                 <Route path="/google-api-disclosure" element={<GoogleApiDisclosure />} />
                 <Route path="/benefits" element={<Benefits />} />
                 <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
+                <Route path="/news" element={<News />} />
                 <Route path="/i/:slug" element={<MiniWebsiteHome />} />
                 <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
                 <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
