@@ -196,13 +196,12 @@ export default function Index() {
             {/* Right: Polaroid Stack Gallery */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="relative h-96 lg:h-[30rem]">
               {[ 
-                { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "5%", left: "0%", zIndex: 1 },
-                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "3deg", top: "15%", left: "30%", zIndex: 2 },
-                { src: testimonialSarah, alt: "Successful student", caption: "1st Time Pass ✨", rotation: "-2deg", top: "10%", left: "60%", zIndex: 3 },
+                { src: heroInstructorNew, alt: "Driving instructor", caption: "Expert Instructors", rotation: "-6deg", top: "10%", left: "10%", zIndex: 1 },
+                { src: heroLearner, alt: "Happy learner", caption: "Happy Passers", rotation: "4deg", top: "20%", left: "45%", zIndex: 2 },
               ].map((img, i) => (
                 <div 
                   key={i} 
-                  className="absolute w-52 lg:w-64 bg-background p-3 pb-10 rounded-md shadow-2xl"
+                  className="absolute w-56 lg:w-72 bg-background p-3 pb-10 rounded-md shadow-2xl"
                   style={{ 
                     transform: `rotate(${img.rotation})`,
                     top: img.top,
