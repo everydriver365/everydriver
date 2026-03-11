@@ -235,12 +235,29 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      let instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      if (instructorId) {
+        instructorsQuery = instructorsQuery.eq("id", instructorId);
+      }
+      let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
+      if (instructorId) {
+        coursesQuery = coursesQuery.eq("instructor_id", instructorId);
+      }
+      let workingHoursQuery = supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active");
+      if (instructorId) {
+        workingHoursQuery = workingHoursQuery.eq("instructor_id", instructorId);
+      }
+      let overridesQuery = supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available");
+      if (instructorId) {
+        overridesQuery = overridesQuery.eq("instructor_id", instructorId);
+      }
+
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes, premiumRes] = await Promise.all([
-        supabase.from("instructors").select("*").eq("is_active", true),
-        supabase.from("instructor_courses").select("*").eq("is_active", true),
+        instructorsQuery,
+        coursesQuery,
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
-        supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
-        supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
+        workingHoursQuery,
+        overridesQuery,
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
