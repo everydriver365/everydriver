@@ -59,6 +59,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const GoogleApiDisclosure = lazy(() => import("./pages/GoogleApiDisclosure"));
 const Benefits = lazy(() => import("./pages/Benefits"));
 const EarlierTestGuarantee = lazy(() => import("./pages/EarlierTestGuarantee"));
+const News = lazy(() => import("./pages/News"));
 const InstructorMiniWebsiteSettings = lazy(() => import("./pages/InstructorMiniWebsiteSettings"));
 const MiniWebsiteHome = lazy(() => import("./pages/mini-website/MiniWebsiteHome"));
 const MiniWebsiteAbout = lazy(() => import("./pages/mini-website/MiniWebsiteAbout"));
