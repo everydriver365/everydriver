@@ -688,105 +688,45 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Video Story Section — Testimonial-Led */}
-      <section className="bg-gradient-to-b from-amber-50 to-background py-20">
-        <div className="container max-w-5xl">
+      {/* Video Story Section — Full-Bleed Hero */}
+      <section className="py-20">
+        <div className="container max-w-6xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="relative rounded-3xl overflow-hidden"
           >
-            <div className="flex justify-center mb-4">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} className="h-5 w-5 fill-amber-400 text-amber-400" />
-              ))}
-            </div>
-            <h2 className="text-4xl font-black mb-2">
-              "They Changed My Life"
-            </h2>
-            <p className="text-muted-foreground">— Sarah, passed first time after 30 hours</p>
-          </motion.div>
-
-          {/* Video with testimonial cards floating */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-              <img
-                src={videoThumbnailImg}
-                alt="Our Story Video"
-                className="aspect-video w-full object-cover"
-              />
-              <button
-                onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-                disabled={!welcomeVideoUrl}
-                className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-all cursor-pointer"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-xl backdrop-blur"
-                >
-                  <Play className="h-8 w-8 fill-amber-500 text-amber-500 ml-1" />
-                </motion.div>
-              </button>
-            </div>
-
-            {/* Floating testimonial cards */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="absolute -bottom-6 -left-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border hidden lg:block"
-            >
-              <div className="flex gap-1 mb-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                ))}
+            <img src={heroLearner} alt="Learner driving" className="w-full aspect-[16/7] object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent flex items-center">
+              <div className="p-8 md:p-16 max-w-lg">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="text-white/70 text-sm ml-2">4.9 from 6,499 reviews</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">Watch Our Story</h2>
+                <p className="text-white/70 text-lg mb-8">Discover why thousands of learners trust us with their driving journey.</p>
+                <div className="flex gap-4 items-center">
+                  <Button
+                    size="lg"
+                    onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                    disabled={!welcomeVideoUrl}
+                    className="gap-2 bg-white text-foreground hover:bg-white/90"
+                  >
+                    <Play className="h-5 w-5 fill-foreground" /> Play Video
+                  </Button>
+                  <div className="flex -space-x-2">
+                    {[testimonialSarahFallback, testimonialJamesFallback, testimonialEmmaFallback].map((src, i) => (
+                      <img key={i} src={src} alt="Learner" className="h-10 w-10 rounded-full border-2 border-white object-cover" />
+                    ))}
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-zinc-600 italic">"Best decision I ever made!"</p>
-              <p className="text-[10px] font-semibold text-zinc-400 mt-1">— James, Manchester</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              viewport={{ once: true }}
-              className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-4 max-w-[220px] border hidden lg:block"
-            >
-              <div className="flex gap-1 mb-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs text-zinc-600 italic">"Passed first time, so happy!"</p>
-              <p className="text-[10px] font-semibold text-zinc-400 mt-1">— Priya, London</p>
-            </motion.div>
+            </div>
           </motion.div>
-
-          <div className="flex justify-center mt-12 gap-4">
-            <Button
-              onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
-              disabled={!welcomeVideoUrl}
-              className="gap-2 bg-amber-500 hover:bg-amber-600 font-bold"
-            >
-              <Play className="h-4 w-4 fill-white" />
-              Watch Our Story
-            </Button>
-            <Button variant="outline" className="gap-2" asChild>
-              <Link to="/about">
-                Read More Stories
-                <Heart className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
