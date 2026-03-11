@@ -155,23 +155,19 @@ export default function Benefits() {
                     value={feature.id} 
                     className="bg-card border overflow-hidden"
                   >
-                    {/* Horizontal layout: Image left, content right */}
-                    <div className="flex flex-row items-center min-h-[80px]">
-                      {/* Left: Image */}
-                      {feature.image_url && (
-                        <div className="w-20 h-[208px] flex-shrink-0 overflow-hidden">
-                          <img 
-                            src={feature.image_url} 
-                            alt={feature.title} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      {/* Right: Text Content */}
-                      <div className="flex-1 min-w-0 px-3 py-3">
-                        <h3 className="font-bold text-foreground text-sm leading-snug">{feature.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{feature.description}</p>
+                    {/* Vertical layout: Image top, content below */}
+                    {feature.image_url && (
+                      <div className="w-full h-[208px] overflow-hidden">
+                        <img 
+                          src={feature.image_url} 
+                          alt={feature.title} 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
+                    )}
+                    <div className="px-3 py-3">
+                      <h3 className="font-bold text-foreground text-sm leading-snug">{feature.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{feature.description}</p>
                     </div>
                     
                     <AccordionTrigger className="hover:no-underline py-2 px-4 border-t border-border/30 bg-gradient-to-r from-primary/5 to-primary/10">
