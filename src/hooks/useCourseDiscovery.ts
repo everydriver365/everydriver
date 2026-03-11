@@ -137,6 +137,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
   // Get display hours based on course type filter
   const displayHours = useMemo(() => {
+    // When filtering by instructor, show all their course hours
+    if (instructorId) {
+      const instructorHours = instructorCourses
+        .filter(c => c.instructor_id === instructorId)
+        .map(c => c.course_hours);
+      return instructorHours.length > 0 ? instructorHours : [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
+    }
     switch (courseTypeFilter) {
       case "intensive":
         return INTENSIVE_HOURS;
@@ -145,7 +152,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       default:
         return [...new Set([...INTENSIVE_HOURS, ...SEMI_INTENSIVE_HOURS])];
     }
-  }, [courseTypeFilter]);
+  }, [courseTypeFilter, instructorId, instructorCourses]);
 
   const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
     const today = startOfDay(new Date());
