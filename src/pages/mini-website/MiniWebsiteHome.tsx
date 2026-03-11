@@ -110,7 +110,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </div>
 
       {/* Hero Section - Warm & Approachable */}
-      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      <section style={{ background: 'linear-gradient(135deg, #414200 0%, #5a5b10 40%, #7a7c2a 70%, #9a9d44 100%)' }}>
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
@@ -145,24 +145,24 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                       key={s}
                       className={`h-5 w-5 ${
                         s <= Math.round(Number(avgRating))
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-gray-300"
+                          ? "fill-amber-300 text-amber-300"
+                          : "text-white/30"
                       }`}
                     />
                   ))}
-                  <span className="font-bold text-gray-700">
+                  <span className="font-bold text-white/90">
                     {avgRating} ({reviews.length} reviews)
                   </span>
                 </div>
               )}
 
               {/* Heading */}
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
                 Your journey starts<br />with{" "}
-                <span style={{ color: primaryColor }}>{instructorName}</span>
+                <span className="text-amber-300">{instructorName}</span>
               </h1>
 
-              <p className="text-gray-600 text-lg">
+              <p className="text-white/80 text-lg">
                 Search, compare and book direct with {instructor.name}.{" "}
                 <strong>
                   Book through Every Driver for a range of exclusive benefits.
