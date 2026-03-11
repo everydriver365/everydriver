@@ -54,13 +54,25 @@ const SHARED_ROUTES = [
   "/admin",
 ];
 
+// Custom domain to instructor slug mappings
+const CUSTOM_DOMAIN_SLUGS: Record<string, string> = {
+  "winchesterdrivingschool.co.uk": "ken-d",
+  "www.winchesterdrivingschool.co.uk": "ken-d",
+};
+
 /**
- * Extracts instructor slug from subdomain if present
+ * Extracts instructor slug from subdomain or custom domain if present
  * e.g., "jane-smith.everydriver.co.uk" returns "jane-smith"
- * Returns null if no subdomain or if it's www
+ * e.g., "winchesterdrivingschool.co.uk" returns "ken-d"
+ * Returns null if no subdomain/custom domain or if it's www
  */
 export function getInstructorSubdomain(): string | null {
   const hostname = window.location.hostname.toLowerCase();
+  
+  // Check custom domain mappings first
+  if (CUSTOM_DOMAIN_SLUGS[hostname]) {
+    return CUSTOM_DOMAIN_SLUGS[hostname];
+  }
   
   // Check if it's an everydriver subdomain
   if (hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`)) {
