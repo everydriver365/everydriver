@@ -556,28 +556,33 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
 
       {/* Quick Links */}
-      <section className="bg-secondary/50 py-10">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <section className="py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-2xl font-black text-center mb-8" style={{ color: primaryColor }}>
+            Explore More
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { to: links.about, label: "About Me", sub: "Learn more" },
-              { to: links.services, label: "Services", sub: "View options" },
-              { to: links.courses, label: "Courses", sub: "Search & book" },
-              { to: links.reviews, label: "Reviews", sub: `${reviews.length} reviews` },
-              { to: links.contact, label: "Contact", sub: "Get in touch" },
-            ].map((link) => (
+              { to: links.about, label: "About Me", sub: "Learn more", icon: "👤" },
+              { to: links.services, label: "Services", sub: "View options", icon: "🚗" },
+              { to: links.courses, label: "Courses", sub: "Search & book", icon: "📚" },
+              { to: links.reviews, label: "Reviews", sub: `${reviews.length} reviews`, icon: "⭐" },
+              { to: links.contact, label: "Contact", sub: "Get in touch", icon: "📞" },
+            ].map((link, i) => (
               <Link key={link.to} to={link.to}>
-                <Card className="border border-border shadow-sm hover:shadow-md transition rounded-2xl cursor-pointer">
-                  <CardContent className="p-4 text-center">
-                    <h3
-                      className="font-bold text-sm"
-                      style={{ color: primaryColor }}
-                    >
-                      {link.label}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">{link.sub}</p>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="group flex flex-col items-center gap-2 p-5 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                >
+                  <span className="text-2xl mb-1">{link.icon}</span>
+                  <h3 className="font-bold text-sm" style={{ color: primaryColor }}>
+                    {link.label}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">{link.sub}</p>
+                </motion.div>
               </Link>
             ))}
           </div>
