@@ -21,7 +21,7 @@ import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons"
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
-import { CardstreamEmbeddedCheckout } from "@/components/payments/CardstreamEmbeddedCheckout";
+import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
 import {
   Accordion,
   AccordionContent,
@@ -798,13 +798,13 @@ export function MobileBookingView({
                   Cancel
                 </button>
               </div>
-              <CardstreamEmbeddedCheckout
+              <CardstreamPayButton
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                 pupilId={embeddedCheckoutPupilId}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                onSuccess={onEmbeddedCheckoutSuccess}
+                onError={(msg) => { /* handled by component */ }}
               />
             </motion.div>
           )}
