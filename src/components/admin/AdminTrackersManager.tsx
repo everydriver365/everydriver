@@ -60,6 +60,7 @@ export function AdminTrackersManager() {
   const [newDeviceId, setNewDeviceId] = useState("");
   const [newDeviceName, setNewDeviceName] = useState("");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<string>("geotab");
   const [isAdding, setIsAdding] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -114,19 +115,27 @@ export function AdminTrackersManager() {
     if (!selectedInstructorId || !newDeviceId.trim()) return;
     setIsAdding(true);
     try {
-      const { error } = await supabase.from("gps_devices").insert({
+      const insertData: Record<string, unknown> = {
         instructor_id: selectedInstructorId,
-        tracking_provider: "geotab",
-        geotab_device_id: newDeviceId.trim(),
-        device_identifier: `geotab-${newDeviceId.trim()}`,
-        device_name: newDeviceName.trim() || `Geotab ${newDeviceId.trim()}`,
+        tracking_provider: selectedProvider,
+        device_identifier: `${selectedProvider}-${newDeviceId.trim()}`,
+        device_name: newDeviceName.trim() || `${selectedProvider === "geotab" ? "Geotab" : "Radius"} ${newDeviceId.trim()}`,
         vehicle_id: selectedVehicleId || null,
         is_active: true,
-      });
+      };
+
+      if (selectedProvider === "geotab") {
+        insertData.geotab_device_id = newDeviceId.trim();
+      } else if (selectedProvider === "radius") {
+        insertData.device_identifier = newDeviceId.trim();
+      }
+
+      const { error } = await supabase.from("gps_devices").insert(insertData as any);
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["admin-all-gps-devices"] });
-      toast({ title: "Device added", description: `Geotab ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
+      const providerLabel = selectedProvider === "geotab" ? "Geotab" : "Radius";
+      toast({ title: "Device added", description: `${providerLabel} ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
       setNewDeviceId("");
       setNewDeviceName("");
       setSelectedVehicleId("");
@@ -228,34 +237,48 @@ export function AdminTrackersManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-primary" />
-            Add Geotab Tracker
+            Add Tracker
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select an instructor..." />
-            </SelectTrigger>
-            <SelectContent>
-              {instructors?.map((i) => (
-                <SelectItem key={i.id} value={i.id}>
-                  {i.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select instructor..." />
+              </SelectTrigger>
+              <SelectContent>
+                {instructors?.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>
+                    {i.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+              <SelectTrigger>
+                <SelectValue placeholder="Provider..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="geotab">Geotab</SelectItem>
+                <SelectItem value="radius">Radius</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {selectedInstructorId && (
             <div className="space-y-3">
               <div className="space-y-1">
                 <Input
-                  placeholder="Geotab Device ID (e.g. GAUU4BSZ9SK8)"
+                  placeholder={selectedProvider === "geotab" ? "Geotab Device ID (e.g. GAUU4BSZ9SK8)" : "Radius Vehicle/Device ID"}
                   value={newDeviceId}
                   onChange={(e) => setNewDeviceId(e.target.value)}
                   className="font-mono"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Find this in Geotab Admin → Devices
+                  {selectedProvider === "geotab"
+                    ? "Find this in Geotab Admin → Devices"
+                    : "Find this in your Radius/Velocity portal"}
                 </p>
               </div>
 
@@ -288,7 +311,7 @@ export function AdminTrackersManager() {
                 ) : (
                   <Link2 className="h-4 w-4 mr-2" />
                 )}
-                Add Device
+                Add {selectedProvider === "geotab" ? "Geotab" : "Radius"} Device
               </Button>
             </div>
           )}
