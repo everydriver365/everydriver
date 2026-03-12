@@ -207,7 +207,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 Learn to Drive in Winchester
               </h1>
 
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-base sm:text-lg">
                 Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
               </p>
 
