@@ -278,6 +278,9 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
         </div>
       </footer>
 
+      {/* Mobile Bottom Nav */}
+      <MiniWebsiteMobileBottomNav slug={slug} />
+
       {/* Live Chat Widget */}
       <LiveChatWidget
         sessionType="instructor"
