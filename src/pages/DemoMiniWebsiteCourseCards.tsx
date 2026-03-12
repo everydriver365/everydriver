@@ -4,12 +4,11 @@ import { format, addDays } from "date-fns";
 import {
   MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap,
   TrendingUp, Calendar, ArrowRight, Sparkles, Shield, Award, Heart,
-  ChevronRight, Timer, Gift, BookOpen,
+  ChevronRight, Timer, Gift, BookOpen, GraduationCap, Route,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 
 // ── Sample data ──────────────────────────────────────────
@@ -28,10 +27,10 @@ const SAMPLE_INSTRUCTOR = {
 };
 
 const SAMPLE_COURSES = [
-  { hours: 10, isPopular: true, isIntensive: false, discountedPrice: null, features: ["Theory support", "Home pick-up", "Mock test included", "Progress tracking"] },
-  { hours: 20, isPopular: false, isIntensive: false, discountedPrice: 760, features: ["Theory support", "Home pick-up", "2 mock tests", "Progress tracking", "Highway driving"] },
-  { hours: 30, isPopular: true, isIntensive: false, discountedPrice: null, features: ["Theory support", "Home pick-up", "3 mock tests", "Progress tracking", "Highway driving", "Night driving"] },
-  { hours: 28, isPopular: false, isIntensive: true, discountedPrice: 1050, features: ["Test in a week", "Theory support", "Home pick-up", "Intensive format", "Test booking help"] },
+  { hours: 10, isPopular: true, isIntensive: false, discountedPrice: null, features: ["Theory support", "Home pick-up", "Mock test included", "Progress tracking"], image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop" },
+  { hours: 20, isPopular: false, isIntensive: false, discountedPrice: 760, features: ["Theory support", "Home pick-up", "2 mock tests", "Progress tracking", "Highway driving"], image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=400&fit=crop" },
+  { hours: 30, isPopular: true, isIntensive: false, discountedPrice: null, features: ["Theory support", "Home pick-up", "3 mock tests", "Progress tracking", "Highway driving", "Night driving"], image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=400&fit=crop" },
+  { hours: 28, isPopular: false, isIntensive: true, discountedPrice: 1050, features: ["Test in a week", "Theory support", "Home pick-up", "Intensive format", "Test booking help"], image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0afa?w=800&h=400&fit=crop" },
 ];
 
 const nextDate = addDays(new Date(), 5);
@@ -46,102 +45,65 @@ function getCourseName(hours: number) {
   return hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
 }
 
+type CourseType = typeof SAMPLE_COURSES[0];
+
 // ══════════════════════════════════════════════════════════
-// VARIANT 1: Clean Minimal
+// VARIANT 1: Elevated Card
 // ══════════════════════════════════════════════════════════
-function Variant1({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant1({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative h-44 overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop" alt={name} className="w-full h-full object-cover" />
-        {course.isPopular && (
-          <span className="absolute top-3 left-3 bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">Popular</span>
-        )}
-        {course.isIntensive && (
-          <span className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-            <Zap className="h-3 w-3" /> Intensive
-          </span>
+    <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all group">
+      <div className="relative h-48 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute top-3 left-3 flex gap-1.5">
+          {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white shadow-lg">⭐ Popular</Badge>}
+          {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white shadow-lg"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+        </div>
+        <Badge className="absolute top-3 right-3 bg-white/90 text-foreground border-0 shadow"><Car className="h-3 w-3 mr-1" />Automatic</Badge>
+        {hasDiscount && (
+          <div className="absolute bottom-3 left-3 bg-red-500 text-white px-2.5 py-1 rounded-lg shadow-lg text-sm font-bold">
+            Save £{base - final}
+          </div>
         )}
       </div>
       <div className="p-5 space-y-3">
-        <h3 className="text-lg font-bold text-foreground">{name}</h3>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{course.hours}hrs</span>
-          <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />Winchester</span>
-          <span className="flex items-center gap-1"><Car className="h-4 w-4" />Automatic</span>
-        </div>
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-start justify-between">
           <div>
-            {hasDiscount ? (
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-foreground">£{final}</span>
-                <span className="text-sm line-through text-muted-foreground">£{base}</span>
-              </div>
-            ) : (
-              <span className="text-2xl font-bold text-foreground">£{base}</span>
-            )}
-            <p className="text-xs text-muted-foreground">or from £{Math.round(final / 4)}/mo</p>
+            <h3 className="text-lg font-bold text-foreground">{name}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">with {SAMPLE_INSTRUCTOR.name} · Winchester</p>
           </div>
-          <Button size="sm" className="rounded-full">Book Now</Button>
+          <div className="flex items-center gap-1 text-sm" style={{ color: brandColour }}>
+            <Calendar className="h-4 w-4" />
+            <span className="font-semibold">{format(nextDate, "d MMM")}</span>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════
-// VARIANT 2: Bold Split
-// ══════════════════════════════════════════════════════════
-function Variant2({ course }: { course: typeof SAMPLE_COURSES[0] }) {
-  const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
-  const name = getCourseName(course.hours);
-
-  return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all group">
-      <div className="flex">
-        {/* Date strip */}
-        <div className="w-20 flex flex-col items-center justify-center py-6" style={{ backgroundColor: brandColour }}>
-          <span className="text-3xl font-black text-white">{format(nextDate, "d")}</span>
-          <span className="text-xs font-bold text-white/70 uppercase">{format(nextDate, "MMM")}</span>
-          <div className="mt-2 w-8 h-px bg-white/30" />
-          <span className="text-[10px] text-white/60 mt-1">{course.hours}hrs</span>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours} hours</span>
+          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
         </div>
-        {/* Content */}
-        <div className="flex-1 p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-foreground">{name}</h3>
-              <p className="text-sm text-muted-foreground mt-1">with {SAMPLE_INSTRUCTOR.name}</p>
-            </div>
-            {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white">Popular</Badge>}
-          </div>
-          <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
-            <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />Automatic</span>
-          </div>
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {course.features.slice(0, 3).map((f, i) => (
-              <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{f}</span>
-            ))}
-          </div>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+        <div className="flex flex-wrap gap-1.5">
+          {course.features.slice(0, 3).map((f, i) => (
+            <span key={i} className="flex items-center gap-1 text-xs text-muted-foreground"><CheckCircle className="h-3 w-3 text-emerald-500" />{f}</span>
+          ))}
+        </div>
+        <div className="pt-3 border-t border-border space-y-2">
+          <div className="flex items-center justify-between">
             <div>
               {hasDiscount ? (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold">£{final}</span>
+                  <span className="text-2xl font-black text-foreground">£{final}</span>
                   <span className="text-sm line-through text-muted-foreground">£{base}</span>
                 </div>
               ) : (
-                <span className="text-xl font-bold">£{base}</span>
+                <span className="text-2xl font-black text-foreground">£{base}</span>
               )}
             </div>
-            <Button size="sm" variant="outline" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              View <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <Button size="sm" className="rounded-full" style={{ backgroundColor: brandColour }}>Book Now</Button>
           </div>
+          <CompactPaymentBadges amount={final} />
         </div>
       </div>
     </div>
@@ -149,40 +111,51 @@ function Variant2({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 3: Gradient Hero Card
+// VARIANT 2: Stacked Modern
 // ══════════════════════════════════════════════════════════
-function Variant3({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant2({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="relative rounded-2xl overflow-hidden group hover:shadow-2xl transition-all">
-      <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop" alt={name} className="w-full h-72 object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-      <div className="absolute inset-0 flex flex-col justify-end p-5 text-white">
-        <div className="flex gap-2 mb-2">
-          {course.isPopular && <Badge className="bg-emerald-500 border-0">Popular</Badge>}
-          {course.isIntensive && <Badge className="bg-amber-500 border-0"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
-          <Badge className="bg-white/20 backdrop-blur-sm border-0"><Car className="h-3 w-3 mr-1" />Auto</Badge>
+    <div className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-xl transition-all">
+      <div className="relative h-44 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 left-0 right-0 p-3 flex gap-1.5">
+          {course.isPopular && <Badge className="bg-emerald-500/90 backdrop-blur-sm border-0 text-white">Popular</Badge>}
+          {course.isIntensive && <Badge className="bg-amber-500/90 backdrop-blur-sm border-0 text-white"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+          <Badge className="bg-white/80 backdrop-blur-sm text-foreground border-0"><Car className="h-3 w-3 mr-1" />Auto</Badge>
         </div>
-        <h3 className="text-2xl font-black">{name}</h3>
-        <div className="flex items-center gap-4 mt-1 text-white/80 text-sm">
-          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours} hours</span>
-          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
-          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(nextDate, "d MMM")}</span>
+      </div>
+      <div className="p-5 space-y-4">
+        <div>
+          <h3 className="text-xl font-black text-foreground">{name}</h3>
+          <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours}hrs</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(nextDate, "d MMM")}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between mt-4">
-          <div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {course.features.slice(0, 4).map((f, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CheckCircle className="h-3 w-3 text-emerald-500 shrink-0" />{f}
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
             {hasDiscount ? (
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black">£{final}</span>
-                <span className="text-base line-through text-white/50">£{base}</span>
+                <span className="text-2xl font-black text-foreground">£{final}</span>
+                <span className="text-sm line-through text-muted-foreground">£{base}</span>
+                <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">-£{base - final}</Badge>
               </div>
             ) : (
-              <span className="text-2xl font-black">£{base}</span>
+              <span className="text-2xl font-black text-foreground">£{base}</span>
             )}
+            <Button size="sm" className="rounded-full px-6" style={{ backgroundColor: brandColour }}>Book</Button>
           </div>
-          <Button className="bg-white text-black hover:bg-white/90 font-bold rounded-full">Book Now</Button>
+          <CompactPaymentBadges amount={final} />
         </div>
       </div>
     </div>
@@ -190,44 +163,55 @@ function Variant3({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 4: Compact Horizontal
+// VARIANT 3: Side-by-Side Pro
 // ══════════════════════════════════════════════════════════
-function Variant4({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant3({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="flex bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg transition-shadow group">
-      <div className="relative w-36 shrink-0">
-        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop" alt={name} className="w-full h-full object-cover" />
+    <div className="flex bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all group">
+      <div className="relative w-44 shrink-0 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
         {hasDiscount && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
-            SAVE £{base - final}
-          </div>
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">SAVE £{base - final}</div>
         )}
       </div>
       <div className="flex-1 p-4 flex flex-col justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-start justify-between">
             <h3 className="font-bold text-foreground">{name}</h3>
-            {course.isPopular && <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">POPULAR</span>}
+            <div className="flex gap-1">
+              {course.isPopular && <Badge variant="secondary" className="text-[10px]">Popular</Badge>}
+              {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white text-[10px]"><Zap className="h-3 w-3" /></Badge>}
+            </div>
           </div>
           <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{course.hours}hrs</span>
             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />Winchester</span>
             <span className="flex items-center gap-1"><Car className="h-3 w-3" />Auto</span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{format(nextDate, "d MMM")}</span>
+          </div>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {course.features.slice(0, 3).map((f, i) => (
+              <span key={i} className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{f}</span>
+            ))}
           </div>
         </div>
-        <div className="flex items-center justify-between mt-3">
-          {hasDiscount ? (
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-foreground">£{final}</span>
-              <span className="text-xs line-through text-muted-foreground">£{base}</span>
-            </div>
-          ) : (
-            <span className="text-lg font-bold text-foreground">£{base}</span>
-          )}
-          <Button size="sm" variant="outline" className="h-8 text-xs rounded-full">Book <ArrowRight className="h-3 w-3 ml-1" /></Button>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            {hasDiscount ? (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black">£{final}</span>
+                <span className="text-xs line-through text-muted-foreground">£{base}</span>
+              </div>
+            ) : (
+              <span className="text-xl font-black">£{base}</span>
+            )}
+            <Button size="sm" variant="outline" className="h-8 text-xs rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              View <ChevronRight className="h-3 w-3 ml-1" />
+            </Button>
+          </div>
+          <CompactPaymentBadges amount={final} />
         </div>
       </div>
     </div>
@@ -235,14 +219,62 @@ function Variant4({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 5: iOS Card Stack
+// VARIANT 4: Cinematic Overlay
 // ══════════════════════════════════════════════════════════
-function Variant5({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant4({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="bg-card rounded-[20px] border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden group hover:shadow-2xl transition-all h-[380px]">
+      <img src={course.image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+      <div className="absolute top-3 left-3 flex gap-1.5 z-10">
+        {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white">⭐ Popular</Badge>}
+        {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+        <Badge className="bg-white/20 backdrop-blur-sm border-0 text-white"><Car className="h-3 w-3 mr-1" />Auto</Badge>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-5 text-white space-y-3">
+        <div>
+          <h3 className="text-2xl font-black">{name}</h3>
+          <div className="flex items-center gap-4 mt-1 text-sm text-white/80">
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours}hrs</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(nextDate, "d MMM")}</span>
+          </div>
+        </div>
+        <div className="flex items-end justify-between">
+          <div>
+            {hasDiscount ? (
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black">£{final}</span>
+                <span className="text-base line-through text-white/50">£{base}</span>
+              </div>
+            ) : (
+              <span className="text-3xl font-black">£{base}</span>
+            )}
+            <CompactPaymentBadges amount={final} className="mt-1.5" />
+          </div>
+          <Button className="bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-xl">Book Now</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+// VARIANT 5: Pill Info Card
+// ══════════════════════════════════════════════════════════
+function Variant5({ course }: { course: CourseType }) {
+  const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
+  const name = getCourseName(course.hours);
+  return (
+    <div className="bg-card rounded-[20px] border border-border shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+      <div className="relative h-40 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover" />
+        {hasDiscount && (
+          <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">-£{base - final}</div>
+        )}
+      </div>
       <div className="p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -254,37 +286,27 @@ function Variant5({ course }: { course: typeof SAMPLE_COURSES[0] }) {
               <p className="text-xs text-muted-foreground">{format(nextDate, "EEEE, d MMMM")}</p>
             </div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex flex-col gap-1">
             {course.isPopular && <Badge variant="secondary" className="text-[10px]">Popular</Badge>}
             {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white text-[10px]">Intensive</Badge>}
           </div>
         </div>
-
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-muted rounded-xl p-3 text-center">
-            <Clock className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-            <span className="text-xs font-medium">{course.hours}hrs</span>
+          <div className="bg-muted rounded-xl p-2.5 text-center">
+            <Clock className="h-4 w-4 mx-auto text-muted-foreground mb-0.5" />
+            <span className="text-[11px] font-medium">{course.hours}hrs</span>
           </div>
-          <div className="bg-muted rounded-xl p-3 text-center">
-            <MapPin className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-            <span className="text-xs font-medium">Winchester</span>
+          <div className="bg-muted rounded-xl p-2.5 text-center">
+            <MapPin className="h-4 w-4 mx-auto text-muted-foreground mb-0.5" />
+            <span className="text-[11px] font-medium">Winchester</span>
           </div>
-          <div className="bg-muted rounded-xl p-3 text-center">
-            <Car className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-            <span className="text-xs font-medium">Auto</span>
+          <div className="bg-muted rounded-xl p-2.5 text-center">
+            <Car className="h-4 w-4 mx-auto text-muted-foreground mb-0.5" />
+            <span className="text-[11px] font-medium">Auto</span>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          {course.features.slice(0, 4).map((f, i) => (
-            <span key={i} className="flex items-center gap-1 text-xs text-muted-foreground">
-              <CheckCircle className="h-3 w-3 text-emerald-500" />{f}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div>
+        <div className="space-y-2 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
             {hasDiscount ? (
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black text-foreground">£{final}</span>
@@ -293,9 +315,9 @@ function Variant5({ course }: { course: typeof SAMPLE_COURSES[0] }) {
             ) : (
               <span className="text-xl font-black text-foreground">£{base}</span>
             )}
-            <p className="text-[11px] text-muted-foreground">from £{Math.round(final / 4)}/mo</p>
+            <Button className="rounded-full" size="sm" style={{ backgroundColor: brandColour }}>Book Now</Button>
           </div>
-          <Button className="rounded-full" size="sm">Book Now</Button>
+          <CompactPaymentBadges amount={final} />
         </div>
       </div>
     </div>
@@ -303,69 +325,89 @@ function Variant5({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 6: Magazine Editorial
+// VARIANT 6: Bold Header Card
 // ══════════════════════════════════════════════════════════
-function Variant6({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant6({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="bg-card border border-border rounded-none hover:shadow-xl transition-all overflow-hidden">
-      <div className="relative h-52 overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop" alt={name} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" />
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: brandColour }} />
-      </div>
-      <div className="p-6 space-y-3">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground font-medium">
-          <span>{course.hours} Hours</span>
-          <span>·</span>
-          <span>Automatic</span>
-          <span>·</span>
-          <span>Winchester</span>
+    <div className="rounded-2xl overflow-hidden hover:shadow-xl transition-all border border-border">
+      <div className="relative">
+        <img src={course.image} alt={name} className="w-full h-40 object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
+          <div className="text-white">
+            <div className="flex gap-1.5 mb-1">
+              {course.isPopular && <Badge className="bg-emerald-500/90 border-0 text-white text-[10px]">Popular</Badge>}
+              {course.isIntensive && <Badge className="bg-amber-500/90 border-0 text-white text-[10px]"><Zap className="h-3 w-3 mr-0.5" />Intensive</Badge>}
+            </div>
+            <h3 className="text-xl font-black">{name}</h3>
+          </div>
+          <Badge className="bg-white/20 backdrop-blur-sm border-0 text-white"><Car className="h-3 w-3 mr-1" />Auto</Badge>
         </div>
-        <h3 className="text-2xl font-black text-foreground tracking-tight">{name}</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-          {SAMPLE_INSTRUCTOR.bio}
-        </p>
-        <div className="flex items-center justify-between pt-4 border-t border-border">
-          <div>
+      </div>
+      <div className="p-4" style={{ backgroundColor: brandColour }}>
+        <div className="flex items-center justify-between text-white">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-white/70" />{course.hours}hrs</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-white/70" />Winchester</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-white/70" />{format(nextDate, "d MMM")}</span>
+          </div>
+          <div className="text-right">
             {hasDiscount ? (
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black">£{final}</span>
-                <span className="text-base line-through text-muted-foreground">£{base}</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black">£{final}</span>
+                <span className="text-xs line-through text-white/50">£{base}</span>
               </div>
             ) : (
-              <span className="text-2xl font-black">£{base}</span>
+              <span className="text-xl font-black">£{base}</span>
             )}
           </div>
-          <button className="text-sm font-bold uppercase tracking-wider hover:underline flex items-center gap-1" style={{ color: brandColour }}>
-            Book Now <ArrowRight className="h-4 w-4" />
-          </button>
         </div>
+      </div>
+      <div className="bg-card p-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback style={{ backgroundColor: brandColour, color: 'white' }} className="text-xs">KD</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-sm font-medium text-foreground">{SAMPLE_INSTRUCTOR.name}</p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />4.9 · Grade A
+            </div>
+          </div>
+          <Button size="sm" className="ml-auto rounded-full" style={{ backgroundColor: brandColour }}>Book Now</Button>
+        </div>
+        <CompactPaymentBadges amount={final} />
       </div>
     </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 7: Pricing Table Style
+// VARIANT 7: Pricing Focus
 // ══════════════════════════════════════════════════════════
-function Variant7({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant7({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
     <div className={`bg-card rounded-2xl border-2 overflow-hidden transition-all hover:shadow-xl ${course.isPopular ? 'border-emerald-500 shadow-emerald-500/10' : 'border-border'}`}>
       {course.isPopular && (
-        <div className="bg-emerald-500 text-white text-center py-1.5 text-xs font-bold uppercase tracking-wider">
-          Most Popular
-        </div>
+        <div className="bg-emerald-500 text-white text-center py-1.5 text-xs font-bold uppercase tracking-wider">Most Popular</div>
       )}
+      <div className="relative h-36 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover" />
+        {course.isIntensive && (
+          <Badge className="absolute top-2 right-2 bg-amber-500 border-0 text-white"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>
+        )}
+      </div>
       <div className="p-6 text-center space-y-4">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full mx-auto" style={{ backgroundColor: `${brandColour}15` }}>
-          <span className="text-2xl font-black" style={{ color: brandColour }}>{course.hours}</span>
-        </div>
         <h3 className="text-xl font-bold text-foreground">{name}</h3>
+        <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours}hrs</span>
+          <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />Auto</span>
+          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
+        </div>
         <div>
           {hasDiscount ? (
             <div className="flex items-baseline justify-center gap-2">
@@ -375,7 +417,6 @@ function Variant7({ course }: { course: typeof SAMPLE_COURSES[0] }) {
           ) : (
             <span className="text-4xl font-black text-foreground">£{base}</span>
           )}
-          <p className="text-sm text-muted-foreground mt-1">or from £{Math.round(final / 4)}/month</p>
         </div>
         <div className="space-y-2 text-left">
           {course.features.map((f, i) => (
@@ -387,6 +428,7 @@ function Variant7({ course }: { course: typeof SAMPLE_COURSES[0] }) {
         </div>
         <div className="space-y-2 pt-2">
           <Button className="w-full rounded-full" style={{ backgroundColor: brandColour }}>Book Now</Button>
+          <CompactPaymentBadges amount={final} className="justify-center" />
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
             <Calendar className="h-3 w-3" />Next: {format(nextDate, "d MMM yyyy")}
           </p>
@@ -397,16 +439,19 @@ function Variant7({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 8: Glassmorphic
+// VARIANT 8: Glassmorphic Float
 // ══════════════════════════════════════════════════════════
-function Variant8({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant8({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="relative rounded-2xl overflow-hidden group">
-      <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=600&fit=crop" alt={name} className="w-full h-80 object-cover" />
+    <div className="relative rounded-2xl overflow-hidden group h-[360px]">
+      <img src={course.image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <div className="absolute top-3 left-3 flex gap-1.5">
+        {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white">Popular</Badge>}
+        {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+      </div>
       <div className="absolute bottom-0 left-0 right-0 p-4">
         <div className="backdrop-blur-xl bg-white/15 rounded-2xl p-5 border border-white/20 text-white space-y-3">
           <div className="flex items-center justify-between">
@@ -415,6 +460,7 @@ function Variant8({ course }: { course: typeof SAMPLE_COURSES[0] }) {
               <div className="flex items-center gap-3 text-sm text-white/70 mt-0.5">
                 <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.hours}hrs</span>
                 <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Winchester</span>
+                <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />Auto</span>
               </div>
             </div>
             <div className="text-right">
@@ -428,11 +474,7 @@ function Variant8({ course }: { course: typeof SAMPLE_COURSES[0] }) {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {course.features.slice(0, 3).map((f, i) => (
-              <span key={i} className="text-[10px] bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">{f}</span>
-            ))}
-          </div>
+          <CompactPaymentBadges amount={final} />
           <Button className="w-full bg-white text-black hover:bg-white/90 rounded-full font-bold">Book Now</Button>
         </div>
       </div>
@@ -441,16 +483,22 @@ function Variant8({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 9: Feature Grid Card
+// VARIANT 9: Feature Grid Pro
 // ══════════════════════════════════════════════════════════
-function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant9({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Top colored banner */}
-      <div className="h-2" style={{ backgroundColor: brandColour }} />
+      <div className="relative h-40 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover" />
+        <div className="absolute top-3 left-3 flex gap-1.5">
+          {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white">Popular</Badge>}
+          {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+        </div>
+        <Badge className="absolute top-3 right-3 bg-white/90 text-foreground border-0"><Car className="h-3 w-3 mr-1" />Auto</Badge>
+      </div>
+      <div className="h-1.5" style={{ backgroundColor: brandColour }} />
       <div className="p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -463,19 +511,13 @@ function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
             </div>
           </div>
           {hasDiscount && (
-            <Badge className="bg-red-500 border-0 text-white text-[10px]">-£{base - final} OFF</Badge>
+            <Badge className="bg-red-500 border-0 text-white text-[10px]">-£{base - final}</Badge>
           )}
         </div>
-
-        {/* Feature pills grid */}
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center gap-2 bg-muted rounded-lg p-2.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs font-medium">{course.hours} hours</span>
-          </div>
-          <div className="flex items-center gap-2 bg-muted rounded-lg p-2.5">
-            <Car className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-medium">Automatic</span>
           </div>
           <div className="flex items-center gap-2 bg-muted rounded-lg p-2.5">
             <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -485,9 +527,11 @@ function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs font-medium">{format(nextDate, "d MMM")}</span>
           </div>
+          <div className="flex items-center gap-2 bg-muted rounded-lg p-2.5">
+            <Star className="h-4 w-4 text-amber-400" />
+            <span className="text-xs font-medium">4.9 rated</span>
+          </div>
         </div>
-
-        {/* Features list */}
         <div className="space-y-1.5">
           {course.features.slice(0, 4).map((f, i) => (
             <div key={i} className="flex items-center gap-2 text-sm">
@@ -496,9 +540,8 @@ function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
             </div>
           ))}
         </div>
-
-        <div className="flex items-center justify-between pt-3 border-t border-border">
-          <div>
+        <div className="space-y-2 pt-3 border-t border-border">
+          <div className="flex items-center justify-between">
             {hasDiscount ? (
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black">£{final}</span>
@@ -507,11 +550,11 @@ function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
             ) : (
               <span className="text-xl font-black">£{base}</span>
             )}
-            <CompactPaymentBadges amount={final} />
+            <Button size="sm" className="rounded-full" style={{ backgroundColor: brandColour }}>
+              Book Now <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
-          <Button size="sm" className="rounded-full" style={{ backgroundColor: brandColour }}>
-            Book Now <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
+          <CompactPaymentBadges amount={final} />
         </div>
       </div>
     </div>
@@ -519,65 +562,67 @@ function Variant9({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// VARIANT 10: Bold Banner Card
+// VARIANT 10: Split Date Banner
 // ══════════════════════════════════════════════════════════
-function Variant10({ course }: { course: typeof SAMPLE_COURSES[0] }) {
+function Variant10({ course }: { course: CourseType }) {
   const { base, final, hasDiscount } = getPrice(course.hours, course.discountedPrice);
   const name = getCourseName(course.hours);
-
   return (
-    <div className="rounded-2xl overflow-hidden hover:shadow-xl transition-all border border-border">
-      {/* Bold top section */}
-      <div className="p-5 text-white relative" style={{ backgroundColor: brandColour }}>
-        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 -translate-y-1/2 translate-x-1/4" style={{ backgroundColor: 'white' }} />
-        <div className="flex items-center justify-between relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              {course.isPopular && <Badge className="bg-white/20 border-0 text-white text-[10px]">⭐ Popular</Badge>}
-              {course.isIntensive && <Badge className="bg-amber-400 border-0 text-black text-[10px]"><Zap className="h-3 w-3 mr-0.5" />Intensive</Badge>}
+    <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all group">
+      <div className="relative h-44 overflow-hidden">
+        <img src={course.image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          {course.isPopular && <Badge className="bg-emerald-500 border-0 text-white shadow">Popular</Badge>}
+          {course.isIntensive && <Badge className="bg-amber-500 border-0 text-white shadow"><Zap className="h-3 w-3 mr-1" />Intensive</Badge>}
+        </div>
+        {/* Date overlay on image */}
+        <div className="absolute bottom-0 left-0 p-4">
+          <div className="flex items-center gap-3 text-white">
+            <div className="h-14 w-14 rounded-xl flex flex-col items-center justify-center" style={{ backgroundColor: brandColour }}>
+              <span className="text-xl font-black leading-none">{format(nextDate, "d")}</span>
+              <span className="text-[10px] font-bold uppercase text-white/80">{format(nextDate, "MMM")}</span>
             </div>
-            <h3 className="text-xl font-black">{name}</h3>
-            <p className="text-sm text-white/70 mt-0.5">{course.hours} hours · Automatic · Winchester</p>
-          </div>
-          <div className="text-right">
-            {hasDiscount ? (
-              <>
-                <p className="text-sm line-through text-white/50">£{base}</p>
-                <span className="text-3xl font-black">£{final}</span>
-              </>
-            ) : (
-              <span className="text-3xl font-black">£{base}</span>
-            )}
+            <div>
+              <h3 className="text-lg font-black drop-shadow-lg">{name}</h3>
+              <p className="text-sm text-white/80">{course.hours}hrs · Automatic</p>
+            </div>
           </div>
         </div>
       </div>
-      {/* Bottom section */}
-      <div className="bg-card p-5 space-y-3">
+      <div className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-8 w-8">
             <AvatarFallback style={{ backgroundColor: brandColour, color: 'white' }} className="text-xs">KD</AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-medium text-foreground">{SAMPLE_INSTRUCTOR.name}</p>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span>4.9 · Grade A Instructor</span>
-            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />Winchester</p>
+          </div>
+          <div className="text-right">
+            {hasDiscount ? (
+              <div>
+                <div className="flex items-baseline gap-1.5 justify-end">
+                  <span className="text-lg font-black text-foreground">£{final}</span>
+                  <span className="text-xs line-through text-muted-foreground">£{base}</span>
+                </div>
+              </div>
+            ) : (
+              <span className="text-lg font-black text-foreground">£{base}</span>
+            )}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-1.5">
-          {course.features.slice(0, 4).map((f, i) => (
-            <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <CheckCircle className="h-3 w-3 text-emerald-500 shrink-0" />{f}
-            </div>
+        <div className="flex flex-wrap gap-1.5">
+          {course.features.slice(0, 3).map((f, i) => (
+            <span key={i} className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <CheckCircle className="h-3 w-3 text-emerald-500" />{f}
+            </span>
           ))}
         </div>
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Calendar className="h-3 w-3" />Next: {format(nextDate, "d MMM")}
-          </p>
-          <Button size="sm" className="rounded-full" style={{ backgroundColor: brandColour }}>
-            Book Now
+        <div className="space-y-2 pt-2 border-t border-border">
+          <CompactPaymentBadges amount={final} />
+          <Button className="w-full rounded-full" size="sm" style={{ backgroundColor: brandColour }}>
+            Book Now <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </div>
@@ -589,16 +634,16 @@ function Variant10({ course }: { course: typeof SAMPLE_COURSES[0] }) {
 // DEMO PAGE
 // ══════════════════════════════════════════════════════════
 const VARIANTS = [
-  { name: "1. Clean Minimal", desc: "Simple, modern card with image hero and clean typography", Component: Variant1 },
-  { name: "2. Bold Split", desc: "Date strip on the left with horizontal content layout", Component: Variant2 },
-  { name: "3. Gradient Hero", desc: "Full-bleed image with gradient overlay and floating content", Component: Variant3 },
-  { name: "4. Compact Horizontal", desc: "Space-efficient horizontal layout, great for lists", Component: Variant4 },
-  { name: "5. iOS Card Stack", desc: "Apple-inspired rounded cards with info pill grid", Component: Variant5 },
-  { name: "6. Magazine Editorial", desc: "Editorial style with strong typography and minimal color", Component: Variant6 },
-  { name: "7. Pricing Table", desc: "Centered pricing card with feature checklist", Component: Variant7 },
-  { name: "8. Glassmorphic", desc: "Frosted glass overlay on full-bleed imagery", Component: Variant8 },
-  { name: "9. Feature Grid", desc: "Instructor avatar with detailed feature grid layout", Component: Variant9 },
-  { name: "10. Bold Banner", desc: "Bold colored header section with white content area", Component: Variant10 },
+  { name: "1. Elevated Card", desc: "Image hero with badges, features, and full payment options", Component: Variant1 },
+  { name: "2. Stacked Modern", desc: "Clean stacked layout with rounded corners and discount badge", Component: Variant2 },
+  { name: "3. Side-by-Side Pro", desc: "Horizontal layout with image on left, details on right", Component: Variant3 },
+  { name: "4. Cinematic Overlay", desc: "Full-bleed image with gradient overlay and floating content", Component: Variant4 },
+  { name: "5. Pill Info Card", desc: "Apple-inspired with hours badge and info pill grid", Component: Variant5 },
+  { name: "6. Bold Header Card", desc: "Image + branded color bar + white content area", Component: Variant6 },
+  { name: "7. Pricing Focus", desc: "Centered pricing table style with feature checklist", Component: Variant7 },
+  { name: "8. Glassmorphic Float", desc: "Frosted glass card floating over full-bleed imagery", Component: Variant8 },
+  { name: "9. Feature Grid Pro", desc: "Instructor avatar with detailed feature and info grid", Component: Variant9 },
+  { name: "10. Split Date Banner", desc: "Date box overlay on image with instructor details below", Component: Variant10 },
 ];
 
 export default function DemoMiniWebsiteCourseCards() {
@@ -608,7 +653,7 @@ export default function DemoMiniWebsiteCourseCards() {
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-black text-foreground">Mini-Website Course Cards</h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            10 design variants for instructor mini-website course cards. Same data, different styles.
+            10 design variants for instructor mini-website course cards. All include images, Klarna & Clearpay.
           </p>
         </div>
 
@@ -618,7 +663,7 @@ export default function DemoMiniWebsiteCourseCards() {
               <h2 className="text-2xl font-bold text-foreground">{name}</h2>
               <p className="text-muted-foreground">{desc}</p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2">
               {SAMPLE_COURSES.map((course, i) => (
                 <Component key={i} course={course} />
               ))}
