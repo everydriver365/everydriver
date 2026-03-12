@@ -35,6 +35,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "home");
   const links = useMiniWebsiteLinks(slug);
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [postcode, setPostcode] = useState("");
