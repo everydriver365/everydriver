@@ -265,9 +265,9 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
             <p>© {new Date().getFullYear()} {instructor.name}. All rights reserved.</p>
             <p className="mt-1">
               Powered by{" "}
-              <a href="/" className="hover:text-white transition-colors">
+              <Link to={`/i/${instructor.app_slug}`} className="hover:text-white transition-colors">
                 EveryDriver
-              </a>
+              </Link>
             </p>
           </div>
         </div>
