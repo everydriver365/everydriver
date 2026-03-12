@@ -516,7 +516,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <motion.h2

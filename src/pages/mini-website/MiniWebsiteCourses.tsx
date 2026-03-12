@@ -96,7 +96,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
   return (
     <MiniWebsiteLayout instructor={instructor}>
       {/* Search Header — identical to Drive365 */}
-      <section className="border-b bg-background py-8">
+      <section className="border-b py-8" style={{ backgroundColor: '#17A9FD' }}>
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
