@@ -798,13 +798,13 @@ export function MobileBookingView({
                   Cancel
                 </button>
               </div>
-              <CardstreamEmbeddedCheckout
+              <CardstreamPayButton
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                 pupilId={embeddedCheckoutPupilId}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                onSuccess={onEmbeddedCheckoutSuccess}
+                onError={(msg) => { /* handled by component */ }}
               />
             </motion.div>
           )}
