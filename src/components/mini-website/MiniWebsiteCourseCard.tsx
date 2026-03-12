@@ -33,6 +33,8 @@ interface MiniWebsiteCourseCardProps {
   customFeatures?: string[] | null;
   isPremium?: boolean;
   placementType?: string;
+  /** Override for the header/accent color (e.g., from STYLE_OVERRIDES) */
+  primaryColor?: string;
 }
 
 export function MiniWebsiteCourseCard({
