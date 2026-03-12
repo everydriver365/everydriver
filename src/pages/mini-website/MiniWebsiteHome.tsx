@@ -434,7 +434,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Everything You Need Section */}
-      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
+      <section style={{ backgroundColor: '#2596be' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
