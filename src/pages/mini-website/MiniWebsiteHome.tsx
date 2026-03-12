@@ -352,7 +352,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground">Semi-Intensive</h3>
+                <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Semi-Intensive</h3>
                 <p className="mt-2 text-sm text-muted-foreground">The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practice between sessions.</p>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>30 hours</strong> of lessons</span></div>
