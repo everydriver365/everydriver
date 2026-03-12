@@ -166,7 +166,107 @@ function QrPreview({ url, label }: { url: string | null; label: string }) {
   );
 }
 
-export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupils }: AdminInstructorProfileProps) {
+function InlineTrackerDevice({ instructorId, provider }: { instructorId: string; provider: string }) {
+  const [newDeviceId, setNewDeviceId] = useState("");
+  const [newDeviceName, setNewDeviceName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const providerLabel = provider === "geotab" ? "Geotab" : "Radius";
+
+  const { data: devices, isLoading } = useQuery({
+    queryKey: ["instructor-tracker-devices", instructorId, provider],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gps_devices")
+        .select("id, device_name, device_identifier, geotab_device_id, is_active, tracking_provider")
+        .eq("instructor_id", instructorId)
+        .eq("tracking_provider", provider);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const addDevice = async () => {
+    if (!newDeviceId.trim()) return;
+    setSaving(true);
+    try {
+      const insertData: Record<string, unknown> = {
+        instructor_id: instructorId,
+        tracking_provider: provider,
+        device_name: newDeviceName.trim() || `${providerLabel} ${newDeviceId.trim()}`,
+        device_identifier: provider === "radius" ? newDeviceId.trim() : `${provider}-${newDeviceId.trim()}`,
+        is_active: true,
+      };
+      if (provider === "geotab") {
+        insertData.geotab_device_id = newDeviceId.trim();
+      }
+      const { error } = await supabase.from("gps_devices").insert(insertData as any);
+      if (error) throw error;
+      toast.success(`${providerLabel} device added`);
+      setNewDeviceId("");
+      setNewDeviceName("");
+      queryClient.invalidateQueries({ queryKey: ["instructor-tracker-devices", instructorId, provider] });
+    } catch {
+      toast.error("Failed to add device");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeDevice = async (deviceId: string) => {
+    const { error } = await supabase.from("gps_devices").delete().eq("id", deviceId);
+    if (error) { toast.error("Failed to remove"); return; }
+    toast.success("Device removed");
+    queryClient.invalidateQueries({ queryKey: ["instructor-tracker-devices", instructorId, provider] });
+  };
+
+  return (
+    <div className="bg-muted/50 rounded-lg p-3 mt-2 space-y-3">
+      <p className="text-xs font-medium text-muted-foreground">{providerLabel} Devices</p>
+
+      {isLoading && <p className="text-xs text-muted-foreground">Loading...</p>}
+
+      {devices && devices.length > 0 && (
+        <div className="space-y-1">
+          {devices.map((d) => (
+            <div key={d.id} className="flex items-center justify-between bg-background rounded px-3 py-2 text-sm">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium truncate">{d.device_name || "Unnamed"}</p>
+                <p className="text-xs text-muted-foreground font-mono">{d.geotab_device_id || d.device_identifier}</p>
+              </div>
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => removeDevice(d.id)}>
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(!devices || devices.length === 0) && !isLoading && (
+        <div className="space-y-2">
+          <Input
+            placeholder={provider === "geotab" ? "Geotab Device ID" : "Radius Vehicle/Device ID"}
+            value={newDeviceId}
+            onChange={(e) => setNewDeviceId(e.target.value)}
+            className="font-mono h-9 text-sm"
+          />
+          <Input
+            placeholder="Friendly name (optional)"
+            value={newDeviceName}
+            onChange={(e) => setNewDeviceName(e.target.value)}
+            className="h-9 text-sm"
+          />
+          <Button size="sm" onClick={addDevice} disabled={saving || !newDeviceId.trim()} className="w-full h-8">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+            Add {providerLabel} Device
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
   const [instructor, setInstructor] = useState<InstructorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [pupilCount, setPupilCount] = useState(0);
