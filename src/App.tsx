@@ -69,6 +69,7 @@ const MiniWebsiteCourses = lazy(() => import("./pages/mini-website/MiniWebsiteCo
 const MiniWebsiteReviews = lazy(() => import("./pages/mini-website/MiniWebsiteReviews"));
 const MiniWebsiteContact = lazy(() => import("./pages/mini-website/MiniWebsiteContact"));
 const MiniWebsiteTheory = lazy(() => import("./pages/mini-website/MiniWebsiteTheory"));
+const MiniWebsiteTests = lazy(() => import("./pages/mini-website/MiniWebsiteTests"));
 const InstallInstructor = lazy(() => import("./pages/InstallInstructor"));
 const InstructorPendingScheduling = lazy(() => import("./pages/InstructorPendingScheduling"));
 const InstructorTestResults = lazy(() => import("./pages/InstructorTestResults"));
