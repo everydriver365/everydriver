@@ -1,34 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Plan: Add "Available Tests" Page to Mini-Website
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-### Overview
-Create a new mini-website page at `/i/:slug/tests` that displays available driving test slots scraped from the DVSA system. The page will reuse the existing `fetchTestCentres` and `fetchSlotsForCentre` API functions and follow the same layout patterns as other mini-website pages.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### Changes
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-**1. Create new page: `src/pages/mini-website/MiniWebsiteTests.tsx`**
-- Follow the same structure as `MiniWebsiteAbout.tsx` (useParams, useWebsitePage, MiniWebsiteLayout, STYLE_OVERRIDES for branding)
-- Hero section with "Available Driving Tests" heading using the synchronized primary color
-- Embed a public-facing version of the test slots UI:
-  - Centre selector dropdown (reuse `fetchTestCentres`)
-  - Slot cards per centre (reuse `fetchSlotsForCentre`)
-  - Display centre name, date, and time for each slot
-  - No "Reserve" button on the public mini-website (that's instructor-only); instead show a CTA like "Contact us to book this slot" linking to the contact page
-- Loading/error states matching other mini-website pages
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-**2. Register route in `src/App.tsx`**
-- Add lazy import for `MiniWebsiteTests`
-- Add route: `<Route path="/i/:slug/tests" element={<MiniWebsiteTests />} />`
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-**3. Add "Tests" to mini-website navigation**
-- **`MiniWebsiteMobileBottomNav.tsx`**: Add a "Tests" nav item (using `Calendar` or `ClipboardList` icon) pointing to `/i/${slug}/tests`
-- **`MiniWebsiteSecondaryNav.tsx`**: Add a "Test Availability" link pointing to `/i/${slug}/tests`
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-### Technical Details
-- The page will import `fetchTestCentres` and `fetchSlotsForCentre` from `@/lib/api/firecrawl` (same as the existing `AvailableTestSlots` component)
-- No database changes needed -- the scrape edge function already exists
-- No authentication required -- this is a public-facing page showing available slots
-- The "Reserve" action will not be available on the public site; instead a contact CTA will direct visitors to the instructor's contact page
-- Branding will use the same `STYLE_OVERRIDES` pattern with `primaryColor` fallback
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
+
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
+
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
+
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
