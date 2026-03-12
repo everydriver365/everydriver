@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
+import { TestEnquiryDialog } from "@/components/mini-website/TestEnquiryDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +32,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
   const [loadingCentreSlots, setLoadingCentreSlots] = useState<string | null>(null);
   const [isLoadingCentres, setIsLoadingCentres] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enquirySlot, setEnquirySlot] = useState<{ centre: string; date: string; time: string } | null>(null);
 
   const loadCentres = async () => {
     setIsLoadingCentres(true);
@@ -90,9 +92,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Link to="/">
-            <Button>Go Home</Button>
-          </Link>
+          <Button onClick={() => window.location.href = "/"}>Go Home</Button>
         </Card>
       </div>
     );
@@ -102,8 +102,6 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
     "ken-d": { primaryColor: "#1e3a5f" },
   };
   const primaryColor = STYLE_OVERRIDES[slug!]?.primaryColor || instructor.brand_colour || "#1e3a5f";
-
-  const contactPath = subdomainSlug ? "/contact" : `/i/${slug}/contact`;
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
@@ -198,12 +196,15 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
                                     {slot.time}
                                   </span>
                                 </div>
-                                <Link to={`${contactPath}?type=test&centre=${encodeURIComponent(selectedCentre)}&date=${encodeURIComponent(slot.date)}&time=${encodeURIComponent(slot.time)}`}>
-                                  <Button size="sm" style={{ backgroundColor: primaryColor }} className="text-white gap-1 shrink-0">
-                                    <MessageCircle className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Enquire</span>
-                                  </Button>
-                                </Link>
+                                <Button
+                                  size="sm"
+                                  style={{ backgroundColor: primaryColor }}
+                                  className="text-white gap-1 shrink-0"
+                                  onClick={() => setEnquirySlot({ centre: selectedCentre, date: slot.date, time: slot.time })}
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                  <span className="hidden sm:inline">Enquire</span>
+                                </Button>
                               </CardContent>
                             </Card>
                           </motion.div>
@@ -227,6 +228,17 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
           </CardContent>
         </Card>
       </section>
+
+      {enquirySlot && (
+        <TestEnquiryDialog
+          open={!!enquirySlot}
+          onOpenChange={(open) => !open && setEnquirySlot(null)}
+          centre={enquirySlot.centre}
+          date={enquirySlot.date}
+          time={enquirySlot.time}
+          primaryColor={primaryColor}
+        />
+      )}
     </MiniWebsiteLayout>
   );
 }
