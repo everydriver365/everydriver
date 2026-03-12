@@ -471,8 +471,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-3">
-              Everything You Need to <span className="text-primary">Learn to Drive</span>
+            <h2 className="text-4xl font-bold mb-3" style={{ color: primaryColor }}>
+              Everything You Need to <span>Learn to Drive</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our platform connects learners, instructors, and parents in one seamless experience.
