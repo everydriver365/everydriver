@@ -39,6 +39,34 @@ serve(async (req: Request) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const siteBaseUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
 
+  // Helper: atomically update pupil balance using RPC
+  async function creditPupilBalance(pPupilId: string, amount: number) {
+    if (amount <= 0) return;
+    const { error } = await supabase.rpc("increment_pupil_balance", {
+      p_pupil_id: pPupilId,
+      p_amount: amount,
+    });
+    if (error) {
+      console.error("Failed to increment pupil balance:", error);
+    } else {
+      console.log(`Atomically credited pupil ${pPupilId} balance by £${amount.toFixed(2)}`);
+    }
+  }
+
+  // Helper: update payment_intents status
+  async function updatePaymentIntentStatus(ref: string, status: "completed" | "failed") {
+    if (!ref) return;
+    const { error } = await supabase
+      .from("payment_intents")
+      .update({ status })
+      .eq("order_ref", ref);
+    if (error) {
+      console.error(`Failed to update payment_intents for ref ${ref}:`, error);
+    } else {
+      console.log(`Updated payment_intents ${ref} → ${status}`);
+    }
+  }
+
   try {
     console.log(`Payment callback received for provider: ${provider}, pupilId: ${pupilId}`);
 
@@ -88,6 +116,9 @@ serve(async (req: Request) => {
 
       console.log(`${provider.toUpperCase()} response - code: ${responseCode}, success: ${paymentSuccessful}, ref: ${paymentRef}`);
 
+      // Update payment_intents status
+      await updatePaymentIntentStatus(paymentRef, paymentSuccessful ? "completed" : "failed");
+
       // Check if this is a pupil balance payment (orderRef starts with "PUPIL-")
       const isPupilPayment = paymentRef.startsWith("PUPIL-") || paymentType === "balance";
 
@@ -96,7 +127,7 @@ serve(async (req: Request) => {
         try {
           const { data: pupil } = await supabase
             .from("pupils")
-            .select("instructor_id, name, account_balance")
+            .select("instructor_id, name")
             .eq("id", pupilId)
             .single();
 
@@ -112,19 +143,11 @@ serve(async (req: Request) => {
               notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}`,
             });
 
-            // If pupil balance payment, update their account balance
+            // Always credit pupil balance (both balance top-ups and booking payments)
+            await creditPupilBalance(pupilId, paymentAmountPounds);
+
+            // If pupil balance payment, send receipt email
             if (isPupilPayment) {
-              const currentBalance = pupil.account_balance || 0;
-              const newBalance = currentBalance + paymentAmountPounds;
-              
-              await supabase
-                .from("pupils")
-                .update({ account_balance: newBalance })
-                .eq("id", pupilId);
-
-              console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
-
-              // Send payment receipt email
               try {
                 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
                 await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
@@ -283,12 +306,15 @@ serve(async (req: Request) => {
             paymentSuccessful = true;
             capturedAmount = captureResult.amount?.amount ? parseFloat(captureResult.amount.amount) : 0;
             console.log("Clearpay payment captured:", captureResult.id);
+
+            // Update payment_intents status
+            await updatePaymentIntentStatus(paymentRef, "completed");
             
             if (pupilId) {
               try {
                 const { data: pupil } = await supabase
                   .from("pupils")
-                  .select("instructor_id, account_balance")
+                  .select("instructor_id")
                   .eq("id", pupilId)
                   .single();
 
@@ -301,39 +327,10 @@ serve(async (req: Request) => {
                     notes: `Clearpay Payment ${captureResult.id}`,
                   });
 
+                  // Always credit pupil balance atomically
+                  await creditPupilBalance(pupilId, capturedAmount);
+
                   if (isPupilPayment) {
-                    const currentBalance = pupil.account_balance || 0;
-                    const newBalance = currentBalance + capturedAmount;
-                    
-                    await supabase
-                      .from("pupils")
-                      .update({ account_balance: newBalance })
-                      .eq("id", pupilId);
-
-                    console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
-
-                    // Notify instructor
-                    try {
-                      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                          "Authorization": `Bearer ${supabaseServiceKey}`,
-                        },
-                        body: JSON.stringify({
-                          instructorId: pupil.instructor_id,
-                          notification: {
-                            title: "💰 Payment Received",
-                            body: `£${capturedAmount.toFixed(2)} received via Clearpay`,
-                            tag: `payment-received-${Date.now()}`,
-                            data: { type: "payment_received", pupilId, amount: capturedAmount },
-                          },
-                        }),
-                      });
-                    } catch (notifyErr) {
-                      console.error("Failed to notify instructor:", notifyErr);
-                    }
-
                     // Send payment receipt email
                     try {
                       const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -356,6 +353,28 @@ serve(async (req: Request) => {
                       console.error("Failed to send receipt email:", emailError);
                     }
                   }
+
+                  // Notify instructor
+                  try {
+                    await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${supabaseServiceKey}`,
+                      },
+                      body: JSON.stringify({
+                        instructorId: pupil.instructor_id,
+                        notification: {
+                          title: "💰 Payment Received",
+                          body: `£${capturedAmount.toFixed(2)} received via Clearpay`,
+                          tag: `payment-received-${Date.now()}`,
+                          data: { type: "payment_received", pupilId, amount: capturedAmount },
+                        },
+                      }),
+                    });
+                  } catch (notifyErr) {
+                    console.error("Failed to notify instructor:", notifyErr);
+                  }
                 }
               } catch (dbError) {
                 console.error("Failed to record Clearpay payment:", dbError);
@@ -364,8 +383,11 @@ serve(async (req: Request) => {
           } else {
             errorMessage = captureResult.message || "Capture failed";
             console.error("Clearpay capture failed:", captureResult);
+            await updatePaymentIntentStatus(paymentRef, "failed");
           }
         }
+      } else {
+        await updatePaymentIntentStatus(paymentRef, "failed");
       }
 
       // Redirect for pupil payments
@@ -434,7 +456,7 @@ serve(async (req: Request) => {
         try {
           const { data: pupil } = await supabase
             .from("pupils")
-            .select("instructor_id, account_balance")
+            .select("instructor_id")
             .eq("id", pupilId)
             .single();
 
@@ -447,19 +469,14 @@ serve(async (req: Request) => {
               notes: `Klarna Payment - Order: ${klarnaOrderId}`,
             });
 
-            // Update pupil balance for pupil payments
+            // Always credit pupil balance atomically
+            await creditPupilBalance(pupilId, klarnaAmount);
+
+            // Update payment_intents status
+            await updatePaymentIntentStatus(paymentRef, "completed");
+
+            // Send receipt email for pupil balance payments
             if (isPupilPayment && klarnaAmount > 0) {
-              const currentBalance = pupil.account_balance || 0;
-              const newBalance = currentBalance + klarnaAmount;
-              
-              await supabase
-                .from("pupils")
-                .update({ account_balance: newBalance })
-                .eq("id", pupilId);
-
-              console.log(`Klarna: Updated pupil balance: ${currentBalance} -> ${newBalance}`);
-
-              // Send payment receipt email
               try {
                 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
                 await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
@@ -508,6 +525,7 @@ serve(async (req: Request) => {
           }
         } catch (dbError) {
           console.error("Failed to record Klarna payment:", dbError);
+          await updatePaymentIntentStatus(paymentRef, "failed");
         }
       }
 
