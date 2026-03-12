@@ -1,74 +1,53 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Current Situation
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+The mini-website currently has several links that break out of the self-contained `/i/:slug` environment:
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+1. **SecondaryNav** (shared component) links to:
+   - `/theory` — goes to the main Drive365 theory page
+   - `/contact?type=bespoke` — goes to the main site contact page
+   - `/contact?type=callback` — goes to the main site contact page
+   - `https://everydriver.co.uk/instructor/login` — external link
+   - `/pupil/login` — goes to main site pupil login
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+2. **MobileBottomNav** (shared component) links to `/drive365`, `/courses`, `/theory`, `/faqs`, `/help`, `/benefits` — all main site routes.
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+3. The mini-website layout imports `SecondaryNav` directly from the shared layout.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+## What Can Be Done
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+Yes — we can make mini-websites fully self-contained. The approach:
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### 1. Create a Mini-Website SecondaryNav
+Replace the shared `SecondaryNav` import in `MiniWebsiteLayout.tsx` with a new `MiniWebsiteSecondaryNav` component that rewrites all links to stay within `/i/:slug`:
+- "Theory Practice" → `/i/:slug/theory` (new page needed)
+- "Bespoke Course Request" → `/i/:slug/contact?type=bespoke`
+- "Request a Callback" → `/i/:slug/contact?type=callback`
+- "Pupil Login" → `/i/:slug/pupil-login` or remove
+- "Instructor Login" → remove entirely
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+### 2. Create a Mini-Website MobileBottomNav
+A scoped bottom nav that links to mini-website pages only (Home, Courses, Theory, Reviews, Contact).
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### 3. Create a Mini-Website Theory Page
+A new `MiniWebsiteTheory.tsx` page at `/i/:slug/theory` that embeds the theory practice functionality within the mini-website layout, reusing the existing theory components.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+### 4. Add Routes
+Register the new `/i/:slug/theory` route in `App.tsx`.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+### 5. Audit & Fix Any Remaining External Links
+Scan all mini-website pages for any remaining links that navigate outside `/i/:slug` and rewrite them.
+
+## Summary of New/Modified Files
+
+| File | Action |
+|------|--------|
+| `src/components/mini-website/MiniWebsiteSecondaryNav.tsx` | Create — scoped secondary nav |
+| `src/components/mini-website/MiniWebsiteMobileBottomNav.tsx` | Create — scoped mobile bottom nav |
+| `src/pages/mini-website/MiniWebsiteTheory.tsx` | Create — theory page in mini-website layout |
+| `src/components/mini-website/MiniWebsiteLayout.tsx` | Modify — swap SecondaryNav import, add mobile nav |
+| `src/App.tsx` | Modify — add `/i/:slug/theory` route |
+
+This makes every mini-website a fully standalone site with no external links or dependencies on Drive365 routes.
+
