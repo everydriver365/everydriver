@@ -51,6 +51,7 @@ interface MiniWebsiteLayoutProps {
 export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // SEO meta tags, JSON-LD, canonical URL
   useMiniWebsiteSEO({ instructor, pageTitle, pageDescription });
