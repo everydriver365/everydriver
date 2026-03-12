@@ -37,6 +37,7 @@ import {
   Link2,
   Phone,
   Mail,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInstructorWebsitePages, WebsitePage } from "@/hooks/useInstructorWebsitePages";
