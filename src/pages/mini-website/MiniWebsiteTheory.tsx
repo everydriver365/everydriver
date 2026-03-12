@@ -34,7 +34,7 @@ export default function MiniWebsiteTheory() {
   }
 
   return (
-    <MiniWebsiteLayout instructor={instructor}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Theory" pageDescription={`Practice theory test questions with ${instructor.business_name || instructor.name}. Free theory revision tools.`}>
       <div className="pb-16 md:pb-0">
         <TheoryContent />
       </div>
