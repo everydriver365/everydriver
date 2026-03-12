@@ -68,6 +68,7 @@ const MiniWebsiteServices = lazy(() => import("./pages/mini-website/MiniWebsiteS
 const MiniWebsiteCourses = lazy(() => import("./pages/mini-website/MiniWebsiteCourses"));
 const MiniWebsiteReviews = lazy(() => import("./pages/mini-website/MiniWebsiteReviews"));
 const MiniWebsiteContact = lazy(() => import("./pages/mini-website/MiniWebsiteContact"));
+const MiniWebsiteTheory = lazy(() => import("./pages/mini-website/MiniWebsiteTheory"));
 const InstallInstructor = lazy(() => import("./pages/InstallInstructor"));
 const InstructorPendingScheduling = lazy(() => import("./pages/InstructorPendingScheduling"));
 const InstructorTestResults = lazy(() => import("./pages/InstructorTestResults"));
@@ -216,6 +217,7 @@ const App = () => (
                 <Route path="/i/:slug/courses" element={<MiniWebsiteCourses />} />
                 <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
                 <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
+                <Route path="/i/:slug/theory" element={<MiniWebsiteTheory />} />
                 <Route path="/review/:slug" element={<SubmitReview />} />
 
                 {/* Public Availability Calendar */}

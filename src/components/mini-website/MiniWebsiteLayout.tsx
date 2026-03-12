@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
-import { SecondaryNav } from "@/components/layout/SecondaryNav";
+import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSecondaryNav";
+import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 
@@ -159,7 +160,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
       </header>
 
       {/* Secondary Nav */}
-      <SecondaryNav />
+      <MiniWebsiteSecondaryNav slug={slug} />
 
       {/* Main Content */}
       <main className="flex-1">{children}</main>
@@ -276,6 +277,9 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
           </div>
         </div>
       </footer>
+
+      {/* Mobile Bottom Nav */}
+      <MiniWebsiteMobileBottomNav slug={slug} />
 
       {/* Live Chat Widget */}
       <LiveChatWidget
