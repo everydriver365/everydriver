@@ -431,7 +431,6 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                             placementType={course.placementType}
                             primaryColor={primaryColor}
                           />
-                          />
                         </motion.div>
                       ))}
                     </div>
