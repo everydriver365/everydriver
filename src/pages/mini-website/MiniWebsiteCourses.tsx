@@ -93,6 +93,8 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     );
   }
 
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
+
   return (
     <MiniWebsiteLayout instructor={instructor}>
       {/* Search Header — identical to Drive365 */}
@@ -103,7 +105,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-6 text-2xl font-bold md:text-3xl">
+            <h1 className="mb-6 text-2xl font-bold md:text-3xl" style={{ color: primaryColor }}>
               {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find a Course"}
             </h1>
 

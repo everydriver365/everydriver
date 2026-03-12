@@ -292,7 +292,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
               Find Your Perfect Fit
             </Badge>
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold" style={{ color: primaryColor }}>
               Choose Your Learning Path
             </h2>
             <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
@@ -317,7 +317,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground">Intensive Courses</h3>
+                <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Intensive Courses</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Full immersion driving experience. Learn everything in concentrated sessions and pass your test in record time.</p>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>30-40 hours</strong> of lessons</span></div>
@@ -352,7 +352,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground">Semi-Intensive</h3>
+                <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Semi-Intensive</h3>
                 <p className="mt-2 text-sm text-muted-foreground">The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practice between sessions.</p>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>30 hours</strong> of lessons</span></div>
@@ -386,7 +386,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 </Badge>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground">Weekly Lessons</h3>
+                <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Weekly Lessons</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.</p>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>1-2 hours</strong> per week</span></div>
@@ -420,7 +420,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
               Why Learners Love Us
             </Badge>
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold" style={{ color: primaryColor }}>
               What's Included With Every Course
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
@@ -471,8 +471,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-3">
-              Everything You Need to <span className="text-primary">Learn to Drive</span>
+            <h2 className="text-4xl font-bold mb-3" style={{ color: primaryColor }}>
+              Everything You Need to <span>Learn to Drive</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our platform connects learners, instructors, and parents in one seamless experience.
@@ -501,7 +501,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     <img src={f.image} alt={f.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-foreground text-sm mb-1">{f.title}</h3>
+                    <h3 className="font-bold text-sm mb-1" style={{ color: primaryColor }}>{f.title}</h3>
                     <p className="text-muted-foreground text-xs line-clamp-2">{f.description}</p>
                   </div>
                 </motion.div>

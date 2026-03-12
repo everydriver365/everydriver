@@ -58,7 +58,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
   const headerBg = instructor.website_header_bg || "#0b4089";
   const buttonColor = instructor.website_button_color || secondaryColor;
-  const footerBg = instructor.website_footer_bg || "#111827";
+  const footerBg = instructor.website_footer_bg || primaryColor;
   const fontFamily = instructor.website_font || "Inter";
   const headerStyle = instructor.website_header_style || "solid";
   const menuTextColor = instructor.website_menu_text_color || "#ffffff";
