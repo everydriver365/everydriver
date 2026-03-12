@@ -60,6 +60,7 @@ export function AdminTrackersManager() {
   const [newDeviceId, setNewDeviceId] = useState("");
   const [newDeviceName, setNewDeviceName] = useState("");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<string>("geotab");
   const [isAdding, setIsAdding] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const { toast } = useToast();
