@@ -21,7 +21,7 @@ import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons"
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
-import { CardstreamEmbeddedCheckout } from "@/components/payments/CardstreamEmbeddedCheckout";
+import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
 import {
   Accordion,
   AccordionContent,
