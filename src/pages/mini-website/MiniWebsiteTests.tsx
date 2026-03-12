@@ -32,6 +32,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
   const [loadingCentreSlots, setLoadingCentreSlots] = useState<string | null>(null);
   const [isLoadingCentres, setIsLoadingCentres] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enquirySlot, setEnquirySlot] = useState<{ centre: string; date: string; time: string } | null>(null);
 
   const loadCentres = async () => {
     setIsLoadingCentres(true);
