@@ -46,20 +46,22 @@ function setLinkTag(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-export function useMiniWebsiteSEO({ instructor, pageTitle, pageDescription }: MiniWebsiteSEOOptions) {
+export function useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, metaTitle, metaDescription }: MiniWebsiteSEOOptions) {
   useEffect(() => {
     const businessName = instructor.business_name || instructor.name;
     const page = pageTitle || "Home";
     const slug = instructor.app_slug;
 
-    // Title
-    const title = page === "Home"
-      ? `${businessName} | Driving Lessons | Drive365`
-      : `${page} - ${businessName} | Drive365`;
+    // Title — prefer page-level meta_title override from admin
+    const title = metaTitle
+      || (page === "Home"
+        ? `${businessName} | Driving Lessons | Drive365`
+        : `${page} - ${businessName} | Drive365`);
     document.title = title;
 
-    // Description
-    const description = pageDescription
+    // Description — prefer page-level meta_description override from admin
+    const description = metaDescription
+      || pageDescription
       || instructor.bio
       || `${businessName} - Professional driving lessons${instructor.home_postcode ? ` in ${instructor.home_postcode}` : ""}. Book your driving course today with Drive365.`;
     const truncatedDesc = description.length > 160 ? description.slice(0, 157) + "..." : description;
