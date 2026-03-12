@@ -55,7 +55,7 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Authorization": `Token ${refreshToken}`,
+        "Authorization": `Bearer ${refreshToken}`,
       },
       body: JSON.stringify({ refresh: refreshToken }),
     }
