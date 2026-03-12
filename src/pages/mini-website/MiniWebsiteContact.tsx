@@ -47,6 +47,15 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
   const headingColor = instructor.website_heading_color;
   const textColor = instructor.website_text_color;
 
+  const CONTACT_OVERRIDES: Record<string, { email?: string; phone?: string; location?: string }> = {
+    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester" },
+  };
+  const contactOverride = CONTACT_OVERRIDES[slug] || {};
+
+  const displayPhone = contactOverride.phone || instructor.phone;
+  const displayEmail = contactOverride.email || instructor.email;
+  const displayLocation = contactOverride.location || instructor.home_postcode;
+
   const socialLinks = [
     { url: instructor.facebook_url, icon: Facebook, label: "Facebook" },
     { url: instructor.instagram_url, icon: Instagram, label: "Instagram" },
@@ -80,9 +89,9 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                   Contact Information
                 </h2>
                 <div className="space-y-4">
-                  {instructor.phone && (
+                  {displayPhone && (
                     <a
-                      href={`tel:${instructor.phone}`}
+                      href={`tel:${displayPhone}`}
                       className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       <div
@@ -93,14 +102,14 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Phone</p>
-                        <p className="font-medium">{instructor.phone}</p>
+                        <p className="font-medium">{displayPhone}</p>
                       </div>
                     </a>
                   )}
 
-                  {instructor.email && (
+                  {displayEmail && (
                     <a
-                      href={`mailto:${instructor.email}`}
+                      href={`mailto:${displayEmail}`}
                       className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       <div
@@ -111,12 +120,12 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium">{instructor.email}</p>
+                        <p className="font-medium">{displayEmail}</p>
                       </div>
                     </a>
                   )}
 
-                  {instructor.home_postcode && (
+                  {displayLocation && (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                       <div
                         className="h-10 w-10 rounded-full flex items-center justify-center text-white"
@@ -126,9 +135,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Coverage Area</p>
-                        <p className="font-medium">
-                          {instructor.home_postcode} ({instructor.radius_miles} mile radius)
-                        </p>
+                        <p className="font-medium">{displayLocation}</p>
                       </div>
                     </div>
                   )}
