@@ -111,7 +111,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
       <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3">Available Driving Tests</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3">These tests are currently available</h1>
             <p className="text-lg text-white/90">Find and book available test slots near you</p>
           </motion.div>
         </div>
