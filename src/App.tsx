@@ -158,6 +158,7 @@ const DemoMiniWebsiteLanding = lazy(() => import("./pages/DemoMiniWebsiteLanding
 const DemoHeroSections = lazy(() => import("./pages/DemoHeroSections"));
 const DemoHeroSections2 = lazy(() => import("./pages/DemoHeroSections2"));
 const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
+const DemoPromoBars = lazy(() => import("./pages/demo/DemoPromoBars"));
 
 
 // Lazy-load ConditionalRoutes
