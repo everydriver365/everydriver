@@ -501,7 +501,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     <img src={f.image} alt={f.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-foreground text-sm mb-1">{f.title}</h3>
+                    <h3 className="font-bold text-sm mb-1" style={{ color: primaryColor }}>{f.title}</h3>
                     <p className="text-muted-foreground text-xs line-clamp-2">{f.description}</p>
                   </div>
                 </motion.div>
