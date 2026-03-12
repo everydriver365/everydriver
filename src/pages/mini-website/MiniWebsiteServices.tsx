@@ -84,7 +84,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#17A9FD' }}>
         <Skeleton className="h-48 w-full rounded-2xl" />
       </div>
     );
@@ -92,7 +92,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
 
   if (notFound || !instructor || !page) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#17A9FD' }}>
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>

@@ -122,7 +122,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </div>
 
       {/* Hero Section */}
-      <section className="bg-background">
+      <section style={{ backgroundColor: '#17A9FD' }}>
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
@@ -250,7 +250,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Choose Your Learning Path */}
-      <section className="bg-muted/30 py-16">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -378,7 +378,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* What's Included Section */}
-      <section className="bg-background py-16">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -434,7 +434,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Everything You Need Section */}
-      <section className="bg-background py-24">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
@@ -516,7 +516,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section className="bg-gradient-to-b from-primary/5 via-accent/5 to-background py-24">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <motion.h2
