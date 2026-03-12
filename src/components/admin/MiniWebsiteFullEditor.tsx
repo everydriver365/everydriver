@@ -390,7 +390,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-6xl mx-auto">
           <Tabs defaultValue="design" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+            <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
               <TabsTrigger value="design" className="gap-2">
                 <Palette className="h-4 w-4" />
                 <span className="hidden sm:inline">Design</span>
@@ -402,6 +402,10 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
               <TabsTrigger value="pages" className="gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Pages</span>
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="gap-2">
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">SEO</span>
               </TabsTrigger>
               <TabsTrigger value="domain" className="gap-2">
                 <Globe className="h-4 w-4" />
