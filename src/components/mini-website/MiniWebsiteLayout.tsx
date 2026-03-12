@@ -153,8 +153,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
                       : "hover:bg-white/10"
                   }`}
                   style={{ 
-                    color: menuTextColor,
-                    opacity: isActive(link.path) ? 1 : 0.8 
+                    color: isActive(link.path) ? "#facc15" : "#ffffff",
                   }}
                 >
                   {link.label}
