@@ -18,6 +18,10 @@ interface MiniWebsiteSEOOptions {
   instructor: SEOInstructor;
   pageTitle?: string;
   pageDescription?: string;
+  /** Override from instructor_website_pages.meta_title */
+  metaTitle?: string | null;
+  /** Override from instructor_website_pages.meta_description */
+  metaDescription?: string | null;
 }
 
 function setMetaTag(attr: "name" | "property", key: string, content: string) {
