@@ -214,7 +214,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
       <MiniWebsiteSecondaryNav slug={slug} />
 
       {/* Main Content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-16 md:pb-0">{children}</main>
 
       {/* Footer */}
       <footer className="text-white py-12" style={{ backgroundColor: footerBg }}>
