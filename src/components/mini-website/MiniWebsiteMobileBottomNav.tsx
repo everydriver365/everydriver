@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, BookOpen, Star, MessageCircle } from "lucide-react";
+import { Home, Search, BookOpen, Star, Calendar } from "lucide-react";
 
 interface MiniWebsiteMobileBottomNavProps {
   slug: string;
