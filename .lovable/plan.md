@@ -1,74 +1,84 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Cardstream Payment Gateway — Rebuild Plan
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+### Current Problems
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+The existing setup has **4 overlapping approaches** spread across 6+ edge functions and 2 frontend components:
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+1. **`CardstreamHostedFieldsCheckout`** — loads jQuery + Cardstream SDK via iframes. Fragile: blocked by CSP, ad blockers, Brave shields. Requires jQuery as a dependency.
+2. **`CardstreamEmbeddedCheckout`** — similar approach with extra diagnostics, still jQuery-dependent and iframe-based.
+3. **`npi-checkout`** — HPP (Hosted Payment Page) redirect. Actually the most reliable approach but underused.
+4. **`npi-hosted-fields`** — yet another init function duplicating signature logic.
+5. Signature generation is duplicated in 4 places (shared helper exists but isn't always used).
+6. `payment-direct-sale` and `cardstream-direct-sale` both do server-to-server SALE with duplicate code.
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+### Recommended Approach: HPP (Hosted Payment Page)
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+Cardstream's **Hosted Payment Page** is the most reliable integration method:
+- No client-side SDK, no jQuery, no CSP issues, no ad-blocker problems
+- Works on all devices and browsers
+- PCI compliance handled entirely by Cardstream
+- User is redirected to Cardstream's secure page, then POST-redirected back via `payment-callback`
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+This is what `npi-checkout` already does — the plan is to make it the **single primary method** and clean up everything else.
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### What We'll Do
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+**1. Consolidate to a single edge function: `npi-checkout`**
+- Clean up the existing function to use the shared `cardstream_signature.ts` helper (eliminate duplicate signature code)
+- Add support for pupil balance top-ups (pass `type=balance` flag)
+- Ensure it records a `payment_intents` row for tracking
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+**2. Replace both frontend checkout components with a simple HPP redirect**
+- Create one component: `CardstreamPayButton` — a button that calls `npi-checkout`, receives form data, and auto-submits a hidden form to Cardstream's HPP
+- No SDK loading, no jQuery, no iframes — just a form POST redirect
+- Works identically on mobile and desktop
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**3. Update `payment-callback` (already handles NPI responses)**
+- Already works — just verify it correctly handles the redirect back and updates `payment_intents` status
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+**4. Clean up unused functions**
+- Mark `cardstream-hostedfields-init`, `cardstream-direct-sale`, `payment-direct-sale`, `npi-hosted-fields` as deprecated (or delete)
+- Remove `CardstreamHostedFieldsCheckout` and `CardstreamEmbeddedCheckout` components
+
+**5. Update booking pages**
+- Replace `CardstreamEmbeddedCheckout` usage in `BookingSummary` and `MobileBookingView` with the new `CardstreamPayButton`
+
+### New Component Architecture
+
+```text
+User clicks "Pay £X"
+       │
+       ▼
+CardstreamPayButton
+       │
+       ├── calls npi-checkout edge function
+       │   (creates payment_intents row, signs fields, returns formData + gatewayUrl)
+       │
+       ├── auto-submits hidden <form> to Cardstream HPP
+       │
+       ▼
+Cardstream Hosted Page (user enters card details)
+       │
+       ▼
+POST redirect → payment-callback edge function
+       │
+       ├── verifies signature
+       ├── updates payment_intents status
+       ├── records payment_history
+       ├── updates pupil balance (if applicable)
+       └── redirects user to confirmation page
+```
+
+### Files to Create/Modify
+
+- **Create**: `src/components/payments/CardstreamPayButton.tsx` — simple redirect-based payment button
+- **Modify**: `supabase/functions/npi-checkout/index.ts` — use shared signature helper, add payment_intents tracking
+- **Modify**: `src/pages/BookingSummary.tsx` — swap `CardstreamEmbeddedCheckout` for `CardstreamPayButton`
+- **Modify**: `src/components/booking/MobileBookingView.tsx` — same swap
+- **Delete**: `CardstreamHostedFieldsCheckout.tsx`, `CardstreamEmbeddedCheckout.tsx` (after swap)
+
+### No database changes required
+The `payment_intents` and `payment_history` tables already exist and support this flow.
+
