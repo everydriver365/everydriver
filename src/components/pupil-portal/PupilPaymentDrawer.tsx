@@ -1,0 +1,341 @@
+import { useState } from "react";
+import { CreditCard, ChevronRight, ChevronDown, Shield, Loader2, ArrowLeft } from "lucide-react";
+import { Drawer as DrawerPrimitive } from "vaul";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { SquareWalletButtons } from "./SquareWalletButtons";
+
+interface PupilPaymentDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pupilId: string;
+  pupilName: string;
+  pupilEmail: string | null;
+  pupilPhone: string | null;
+  instructorId: string;
+  instructorSlug: string;
+  accountBalance: number;
+  brandColour: string | null;
+}
+
+type PaymentGateway = "npi" | "clearpay" | "klarna";
+type Stage = "amount" | "method";
+
+export function PupilPaymentDrawer({
+  open,
+  onOpenChange,
+  pupilId,
+  pupilName,
+  pupilEmail,
+  pupilPhone,
+  instructorId,
+  instructorSlug,
+  accountBalance,
+  brandColour,
+}: PupilPaymentDrawerProps) {
+  const [stage, setStage] = useState<Stage>("amount");
+  const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
+  const [processing, setProcessing] = useState(false);
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
+  const [bnplExpanded, setBnplExpanded] = useState(false);
+
+  const amountOwed = Math.abs(accountBalance);
+  const paymentAmount = parseFloat(amount) || 0;
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setStage("amount");
+      setSelectedGateway(null);
+      setProcessing(false);
+      setBnplExpanded(false);
+    }
+    onOpenChange(isOpen);
+  };
+
+  const handleContinue = () => {
+    if (paymentAmount <= 0) {
+      toast({ title: "Invalid amount", description: "Please enter a valid payment amount", variant: "destructive" });
+      return;
+    }
+    setStage("method");
+  };
+
+  const handlePayment = async (gateway: PaymentGateway) => {
+    if (paymentAmount <= 0) return;
+
+    setSelectedGateway(gateway);
+    setProcessing(true);
+
+    try {
+      const baseUrl = window.location.origin;
+      const returnUrl = `${baseUrl}/i/${instructorSlug}?payment=success&amount=${paymentAmount}`;
+      const cancelUrl = `${baseUrl}/i/${instructorSlug}?payment=cancelled`;
+
+      const { data, error } = await supabase.functions.invoke("pupil-payment-checkout", {
+        body: {
+          pupilId,
+          instructorId,
+          amount: paymentAmount,
+          gateway,
+          customerName: pupilName,
+          customerEmail: pupilEmail || undefined,
+          customerPhone: pupilPhone || undefined,
+          returnUrl,
+          cancelUrl,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to initialize payment");
+
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else if (data.formAction && data.formFields) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.formAction;
+        form.style.display = "none";
+        Object.entries(data.formFields).forEach(([key, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value as string;
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        throw new Error("No payment URL received");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Could not process payment",
+        variant: "destructive",
+      });
+      setProcessing(false);
+      setSelectedGateway(null);
+    }
+  };
+
+  return (
+    <DrawerPrimitive.Root open={open} onOpenChange={handleOpenChange}>
+      <DrawerPrimitive.Portal>
+        <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]" />
+        <DrawerPrimitive.Content
+          className={cn(
+            "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[14px] bg-card",
+            "shadow-[0_-4px_40px_rgba(0,0,0,0.12)] max-h-[85vh]"
+          )}
+        >
+          {/* Grab handle */}
+          <div className="flex justify-center pt-2.5 pb-1">
+            <div className="w-9 h-[5px] rounded-full bg-muted-foreground/30" />
+          </div>
+
+          {stage === "amount" ? (
+            <div className="px-5 pb-8 space-y-5">
+              {/* Header */}
+              <div className="text-center pt-1">
+                <h2 className="text-[17px] font-semibold text-foreground">Make a Payment</h2>
+                {amountOwed > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Balance owed: <span className="font-semibold text-destructive">£{amountOwed.toFixed(2)}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Amount display */}
+              <div className="space-y-2">
+                <Label htmlFor="drawer-amount" className="text-sm text-muted-foreground">Payment amount</Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-muted-foreground font-medium">£</span>
+                  <Input
+                    id="drawer-amount"
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    max={amountOwed > 0 ? amountOwed : 1000}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="pl-9 text-2xl font-bold h-14 rounded-xl text-center"
+                    disabled={processing}
+                  />
+                </div>
+              </div>
+
+              {/* Quick-select chips */}
+              {amountOwed > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setAmount(amountOwed.toFixed(2))}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                      parseFloat(amount) === amountOwed
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    )}
+                  >
+                    Full Balance
+                  </button>
+                  {amountOwed > 50 && (
+                    <button
+                      onClick={() => setAmount("50.00")}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                        amount === "50.00"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      £50
+                    </button>
+                  )}
+                  {amountOwed > 100 && (
+                    <button
+                      onClick={() => setAmount("100.00")}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                        amount === "100.00"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      £100
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Continue button */}
+              <Button
+                onClick={handleContinue}
+                className="w-full h-12 rounded-xl text-base font-semibold"
+                disabled={paymentAmount <= 0}
+              >
+                Continue — £{paymentAmount.toFixed(2)}
+                <ChevronRight className="h-5 w-5 ml-1" />
+              </Button>
+            </div>
+          ) : (
+            <div className="px-5 pb-8 space-y-4 overflow-auto">
+              {/* Header with back */}
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={() => setStage("amount")}
+                  className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={processing}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="flex-1">
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{paymentAmount.toFixed(2)}</h2>
+                  <p className="text-xs text-muted-foreground">Choose payment method</p>
+                </div>
+              </div>
+
+              {/* Express Checkout — Apple Pay / Google Pay */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
+                <SquareWalletButtons
+                  amount={paymentAmount}
+                  pupilId={pupilId}
+                  instructorId={instructorId}
+                  instructorSlug={instructorSlug}
+                  pupilName={pupilName}
+                  pupilEmail={pupilEmail}
+                  onProcessing={setProcessing}
+                  disabled={processing || paymentAmount <= 0}
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {/* Pay by Card — primary */}
+              <Button
+                onClick={() => handlePayment("npi")}
+                className="w-full h-12 rounded-xl text-base font-semibold"
+                disabled={processing}
+              >
+                {selectedGateway === "npi" && processing ? (
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                ) : (
+                  <CreditCard className="h-5 w-5 mr-2" />
+                )}
+                Pay by Card
+              </Button>
+
+              {/* BNPL expandable */}
+              <div className="rounded-xl border bg-card">
+                <button
+                  onClick={() => setBnplExpanded(!bnplExpanded)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground"
+                  disabled={processing}
+                >
+                  <span>Pay in instalments</span>
+                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", bnplExpanded && "rotate-180")} />
+                </button>
+                {bnplExpanded && (
+                  <div className="px-4 pb-3 space-y-2">
+                    <button
+                      onClick={() => handlePayment("clearpay")}
+                      disabled={processing}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3 rounded-lg transition-colors",
+                        "bg-secondary/50 hover:bg-secondary",
+                        processing && "opacity-50 pointer-events-none"
+                      )}
+                    >
+                      <span className="text-xl">🔄</span>
+                      <div className="flex-1 text-left">
+                        <div className="text-sm font-medium text-foreground">Clearpay</div>
+                        <div className="text-xs text-muted-foreground">4 payments of £{(paymentAmount / 4).toFixed(2)}</div>
+                      </div>
+                      {selectedGateway === "clearpay" && processing && (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handlePayment("klarna")}
+                      disabled={processing}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3 rounded-lg transition-colors",
+                        "bg-secondary/50 hover:bg-secondary",
+                        processing && "opacity-50 pointer-events-none"
+                      )}
+                    >
+                      <span className="text-xl">💜</span>
+                      <div className="flex-1 text-left">
+                        <div className="text-sm font-medium text-foreground">Klarna</div>
+                        <div className="text-xs text-muted-foreground">3 payments of £{(paymentAmount / 3).toFixed(2)}</div>
+                      </div>
+                      {selectedGateway === "klarna" && processing && (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Security notice */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
+                <span>Payments are processed securely. Your card details are never stored.</span>
+              </div>
+            </div>
+          )}
+        </DrawerPrimitive.Content>
+      </DrawerPrimitive.Portal>
+    </DrawerPrimitive.Root>
+  );
+}
