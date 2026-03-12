@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN tracking_mode text NOT NULL DEFAULT 'route_recorder';
