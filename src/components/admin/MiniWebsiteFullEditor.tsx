@@ -957,7 +957,97 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
               )}
             </TabsContent>
 
-            {/* Domain Tab */}
+            {/* SEO Tab */}
+            <TabsContent value="seo" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Search Engine Optimisation
+                  </CardTitle>
+                  <CardDescription>
+                    Customise how each page appears in Google search results. Leave blank to use auto-generated defaults.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {pagesLoading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Loading pages…
+                    </div>
+                  ) : pages.length === 0 ? (
+                    <p className="text-muted-foreground">No pages found for this instructor.</p>
+                  ) : (
+                    pages.map((p) => {
+                      const businessName = editData.name || "Instructor";
+                      const defaultTitle = p.page_type === "home"
+                        ? `${businessName} | Driving Lessons | Drive365`
+                        : `${p.page_title} - ${businessName} | Drive365`;
+                      return (
+                        <div key={p.id} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium capitalize flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              {p.page_title}
+                            </h4>
+                            <Badge variant={p.is_published ? "default" : "secondary"}>
+                              {p.is_published ? "Published" : "Draft"}
+                            </Badge>
+                          </div>
+                          {/* Google Preview */}
+                          <div className="bg-muted/50 rounded-lg p-3 border text-sm space-y-0.5">
+                            <p className="text-xs text-muted-foreground mb-1">Google Preview</p>
+                            <p className="text-blue-600 font-medium truncate">
+                              {p.meta_title || defaultTitle}
+                            </p>
+                            <p className="text-green-700 text-xs truncate">
+                              everydriver.lovable.app/i/{editData.app_slug || "slug"}/{p.page_type === "home" ? "" : p.page_type}
+                            </p>
+                            <p className="text-muted-foreground text-xs line-clamp-2">
+                              {p.meta_description || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">
+                              Meta Title <span className="text-muted-foreground">({(p.meta_title || "").length}/60)</span>
+                            </Label>
+                            <Input
+                              value={p.meta_title || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPages((prev: WebsitePage[]) => prev.map((pg: WebsitePage) => pg.id === p.id ? { ...pg, meta_title: val || null } : pg));
+                              }}
+                              placeholder={defaultTitle}
+                              maxLength={60}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">
+                              Meta Description <span className={`${(p.meta_description || "").length > 160 ? "text-destructive" : "text-muted-foreground"}`}>({(p.meta_description || "").length}/160)</span>
+                            </Label>
+                            <Textarea
+                              value={p.meta_description || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPages((prev: WebsitePage[]) => prev.map((pg: WebsitePage) => pg.id === p.id ? { ...pg, meta_description: val || null } : pg));
+                              }}
+                              placeholder="Brief description for search results"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  {pages.length > 0 && (
+                    <Button onClick={handleSaveAllSEO} disabled={savingSEO}>
+                      {savingSEO && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Save All SEO
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="domain" className="space-y-6">
               <Card>
                 <CardHeader>
