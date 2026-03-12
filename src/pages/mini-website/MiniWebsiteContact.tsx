@@ -65,7 +65,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
   ].filter((link) => link.url);
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Contact" pageDescription={`Get in touch with ${instructor.business_name || instructor.name}. Book a driving lesson or ask a question.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Contact" pageDescription={`Get in touch with ${instructor.business_name || instructor.name}. Book a driving lesson or ask a question.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Hero */}
       <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">

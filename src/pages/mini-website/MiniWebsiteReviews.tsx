@@ -81,7 +81,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Reviews" pageDescription={`Read student reviews for ${instructor.business_name || instructor.name}. See what learners say about their driving lessons.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Reviews" pageDescription={`Read student reviews for ${instructor.business_name || instructor.name}. See what learners say about their driving lessons.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Hero */}
       <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">

@@ -37,6 +37,7 @@ import {
   Link2,
   Phone,
   Mail,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInstructorWebsitePages, WebsitePage } from "@/hooks/useInstructorWebsitePages";
@@ -164,6 +165,36 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const { pages, loading: pagesLoading, updatePage } = useInstructorWebsitePages(website.id);
   const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
   const [savingPage, setSavingPage] = useState(false);
+  const [seoEdits, setSeoEdits] = useState<Record<string, { meta_title?: string | null; meta_description?: string | null }>>({});
+  const [savingSEO, setSavingSEO] = useState(false);
+
+  const getSeoValue = (pageId: string, field: "meta_title" | "meta_description", original: string | null) => {
+    if (seoEdits[pageId] && field in seoEdits[pageId]) return seoEdits[pageId][field] || "";
+    return original || "";
+  };
+
+  const handleSeoChange = (pageId: string, field: "meta_title" | "meta_description", value: string) => {
+    setSeoEdits(prev => ({
+      ...prev,
+      [pageId]: { ...prev[pageId], [field]: value || null },
+    }));
+  };
+
+  const handleSaveAllSEO = async () => {
+    setSavingSEO(true);
+    try {
+      const entries = Object.entries(seoEdits);
+      for (const [pageId, updates] of entries) {
+        await updatePage(pageId, updates);
+      }
+      setSeoEdits({});
+      toast.success("SEO settings saved");
+    } catch {
+      toast.error("Failed to save SEO settings");
+    } finally {
+      setSavingSEO(false);
+    }
+  };
 
   // Available domains (not linked or linked to this website)
   // Also include domains owned by this instructor that aren't linked elsewhere
@@ -389,7 +420,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-6xl mx-auto">
           <Tabs defaultValue="design" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+            <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
               <TabsTrigger value="design" className="gap-2">
                 <Palette className="h-4 w-4" />
                 <span className="hidden sm:inline">Design</span>
@@ -401,6 +432,10 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
               <TabsTrigger value="pages" className="gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Pages</span>
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="gap-2">
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">SEO</span>
               </TabsTrigger>
               <TabsTrigger value="domain" className="gap-2">
                 <Globe className="h-4 w-4" />
@@ -952,7 +987,91 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
               )}
             </TabsContent>
 
-            {/* Domain Tab */}
+            {/* SEO Tab */}
+            <TabsContent value="seo" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Search Engine Optimisation
+                  </CardTitle>
+                  <CardDescription>
+                    Customise how each page appears in Google search results. Leave blank to use auto-generated defaults.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {pagesLoading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Loading pages…
+                    </div>
+                  ) : pages.length === 0 ? (
+                    <p className="text-muted-foreground">No pages found for this instructor.</p>
+                  ) : (
+                    pages.map((p) => {
+                      const businessName = editData.name || "Instructor";
+                      const defaultTitle = p.page_type === "home"
+                        ? `${businessName} | Driving Lessons | Drive365`
+                        : `${p.page_title} - ${businessName} | Drive365`;
+                      return (
+                        <div key={p.id} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium capitalize flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              {p.page_title}
+                            </h4>
+                            <Badge variant={p.is_published ? "default" : "secondary"}>
+                              {p.is_published ? "Published" : "Draft"}
+                            </Badge>
+                          </div>
+                          {/* Google Preview */}
+                          <div className="bg-muted/50 rounded-lg p-3 border text-sm space-y-0.5">
+                            <p className="text-xs text-muted-foreground mb-1">Google Preview</p>
+                            <p className="text-blue-600 font-medium truncate">
+                              {getSeoValue(p.id, "meta_title", p.meta_title) || defaultTitle}
+                            </p>
+                            <p className="text-green-700 text-xs truncate">
+                              everydriver.lovable.app/i/{editData.app_slug || "slug"}/{p.page_type === "home" ? "" : p.page_type}
+                            </p>
+                            <p className="text-muted-foreground text-xs line-clamp-2">
+                              {getSeoValue(p.id, "meta_description", p.meta_description) || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">
+                              Meta Title <span className="text-muted-foreground">({getSeoValue(p.id, "meta_title", p.meta_title).length}/60)</span>
+                            </Label>
+                            <Input
+                              value={getSeoValue(p.id, "meta_title", p.meta_title)}
+                              onChange={(e) => handleSeoChange(p.id, "meta_title", e.target.value)}
+                              placeholder={defaultTitle}
+                              maxLength={60}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">
+                              Meta Description <span className={`${getSeoValue(p.id, "meta_description", p.meta_description).length > 160 ? "text-destructive" : "text-muted-foreground"}`}>({getSeoValue(p.id, "meta_description", p.meta_description).length}/160)</span>
+                            </Label>
+                            <Textarea
+                              value={getSeoValue(p.id, "meta_description", p.meta_description)}
+                              onChange={(e) => handleSeoChange(p.id, "meta_description", e.target.value)}
+                              placeholder="Brief description for search results"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  {pages.length > 0 && (
+                    <Button onClick={handleSaveAllSEO} disabled={savingSEO}>
+                      {savingSEO && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Save All SEO
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="domain" className="space-y-6">
               <Card>
                 <CardHeader>

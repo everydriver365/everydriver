@@ -104,7 +104,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
   const primaryColor = STYLE_OVERRIDES[slug!]?.primaryColor || instructor.brand_colour || "#1e3a5f";
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Tests" pageDescription={`Find driving test availability and book your test with support from ${instructor.business_name || instructor.name}.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Tests" pageDescription={`Find driving test availability and book your test with support from ${instructor.business_name || instructor.name}.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Hero */}
       <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">

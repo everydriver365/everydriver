@@ -49,7 +49,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="About" pageDescription={`Learn about ${instructor.business_name || instructor.name} - your local driving instructor.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="About" pageDescription={`Learn about ${instructor.business_name || instructor.name} - your local driving instructor.`} metaTitle={page.meta_title} metaDescription={page.meta_description}>
       {/* Hero */}
       <section
         className="py-6 sm:py-8"
