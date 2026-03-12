@@ -133,7 +133,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await authenticate(supabase);
+    // Use refresh token directly as API token (Velocity Fleet docs: "The API Token is the Refresh Token")
+    const apiToken = Deno.env.get("RADIUS_REFRESH_TOKEN");
+    if (!apiToken) {
+      throw new Error("RADIUS_REFRESH_TOKEN not configured");
+    }
 
     // Build device identifier lookup map
     const deviceMap = new Map(devices.map((d) => [d.device_identifier, d]));
@@ -146,7 +150,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
+          Authorization: `Token ${apiToken}`,
         },
         body: JSON.stringify({}),
       }
