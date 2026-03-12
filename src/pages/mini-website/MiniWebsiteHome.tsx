@@ -219,7 +219,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
                   navigate(`/i/${slug}/courses${params}`);
                 }}
-                className="flex flex-col sm:flex-row gap-2">
+                className="flex flex-col sm:flex-row gap-2"
               >
                 <div className="flex-1 relative">
                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
