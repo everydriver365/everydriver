@@ -54,11 +54,17 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
   };
   const resolvedFooterOverrides = { ...FOOTER_CONTACT_OVERRIDES[slug], ...footerOverrides };
 
-  const primaryColor = instructor.brand_colour || "#1e3a5f";
+  // Per-instructor style overrides (highest priority)
+  const STYLE_OVERRIDES: Record<string, { primaryColor?: string; headerBg?: string; footerBg?: string }> = {
+    "ken-d": { primaryColor: "#1e3a5f", headerBg: "#1e3a5f", footerBg: "#1e3a5f" },
+  };
+  const styleOverride = STYLE_OVERRIDES[slug] || {};
+
+  const primaryColor = styleOverride.primaryColor || instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
-  const headerBg = instructor.website_header_bg || primaryColor;
+  const headerBg = styleOverride.headerBg || instructor.website_header_bg || primaryColor;
   const buttonColor = instructor.website_button_color || secondaryColor;
-  const footerBg = instructor.website_footer_bg || primaryColor;
+  const footerBg = styleOverride.footerBg || instructor.website_footer_bg || primaryColor;
   const fontFamily = instructor.website_font || "Inter";
   const headerStyle = instructor.website_header_style || "solid";
   const menuTextColor = instructor.website_menu_text_color || "#ffffff";

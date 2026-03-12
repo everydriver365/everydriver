@@ -93,7 +93,10 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     );
   }
 
-  const primaryColor = instructor.brand_colour || "#1e3a5f";
+  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
+    "ken-d": { primaryColor: "#1e3a5f" },
+  };
+  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
