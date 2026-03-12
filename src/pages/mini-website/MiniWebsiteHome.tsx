@@ -157,8 +157,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
       {/* Hero Section */}
       <section style={{ backgroundColor: '#e9f4f9' }}>
-        <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center">
             {/* Left: Hero Image */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -168,12 +168,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <img
                 src={defaultHeroImage}
                 alt={instructorName}
-                className="w-full h-[580px] object-cover rounded-3xl shadow-xl"
+                className="w-full h-[300px] sm:h-[420px] lg:h-[580px] object-cover rounded-2xl sm:rounded-3xl shadow-xl"
               />
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
-                className="absolute -top-4 -right-4 w-36 h-36 object-contain drop-shadow-lg"
+                className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-36 sm:h-36 object-contain drop-shadow-lg"
               />
             </motion.div>
 
