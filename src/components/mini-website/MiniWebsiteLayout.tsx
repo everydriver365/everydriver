@@ -148,7 +148,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                 </div>
               )}
               <span 
-                className="font-semibold text-sm sm:text-lg hidden sm:block"
+                className="font-semibold text-sm sm:text-lg"
                 style={{ color: "#ffffff" }}
               >
                 {instructor.business_name || instructor.name}
@@ -214,8 +214,10 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
         </div>
       </header>
 
-      {/* Secondary Nav */}
-      <MiniWebsiteSecondaryNav slug={slug} />
+      {/* Secondary Nav — hidden on mobile */}
+      <div className="hidden md:block">
+        <MiniWebsiteSecondaryNav slug={slug} />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
