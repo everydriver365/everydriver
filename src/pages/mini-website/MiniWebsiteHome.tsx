@@ -629,9 +629,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-primary">
+      <section className="py-8 sm:py-12 bg-primary">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-primary-foreground mb-3">
+          <h2 className="text-2xl sm:text-3xl font-black text-primary-foreground mb-3">
             Start your driving journey today! 🚗
           </h2>
           <p className="text-primary-foreground/70 mb-6">
