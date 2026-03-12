@@ -43,6 +43,21 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [postcode, setPostcode] = useState("");
   const { features: includedFeatures } = useIncludedFeatures();
   const { testimonials: homepageTestimonials } = useHomepageTestimonials();
+  const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+
+  const openFeatureModal = (feature: typeof includedFeatures[0]) => {
+    const mapped: FeatureData = {
+      id: feature.id,
+      icon: feature.icon,
+      title: feature.title,
+      description: feature.description,
+      detailed_content: feature.detailed_content,
+      image_url: feature.image_url,
+    };
+    setSelectedFeature(mapped);
+    setFeatureModalOpen(true);
+  };
 
   useEffect(() => {
     if (instructor?.id) {
