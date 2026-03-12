@@ -45,6 +45,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const { testimonials: homepageTestimonials } = useHomepageTestimonials();
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [showPromoBanner, setShowPromoBanner] = useState(true);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
