@@ -98,7 +98,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily, backgroundColor: '#2596be' }}>
+    <div className="min-h-screen flex flex-col" style={{ fontFamily, backgroundColor: '#c5dde3' }}>
       {/* Google Fonts */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
