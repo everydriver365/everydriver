@@ -20,7 +20,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#c5dde3' }}>
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#e9f4f9' }}>
         <Skeleton className="h-48 w-full rounded-2xl" />
       </div>
     );
