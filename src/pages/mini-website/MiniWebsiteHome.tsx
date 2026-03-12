@@ -182,7 +182,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   e.preventDefault();
                   const slug = instructor.app_slug;
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
-                  window.location.href = `/i/${slug}/courses${params}`;
+                  navigate(`/i/${slug}/courses${params}`);
                 }}
                 className="flex gap-2"
               >
