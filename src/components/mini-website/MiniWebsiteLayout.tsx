@@ -136,7 +136,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
               )}
               <span 
                 className="font-semibold text-lg hidden sm:block"
-                style={{ color: menuTextColor }}
+                style={{ color: "#ffffff" }}
               >
                 {instructor.business_name || instructor.name}
               </span>
