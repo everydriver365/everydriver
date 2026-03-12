@@ -158,6 +158,7 @@ const DemoMiniWebsiteLanding = lazy(() => import("./pages/DemoMiniWebsiteLanding
 const DemoHeroSections = lazy(() => import("./pages/DemoHeroSections"));
 const DemoHeroSections2 = lazy(() => import("./pages/DemoHeroSections2"));
 const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
+const DemoPromoBars = lazy(() => import("./pages/demo/DemoPromoBars"));
 
 
 // Lazy-load ConditionalRoutes
@@ -364,6 +365,7 @@ const App = () => (
                 <Route path="/demo/hero-sections-2" element={<DemoHeroSections2 />} />
                 <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
                 <Route path="/demo/course-cards" element={<DemoCourseCards />} />
+                <Route path="/demo/promo-bars" element={<DemoPromoBars />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
