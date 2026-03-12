@@ -551,15 +551,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-24">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-12 sm:py-24">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 sm:mb-10">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold md:text-4xl text-foreground"
+              className="text-2xl sm:text-3xl font-bold md:text-4xl text-foreground"
             >
               Trusted by Many
             </motion.h2>
