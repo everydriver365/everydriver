@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { MiniWebsiteCourseCard } from "@/components/mini-website/MiniWebsiteCourseCard";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
