@@ -5859,6 +5859,7 @@ export type Database = {
           special_skills: string | null
           stripe_account_id: string | null
           tax_code: string | null
+          tracking_mode: string
           truelayer_enabled: boolean | null
           twitter_url: string | null
           updated_at: string
@@ -5983,6 +5984,7 @@ export type Database = {
           special_skills?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
+          tracking_mode?: string
           truelayer_enabled?: boolean | null
           twitter_url?: string | null
           updated_at?: string
@@ -6107,6 +6109,7 @@ export type Database = {
           special_skills?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
+          tracking_mode?: string
           truelayer_enabled?: boolean | null
           twitter_url?: string | null
           updated_at?: string
