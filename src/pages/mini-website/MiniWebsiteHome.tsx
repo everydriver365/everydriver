@@ -516,7 +516,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section style={{ backgroundColor: '#2596be' }} className="py-24">
+      <section style={{ backgroundColor: '#c5dde3' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <motion.h2
