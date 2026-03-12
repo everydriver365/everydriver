@@ -70,7 +70,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#2596be' }}>
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-[500px] w-full rounded-2xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
