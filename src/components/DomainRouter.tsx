@@ -34,6 +34,8 @@ const LEARNER_ALLOWED_ROUTES = [
   "/drive365",           // Drive365 homepage
   "/learner-app/",       // Learner app routes
   "/benefits",           // Benefits page
+  "/instructor-app/login", // Instructor login page
+  "/admin/login",        // Admin login page
 ];
 
 // Routes that should stay on their current domain (shared routes)

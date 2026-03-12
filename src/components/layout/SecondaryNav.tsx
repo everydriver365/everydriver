@@ -5,7 +5,7 @@ const secondaryLinks = [
   { href: "/theory", label: "Theory Practice", icon: BookOpen, external: false },
   { href: "/contact?type=bespoke", label: "Bespoke Course Request", icon: FileEdit, external: false },
   { href: "/contact?type=callback", label: "Request a Callback", icon: Phone, external: false },
-  { href: "https://everydriver.co.uk/instructor/login", label: "Instructor Login", icon: User, external: true },
+  { href: "/instructor-app/login", label: "Instructor Login", icon: User, external: false },
   { href: "/pupil/login", label: "Pupil Login", icon: User, external: false },
 ];
 

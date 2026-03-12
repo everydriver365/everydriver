@@ -163,13 +163,13 @@ export function Header() {
                 ))}
                 
                 <div className="border-t border-border mt-2 pt-2">
-                <a
-                    href="https://everydriver.co.uk/instructor"
+                <Link
+                    to="/instructor-app/login"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
                   >
                     Instructor Login
-                  </a>
+                  </Link>
                   <Link
                     to="/pupil/login"
                     onClick={() => setIsMobileMenuOpen(false)}
