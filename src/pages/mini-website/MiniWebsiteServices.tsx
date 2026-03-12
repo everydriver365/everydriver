@@ -104,7 +104,10 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
     );
   }
 
-  const primaryColor = instructor.brand_colour || "#1e3a5f";
+  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
+    "ken-d": { primaryColor: "#1e3a5f" },
+  };
+  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
