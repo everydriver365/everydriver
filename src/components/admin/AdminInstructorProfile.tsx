@@ -621,6 +621,12 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Inline tracker device management */}
+            {(instructor.tracking_mode === "geotab" || instructor.tracking_mode === "radius") && (
+              <InlineTrackerDevice instructorId={instructor.id} provider={instructor.tracking_mode} />
+            )}
+
             <div className="border-t border-border/40 mt-1 pt-1" />
             <InlineEditField value={instructor.car_type} onSave={(v) => updateField("car_type", v)} label="Transmission" />
             <InlineEditField value={instructor.car_make || ""} onSave={(v) => updateField("car_make", v)} label="Make" emptyText="Add make" />
