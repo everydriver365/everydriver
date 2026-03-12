@@ -64,8 +64,6 @@ export function PupilPaymentModal({
     );
   }
 
-  const amountOwed = Math.abs(accountBalance);
-  const paymentAmount = parseFloat(amount) || 0;
 
   const handlePayment = async (gateway: PaymentGateway) => {
     if (paymentAmount <= 0) {
