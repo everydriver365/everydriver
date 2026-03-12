@@ -1027,39 +1027,33 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           <div className="bg-muted/50 rounded-lg p-3 border text-sm space-y-0.5">
                             <p className="text-xs text-muted-foreground mb-1">Google Preview</p>
                             <p className="text-blue-600 font-medium truncate">
-                              {p.meta_title || defaultTitle}
+                              {getSeoValue(p.id, "meta_title", p.meta_title) || defaultTitle}
                             </p>
                             <p className="text-green-700 text-xs truncate">
                               everydriver.lovable.app/i/{editData.app_slug || "slug"}/{p.page_type === "home" ? "" : p.page_type}
                             </p>
                             <p className="text-muted-foreground text-xs line-clamp-2">
-                              {p.meta_description || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
+                              {getSeoValue(p.id, "meta_description", p.meta_description) || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
                             </p>
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs">
-                              Meta Title <span className="text-muted-foreground">({(p.meta_title || "").length}/60)</span>
+                              Meta Title <span className="text-muted-foreground">({getSeoValue(p.id, "meta_title", p.meta_title).length}/60)</span>
                             </Label>
                             <Input
-                              value={p.meta_title || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setPages((prev: WebsitePage[]) => prev.map((pg: WebsitePage) => pg.id === p.id ? { ...pg, meta_title: val || null } : pg));
-                              }}
+                              value={getSeoValue(p.id, "meta_title", p.meta_title)}
+                              onChange={(e) => handleSeoChange(p.id, "meta_title", e.target.value)}
                               placeholder={defaultTitle}
                               maxLength={60}
                             />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs">
-                              Meta Description <span className={`${(p.meta_description || "").length > 160 ? "text-destructive" : "text-muted-foreground"}`}>({(p.meta_description || "").length}/160)</span>
+                              Meta Description <span className={`${getSeoValue(p.id, "meta_description", p.meta_description).length > 160 ? "text-destructive" : "text-muted-foreground"}`}>({getSeoValue(p.id, "meta_description", p.meta_description).length}/160)</span>
                             </Label>
                             <Textarea
-                              value={p.meta_description || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setPages((prev: WebsitePage[]) => prev.map((pg: WebsitePage) => pg.id === p.id ? { ...pg, meta_description: val || null } : pg));
-                              }}
+                              value={getSeoValue(p.id, "meta_description", p.meta_description)}
+                              onChange={(e) => handleSeoChange(p.id, "meta_description", e.target.value)}
                               placeholder="Brief description for search results"
                               rows={2}
                             />
