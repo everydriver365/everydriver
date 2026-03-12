@@ -48,7 +48,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
   const textColor = instructor.website_text_color;
 
   const CONTACT_OVERRIDES: Record<string, { email?: string; phone?: string; location?: string }> = {
-    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester" },
+    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester, Southampton, Portsmouth and all surrounding areas" },
   };
   const contactOverride = CONTACT_OVERRIDES[slug] || {};
 
