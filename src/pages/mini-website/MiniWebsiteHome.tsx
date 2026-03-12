@@ -470,11 +470,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Everything You Need Section */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-24">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-12 sm:py-24">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
-            <h2 className="text-4xl font-bold mb-3" style={{ color: primaryColor }}>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: primaryColor }}>
               Everything You Need to <span>Learn to Drive</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
