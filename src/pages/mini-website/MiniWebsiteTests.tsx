@@ -91,9 +91,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Link to="/">
-            <Button>Go Home</Button>
-          </Link>
+          <Button onClick={() => window.location.href = "/"}>Go Home</Button>
         </Card>
       </div>
     );
