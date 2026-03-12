@@ -77,7 +77,7 @@ export function Footer() {
               <li><Link to="/about" className="hover:text-accent">About Us</Link></li>
               <li><Link to="/pricing" className="hover:text-accent">Pricing</Link></li>
               <li><Link to="/faq" className="hover:text-accent">FAQ</Link></li>
-              <li><a href="https://everydriver.co.uk/instructor-app" className="hover:text-accent font-medium text-accent">EveryDriver for Instructors</a></li>
+              <li><Link to="/instructor-app/login" className="hover:text-accent font-medium text-accent">EveryDriver for Instructors</Link></li>
             </ul>
           </div>
 
@@ -87,7 +87,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/drive365" className="hover:text-accent">Drive365 Learners</Link></li>
               <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
-              <li><a href="https://everydriver.co.uk/instructor-app" className="hover:text-accent">Instructor Portal</a></li>
+              <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
             </ul>
           </div>
