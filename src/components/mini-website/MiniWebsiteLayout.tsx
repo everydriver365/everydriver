@@ -126,32 +126,33 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
         className="sticky top-0 z-50 border-b shadow-sm"
         style={getHeaderStyles()}
       >
-        <div className="max-w-5xl mx-auto px-4 py-3">
+        <div className="max-w-5xl mx-auto px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
-            <Link to={`/i/${slug}`} className="flex items-center gap-3">
+            <Link to={`/i/${slug}`} className="flex items-center gap-2 sm:gap-3">
               {instructor.logo_url ? (
                 <img
                   src={instructor.logo_url}
                   alt={instructor.name}
-                  className="h-24 w-auto object-contain rounded p-1"
+                  className="h-12 sm:h-24 w-auto object-contain rounded p-1"
                 />
               ) : (
                 <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-lg font-bold text-white"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-base sm:text-lg font-bold text-white"
                   style={{ backgroundColor: secondaryColor }}
                 >
                   {instructor.name.charAt(0)}
                 </div>
               )}
               <span 
-                className="font-semibold text-lg hidden sm:block"
+                className="font-semibold text-sm sm:text-lg hidden sm:block"
                 style={{ color: "#ffffff" }}
               >
                 {instructor.business_name || instructor.name}
               </span>
             </Link>
 
-            <nav className="flex items-center gap-1">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -169,7 +170,43 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                 </Link>
               ))}
             </nav>
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-white" />
+              ) : (
+                <Menu className="h-6 w-6 text-white" />
+              )}
+            </button>
           </div>
+
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden pt-2 pb-3 border-t border-white/10 mt-2 grid grid-cols-2 gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-center ${
+                    isActive(link.path)
+                      ? "bg-white/20"
+                      : "hover:bg-white/10"
+                  }`}
+                  style={{ 
+                    color: isActive(link.path) ? "#facc15" : "#ffffff",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
       </header>
 
