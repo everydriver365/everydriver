@@ -48,11 +48,15 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   }
 
   console.log("[RadiusPoller] Refreshing access token...");
+  // Try multiple auth approaches for the Velocity Fleet refresh endpoint
   const res = await fetch(
     "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Token ${refreshToken}`,
+      },
       body: JSON.stringify({ refresh: refreshToken }),
     }
   );
