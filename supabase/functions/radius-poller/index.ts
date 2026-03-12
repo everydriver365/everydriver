@@ -47,74 +47,46 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
     throw new Error("RADIUS_REFRESH_TOKEN not configured");
   }
 
-  console.log("[RadiusPoller] Refreshing access token, token length:", refreshToken?.length);
-
-  // Try multiple auth approaches
-  const approaches = [
-    { 
-      url: "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
-      body: { refresh: refreshToken },
-      headers: { "Content-Type": "application/json" }
-    },
-    { 
-      url: "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
-      body: { refresh: refreshToken },
-      headers: { "Content-Type": "application/json", "X-API-Token": refreshToken }
-    },
+  console.log("[RadiusPoller] Refreshing access token...");
+  const res = await fetch(
+    "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
     {
-      url: "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
-      body: { token: refreshToken },
-      headers: { "Content-Type": "application/json" }
-    },
-  ];
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: refreshToken }),
+    }
+  );
 
-  let lastError = "";
-  for (const approach of approaches) {
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Radius auth failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const accessToken = data.access || data.token || data.access_token;
+  if (!accessToken) {
+    throw new Error("No access token in refresh response");
+  }
+
+  // Cache for 24h
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  cachedSession = { accessToken, expiresAt };
+
+  // 4. Persist to DB
+  if (supabaseClient) {
     try {
-      console.log("[RadiusPoller] Trying auth:", approach.url, "body keys:", Object.keys(approach.body));
-      const res = await fetch(approach.url, {
-        method: "POST",
-        headers: approach.headers,
-        body: JSON.stringify(approach.body),
+      await supabaseClient.from("radius_session_cache").upsert({
+        id: "default",
+        access_token: accessToken,
+        expires_at: new Date(expiresAt).toISOString(),
+        updated_at: new Date().toISOString(),
       });
-
-      console.log("[RadiusPoller] Auth response status:", res.status);
-
-      if (res.ok) {
-        const data = await res.json();
-        const accessToken = data.access || data.token || data.access_token;
-        if (accessToken) {
-          const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-          cachedSession = { accessToken, expiresAt };
-
-          if (supabaseClient) {
-            try {
-              await supabaseClient.from("radius_session_cache").upsert({
-                id: "default",
-                access_token: accessToken,
-                expires_at: new Date(expiresAt).toISOString(),
-                updated_at: new Date().toISOString(),
-              });
-            } catch (e) {
-              console.log("[RadiusPoller] Failed to persist token (non-critical):", e);
-            }
-          }
-          console.log("[RadiusPoller] Auth succeeded!");
-          return cachedSession;
-        }
-      }
-
-      const errText = await res.text();
-      lastError = `${res.status}: ${errText}`;
-      console.log("[RadiusPoller] Auth attempt failed:", lastError);
     } catch (e) {
-      lastError = e.message;
-      console.log("[RadiusPoller] Auth attempt error:", lastError);
+      console.log("[RadiusPoller] Failed to persist token to DB (non-critical):", e);
     }
   }
 
-  throw new Error(`All Radius auth approaches failed. Last: ${lastError}`);
-}
+  return cachedSession;
 
 // Reverse geocode to get road name using Nominatim
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
