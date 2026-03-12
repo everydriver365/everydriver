@@ -270,7 +270,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
             <p className="mt-1">
               Powered by{" "}
               <Link to={`/i/${instructor.app_slug}`} className="hover:text-white transition-colors">
-                EveryDriver
+                Drive365
               </Link>
             </p>
           </div>
