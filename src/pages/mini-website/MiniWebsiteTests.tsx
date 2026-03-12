@@ -229,6 +229,17 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
           </CardContent>
         </Card>
       </section>
+
+      {enquirySlot && (
+        <TestEnquiryDialog
+          open={!!enquirySlot}
+          onOpenChange={(open) => !open && setEnquirySlot(null)}
+          centre={enquirySlot.centre}
+          date={enquirySlot.date}
+          time={enquirySlot.time}
+          primaryColor={primaryColor}
+        />
+      )}
     </MiniWebsiteLayout>
   );
 }
