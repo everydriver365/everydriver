@@ -214,8 +214,10 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
         </div>
       </header>
 
-      {/* Secondary Nav */}
-      <MiniWebsiteSecondaryNav slug={slug} />
+      {/* Secondary Nav — hidden on mobile */}
+      <div className="hidden md:block">
+        <MiniWebsiteSecondaryNav slug={slug} />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
