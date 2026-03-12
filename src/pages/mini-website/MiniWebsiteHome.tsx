@@ -35,6 +35,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "home");
   const links = useMiniWebsiteLinks(slug);
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [postcode, setPostcode] = useState("");
@@ -182,7 +183,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   e.preventDefault();
                   const slug = instructor.app_slug;
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
-                  window.location.href = `/i/${slug}/courses${params}`;
+                  navigate(`/i/${slug}/courses${params}`);
                 }}
                 className="flex gap-2"
               >
@@ -448,11 +449,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { title: "Search, Compare & Book", description: "Find and compare local instructors, check real-time availability, and book directly online.", image: drivingTestCentreImg, link: links.courses },
-              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends },
-              { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage },
-              { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg },
-              { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile },
-              { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile },
+              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: links.contact },
+              { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: links.courses },
+              { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
+              { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: links.courses },
+              { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile, link: links.courses },
             ].map((f, i) => {
               const content = (
                 <motion.div
