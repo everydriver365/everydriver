@@ -41,6 +41,28 @@ export function PupilPaymentModal({
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
   const [processing, setProcessing] = useState(false);
+  const isMobile = useIsMobile();
+
+  const amountOwed = Math.abs(accountBalance);
+  const paymentAmount = parseFloat(amount) || 0;
+
+  // On mobile, render the drawer instead
+  if (isMobile) {
+    return (
+      <PupilPaymentDrawer
+        open={open}
+        onOpenChange={onOpenChange}
+        pupilId={pupilId}
+        pupilName={pupilName}
+        pupilEmail={pupilEmail}
+        pupilPhone={pupilPhone}
+        instructorId={instructorId}
+        instructorSlug={instructorSlug}
+        accountBalance={accountBalance}
+        brandColour={brandColour}
+      />
+    );
+  }
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
