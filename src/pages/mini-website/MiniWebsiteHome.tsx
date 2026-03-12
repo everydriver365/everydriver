@@ -412,7 +412,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* What's Included Section */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-16">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-10 sm:py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
