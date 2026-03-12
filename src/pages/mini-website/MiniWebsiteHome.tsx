@@ -70,7 +70,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#2596be' }}>
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-[500px] w-full rounded-2xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -81,7 +81,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   if (notFound || !instructor || !page) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2596be' }}>
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Page Not Found</h1>
