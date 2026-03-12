@@ -112,7 +112,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
   return (
     <MiniWebsiteLayout instructor={instructor}>
       {/* Hero */}
-      <section className="py-12 sm:py-16" style={{ backgroundColor: primaryColor }}>
+      <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3">

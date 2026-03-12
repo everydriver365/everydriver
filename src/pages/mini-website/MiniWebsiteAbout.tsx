@@ -52,7 +52,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
     <MiniWebsiteLayout instructor={instructor}>
       {/* Hero */}
       <section
-        className="py-12 sm:py-16"
+        className="py-6 sm:py-8"
         style={{ backgroundColor: primaryColor }}
       >
         <div className="max-w-4xl mx-auto px-4 text-center text-white">
