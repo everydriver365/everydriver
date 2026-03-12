@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { MiniWebsiteCourseCard } from "@/components/mini-website/MiniWebsiteCourseCard";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -370,7 +370,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <DynamicCourseCard
+                          <MiniWebsiteCourseCard
                             instructor={course.instructor}
                             hours={course.hours}
                             nextAvailable={course.bookableDate}
@@ -414,7 +414,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <DynamicCourseCard
+                          <MiniWebsiteCourseCard
                             instructor={course.instructor}
                             hours={course.hours}
                             nextAvailable={course.bookableDate}
