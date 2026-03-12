@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
-import Theory from "@/pages/Theory";
+import { TheoryContent } from "@/pages/Theory";
 
 export default function MiniWebsiteTheory() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,7 +36,7 @@ export default function MiniWebsiteTheory() {
   return (
     <MiniWebsiteLayout instructor={instructor}>
       <div className="pb-16 md:pb-0">
-        <Theory />
+        <TheoryContent />
       </div>
     </MiniWebsiteLayout>
   );
