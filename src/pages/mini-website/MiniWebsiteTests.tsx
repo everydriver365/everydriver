@@ -197,12 +197,15 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
                                     {slot.time}
                                   </span>
                                 </div>
-                                <Link to={`${contactPath}?type=test&centre=${encodeURIComponent(selectedCentre)}&date=${encodeURIComponent(slot.date)}&time=${encodeURIComponent(slot.time)}`}>
-                                  <Button size="sm" style={{ backgroundColor: primaryColor }} className="text-white gap-1 shrink-0">
-                                    <MessageCircle className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Enquire</span>
-                                  </Button>
-                                </Link>
+                                <Button
+                                  size="sm"
+                                  style={{ backgroundColor: primaryColor }}
+                                  className="text-white gap-1 shrink-0"
+                                  onClick={() => setEnquirySlot({ centre: selectedCentre, date: slot.date, time: slot.time })}
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                  <span className="hidden sm:inline">Enquire</span>
+                                </Button>
                               </CardContent>
                             </Card>
                           </motion.div>
