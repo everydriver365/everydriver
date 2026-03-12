@@ -87,6 +87,7 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   }
 
   return cachedSession;
+}
 
 // Reverse geocode to get road name using Nominatim
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
