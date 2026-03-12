@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${apiToken}`,
+          Authorization: `Bearer ${apiToken}`,
         },
         body: JSON.stringify({}),
       }
