@@ -386,7 +386,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 </Badge>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground">Weekly Lessons</h3>
+                <h3 className="text-xl font-bold" style={{ color: primaryColor }}>Weekly Lessons</h3>
                 <p className="mt-2 text-sm text-muted-foreground">Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.</p>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-primary" /><span><strong>1-2 hours</strong> per week</span></div>
