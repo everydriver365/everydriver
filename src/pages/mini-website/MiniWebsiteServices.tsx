@@ -84,7 +84,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#17A9FD' }}>
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#2596be' }}>
         <Skeleton className="h-48 w-full rounded-2xl" />
       </div>
     );
