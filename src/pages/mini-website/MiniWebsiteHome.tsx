@@ -7,6 +7,7 @@ import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
