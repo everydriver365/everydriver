@@ -445,7 +445,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
                     <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
                   </div>
-                </motion.div>
+                </motion.button>
               );
             })}
           </div>
