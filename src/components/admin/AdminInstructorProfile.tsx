@@ -126,6 +126,7 @@ interface InstructorData {
   // Additional compliance
   adi_certificate_url: string | null;
   cpd_certified: boolean | null;
+  tracking_mode: string;
 }
 
 interface SubscriptionPlan {
