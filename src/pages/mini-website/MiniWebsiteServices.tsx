@@ -113,7 +113,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Services" pageDescription={`Driving lesson services offered by ${instructor.business_name || instructor.name}. View packages and prices.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Services" pageDescription={`Driving lesson services offered by ${instructor.business_name || instructor.name}. View packages and prices.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Hero */}
       <section className="py-6 sm:py-8" style={{ backgroundColor: primaryColor }}>
         <div className="max-w-4xl mx-auto px-4 text-center text-white">
