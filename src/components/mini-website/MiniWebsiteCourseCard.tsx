@@ -49,6 +49,7 @@ export function MiniWebsiteCourseCard({
   isIntensive,
   discountedPrice,
   customFeatures,
+  primaryColor,
 }: MiniWebsiteCourseCardProps) {
   const navigate = useNavigate();
 
@@ -58,7 +59,7 @@ export function MiniWebsiteCourseCard({
   const finalPrice = discountedPrice || basePrice;
   const hasDiscount = discountedPrice && discountedPrice < basePrice;
   const courseName = hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
-  const brandColour = instructor.brand_colour || "#1e3a5f";
+  const brandColour = primaryColor || instructor.brand_colour || "#1e3a5f";
 
   const carType = instructor.car_type.toLowerCase();
   const isAutomatic = carType.includes("automatic") || carType === "auto";
