@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BookOpen, FileEdit, Phone } from "lucide-react";
+import { BookOpen, FileEdit, Phone, Calendar } from "lucide-react";
 
 interface MiniWebsiteSecondaryNavProps {
   slug: string;
