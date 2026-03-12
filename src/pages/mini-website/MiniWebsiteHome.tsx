@@ -157,8 +157,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
       {/* Hero Section */}
       <section style={{ backgroundColor: '#e9f4f9' }}>
-        <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center">
             {/* Left: Hero Image */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -168,12 +168,12 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <img
                 src={defaultHeroImage}
                 alt={instructorName}
-                className="w-full h-[580px] object-cover rounded-3xl shadow-xl"
+                className="w-full h-[300px] sm:h-[420px] lg:h-[580px] object-cover rounded-2xl sm:rounded-3xl shadow-xl"
               />
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
-                className="absolute -top-4 -right-4 w-36 h-36 object-contain drop-shadow-lg"
+                className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-36 sm:h-36 object-contain drop-shadow-lg"
               />
             </motion.div>
 
@@ -203,11 +203,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               )}
 
               {/* Heading */}
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
                 Learn to Drive in Winchester
               </h1>
 
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-base sm:text-lg">
                 Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
               </p>
 
@@ -219,7 +219,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
                   navigate(`/i/${slug}/courses${params}`);
                 }}
-                className="flex gap-2"
+                className="flex flex-col sm:flex-row gap-2"
               >
                 <div className="flex-1 relative">
                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -284,7 +284,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Choose Your Learning Path */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-16">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-10 sm:py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -412,7 +412,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* What's Included Section */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-16">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-10 sm:py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -470,11 +470,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Everything You Need Section */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-24">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-12 sm:py-24">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
-            <h2 className="text-4xl font-bold mb-3" style={{ color: primaryColor }}>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: primaryColor }}>
               Everything You Need to <span>Learn to Drive</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -551,15 +551,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section style={{ backgroundColor: '#e9f4f9' }} className="py-24">
+      <section style={{ backgroundColor: '#e9f4f9' }} className="py-12 sm:py-24">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 sm:mb-10">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold md:text-4xl text-foreground"
+              className="text-2xl sm:text-3xl font-bold md:text-4xl text-foreground"
             >
               Trusted by Many
             </motion.h2>
@@ -595,9 +595,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
 
       {/* Quick Links */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl font-black text-center mb-8 text-[#1e3a5f]">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8 text-[#1e3a5f]">
             Explore More
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -629,9 +629,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-primary">
+      <section className="py-8 sm:py-12 bg-primary">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-primary-foreground mb-3">
+          <h2 className="text-2xl sm:text-3xl font-black text-primary-foreground mb-3">
             Start your driving journey today! 🚗
           </h2>
           <p className="text-primary-foreground/70 mb-6">

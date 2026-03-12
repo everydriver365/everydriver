@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe, Menu, X } from "lucide-react";
 import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSecondaryNav";
 import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ interface MiniWebsiteLayoutProps {
 export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // SEO meta tags, JSON-LD, canonical URL
   useMiniWebsiteSEO({ instructor, pageTitle, pageDescription });
@@ -124,32 +126,33 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
         className="sticky top-0 z-50 border-b shadow-sm"
         style={getHeaderStyles()}
       >
-        <div className="max-w-5xl mx-auto px-4 py-3">
+        <div className="max-w-5xl mx-auto px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
-            <Link to={`/i/${slug}`} className="flex items-center gap-3">
+            <Link to={`/i/${slug}`} className="flex items-center gap-2 sm:gap-3">
               {instructor.logo_url ? (
                 <img
                   src={instructor.logo_url}
                   alt={instructor.name}
-                  className="h-24 w-auto object-contain rounded p-1"
+                  className="h-12 sm:h-24 w-auto object-contain rounded p-1"
                 />
               ) : (
                 <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-lg font-bold text-white"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-base sm:text-lg font-bold text-white"
                   style={{ backgroundColor: secondaryColor }}
                 >
                   {instructor.name.charAt(0)}
                 </div>
               )}
               <span 
-                className="font-semibold text-lg hidden sm:block"
+                className="font-semibold text-sm sm:text-lg hidden sm:block"
                 style={{ color: "#ffffff" }}
               >
                 {instructor.business_name || instructor.name}
               </span>
             </Link>
 
-            <nav className="flex items-center gap-1">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -167,7 +170,43 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                 </Link>
               ))}
             </nav>
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-white" />
+              ) : (
+                <Menu className="h-6 w-6 text-white" />
+              )}
+            </button>
           </div>
+
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden pt-2 pb-3 border-t border-white/10 mt-2 grid grid-cols-2 gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-center ${
+                    isActive(link.path)
+                      ? "bg-white/20"
+                      : "hover:bg-white/10"
+                  }`}
+                  style={{ 
+                    color: isActive(link.path) ? "#facc15" : "#ffffff",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
       </header>
 
@@ -175,7 +214,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
       <MiniWebsiteSecondaryNav slug={slug} />
 
       {/* Main Content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-16 md:pb-0">{children}</main>
 
       {/* Footer */}
       <footer className="text-white py-12" style={{ backgroundColor: footerBg }}>
