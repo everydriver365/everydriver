@@ -122,7 +122,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </div>
 
       {/* Hero Section */}
-      <section style={{ backgroundColor: '#17A9FD' }}>
+      <section style={{ backgroundColor: '#2596be' }}>
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left: Hero Image */}
@@ -250,7 +250,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Choose Your Learning Path */}
-      <section style={{ backgroundColor: '#17A9FD' }} className="py-16">
+      <section style={{ backgroundColor: '#2596be' }} className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -378,7 +378,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* What's Included Section */}
-      <section style={{ backgroundColor: '#17A9FD' }} className="py-16">
+      <section style={{ backgroundColor: '#2596be' }} className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -434,7 +434,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Everything You Need Section */}
-      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
+      <section style={{ backgroundColor: '#2596be' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-primary text-primary-foreground border-0">All-in-One Platform</Badge>
@@ -516,7 +516,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       )}
 
       {/* Trusted by Thousands */}
-      <section style={{ backgroundColor: '#17A9FD' }} className="py-24">
+      <section style={{ backgroundColor: '#2596be' }} className="py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <motion.h2
