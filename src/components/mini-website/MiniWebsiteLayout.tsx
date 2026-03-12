@@ -158,6 +158,9 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides }: Min
         </div>
       </header>
 
+      {/* Secondary Nav */}
+      <SecondaryNav />
+
       {/* Main Content */}
       <main className="flex-1">{children}</main>
 
