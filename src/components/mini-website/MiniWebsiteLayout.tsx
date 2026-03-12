@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe, Menu, X } from "lucide-react";
 import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSecondaryNav";
 import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
