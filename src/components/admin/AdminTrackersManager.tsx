@@ -115,19 +115,27 @@ export function AdminTrackersManager() {
     if (!selectedInstructorId || !newDeviceId.trim()) return;
     setIsAdding(true);
     try {
-      const { error } = await supabase.from("gps_devices").insert({
+      const insertData: Record<string, unknown> = {
         instructor_id: selectedInstructorId,
-        tracking_provider: "geotab",
-        geotab_device_id: newDeviceId.trim(),
-        device_identifier: `geotab-${newDeviceId.trim()}`,
-        device_name: newDeviceName.trim() || `Geotab ${newDeviceId.trim()}`,
+        tracking_provider: selectedProvider,
+        device_identifier: `${selectedProvider}-${newDeviceId.trim()}`,
+        device_name: newDeviceName.trim() || `${selectedProvider === "geotab" ? "Geotab" : "Radius"} ${newDeviceId.trim()}`,
         vehicle_id: selectedVehicleId || null,
         is_active: true,
-      });
+      };
+
+      if (selectedProvider === "geotab") {
+        insertData.geotab_device_id = newDeviceId.trim();
+      } else if (selectedProvider === "radius") {
+        insertData.device_identifier = newDeviceId.trim();
+      }
+
+      const { error } = await supabase.from("gps_devices").insert(insertData as any);
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["admin-all-gps-devices"] });
-      toast({ title: "Device added", description: `Geotab ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
+      const providerLabel = selectedProvider === "geotab" ? "Geotab" : "Radius";
+      toast({ title: "Device added", description: `${providerLabel} ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
       setNewDeviceId("");
       setNewDeviceName("");
       setSelectedVehicleId("");
