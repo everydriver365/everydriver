@@ -8,6 +8,7 @@ interface MiniWebsiteSecondaryNavProps {
 export function MiniWebsiteSecondaryNav({ slug }: MiniWebsiteSecondaryNavProps) {
   const links = [
     { to: `/i/${slug}/theory`, label: "Theory Practice", icon: BookOpen },
+    { to: `/i/${slug}/tests`, label: "Test Availability", icon: Calendar },
     { to: `/i/${slug}/contact?type=bespoke`, label: "Bespoke Course Request", icon: FileEdit },
     { to: `/i/${slug}/contact?type=callback`, label: "Request a Callback", icon: Phone },
   ];

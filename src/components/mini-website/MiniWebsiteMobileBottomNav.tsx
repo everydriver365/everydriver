@@ -13,7 +13,7 @@ export function MiniWebsiteMobileBottomNav({ slug }: MiniWebsiteMobileBottomNavP
     { label: "Courses", icon: Search, path: `/i/${slug}/courses` },
     { label: "Theory", icon: BookOpen, path: `/i/${slug}/theory` },
     { label: "Reviews", icon: Star, path: `/i/${slug}/reviews` },
-    { label: "Contact", icon: MessageCircle, path: `/i/${slug}/contact` },
+    { label: "Tests", icon: Calendar, path: `/i/${slug}/tests` },
   ];
 
   return (

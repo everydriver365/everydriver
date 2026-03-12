@@ -220,6 +220,7 @@ const App = () => (
                 <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
                 <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
                 <Route path="/i/:slug/theory" element={<MiniWebsiteTheory />} />
+                <Route path="/i/:slug/tests" element={<MiniWebsiteTests />} />
                 <Route path="/review/:slug" element={<SubmitReview />} />
 
                 {/* Public Availability Calendar */}
