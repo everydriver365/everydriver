@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
+import { TestEnquiryDialog } from "@/components/mini-website/TestEnquiryDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
