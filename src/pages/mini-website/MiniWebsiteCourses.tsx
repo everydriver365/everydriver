@@ -99,7 +99,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
   const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
 
   return (
-    <MiniWebsiteLayout instructor={instructor} pageTitle="Courses" pageDescription={`Browse and book driving courses with ${instructor.business_name || instructor.name}. Intensive and weekly courses available.`}>
+    <MiniWebsiteLayout instructor={instructor} pageTitle="Courses" pageDescription={`Browse and book driving courses with ${instructor.business_name || instructor.name}. Intensive and weekly courses available.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Search Header — identical to Drive365 */}
       <section className="border-b py-8" style={{ backgroundColor: '#e9f4f9' }}>
         <div className="container">
