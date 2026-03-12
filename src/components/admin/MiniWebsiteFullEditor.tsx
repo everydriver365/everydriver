@@ -165,6 +165,36 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const { pages, loading: pagesLoading, updatePage } = useInstructorWebsitePages(website.id);
   const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
   const [savingPage, setSavingPage] = useState(false);
+  const [seoEdits, setSeoEdits] = useState<Record<string, { meta_title?: string | null; meta_description?: string | null }>>({});
+  const [savingSEO, setSavingSEO] = useState(false);
+
+  const getSeoValue = (pageId: string, field: "meta_title" | "meta_description", original: string | null) => {
+    if (seoEdits[pageId] && field in seoEdits[pageId]) return seoEdits[pageId][field] || "";
+    return original || "";
+  };
+
+  const handleSeoChange = (pageId: string, field: "meta_title" | "meta_description", value: string) => {
+    setSeoEdits(prev => ({
+      ...prev,
+      [pageId]: { ...prev[pageId], [field]: value || null },
+    }));
+  };
+
+  const handleSaveAllSEO = async () => {
+    setSavingSEO(true);
+    try {
+      const entries = Object.entries(seoEdits);
+      for (const [pageId, updates] of entries) {
+        await updatePage(pageId, updates);
+      }
+      setSeoEdits({});
+      toast.success("SEO settings saved");
+    } catch {
+      toast.error("Failed to save SEO settings");
+    } finally {
+      setSavingSEO(false);
+    }
+  };
 
   // Available domains (not linked or linked to this website)
   // Also include domains owned by this instructor that aren't linked elsewhere
