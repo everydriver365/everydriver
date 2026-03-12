@@ -102,7 +102,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
   };
   const primaryColor = STYLE_OVERRIDES[slug!]?.primaryColor || instructor.brand_colour || "#1e3a5f";
 
-  const contactPath = subdomainSlug ? "/contact" : `/i/${slug}/contact`;
+  const [enquirySlot, setEnquirySlot] = useState<{ centre: string; date: string; time: string } | null>(null);
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
