@@ -5,6 +5,8 @@ import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
+import { FeatureDetailModal } from "@/components/FeatureDetailModal";
+import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +43,21 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [postcode, setPostcode] = useState("");
   const { features: includedFeatures } = useIncludedFeatures();
   const { testimonials: homepageTestimonials } = useHomepageTestimonials();
+  const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+
+  const openFeatureModal = (feature: typeof includedFeatures[0]) => {
+    const mapped: FeatureData = {
+      id: feature.id,
+      icon: feature.icon,
+      title: feature.title,
+      description: feature.description,
+      detailed_content: feature.detailed_content,
+      image_url: feature.image_url,
+    };
+    setSelectedFeature(mapped);
+    setFeatureModalOpen(true);
+  };
 
   useEffect(() => {
     if (instructor?.id) {
@@ -401,13 +418,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             {includedFeatures.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <motion.div
+                <motion.button
                   key={feature.id}
+                  onClick={() => openFeatureModal(feature)}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
+                  whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.4, delay: index * 0.04 }}
                   viewport={{ once: true }}
-                  className="rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
+                  className="rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group text-left cursor-pointer"
                 >
                   <div className="h-36 md:h-48 overflow-hidden">
                     {feature.image_url ? (
@@ -426,7 +445,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                     <h3 className="font-semibold text-xs md:text-sm text-foreground">{feature.title}</h3>
                     <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
                   </div>
-                </motion.div>
+                </motion.button>
               );
             })}
           </div>
@@ -610,6 +629,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           </Link>
         </div>
       </section>
+      <FeatureDetailModal
+        feature={selectedFeature}
+        open={featureModalOpen}
+        onClose={() => setFeatureModalOpen(false)}
+      />
     </MiniWebsiteLayout>
   );
 }
