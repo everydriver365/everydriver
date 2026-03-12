@@ -7,6 +7,7 @@ import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -557,7 +558,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               viewport={{ once: true }}
               className="text-3xl font-bold md:text-4xl text-foreground"
             >
-              Trusted by Thousands
+              Trusted by Many
             </motion.h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -576,10 +577,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   ))}
                 </div>
                 <p className="text-xs text-foreground/70 leading-relaxed line-clamp-3">"{testimonial.content}"</p>
-                <p className="text-xs font-semibold mt-3">
-                  {testimonial.name}{" "}
-                  <span className="font-normal text-muted-foreground">· {testimonial.role}</span>
-                </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <PupilAvatar name={testimonial.name} size="xs" />
+                  <div>
+                    <p className="text-xs font-semibold">{testimonial.name}</p>
+                    <p className="text-xs font-normal text-muted-foreground">{testimonial.role}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
