@@ -369,6 +369,7 @@ const App = () => (
                 <Route path="/demo-etg-designs" element={<DemoETGDesigns />} />
                 <Route path="/demo/course-cards" element={<DemoCourseCards />} />
                 <Route path="/demo/promo-bars" element={<DemoPromoBars />} />
+                <Route path="/demo/mini-website-course-cards" element={<DemoMiniWebsiteCourseCards />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
