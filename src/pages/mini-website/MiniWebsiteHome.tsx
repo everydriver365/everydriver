@@ -292,7 +292,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
               Find Your Perfect Fit
             </Badge>
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold" style={{ color: primaryColor }}>
               Choose Your Learning Path
             </h2>
             <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
