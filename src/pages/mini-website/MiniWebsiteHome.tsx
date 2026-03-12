@@ -590,7 +590,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       {/* Quick Links */}
       <section className="py-12">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl font-black text-center mb-8" style={{ color: primaryColor }}>
+          <h2 className="text-2xl font-black text-center mb-8 text-[#1e3a5f]">
             Explore More
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -610,10 +610,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   className="group flex flex-col items-center gap-2 p-5 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 >
                   <span className="text-2xl mb-1">{link.icon}</span>
-                  <h3 className="font-bold text-sm" style={{ color: primaryColor }}>
+                  <h3 className="font-bold text-sm text-[#1e3a5f]">
                     {link.label}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">{link.sub}</p>
+                  <p className="text-[11px] text-[#1e3a5f]/70">{link.sub}</p>
                 </motion.div>
               </Link>
             ))}
