@@ -250,7 +250,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
       {/* Choose Your Learning Path */}
-      <section className="bg-muted/30 py-16">
+      <section style={{ backgroundColor: '#17A9FD' }} className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
