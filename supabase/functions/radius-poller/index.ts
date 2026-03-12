@@ -47,22 +47,25 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
     throw new Error("RADIUS_REFRESH_TOKEN not configured");
   }
 
-  console.log("[RadiusPoller] Refreshing access token...");
-  // Try multiple auth approaches for the Velocity Fleet refresh endpoint
+  console.log("[RadiusPoller] Refreshing access token, token length:", refreshToken?.length, "starts with:", refreshToken?.substring(0, 10));
+  
+  // Try the standard JWT refresh endpoint
   const res = await fetch(
     "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
     {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${refreshToken}`,
       },
       body: JSON.stringify({ refresh: refreshToken }),
     }
   );
-
+  
+  console.log("[RadiusPoller] Refresh response status:", res.status);
+  
   if (!res.ok) {
     const errText = await res.text();
+    console.log("[RadiusPoller] Refresh response body:", errText);
     throw new Error(`Radius auth failed (${res.status}): ${errText}`);
   }
 
