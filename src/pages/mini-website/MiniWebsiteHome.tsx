@@ -509,7 +509,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           </div>
         </div>
       </section>
-
+  const [showPromoBanner, setShowPromoBanner] = useState(true);
 
       {avgRating && (
         <section className="py-8 bg-primary">
