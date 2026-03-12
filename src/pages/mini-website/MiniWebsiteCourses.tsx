@@ -414,7 +414,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <DynamicCourseCard
+                          <MiniWebsiteCourseCard
                             instructor={course.instructor}
                             hours={course.hours}
                             nextAvailable={course.bookableDate}
