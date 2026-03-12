@@ -596,9 +596,32 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           </div>
         </SectionPanel>
 
-        {/* Vehicle */}
-        <SectionPanel title="Vehicle" icon={<Car className="h-4 w-4 text-primary" />} defaultOpen>
+        {/* Vehicle & Tracking */}
+        <SectionPanel title="Vehicle & Tracking" icon={<Car className="h-4 w-4 text-primary" />} defaultOpen>
           <div className="space-y-1">
+            <div className="flex items-center justify-between py-2 px-1 gap-3">
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm font-medium">Tracking Mode</Label>
+                <p className="text-xs text-muted-foreground">How this instructor's lessons are tracked</p>
+              </div>
+              <Select
+                value={instructor.tracking_mode || "route_recorder"}
+                onValueChange={(v) => {
+                  setPendingChanges(prev => ({ ...prev, tracking_mode: v }));
+                  setInstructor(prev => prev ? { ...prev, tracking_mode: v } : prev);
+                }}
+              >
+                <SelectTrigger className="w-[160px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="route_recorder">Route Recorder</SelectItem>
+                  <SelectItem value="geotab">Geotab</SelectItem>
+                  <SelectItem value="radius">Radius</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="border-t border-border/40 mt-1 pt-1" />
             <InlineEditField value={instructor.car_type} onSave={(v) => updateField("car_type", v)} label="Transmission" />
             <InlineEditField value={instructor.car_make || ""} onSave={(v) => updateField("car_make", v)} label="Make" emptyText="Add make" />
             <InlineEditField value={instructor.car_model || ""} onSave={(v) => updateField("car_model", v)} label="Model" emptyText="Add model" />
