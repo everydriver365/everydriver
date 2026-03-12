@@ -384,6 +384,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                             customFeatures={course.customFeatures}
                             isPremium={course.isPremium}
                             placementType={course.placementType}
+                            primaryColor={primaryColor}
                           />
                         </motion.div>
                       ))}
