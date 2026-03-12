@@ -46,15 +46,19 @@ interface MiniWebsiteLayoutProps {
   footerOverrides?: FooterOverrides;
   pageTitle?: string;
   pageDescription?: string;
+  /** Per-page meta_title override from admin CMS */
+  metaTitle?: string | null;
+  /** Per-page meta_description override from admin CMS */
+  metaDescription?: string | null;
 }
 
-export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription }: MiniWebsiteLayoutProps) {
+export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription, metaTitle, metaDescription }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // SEO meta tags, JSON-LD, canonical URL
-  useMiniWebsiteSEO({ instructor, pageTitle, pageDescription });
+  useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, metaTitle, metaDescription });
 
   // Per-instructor footer contact overrides
   const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {

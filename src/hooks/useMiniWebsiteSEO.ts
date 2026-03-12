@@ -123,5 +123,5 @@ export function useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, meta
       const script = document.querySelector('script[data-mini-website-seo]');
       if (script) script.remove();
     };
-  }, [instructor, pageTitle, pageDescription]);
+  }, [instructor, pageTitle, pageDescription, metaTitle, metaDescription]);
 }
