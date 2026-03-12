@@ -629,6 +629,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           </Link>
         </div>
       </section>
+      <FeatureDetailModal
+        feature={selectedFeature}
+        open={featureModalOpen}
+        onClose={() => setFeatureModalOpen(false)}
+      />
     </MiniWebsiteLayout>
   );
 }
