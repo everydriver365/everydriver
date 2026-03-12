@@ -418,13 +418,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             {includedFeatures.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <motion.div
+                <motion.button
                   key={feature.id}
+                  onClick={() => openFeatureModal(feature)}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
+                  whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.4, delay: index * 0.04 }}
                   viewport={{ once: true }}
-                  className="rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group"
+                  className="rounded-2xl overflow-hidden bg-card/70 backdrop-blur ring-1 ring-border/50 shadow-sm hover:shadow-lg transition-all group text-left cursor-pointer"
                 >
                   <div className="h-36 md:h-48 overflow-hidden">
                     {feature.image_url ? (
