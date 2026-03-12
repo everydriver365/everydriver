@@ -266,7 +266,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
   );
 }
 
-
+export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupils }: AdminInstructorProfileProps) {
   const [instructor, setInstructor] = useState<InstructorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [pupilCount, setPupilCount] = useState(0);
