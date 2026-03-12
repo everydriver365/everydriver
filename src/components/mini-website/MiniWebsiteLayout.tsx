@@ -4,6 +4,7 @@ import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSe
 import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
+import { useMiniWebsiteSEO } from "@/hooks/useMiniWebsiteSEO";
 
 interface Instructor {
   id: string;
@@ -42,11 +43,16 @@ interface MiniWebsiteLayoutProps {
   instructor: Instructor;
   children: React.ReactNode;
   footerOverrides?: FooterOverrides;
+  pageTitle?: string;
+  pageDescription?: string;
 }
 
-export function MiniWebsiteLayout({ instructor, children, footerOverrides }: MiniWebsiteLayoutProps) {
+export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageTitle, pageDescription }: MiniWebsiteLayoutProps) {
   const location = useLocation();
   const slug = instructor.app_slug;
+
+  // SEO meta tags, JSON-LD, canonical URL
+  useMiniWebsiteSEO({ instructor, pageTitle, pageDescription });
 
   // Per-instructor footer contact overrides
   const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {
