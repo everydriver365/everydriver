@@ -387,8 +387,12 @@ export default function BrandedPupilPortal() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="p-4 space-y-4"
               >
+                {/* Welcome Tour */}
+                <PupilWelcomeTour pupilId={pupil.id} />
+                
+                <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
+                <div className="p-4 space-y-4">
                 {/* iOS Greeting */}
                 <div className="pt-1">
                   <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
