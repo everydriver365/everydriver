@@ -89,15 +89,15 @@ export function LessonScheduler({
   const [viewMonth, setViewMonth] = useState(new Date());
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   
-  // Use allowed lesson lengths or default to 1-7 hours
-  const durationOptions = useMemo(() => {
+  // Base allowed lesson lengths from instructor settings
+  const baseDurationOptions = useMemo(() => {
     const lengths = allowedLessonLengths && allowedLessonLengths.length > 0 
       ? allowedLessonLengths 
       : DEFAULT_LESSON_LENGTHS;
     return lengths.sort((a, b) => a - b);
   }, [allowedLessonLengths]);
 
-  const [selectedDuration, setSelectedDuration] = useState(durationOptions[0] || 60);
+  const [selectedDuration, setSelectedDuration] = useState(baseDurationOptions[0] || 60);
 
   useEffect(() => {
     fetchAvailability();
