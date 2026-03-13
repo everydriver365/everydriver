@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Copy, Check, Share2, Link } from "lucide-react";
+import { Copy, Check, Share2, Link, PoundSterling } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface PaymentLinkShareProps {
@@ -11,8 +12,15 @@ interface PaymentLinkShareProps {
 
 export function PaymentLinkShare({ instructorId, instructorName }: PaymentLinkShareProps) {
   const [copied, setCopied] = useState(false);
+  const [customAmount, setCustomAmount] = useState("");
 
-  const paymentUrl = `${window.location.origin}/pay/${instructorId}`;
+  const parsedAmount = parseFloat(customAmount);
+  const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;
+
+  const baseUrl = `${window.location.origin}/pay/${instructorId}`;
+  const paymentUrl = customAmount && isValidAmount
+    ? `${baseUrl}?amount=${parsedAmount}`
+    : baseUrl;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(paymentUrl);
@@ -39,6 +47,29 @@ export function PaymentLinkShare({ instructorId, instructorName }: PaymentLinkSh
 
   return (
     <div className="space-y-4">
+      {/* Optional amount pre-fill */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Pre-fill amount <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <div className="relative">
+          <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="number"
+            min="1"
+            max="5000"
+            step="0.01"
+            placeholder="Leave blank for any amount"
+            value={customAmount}
+            onChange={(e) => setCustomAmount(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {customAmount && !isValidAmount && (
+          <p className="text-xs text-destructive mt-1">Enter an amount between £1 and £5,000</p>
+        )}
+      </div>
+
       {/* QR Code */}
       <div className="flex justify-center">
         <div className="bg-white p-4 rounded-lg">
