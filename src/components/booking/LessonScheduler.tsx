@@ -424,8 +424,8 @@ export function LessonScheduler({
   const handleSelectSlot = (date: Date, startTime: string) => {
     if (remainingHours <= 0) return;
 
-    // Use the selected duration, but cap at remaining hours if needed
-    const duration = Math.min(selectedDuration, remainingHours * 60);
+    // Duration is always valid since we only show valid options
+    const duration = selectedDuration;
     const endTime = addMinutesToTime(startTime, duration);
 
     setSelectedSlots((prev) => [
