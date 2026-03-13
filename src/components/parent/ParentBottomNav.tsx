@@ -31,7 +31,7 @@ export function ParentBottomNav({ activeSection, onNavigate }: ParentBottomNavPr
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => { haptics.selection(); onNavigate(item.id); }}
               className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
             >
               <div className="relative p-1">

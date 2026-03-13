@@ -36,6 +36,7 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
   const [showQuickMenu, setShowQuickMenu] = useState(false);
 
   const handleNavClick = (id: string) => {
+    haptics.selection();
     onNavigate(id);
   };
 
