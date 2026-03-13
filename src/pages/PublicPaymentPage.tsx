@@ -20,6 +20,8 @@ export default function PublicPaymentPage() {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const prefillAmount = searchParams.get("amount");
+  const pupilParam = searchParams.get("pupil");
+
   const [amount, setAmount] = useState(() => {
     if (prefillAmount) {
       const parsed = parseFloat(prefillAmount);
@@ -29,6 +31,7 @@ export default function PublicPaymentPage() {
   });
   const [payerName, setPayerName] = useState("");
   const [payerEmail, setPayerEmail] = useState("");
+  const [pupilLinked, setPupilLinked] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [paid, setPaid] = useState(false);
 
@@ -44,9 +47,23 @@ export default function PublicPaymentPage() {
         .single();
 
       if (data) setInstructor(data);
+
+      // Fetch pupil info if pupil param present
+      if (pupilParam && data) {
+        const { data: pupilData } = await supabase.rpc("get_pupil_payment_info", {
+          p_pupil_id: pupilParam,
+          p_instructor_id: data.id,
+        });
+        if (pupilData && pupilData.length > 0) {
+          setPayerName(pupilData[0].name || "");
+          setPayerEmail(pupilData[0].email || "");
+          setPupilLinked(true);
+        }
+      }
+
       setLoading(false);
     })();
-  }, [instructorId]);
+  }, [instructorId, pupilParam]);
 
   const parsedAmount = parseFloat(amount);
   const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;
@@ -108,14 +125,21 @@ export default function PublicPaymentPage() {
               {instructor.name.charAt(0)}
             </div>
           )}
-          <h1 className="text-xl font-bold text-foreground">Pay {instructor.name}</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            Pay {instructor.name}
+            {pupilLinked && payerName && (
+              <span className="block text-base font-normal text-muted-foreground mt-1">
+                for {payerName}
+              </span>
+            )}
+          </h1>
         </div>
 
          {!showCheckout ? (
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Your name <span className="text-muted-foreground font-normal">(optional)</span>
+                Your name {!pupilLinked && <span className="text-muted-foreground font-normal">(optional)</span>}
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -125,13 +149,14 @@ export default function PublicPaymentPage() {
                   value={payerName}
                   onChange={(e) => setPayerName(e.target.value.slice(0, 100))}
                   className="pl-9 h-12"
+                  readOnly={pupilLinked}
                 />
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Email address <span className="text-muted-foreground font-normal">(optional)</span>
+                Email address {!pupilLinked && <span className="text-muted-foreground font-normal">(optional)</span>}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -141,6 +166,7 @@ export default function PublicPaymentPage() {
                   value={payerEmail}
                   onChange={(e) => setPayerEmail(e.target.value.slice(0, 255))}
                   className="pl-9 h-12"
+                  readOnly={pupilLinked}
                 />
               </div>
               {payerEmail && !emailValid && (
@@ -182,6 +208,7 @@ export default function PublicPaymentPage() {
           <CardstreamCheckout
             amount={parsedAmount}
             instructorId={instructorId}
+            pupilId={pupilParam || undefined}
             customerName={payerName.trim() || undefined}
             customerEmail={payerEmail.trim() || undefined}
             merchantIdForHPF=""

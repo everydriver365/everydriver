@@ -1,43 +1,107 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Simplify Payment Flow — Pupil-Linked Payment Links
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-### The Problem Today
-The current public payment page (`/pay/:instructorId`) is a generic link. The instructor shares it, the payer manually types their name/email, and the payment has no automatic link to a pupil record. The instructor must then manually reconcile who paid.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### Proposed Solution: Pupil-Specific Payment Links
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-Generate payment links that include the **pupil ID** in the URL, e.g.:
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-```text
-/pay/:instructorId?pupil=:pupilId&amount=50
-```
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-This means:
-- The payment page **auto-fills the pupil's name and email** from the database (no typing needed).
-- The payment intent is **automatically linked** to the pupil record (`pupil_id` in `payment_intents`).
-- On success, the pupil's **account balance is credited automatically** — no manual "Record Payment" step.
-- The payer just sees their name, the amount, and the card form. One-tap flow.
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-### Changes Required
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-**1. `PaymentLinkShare` component** — Add an optional pupil selector. When a pupil is selected, append `&pupil=:pupilId` to the generated URL/QR code. The component already receives no pupil list, so it will need a `pupils` prop passed from `TakePaymentSheet`.
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-**2. `TakePaymentSheet`** — Pass the `pupils` array down to `PaymentLinkShare`.
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-**3. `PublicPaymentPage`** — Read `?pupil=` from URL params. If present, fetch the pupil's name and email from a public-safe view/RPC and pre-fill them (read-only). Pass `pupilId` through to `CardstreamCheckout` so the payment intent is linked.
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-**4. `payment-intent-create` edge function** — Already accepts `pupilId` and stores it. No change needed.
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-**5. `payment-direct-sale` edge function** — After a successful sale, if `pupil_id` is set on the intent, call `increment_pupil_balance` to auto-credit the pupil's account. This removes the need for manual reconciliation.
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-**6. Database** — Create a public-safe view or RPC that returns minimal pupil info (name, email) given a pupil ID + instructor ID, without requiring auth. This prevents data leakage while allowing the payment page to display the pupil's name.
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-### Resulting UX
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
-**Instructor side:** In "Share Payment Link", optionally pick a pupil and set an amount. The QR/link encodes both. Share it via copy/SMS/QR.
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-**Pupil side:** Opens link → sees "Pay [Instructor Name] — [Pupil Name] — £50" → enters card details → done. Balance auto-updated.
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-**Fallback:** If no pupil param, the page works exactly as it does today (generic link, manual name/email entry).
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
+
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding

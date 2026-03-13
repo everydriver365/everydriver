@@ -1,26 +1,32 @@
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Copy, Check, Share2, Link, PoundSterling } from "lucide-react";
+import { Copy, Check, Share2, Link, PoundSterling, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+
+type PupilOption = { id: string; name: string };
 
 interface PaymentLinkShareProps {
   instructorId: string;
   instructorName?: string;
+  pupils?: PupilOption[];
 }
 
-export function PaymentLinkShare({ instructorId, instructorName }: PaymentLinkShareProps) {
+export function PaymentLinkShare({ instructorId, instructorName, pupils = [] }: PaymentLinkShareProps) {
   const [copied, setCopied] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
+  const [selectedPupilId, setSelectedPupilId] = useState<string>("");
 
   const parsedAmount = parseFloat(customAmount);
   const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;
 
   const baseUrl = `${window.location.origin}/pay/${instructorId}`;
-  const paymentUrl = customAmount && isValidAmount
-    ? `${baseUrl}?amount=${parsedAmount}`
-    : baseUrl;
+  const params = new URLSearchParams();
+  if (customAmount && isValidAmount) params.set("amount", String(parsedAmount));
+  if (selectedPupilId) params.set("pupil", selectedPupilId);
+  const paymentUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(paymentUrl);
@@ -47,6 +53,27 @@ export function PaymentLinkShare({ instructorId, instructorName }: PaymentLinkSh
 
   return (
     <div className="space-y-4">
+      {/* Optional pupil selector */}
+      {pupils.length > 0 && (
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            Link to pupil <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <Select value={selectedPupilId} onValueChange={(v) => setSelectedPupilId(v === "none" ? "" : v)}>
+            <SelectTrigger>
+              <Users className="h-4 w-4 text-muted-foreground mr-2" />
+              <SelectValue placeholder="Anyone (generic link)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Anyone (generic link)</SelectItem>
+              {pupils.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Optional amount pre-fill */}
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">
