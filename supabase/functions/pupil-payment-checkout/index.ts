@@ -190,7 +190,7 @@ serve(async (req: Request) => {
         const authHeader = btoa(`${merchantId}:${secretKey}`);
 
         const checkoutPayload = {
-          amount: { amount: amount.toFixed(2), currency: "GBP" },
+          amount: { amount: chargeAmount.toFixed(2), currency: "GBP" },
           consumer: {
             givenNames: customerName.split(" ")[0] || "Customer",
             surname: customerName.split(" ").slice(1).join(" ") || "User",
@@ -199,7 +199,7 @@ serve(async (req: Request) => {
           },
           merchant: { redirectConfirmUrl: callbackUrl, redirectCancelUrl: cancelUrl },
           merchantReference: orderReference,
-          items: [{ name: "Lesson Balance Payment", quantity: 1, price: { amount: amount.toFixed(2), currency: "GBP" } }],
+          items: [{ name: "Lesson Balance Payment", quantity: 1, price: { amount: chargeAmount.toFixed(2), currency: "GBP" } }],
         };
 
         const response = await fetch(`${baseUrl}/v2/checkouts`, {
