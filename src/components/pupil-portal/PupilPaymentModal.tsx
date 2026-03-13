@@ -40,6 +40,7 @@ export function PupilPaymentModal({
   instructorSlug,
   accountBalance,
   brandColour,
+  commissionPayer,
 }: PupilPaymentModalProps) {
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
