@@ -10,6 +10,7 @@ import { format, parseISO, isBefore, startOfDay, addHours, isAfter } from "date-
 import { toast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
+import { CancellationPolicyCard } from "./CancellationPolicyCard";
 
 interface PupilPortalScheduleProps {
   pupilId: string;
@@ -265,6 +266,14 @@ export function PupilPortalSchedule({
           <Calendar className="h-5 w-5 mr-2" />
           Book a New Lesson
         </Button>
+      )}
+
+      {/* Cancellation Policy Card */}
+      {settings?.allow_self_cancel && (
+        <CancellationPolicyCard
+          cancelNoticeHours={settings.cancel_notice_hours}
+          brandColour={brandColour || '#1e3a5f'}
+        />
       )}
 
       <div>

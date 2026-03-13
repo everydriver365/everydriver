@@ -1,98 +1,107 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## UX Improvements Inspired by Leading Platforms
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-After auditing the codebase against patterns from Uber, Airbnb, Duolingo, and top driving school platforms (MyDriveTime, BookingTimes, NextDrive), here are improvements the app doesn't yet have:
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
----
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-### 1. Smart Empty States with Illustrations (Airbnb / Duolingo pattern)
-**Problem**: Empty states across the pupil portal use plain text + icon ("No Upcoming Lessons", "No data"). These feel hollow and don't motivate action.
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-**Fix**: Replace empty states with illustrated SVG graphics, a friendly headline, and a single clear CTA. Apply to: lesson schedule, payment history, progress page, and theory section.
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-| File | Change |
-|------|--------|
-| New: `src/components/ui/EmptyState.tsx` | Reusable empty state with illustration slot, title, subtitle, CTA button |
-| `PupilPortalSchedule.tsx` | Use `EmptyState` for "no lessons" |
-| `PupilPortalLessonCountdown.tsx` | Use `EmptyState` for "no upcoming" |
-| `PupilPortalPayments.tsx` | Use `EmptyState` for "no payments" |
-| `PupilPortalHistory.tsx` | Use `EmptyState` for "no history" |
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
----
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-### 2. Lesson Reminder Notifications (SMS/Push pattern from BookingTimes)
-**Problem**: No automated reminders before lessons. Pupils rely on memory or manually checking the app. BookingTimes and MyDriveTime both send 24h + 1h reminders.
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-**Fix**: Add a "Reminders" preference in the pupil profile (24h before, 1h before, or both) and create a backend function that sends SMS reminders via the existing SMS infrastructure.
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-| File | Change |
-|------|--------|
-| DB migration | Add `reminder_preferences` jsonb column to `pupils` table |
-| `PupilPortalProfileEdit.tsx` | Add reminder preference toggles (24h / 1h before) |
-| New: `supabase/functions/send-lesson-reminders/index.ts` | Cron-triggered function that queries upcoming lessons and sends SMS |
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
----
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-### 3. Post-Lesson Rating & Feedback (Uber 5-star pattern)
-**Problem**: There's a `PupilFeedbackPrompt` and `PupilEndOfLessonWizard` but no simple star-rating system. Uber, Lyft, and Airbnb all use a quick 1-tap star rating immediately after the experience.
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-**Fix**: Add a lightweight star-rating prompt that appears on the dashboard after a lesson has ended (status = completed, no rating yet). One tap to rate, optional comment. Store in a `lesson_ratings` table.
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-| File | Change |
-|------|--------|
-| DB migration | Create `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment, created_at) |
-| New: `src/components/pupil-portal/PostLessonRating.tsx` | Star-rating bottom sheet that auto-shows after completed lessons |
-| `BrandedPupilPortal.tsx` | Mount the rating prompt on the home section |
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
----
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-### 4. "Share Your Pass" Social Card (Duolingo streak share pattern)
-**Problem**: When a pupil passes their test, there's no easy way to share their achievement on social media. Driving test passes are highly shareable moments.
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-**Fix**: Generate a branded social card (instructor logo, pass date, "I passed!" message) that pupils can download or share directly to Instagram/WhatsApp/X. Triggered from the test results section or a congratulatory banner.
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
-| File | Change |
-|------|--------|
-| New: `src/components/pupil-portal/PassShareCard.tsx` | Generates a branded canvas/image with pass details |
-| New: `src/lib/share-utils.ts` | Web Share API wrapper with fallback to clipboard |
-| `PupilTestInfo.tsx` or dashboard | Show "Share Your Pass!" button when test result is pass |
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
 
----
-
-### 5. Cancellation Policy Clarity (Airbnb pattern)
-**Problem**: The cancellation flow works, but the policy is buried in small text ("Cancellations require Xh notice"). Airbnb shows a clear, color-coded policy breakdown before you commit.
-
-**Fix**: Add a dedicated cancellation policy card visible on the schedule page, showing: free cancellation window (green), late cancellation fee (amber), and no-show fee (red). Pull values from instructor settings.
-
-| File | Change |
-|------|--------|
-| New: `src/components/pupil-portal/CancellationPolicyCard.tsx` | Visual policy breakdown with traffic-light colors |
-| `PupilPortalSchedule.tsx` | Show policy card above lesson list |
-
----
-
-### 6. Booking Abandonment Recovery (E-commerce pattern)
-**Problem**: If a user leaves the booking page mid-flow, all progress is lost. No recovery mechanism exists.
-
-**Fix**: Auto-save booking form state to `localStorage` on every field change. On return to `/book/:id`, detect saved state and show a "Continue where you left off?" prompt. Clear on successful payment.
-
-| File | Change |
-|------|--------|
-| `MobileBookingView.tsx` | Save form state to localStorage on change, restore on mount |
-| `BookingSummary.tsx` | Same for desktop |
-| New: `src/components/booking/BookingRecoveryBanner.tsx` | "Welcome back" banner with resume/discard options |
-
----
-
-### Implementation Priority
-
-| Priority | Item | Effort |
-|----------|------|--------|
-| High | Empty states with illustrations | Small |
-| High | Booking abandonment recovery | Small |
-| High | Post-lesson star rating | Medium |
-| Medium | Cancellation policy card | Small |
-| Medium | Lesson SMS reminders | Medium |
-| Low | "Share Your Pass" social card | Medium |
-
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding

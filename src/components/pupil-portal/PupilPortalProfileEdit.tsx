@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Bell } from "lucide-react";
 
 interface PupilData {
   id: string;
@@ -28,6 +29,7 @@ interface PupilData {
   pickup_address: string | null;
   what3words: string | null;
   parent_portal_enabled?: boolean;
+  reminder_preferences?: { "24h": boolean; "1h": boolean } | null;
 }
 
 interface PupilPortalProfileEditProps {
@@ -302,6 +304,49 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
             </div>
           </>
         )}
+
+        {/* Lesson Reminders */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2 px-1 py-1.5">
+            <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] text-muted-foreground block">Lesson Reminders</span>
+              <div className="space-y-2 mt-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="reminder-24h" className="text-sm text-foreground cursor-pointer">
+                    24 hours before
+                  </Label>
+                  <Switch
+                    id="reminder-24h"
+                    checked={pupil.reminder_preferences?.["24h"] !== false}
+                    onCheckedChange={async (checked) => {
+                      const prefs = { ...(pupil.reminder_preferences || { "24h": true, "1h": true }), "24h": checked };
+                      await updateField("reminder_preferences", JSON.stringify(prefs));
+                      onPupilUpdate({ reminder_preferences: prefs } as any);
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="reminder-1h" className="text-sm text-foreground cursor-pointer">
+                    1 hour before
+                  </Label>
+                  <Switch
+                    id="reminder-1h"
+                    checked={pupil.reminder_preferences?.["1h"] !== false}
+                    onCheckedChange={async (checked) => {
+                      const prefs = { ...(pupil.reminder_preferences || { "24h": true, "1h": true }), "1h": checked };
+                      await updateField("reminder_preferences", JSON.stringify(prefs));
+                      onPupilUpdate({ reminder_preferences: prefs } as any);
+                    }}
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Get an SMS reminder before each lesson
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </InstructorCard>
   );
