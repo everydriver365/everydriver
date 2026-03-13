@@ -1053,6 +1053,10 @@ export default function BookingSummary() {
         setPickupAddress={setPickupAddress}
         setPickupPostcode={setPickupPostcode}
         setPickupWhat3words={setPickupWhat3words}
+        hasSpecialNeeds={hasSpecialNeeds}
+        specialNeeds={specialNeeds}
+        setHasSpecialNeeds={setHasSpecialNeeds}
+        setSpecialNeeds={setSpecialNeeds}
         selectedSlots={selectedSlots}
         scheduledHours={scheduledHours}
         onSlotsChange={handleSlotsChange}
