@@ -367,6 +367,59 @@ export function LessonScheduler({
   }, [selectedSlots]);
 
   const remainingHours = totalHours - scheduledHours;
+  const remainingMinutes = remainingHours * 60;
+
+  // Smart duration filtering: only show lengths that won't create orphan remainders
+  const durationOptions = useMemo(() => {
+    if (remainingMinutes <= 0) return baseDurationOptions;
+
+    // Filter to durations that fit within remaining time
+    const fitting = baseDurationOptions.filter(d => d <= remainingMinutes);
+
+    // For each fitting duration, check if the leftover can be filled by some combination of allowed lengths
+    const canFillRemainder = (remaining: number): boolean => {
+      if (remaining === 0) return true;
+      if (remaining < 0) return false;
+      return baseDurationOptions.some(d => d <= remaining && canFillRemainder(remaining - d));
+    };
+
+    const smart = fitting.filter(d => canFillRemainder(remainingMinutes - d));
+
+    // If no smart options work (e.g. only 3hr allowed, 1hr left), add the exact remainder as a completion option
+    if (smart.length === 0 && remainingMinutes >= 30) {
+      return [remainingMinutes];
+    }
+
+    // If the remainder can't be evenly divided but we have options, also offer the exact remainder
+    // so the course can always be completed
+    if (smart.length > 0 && !smart.includes(remainingMinutes) && remainingMinutes >= 30) {
+      // Check if any combination of smart options can exactly fill remaining time
+      const canComplete = canFillRemainder(remainingMinutes);
+      if (!canComplete) {
+        return [...smart, remainingMinutes].sort((a, b) => a - b);
+      }
+    }
+
+    return smart.length > 0 ? smart : fitting;
+  }, [baseDurationOptions, remainingMinutes]);
+
+  // Check if we're showing a non-standard completion duration
+  const completionDuration = useMemo(() => {
+    if (remainingMinutes <= 0) return null;
+    const isNonStandard = durationOptions.includes(remainingMinutes) && !baseDurationOptions.includes(remainingMinutes);
+    return isNonStandard ? remainingMinutes : null;
+  }, [durationOptions, baseDurationOptions, remainingMinutes]);
+
+  // Auto-select valid duration when current selection becomes invalid
+  useEffect(() => {
+    if (durationOptions.length > 0 && !durationOptions.includes(selectedDuration)) {
+      // Pick the closest valid option
+      const closest = durationOptions.reduce((prev, curr) =>
+        Math.abs(curr - selectedDuration) < Math.abs(prev - selectedDuration) ? curr : prev
+      );
+      setSelectedDuration(closest);
+    }
+  }, [durationOptions, selectedDuration]);
 
   const handleSelectSlot = (date: Date, startTime: string) => {
     if (remainingHours <= 0) return;
