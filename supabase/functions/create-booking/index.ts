@@ -24,6 +24,7 @@ const bookingSchema = z.object({
   pickupAddress: z.string().trim().max(500).optional(),
   pickupPostcode: z.string().trim().max(20).optional(),
   pickupWhat3words: z.string().trim().max(100).optional(),
+  specialNeeds: z.string().trim().max(1000).optional(),
   courseType: z.string().trim().min(1).max(100),
   courseHours: z.number().min(1).max(200),
   totalPrice: z.number().min(0).max(100000),

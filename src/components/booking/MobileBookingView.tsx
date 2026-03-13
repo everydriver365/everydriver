@@ -632,6 +632,30 @@ export function MobileBookingView({
                       </div>
                     </>
                   )}
+                  
+                  {/* Special Needs */}
+                  <div className="pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={hasSpecialNeeds}
+                        onCheckedChange={(checked) => setHasSpecialNeeds(checked === true)}
+                      />
+                      <span className="text-xs text-muted-foreground">Any special needs?</span>
+                    </label>
+                  </div>
+                  
+                  {hasSpecialNeeds && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="specialNeeds" className="text-xs">Please describe your requirements</Label>
+                      <Input
+                        id="specialNeeds"
+                        value={specialNeeds}
+                        onChange={(e) => setSpecialNeeds(e.target.value)}
+                        placeholder="e.g. hearing impairment, mobility needs..."
+                        className="h-10"
+                      />
+                    </div>
+                  )
                   {isPupilDetailsComplete && (
                     <Button variant="secondary" size="sm" className="w-full" onClick={() => setEditingDetails(false)}>
                       Done
