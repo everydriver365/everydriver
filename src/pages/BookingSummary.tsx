@@ -364,11 +364,19 @@ export default function BookingSummary() {
   const handleBookingSubmit = async () => {
     if (!canSubmit || !courseDetails) return;
 
+    const totalAmount = totalPrice + upsellTotal;
+    
+    // Only allow direct booking (no payment) if total is £0
+    if (totalAmount > 0) {
+      toast.error("Please select a payment method to complete your booking.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const pupilId = await ensureBookingCreated();
       if (!pupilId) return;
-      navigate(`/booking-confirmation?pupilId=${pupilId}`);
+      navigate(`/booking-confirmation?pupilId=${pupilId}&free=true`);
     } catch (err) {
       console.error("Booking error:", err);
       toast.error("Something went wrong. Please try again.");
