@@ -33,6 +33,7 @@ export function TakePaymentSheet({
   const [sendingLink, setSendingLink] = useState<string | null>(null);
   const [selectedPupil, setSelectedPupil] = useState<string | null>(null);
   const [linkMode, setLinkMode] = useState<"sms" | "email" | null>(null);
+  const [showPaymentLink, setShowPaymentLink] = useState(false);
 
   const handleShowQR = () => {
     onOpenChange(false);
