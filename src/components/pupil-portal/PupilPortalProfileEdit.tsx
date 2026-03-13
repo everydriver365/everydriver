@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash } from "lucide-react";
-import { format } from "date-fns";
+import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash, Users } from "lucide-react";
+import { format, differenceInYears } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InlineEditField } from "@/components/ui/InlineEditField";
