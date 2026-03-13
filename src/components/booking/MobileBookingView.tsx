@@ -23,7 +23,7 @@ import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
-import { IOSSheet, IOSSheetHeader, IOSSheetTitle, IOSSheetBody } from "@/components/ui/IOSSheet";
+
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 
 
