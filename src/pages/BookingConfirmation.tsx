@@ -228,14 +228,23 @@ export default function BookingConfirmation() {
             {pupil.payment_type === "deposit" ? "Deposit Received! 🎉" : "Booking Confirmed! 🎉"}
           </motion.h1>
           
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="mt-3 text-emerald-100 max-w-md mx-auto"
           >
-            Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.
-          </motion.p>
+            <p>Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.</p>
+            {lessons.length > 0 && (
+              <div className="mt-3 space-y-1 text-sm">
+                {lessons.map((lesson, i) => (
+                  <p key={lesson.id} className="text-emerald-50">
+                    Lesson {i + 1}: {format(parseISO(lesson.lesson_date), "EEE d MMM")} at {lesson.start_time} ({lesson.duration_minutes / 60}h)
+                  </p>
+                ))}
+              </div>
+            )}
+          </motion.div>
 
           {/* Deposit Payment Notice */}
           {pupil.payment_type === "deposit" && pupil.balance_due_date && (
