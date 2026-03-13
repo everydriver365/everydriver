@@ -55,6 +55,7 @@ import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { FeatureGatingManager } from "@/components/admin/FeatureGatingManager";
 import { CommissionDashboard } from "@/components/admin/CommissionDashboard";
+import { CommissionSettingsManager } from "@/components/admin/CommissionSettingsManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
