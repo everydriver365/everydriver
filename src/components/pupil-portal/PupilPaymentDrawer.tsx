@@ -248,7 +248,7 @@ export function PupilPaymentDrawer({
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div className="flex-1">
-                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{paymentAmount.toFixed(2)}</h2>
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{totalCharge.toFixed(2)}</h2>
                   <p className="text-xs text-muted-foreground">Choose payment method</p>
                 </div>
               </div>
