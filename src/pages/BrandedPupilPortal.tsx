@@ -62,6 +62,8 @@ import { LessonStreakCard } from "@/components/pupil-portal/LessonStreakCard";
 import { PupilWelcomeTour } from "@/components/pupil-portal/PupilWelcomeTour";
 import { PupilDashboardSkeleton } from "@/components/ui/skeletons/PupilDashboardSkeleton";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { PostLessonRating } from "@/components/pupil-portal/PostLessonRating";
+import { PassShareCard } from "@/components/pupil-portal/PassShareCard";
 
 interface InstructorBranding {
   id: string;
