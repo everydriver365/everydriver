@@ -1,74 +1,50 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Booking Flow UX Improvements
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+After auditing the current booking flow, here are the issues and improvements:
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+---
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+### 1. **No Form Validation Feedback** (High)
+The `isPupilDetailsComplete` check is a basic truthy test — no email format validation, no phone format validation, no inline field errors. Users can enter "abc" as an email and still proceed to payment.
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**Fix**: Add inline validation with error messages below each field. Validate email format (regex), phone format (UK mobile), and postcode format. Show red borders and helper text on blur.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+### 2. **Bottom Bar "Pay Now" is Misleading** (Medium)
+The sticky `BookingBottomBar` says "Pay Now" and scrolls to the payment section. But on first load, the user hasn't filled details yet — the button is disabled with no explanation why.
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+**Fix**: Change the button text dynamically: "Fill Your Details" → "Choose Lessons" → "Pay £X". This guides users through the flow without confusion.
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### 3. **No Confetti / Celebration on Booking Confirmation** (Low)
+The confirmation page has a nice hero but lacks the dopamine hit. `canvas-confetti` is already installed but not used on the confirmation page.
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+**Fix**: Fire confetti on mount when `paymentSuccessful` is true.
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### 4. **Calendar Export Only Exports First Lesson** (Medium)
+Both "Download .ics" and "Google Calendar" buttons only export the first lesson. Users with multi-lesson bookings lose all other dates.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**Fix**: Loop through all lessons and generate a single `.ics` with multiple `VEVENT` blocks, or download one per lesson. For Google Calendar, open multiple tabs or show a lesson picker.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+### 5. **No Loading Skeleton on Booking Page** (Medium)
+The booking summary shows nothing while loading instructor data — the whole page is blank until the fetch completes.
+
+**Fix**: Add a skeleton state matching the header + form layout while `loading` is true.
+
+### 6. **Payment Section Lacks Trust Signals** (Low)
+No lock icon, no "256-bit encryption" badge, no payment provider logos near the card button. Trust signals reduce cart abandonment.
+
+**Fix**: Add a small row of payment logos (Visa, Mastercard, Amex) and a lock icon with "Secure checkout" below the payment section.
+
+---
+
+### Proposed Changes
+
+| File | Change |
+|------|--------|
+| `src/components/booking/MobileBookingView.tsx` | Add inline validation for email/phone/postcode with error messages. Change bottom bar text dynamically based on step. |
+| `src/components/booking/BookingBottomBar.tsx` | Accept `step` prop to show contextual CTA text. |
+| `src/pages/BookingConfirmation.tsx` | Fire `canvas-confetti` on successful payment. Export all lessons in calendar (not just first). |
+| `src/pages/BookingSummary.tsx` | Add skeleton loading state. Add same validation logic for desktop. |
+| `src/lib/calendar-export.ts` | Add `downloadMultiEventICS()` function for multi-lesson exports. |
+
