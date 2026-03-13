@@ -24,6 +24,8 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
+import { BookingFormField } from "@/components/booking/BookingFormField";
+import { validateField, type FieldErrors } from "@/lib/booking-validation";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 
