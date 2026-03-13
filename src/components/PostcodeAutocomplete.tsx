@@ -136,6 +136,7 @@ export function PostcodeAutocomplete({
   };
 
   const handleSelect = (suggestion: PostcodeSuggestion) => {
+    skipNextFetchRef.current = true;
     onChange(suggestion.postcode);
     setShowDropdown(false);
     setSuggestions([]);
