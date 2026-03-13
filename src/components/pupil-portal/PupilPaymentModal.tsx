@@ -91,6 +91,7 @@ export function PupilPaymentModal({
           pupilId,
           instructorId,
           amount: paymentAmount,
+          adminFee: hasFee ? adminFee : 0,
           gateway,
           customerName: pupilName,
           customerEmail: pupilEmail || undefined,
