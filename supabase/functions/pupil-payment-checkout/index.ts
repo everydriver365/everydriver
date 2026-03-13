@@ -249,7 +249,7 @@ serve(async (req: Request) => {
           ? "https://api.playground.klarna.com"
           : "https://api.klarna.com";
 
-        const amountInMinor = Math.round(amount * 100);
+        const amountInMinor = Math.round(chargeAmount * 100);
         const authHeader = btoa(`${apiUsername}:${apiPassword}`);
 
         const checkoutPayload = {
