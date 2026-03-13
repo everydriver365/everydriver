@@ -33,6 +33,8 @@ serve(async (req: Request) => {
   const pupilId = url.searchParams.get("pupilId");
   const orderRef = url.searchParams.get("ref");
   const paymentType = url.searchParams.get("type"); // "balance" for pupil payments
+  const baseAmountParam = parseFloat(url.searchParams.get("baseAmount") || "0");
+  const adminFeeParam = parseFloat(url.searchParams.get("adminFee") || "0");
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
