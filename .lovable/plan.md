@@ -72,3 +72,36 @@ All 6 features + security hardening have been built and deployed.
 - Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
 - Brand colour applied throughout; downloadable PDF
 - Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
+
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
+
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
+
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
+
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
+
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
+
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding
