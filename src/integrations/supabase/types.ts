@@ -12923,6 +12923,13 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      get_pupil_payment_info: {
+        Args: { p_instructor_id: string; p_pupil_id: string }
+        Returns: {
+          email: string
+          name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
