@@ -276,7 +276,9 @@ export function MobileBookingView({
   // Course info sheet state
   const [showCourseInfo, setShowCourseInfo] = useState(false);
   
-  // Step editing state - allows re-expanding collapsed steps
+  // Step editing state - controls whether details section is expanded or collapsed
+  // Starts expanded (false = not confirmed yet), user must click "Continue" to collapse
+  const [detailsConfirmed, setDetailsConfirmed] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
   
   // Auto-assign preferences state
@@ -299,8 +301,8 @@ export function MobileBookingView({
   // Determine current step - only 2 steps for non-pupil_choice modes
   const currentStep = !isPupilDetailsComplete ? 1 : (requiresSlotSelection && !isScheduleComplete) ? 2 : (requiresSlotSelection ? 3 : 2);
   
-  // Should details be collapsed?
-  const detailsCollapsed = isPupilDetailsComplete && !editingDetails;
+  // Should details be collapsed? Only when user has explicitly confirmed
+  const detailsCollapsed = detailsConfirmed && isPupilDetailsComplete && !editingDetails;
 
   const hasCourseInfo = !!(
     courseDescription ||
