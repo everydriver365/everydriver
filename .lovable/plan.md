@@ -1,74 +1,55 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Suggestions to Streamline the Booking Flow
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+After reviewing the current mobile booking flow, here are the key friction points and proposed improvements:
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+### Current Flow (7+ scrollable sections)
+1. Header → Progress bar → Date banner → "Book in 60 seconds" badge → 5 accordion tiles (Summary, Instructor, Lessons, Prerequisites, What to Bring) → Details form → Scheduler → Payment
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+### Proposed Changes
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**1. Collapse the accordion tiles into the header**
+- Remove the separate Summary and Instructor accordion tiles. Instead, show the course image, name, hours, location, and instructor avatar/name directly in a compact header card (always visible, not expandable). This eliminates two taps and scroll distance.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+**2. Remove the "Book in 60 seconds" banner**
+- It adds visual clutter without functional value. The progress stepper already communicates speed.
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+**3. Hide Prerequisites and What to Bring behind a single "Course Info" link**
+- Replace two separate accordion tiles with a single "View course details" text link that opens a bottom sheet/dialog. Most users don't need this during checkout.
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+**4. Auto-expand the current step, collapse completed steps**
+- When details are filled, auto-collapse Step 1 into a summary line ("John Smith · john@example.com") with an "Edit" button. This keeps focus on the active step and reduces scroll.
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+**5. Sticky payment summary at the bottom**
+- Add a sticky bottom bar showing the total price and a "Pay" CTA that scrolls to/activates the payment section. On mobile, users currently have to scroll past everything to reach payment.
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+### Technical Approach
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+- **`MobileBookingView.tsx`**: Restructure the JSX to merge the header card, remove the Zap banner, replace accordion tiles with a compact layout, and add auto-collapse logic for completed steps.
+- **New component `BookingBottomBar.tsx`**: A sticky footer with price + primary CTA button.
+- **`BookingSummary.tsx`**: Pass through any new props needed for the bottom bar.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+### Summary of visual changes
+
+```text
+BEFORE                          AFTER
+┌──────────────────┐           ┌──────────────────┐
+│ Header           │           │ Header + Summary  │
+│ Progress Steps   │           │ Progress Steps    │
+│ Date Banner      │           │ Date Banner       │
+│ ⚡ Book in 60s   │           ├──────────────────┤
+│ ▸ Summary        │           │ Step 1: Details   │
+│ ▸ Instructor     │           │  (auto-collapses) │
+│ ▸ Choose Lessons │           │ Step 2: Schedule  │
+│ ▸ Prerequisites  │           │ Step 3: Payment   │
+│ ▸ What to Bring  │           ├──────────────────┤
+├──────────────────┤           │ [Course info link]│
+│ Step 1: Details  │           ├──────────────────┤
+│ Step 2: Schedule │           │ ██ Sticky £400 ██ │
+│ Step 3: Payment  │           └──────────────────┘
+└──────────────────┘
+```
+
+This reduces the page from ~7 sections to ~4, cutting scroll distance roughly in half on mobile.
+
