@@ -554,58 +554,57 @@ export function MobileBookingView({
                 className="mt-3"
               >
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pupilName" className="text-xs">Full Name *</Label>
-                    <Input
-                      id="pupilName"
-                      value={pupilName}
-                      onChange={(e) => setPupilName(e.target.value)}
-                      placeholder="John Smith"
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pupilEmail" className="text-xs">Email *</Label>
-                    <Input
-                      id="pupilEmail"
-                      type="email"
-                      value={pupilEmail}
-                      onChange={(e) => setPupilEmail(e.target.value)}
-                      placeholder="john@example.com"
-                      className="h-10"
-                    />
-                  </div>
+                  <BookingFormField
+                    id="pupilName"
+                    label="Full Name"
+                    value={pupilName}
+                    onChange={setPupilName}
+                    onBlur={() => handleFieldBlur('name', pupilName)}
+                    error={touchedFields.has('name') ? fieldErrors.name : null}
+                    placeholder="John Smith"
+                  />
+                  <BookingFormField
+                    id="pupilEmail"
+                    label="Email"
+                    type="email"
+                    value={pupilEmail}
+                    onChange={setPupilEmail}
+                    onBlur={() => handleFieldBlur('email', pupilEmail)}
+                    error={touchedFields.has('email') ? fieldErrors.email : null}
+                    placeholder="john@example.com"
+                  />
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="pupilPhone" className="text-xs">Phone *</Label>
-                      <Input
-                        id="pupilPhone"
-                        type="tel"
-                        value={pupilPhone}
-                        onChange={(e) => setPupilPhone(e.target.value)}
-                        placeholder="07123 456789"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="pupilPostcode" className="text-xs">Postcode *</Label>
-                      <Input
-                        id="pupilPostcode"
-                        value={pupilPostcode}
-                        onChange={(e) => setPupilPostcode(e.target.value)}
-                        placeholder="SW1A 1AA"
-                        className="h-10"
-                      />
-                    </div>
+                    <BookingFormField
+                      id="pupilPhone"
+                      label="Phone"
+                      type="tel"
+                      value={pupilPhone}
+                      onChange={setPupilPhone}
+                      onBlur={() => handleFieldBlur('phone', pupilPhone)}
+                      error={touchedFields.has('phone') ? fieldErrors.phone : null}
+                      placeholder="07123 456789"
+                    />
+                    <BookingFormField
+                      id="pupilPostcode"
+                      label="Postcode"
+                      value={pupilPostcode}
+                      onChange={setPupilPostcode}
+                      onBlur={() => handleFieldBlur('postcode', pupilPostcode)}
+                      error={touchedFields.has('postcode') ? fieldErrors.postcode : null}
+                      placeholder="SW1A 1AA"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="pupilAddress" className="text-xs">Home Address *</Label>
                     <GoogleAddressAutocomplete
                       value={pupilAddress}
-                      onChange={setPupilAddress}
+                      onChange={(v) => { setPupilAddress(v); handleFieldBlur('address', v); }}
                       onPostcodeChange={setPupilPostcode}
                       placeholder="Start typing your home address..."
                     />
+                    {touchedFields.has('address') && fieldErrors.address && (
+                      <p className="text-[11px] text-destructive font-medium">{fieldErrors.address}</p>
+                    )}
                   </div>
                   
                   <div className="pt-1">
