@@ -233,6 +233,9 @@ const App = () => (
                 {/* Quote Accept */}
                 <Route path="/quote/:token" element={<QuoteAcceptPage />} />
 
+                {/* Public Payment Page */}
+                <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
+
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
                 <Route path="/instructor-app" element={<Navigate to="/" replace />} />

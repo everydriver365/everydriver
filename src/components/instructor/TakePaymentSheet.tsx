@@ -199,6 +199,34 @@ export function TakePaymentSheet({
             </div>
           </button>
 
+          {/* Share Payment Link */}
+          {!showPaymentLink ? (
+            <button
+              onClick={() => setShowPaymentLink(true)}
+              className="w-full flex items-center gap-3 p-4 border border-border bg-card hover:bg-accent transition-colors text-left"
+            >
+              <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                <Link className="h-5 w-5 text-purple-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-sm text-foreground">Share Payment Link</p>
+                <p className="text-xs text-muted-foreground">QR code & link for anyone to pay you</p>
+              </div>
+            </button>
+          ) : (
+            <div className="border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-sm text-foreground">Payment Link & QR</p>
+                <Button variant="ghost" size="sm" onClick={() => setShowPaymentLink(false)}>
+                  Close
+                </Button>
+              </div>
+              {instructorId && (
+                <PaymentLinkShare instructorId={instructorId} instructorName={instructorName} />
+              )}
+            </div>
+          )}
+
           {/* Email Receipt */}
           <button
             disabled
