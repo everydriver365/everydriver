@@ -29,6 +29,7 @@ interface PupilData {
   pickup_address: string | null;
   what3words: string | null;
   parent_portal_enabled?: boolean;
+  reminder_preferences?: { "24h": boolean; "1h": boolean } | null;
 }
 
 interface PupilPortalProfileEditProps {
