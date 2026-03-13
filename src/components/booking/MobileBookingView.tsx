@@ -360,6 +360,11 @@ export function MobileBookingView({
         </div>
       </div>
 
+      {/* Booking Recovery Banner */}
+      {showRecovery && (
+        <BookingRecoveryBanner onResume={handleResumeDraft} onDiscard={handleDiscardDraft} />
+      )}
+
       {/* Progress Steps */}
       <div className="px-4 py-4 bg-muted/30">
         <div className="flex items-center gap-2">
