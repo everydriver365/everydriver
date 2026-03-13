@@ -875,21 +875,42 @@ export function MobileBookingView({
                 </div>
               )}
 
-              <Button
-                onClick={onNPICheckout}
-                disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available || isWalletProcessing}
-                className="w-full h-12"
-              >
-                {isNPILoading ? (
-                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice} Card
-                  </>
-                )}
-              </Button>
-              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Visa, Mastercard, Amex</p>
+              {showEmbeddedCheckout && embeddedCheckoutPupilId ? (
+                <div>
+                  <CardstreamPayButton
+                    amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
+                    pupilId={embeddedCheckoutPupilId}
+                    instructorId={instructor.id}
+                    customerName={pupilName.trim()}
+                    customerEmail={pupilEmail.trim()}
+                    onError={(msg) => { /* handled by component */ }}
+                  />
+                  <button 
+                    onClick={onEmbeddedCheckoutCancel}
+                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 text-center"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    onClick={onNPICheckout}
+                    disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available || isWalletProcessing}
+                    className="w-full h-12"
+                  >
+                    {isNPILoading ? (
+                      <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
+                    ) : (
+                      <>
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice} Card
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Visa, Mastercard, Amex</p>
+                </>
+              )}
             </div>
 
             {/* Clearpay */}
@@ -927,35 +948,6 @@ export function MobileBookingView({
             {/* Finance Option */}
           </div>
 
-          {/* Embedded Card Checkout */}
-          {showEmbeddedCheckout && embeddedCheckoutPupilId && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 rounded-xl border-2 border-primary bg-card"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  Enter Card Details
-                </h3>
-                <button 
-                  onClick={onEmbeddedCheckoutCancel}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-              <CardstreamPayButton
-                amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                pupilId={embeddedCheckoutPupilId}
-                instructorId={instructor.id}
-                customerName={pupilName.trim()}
-                customerEmail={pupilEmail.trim()}
-                onError={(msg) => { /* handled by component */ }}
-              />
-            </motion.div>
-          )}
 
           <div className="flex items-center justify-center gap-3 mt-4">
             <div className="flex items-center gap-1.5 text-muted-foreground">
