@@ -103,6 +103,10 @@ interface MobileBookingViewProps {
   setPickupAddress: (v: string) => void;
   setPickupPostcode: (v: string) => void;
   setPickupWhat3words: (v: string) => void;
+  hasSpecialNeeds: boolean;
+  specialNeeds: string;
+  setHasSpecialNeeds: (v: boolean) => void;
+  setSpecialNeeds: (v: string) => void;
   // Scheduling
   selectedSlots: SelectedSlot[];
   scheduledHours: number;
