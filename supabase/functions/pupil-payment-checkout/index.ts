@@ -53,9 +53,12 @@ serve(async (req: Request) => {
 
   try {
     const body: PupilPaymentRequest = await req.json();
-    const { pupilId, instructorId, amount, gateway, customerName, customerEmail, customerPhone, returnUrl, cancelUrl } = body;
+    const { pupilId, instructorId, amount, adminFee = 0, gateway, customerName, customerEmail, customerPhone, returnUrl, cancelUrl } = body;
 
-    console.log(`Pupil payment checkout: pupil=${pupilId}, gateway=${gateway}, amount=${amount}`);
+    // Total to charge = base amount + admin fee
+    const chargeAmount = Math.round((amount + adminFee) * 100) / 100;
+
+    console.log(`Pupil payment checkout: pupil=${pupilId}, gateway=${gateway}, amount=${amount}, adminFee=${adminFee}, chargeTotal=${chargeAmount}`);
 
     if (!pupilId || !instructorId || !amount || !gateway || !returnUrl) {
       return new Response(
