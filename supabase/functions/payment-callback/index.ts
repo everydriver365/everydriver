@@ -500,16 +500,34 @@ serve(async (req: Request) => {
             .single();
 
           if (pupil) {
+            const klarnaCreditAmount = adminFeeParam > 0 ? baseAmountParam : klarnaAmount;
+            const klarnaFee = adminFeeParam > 0 ? adminFeeParam : 0;
+
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: klarnaAmount,
+              amount: klarnaCreditAmount,
               payment_method: "klarna",
-              notes: `Klarna Payment - Order: ${klarnaOrderId}`,
+              notes: `Klarna Payment - Order: ${klarnaOrderId}${klarnaFee > 0 ? ` (admin fee: £${klarnaFee.toFixed(2)})` : ''}`,
             });
 
-            // Always credit pupil balance atomically
-            await creditPupilBalance(pupilId, klarnaAmount);
+            // Credit pupil balance with base amount only
+            await creditPupilBalance(pupilId, klarnaCreditAmount);
+
+            // Record commission if admin fee was charged
+            if (klarnaFee > 0) {
+              await supabase.from("platform_commissions").insert({
+                instructor_id: pupil.instructor_id,
+                source_type: "klarna",
+                source_id: klarnaOrderId || paymentRef,
+                gross_amount: klarnaAmount,
+                commission_amount: klarnaFee,
+                commission_rate: 0.025,
+                fixed_fee: 0.20,
+                net_amount: klarnaCreditAmount,
+                description: `Admin fee on pupil balance payment`,
+              });
+            }
 
             // Update payment_intents status
             await updatePaymentIntentStatus(paymentRef, "completed");
