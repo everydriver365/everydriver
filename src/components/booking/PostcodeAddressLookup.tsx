@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MapPin, Loader2, ChevronDown, Search, PenLine } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, Search, PenLine, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +44,11 @@ export function PostcodeAddressLookup({
   const [showDropdown, setShowDropdown] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
   const [noResults, setNoResults] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<AddressOption | null>(null);
+  const [doorNumber, setDoorNumber] = useState("");
+  const [showDoorPrompt, setShowDoorPrompt] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const doorInputRef = useRef<HTMLInputElement>(null);
   const lastLookedUp = useRef("");
 
   // Close dropdown on outside click
@@ -57,6 +61,13 @@ export function PostcodeAddressLookup({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Focus door input when it appears
+  useEffect(() => {
+    if (showDoorPrompt && doorInputRef.current) {
+      doorInputRef.current.focus();
+    }
+  }, [showDoorPrompt]);
 
   const lookupAddresses = useCallback(async (pc: string) => {
     const clean = pc.trim();
@@ -91,11 +102,13 @@ export function PostcodeAddressLookup({
 
   const handlePostcodeChange = (value: string) => {
     onPostcodeChange(value);
-    // Reset if postcode changes significantly
     if (value.trim() !== lastLookedUp.current) {
       setAddresses([]);
       setShowDropdown(false);
       setNoResults(false);
+      setSelectedAddress(null);
+      setShowDoorPrompt(false);
+      setDoorNumber("");
     }
   };
 
@@ -111,14 +124,40 @@ export function PostcodeAddressLookup({
     }
   };
 
+  const buildFullAddress = (addr: AddressOption, door: string) => {
+    const parts = [door || addr.houseNumber, addr.street, addr.district, addr.city].filter(Boolean);
+    return parts.join(", ");
+  };
+
   const handleSelectAddress = (addr: AddressOption) => {
-    const parts = [addr.houseNumber, addr.street, addr.district, addr.city].filter(Boolean);
-    const formatted = parts.join(", ");
-    onAddressChange(formatted);
+    setSelectedAddress(addr);
+    setShowDropdown(false);
+    
+    // If the address already has a house number, use it as default door number
+    if (addr.houseNumber) {
+      setDoorNumber(addr.houseNumber);
+    } else {
+      setDoorNumber("");
+    }
+    
+    // Show door/property prompt and set preliminary address
+    setShowDoorPrompt(true);
+    const preliminary = buildFullAddress(addr, addr.houseNumber);
+    onAddressChange(preliminary);
     if (addr.postcode) {
       onPostcodeChange(addr.postcode);
     }
-    setShowDropdown(false);
+  };
+
+  const handleDoorNumberChange = (value: string) => {
+    setDoorNumber(value);
+    if (selectedAddress) {
+      const updated = buildFullAddress(selectedAddress, value);
+      onAddressChange(updated);
+    }
+  };
+
+  const handleDoorNumberBlur = () => {
     onBlurAddress?.();
   };
 
@@ -158,6 +197,30 @@ export function PostcodeAddressLookup({
         )}
       </div>
 
+      {/* Door number / property name — shown after selecting from dropdown */}
+      {showDoorPrompt && selectedAddress && (
+        <div className="space-y-1.5">
+          <Label htmlFor="doorNumber" className="text-xs">
+            Door Number / Property Name *
+          </Label>
+          <div className="relative">
+            <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              ref={doorInputRef}
+              id="doorNumber"
+              value={doorNumber}
+              onChange={(e) => handleDoorNumberChange(e.target.value)}
+              onBlur={handleDoorNumberBlur}
+              placeholder="e.g. 42, Flat 3, Rose Cottage"
+              className="h-10 pl-9"
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {[selectedAddress.street, selectedAddress.district, selectedAddress.city].filter(Boolean).join(", ")}
+          </p>
+        </div>
+      )}
+
       {/* Address dropdown or manual entry */}
       <div className="space-y-1.5">
         <Label htmlFor="addressField" className="text-xs">
@@ -165,7 +228,7 @@ export function PostcodeAddressLookup({
         </Label>
 
         {/* Show dropdown selector when addresses are available and not in manual mode */}
-        {!manualEntry && addresses.length > 0 ? (
+        {!manualEntry && addresses.length > 0 && !showDoorPrompt ? (
           <div className="relative">
             <button
               type="button"
@@ -215,6 +278,19 @@ export function PostcodeAddressLookup({
                 </div>
               </div>
             )}
+          </div>
+        ) : showDoorPrompt ? (
+          /* Show the composed address as a read-only display after selection */
+          <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mr-2" />
+            <span className="truncate">{address || "—"}</span>
+            <button
+              type="button"
+              onClick={() => { setShowDoorPrompt(false); setSelectedAddress(null); setShowDropdown(true); }}
+              className="ml-auto text-xs text-primary hover:underline shrink-0"
+            >
+              Change
+            </button>
           </div>
         ) : (
           /* Manual text input fallback */
