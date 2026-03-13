@@ -328,7 +328,8 @@ export function CardstreamCheckout({
                 <label className="text-sm font-medium mb-1 block">Card number</label>
                 <div 
                   id="cs-card-number" 
-                  className="h-10 border rounded-md bg-background"
+                  className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
+                  style={{ minHeight: '40px' }}
                 />
               </div>
 
@@ -337,14 +338,16 @@ export function CardstreamCheckout({
                   <label className="text-sm font-medium mb-1 block">Expiry</label>
                   <div 
                     id="cs-card-expiry" 
-                    className="h-10 border rounded-md bg-background"
+                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
+                    style={{ minHeight: '40px' }}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">CVV</label>
                   <div 
                     id="cs-card-cvv" 
-                    className="h-10 border rounded-md bg-background"
+                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
+                    style={{ minHeight: '40px' }}
                   />
                 </div>
               </div>
