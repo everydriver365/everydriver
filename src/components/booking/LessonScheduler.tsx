@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
 import { Calendar, Clock, X, Check, Bell } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -80,6 +82,7 @@ export function LessonScheduler({
   pupilId,
   onSlotsChange,
 }: LessonSchedulerProps) {
+  const isMobile = useIsMobile();
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [externalEvents, setExternalEvents] = useState<ExternalCalendarEvent[]>([]);
@@ -530,155 +533,298 @@ export function LessonScheduler({
       </div>
 
       {/* Calendar, Time Slots, and Selected Lessons */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Calendar */}
-        <div className="rounded-lg border p-2">
-          <CalendarComponent
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            month={viewMonth}
-            onMonthChange={setViewMonth}
-            disabled={(date) => !isDateAvailable(date)}
-            modifiers={{
-              booked: (date) =>
-                selectedSlots.some((s) => isSameDay(s.date, date)),
-              available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
-            }}
-            modifiersStyles={{
-              booked: {
-                backgroundColor: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-                fontWeight: "bold",
-              },
-              available: {
-                backgroundColor: "hsl(var(--success) / 0.15)",
-                color: "hsl(var(--success))",
-                fontWeight: "600",
-              },
-            }}
-            components={{
-              DayContent: (props: { date: Date }) => {
-                const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
-                return (
-                  <div className="relative flex items-center justify-center w-full h-full">
-                    <span>{props.date.getDate()}</span>
-                    {isBooked && (
-                      <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
-                    )}
-                  </div>
-                );
-              },
-            }}
-            className={cn(
-              "p-1 pointer-events-auto",
-              "[&_table]:w-full",
-              "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
-              "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
-              "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
-              "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
-            )}
-          />
-        </div>
+      {isMobile ? (
+        /* ── Mobile Layout: Calendar + Chips + Bottom Sheet ── */
+        <div className="relative">
+          {/* Calendar */}
+          <div className="rounded-lg border p-2">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              month={viewMonth}
+              onMonthChange={setViewMonth}
+              disabled={(date) => !isDateAvailable(date)}
+              modifiers={{
+                booked: (date) =>
+                  selectedSlots.some((s) => isSameDay(s.date, date)),
+                available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
+              }}
+              modifiersStyles={{
+                booked: {
+                  backgroundColor: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                  fontWeight: "bold",
+                },
+                available: {
+                  backgroundColor: "hsl(var(--success) / 0.15)",
+                  color: "hsl(var(--success))",
+                  fontWeight: "600",
+                },
+              }}
+              components={{
+                DayContent: (props: { date: Date }) => {
+                  const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
+                  return (
+                    <div className="relative flex items-center justify-center w-full h-full">
+                      <span>{props.date.getDate()}</span>
+                      {isBooked && (
+                        <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
+                      )}
+                    </div>
+                  );
+                },
+              }}
+              className={cn(
+                "p-1 pointer-events-auto",
+                "[&_table]:w-full",
+                "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
+                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
+                "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
+                "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
+              )}
+            />
+          </div>
 
-        {/* Time Slots */}
-        <div className="rounded-lg border p-3">
-          {selectedDate ? (
-            <div>
-              <h4 className="font-medium mb-2 text-sm">
-                Times for {format(selectedDate, "EEE, d MMM")}
-              </h4>
-              <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
-                {getAvailableTimeSlots(selectedDate).map((time) => (
-                  <Button
-                    key={time}
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleSelectSlot(selectedDate, time);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleSelectSlot(selectedDate, time);
-                    }}
-                    disabled={remainingHours <= 0}
-                    className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
-                  >
-                    <Clock className="h-3 w-3 mr-1 pointer-events-none" />
-                    {time}
-                  </Button>
-                ))}
-                {getAvailableTimeSlots(selectedDate).length === 0 && (
-                  <div className="col-span-2 text-center py-4 space-y-3">
-                    <p className="text-xs text-muted-foreground">
-                      No available slots for this date
-                    </p>
-                    {pupilId && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setWaitlistDialogOpen(true)}
-                        className="gap-2"
-                      >
-                        <Bell className="h-4 w-4" />
-                        Join Waitlist
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground text-xs py-8">
-              Select a date to see times
-            </div>
-          )}
-        </div>
-
-        {/* Selected Lessons - Now in third column */}
-        <div className="rounded-lg border p-3">
-          <h4 className="font-medium mb-2 text-sm">Scheduled Lessons</h4>
-          {selectedSlots.length > 0 ? (
-            <div className="space-y-2 max-h-[280px] overflow-y-auto">
+          {/* Compact Scheduled Lesson Chips */}
+          {selectedSlots.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {selectedSlots
                 .sort((a, b) => a.date.getTime() - b.date.getTime())
                 .map((slot, index) => (
-                  <div
+                  <Badge
                     key={index}
-                    className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
+                    variant="secondary"
+                    className="pl-2 pr-1 py-1 text-xs gap-1 cursor-pointer"
+                    onClick={() => handleRemoveSlot(index)}
                   >
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-sm font-medium">
-                        {format(slot.date, "EEE, d MMM")}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {slot.startTime} - {slot.endTime}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          ({slot.duration / 60}h)
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveSlot(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    {format(slot.date, "EEE d")} {slot.startTime} · {slot.duration / 60}h
+                    <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                  </Badge>
                 ))}
             </div>
-          ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground text-sm py-8">
-              No lessons scheduled yet
-            </div>
           )}
+
+          {/* Bottom Sheet Time Picker */}
+          <AnimatePresence>
+            {selectedDate && (
+              <motion.div
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="mt-3 rounded-xl border-2 border-primary/20 bg-card shadow-lg p-3"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-sm">
+                    {format(selectedDate, "EEE, d MMM")}
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => setSelectedDate(undefined)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {getAvailableTimeSlots(selectedDate).map((time) => (
+                    <Button
+                      key={time}
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSelectSlot(selectedDate, time);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleSelectSlot(selectedDate, time);
+                      }}
+                      disabled={remainingHours <= 0}
+                      className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
+                    >
+                      <Clock className="h-3 w-3 mr-1 pointer-events-none" />
+                      {time}
+                    </Button>
+                  ))}
+                  {getAvailableTimeSlots(selectedDate).length === 0 && (
+                    <div className="col-span-3 text-center py-4 space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        No available slots for this date
+                      </p>
+                      {pupilId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setWaitlistDialogOpen(true)}
+                          className="gap-2"
+                        >
+                          <Bell className="h-4 w-4" />
+                          Join Waitlist
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+      ) : (
+        /* ── Desktop Layout: 3-column grid ── */
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* Calendar */}
+          <div className="rounded-lg border p-2">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              month={viewMonth}
+              onMonthChange={setViewMonth}
+              disabled={(date) => !isDateAvailable(date)}
+              modifiers={{
+                booked: (date) =>
+                  selectedSlots.some((s) => isSameDay(s.date, date)),
+                available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
+              }}
+              modifiersStyles={{
+                booked: {
+                  backgroundColor: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                  fontWeight: "bold",
+                },
+                available: {
+                  backgroundColor: "hsl(var(--success) / 0.15)",
+                  color: "hsl(var(--success))",
+                  fontWeight: "600",
+                },
+              }}
+              components={{
+                DayContent: (props: { date: Date }) => {
+                  const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
+                  return (
+                    <div className="relative flex items-center justify-center w-full h-full">
+                      <span>{props.date.getDate()}</span>
+                      {isBooked && (
+                        <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
+                      )}
+                    </div>
+                  );
+                },
+              }}
+              className={cn(
+                "p-1 pointer-events-auto",
+                "[&_table]:w-full",
+                "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
+                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
+                "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
+                "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
+              )}
+            />
+          </div>
+
+          {/* Time Slots */}
+          <div className="rounded-lg border p-3">
+            {selectedDate ? (
+              <div>
+                <h4 className="font-medium mb-2 text-sm">
+                  Times for {format(selectedDate, "EEE, d MMM")}
+                </h4>
+                <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
+                  {getAvailableTimeSlots(selectedDate).map((time) => (
+                    <Button
+                      key={time}
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSelectSlot(selectedDate, time);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleSelectSlot(selectedDate, time);
+                      }}
+                      disabled={remainingHours <= 0}
+                      className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
+                    >
+                      <Clock className="h-3 w-3 mr-1 pointer-events-none" />
+                      {time}
+                    </Button>
+                  ))}
+                  {getAvailableTimeSlots(selectedDate).length === 0 && (
+                    <div className="col-span-2 text-center py-4 space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        No available slots for this date
+                      </p>
+                      {pupilId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setWaitlistDialogOpen(true)}
+                          className="gap-2"
+                        >
+                          <Bell className="h-4 w-4" />
+                          Join Waitlist
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground text-xs py-8">
+                Select a date to see times
+              </div>
+            )}
+          </div>
+
+          {/* Selected Lessons */}
+          <div className="rounded-lg border p-3">
+            <h4 className="font-medium mb-2 text-sm">Scheduled Lessons</h4>
+            {selectedSlots.length > 0 ? (
+              <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                {selectedSlots
+                  .sort((a, b) => a.date.getTime() - b.date.getTime())
+                  .map((slot, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-sm font-medium">
+                          {format(slot.date, "EEE, d MMM")}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {slot.startTime} - {slot.endTime}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            ({slot.duration / 60}h)
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveSlot(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground text-sm py-8">
+                No lessons scheduled yet
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Remaining Hours Warning */}
       {remainingHours > 0 && selectedSlots.length > 0 && (
