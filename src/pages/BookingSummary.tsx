@@ -1620,22 +1620,6 @@ export default function BookingSummary() {
           </motion.div>
         )}
 
-        {/* Boost Your Booking - Upsells */}
-        {availableUpsells.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28 }}
-            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
-          >
-            <UpsellSelector
-              upsells={availableUpsells}
-              selectedUpsells={selectedUpsells}
-              onSelectionChange={setSelectedUpsells}
-            />
-          </motion.div>
-        )}
-
         {/* Step 3: Payment Options */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
