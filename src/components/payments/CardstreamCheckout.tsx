@@ -120,7 +120,7 @@ export function CardstreamCheckout({
         setOrderRef(data.orderRef);
 
         // Load Hosted Fields script
-        await loadScript(data.cardstream.hostedFieldsScriptUrl);
+        await loadScript(data.hostedFieldsScriptUrl);
         
         if (cancelled) return;
 
