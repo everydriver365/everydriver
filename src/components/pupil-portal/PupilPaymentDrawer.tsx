@@ -39,6 +39,7 @@ export function PupilPaymentDrawer({
   instructorSlug,
   accountBalance,
   brandColour,
+  commissionPayer,
 }: PupilPaymentDrawerProps) {
   const [stage, setStage] = useState<Stage>("amount");
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
