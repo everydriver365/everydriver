@@ -63,15 +63,18 @@ export default function BookingConfirmation() {
   const squareSuccess = searchParams.get("square") === "success";
   const paymentRef = searchParams.get("ref");
   
-  // Payment was successful if Cardstream approved OR provider success flag OR direct booking (no payment params)
+  // Free booking flag (£0 courses bypass payment)
+  const freeBooking = searchParams.get("free") === "true";
+  
+  // Payment was successful if Cardstream approved OR provider success flag OR free booking
   const paymentSuccessful =
     responseCode === "0" ||
-    responseCode === null ||
     clearpaySuccess ||
     klarnaSuccess ||
     npiSuccess ||
     elavonSuccess ||
-    squareSuccess;
+    squareSuccess ||
+    freeBooking;
   
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
