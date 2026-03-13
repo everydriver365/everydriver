@@ -49,6 +49,7 @@ export function PupilPaymentDrawer({
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
+  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, commissionPayer);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
