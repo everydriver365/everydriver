@@ -142,6 +142,14 @@ serve(async (req) => {
       gateway_response: responseFields,
     }).eq("order_ref", intent.order_ref);
 
+    // Auto-credit pupil balance if payment succeeded and pupil is linked
+    if (okSig && success && intent.pupil_id) {
+      await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: intent.pupil_id,
+        p_amount: intent.amount_pence / 100,
+      });
+    }
+
     return new Response(
       JSON.stringify({
         success: okSig && success,

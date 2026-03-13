@@ -222,7 +222,7 @@ export function TakePaymentSheet({
                 </Button>
               </div>
               {instructorId && (
-                <PaymentLinkShare instructorId={instructorId} instructorName={instructorName} />
+                <PaymentLinkShare instructorId={instructorId} instructorName={instructorName} pupils={pupils} />
               )}
             </div>
           )}
