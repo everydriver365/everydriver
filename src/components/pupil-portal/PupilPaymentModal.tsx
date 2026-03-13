@@ -221,9 +221,17 @@ export function PupilPaymentModal({
             </div>
           )}
 
+          {/* Admin Fee Breakdown */}
+          <AdminFeeBreakdown
+            baseAmount={paymentAmount}
+            adminFee={adminFee}
+            totalCharge={totalCharge}
+            hasFee={hasFee}
+          />
+
           {/* Apple Pay / Google Pay Express Checkout */}
           <SquareWalletButtons
-            amount={paymentAmount}
+            amount={totalCharge}
             pupilId={pupilId}
             instructorId={instructorId}
             instructorSlug={instructorSlug}
