@@ -89,11 +89,19 @@ interface MobileBookingViewProps {
   pupilPhone: string;
   pupilAddress: string;
   pupilPostcode: string;
+  differentPickup: boolean;
+  pickupAddress: string;
+  pickupPostcode: string;
+  pickupWhat3words: string;
   setPupilName: (v: string) => void;
   setPupilEmail: (v: string) => void;
   setPupilPhone: (v: string) => void;
   setPupilAddress: (v: string) => void;
   setPupilPostcode: (v: string) => void;
+  setDifferentPickup: (v: boolean) => void;
+  setPickupAddress: (v: string) => void;
+  setPickupPostcode: (v: string) => void;
+  setPickupWhat3words: (v: string) => void;
   // Scheduling
   selectedSlots: SelectedSlot[];
   scheduledHours: number;
