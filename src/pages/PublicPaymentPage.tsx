@@ -21,12 +21,10 @@ export default function PublicPaymentPage() {
   const [amount, setAmount] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [paid, setPaid] = useState(false);
-  const [merchantId, setMerchantId] = useState("");
 
   useEffect(() => {
     if (!instructorId) return;
     (async () => {
-      // Fetch public instructor info
       const { data } = await supabase
         .from("public_instructors")
         .select("id, name, profile_image_url, logo_url, brand_colour")
@@ -34,9 +32,6 @@ export default function PublicPaymentPage() {
         .single();
 
       if (data) setInstructor(data);
-
-      // Fetch merchant ID from instructors table via edge function / intent
-      // The merchant ID comes back from payment-intent-create, so we just store it
       setLoading(false);
     })();
   }, [instructorId]);
@@ -44,18 +39,9 @@ export default function PublicPaymentPage() {
   const parsedAmount = parseFloat(amount);
   const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;
 
-  const handleContinue = async () => {
-    if (!isValidAmount || !instructorId) return;
-
-    // Create a quick intent to get the merchant ID
-    const { data } = await supabase.functions.invoke("payment-intent-create", {
-      body: { amount: parsedAmount, instructorId, currency: "GBP" },
-    });
-
-    if (data?.merchantId) {
-      setMerchantId(data.merchantId);
-      setShowCheckout(true);
-    }
+  const handleContinue = () => {
+    if (!isValidAmount) return;
+    setShowCheckout(true);
   };
 
   if (loading) {
