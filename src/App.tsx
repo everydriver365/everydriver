@@ -89,6 +89,7 @@ const InstallParent = lazy(() => import("./pages/InstallParent"));
 const PublicAvailability = lazy(() => import("./pages/PublicAvailability"));
 const RemoteSigning = lazy(() => import("./pages/RemoteSigning"));
 const QuoteAcceptPage = lazy(() => import("./pages/QuoteAcceptPage"));
+const PublicPaymentPage = lazy(() => import("./pages/PublicPaymentPage"));
 const InstructorDoodlepad = lazy(() => import("./pages/InstructorDoodlepad"));
 const InstructorTodos = lazy(() => import("./pages/InstructorTodos"));
 const InstructorNotes = lazy(() => import("./pages/InstructorNotes"));
