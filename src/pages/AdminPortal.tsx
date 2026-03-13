@@ -55,6 +55,7 @@ import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { FeatureGatingManager } from "@/components/admin/FeatureGatingManager";
 import { CommissionDashboard } from "@/components/admin/CommissionDashboard";
+import { CommissionSettingsManager } from "@/components/admin/CommissionSettingsManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
@@ -165,6 +166,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
+  "commission-settings": { title: "Commission & Fees", group: "Finance & Payments", icon: PoundSterling },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
@@ -927,6 +929,14 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="commission" className="mb-4" />
             <CommissionDashboard />
+          </motion.div>
+        );
+
+      case "commission-settings":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <CommissionSettingsManager />
           </motion.div>
         );
 
