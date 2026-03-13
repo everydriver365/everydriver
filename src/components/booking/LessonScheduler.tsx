@@ -369,45 +369,47 @@ export function LessonScheduler({
   const remainingHours = totalHours - scheduledHours;
   const remainingMinutes = remainingHours * 60;
 
-  // Smart duration filtering: only show lengths that won't create orphan remainders
+  // Check if a given remaining time can be filled exactly by allowed lesson lengths
+  const canFillRemainder = useCallback((remaining: number): boolean => {
+    if (remaining === 0) return true;
+    if (remaining < 0) return false;
+    return baseDurationOptions.some(d => d <= remaining && canFillRemainder(remaining - d));
+  }, [baseDurationOptions]);
+
+  // Upfront validation: can the total course hours be divided by instructor's allowed lengths?
+  const courseCanBeCompleted = useMemo(() => {
+    return canFillRemainder(totalHours * 60);
+  }, [canFillRemainder, totalHours]);
+
+  // Smart duration filtering: only show instructor-allowed lengths that won't create orphan remainders
   const durationOptions = useMemo(() => {
     if (remainingMinutes <= 0) return baseDurationOptions;
+
+    const minAllowed = Math.min(...baseDurationOptions);
 
     // Filter to durations that fit within remaining time
     const fitting = baseDurationOptions.filter(d => d <= remainingMinutes);
 
-    // For each fitting duration, check if the leftover can be filled by some combination of allowed lengths
-    const canFillRemainder = (remaining: number): boolean => {
-      if (remaining === 0) return true;
-      if (remaining < 0) return false;
-      return baseDurationOptions.some(d => d <= remaining && canFillRemainder(remaining - d));
-    };
-
+    // Only keep durations where the leftover can be filled by allowed lengths
     const smart = fitting.filter(d => canFillRemainder(remainingMinutes - d));
 
-    // If no smart options work (e.g. only 3hr allowed, 1hr left), add the exact remainder as a completion option
-    if (smart.length === 0 && remainingMinutes >= 30) {
+    if (smart.length > 0) return smart;
+
+    // Fallback: if no combination works, only offer the exact remainder if it meets instructor minimum
+    if (fitting.length === 0 && remainingMinutes >= minAllowed) {
       return [remainingMinutes];
     }
 
-    // If the remainder can't be evenly divided but we have options, also offer the exact remainder
-    // so the course can always be completed
-    if (smart.length > 0 && !smart.includes(remainingMinutes) && remainingMinutes >= 30) {
-      // Check if any combination of smart options can exactly fill remaining time
-      const canComplete = canFillRemainder(remainingMinutes);
-      if (!canComplete) {
-        return [...smart, remainingMinutes].sort((a, b) => a - b);
-      }
-    }
+    // If remainder is below instructor minimum, no valid options — show fitting (will be empty if truly stuck)
+    return fitting;
+  }, [baseDurationOptions, remainingMinutes, canFillRemainder]);
 
-    return smart.length > 0 ? smart : fitting;
-  }, [baseDurationOptions, remainingMinutes]);
-
-  // Check if we're showing a non-standard completion duration
+  // Check if we're showing a non-standard completion duration (only if ≥ instructor minimum)
   const completionDuration = useMemo(() => {
     if (remainingMinutes <= 0) return null;
+    const minAllowed = Math.min(...baseDurationOptions);
     const isNonStandard = durationOptions.includes(remainingMinutes) && !baseDurationOptions.includes(remainingMinutes);
-    return isNonStandard ? remainingMinutes : null;
+    return isNonStandard && remainingMinutes >= minAllowed ? remainingMinutes : null;
   }, [durationOptions, baseDurationOptions, remainingMinutes]);
 
   // Auto-select valid duration when current selection becomes invalid
