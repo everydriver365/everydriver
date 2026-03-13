@@ -322,55 +322,68 @@ export default function BookingSummary() {
   const requiresSlotSelection = bookingMode === 'pupil_choice';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting;
 
+  const bookingInProgressRef = useRef(false);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
     amountPaid?: number
   ): Promise<string | null> => {
     if (!courseDetails) return null;
     if (bookingPupilId) return bookingPupilId;
-
-    const { data, error } = await supabase.functions.invoke("create-booking", {
-      body: {
-        instructorId: instructor.id,
-        pupilName: pupilName.trim(),
-        pupilEmail: pupilEmail.trim(),
-        pupilPhone: pupilPhone.trim(),
-        pupilAddress: pupilAddress.trim(),
-        pupilPostcode: pupilPostcode.trim().toUpperCase(),
-        pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
-        pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
-        pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
-        specialNeeds: hasSpecialNeeds && specialNeeds.trim() ? specialNeeds.trim() : undefined,
-        courseType: courseName,
-        courseHours: hours,
-        totalPrice,
-        slots: selectedSlots.map((slot) => ({
-          date: format(slot.date, "yyyy-MM-dd"),
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          duration: slot.duration,
-        })),
-        // Deposit payment fields
-        paymentType,
-        amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice + upsellTotal : depositAmount),
-        depositAmount: paymentType === 'deposit' ? depositAmount : 0,
-        // Upsells
-        upsells: selectedUpsells.map((id) => {
-          const upsell = availableUpsells.find((u) => u.id === id);
-          return { id, price: upsell?.price || 0 };
-        }),
-      },
-    });
-
-    if (error) {
-      console.error("Booking error:", error);
-      toast.error("Failed to create your booking. Please try again.");
+    
+    // Prevent duplicate concurrent calls
+    if (bookingInProgressRef.current) {
+      // Wait for the in-progress booking to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (bookingPupilId) return bookingPupilId;
       return null;
     }
+    
+    bookingInProgressRef.current = true;
 
-    setBookingPupilId(data.pupilId);
-    toast.info(`Booking created — completing payment...`);
-    return data.pupilId as string;
+    try {
+      const { data, error } = await supabase.functions.invoke("create-booking", {
+        body: {
+          instructorId: instructor.id,
+          pupilName: pupilName.trim(),
+          pupilEmail: pupilEmail.trim(),
+          pupilPhone: pupilPhone.trim(),
+          pupilAddress: pupilAddress.trim(),
+          pupilPostcode: pupilPostcode.trim().toUpperCase(),
+          pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
+          pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
+          pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
+          specialNeeds: hasSpecialNeeds && specialNeeds.trim() ? specialNeeds.trim() : undefined,
+          courseType: courseName,
+          courseHours: hours,
+          totalPrice,
+          slots: selectedSlots.map((slot) => ({
+            date: format(slot.date, "yyyy-MM-dd"),
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            duration: slot.duration,
+          })),
+          paymentType,
+          amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice + upsellTotal : depositAmount),
+          depositAmount: paymentType === 'deposit' ? depositAmount : 0,
+          upsells: selectedUpsells.map((id) => {
+            const upsell = availableUpsells.find((u) => u.id === id);
+            return { id, price: upsell?.price || 0 };
+          }),
+        },
+      });
+
+      if (error) {
+        console.error("Booking error:", error);
+        toast.error("Failed to create your booking. Please try again.");
+        return null;
+      }
+
+      setBookingPupilId(data.pupilId);
+      toast.info(`Booking created — completing payment...`);
+      return data.pupilId as string;
+    } finally {
+      bookingInProgressRef.current = false;
+    }
   };
 
   const handleBookingSubmit = async () => {
