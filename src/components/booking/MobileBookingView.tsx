@@ -707,8 +707,8 @@ export function MobileBookingView({
                     </div>
                   )}
                   {isPupilDetailsComplete && (
-                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setEditingDetails(false)}>
-                      Done
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => { setDetailsConfirmed(true); setEditingDetails(false); }}>
+                      Continue
                     </Button>
                   )}
                 </div>
