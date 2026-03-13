@@ -218,6 +218,49 @@ export function MobileBookingView({
   
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
+  const [showRecovery, setShowRecovery] = useState(false);
+  
+  // Booking recovery: save form state to localStorage
+  const storageKey = `booking_draft_${instructor.id}`;
+  
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.pupilName || parsed.pupilEmail || parsed.pupilPhone) {
+          setShowRecovery(true);
+        }
+      } catch {}
+    }
+  }, []);
+  
+  // Auto-save form fields to localStorage on change
+  useEffect(() => {
+    if (!pupilName && !pupilEmail && !pupilPhone) return;
+    const draft = { pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode };
+    localStorage.setItem(storageKey, JSON.stringify(draft));
+  }, [pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode]);
+  
+  const handleResumeDraft = () => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.pupilName) setPupilName(parsed.pupilName);
+        if (parsed.pupilEmail) setPupilEmail(parsed.pupilEmail);
+        if (parsed.pupilPhone) setPupilPhone(parsed.pupilPhone);
+        if (parsed.pupilAddress) setPupilAddress(parsed.pupilAddress);
+        if (parsed.pupilPostcode) setPupilPostcode(parsed.pupilPostcode);
+      } catch {}
+    }
+    setShowRecovery(false);
+  };
+  
+  const handleDiscardDraft = () => {
+    localStorage.removeItem(storageKey);
+    setShowRecovery(false);
+  };
   
   // Form validation errors
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
