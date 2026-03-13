@@ -37,6 +37,7 @@ export function PostcodeAutocomplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const skipNextFetchRef = useRef(false);
   const [isLocating, setIsLocating] = useState(false);
 
   // Fetch suggestions from edge function
