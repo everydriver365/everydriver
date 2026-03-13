@@ -1112,7 +1112,7 @@ export default function BookingSummary() {
         klarnaMerchantReference={klarnaMerchantReference}
         gatewayHealth={gatewayHealth}
         onBookingSubmit={handleBookingSubmit}
-        onNPICheckout={handleNPICheckout}
+        onNPICheckout={handleElavonCheckout}
         onClearpayCheckout={handleClearpayCheckout}
         onKlarnaSuccess={handleKlarnaSuccess}
         onKlarnaError={handleKlarnaError}
