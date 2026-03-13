@@ -808,7 +808,7 @@ export function MobileBookingView({
           <div className="space-y-2">
             {/* Express Checkout - Apple/Google Pay */}
             {canSubmit && (
-              <BookingWalletButtons
+              <ElavonBookingWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
                 pupilName={pupilName}

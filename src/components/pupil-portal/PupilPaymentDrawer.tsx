@@ -256,7 +256,7 @@ export function PupilPaymentDrawer({
               {/* Express Checkout — Apple Pay / Google Pay */}
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
-                <SquareWalletButtons
+                <ElavonWalletButtons
                   amount={totalCharge}
                   pupilId={pupilId}
                   instructorId={instructorId}
