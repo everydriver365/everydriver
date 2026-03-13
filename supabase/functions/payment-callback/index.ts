@@ -135,18 +135,37 @@ serve(async (req: Request) => {
 
           if (pupil) {
             const paymentAmountPounds = amountReceived ? parseFloat(amountReceived) / 100 : 0;
+            // Determine the base amount to credit (gross minus admin fee)
+            const creditAmount = adminFeeParam > 0 ? baseAmountParam : paymentAmountPounds;
+            const feeAmount = adminFeeParam > 0 ? adminFeeParam : 0;
 
-            // Record payment in history
+            // Record payment in history (show gross amount)
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: paymentAmountPounds,
+              amount: creditAmount,
               payment_method: `${provider}_card`,
-              notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}`,
+              notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
             });
 
-            // Always credit pupil balance (both balance top-ups and booking payments)
-            await creditPupilBalance(pupilId, paymentAmountPounds);
+            // Credit pupil balance with base amount only (not the fee)
+            await creditPupilBalance(pupilId, creditAmount);
+
+            // Record commission if admin fee was charged
+            if (feeAmount > 0) {
+              await supabase.from("platform_commissions").insert({
+                instructor_id: pupil.instructor_id,
+                source_type: `${provider}_card`,
+                source_id: paymentRef,
+                gross_amount: paymentAmountPounds,
+                commission_amount: feeAmount,
+                commission_rate: 0.025,
+                fixed_fee: 0.20,
+                net_amount: creditAmount,
+                description: `Admin fee on pupil balance payment`,
+              });
+              console.log(`Recorded commission: £${feeAmount.toFixed(2)} on £${paymentAmountPounds.toFixed(2)} gross`);
+            }
 
             // If pupil balance payment, send receipt email
             if (isPupilPayment) {
