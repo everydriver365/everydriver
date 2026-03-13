@@ -19,6 +19,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
