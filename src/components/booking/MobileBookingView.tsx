@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -24,6 +24,8 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
+import { BookingFormField } from "@/components/booking/BookingFormField";
+import { validateField, type FieldErrors } from "@/lib/booking-validation";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 
@@ -215,6 +217,16 @@ export function MobileBookingView({
   
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
+  
+  // Form validation errors
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  
+  const handleFieldBlur = useCallback((field: 'name' | 'email' | 'phone' | 'postcode' | 'address', value: string) => {
+    setTouchedFields(prev => new Set(prev).add(field));
+    const error = validateField(field, value);
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+  }, []);
   
   // Course info sheet state
   const [showCourseInfo, setShowCourseInfo] = useState(false);
@@ -542,58 +554,57 @@ export function MobileBookingView({
                 className="mt-3"
               >
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pupilName" className="text-xs">Full Name *</Label>
-                    <Input
-                      id="pupilName"
-                      value={pupilName}
-                      onChange={(e) => setPupilName(e.target.value)}
-                      placeholder="John Smith"
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pupilEmail" className="text-xs">Email *</Label>
-                    <Input
-                      id="pupilEmail"
-                      type="email"
-                      value={pupilEmail}
-                      onChange={(e) => setPupilEmail(e.target.value)}
-                      placeholder="john@example.com"
-                      className="h-10"
-                    />
-                  </div>
+                  <BookingFormField
+                    id="pupilName"
+                    label="Full Name"
+                    value={pupilName}
+                    onChange={setPupilName}
+                    onBlur={() => handleFieldBlur('name', pupilName)}
+                    error={touchedFields.has('name') ? fieldErrors.name : null}
+                    placeholder="John Smith"
+                  />
+                  <BookingFormField
+                    id="pupilEmail"
+                    label="Email"
+                    type="email"
+                    value={pupilEmail}
+                    onChange={setPupilEmail}
+                    onBlur={() => handleFieldBlur('email', pupilEmail)}
+                    error={touchedFields.has('email') ? fieldErrors.email : null}
+                    placeholder="john@example.com"
+                  />
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="pupilPhone" className="text-xs">Phone *</Label>
-                      <Input
-                        id="pupilPhone"
-                        type="tel"
-                        value={pupilPhone}
-                        onChange={(e) => setPupilPhone(e.target.value)}
-                        placeholder="07123 456789"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="pupilPostcode" className="text-xs">Postcode *</Label>
-                      <Input
-                        id="pupilPostcode"
-                        value={pupilPostcode}
-                        onChange={(e) => setPupilPostcode(e.target.value)}
-                        placeholder="SW1A 1AA"
-                        className="h-10"
-                      />
-                    </div>
+                    <BookingFormField
+                      id="pupilPhone"
+                      label="Phone"
+                      type="tel"
+                      value={pupilPhone}
+                      onChange={setPupilPhone}
+                      onBlur={() => handleFieldBlur('phone', pupilPhone)}
+                      error={touchedFields.has('phone') ? fieldErrors.phone : null}
+                      placeholder="07123 456789"
+                    />
+                    <BookingFormField
+                      id="pupilPostcode"
+                      label="Postcode"
+                      value={pupilPostcode}
+                      onChange={setPupilPostcode}
+                      onBlur={() => handleFieldBlur('postcode', pupilPostcode)}
+                      error={touchedFields.has('postcode') ? fieldErrors.postcode : null}
+                      placeholder="SW1A 1AA"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="pupilAddress" className="text-xs">Home Address *</Label>
                     <GoogleAddressAutocomplete
                       value={pupilAddress}
-                      onChange={setPupilAddress}
+                      onChange={(v) => { setPupilAddress(v); handleFieldBlur('address', v); }}
                       onPostcodeChange={setPupilPostcode}
                       placeholder="Start typing your home address..."
                     />
+                    {touchedFields.has('address') && fieldErrors.address && (
+                      <p className="text-[11px] text-destructive font-medium">{fieldErrors.address}</p>
+                    )}
                   </div>
                   
                   <div className="pt-1">
@@ -897,9 +908,20 @@ export function MobileBookingView({
             </motion.div>
           )}
 
-          <p className="text-[10px] text-center text-muted-foreground mt-4">
-            Secure checkout with SSL encryption
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span className="text-[10px]">Secure checkout</span>
+            </div>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="text-[10px] text-muted-foreground">256-bit SSL</span>
+            <span className="text-muted-foreground/30">|</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">VISA</span>
+              <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">MC</span>
+              <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">AMEX</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -910,6 +932,9 @@ export function MobileBookingView({
         upsellTotal={upsellTotal}
         canSubmit={canSubmit}
         onPayClick={scrollToPayment}
+        isPupilDetailsComplete={isPupilDetailsComplete}
+        isFullyScheduled={isFullyScheduled}
+        requiresSlotSelection={requiresSlotSelection}
       />
     </div>
   );

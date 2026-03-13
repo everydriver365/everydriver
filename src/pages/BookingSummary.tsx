@@ -977,9 +977,44 @@ export default function BookingSummary() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="container py-16 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-muted-foreground">Loading course details...</p>
+        <div className="container py-8 max-w-5xl mx-auto">
+          <div className="space-y-6">
+            {/* Header skeleton */}
+            <div className="flex items-center gap-4">
+              <div className="h-9 w-9 rounded-lg bg-muted animate-pulse" />
+              <div className="space-y-2 flex-1">
+                <div className="h-6 w-48 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+              </div>
+              <div className="h-8 w-20 bg-muted animate-pulse rounded" />
+            </div>
+            {/* Form skeleton */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="rounded-xl border bg-card p-6 space-y-4">
+                  <div className="h-5 w-32 bg-muted animate-pulse rounded" />
+                  <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                  <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="h-10 bg-muted animate-pulse rounded" />
+                    <div className="h-10 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                </div>
+                <div className="rounded-xl border bg-card p-6 space-y-4">
+                  <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+                  <div className="h-64 w-full bg-muted animate-pulse rounded-lg" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="rounded-xl border bg-card p-6 space-y-3">
+                  <div className="h-16 w-16 rounded-full bg-muted animate-pulse mx-auto" />
+                  <div className="h-5 w-32 bg-muted animate-pulse rounded mx-auto" />
+                  <div className="h-4 w-24 bg-muted animate-pulse rounded mx-auto" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </MainLayout>
     );

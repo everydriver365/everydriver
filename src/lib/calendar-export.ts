@@ -49,6 +49,43 @@ export function generateICSFile(event: CalendarEvent): string {
     .join("\r\n");
 }
 
+export function generateMultiEventICS(events: CalendarEvent[]): string {
+  const vevents = events.map((event) => {
+    const start = toICSDate(event.startDate, event.startTime);
+    const end = addMinutes(event.startDate, event.startTime, event.durationMinutes);
+    return [
+      "BEGIN:VEVENT",
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:${event.title}`,
+      `DESCRIPTION:${event.description.replace(/\n/g, "\\n")}`,
+      event.location ? `LOCATION:${event.location}` : "",
+      "END:VEVENT",
+    ].filter(Boolean).join("\r\n");
+  });
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//EveryDriver//Booking//EN",
+    ...vevents,
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
+export function downloadMultiEventICS(events: CalendarEvent[]) {
+  const ics = generateMultiEventICS(events);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `lessons.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export function downloadICS(event: CalendarEvent) {
   const ics = generateICSFile(event);
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });

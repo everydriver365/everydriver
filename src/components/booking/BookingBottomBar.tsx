@@ -7,9 +7,32 @@ interface BookingBottomBarProps {
   upsellTotal: number;
   canSubmit: boolean;
   onPayClick: () => void;
+  isPupilDetailsComplete?: boolean;
+  isFullyScheduled?: boolean;
+  requiresSlotSelection?: boolean;
 }
 
-export function BookingBottomBar({ totalPrice, upsellTotal, canSubmit, onPayClick }: BookingBottomBarProps) {
+export function BookingBottomBar({ 
+  totalPrice, 
+  upsellTotal, 
+  canSubmit, 
+  onPayClick,
+  isPupilDetailsComplete = false,
+  isFullyScheduled = false,
+  requiresSlotSelection = true,
+}: BookingBottomBarProps) {
+  // Determine contextual button text
+  let buttonText = "Fill Your Details";
+  let ButtonIcon = CreditCard;
+  
+  if (!isPupilDetailsComplete) {
+    buttonText = "Fill Your Details";
+  } else if (requiresSlotSelection && !isFullyScheduled) {
+    buttonText = "Choose Your Lessons";
+  } else {
+    buttonText = `Pay £${totalPrice + upsellTotal}`;
+  }
+
   return (
     <motion.div
       initial={{ y: 100 }}
@@ -32,8 +55,8 @@ export function BookingBottomBar({ totalPrice, upsellTotal, canSubmit, onPayClic
           disabled={!canSubmit}
           onClick={onPayClick}
         >
-          <CreditCard className="h-4 w-4 mr-2" />
-          Pay Now
+          <ButtonIcon className="h-4 w-4 mr-2" />
+          {buttonText}
         </Button>
       </div>
     </motion.div>
