@@ -27,8 +27,12 @@ export default function PublicPaymentPage() {
     }
     return "";
   });
+  const [payerName, setPayerName] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [paid, setPaid] = useState(false);
+
+  const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
 
   useEffect(() => {
     if (!instructorId) return;
