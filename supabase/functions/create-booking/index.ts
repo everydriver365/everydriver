@@ -233,20 +233,21 @@ serve(async (req) => {
       console.error("Instructor notification error (non-fatal):", notifyError);
     }
 
-    // 7. Sync lessons to Google Calendar
+    // 7. Sync lessons to Google Calendar — flush the queue now
     try {
-      const calendarLessons = lessons?.map((lesson) => ({
-        lessonId: lesson.id,
-        date: lesson.lesson_date,
-        startTime: lesson.start_time,
-        pupilName: booking.pupilName,
-        pickupLocation: booking.pupilAddress,
-        duration: lesson.duration_minutes,
-      }));
-
-    // Calendar sync happens automatically via trigger_calendar_sync trigger
-    // on scheduled_lessons table, no manual call needed
-    console.log("Calendar sync will be handled by database trigger");
+      const syncResponse = await fetch(
+        `${supabaseUrl}/functions/v1/process-calendar-queue`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({}),
+        }
+      );
+      const syncResult = await syncResponse.json();
+      console.log("Calendar queue processed:", syncResult);
     } catch (calendarError) {
       console.error("Calendar sync error (non-fatal):", calendarError);
     }
