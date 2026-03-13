@@ -52,7 +52,7 @@ export function CardstreamPayButton({
       const returnUrl = `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`;
       const cancelUrl = window.location.href;
 
-      const { data, error } = await supabase.functions.invoke("npi-checkout", {
+      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
         body: {
           amount,
           currency: "GBP",
