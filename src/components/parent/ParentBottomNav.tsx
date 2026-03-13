@@ -1,6 +1,7 @@
 import { Home, Users, MessageSquare, Settings, LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { haptics } from "@/lib/haptics";
 
 interface NavItem {
   id: string;
