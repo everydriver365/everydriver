@@ -621,19 +621,6 @@ export function MobileBookingView({
         </div>
       )}
 
-      {/* Boost Your Booking - Upsells */}
-      {availableUpsells.length > 0 && onUpsellsChange && (
-        <div className="px-4 pb-4">
-          <div className="rounded-xl border bg-card p-4">
-            <UpsellSelector
-              upsells={availableUpsells}
-              selectedUpsells={selectedUpsells}
-              onSelectionChange={onUpsellsChange}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Step 3: Payment */}
       <div className="px-4 pb-8">
         <div className="rounded-xl border bg-card p-4">
