@@ -352,21 +352,21 @@ export default function BookingConfirmation() {
                       className="flex-1 gap-1.5"
                       onClick={() => {
                         if (lessons.length > 0) {
-                          const first = lessons[0];
-                          downloadICS({
+                          const events = lessons.map((lesson) => ({
                             title: `Driving Lesson with ${pupil.instructor.name}`,
                             description: `${pupil.prepaid_hours || totalHours}h ${pupil.course_type || 'driving'} course`,
-                            startDate: first.lesson_date,
-                            startTime: first.start_time,
-                            durationMinutes: first.duration_minutes,
-                            location: first.pickup_location || pupil.address,
-                          });
-                          toast.success("Calendar file downloaded");
+                            startDate: lesson.lesson_date,
+                            startTime: lesson.start_time,
+                            durationMinutes: lesson.duration_minutes,
+                            location: lesson.pickup_location || pupil.address,
+                          }));
+                          downloadMultiEventICS(events);
+                          toast.success(`${lessons.length} lesson${lessons.length > 1 ? 's' : ''} added to calendar file`);
                         }
                       }}
                     >
                       <CalendarPlus className="h-4 w-4" />
-                      Download .ics
+                      Download .ics ({lessons.length})
                     </Button>
                     <Button
                       variant="outline"
@@ -374,18 +374,22 @@ export default function BookingConfirmation() {
                       className="flex-1 gap-1.5"
                       onClick={() => {
                         if (lessons.length > 0) {
-                          const first = lessons[0];
-                          window.open(
-                            getGoogleCalendarUrl({
-                              title: `Driving Lesson with ${pupil.instructor.name}`,
-                              description: `${pupil.prepaid_hours || totalHours}h ${pupil.course_type || 'driving'} course`,
-                              startDate: first.lesson_date,
-                              startTime: first.start_time,
-                              durationMinutes: first.duration_minutes,
-                              location: first.pickup_location || pupil.address,
-                            }),
-                            "_blank"
-                          );
+                          // Open Google Calendar for each lesson
+                          lessons.forEach((lesson, i) => {
+                            setTimeout(() => {
+                              window.open(
+                                getGoogleCalendarUrl({
+                                  title: `Driving Lesson with ${pupil.instructor.name}`,
+                                  description: `${pupil.prepaid_hours || totalHours}h ${pupil.course_type || 'driving'} course - Lesson ${i + 1}/${lessons.length}`,
+                                  startDate: lesson.lesson_date,
+                                  startTime: lesson.start_time,
+                                  durationMinutes: lesson.duration_minutes,
+                                  location: lesson.pickup_location || pupil.address,
+                                }),
+                                "_blank"
+                              );
+                            }, i * 500); // Stagger to avoid popup blocking
+                          });
                         }
                       }}
                     >
