@@ -1775,6 +1775,32 @@ export default function BookingSummary() {
             </div>
           )}
 
+          {/* Express Checkout - Apple/Google Pay */}
+          {canSubmit && (
+            <div className="sm:col-span-2 mb-2">
+              <ElavonBookingWalletButtons
+                amount={totalPrice + upsellTotal}
+                instructorId={instructor.id}
+                pupilName={pupilName}
+                pupilEmail={pupilEmail}
+                pupilPhone={pupilPhone}
+                pupilAddress={pupilAddress}
+                pupilPostcode={pupilPostcode}
+                courseType={courseName}
+                courseHours={hours}
+                totalPrice={totalPrice}
+                slots={selectedSlots}
+                upsells={availableUpsells
+                  .filter((u) => selectedUpsells.includes(u.id))
+                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
+                onSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+                onProcessing={(p) => setIsSubmitting(p)}
+                disabled={isSubmitting || isElavonLoading || isClearpayLoading}
+                ensureBookingCreated={ensureBookingCreated}
+              />
+            </div>
+          )}
+
           <div className="grid gap-3 sm:grid-cols-2">
             {/* NPI Card Payment - With Deposit Option */}
             <div className="w-full rounded-lg border-2 border-primary p-4 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 relative">
