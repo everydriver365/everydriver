@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
-import { Loader2, CheckCircle2, PoundSterling } from "lucide-react";
+import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
 
 interface InstructorInfo {
   id: string;
@@ -27,8 +27,12 @@ export default function PublicPaymentPage() {
     }
     return "";
   });
+  const [payerName, setPayerName] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [paid, setPaid] = useState(false);
+
+  const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -107,8 +111,43 @@ export default function PublicPaymentPage() {
           <h1 className="text-xl font-bold text-foreground">Pay {instructor.name}</h1>
         </div>
 
-        {!showCheckout ? (
+         {!showCheckout ? (
           <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Your name <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Full name"
+                  value={payerName}
+                  onChange={(e) => setPayerName(e.target.value.slice(0, 100))}
+                  className="pl-9 h-12"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Email address <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value.slice(0, 255))}
+                  className="pl-9 h-12"
+                />
+              </div>
+              {payerEmail && !emailValid && (
+                <p className="text-xs text-destructive mt-1">Enter a valid email address</p>
+              )}
+            </div>
+
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
                 Amount to pay
@@ -124,7 +163,6 @@ export default function PublicPaymentPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="pl-9 text-lg h-12"
-                  autoFocus
                 />
               </div>
               {amount && !isValidAmount && (
@@ -134,7 +172,7 @@ export default function PublicPaymentPage() {
 
             <Button
               onClick={handleContinue}
-              disabled={!isValidAmount}
+              disabled={!isValidAmount || !emailValid}
               className="w-full h-12 text-base"
             >
               Continue to Payment
@@ -144,6 +182,8 @@ export default function PublicPaymentPage() {
           <CardstreamCheckout
             amount={parsedAmount}
             instructorId={instructorId}
+            customerName={payerName.trim() || undefined}
+            customerEmail={payerEmail.trim() || undefined}
             merchantIdForHPF=""
             onPaid={() => setPaid(true)}
           />
