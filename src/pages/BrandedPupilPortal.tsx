@@ -537,7 +537,10 @@ export default function BrandedPupilPortal() {
 
                 {/* Contact Instructor */}
                 <PupilPortalContact instructor={instructor} />
+                </div>
+                </PullToRefresh>
               </motion.div>
+            )}
             )}
 
             {activeSection === 'schedule' && (
