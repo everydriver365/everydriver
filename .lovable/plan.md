@@ -1,74 +1,59 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Booking Flow Audit: Payment Gateways, Records, and Calendar Integration
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+### Findings Summary
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+| Area | Status | Details |
+|------|--------|---------|
+| **Clearpay** | ✅ Working | Redirect → `payment-callback` captures token, records `payment_history`, credits balance via `increment_pupil_balance` RPC, records `platform_commissions`, sends receipt email, notifies instructor |
+| **Klarna** | ✅ Working | Redirect → `payment-callback` records payment, credits balance, records commissions, sends receipt, notifies instructor |
+| **NPI (Cardstream)** | ✅ Working | HPP POST → `payment-callback` handles response code 0, records payment, credits balance, records commissions |
+| **Elavon** | ✅ Working | HPP POST → `payment-callback` (shares NPI handler for `provider=elavon`), same flow |
+| **Square Checkout (redirect)** | ⚠️ **NOT RECORDING** | Redirects to Square hosted checkout → returns to `/booking-confirmation?square=success` — **no server-side callback** records the payment. No `payment_history` insert, no balance credit, no commission recorded |
+| **Square Wallet (Apple/Google Pay - pupil balance)** | ✅ Working | `square-wallet-payment` function handles payment + records `payment_history` + credits balance |
+| **Square Wallet (booking)** | ✅ Working | `square-booking-wallet-payment` creates pupil, lessons, records `payment_history` |
+| **WooCommerce** | ✅ Working | Uses sub-flows (NPI/Clearpay/Klarna) for actual payment, plus `woocommerce-update-order` sync |
+| **Google Calendar** | ✅ Working | `trigger_calendar_sync` DB trigger → `calendar_sync_queue` → `process-calendar-queue` called immediately by `create-booking` + pg_cron fallback every 5 min |
+| **Internal Calendar** | ✅ Working | Reads from `scheduled_lessons` directly; lessons created in `create-booking` |
+| **Parent notifications** | ❌ **Not implemented** | No parent notification on booking or payment in any gateway callback |
+| **`create-booking` payment_history** | ❌ **Not recorded** | `create-booking` sets negative `account_balance` but never records a `payment_history` entry for the initial booking payment |
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+---
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+### Issues Requiring Fixes
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+#### 1. **Square Checkout (redirect flow) — no payment recording** (Critical)
+The `square-checkout` function creates a Square Checkout link and redirects the user. When Square redirects back to `/booking-confirmation?square=success`, nothing server-side records the payment. The `payment-callback` edge function has no `provider === "square"` handler.
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+**Fix**: Add Square as a provider in `payment-callback`, OR use the Square webhook (`payment.completed` event) in `square-webhook/index.ts` to record the booking payment. The cleanest approach is to add a Square webhook handler for `payment.completed` that looks up the pupil by `reference_id`, records `payment_history`, and credits the balance.
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+#### 2. **`create-booking` doesn't record payment_history** (Medium)
+When `create-booking` is called, it sets `account_balance: -remainingBalance` but doesn't insert a `payment_history` row. For redirect-based gateways (NPI, Clearpay, Elavon, Klarna), the `payment-callback` eventually records it. But this means:
+- Free bookings (£0) have no payment record at all
+- The initial booking amount is only implied by the negative balance
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+**Fix**: For redirect gateways, this is acceptable (callback records it). For free bookings, add a `payment_history` entry with amount 0 and method "free".
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+#### 3. **Square Booking Wallet — no calendar queue flush** (Low)
+`square-booking-wallet-payment` creates lessons and relies on the DB trigger alone (line 264: "Calendar sync will be handled by database trigger"). Unlike `create-booking`, it does NOT call `process-calendar-queue` immediately. The pg_cron fallback will catch it within 5 minutes, but there's a delay.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**Fix**: Add the same `process-calendar-queue` fetch call that `create-booking` uses.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+#### 4. **Parent notifications on payment/booking** (Not implemented)
+No payment callback or booking function sends any notification to a pupil's parent. The `parent-weekly-summary` function exists but is separate.
+
+**Fix**: If parents should be notified of bookings/payments, add a call to a parent notification function in `create-booking` and `payment-callback`. This requires checking if the pupil has a linked parent record.
+
+---
+
+### Proposed Changes
+
+| File | Change |
+|------|--------|
+| `supabase/functions/square-webhook/index.ts` | Add `payment.completed` handler: look up pupil by `reference_id` prefix (`SQ-` or `BOOK-`), record `payment_history`, credit balance via `increment_pupil_balance`, record `platform_commissions`, notify instructor |
+| `supabase/functions/square-booking-wallet-payment/index.ts` | Add `process-calendar-queue` fetch call after lesson creation (same pattern as `create-booking`) |
+| `supabase/functions/create-booking/index.ts` | Add `payment_history` insert for free bookings (amount=0, method="free") |
+
+Parent notifications can be added as a follow-up if desired — it's a separate feature scope.
+
