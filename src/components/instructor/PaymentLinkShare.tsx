@@ -59,7 +59,7 @@ export function PaymentLinkShare({ instructorId, instructorName, pupils = [] }: 
           <label className="text-sm font-medium text-foreground mb-1.5 block">
             Link to pupil <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
-          <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+          <Select value={selectedPupilId} onValueChange={(v) => setSelectedPupilId(v === "none" ? "" : v)}>
             <SelectTrigger>
               <Users className="h-4 w-4 text-muted-foreground mr-2" />
               <SelectValue placeholder="Anyone (generic link)" />
