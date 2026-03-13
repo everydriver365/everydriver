@@ -471,6 +471,15 @@ export function LessonScheduler({
         </Badge>
       </div>
 
+      {/* Warning if course can't be divided by instructor's allowed lengths */}
+      {!courseCanBeCompleted && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+          <p className="text-sm text-destructive font-medium">
+            ⚠️ This {totalHours}-hour course cannot be evenly divided into the instructor's allowed lesson lengths ({baseDurationOptions.map(d => formatDuration(d)).join(', ')}). Please contact the instructor to adjust the course hours or lesson length options.
+          </p>
+        </div>
+      )}
+
       {/* Lesson Length Selection - Made Prominent */}
       <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -515,7 +524,7 @@ export function LessonScheduler({
         </div>
         {completionDuration && (
           <p className="text-xs text-muted-foreground mt-2 px-1">
-            💡 A {formatDuration(completionDuration)} lesson has been added to complete your {totalHours}-hour course
+            💡 A {formatDuration(completionDuration)} lesson has been added to complete your {totalHours}-hour course (instructor allows {baseDurationOptions.map(d => formatDuration(d)).join(', ')} lessons)
           </p>
         )}
       </div>
