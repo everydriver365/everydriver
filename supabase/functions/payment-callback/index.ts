@@ -433,6 +433,24 @@ serve(async (req: Request) => {
                   } catch (notifyErr) {
                     console.error("Failed to notify instructor:", notifyErr);
                   }
+
+                  // Notify parent of Clearpay payment
+                  try {
+                    await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${supabaseServiceKey}`,
+                      },
+                      body: JSON.stringify({
+                        pupilId,
+                        type: "payment_received",
+                        body: `£${capturedAmount.toFixed(2)} payment confirmed for ${pupil.name || "your child"}'s driving lessons via Clearpay.`,
+                      }),
+                    });
+                  } catch (parentErr) {
+                    console.error("Parent notification error (non-fatal):", parentErr);
+                  }
                 }
               } catch (dbError) {
                 console.error("Failed to record Clearpay payment:", dbError);
