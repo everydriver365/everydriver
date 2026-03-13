@@ -340,15 +340,23 @@ export function MobileBookingView({
         </motion.div>
       )}
 
-      {/* Course Info Link */}
+      {/* Course Info Expandable Card */}
       {hasCourseInfo && (
         <div className="px-4 mt-4">
-          <button 
+          <button
             onClick={() => setShowCourseInfo(true)}
-            className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+            className="w-full flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors active:bg-muted/50"
           >
-            <Info className="h-3.5 w-3.5" />
-            View course details
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Info className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Course Details</p>
+                <p className="text-[11px] text-muted-foreground">Prerequisites, what to bring & more</p>
+              </div>
+            </div>
+            <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           </button>
         </div>
       )}
