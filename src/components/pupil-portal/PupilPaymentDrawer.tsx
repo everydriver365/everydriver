@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { SquareWalletButtons } from "./SquareWalletButtons";
+import { ElavonWalletButtons } from "@/components/payments/ElavonWalletButtons";
 import { useAdminFee } from "@/hooks/useAdminFee";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
@@ -256,7 +256,7 @@ export function PupilPaymentDrawer({
               {/* Express Checkout — Apple Pay / Google Pay */}
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
-                <SquareWalletButtons
+                <ElavonWalletButtons
                   amount={totalCharge}
                   pupilId={pupilId}
                   instructorId={instructorId}

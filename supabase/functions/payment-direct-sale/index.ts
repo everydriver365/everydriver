@@ -11,7 +11,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-type PayMethod = "card_token" | "apple_pay";
+type PayMethod = "card_token" | "apple_pay" | "google_pay";
 
 interface DirectSaleRequest {
   orderRef: string;
@@ -22,6 +22,9 @@ interface DirectSaleRequest {
 
   // Apple Pay token object stringified (event.payment.token)
   applePayPaymentToken?: string;
+
+  // Google Pay token object stringified
+  googlePayPaymentToken?: string;
 
   customerName?: string;
   customerEmail?: string;
@@ -118,6 +121,15 @@ serve(async (req) => {
       }
       requestFields.paymentMethod = "applepay";
       requestFields.paymentToken = body.applePayPaymentToken;
+    } else if (body.method === "google_pay") {
+      if (!body.googlePayPaymentToken) {
+        return new Response(JSON.stringify({ error: "Missing googlePayPaymentToken" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      requestFields.paymentMethod = "googlepay";
+      requestFields.paymentToken = body.googlePayPaymentToken;
     }
 
     requestFields.signature = await createCardstreamSignature(requestFields, secretKey);

@@ -17,7 +17,7 @@ import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons";
+import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
@@ -808,7 +808,7 @@ export function MobileBookingView({
           <div className="space-y-2">
             {/* Express Checkout - Apple/Google Pay */}
             {canSubmit && (
-              <BookingWalletButtons
+              <ElavonBookingWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
                 pupilName={pupilName}

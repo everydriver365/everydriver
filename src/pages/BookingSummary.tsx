@@ -19,6 +19,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
@@ -1771,6 +1772,32 @@ export default function BookingSummary() {
                     ? `Please schedule all ${hours} hours first`
                     : "Please complete your details above"}
               </span>
+            </div>
+          )}
+
+          {/* Express Checkout - Apple/Google Pay */}
+          {canSubmit && (
+            <div className="sm:col-span-2 mb-2">
+              <ElavonBookingWalletButtons
+                amount={totalPrice + upsellTotal}
+                instructorId={instructor.id}
+                pupilName={pupilName}
+                pupilEmail={pupilEmail}
+                pupilPhone={pupilPhone}
+                pupilAddress={pupilAddress}
+                pupilPostcode={pupilPostcode}
+                courseType={courseName}
+                courseHours={hours}
+                totalPrice={totalPrice}
+                slots={selectedSlots}
+                upsells={availableUpsells
+                  .filter((u) => selectedUpsells.includes(u.id))
+                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
+                onSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+                onProcessing={(p) => setIsSubmitting(p)}
+                disabled={isSubmitting || isElavonLoading || isClearpayLoading}
+                ensureBookingCreated={ensureBookingCreated}
+              />
             </div>
           )}
 
