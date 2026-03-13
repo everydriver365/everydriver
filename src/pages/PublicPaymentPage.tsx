@@ -100,7 +100,7 @@ export default function PublicPaymentPage() {
             <img
               src={instructor.logo_url || instructor.profile_image_url || ""}
               alt={instructor.name}
-              className="h-24 w-24 rounded-full object-cover mx-auto"
+              className="h-24 w-auto max-w-[12rem] object-contain mx-auto"
             />
           ) : (
             <div
