@@ -27,6 +27,7 @@ interface PupilData {
   postcode: string | null;
   pickup_address: string | null;
   what3words: string | null;
+  parent_portal_enabled?: boolean;
 }
 
 interface PupilPortalProfileEditProps {
