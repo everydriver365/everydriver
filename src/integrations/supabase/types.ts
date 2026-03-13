@@ -6657,6 +6657,65 @@ export type Database = {
           },
         ]
       }
+      lesson_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id: string
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id: string
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          pupil_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_ratings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_ratings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_ratings_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_ratings_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_reminders_log: {
         Row: {
           channel: string
@@ -10044,6 +10103,7 @@ export type Database = {
           progress: number | null
           referral_code: string | null
           referred_by_pupil_id: string | null
+          reminder_preferences: Json | null
           reward_points: number | null
           scheduling_status: string | null
           special_needs: string | null
@@ -10125,6 +10185,7 @@ export type Database = {
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
+          reminder_preferences?: Json | null
           reward_points?: number | null
           scheduling_status?: string | null
           special_needs?: string | null
@@ -10206,6 +10267,7 @@ export type Database = {
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
+          reminder_preferences?: Json | null
           reward_points?: number | null
           scheduling_status?: string | null
           special_needs?: string | null
