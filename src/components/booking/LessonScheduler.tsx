@@ -82,7 +82,7 @@ export function LessonScheduler({
   pupilId,
   onSlotsChange,
 }: LessonSchedulerProps) {
-  const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
+  const isMobile = useIsMobile();
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [externalEvents, setExternalEvents] = useState<ExternalCalendarEvent[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
