@@ -218,6 +218,16 @@ export function MobileBookingView({
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
   
+  // Form validation errors
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  
+  const handleFieldBlur = useCallback((field: 'name' | 'email' | 'phone' | 'postcode' | 'address', value: string) => {
+    setTouchedFields(prev => new Set(prev).add(field));
+    const error = validateField(field, value);
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+  }, []);
+  
   // Course info sheet state
   const [showCourseInfo, setShowCourseInfo] = useState(false);
   
