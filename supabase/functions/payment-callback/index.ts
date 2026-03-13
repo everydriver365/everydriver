@@ -215,6 +215,25 @@ serve(async (req: Request) => {
               console.error("Failed to notify instructor:", notifyError);
             }
 
+            // Notify parent of payment (if linked)
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  pupilId,
+                  type: "payment_received",
+                  body: `£${paymentAmountPounds.toFixed(2)} payment confirmed for ${pupil.name || "your child"}'s driving lessons via ${provider.toUpperCase()}.`,
+                }),
+              });
+              console.log("Parent payment notification triggered");
+            } catch (parentError) {
+              console.error("Parent notification error (non-fatal):", parentError);
+            }
+
             console.log("Payment recorded in history");
           }
         } catch (dbError) {

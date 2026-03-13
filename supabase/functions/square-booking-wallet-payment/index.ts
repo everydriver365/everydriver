@@ -276,6 +276,25 @@ serve(async (req: Request) => {
       console.error("Calendar sync error (non-fatal):", calendarError);
     }
 
+    // Notify parent of booking (if linked)
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          pupilId,
+          type: "booking_confirmed",
+          body: `A ${courseType} course has been booked for ${pupilName}.${slots.length > 0 ? ` ${slots.length} lessons scheduled.` : ''}`,
+        }),
+      });
+      console.log("Parent booking notification triggered");
+    } catch (parentError) {
+      console.error("Parent notification error (non-fatal):", parentError);
+    }
+
     console.log("Booking completed successfully:", pupilId);
 
     return new Response(
