@@ -165,6 +165,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
+  "commission-settings": { title: "Commission & Fees", group: "Finance & Payments", icon: PoundSterling },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
