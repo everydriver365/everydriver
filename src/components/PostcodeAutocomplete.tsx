@@ -37,6 +37,7 @@ export function PostcodeAutocomplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const skipNextFetchRef = useRef(false);
   const [isLocating, setIsLocating] = useState(false);
 
   // Fetch suggestions from edge function
@@ -72,6 +73,11 @@ export function PostcodeAutocomplete({
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
+    }
+
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
     }
 
     if (value.length >= 2) {
@@ -130,6 +136,7 @@ export function PostcodeAutocomplete({
   };
 
   const handleSelect = (suggestion: PostcodeSuggestion) => {
+    skipNextFetchRef.current = true;
     onChange(suggestion.postcode);
     setShowDropdown(false);
     setSuggestions([]);
@@ -179,6 +186,7 @@ export function PostcodeAutocomplete({
             
             console.log('Found postcode:', formattedPostcode, areaName);
             
+            skipNextFetchRef.current = true;
             onChange(formattedPostcode);
             onSelect?.(formattedPostcode, areaName);
             
