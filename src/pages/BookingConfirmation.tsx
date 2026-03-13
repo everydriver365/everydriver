@@ -128,6 +128,32 @@ export default function BookingConfirmation() {
     fetchBookingDetails();
   }, [pupilId]);
 
+  // Fire confetti on successful payment
+  useEffect(() => {
+    if (paymentSuccessful && !loading && pupil) {
+      const duration = 2000;
+      const end = Date.now() + duration;
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#10b981', '#34d399', '#6ee7b7'],
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#10b981', '#34d399', '#6ee7b7'],
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
+  }, [paymentSuccessful, loading, pupil]);
+
   if (loading) {
     return (
       <MainLayout>
