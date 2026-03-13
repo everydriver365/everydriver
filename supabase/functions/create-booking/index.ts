@@ -290,6 +290,22 @@ serve(async (req) => {
       console.error("Welcome email error (non-fatal):", welcomeError);
     }
 
+    // 9. Record payment_history for free bookings (amount=0)
+    if (booking.totalPrice === 0) {
+      try {
+        await supabase.from("payment_history").insert({
+          instructor_id: booking.instructorId,
+          pupil_id: pupil.id,
+          amount: 0,
+          payment_method: "free",
+          notes: `Free booking: ${booking.courseType}`,
+        });
+        console.log("Free booking payment_history recorded");
+      } catch (freePayError) {
+        console.error("Free booking payment record error (non-fatal):", freePayError);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

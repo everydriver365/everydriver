@@ -23,6 +23,198 @@ serve(async (req: Request) => {
     console.log("Received Square webhook:", eventType);
 
     switch (eventType) {
+      case "payment.completed": {
+        const payment = data?.payment || data;
+        const paymentId = payment?.id;
+        const referenceId = payment?.reference_id;
+        const orderId = payment?.order_id;
+        const amountMoney = payment?.amount_money;
+        const receiptUrl = payment?.receipt_url;
+
+        if (!paymentId || !amountMoney) {
+          console.log("payment.completed: missing payment ID or amount");
+          break;
+        }
+
+        const amountPounds = (amountMoney.amount || 0) / 100;
+        console.log(`Square payment completed: ${paymentId}, £${amountPounds}, ref: ${referenceId}, order: ${orderId}`);
+
+        // Determine if this is a pupil balance payment or booking payment
+        // Square wallet payments already record via their own edge functions,
+        // so we only handle Square Checkout (redirect) payments here.
+        // Square Checkout payments have an order_id but typically no reference_id
+        // since quick_pay doesn't support reference_id.
+
+        // Look for a pupil with a pending booking whose balance matches
+        // We check payment_intents first if available
+        let pupilId: string | null = null;
+        let instructorId: string | null = null;
+
+        // Try to find by payment_intents table (if booking stored a record)
+        if (orderId) {
+          const { data: intent } = await supabase
+            .from("payment_intents")
+            .select("pupil_id, instructor_id, amount, status")
+            .eq("provider_reference", orderId)
+            .eq("status", "pending")
+            .maybeSingle();
+
+          if (intent) {
+            pupilId = intent.pupil_id;
+            instructorId = intent.instructor_id;
+            console.log(`Found payment intent for order ${orderId}: pupil ${pupilId}`);
+
+            // Mark intent as completed
+            await supabase
+              .from("payment_intents")
+              .update({ status: "completed", completed_at: new Date().toISOString() })
+              .eq("provider_reference", orderId);
+          }
+        }
+
+        // Try reference_id lookup (for wallet payments that set reference_id)
+        if (!pupilId && referenceId) {
+          // Check PUPIL- prefix (balance payments)
+          if (referenceId.startsWith("PUPIL-")) {
+            const pupilIdSlice = referenceId.replace("PUPIL-", "").split("-")[0];
+            const { data: pupils } = await supabase
+              .from("pupils")
+              .select("id, instructor_id")
+              .ilike("id", `${pupilIdSlice}%`)
+              .limit(1);
+
+            if (pupils && pupils.length > 0) {
+              pupilId = pupils[0].id;
+              instructorId = pupils[0].instructor_id;
+            }
+          }
+          // Check BOOK- prefix (booking payments from wallet)
+          else if (referenceId.startsWith("BOOK-")) {
+            const instructorSlice = referenceId.replace("BOOK-", "").split("-")[0];
+            // These are already handled by square-booking-wallet-payment, skip
+            console.log(`Skipping BOOK- reference (handled by wallet function): ${referenceId}`);
+            break;
+          }
+        }
+
+        if (!pupilId || !instructorId) {
+          console.log("payment.completed: could not match to a pupil/instructor, skipping");
+          break;
+        }
+
+        // Check if payment_history already recorded (idempotency)
+        const { data: existing } = await supabase
+          .from("payment_history")
+          .select("id")
+          .eq("transaction_reference", paymentId)
+          .maybeSingle();
+
+        if (existing) {
+          console.log(`Payment ${paymentId} already recorded, skipping`);
+          break;
+        }
+
+        // Get commission config
+        const { data: commConfig } = await supabase
+          .from("platform_commission_config")
+          .select("rate_percent, fixed_fee_pence, is_active")
+          .eq("is_active", true)
+          .maybeSingle();
+
+        let feeAmount = 0;
+        let creditAmount = amountPounds;
+        if (commConfig) {
+          feeAmount = amountPounds * (commConfig.rate_percent / 100) + (commConfig.fixed_fee_pence / 100);
+          feeAmount = Math.round(feeAmount * 100) / 100;
+          creditAmount = amountPounds - feeAmount;
+        }
+
+        // Record payment_history
+        await supabase.from("payment_history").insert({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          amount: creditAmount,
+          payment_method: "square_checkout",
+          notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
+          transaction_reference: paymentId,
+        });
+
+        // Credit pupil balance
+        await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId,
+          p_amount: creditAmount,
+        });
+        console.log(`Credited £${creditAmount.toFixed(2)} to pupil ${pupilId}`);
+
+        // Record commission
+        if (feeAmount > 0) {
+          await supabase.from("platform_commissions").insert({
+            instructor_id: instructorId,
+            source_type: "square_checkout",
+            source_id: paymentId,
+            gross_amount: amountPounds,
+            commission_amount: feeAmount,
+            commission_rate: commConfig?.rate_percent ? commConfig.rate_percent / 100 : 0.025,
+            fixed_fee: commConfig?.fixed_fee_pence ? commConfig.fixed_fee_pence / 100 : 0.20,
+            net_amount: creditAmount,
+            description: "Admin fee on Square Checkout payment",
+          });
+          console.log(`Recorded commission: £${feeAmount.toFixed(2)}`);
+        }
+
+        // Send receipt email (non-blocking)
+        try {
+          const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+          await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${supabaseAnonKey}`,
+            },
+            body: JSON.stringify({
+              pupilId,
+              instructorId,
+              amount: creditAmount,
+              paymentMethod: "Square Checkout",
+              transactionReference: paymentId,
+              receiptUrl,
+            }),
+          });
+        } catch (e) {
+          console.error("Receipt email error:", e);
+        }
+
+        // Notify instructor
+        try {
+          const { data: pupil } = await supabase
+            .from("pupils")
+            .select("name")
+            .eq("id", pupilId)
+            .maybeSingle();
+
+          await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              instructorId,
+              notification: {
+                title: "💰 Payment Received",
+                body: `£${creditAmount.toFixed(2)} received from ${pupil?.name || "a pupil"} via Square Checkout`,
+                tag: `payment-received-${Date.now()}`,
+                data: { type: "payment_received", pupilId, amount: creditAmount },
+              },
+            }),
+          });
+        } catch (e) {
+          console.error("Instructor notification error:", e);
+        }
+
+        break;
+      }
+
       case "subscription.created":
       case "subscription.updated": {
         const subscriptionId = data?.subscription?.id;
