@@ -22,6 +22,7 @@ import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
