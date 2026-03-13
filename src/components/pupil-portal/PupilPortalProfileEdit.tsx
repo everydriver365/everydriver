@@ -11,6 +11,8 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface PupilData {
   id: string;
