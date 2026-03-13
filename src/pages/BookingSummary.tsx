@@ -339,6 +339,7 @@ export default function BookingSummary() {
         pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
         pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
         pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
+        specialNeeds: hasSpecialNeeds && specialNeeds.trim() ? specialNeeds.trim() : undefined,
         courseType: courseName,
         courseHours: hours,
         totalPrice,
