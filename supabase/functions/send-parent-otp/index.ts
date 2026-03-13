@@ -121,7 +121,7 @@ serve(async (req: Request) => {
       JSON.stringify({ 
         success: true, 
         message: "Verification code sent",
-        childCount: pupils.length
+        childCount: enabledPupils.length
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

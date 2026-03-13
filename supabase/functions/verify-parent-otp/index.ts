@@ -73,12 +73,13 @@ serve(async (req: Request) => {
       .update({ verified: true })
       .eq("id", otpRecord.id);
 
-    // Get children linked to this parent
+    // Get children linked to this parent (only those with parent portal enabled)
     const phoneWithoutCountry = cleanPhone.replace(/^\+44/, "0");
     const { data: children, error: childError } = await supabase
       .from("pupils")
       .select("id, name, instructor_id")
-      .or(`parent_phone.eq.${cleanPhone},parent_phone.eq.${phoneWithoutCountry}`);
+      .or(`parent_phone.eq.${cleanPhone},parent_phone.eq.${phoneWithoutCountry}`)
+      .neq("parent_portal_enabled", false);
 
     if (childError) throw childError;
 
