@@ -49,7 +49,7 @@ serve(async (req: Request) => {
     // Check if this phone is linked to any pupils as parent
     const { data: pupils, error: pupilError } = await supabase
       .from("pupils")
-      .select("id, name")
+      .select("id, name, parent_portal_enabled")
       .or(`parent_phone.eq.${cleanPhone},parent_phone.eq.${phoneWithoutCountry},parent_phone.ilike.%${phone.replace(/\s+/g, "").slice(-9)}`);
 
     if (pupilError) throw pupilError;
@@ -58,6 +58,16 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "No children found linked to this phone number" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Filter out pupils who have disabled parent portal access
+    const enabledPupils = pupils.filter(p => p.parent_portal_enabled !== false);
+
+    if (enabledPupils.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Access has been restricted by the learner" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -111,7 +121,7 @@ serve(async (req: Request) => {
       JSON.stringify({ 
         success: true, 
         message: "Verification code sent",
-        childCount: pupils.length
+        childCount: enabledPupils.length
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
