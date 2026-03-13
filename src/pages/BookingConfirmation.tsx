@@ -10,8 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
-import { downloadICS, getGoogleCalendarUrl } from "@/lib/calendar-export";
+import { downloadMultiEventICS, getGoogleCalendarUrl } from "@/lib/calendar-export";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface ScheduledLesson {
   id: string;
