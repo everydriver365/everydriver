@@ -27,6 +27,8 @@ import { PupilRouteHistory } from "@/components/pupil-portal/PupilRouteHistory";
 import { ParentChat } from "@/components/parent/ParentChat";
 import { ParentPushBanner } from "@/components/parent/ParentPushBanner";
 import { ParentPaymentTopUp } from "@/components/parent/ParentPaymentTopUp";
+import { ParentWelcomeTour } from "@/components/parent/ParentWelcomeTour";
+import { ParentDashboardSkeleton } from "@/components/ui/skeletons/ParentDashboardSkeleton";
 
 interface Child {
   id: string;
@@ -485,6 +487,9 @@ export default function ParentPortal() {
         <AnimatePresence mode="wait">
           {activeSection === 'dashboard' && (
             <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              {/* Welcome Tour */}
+              <ParentWelcomeTour parentPhone={parentPhone} />
+              
               {/* iOS Greeting */}
               <div className="pt-1">
                 <p className="text-xs text-muted-foreground">Welcome back</p>
@@ -514,6 +519,28 @@ export default function ParentPortal() {
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex gap-2 mb-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Top Up
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Message
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Lessons
+                        </button>
                       </div>
 
                       {/* 3-Column Stats Strip */}

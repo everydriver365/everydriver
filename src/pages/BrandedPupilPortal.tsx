@@ -59,6 +59,9 @@ import { PupilLessonVideos } from "@/components/pupil-portal/PupilLessonVideos";
 import { PupilDrivingStyleReport } from "@/components/pupil-portal/PupilDrivingStyleReport";
 import { PupilGoals } from "@/components/pupil-portal/PupilGoals";
 import { LessonStreakCard } from "@/components/pupil-portal/LessonStreakCard";
+import { PupilWelcomeTour } from "@/components/pupil-portal/PupilWelcomeTour";
+import { PupilDashboardSkeleton } from "@/components/ui/skeletons/PupilDashboardSkeleton";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 
 interface InstructorBranding {
   id: string;
@@ -241,8 +244,8 @@ export default function BrandedPupilPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: wallpaperColor }}>
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen" style={{ backgroundColor: wallpaperColor }}>
+        <PupilDashboardSkeleton />
       </div>
     );
   }
@@ -384,8 +387,12 @@ export default function BrandedPupilPortal() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="p-4 space-y-4"
               >
+                {/* Welcome Tour */}
+                <PupilWelcomeTour pupilId={pupil.id} />
+                
+                <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
+                <div className="p-4 space-y-4">
                 {/* iOS Greeting */}
                 <div className="pt-1">
                   <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
@@ -530,6 +537,8 @@ export default function BrandedPupilPortal() {
 
                 {/* Contact Instructor */}
                 <PupilPortalContact instructor={instructor} />
+                </div>
+                </PullToRefresh>
               </motion.div>
             )}
 
