@@ -50,6 +50,8 @@ export function PupilPaymentModal({
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
 
+  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, commissionPayer);
+
   // On mobile, render the drawer instead
   if (isMobile) {
     return (
@@ -64,6 +66,7 @@ export function PupilPaymentModal({
         instructorSlug={instructorSlug}
         accountBalance={accountBalance}
         brandColour={brandColour}
+        commissionPayer={commissionPayer}
       />
     );
   }
