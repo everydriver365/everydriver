@@ -1819,7 +1819,7 @@ export default function BookingSummary() {
                   Card
                 </span>
                 <span className="text-xs text-primary">
-                  {isNPILoading ? "Loading..." : "Secure Payment"}
+                  {isElavonLoading ? "Loading..." : "Secure Payment"}
                 </span>
               </div>
 
