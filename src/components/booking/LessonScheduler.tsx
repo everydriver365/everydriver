@@ -503,11 +503,19 @@ export function LessonScheduler({
                   )}
                 >
                   {formatDuration(d)}
+                  {completionDuration === d && (
+                    <span className="ml-1 text-[10px] opacity-75">(finish)</span>
+                  )}
                 </Button>
               );
             })}
           </div>
         </div>
+        {completionDuration && (
+          <p className="text-xs text-muted-foreground mt-2 px-1">
+            💡 A {formatDuration(completionDuration)} lesson has been added to complete your {totalHours}-hour course
+          </p>
+        )}
       </div>
 
       {/* Calendar, Time Slots, and Selected Lessons */}
