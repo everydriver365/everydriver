@@ -16,6 +16,7 @@ import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { supabase } from "@/integrations/supabase/client";
@@ -1596,22 +1597,12 @@ export default function BookingSummary() {
                 placeholder="07123 456789"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="pupilPostcode">Postcode *</Label>
-              <Input
-                id="pupilPostcode"
-                value={pupilPostcode}
-                onChange={(e) => setPupilPostcode(e.target.value)}
-                placeholder="SW1A 1AA"
-              />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="pupilAddress">Home Address *</Label>
-              <GoogleAddressAutocomplete
-                value={pupilAddress}
-                onChange={setPupilAddress}
+            <div className="sm:col-span-2">
+              <PostcodeAddressLookup
+                postcode={pupilPostcode}
+                address={pupilAddress}
                 onPostcodeChange={setPupilPostcode}
-                placeholder="Start typing your home address..."
+                onAddressChange={setPupilAddress}
               />
             </div>
             

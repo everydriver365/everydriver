@@ -21,6 +21,7 @@ import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons"
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
@@ -622,39 +623,26 @@ export function MobileBookingView({
                     error={touchedFields.has('email') ? fieldErrors.email : null}
                     placeholder="john@example.com"
                   />
-                  <div className="grid grid-cols-2 gap-3">
-                    <BookingFormField
-                      id="pupilPhone"
-                      label="Phone"
-                      type="tel"
-                      value={pupilPhone}
-                      onChange={setPupilPhone}
-                      onBlur={() => handleFieldBlur('phone', pupilPhone)}
-                      error={touchedFields.has('phone') ? fieldErrors.phone : null}
-                      placeholder="07123 456789"
-                    />
-                    <BookingFormField
-                      id="pupilPostcode"
-                      label="Postcode"
-                      value={pupilPostcode}
-                      onChange={setPupilPostcode}
-                      onBlur={() => handleFieldBlur('postcode', pupilPostcode)}
-                      error={touchedFields.has('postcode') ? fieldErrors.postcode : null}
-                      placeholder="SW1A 1AA"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pupilAddress" className="text-xs">Home Address *</Label>
-                    <GoogleAddressAutocomplete
-                      value={pupilAddress}
-                      onChange={(v) => { setPupilAddress(v); handleFieldBlur('address', v); }}
-                      onPostcodeChange={setPupilPostcode}
-                      placeholder="Start typing your home address..."
-                    />
-                    {touchedFields.has('address') && fieldErrors.address && (
-                      <p className="text-[11px] text-destructive font-medium">{fieldErrors.address}</p>
-                    )}
-                  </div>
+                  <BookingFormField
+                    id="pupilPhone"
+                    label="Phone"
+                    type="tel"
+                    value={pupilPhone}
+                    onChange={setPupilPhone}
+                    onBlur={() => handleFieldBlur('phone', pupilPhone)}
+                    error={touchedFields.has('phone') ? fieldErrors.phone : null}
+                    placeholder="07123 456789"
+                  />
+                  <PostcodeAddressLookup
+                    postcode={pupilPostcode}
+                    address={pupilAddress}
+                    onPostcodeChange={setPupilPostcode}
+                    onAddressChange={(v) => { setPupilAddress(v); handleFieldBlur('address', v); }}
+                    onBlurPostcode={() => handleFieldBlur('postcode', pupilPostcode)}
+                    onBlurAddress={() => handleFieldBlur('address', pupilAddress)}
+                    postcodeError={touchedFields.has('postcode') ? fieldErrors.postcode : null}
+                    addressError={touchedFields.has('address') ? fieldErrors.address : null}
+                  />
                   
                   <div className="pt-1">
                     <label className="flex items-center gap-2 cursor-pointer">
