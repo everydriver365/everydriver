@@ -120,7 +120,7 @@ export function CardstreamCheckout({
         setOrderRef(data.orderRef);
 
         // Load Hosted Fields script
-        await loadScript(data.cardstream.hostedFieldsScriptUrl);
+        await loadScript(data.hostedFieldsScriptUrl);
         
         if (cancelled) return;
 
@@ -130,7 +130,7 @@ export function CardstreamCheckout({
         // Initialize Hosted Fields using their SDK
         if (window.hostedFields?.classes?.HostedFields) {
           const instance = new window.hostedFields.classes.HostedFields({
-            merchantID: merchantIdForHPF,
+            merchantID: merchantIdForHPF || data.merchantId,
             stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
             fields: {
               cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },

@@ -23,7 +23,7 @@ import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
+import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
@@ -877,13 +877,14 @@ export function MobileBookingView({
 
               {showEmbeddedCheckout && embeddedCheckoutPupilId ? (
                 <div>
-                  <CardstreamPayButton
+                  <CardstreamCheckout
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                     pupilId={embeddedCheckoutPupilId}
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    onError={(msg) => { /* handled by component */ }}
+                    merchantIdForHPF=""
+                    onPaid={onEmbeddedCheckoutSuccess}
                   />
                   <button 
                     onClick={onEmbeddedCheckoutCancel}

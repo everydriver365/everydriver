@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
+import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
@@ -660,57 +660,8 @@ export default function BookingSummary() {
       );
       if (!pupilId) return;
 
-      const payAmount = isDepositPayment ? depositAmount : fullPaymentAmount;
-      const orderReference = `ELV-${instructor.id.slice(0, 8)}-${Date.now()}`;
-
-      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
-        body: {
-          amount: payAmount,
-          orderReference,
-          customerEmail: pupilEmail.trim(),
-          customerName: pupilName.trim(),
-          customerPhone: pupilPhone.trim(),
-          customerAddress: pupilAddress.trim(),
-          customerPostcode: pupilPostcode.trim(),
-          description: `${courseName} - ${hours} Hour Driving Course`,
-          instructorId: instructor.id,
-          pupilId,
-          formResponsive: true,
-          merchantName: "EveryDriver",
-        },
-      });
-
-      if (error) {
-        console.error("Elavon checkout error:", error);
-        toast.error("Failed to start card payment. Please try again.");
-        return;
-      }
-
-      if (!data?.success) {
-        toast.error(data?.error || "Failed to create checkout session");
-        return;
-      }
-
-      // Elavon HPP requires form POST submission
-      if (data?.formAction && data?.formFields) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.formAction;
-        form.style.display = 'none';
-
-        for (const [key, value] of Object.entries(data.formFields)) {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = String(value);
-          form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-      } else {
-        toast.error("Could not get payment form data");
-      }
+      // Show inline hosted fields instead of redirecting
+      setShowHostedFields(true);
     } catch (err) {
       console.error("Elavon error:", err);
       toast.error("Something went wrong. Please try again.");
@@ -1965,13 +1916,19 @@ export default function BookingSummary() {
                   Cancel
                 </button>
               </div>
-              <CardstreamPayButton
+              <CardstreamCheckout
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                pupilId={bookingPupilId}
+                pupilId={bookingPupilId || undefined}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                onError={(msg) => toast.error(msg)}
+                merchantIdForHPF=""
+                onPaid={() => {
+                  toast.success("Payment successful!");
+                  if (bookingPupilId) {
+                    navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+                  }
+                }}
               />
             </motion.div>
           )}
