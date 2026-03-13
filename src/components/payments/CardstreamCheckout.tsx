@@ -364,35 +364,38 @@ export function CardstreamCheckout({
             )}
 
             {/* Card Fields */}
-            <div className="space-y-3">
+            <form id="cs-payment-form" className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="text-sm font-medium mb-1 block">Card number</label>
-                <div 
-                  id="cs-card-number" 
-                  className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                  style={{ minHeight: '40px' }}
+                <input
+                  id="cs-card-number"
+                  type="hostedfield:cardNumber"
+                  className="h-10 w-full border rounded-md bg-background px-3"
+                  autoComplete="off"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Expiry</label>
-                  <div 
-                    id="cs-card-expiry" 
-                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                    style={{ minHeight: '40px' }}
+                  <input
+                    id="cs-card-expiry"
+                    type="hostedfield:cardExpiryDate"
+                    className="h-10 w-full border rounded-md bg-background px-3"
+                    autoComplete="off"
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">CVV</label>
-                  <div 
-                    id="cs-card-cvv" 
-                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                    style={{ minHeight: '40px' }}
+                  <input
+                    id="cs-card-cvv"
+                    type="hostedfield:cardCVV"
+                    className="h-10 w-full border rounded-md bg-background px-3"
+                    autoComplete="off"
                   />
                 </div>
               </div>
-            </div>
+            </form>
 
             {/* Pay Button */}
             <Button
