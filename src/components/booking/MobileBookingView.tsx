@@ -579,14 +579,51 @@ export function MobileBookingView({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="pupilAddress" className="text-xs">Pickup Address *</Label>
+                    <Label htmlFor="pupilAddress" className="text-xs">Home Address *</Label>
                     <GoogleAddressAutocomplete
                       value={pupilAddress}
                       onChange={setPupilAddress}
                       onPostcodeChange={setPupilPostcode}
-                      placeholder="Start typing your address..."
+                      placeholder="Start typing your home address..."
                     />
                   </div>
+                  
+                  <div className="pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={differentPickup}
+                        onCheckedChange={(checked) => setDifferentPickup(checked === true)}
+                      />
+                      <span className="text-xs text-muted-foreground">My pickup location is different</span>
+                    </label>
+                  </div>
+                  
+                  {differentPickup && (
+                    <>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pickupAddress" className="text-xs">Pickup Address *</Label>
+                        <GoogleAddressAutocomplete
+                          value={pickupAddress}
+                          onChange={setPickupAddress}
+                          onPostcodeChange={setPickupPostcode}
+                          placeholder="Start typing your pickup address..."
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pickupWhat3words" className="text-xs flex items-center gap-1">
+                          what3words
+                          <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Input
+                          id="pickupWhat3words"
+                          value={pickupWhat3words}
+                          onChange={(e) => setPickupWhat3words(e.target.value)}
+                          placeholder="///word.word.word"
+                          className="h-10"
+                        />
+                      </div>
+                    </>
+                  )
                   {isPupilDetailsComplete && (
                     <Button variant="secondary" size="sm" className="w-full" onClick={() => setEditingDetails(false)}>
                       Done
