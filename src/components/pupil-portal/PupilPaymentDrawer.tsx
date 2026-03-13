@@ -218,13 +218,21 @@ export function PupilPaymentDrawer({
                 </div>
               )}
 
+              {/* Fee breakdown */}
+              <AdminFeeBreakdown
+                baseAmount={paymentAmount}
+                adminFee={adminFee}
+                totalCharge={totalCharge}
+                hasFee={hasFee}
+              />
+
               {/* Continue button */}
               <Button
                 onClick={handleContinue}
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={paymentAmount <= 0}
               >
-                Continue — £{paymentAmount.toFixed(2)}
+                Continue — £{totalCharge.toFixed(2)}
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
