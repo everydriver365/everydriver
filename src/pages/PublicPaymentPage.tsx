@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
-import { Loader2, CheckCircle2, PoundSterling } from "lucide-react";
+import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
 
 interface InstructorInfo {
   id: string;
