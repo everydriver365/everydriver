@@ -22,6 +22,7 @@ interface PupilPaymentDrawerProps {
   instructorSlug: string;
   accountBalance: number;
   brandColour: string | null;
+  commissionPayer?: string | null;
 }
 
 type PaymentGateway = "npi" | "clearpay" | "klarna";
