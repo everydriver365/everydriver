@@ -1571,14 +1571,51 @@ export default function BookingSummary() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="pupilAddress">Pickup Address *</Label>
+              <Label htmlFor="pupilAddress">Home Address *</Label>
               <GoogleAddressAutocomplete
                 value={pupilAddress}
                 onChange={setPupilAddress}
                 onPostcodeChange={setPupilPostcode}
-                placeholder="Start typing your address..."
+                placeholder="Start typing your home address..."
               />
             </div>
+            
+            {/* Different pickup location */}
+            <div className="sm:col-span-2 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={differentPickup}
+                  onCheckedChange={(checked) => setDifferentPickup(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">My pickup location is different from my home address</span>
+              </label>
+            </div>
+            
+            {differentPickup && (
+              <>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pickupAddress">Pickup Address *</Label>
+                  <GoogleAddressAutocomplete
+                    value={pickupAddress}
+                    onChange={setPickupAddress}
+                    onPostcodeChange={setPickupPostcode}
+                    placeholder="Start typing your pickup address..."
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pickupWhat3words" className="flex items-center gap-1.5">
+                    what3words
+                    <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="pickupWhat3words"
+                    value={pickupWhat3words}
+                    onChange={(e) => setPickupWhat3words(e.target.value)}
+                    placeholder="///word.word.word"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
 
