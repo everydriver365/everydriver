@@ -212,6 +212,7 @@ export function CardstreamCheckout({
 
       const details = await hostedFieldsRef.current.getPaymentDetails({
         customerName: customerName ?? "",
+        customerEmail: customerEmail ?? "",
       });
 
       if (!details?.success || !details?.paymentToken) {
