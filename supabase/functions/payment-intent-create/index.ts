@@ -35,9 +35,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const merchantId = Deno.env.get("NPI_MERCHANT_ID") || "";
-    // Keep gateway host consistent between Hosted Fields SDK + Direct API.
-    // Prefer the existing secret used by the Direct Sale function.
+    const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS") || "";
     const directUrl =
       Deno.env.get("CARDSTREAM_DIRECT_URL") ||
       Deno.env.get("NPI_DIRECT_URL") ||
