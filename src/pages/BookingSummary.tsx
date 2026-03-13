@@ -135,6 +135,8 @@ export default function BookingSummary() {
   const [pickupAddress, setPickupAddress] = useState("");
   const [pickupPostcode, setPickupPostcode] = useState("");
   const [pickupWhat3words, setPickupWhat3words] = useState("");
+  const [hasSpecialNeeds, setHasSpecialNeeds] = useState(false);
+  const [specialNeeds, setSpecialNeeds] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
@@ -337,6 +339,7 @@ export default function BookingSummary() {
         pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
         pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
         pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
+        specialNeeds: hasSpecialNeeds && specialNeeds.trim() ? specialNeeds.trim() : undefined,
         courseType: courseName,
         courseHours: hours,
         totalPrice,
@@ -1050,6 +1053,10 @@ export default function BookingSummary() {
         setPickupAddress={setPickupAddress}
         setPickupPostcode={setPickupPostcode}
         setPickupWhat3words={setPickupWhat3words}
+        hasSpecialNeeds={hasSpecialNeeds}
+        specialNeeds={specialNeeds}
+        setHasSpecialNeeds={setHasSpecialNeeds}
+        setSpecialNeeds={setSpecialNeeds}
         selectedSlots={selectedSlots}
         scheduledHours={scheduledHours}
         onSlotsChange={handleSlotsChange}
@@ -1616,6 +1623,29 @@ export default function BookingSummary() {
                   />
                 </div>
               </>
+            )}
+            
+            {/* Special Needs */}
+            <div className="sm:col-span-2 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={hasSpecialNeeds}
+                  onCheckedChange={(checked) => setHasSpecialNeeds(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">Any special needs?</span>
+              </label>
+            </div>
+            
+            {hasSpecialNeeds && (
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="specialNeeds">Please describe your requirements</Label>
+                <Input
+                  id="specialNeeds"
+                  value={specialNeeds}
+                  onChange={(e) => setSpecialNeeds(e.target.value)}
+                  placeholder="e.g. hearing impairment, mobility needs, anxiety support..."
+                />
+              </div>
             )}
           </div>
         </motion.div>
