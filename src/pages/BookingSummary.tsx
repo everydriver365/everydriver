@@ -1620,6 +1620,29 @@ export default function BookingSummary() {
                 </div>
               </>
             )}
+            
+            {/* Special Needs */}
+            <div className="sm:col-span-2 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={hasSpecialNeeds}
+                  onCheckedChange={(checked) => setHasSpecialNeeds(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">Any special needs?</span>
+              </label>
+            </div>
+            
+            {hasSpecialNeeds && (
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="specialNeeds">Please describe your requirements</Label>
+                <Input
+                  id="specialNeeds"
+                  value={specialNeeds}
+                  onChange={(e) => setSpecialNeeds(e.target.value)}
+                  placeholder="e.g. hearing impairment, mobility needs, anxiety support..."
+                />
+              </div>
+            )}
           </div>
         </motion.div>
 
