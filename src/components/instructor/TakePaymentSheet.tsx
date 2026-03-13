@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { QrCode, Mail, MessageSquare, Banknote, Send, Loader2, Receipt } from "lucide-react";
+import { QrCode, Mail, MessageSquare, Banknote, Send, Loader2, Receipt, Link } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { PaymentLinkShare } from "./PaymentLinkShare";
 
 interface TakePaymentSheetProps {
   open: boolean;
