@@ -660,57 +660,8 @@ export default function BookingSummary() {
       );
       if (!pupilId) return;
 
-      const payAmount = isDepositPayment ? depositAmount : fullPaymentAmount;
-      const orderReference = `ELV-${instructor.id.slice(0, 8)}-${Date.now()}`;
-
-      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
-        body: {
-          amount: payAmount,
-          orderReference,
-          customerEmail: pupilEmail.trim(),
-          customerName: pupilName.trim(),
-          customerPhone: pupilPhone.trim(),
-          customerAddress: pupilAddress.trim(),
-          customerPostcode: pupilPostcode.trim(),
-          description: `${courseName} - ${hours} Hour Driving Course`,
-          instructorId: instructor.id,
-          pupilId,
-          formResponsive: true,
-          merchantName: "EveryDriver",
-        },
-      });
-
-      if (error) {
-        console.error("Elavon checkout error:", error);
-        toast.error("Failed to start card payment. Please try again.");
-        return;
-      }
-
-      if (!data?.success) {
-        toast.error(data?.error || "Failed to create checkout session");
-        return;
-      }
-
-      // Elavon HPP requires form POST submission
-      if (data?.formAction && data?.formFields) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.formAction;
-        form.style.display = 'none';
-
-        for (const [key, value] of Object.entries(data.formFields)) {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = String(value);
-          form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-      } else {
-        toast.error("Could not get payment form data");
-      }
+      // Show inline hosted fields instead of redirecting
+      setShowHostedFields(true);
     } catch (err) {
       console.error("Elavon error:", err);
       toast.error("Something went wrong. Please try again.");
