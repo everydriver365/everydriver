@@ -948,35 +948,6 @@ export function MobileBookingView({
             {/* Finance Option */}
           </div>
 
-          {/* Embedded Card Checkout */}
-          {showEmbeddedCheckout && embeddedCheckoutPupilId && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 rounded-xl border-2 border-primary bg-card"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  Enter Card Details
-                </h3>
-                <button 
-                  onClick={onEmbeddedCheckoutCancel}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-              <CardstreamPayButton
-                amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                pupilId={embeddedCheckoutPupilId}
-                instructorId={instructor.id}
-                customerName={pupilName.trim()}
-                customerEmail={pupilEmail.trim()}
-                onError={(msg) => { /* handled by component */ }}
-              />
-            </motion.div>
-          )}
 
           <div className="flex items-center justify-center gap-3 mt-4">
             <div className="flex items-center gap-1.5 text-muted-foreground">
