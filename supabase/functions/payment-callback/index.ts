@@ -615,6 +615,24 @@ serve(async (req: Request) => {
               console.error("Failed to notify instructor:", notifyErr);
             }
 
+            // Notify parent of Klarna payment
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  pupilId,
+                  type: "payment_received",
+                  body: `£${klarnaAmount.toFixed(2)} payment confirmed for ${pupil.name || "your child"}'s driving lessons via Klarna.`,
+                }),
+              });
+            } catch (parentErr) {
+              console.error("Parent notification error (non-fatal):", parentErr);
+            }
+
             paymentSuccessful = true;
           }
         } catch (dbError) {
