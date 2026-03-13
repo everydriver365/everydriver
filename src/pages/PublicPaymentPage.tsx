@@ -182,6 +182,8 @@ export default function PublicPaymentPage() {
           <CardstreamCheckout
             amount={parsedAmount}
             instructorId={instructorId}
+            customerName={payerName.trim() || undefined}
+            customerEmail={payerEmail.trim() || undefined}
             merchantIdForHPF=""
             onPaid={() => setPaid(true)}
           />
