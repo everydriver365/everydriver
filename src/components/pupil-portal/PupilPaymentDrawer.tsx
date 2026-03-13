@@ -257,7 +257,7 @@ export function PupilPaymentDrawer({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
                 <SquareWalletButtons
-                  amount={paymentAmount}
+                  amount={totalCharge}
                   pupilId={pupilId}
                   instructorId={instructorId}
                   instructorSlug={instructorSlug}
