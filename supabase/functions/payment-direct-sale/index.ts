@@ -45,7 +45,7 @@ serve(async (req) => {
     const directUrl = Deno.env.get("CARDSTREAM_DIRECT_URL") ?? "https://gateway.cardstream.com/direct/";
 
     if (!merchantId || !secretKey) {
-      return new Response(JSON.stringify({ error: "Cardstream not configured" }), {
+      return new Response(JSON.stringify({ error: "Elavon payment gateway not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

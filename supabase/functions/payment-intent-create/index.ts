@@ -52,7 +52,7 @@ serve(async (req) => {
       currency_code: "826",
       status: "pending",
       transaction_unique: transactionUnique,
-      provider: "cardstream",
+      provider: "elavon",
     });
 
     if (error) throw error;
