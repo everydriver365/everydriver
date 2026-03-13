@@ -15,9 +15,19 @@ declare global {
     };
     hostedFields?: {
       classes: {
-        HostedFields: new (config: HostedFieldsConfig) => HostedFieldsInstance;
+        Form: unknown;
+        Field: unknown;
       };
     };
+    jQuery?: {
+      fn?: {
+        hostedForm?: (...args: unknown[]) => unknown;
+      };
+      (selector: string): {
+        hostedForm: (...args: unknown[]) => unknown;
+      };
+    };
+    $?: Window["jQuery"];
   }
 }
 
@@ -39,18 +49,8 @@ interface ApplePaySessionInstance {
   completePayment(status: number): void;
 }
 
-interface HostedFieldsConfig {
-  merchantID: string;
-  stylesheet?: string;
-  fields: {
-    cardNumber: { selector: string; placeholder?: string };
-    cardExpiryDate: { selector: string; placeholder?: string };
-    cardCVV: { selector: string; placeholder?: string };
-  };
-}
-
 interface HostedFieldsInstance {
-  getPaymentDetails(options?: { customerName?: string }): Promise<{
+  getPaymentDetails(options?: { customerName?: string; customerEmail?: string }): Promise<{
     success: boolean;
     paymentToken?: string;
     error?: string;
