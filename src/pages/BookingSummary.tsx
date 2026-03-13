@@ -15,6 +15,7 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";

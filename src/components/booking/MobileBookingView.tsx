@@ -20,6 +20,7 @@ import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
