@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "./SquareWalletButtons";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAdminFee } from "@/hooks/useAdminFee";
+import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface PupilPaymentModalProps {
   open: boolean;
