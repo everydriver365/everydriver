@@ -315,7 +315,57 @@ export default function BookingConfirmation() {
                     ))}
                   </div>
 
-                  <Separator className="my-6" />
+                   <Separator className="my-6" />
+
+                  {/* Add to Calendar */}
+                  <div className="flex gap-2 mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 gap-1.5"
+                      onClick={() => {
+                        if (lessons.length > 0) {
+                          const first = lessons[0];
+                          downloadICS({
+                            title: `Driving Lesson with ${pupil.instructor.name}`,
+                            description: `${pupil.prepaid_hours || totalHours}h ${pupil.course_type || 'driving'} course`,
+                            startDate: first.lesson_date,
+                            startTime: first.start_time,
+                            durationMinutes: first.duration_minutes,
+                            location: first.pickup_location || pupil.address,
+                          });
+                          toast.success("Calendar file downloaded");
+                        }
+                      }}
+                    >
+                      <CalendarPlus className="h-4 w-4" />
+                      Download .ics
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 gap-1.5"
+                      onClick={() => {
+                        if (lessons.length > 0) {
+                          const first = lessons[0];
+                          window.open(
+                            getGoogleCalendarUrl({
+                              title: `Driving Lesson with ${pupil.instructor.name}`,
+                              description: `${pupil.prepaid_hours || totalHours}h ${pupil.course_type || 'driving'} course`,
+                              startDate: first.lesson_date,
+                              startTime: first.start_time,
+                              durationMinutes: first.duration_minutes,
+                              location: first.pickup_location || pupil.address,
+                            }),
+                            "_blank"
+                          );
+                        }
+                      }}
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Google Calendar
+                    </Button>
+                  </div>
 
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Total lessons</span>

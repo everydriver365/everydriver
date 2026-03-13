@@ -521,6 +521,28 @@ export default function ParentPortal() {
                         <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
                       </div>
 
+                      {/* Quick Actions */}
+                      <div className="flex gap-2 mb-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Top Up
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Message
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          Lessons
+                        </button>
+                      </div>
+
                       {/* 3-Column Stats Strip */}
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="bg-secondary/50 rounded-xl p-2.5 text-center">
