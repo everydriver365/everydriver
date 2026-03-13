@@ -252,12 +252,12 @@ export function PupilPortalPayments({
             ))}
           </div>
         ) : payments.length === 0 ? (
-          <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-            <CardContent className="p-6 text-center">
-              <CreditCard className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
-              <p style={{ color: 'var(--brand-muted)' }}>No payments recorded yet</p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={CreditCard}
+            title="No payments yet"
+            description="Your payment history will appear here once transactions are recorded"
+            compact
+          />
         ) : (
           <div className="space-y-2">
             {payments.map((payment) => (

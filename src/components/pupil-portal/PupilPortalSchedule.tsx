@@ -268,6 +268,14 @@ export function PupilPortalSchedule({
         </Button>
       )}
 
+      {/* Cancellation Policy Card */}
+      {settings?.allow_self_cancel && (
+        <CancellationPolicyCard
+          cancelNoticeHours={settings.cancel_notice_hours}
+          brandColour={brandColour || '#1e3a5f'}
+        />
+      )}
+
       <div>
         <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--brand-text)' }}>
           Upcoming Lessons ({upcomingLessons.length})

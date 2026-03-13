@@ -422,6 +422,13 @@ export default function BrandedPupilPortal() {
                   />
                 )}
 
+                {/* Post-Lesson Star Rating (Uber pattern) */}
+                <PostLessonRating
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={drive365Blue}
+                />
+
                 {/* Last Lesson Summary */}
                 <LessonSummaryCard pupilId={pupil.id} />
 

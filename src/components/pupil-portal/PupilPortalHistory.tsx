@@ -92,15 +92,12 @@ export function PupilPortalHistory({ pupilId, brandColour, darkMode }: PupilPort
   if (lessons.length === 0) {
     return (
       <div className="px-4">
-        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
-          <CardContent className="p-6 text-center">
-            <History className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
-            <p style={{ color: 'var(--brand-muted)' }}>No lesson history yet</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--brand-muted)' }}>
-              Your completed lessons will appear here
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={History}
+          title="No lesson history yet"
+          description="Your completed lessons will appear here after each session"
+          compact
+        />
       </div>
     );
   }
