@@ -12,10 +12,6 @@ declare global {
         };
       };
     };
-    ApplePaySession?: {
-      canMakePayments: () => boolean;
-      new (version: number, request: ApplePayRequest): ApplePaySessionInstance;
-    };
   }
 }
 
@@ -23,23 +19,6 @@ interface GooglePayClient {
   isReadyToPay: (request: object) => Promise<{ result: boolean }>;
   createButton: (options: object) => HTMLElement;
   loadPaymentData: (request: object) => Promise<{ paymentMethodData: { tokenizationData: { token: string } } }>;
-}
-
-interface ApplePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  supportedNetworks: string[];
-  merchantCapabilities: string[];
-  total: { label: string; amount: string };
-}
-
-interface ApplePaySessionInstance {
-  begin: () => void;
-  completeMerchantValidation: (session: object) => void;
-  completePayment: (status: number) => void;
-  onvalidatemerchant: ((event: { validationURL: string }) => void) | null;
-  onpaymentauthorized: ((event: { payment: { token: object } }) => void) | null;
-  oncancel: (() => void) | null;
 }
 
 interface ElavonWalletButtonsProps {
