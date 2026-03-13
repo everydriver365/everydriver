@@ -652,33 +652,46 @@ export default function BookingSummary() {
 
     setIsElavonLoading(true);
     try {
-      const pupilId = await ensureBookingCreated();
+      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+      const fullPaymentAmount = totalPrice + upsellTotal;
+      const pupilId = await ensureBookingCreated(
+        isDepositPayment ? 'deposit' : 'full',
+        isDepositPayment ? depositAmount : fullPaymentAmount
+      );
       if (!pupilId) return;
 
+      const payAmount = isDepositPayment ? depositAmount : fullPaymentAmount;
       const orderReference = `ELV-${instructor.id.slice(0, 8)}-${Date.now()}`;
-      const currentUrl = window.location.origin;
 
       const { data, error } = await supabase.functions.invoke("elavon-checkout", {
         body: {
-          amount: totalPrice + upsellTotal,
+          amount: payAmount,
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
+          customerPhone: pupilPhone.trim(),
+          customerAddress: pupilAddress.trim(),
+          customerPostcode: pupilPostcode.trim(),
           description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&elavon=success&ref=${orderReference}`,
-          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&elavon=cancelled`,
           instructorId: instructor.id,
-          pupilId: pupilId,
+          pupilId,
+          formResponsive: true,
+          merchantName: "EveryDriver",
         },
       });
 
       if (error) {
         console.error("Elavon checkout error:", error);
-        toast.error("Failed to start Elavon checkout. Please try again.");
+        toast.error("Failed to start card payment. Please try again.");
         return;
       }
 
-      // Elavon HPP requires form POST submission (same as NPI)
+      if (!data?.success) {
+        toast.error(data?.error || "Failed to create checkout session");
+        return;
+      }
+
+      // Elavon HPP requires form POST submission
       if (data?.formAction && data?.formFields) {
         const form = document.createElement('form');
         form.method = 'POST';
@@ -694,14 +707,13 @@ export default function BookingSummary() {
         }
 
         document.body.appendChild(form);
-        toast.success("Redirecting to payment page...");
         form.submit();
       } else {
-        toast.error("Could not get Elavon payment form data");
+        toast.error("Could not get payment form data");
       }
     } catch (err) {
       console.error("Elavon error:", err);
-      toast.error("Something went wrong with Elavon. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsElavonLoading(false);
     }
