@@ -22,6 +22,7 @@ import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
@@ -89,11 +90,19 @@ interface MobileBookingViewProps {
   pupilPhone: string;
   pupilAddress: string;
   pupilPostcode: string;
+  differentPickup: boolean;
+  pickupAddress: string;
+  pickupPostcode: string;
+  pickupWhat3words: string;
   setPupilName: (v: string) => void;
   setPupilEmail: (v: string) => void;
   setPupilPhone: (v: string) => void;
   setPupilAddress: (v: string) => void;
   setPupilPostcode: (v: string) => void;
+  setDifferentPickup: (v: boolean) => void;
+  setPickupAddress: (v: string) => void;
+  setPickupPostcode: (v: string) => void;
+  setPickupWhat3words: (v: string) => void;
   // Scheduling
   selectedSlots: SelectedSlot[];
   scheduledHours: number;
@@ -147,11 +156,19 @@ export function MobileBookingView({
   pupilPhone,
   pupilAddress,
   pupilPostcode,
+  differentPickup,
+  pickupAddress,
+  pickupPostcode,
+  pickupWhat3words,
   setPupilName,
   setPupilEmail,
   setPupilPhone,
   setPupilAddress,
   setPupilPostcode,
+  setDifferentPickup,
+  setPickupAddress,
+  setPickupPostcode,
+  setPickupWhat3words,
   selectedSlots,
   scheduledHours,
   onSlotsChange,
@@ -562,14 +579,51 @@ export function MobileBookingView({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="pupilAddress" className="text-xs">Pickup Address *</Label>
+                    <Label htmlFor="pupilAddress" className="text-xs">Home Address *</Label>
                     <GoogleAddressAutocomplete
                       value={pupilAddress}
                       onChange={setPupilAddress}
                       onPostcodeChange={setPupilPostcode}
-                      placeholder="Start typing your address..."
+                      placeholder="Start typing your home address..."
                     />
                   </div>
+                  
+                  <div className="pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={differentPickup}
+                        onCheckedChange={(checked) => setDifferentPickup(checked === true)}
+                      />
+                      <span className="text-xs text-muted-foreground">My pickup location is different</span>
+                    </label>
+                  </div>
+                  
+                  {differentPickup && (
+                    <>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pickupAddress" className="text-xs">Pickup Address *</Label>
+                        <GoogleAddressAutocomplete
+                          value={pickupAddress}
+                          onChange={setPickupAddress}
+                          onPostcodeChange={setPickupPostcode}
+                          placeholder="Start typing your pickup address..."
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pickupWhat3words" className="text-xs flex items-center gap-1">
+                          what3words
+                          <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Input
+                          id="pickupWhat3words"
+                          value={pickupWhat3words}
+                          onChange={(e) => setPickupWhat3words(e.target.value)}
+                          placeholder="///word.word.word"
+                          className="h-10"
+                        />
+                      </div>
+                    </>
+                  )}
                   {isPupilDetailsComplete && (
                     <Button variant="secondary" size="sm" className="w-full" onClick={() => setEditingDetails(false)}>
                       Done

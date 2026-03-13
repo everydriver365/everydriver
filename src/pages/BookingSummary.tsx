@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -130,6 +131,10 @@ export default function BookingSummary() {
   const [pupilPhone, setPupilPhone] = useState("");
   const [pupilAddress, setPupilAddress] = useState("");
   const [pupilPostcode, setPupilPostcode] = useState("");
+  const [differentPickup, setDifferentPickup] = useState(false);
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [pickupPostcode, setPickupPostcode] = useState("");
+  const [pickupWhat3words, setPickupWhat3words] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
@@ -329,6 +334,9 @@ export default function BookingSummary() {
         pupilPhone: pupilPhone.trim(),
         pupilAddress: pupilAddress.trim(),
         pupilPostcode: pupilPostcode.trim().toUpperCase(),
+        pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
+        pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
+        pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
         courseType: courseName,
         courseHours: hours,
         totalPrice,
@@ -1029,11 +1037,19 @@ export default function BookingSummary() {
         pupilPhone={pupilPhone}
         pupilAddress={pupilAddress}
         pupilPostcode={pupilPostcode}
+        differentPickup={differentPickup}
+        pickupAddress={pickupAddress}
+        pickupPostcode={pickupPostcode}
+        pickupWhat3words={pickupWhat3words}
         setPupilName={setPupilName}
         setPupilEmail={setPupilEmail}
         setPupilPhone={setPupilPhone}
         setPupilAddress={setPupilAddress}
         setPupilPostcode={setPupilPostcode}
+        setDifferentPickup={setDifferentPickup}
+        setPickupAddress={setPickupAddress}
+        setPickupPostcode={setPickupPostcode}
+        setPickupWhat3words={setPickupWhat3words}
         selectedSlots={selectedSlots}
         scheduledHours={scheduledHours}
         onSlotsChange={handleSlotsChange}
@@ -1556,14 +1572,51 @@ export default function BookingSummary() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="pupilAddress">Pickup Address *</Label>
+              <Label htmlFor="pupilAddress">Home Address *</Label>
               <GoogleAddressAutocomplete
                 value={pupilAddress}
                 onChange={setPupilAddress}
                 onPostcodeChange={setPupilPostcode}
-                placeholder="Start typing your address..."
+                placeholder="Start typing your home address..."
               />
             </div>
+            
+            {/* Different pickup location */}
+            <div className="sm:col-span-2 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={differentPickup}
+                  onCheckedChange={(checked) => setDifferentPickup(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">My pickup location is different from my home address</span>
+              </label>
+            </div>
+            
+            {differentPickup && (
+              <>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pickupAddress">Pickup Address *</Label>
+                  <GoogleAddressAutocomplete
+                    value={pickupAddress}
+                    onChange={setPickupAddress}
+                    onPostcodeChange={setPickupPostcode}
+                    placeholder="Start typing your pickup address..."
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pickupWhat3words" className="flex items-center gap-1.5">
+                    what3words
+                    <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="pickupWhat3words"
+                    value={pickupWhat3words}
+                    onChange={(e) => setPickupWhat3words(e.target.value)}
+                    placeholder="///word.word.word"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
 
