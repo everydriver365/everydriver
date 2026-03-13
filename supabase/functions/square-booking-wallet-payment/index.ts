@@ -261,9 +261,20 @@ serve(async (req: Request) => {
       }),
     }).catch(console.error);
 
-    // Calendar sync happens automatically via trigger_calendar_sync trigger
-    // on scheduled_lessons table, no manual call needed
-    console.log("Calendar sync will be handled by database trigger");
+    // Flush calendar sync queue immediately (same pattern as create-booking)
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/process-calendar-queue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({}),
+      });
+      console.log("Calendar queue flushed");
+    } catch (calendarError) {
+      console.error("Calendar sync error (non-fatal):", calendarError);
+    }
 
     console.log("Booking completed successfully:", pupilId);
 
