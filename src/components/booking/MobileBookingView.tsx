@@ -877,13 +877,14 @@ export function MobileBookingView({
 
               {showEmbeddedCheckout && embeddedCheckoutPupilId ? (
                 <div>
-                  <CardstreamPayButton
+                  <CardstreamCheckout
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                     pupilId={embeddedCheckoutPupilId}
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    onError={(msg) => { /* handled by component */ }}
+                    merchantIdForHPF=""
+                    onPaid={onEmbeddedCheckoutSuccess}
                   />
                   <button 
                     onClick={onEmbeddedCheckoutCancel}
