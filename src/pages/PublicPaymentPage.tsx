@@ -136,7 +136,7 @@ export default function PublicPaymentPage() {
           <CardstreamCheckout
             amount={parsedAmount}
             instructorId={instructorId}
-            merchantIdForHPF={merchantId}
+            merchantIdForHPF=""
             onPaid={() => setPaid(true)}
           />
         )}
