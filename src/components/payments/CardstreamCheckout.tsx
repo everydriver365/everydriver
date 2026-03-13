@@ -15,9 +15,19 @@ declare global {
     };
     hostedFields?: {
       classes: {
-        HostedFields: new (config: HostedFieldsConfig) => HostedFieldsInstance;
+        Form: unknown;
+        Field: unknown;
       };
     };
+    jQuery?: {
+      fn?: {
+        hostedForm?: (...args: unknown[]) => unknown;
+      };
+      (selector: string): {
+        hostedForm: (...args: unknown[]) => unknown;
+      };
+    };
+    $?: Window["jQuery"];
   }
 }
 
@@ -39,18 +49,8 @@ interface ApplePaySessionInstance {
   completePayment(status: number): void;
 }
 
-interface HostedFieldsConfig {
-  merchantID: string;
-  stylesheet?: string;
-  fields: {
-    cardNumber: { selector: string; placeholder?: string };
-    cardExpiryDate: { selector: string; placeholder?: string };
-    cardCVV: { selector: string; placeholder?: string };
-  };
-}
-
 interface HostedFieldsInstance {
-  getPaymentDetails(options?: { customerName?: string }): Promise<{
+  getPaymentDetails(options?: { customerName?: string; customerEmail?: string }): Promise<{
     success: boolean;
     paymentToken?: string;
     error?: string;
@@ -81,6 +81,15 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+function toPromise<T>(value: T | PromiseLike<T>): Promise<T> {
+  if (value && typeof (value as PromiseLike<T>).then === "function") {
+    return new Promise<T>((resolve, reject) => {
+      (value as PromiseLike<T>).then(resolve, reject);
+    });
+  }
+  return Promise.resolve(value);
+}
+
 export function CardstreamCheckout({
   amount,
   pupilId,
@@ -108,6 +117,7 @@ export function CardstreamCheckout({
     (async () => {
       try {
         setLoading(true);
+        setFieldsReady(false);
 
         // Create intent
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
@@ -124,26 +134,59 @@ export function CardstreamCheckout({
         
         if (cancelled) return;
 
-        // Wait for script to initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Render field containers first, then initialize SDK
+        setLoading(false);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        await new Promise<void>((resolve) => setTimeout(resolve, 50));
 
-        // Initialize Hosted Fields using their SDK
-        if (window.hostedFields?.classes?.HostedFields) {
-          const instance = new window.hostedFields.classes.HostedFields({
-            merchantID: merchantIdForHPF || data.merchantId,
-            stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
-            fields: {
-              cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },
-              cardExpiryDate: { selector: "#cs-card-expiry", placeholder: "MM/YY" },
-              cardCVV: { selector: "#cs-card-cvv", placeholder: "•••" },
-            },
-          });
+        if (cancelled) return;
 
-          hostedFieldsRef.current = instance;
-          setFieldsReady(true);
+        const $ = window.jQuery || window.$;
+        if (!$?.fn?.hostedForm) {
+          throw new Error("Secure card fields SDK unavailable");
         }
 
-        setLoading(false);
+        const formSelection = $("#cs-payment-form") as {
+          hostedForm: (...args: unknown[]) => unknown;
+        };
+
+        formSelection.hostedForm({
+          merchantID: merchantIdForHPF || data.merchantId,
+          stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
+          autoSetup: true,
+          autoSubmit: false,
+          fields: {
+            cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },
+            cardExpiryDate: { selector: "#cs-card-expiry", placeholder: "MM/YY" },
+            cardCVV: { selector: "#cs-card-cvv", placeholder: "•••" },
+          },
+        });
+
+        const instance = formSelection.hostedForm("instance") as {
+          getPaymentDetails: (options?: { customerName?: string; customerEmail?: string }) => PromiseLike<{
+            success: boolean;
+            paymentToken?: string;
+            error?: string;
+          }>;
+          destroy?: () => void;
+        } | null;
+
+        if (!instance) {
+          throw new Error("Failed to initialize secure card fields");
+        }
+
+        hostedFieldsRef.current = {
+          getPaymentDetails: (options) =>
+            toPromise(
+              instance.getPaymentDetails({
+                customerName: options?.customerName,
+                customerEmail: options?.customerEmail,
+              }),
+            ),
+          destroy: () => instance.destroy?.(),
+        };
+
+        setFieldsReady(true);
       } catch (e) {
         if (!cancelled) {
           setLoading(false);
@@ -169,6 +212,7 @@ export function CardstreamCheckout({
 
       const details = await hostedFieldsRef.current.getPaymentDetails({
         customerName: customerName ?? "",
+        customerEmail: customerEmail ?? "",
       });
 
       if (!details?.success || !details?.paymentToken) {
@@ -323,35 +367,38 @@ export function CardstreamCheckout({
             )}
 
             {/* Card Fields */}
-            <div className="space-y-3">
+            <form id="cs-payment-form" className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="text-sm font-medium mb-1 block">Card number</label>
-                <div 
-                  id="cs-card-number" 
-                  className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                  style={{ minHeight: '40px' }}
+                <input
+                  id="cs-card-number"
+                  type="hostedfield:cardNumber"
+                  className="h-10 w-full border rounded-md bg-background px-3"
+                  autoComplete="off"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Expiry</label>
-                  <div 
-                    id="cs-card-expiry" 
-                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                    style={{ minHeight: '40px' }}
+                  <input
+                    id="cs-card-expiry"
+                    type="hostedfield:cardExpiryDate"
+                    className="h-10 w-full border rounded-md bg-background px-3"
+                    autoComplete="off"
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">CVV</label>
-                  <div 
-                    id="cs-card-cvv" 
-                    className="h-10 border rounded-md bg-background overflow-hidden [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0"
-                    style={{ minHeight: '40px' }}
+                  <input
+                    id="cs-card-cvv"
+                    type="hostedfield:cardCVV"
+                    className="h-10 w-full border rounded-md bg-background px-3"
+                    autoComplete="off"
                   />
                 </div>
               </div>
-            </div>
+            </form>
 
             {/* Pay Button */}
             <Button
