@@ -104,7 +104,7 @@ export default function PublicPaymentPage() {
             />
           ) : (
             <div
-              className="h-16 w-16 rounded-full mx-auto flex items-center justify-center text-xl font-bold text-white"
+              className="h-24 w-24 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-white"
               style={{ backgroundColor: instructor.brand_colour || "hsl(var(--primary))" }}
             >
               {instructor.name.charAt(0)}
