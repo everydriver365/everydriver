@@ -138,7 +138,7 @@ serve(async (req: Request) => {
           );
         }
 
-        const amountInPence = Math.round(amount * 100);
+        const amountInPence = Math.round(chargeAmount * 100);
         const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const formData: Record<string, string> = {
