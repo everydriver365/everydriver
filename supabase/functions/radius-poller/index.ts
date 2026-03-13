@@ -133,34 +133,43 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await authenticate(supabase);
+    let session = await authenticate(supabase);
 
     // Build device identifier lookup map
     const deviceMap = new Map(devices.map((d) => [d.device_identifier, d]));
 
-    // Poll live positions from Velocity Fleet API
-    console.log("[RadiusPoller] Fetching live positions for customer:", customerId);
-    const posRes = await fetch(
-      `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({}),
-      }
-    );
+    // Poll live positions from Velocity Fleet API (with one retry on auth failure)
+    async function fetchPositions(token: string) {
+      console.log("[RadiusPoller] Fetching live positions for customer:", customerId);
+      return await fetch(
+        `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        }
+      );
+    }
+
+    let posRes = await fetchPositions(session.accessToken);
+
+    // On 401/403, clear cache, get a fresh token, and retry once
+    if (posRes.status === 401 || posRes.status === 403) {
+      console.log("[RadiusPoller] Got", posRes.status, "- clearing cache and retrying with fresh token");
+      cachedSession = null;
+      try {
+        await supabase.from("radius_session_cache").delete().eq("id", "default");
+      } catch (_) { /* ignore */ }
+
+      session = await authenticate(supabase);
+      posRes = await fetchPositions(session.accessToken);
+    }
 
     if (!posRes.ok) {
       const errText = await posRes.text();
-      // If auth error, clear cached session
-      if (posRes.status === 401 || posRes.status === 403) {
-        cachedSession = null;
-        try {
-          await supabase.from("radius_session_cache").delete().eq("id", "default");
-        } catch (_) { /* ignore */ }
-      }
       throw new Error(`Radius positions API failed (${posRes.status}): ${errText}`);
     }
 
