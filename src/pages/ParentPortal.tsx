@@ -487,6 +487,9 @@ export default function ParentPortal() {
         <AnimatePresence mode="wait">
           {activeSection === 'dashboard' && (
             <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              {/* Welcome Tour */}
+              <ParentWelcomeTour parentPhone={parentPhone} />
+              
               {/* iOS Greeting */}
               <div className="pt-1">
                 <p className="text-xs text-muted-foreground">Welcome back</p>
