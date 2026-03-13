@@ -1,107 +1,60 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+## Route Apple Pay and Google Pay Through Elavon (Cardstream)
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+### Current State
+- **CardstreamCheckout** already has Apple Pay built in (native `ApplePaySession` API → `payment-direct-sale` with `method: "apple_pay"`). It works on the public payment page and booking flows.
+- **Google Pay** is NOT yet implemented via Elavon — only via Square's `SquareWalletButtons`.
+- The pupil portal payment drawer/modal uses `SquareWalletButtons` for wallet payments.
+- Booking flows (`BookingSummary`, `MobileBookingView`) use `CardstreamCheckout` for card entry but don't surface Apple/Google Pay buttons separately — Apple Pay is already embedded inside `CardstreamCheckout`.
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+### What Needs to Change
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+**1. Add Google Pay to `CardstreamCheckout`**
+- Use the native Google Pay JS API (`google.payments.api.PaymentsClient`) alongside the existing Apple Pay.
+- Configure with gateway `"cardstream"` and `gatewayMerchantId` set to the Elavon merchant alias (already returned by `payment-intent-create`).
+- On tokenization, send the Google Pay token to `payment-direct-sale` with `method: "google_pay"`.
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**2. Update `payment-direct-sale` edge function**
+- Add `"google_pay"` as a valid `PayMethod`.
+- When method is `google_pay`, set `paymentMethod: "googlepay"` and `paymentToken` to the Google Pay token string, mirroring how Apple Pay works.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+**3. Replace `SquareWalletButtons` with Elavon wallet buttons**
+- Create a new `ElavonWalletButtons` component that renders standalone Apple Pay and Google Pay buttons backed by `payment-intent-create` + `payment-direct-sale`.
+- Replace `SquareWalletButtons` usage in `PupilPaymentDrawer` and `PupilPaymentModal` with `ElavonWalletButtons`.
+- Same props interface (amount, pupilId, instructorId, etc.) for drop-in replacement.
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+**4. Ensure booking flows show wallet options prominently**
+- In `BookingSummary` and `MobileBookingView`, add `ElavonWalletButtons` above or alongside the "Pay by Card" button (before `CardstreamCheckout` is opened), so users see Apple/Google Pay as express options on the booking payment step.
+- When a wallet payment succeeds, navigate to the booking confirmation page the same way the card payment does.
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+### Technical Details
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+**Google Pay configuration:**
+```text
+gateway: "cardstream"
+gatewayMerchantId: <ELAVON_MERCHANT_ALIAS from payment-intent-create>
+allowedCardNetworks: ["VISA", "MASTERCARD", "AMEX"]
+tokenizationSpecification.type: "PAYMENT_GATEWAY"
+```
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+**payment-direct-sale changes:**
+- Add `googlePayPaymentToken` field to request interface.
+- Add `google_pay` method branch: set `paymentMethod: "googlepay"`, `paymentToken: body.googlePayPaymentToken`.
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**ElavonWalletButtons component:**
+- Calls `payment-intent-create` on mount to get `orderRef` + `merchantId`.
+- Renders native Apple Pay button (if `ApplePaySession.canMakePayments()`) and Google Pay button (via Google Pay JS API).
+- On payment authorized → calls `payment-direct-sale` → on success, triggers `onPaid` callback.
+- Shares the same auto-balance-credit logic already in `payment-direct-sale`.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+**Files to create/modify:**
+- Create: `src/components/payments/ElavonWalletButtons.tsx`
+- Edit: `supabase/functions/payment-direct-sale/index.ts` (add Google Pay method)
+- Edit: `src/components/pupil-portal/PupilPaymentDrawer.tsx` (swap Square → Elavon)
+- Edit: `src/components/pupil-portal/PupilPaymentModal.tsx` (swap Square → Elavon)
+- Edit: `src/pages/BookingSummary.tsx` (add wallet buttons to payment step)
+- Edit: `src/components/booking/MobileBookingView.tsx` (add wallet buttons to payment step)
 
-### Feature 8: UX Improvements Inspired by Leading Platforms ✅
+No database changes needed. No new secrets needed (Google Pay via Cardstream uses the existing `ELAVON_MERCHANT_ALIAS`; Apple Pay uses existing `applepay-validate-merchant` function).
 
-#### 8a. Smart Empty States ✅
-- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
-- Friendly headlines and descriptions replace plain icons
-
-#### 8b. Booking Abandonment Recovery ✅
-- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
-- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
-- Cleared on successful payment
-
-#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
-- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
-- `PostLessonRating` component: auto-appears after completed lessons on dashboard
-- 5-star interactive rating with optional comment, dismissible per session
-- Mounted in `BrandedPupilPortal` home section
-
-#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
-- `CancellationPolicyCard` component with traffic-light visual breakdown
-- Green (free), Amber (late fee), Red (no-show full charge)
-- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
-
-#### 8e. Lesson SMS Reminders ✅
-- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
-- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
-- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
-- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
-
-#### 8f. Share Your Pass Social Card ✅
-- `PassShareCard` component generates branded celebration card
-- Uses Web Share API with clipboard fallback via `share-utils.ts`
-- Shows "Share Your Pass!" button with instructor branding
