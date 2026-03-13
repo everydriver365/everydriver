@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface PupilPortalHistoryProps {
   pupilId: string;
