@@ -23,6 +23,7 @@ import { AdminTodoList } from "./AdminTodoList";
 import { WebsitesNeededList } from "./WebsitesNeededList";
 import { GPSStatusPanel } from "./GPSStatusPanel";
 import { AdminEmailClient } from "./AdminEmailClient";
+import { AdminFeeIncomeTile } from "./AdminFeeIncomeTile";
 interface SettingsLink {
   key: string;
   title: string;
