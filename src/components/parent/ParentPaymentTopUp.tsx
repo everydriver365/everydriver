@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { useAdminFee } from "@/hooks/useAdminFee";
+import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface ParentPaymentTopUpProps {
   childId: string;
@@ -18,16 +21,33 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Fetch commission_payer setting for this instructor
+  const { data: commissionPayer } = useQuery({
+    queryKey: ["instructor-commission-payer", instructorId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("commission_payer")
+        .eq("id", instructorId)
+        .single();
+      return data?.commission_payer ?? "pupil";
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const baseAmount = selectedAmount || 0;
+  const { adminFee, totalCharge, hasFee } = useAdminFee(baseAmount, commissionPayer);
+
   const handlePayment = async () => {
     if (!selectedAmount) return;
     setLoading(true);
     try {
-      // Use the existing pupil payment checkout edge function
       const { data, error } = await supabase.functions.invoke("pupil-payment-checkout", {
         body: {
           pupilId: childId,
           instructorId,
           amount: selectedAmount,
+          adminFee: hasFee ? adminFee : 0,
           paymentMethod: "square",
           returnUrl: `${window.location.origin}/parent?payment=success&amount=${selectedAmount}`,
           cancelUrl: `${window.location.origin}/parent?payment=cancelled`,
@@ -82,6 +102,14 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
           ))}
         </div>
 
+        {/* Admin fee breakdown */}
+        <AdminFeeBreakdown
+          baseAmount={baseAmount}
+          adminFee={adminFee}
+          totalCharge={totalCharge}
+          hasFee={hasFee}
+        />
+
         <Button
           className="w-full"
           disabled={!selectedAmount || loading}
@@ -90,7 +118,7 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
           {loading ? (
             <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
           ) : (
-            <><CreditCard className="h-4 w-4 mr-2" />Pay £{selectedAmount || "0"}</>
+            <><CreditCard className="h-4 w-4 mr-2" />Pay £{selectedAmount ? totalCharge.toFixed(2) : "0"}</>
           )}
         </Button>
         <p className="text-[10px] text-muted-foreground text-center">
