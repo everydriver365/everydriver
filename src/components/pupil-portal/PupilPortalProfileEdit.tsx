@@ -290,6 +290,7 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
                         try {
                           await updateField("parent_portal_enabled", checked ? "true" : "false");
                           onPupilUpdate({ parent_portal_enabled: checked });
+                          toast.success(checked ? "Parent access enabled" : "Parent access disabled");
                         } catch {
                           // error toast already shown by updateField
                         }

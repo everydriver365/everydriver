@@ -1160,6 +1160,35 @@ export default function BookingSummary() {
       </div>
 
       <div className="container py-6">
+        {/* Desktop Progress Indicator */}
+        <div className="mb-6 flex items-center justify-center gap-2">
+          {[
+            { step: 1, label: "Your Details" },
+            { step: 2, label: "Choose Lessons" },
+            { step: 3, label: "Payment" },
+          ].map((s, i, arr) => {
+            const step = isPupilDetailsComplete ? (isFullyScheduled ? 3 : 2) : 1;
+            const isDone = step > s.step;
+            const isCurrent = step === s.step;
+            return (
+              <div key={i} className="flex items-center gap-2">
+                <div className="flex flex-col items-center gap-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    isDone ? 'bg-primary text-primary-foreground' :
+                    isCurrent ? 'bg-primary/20 text-primary ring-2 ring-primary' :
+                    'bg-muted text-muted-foreground'
+                  }`}>
+                    {isDone ? <CheckCircle className="h-4 w-4" /> : s.step}
+                  </div>
+                  <span className={`text-[10px] font-medium ${isCurrent ? 'text-primary' : isDone ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {s.label}
+                  </span>
+                </div>
+                {i < arr.length - 1 && <div className={`w-12 h-0.5 mb-4 rounded-full ${isDone ? 'bg-primary' : 'bg-muted'}`} />}
+              </div>
+            );
+          })}
+        </div>
         {/* Selected Date Banner - Show when date is selected */}
         {selectedDate && (
           <motion.div
