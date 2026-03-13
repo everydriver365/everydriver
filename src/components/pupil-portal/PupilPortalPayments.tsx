@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { PupilPaymentModal } from "./PupilPaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 
 interface PupilPortalPaymentsProps {
