@@ -23,7 +23,7 @@ import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
-import { IOSSheet, IOSSheetHeader, IOSSheetTitle, IOSSheetBody } from "@/components/ui/IOSSheet";
+
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 
 
@@ -343,21 +343,137 @@ export function MobileBookingView({
       {/* Course Info Expandable Card */}
       {hasCourseInfo && (
         <div className="px-4 mt-4">
-          <button
-            onClick={() => setShowCourseInfo(true)}
-            className="w-full flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors active:bg-muted/50"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Info className="h-4 w-4 text-primary" />
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <button
+              onClick={() => setShowCourseInfo(!showCourseInfo)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors active:bg-muted/50"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Info className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Course Details</p>
+                  <p className="text-[11px] text-muted-foreground">Prerequisites, what to bring & more</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold">Course Details</p>
-                <p className="text-[11px] text-muted-foreground">Prerequisites, what to bring & more</p>
-              </div>
-            </div>
-            <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          </button>
+              <motion.div animate={{ rotate: showCourseInfo ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              </motion.div>
+            </button>
+
+            <AnimatePresence>
+              {showCourseInfo && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-4 space-y-4 border-t pt-3">
+                    {courseDescription && (
+                      <div>
+                        <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-1">About</h3>
+                        <p className="text-sm text-muted-foreground">{courseDescription}</p>
+                      </div>
+                    )}
+
+                    {features && features.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-1.5">What's included</h3>
+                        <div className="space-y-1.5">
+                          {features.map((f, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                              <span>{f}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {template?.prerequisites && template.prerequisites.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                          <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                          Prerequisites
+                        </h3>
+                        <div className="space-y-1.5">
+                          {template.prerequisites.map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-sm">
+                              <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+                              <span className="text-muted-foreground">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {template?.what_to_bring && template.what_to_bring.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                          <Backpack className="h-3.5 w-3.5 text-blue-500" />
+                          What to Bring
+                        </h3>
+                        <div className="space-y-1.5">
+                          {template.what_to_bring.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Instructor info */}
+                    <div>
+                      <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-2">Your Instructor</h3>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={instructor.profile_image_url || undefined} />
+                          <AvatarFallback style={{ backgroundColor: brandColour, color: "white" }}>
+                            {instructor.name.split(" ").map((n) => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{instructor.name}</p>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Car className="h-3 w-3" />
+                            {instructor.car_type} Instructor
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {instructor.instructor_grade && (
+                          <Badge variant="secondary" className="text-[10px] gap-1">
+                            <Award className="h-2.5 w-2.5" />
+                            Grade {instructor.instructor_grade}
+                          </Badge>
+                        )}
+                        {instructor.cpd_certified && (
+                          <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-100 text-emerald-700">
+                            <CheckCircle className="h-2.5 w-2.5" />
+                            CPD
+                          </Badge>
+                        )}
+                        {instructor.adi_code_of_practice && (
+                          <Badge variant="secondary" className="text-[10px] gap-1 bg-blue-100 text-blue-700">
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            ADI
+                          </Badge>
+                        )}
+                      </div>
+                      {instructor.bio && (
+                        <p className="text-xs text-muted-foreground mt-2">{instructor.bio}</p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       )}
 
@@ -701,113 +817,6 @@ export function MobileBookingView({
         </div>
       </div>
 
-      {/* Course Info Bottom Sheet */}
-      <IOSSheet open={showCourseInfo} onOpenChange={setShowCourseInfo}>
-        <IOSSheetHeader>
-          <IOSSheetTitle>Course Details</IOSSheetTitle>
-        </IOSSheetHeader>
-        <IOSSheetBody>
-          <div className="space-y-5">
-            {courseDescription && (
-              <div>
-                <h3 className="font-semibold text-sm mb-1.5">About this course</h3>
-                <p className="text-sm text-muted-foreground">{courseDescription}</p>
-              </div>
-            )}
-
-            {features && features.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-sm mb-1.5">What's included</h3>
-                <div className="space-y-1.5">
-                  {features.map((f, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {template?.prerequisites && template.prerequisites.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
-                  Prerequisites
-                </h3>
-                <div className="space-y-1.5">
-                  {template.prerequisites.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {template?.what_to_bring && template.what_to_bring.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
-                  <Backpack className="h-4 w-4 text-blue-500" />
-                  What to Bring
-                </h3>
-                <div className="space-y-1.5">
-                  {template.what_to_bring.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-3 w-3 text-blue-500 flex-shrink-0" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Instructor info */}
-            <div>
-              <h3 className="font-semibold text-sm mb-2">Your Instructor</h3>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback style={{ backgroundColor: brandColour, color: "white" }}>
-                    {instructor.name.split(" ").map((n) => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium text-sm">{instructor.name}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Car className="h-3 w-3" />
-                    {instructor.car_type} Instructor
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {instructor.instructor_grade && (
-                  <Badge variant="secondary" className="text-[10px] gap-1">
-                    <Award className="h-2.5 w-2.5" />
-                    Grade {instructor.instructor_grade}
-                  </Badge>
-                )}
-                {instructor.cpd_certified && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-100 text-emerald-700">
-                    <CheckCircle className="h-2.5 w-2.5" />
-                    CPD
-                  </Badge>
-                )}
-                {instructor.adi_code_of_practice && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 bg-blue-100 text-blue-700">
-                    <ShieldCheck className="h-2.5 w-2.5" />
-                    ADI
-                  </Badge>
-                )}
-              </div>
-              {instructor.bio && (
-                <p className="text-xs text-muted-foreground mt-2">{instructor.bio}</p>
-              )}
-            </div>
-          </div>
-        </IOSSheetBody>
-      </IOSSheet>
 
       {/* Sticky Bottom Bar */}
       <BookingBottomBar
