@@ -1916,13 +1916,19 @@ export default function BookingSummary() {
                   Cancel
                 </button>
               </div>
-              <CardstreamPayButton
+              <CardstreamCheckout
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                pupilId={bookingPupilId}
+                pupilId={bookingPupilId || undefined}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                onError={(msg) => toast.error(msg)}
+                merchantIdForHPF=""
+                onPaid={() => {
+                  toast.success("Payment successful!");
+                  if (bookingPupilId) {
+                    navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+                  }
+                }}
               />
             </motion.div>
           )}
