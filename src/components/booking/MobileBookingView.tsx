@@ -921,6 +921,9 @@ export function MobileBookingView({
         upsellTotal={upsellTotal}
         canSubmit={canSubmit}
         onPayClick={scrollToPayment}
+        isPupilDetailsComplete={isPupilDetailsComplete}
+        isFullyScheduled={isFullyScheduled}
+        requiresSlotSelection={requiresSlotSelection}
       />
     </div>
   );
