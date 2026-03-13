@@ -23,6 +23,7 @@ import { AdminTodoList } from "./AdminTodoList";
 import { WebsitesNeededList } from "./WebsitesNeededList";
 import { GPSStatusPanel } from "./GPSStatusPanel";
 import { AdminEmailClient } from "./AdminEmailClient";
+import { AdminFeeIncomeTile } from "./AdminFeeIncomeTile";
 interface SettingsLink {
   key: string;
   title: string;
@@ -397,6 +398,9 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
           />
         ))}
       </div>
+
+      {/* Admin Fee Income */}
+      <AdminFeeIncomeTile onClick={() => onNavigate("commission")} />
 
       {/* Quick Actions Row */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
