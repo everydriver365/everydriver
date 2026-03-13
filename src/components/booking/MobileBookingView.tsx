@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, 
-  ShieldCheck, Star, Loader2, Calendar, ChevronDown, Zap, Play, 
-  Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog
+  ShieldCheck, Star, Loader2, Calendar, ChevronDown, Play, 
+  Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog, Info, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -18,16 +18,12 @@ import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons";
+import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { IOSSheet, IOSSheetHeader, IOSSheetTitle, IOSSheetBody } from "@/components/ui/IOSSheet";
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 
 
@@ -190,9 +186,16 @@ export function MobileBookingView({
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
   const bookingMode = instructor.booking_mode || 'pupil_choice';
+  const paymentRef = useRef<HTMLDivElement>(null);
   
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
+  
+  // Course info sheet state
+  const [showCourseInfo, setShowCourseInfo] = useState(false);
+  
+  // Step editing state - allows re-expanding collapsed steps
+  const [editingDetails, setEditingDetails] = useState(false);
   
   // Auto-assign preferences state
   const [autoPreferences, setAutoPreferences] = useState<{
@@ -214,15 +217,24 @@ export function MobileBookingView({
   // Determine current step - only 2 steps for non-pupil_choice modes
   const currentStep = !isPupilDetailsComplete ? 1 : (requiresSlotSelection && !isScheduleComplete) ? 2 : (requiresSlotSelection ? 3 : 2);
   
-  // Find first available date from slots
-  const firstSlotDate = selectedSlots.length > 0 
-    ? format(selectedSlots[0].date, "EEE, MMM d") 
-    : null;
+  // Should details be collapsed?
+  const detailsCollapsed = isPupilDetailsComplete && !editingDetails;
+
+  const hasCourseInfo = !!(
+    courseDescription ||
+    (features && features.length > 0) ||
+    (template?.prerequisites && template.prerequisites.length > 0) ||
+    (template?.what_to_bring && template.what_to_bring.length > 0)
+  );
+
+  const scrollToPayment = () => {
+    paymentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-safe">
-      {/* Header - Navy Blue */}
-      <div className="sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header - Navy Blue with merged summary + instructor */}
+      <div className="sticky top-0 z-50 bg-[#142040]">
         <div className="px-4 py-3 flex items-center gap-3">
           <Button variant="ghost" size="icon" className="h-9 w-9 text-white/80 hover:text-white hover:bg-white/10" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
@@ -232,9 +244,42 @@ export function MobileBookingView({
             <span className="text-lg font-bold text-emerald-400">£{totalPrice}</span>
           </div>
         </div>
+
+        {/* Compact course + instructor summary */}
+        <div className="px-4 pb-3 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
+            <img
+              src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=200"}
+              alt={courseName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {hours}h
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1 truncate">
+                <MapPin className="h-3 w-3" />
+                {locationName || instructor.home_postcode}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Avatar className="h-8 w-8 border border-white/20">
+              <AvatarImage src={instructor.profile_image_url || undefined} />
+              <AvatarFallback style={{ backgroundColor: brandColour, color: "white" }} className="text-xs">
+                {instructor.name.split(" ").map((n) => n[0]).join("")}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-white/80 max-w-[80px] truncate">{instructor.name}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Progress Steps - 2 steps for auto/instructor modes, 3 for pupil choice */}
+      {/* Progress Steps */}
       <div className="px-4 py-4 bg-muted/30">
         <div className="flex items-center gap-2">
           {(requiresSlotSelection 
@@ -269,13 +314,16 @@ export function MobileBookingView({
           })}
         </div>
         <div className="flex justify-between mt-2 px-1">
-          {["Details", "Schedule", "Pay"].map((label, i) => (
+          {(requiresSlotSelection 
+            ? ["Details", "Schedule", "Pay"]
+            : ["Details", "Pay"]
+          ).map((label, i) => (
             <span key={i} className="text-[10px] text-muted-foreground">{label}</span>
           ))}
         </div>
       </div>
 
-      {/* Selected Date Banner - Show when date is selected */}
+      {/* Selected Date Banner */}
       {selectedDate && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -292,278 +340,121 @@ export function MobileBookingView({
         </motion.div>
       )}
 
-      {/* "Book in 60 seconds" Badge */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mx-4 mt-4 p-3 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center gap-3"
-      >
-        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-          <Zap className="h-5 w-5 text-primary-foreground" />
+      {/* Course Info Link */}
+      {hasCourseInfo && (
+        <div className="px-4 mt-4">
+          <button 
+            onClick={() => setShowCourseInfo(true)}
+            className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+          >
+            <Info className="h-3.5 w-3.5" />
+            View course details
+          </button>
         </div>
-        <div className="text-primary-foreground">
-          <p className="font-semibold text-sm">Book in 60 seconds</p>
-          <p className="text-xs opacity-80">Fast, simple, secure</p>
-        </div>
-      </motion.div>
+      )}
 
-      {/* Course Details - Expandable Tiles */}
-      <div className="px-4 py-4">
-        <Accordion type="multiple" defaultValue={["summary"]} className="space-y-2">
-          {/* Summary Tile */}
-          <AccordionItem value="summary" className="border rounded-xl overflow-hidden bg-card">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=200"}
-                    alt={courseName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold text-sm">{courseName}</h3>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {hours}h
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {locationName || instructor.home_postcode}
-                    </span>
-                  </div>
-                </div>
+      {/* Step 1: Your Details — auto-collapses when complete */}
+      <div className="px-4 pt-4 pb-4">
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                isPupilDetailsComplete ? 'bg-emerald-500 text-white' : 'bg-primary text-primary-foreground'
+              }`}>
+                {isPupilDetailsComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '1'}
               </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              {courseDescription && (
-                <p className="text-sm text-muted-foreground mb-3">{courseDescription}</p>
-              )}
-              {features && features.length > 0 && (
-                <div className="space-y-1.5">
-                  {features.slice(0, 4).map((f, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{f}</span>
+              Your Details
+            </h2>
+            {detailsCollapsed && (
+              <button onClick={() => setEditingDetails(true)} className="text-xs text-primary font-medium flex items-center gap-1">
+                <Pencil className="h-3 w-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {detailsCollapsed ? (
+              <motion.div
+                key="summary"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 text-xs text-muted-foreground truncate"
+              >
+                {pupilName} · {pupilEmail}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3"
+              >
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="pupilName" className="text-xs">Full Name *</Label>
+                    <Input
+                      id="pupilName"
+                      value={pupilName}
+                      onChange={(e) => setPupilName(e.target.value)}
+                      placeholder="John Smith"
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="pupilEmail" className="text-xs">Email *</Label>
+                    <Input
+                      id="pupilEmail"
+                      type="email"
+                      value={pupilEmail}
+                      onChange={(e) => setPupilEmail(e.target.value)}
+                      placeholder="john@example.com"
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pupilPhone" className="text-xs">Phone *</Label>
+                      <Input
+                        id="pupilPhone"
+                        type="tel"
+                        value={pupilPhone}
+                        onChange={(e) => setPupilPhone(e.target.value)}
+                        placeholder="07123 456789"
+                        className="h-10"
+                      />
                     </div>
-                  ))}
-                </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Instructor Tile */}
-          <AccordionItem value="instructor" className="border rounded-xl overflow-hidden bg-card">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback style={{ backgroundColor: brandColour, color: "white" }}>
-                    {instructor.name.split(" ").map((n) => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-left">
-                  <h3 className="font-semibold text-sm">{instructor.name}</h3>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                    <Car className="h-3 w-3" />
-                    {instructor.car_type} Instructor
-                  </div>
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {instructor.instructor_grade && (
-                  <Badge variant="secondary" className="text-[10px] gap-1">
-                    <Award className="h-2.5 w-2.5" />
-                    Grade {instructor.instructor_grade}
-                  </Badge>
-                )}
-                {instructor.cpd_certified && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-100 text-emerald-700">
-                    <CheckCircle className="h-2.5 w-2.5" />
-                    CPD
-                  </Badge>
-                )}
-                {instructor.adi_code_of_practice && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 bg-blue-100 text-blue-700">
-                    <ShieldCheck className="h-2.5 w-2.5" />
-                    ADI
-                  </Badge>
-                )}
-              </div>
-              {instructor.bio && (
-                <p className="text-xs text-muted-foreground">{instructor.bio}</p>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Start Dates Tile - Only show for pupil_choice mode */}
-          {requiresSlotSelection && (
-            <AccordionItem value="dates" className="border rounded-xl overflow-hidden bg-card">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm">Choose Your Lessons</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {firstSlotDate || "Select your lesson times below"}
-                    </p>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="text-sm">
-                  {selectedSlots.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedSlots.map((slot, idx) => (
-                        <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
-                          <span className="font-medium">{format(slot.date, "EEE, MMM d")}</span>
-                          <span className="text-muted-foreground">{slot.startTime} - {slot.endTime}</span>
-                        </div>
-                      ))}
-                      <div className="pt-2 flex items-center justify-between">
-                        <span className="font-semibold">Total Scheduled</span>
-                        <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-                          {scheduledHours}/{hours}h
-                        </Badge>
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pupilPostcode" className="text-xs">Postcode *</Label>
+                      <Input
+                        id="pupilPostcode"
+                        value={pupilPostcode}
+                        onChange={(e) => setPupilPostcode(e.target.value)}
+                        placeholder="SW1A 1AA"
+                        className="h-10"
+                      />
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">No lessons scheduled yet. Use the scheduler below to pick your times.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="pupilAddress" className="text-xs">Pickup Address *</Label>
+                    <GoogleAddressAutocomplete
+                      value={pupilAddress}
+                      onChange={setPupilAddress}
+                      onPostcodeChange={setPupilPostcode}
+                      placeholder="Start typing your address..."
+                    />
+                  </div>
+                  {isPupilDetailsComplete && (
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setEditingDetails(false)}>
+                      Done
+                    </Button>
                   )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-
-          {/* Prerequisites Tile (if any) */}
-          {template?.prerequisites && template.prerequisites.length > 0 && (
-            <AccordionItem value="prerequisites" className="border rounded-xl overflow-hidden bg-card">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm">Prerequisites</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{template.prerequisites.length} requirements</p>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="space-y-1.5">
-                  {template.prerequisites.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs">
-                      <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-
-          {/* What to Bring Tile (if any) */}
-          {template?.what_to_bring && template.what_to_bring.length > 0 && (
-            <AccordionItem value="what-to-bring" className="border rounded-xl overflow-hidden bg-card">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Backpack className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm">What to Bring</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{template.what_to_bring.length} items</p>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="space-y-1.5">
-                  {template.what_to_bring.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
-                      <CheckCircle className="h-3 w-3 text-blue-500" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-        </Accordion>
-      </div>
-
-      {/* Step 1: Your Details */}
-      <div className="px-4 pb-4">
-        <div className="rounded-xl border bg-card p-4">
-          <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              isPupilDetailsComplete ? 'bg-emerald-500 text-white' : 'bg-primary text-primary-foreground'
-            }`}>
-              {isPupilDetailsComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '1'}
-            </div>
-            Your Details
-          </h2>
-          
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="pupilName" className="text-xs">Full Name *</Label>
-              <Input
-                id="pupilName"
-                value={pupilName}
-                onChange={(e) => setPupilName(e.target.value)}
-                placeholder="John Smith"
-                className="h-10"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="pupilEmail" className="text-xs">Email *</Label>
-              <Input
-                id="pupilEmail"
-                type="email"
-                value={pupilEmail}
-                onChange={(e) => setPupilEmail(e.target.value)}
-                placeholder="john@example.com"
-                className="h-10"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="pupilPhone" className="text-xs">Phone *</Label>
-                <Input
-                  id="pupilPhone"
-                  type="tel"
-                  value={pupilPhone}
-                  onChange={(e) => setPupilPhone(e.target.value)}
-                  placeholder="07123 456789"
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="pupilPostcode" className="text-xs">Postcode *</Label>
-                <Input
-                  id="pupilPostcode"
-                  value={pupilPostcode}
-                  onChange={(e) => setPupilPostcode(e.target.value)}
-                  placeholder="SW1A 1AA"
-                  className="h-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="pupilAddress" className="text-xs">Pickup Address *</Label>
-              <GoogleAddressAutocomplete
-                value={pupilAddress}
-                onChange={setPupilAddress}
-                onPostcodeChange={setPupilPostcode}
-                placeholder="Start typing your address..."
-              />
-            </div>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -622,14 +513,14 @@ export function MobileBookingView({
       )}
 
       {/* Step 3: Payment */}
-      <div className="px-4 pb-8">
+      <div className="px-4 pb-8" ref={paymentRef}>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold flex items-center gap-2">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                 canSubmit ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
-                3
+                {requiresSlotSelection ? '3' : '2'}
               </div>
               Payment
             </h2>
@@ -801,6 +692,122 @@ export function MobileBookingView({
           </p>
         </div>
       </div>
+
+      {/* Course Info Bottom Sheet */}
+      <IOSSheet open={showCourseInfo} onOpenChange={setShowCourseInfo}>
+        <IOSSheetHeader>
+          <IOSSheetTitle>Course Details</IOSSheetTitle>
+        </IOSSheetHeader>
+        <IOSSheetBody>
+          <div className="space-y-5">
+            {courseDescription && (
+              <div>
+                <h3 className="font-semibold text-sm mb-1.5">About this course</h3>
+                <p className="text-sm text-muted-foreground">{courseDescription}</p>
+              </div>
+            )}
+
+            {features && features.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-sm mb-1.5">What's included</h3>
+                <div className="space-y-1.5">
+                  {features.map((f, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {template?.prerequisites && template.prerequisites.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  Prerequisites
+                </h3>
+                <div className="space-y-1.5">
+                  {template.prerequisites.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {template?.what_to_bring && template.what_to_bring.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
+                  <Backpack className="h-4 w-4 text-blue-500" />
+                  What to Bring
+                </h3>
+                <div className="space-y-1.5">
+                  {template.what_to_bring.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Instructor info */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Your Instructor</h3>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={instructor.profile_image_url || undefined} />
+                  <AvatarFallback style={{ backgroundColor: brandColour, color: "white" }}>
+                    {instructor.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-sm">{instructor.name}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Car className="h-3 w-3" />
+                    {instructor.car_type} Instructor
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {instructor.instructor_grade && (
+                  <Badge variant="secondary" className="text-[10px] gap-1">
+                    <Award className="h-2.5 w-2.5" />
+                    Grade {instructor.instructor_grade}
+                  </Badge>
+                )}
+                {instructor.cpd_certified && (
+                  <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-100 text-emerald-700">
+                    <CheckCircle className="h-2.5 w-2.5" />
+                    CPD
+                  </Badge>
+                )}
+                {instructor.adi_code_of_practice && (
+                  <Badge variant="secondary" className="text-[10px] gap-1 bg-blue-100 text-blue-700">
+                    <ShieldCheck className="h-2.5 w-2.5" />
+                    ADI
+                  </Badge>
+                )}
+              </div>
+              {instructor.bio && (
+                <p className="text-xs text-muted-foreground mt-2">{instructor.bio}</p>
+              )}
+            </div>
+          </div>
+        </IOSSheetBody>
+      </IOSSheet>
+
+      {/* Sticky Bottom Bar */}
+      <BookingBottomBar
+        totalPrice={totalPrice}
+        upsellTotal={upsellTotal}
+        canSubmit={canSubmit}
+        onPayClick={scrollToPayment}
+      />
     </div>
   );
 }
