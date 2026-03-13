@@ -1,54 +1,74 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Plan: Add Admin Fee to Pupil Payments
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-Yes, this is achievable. The platform already has a `platform_commission_config` table with an active config: **2.5% + 20p** per payment. Currently, this fee is tracked after the fact but **not added to the charge amount**. The `commission_payer` setting per instructor determines who absorbs the fee, but the actual payment amount sent to the gateway is always the base amount.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-### What will change
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-**1. Frontend — Show fee breakdown before payment (PupilPaymentDrawer + PupilPaymentModal)**
-- When the pupil selects an amount (e.g. £40), fetch the active commission config
-- If `commission_payer === 'pupil'`, calculate and display the admin fee (£40 × 2.5% + £0.20 = £1.20)
-- Show: "Lesson credit: £40.00 | Admin fee: £1.20 | **Total: £41.20**"
-- If `commission_payer === 'instructor'`, no fee shown — instructor absorbs it
-- The total (with fee) is what gets sent to the payment gateway
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-**2. Edge function — `pupil-payment-checkout`**
-- Accept a new optional `adminFee` field in the request body
-- Add `adminFee` to `amount` when calculating `amountInPence` sent to the gateway
-- Store the fee breakdown in `payment_intents` metadata for audit
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-**3. Edge function — `payment-callback`**
-- On successful payment, credit the pupil balance with only the **base amount** (not the fee)
-- Record the fee portion in the `platform_commissions` table (gross, net, commission_amount)
-- Payment history shows the gross amount paid, with a note indicating the fee
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-**4. Parent top-up (ParentPaymentTopUp)**
-- Same logic: fetch commission config, show fee if pupil pays, charge total
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-### Data flow
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-```text
-Pupil enters £40
-  ↓
-Frontend calculates fee (2.5% + 20p = £1.20)
-  ↓
-Gateway charges £41.20
-  ↓
-payment-callback receives £41.20
-  ↓
-Credits pupil balance: £40.00
-Records platform_commissions: £1.20
-Payment history: £40.00 (net to pupil)
-```
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-### Files to modify
-- `src/components/pupil-portal/PupilPaymentDrawer.tsx` — fee display + pass total to checkout
-- `src/components/pupil-portal/PupilPaymentModal.tsx` — same for desktop
-- `src/components/parent/ParentPaymentTopUp.tsx` — same for parent flow
-- `supabase/functions/pupil-payment-checkout/index.ts` — accept adminFee, charge total
-- `supabase/functions/payment-callback/index.ts` — split payment into balance credit + commission record
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-### New helper
-- `src/hooks/useAdminFee.ts` — fetches active commission config and calculates fee for a given amount + commission_payer setting
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`

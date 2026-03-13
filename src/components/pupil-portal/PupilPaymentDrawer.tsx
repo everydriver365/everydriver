@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "./SquareWalletButtons";
+import { useAdminFee } from "@/hooks/useAdminFee";
+import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface PupilPaymentDrawerProps {
   open: boolean;
@@ -20,6 +22,7 @@ interface PupilPaymentDrawerProps {
   instructorSlug: string;
   accountBalance: number;
   brandColour: string | null;
+  commissionPayer?: string | null;
 }
 
 type PaymentGateway = "npi" | "clearpay" | "klarna";
@@ -36,6 +39,7 @@ export function PupilPaymentDrawer({
   instructorSlug,
   accountBalance,
   brandColour,
+  commissionPayer,
 }: PupilPaymentDrawerProps) {
   const [stage, setStage] = useState<Stage>("amount");
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
@@ -45,6 +49,7 @@ export function PupilPaymentDrawer({
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
+  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, commissionPayer);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -80,6 +85,7 @@ export function PupilPaymentDrawer({
           pupilId,
           instructorId,
           amount: paymentAmount,
+          adminFee: hasFee ? adminFee : 0,
           gateway,
           customerName: pupilName,
           customerEmail: pupilEmail || undefined,
@@ -212,13 +218,21 @@ export function PupilPaymentDrawer({
                 </div>
               )}
 
+              {/* Fee breakdown */}
+              <AdminFeeBreakdown
+                baseAmount={paymentAmount}
+                adminFee={adminFee}
+                totalCharge={totalCharge}
+                hasFee={hasFee}
+              />
+
               {/* Continue button */}
               <Button
                 onClick={handleContinue}
                 className="w-full h-12 rounded-xl text-base font-semibold"
                 disabled={paymentAmount <= 0}
               >
-                Continue — £{paymentAmount.toFixed(2)}
+                Continue — £{totalCharge.toFixed(2)}
                 <ChevronRight className="h-5 w-5 ml-1" />
               </Button>
             </div>
@@ -234,7 +248,7 @@ export function PupilPaymentDrawer({
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div className="flex-1">
-                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{paymentAmount.toFixed(2)}</h2>
+                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{totalCharge.toFixed(2)}</h2>
                   <p className="text-xs text-muted-foreground">Choose payment method</p>
                 </div>
               </div>
@@ -243,7 +257,7 @@ export function PupilPaymentDrawer({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
                 <SquareWalletButtons
-                  amount={paymentAmount}
+                  amount={totalCharge}
                   pupilId={pupilId}
                   instructorId={instructorId}
                   instructorSlug={instructorSlug}

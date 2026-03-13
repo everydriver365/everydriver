@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { SquareWalletButtons } from "./SquareWalletButtons";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAdminFee } from "@/hooks/useAdminFee";
+import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface PupilPaymentModalProps {
   open: boolean;
@@ -22,6 +24,7 @@ interface PupilPaymentModalProps {
   instructorSlug: string;
   accountBalance: number;
   brandColour: string | null;
+  commissionPayer?: string | null;
 }
 
 type PaymentGateway = "npi" | "clearpay" | "klarna" | "elavon";
@@ -37,6 +40,7 @@ export function PupilPaymentModal({
   instructorSlug,
   accountBalance,
   brandColour,
+  commissionPayer,
 }: PupilPaymentModalProps) {
   const [amount, setAmount] = useState<string>(Math.abs(accountBalance).toFixed(2));
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
@@ -45,6 +49,8 @@ export function PupilPaymentModal({
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
+
+  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, commissionPayer);
 
   // On mobile, render the drawer instead
   if (isMobile) {
@@ -60,6 +66,7 @@ export function PupilPaymentModal({
         instructorSlug={instructorSlug}
         accountBalance={accountBalance}
         brandColour={brandColour}
+        commissionPayer={commissionPayer}
       />
     );
   }
@@ -84,6 +91,7 @@ export function PupilPaymentModal({
           pupilId,
           instructorId,
           amount: paymentAmount,
+          adminFee: hasFee ? adminFee : 0,
           gateway,
           customerName: pupilName,
           customerEmail: pupilEmail || undefined,
@@ -213,9 +221,17 @@ export function PupilPaymentModal({
             </div>
           )}
 
+          {/* Admin Fee Breakdown */}
+          <AdminFeeBreakdown
+            baseAmount={paymentAmount}
+            adminFee={adminFee}
+            totalCharge={totalCharge}
+            hasFee={hasFee}
+          />
+
           {/* Apple Pay / Google Pay Express Checkout */}
           <SquareWalletButtons
-            amount={paymentAmount}
+            amount={totalCharge}
             pupilId={pupilId}
             instructorId={instructorId}
             instructorSlug={instructorSlug}

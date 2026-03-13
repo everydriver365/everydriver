@@ -33,6 +33,8 @@ serve(async (req: Request) => {
   const pupilId = url.searchParams.get("pupilId");
   const orderRef = url.searchParams.get("ref");
   const paymentType = url.searchParams.get("type"); // "balance" for pupil payments
+  const baseAmountParam = parseFloat(url.searchParams.get("baseAmount") || "0");
+  const adminFeeParam = parseFloat(url.searchParams.get("adminFee") || "0");
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -133,18 +135,37 @@ serve(async (req: Request) => {
 
           if (pupil) {
             const paymentAmountPounds = amountReceived ? parseFloat(amountReceived) / 100 : 0;
+            // Determine the base amount to credit (gross minus admin fee)
+            const creditAmount = adminFeeParam > 0 ? baseAmountParam : paymentAmountPounds;
+            const feeAmount = adminFeeParam > 0 ? adminFeeParam : 0;
 
-            // Record payment in history
+            // Record payment in history (show gross amount)
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: paymentAmountPounds,
+              amount: creditAmount,
               payment_method: `${provider}_card`,
-              notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}`,
+              notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
             });
 
-            // Always credit pupil balance (both balance top-ups and booking payments)
-            await creditPupilBalance(pupilId, paymentAmountPounds);
+            // Credit pupil balance with base amount only (not the fee)
+            await creditPupilBalance(pupilId, creditAmount);
+
+            // Record commission if admin fee was charged
+            if (feeAmount > 0) {
+              await supabase.from("platform_commissions").insert({
+                instructor_id: pupil.instructor_id,
+                source_type: `${provider}_card`,
+                source_id: paymentRef,
+                gross_amount: paymentAmountPounds,
+                commission_amount: feeAmount,
+                commission_rate: 0.025,
+                fixed_fee: 0.20,
+                net_amount: creditAmount,
+                description: `Admin fee on pupil balance payment`,
+              });
+              console.log(`Recorded commission: £${feeAmount.toFixed(2)} on £${paymentAmountPounds.toFixed(2)} gross`);
+            }
 
             // If pupil balance payment, send receipt email
             if (isPupilPayment) {
@@ -319,16 +340,34 @@ serve(async (req: Request) => {
                   .single();
 
                 if (pupil) {
+                  const creditAmount = adminFeeParam > 0 ? baseAmountParam : capturedAmount;
+                  const feeAmount = adminFeeParam > 0 ? adminFeeParam : 0;
+
                   await supabase.from("payment_history").insert({
                     instructor_id: pupil.instructor_id,
                     pupil_id: pupilId,
-                    amount: capturedAmount,
+                    amount: creditAmount,
                     payment_method: "clearpay",
-                    notes: `Clearpay Payment ${captureResult.id}`,
+                    notes: `Clearpay Payment ${captureResult.id}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
                   });
 
-                  // Always credit pupil balance atomically
-                  await creditPupilBalance(pupilId, capturedAmount);
+                  // Credit pupil balance with base amount only
+                  await creditPupilBalance(pupilId, creditAmount);
+
+                  // Record commission if admin fee was charged
+                  if (feeAmount > 0) {
+                    await supabase.from("platform_commissions").insert({
+                      instructor_id: pupil.instructor_id,
+                      source_type: "clearpay",
+                      source_id: captureResult.id || paymentRef,
+                      gross_amount: capturedAmount,
+                      commission_amount: feeAmount,
+                      commission_rate: 0.025,
+                      fixed_fee: 0.20,
+                      net_amount: creditAmount,
+                      description: `Admin fee on pupil balance payment`,
+                    });
+                  }
 
                   if (isPupilPayment) {
                     // Send payment receipt email
@@ -461,16 +500,34 @@ serve(async (req: Request) => {
             .single();
 
           if (pupil) {
+            const klarnaCreditAmount = adminFeeParam > 0 ? baseAmountParam : klarnaAmount;
+            const klarnaFee = adminFeeParam > 0 ? adminFeeParam : 0;
+
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: klarnaAmount,
+              amount: klarnaCreditAmount,
               payment_method: "klarna",
-              notes: `Klarna Payment - Order: ${klarnaOrderId}`,
+              notes: `Klarna Payment - Order: ${klarnaOrderId}${klarnaFee > 0 ? ` (admin fee: £${klarnaFee.toFixed(2)})` : ''}`,
             });
 
-            // Always credit pupil balance atomically
-            await creditPupilBalance(pupilId, klarnaAmount);
+            // Credit pupil balance with base amount only
+            await creditPupilBalance(pupilId, klarnaCreditAmount);
+
+            // Record commission if admin fee was charged
+            if (klarnaFee > 0) {
+              await supabase.from("platform_commissions").insert({
+                instructor_id: pupil.instructor_id,
+                source_type: "klarna",
+                source_id: klarnaOrderId || paymentRef,
+                gross_amount: klarnaAmount,
+                commission_amount: klarnaFee,
+                commission_rate: 0.025,
+                fixed_fee: 0.20,
+                net_amount: klarnaCreditAmount,
+                description: `Admin fee on pupil balance payment`,
+              });
+            }
 
             // Update payment_intents status
             await updatePaymentIntentStatus(paymentRef, "completed");

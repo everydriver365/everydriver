@@ -229,6 +229,7 @@ export function PupilPortalPayments({
         instructorSlug={instructorSlug}
         accountBalance={balance}
         brandColour={brandColour}
+        commissionPayer={commissionPayer}
       />
 
       {/* Payment History */}

@@ -10,6 +10,7 @@ interface PupilPaymentRequest {
   pupilId: string;
   instructorId: string;
   amount: number;
+  adminFee?: number;
   gateway: "npi" | "clearpay" | "klarna" | "elavon";
   customerName: string;
   customerEmail?: string;
@@ -52,9 +53,12 @@ serve(async (req: Request) => {
 
   try {
     const body: PupilPaymentRequest = await req.json();
-    const { pupilId, instructorId, amount, gateway, customerName, customerEmail, customerPhone, returnUrl, cancelUrl } = body;
+    const { pupilId, instructorId, amount, adminFee = 0, gateway, customerName, customerEmail, customerPhone, returnUrl, cancelUrl } = body;
 
-    console.log(`Pupil payment checkout: pupil=${pupilId}, gateway=${gateway}, amount=${amount}`);
+    // Total to charge = base amount + admin fee
+    const chargeAmount = Math.round((amount + adminFee) * 100) / 100;
+
+    console.log(`Pupil payment checkout: pupil=${pupilId}, gateway=${gateway}, amount=${amount}, adminFee=${adminFee}, chargeTotal=${chargeAmount}`);
 
     if (!pupilId || !instructorId || !amount || !gateway || !returnUrl) {
       return new Response(
@@ -75,7 +79,7 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     
     // Build callback URL that routes back to payment-callback
-    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=${gateway}&pupilId=${pupilId}&ref=${orderReference}&type=balance`;
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=${gateway}&pupilId=${pupilId}&ref=${orderReference}&type=balance&baseAmount=${amount}&adminFee=${adminFee}`;
 
     // Handle each gateway
     switch (gateway) {
@@ -90,7 +94,7 @@ serve(async (req: Request) => {
           );
         }
 
-        const amountInPence = Math.round(amount * 100);
+        const amountInPence = Math.round(chargeAmount * 100);
         const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const formData: Record<string, string> = {
@@ -134,7 +138,7 @@ serve(async (req: Request) => {
           );
         }
 
-        const amountInPence = Math.round(amount * 100);
+        const amountInPence = Math.round(chargeAmount * 100);
         const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const formData: Record<string, string> = {
@@ -186,7 +190,7 @@ serve(async (req: Request) => {
         const authHeader = btoa(`${merchantId}:${secretKey}`);
 
         const checkoutPayload = {
-          amount: { amount: amount.toFixed(2), currency: "GBP" },
+          amount: { amount: chargeAmount.toFixed(2), currency: "GBP" },
           consumer: {
             givenNames: customerName.split(" ")[0] || "Customer",
             surname: customerName.split(" ").slice(1).join(" ") || "User",
@@ -195,7 +199,7 @@ serve(async (req: Request) => {
           },
           merchant: { redirectConfirmUrl: callbackUrl, redirectCancelUrl: cancelUrl },
           merchantReference: orderReference,
-          items: [{ name: "Lesson Balance Payment", quantity: 1, price: { amount: amount.toFixed(2), currency: "GBP" } }],
+          items: [{ name: "Lesson Balance Payment", quantity: 1, price: { amount: chargeAmount.toFixed(2), currency: "GBP" } }],
         };
 
         const response = await fetch(`${baseUrl}/v2/checkouts`, {
@@ -245,7 +249,7 @@ serve(async (req: Request) => {
           ? "https://api.playground.klarna.com"
           : "https://api.klarna.com";
 
-        const amountInMinor = Math.round(amount * 100);
+        const amountInMinor = Math.round(chargeAmount * 100);
         const authHeader = btoa(`${apiUsername}:${apiPassword}`);
 
         const checkoutPayload = {
