@@ -133,26 +133,58 @@ export function CardstreamCheckout({
         
         if (cancelled) return;
 
-        // Wait for script to initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Render field containers first, then initialize SDK
+        setLoading(false);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-        // Initialize Hosted Fields using their SDK
-        if (window.hostedFields?.classes?.HostedFields) {
-          const instance = new window.hostedFields.classes.HostedFields({
-            merchantID: merchantIdForHPF || data.merchantId,
-            stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
-            fields: {
-              cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },
-              cardExpiryDate: { selector: "#cs-card-expiry", placeholder: "MM/YY" },
-              cardCVV: { selector: "#cs-card-cvv", placeholder: "•••" },
-            },
-          });
+        if (cancelled) return;
 
-          hostedFieldsRef.current = instance;
-          setFieldsReady(true);
+        const $ = window.jQuery || window.$;
+        if (!$?.fn?.hostedForm) {
+          throw new Error("Secure card fields SDK unavailable");
         }
 
-        setLoading(false);
+        const formSelection = $("#cs-payment-form") as {
+          hostedForm: (...args: unknown[]) => unknown;
+        };
+
+        formSelection.hostedForm({
+          merchantID: merchantIdForHPF || data.merchantId,
+          stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
+          autoSetup: true,
+          autoSubmit: false,
+          fields: {
+            cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },
+            cardExpiryDate: { selector: "#cs-card-expiry", placeholder: "MM/YY" },
+            cardCVV: { selector: "#cs-card-cvv", placeholder: "•••" },
+          },
+        });
+
+        const instance = formSelection.hostedForm("instance") as {
+          getPaymentDetails: (options?: { customerName?: string; customerEmail?: string }) => PromiseLike<{
+            success: boolean;
+            paymentToken?: string;
+            error?: string;
+          }>;
+          destroy?: () => void;
+        } | null;
+
+        if (!instance) {
+          throw new Error("Failed to initialize secure card fields");
+        }
+
+        hostedFieldsRef.current = {
+          getPaymentDetails: (options) =>
+            toPromise(
+              instance.getPaymentDetails({
+                customerName: options?.customerName,
+                customerEmail: options?.customerEmail,
+              }),
+            ),
+          destroy: () => instance.destroy?.(),
+        };
+
+        setFieldsReady(true);
       } catch (e) {
         if (!cancelled) {
           setLoading(false);
