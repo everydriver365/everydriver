@@ -306,6 +306,25 @@ serve(async (req) => {
       }
     }
 
+    // 10. Notify parent (if linked)
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          pupilId: pupil.id,
+          type: "booking_confirmed",
+          body: `A ${booking.courseType} course (${booking.courseHours} hours) has been booked for ${booking.pupilName}.${sortedLessons?.[0] ? ` First lesson: ${sortedLessons[0].lesson_date}` : ''}`,
+        }),
+      });
+      console.log("Parent notification triggered");
+    } catch (parentError) {
+      console.error("Parent notification error (non-fatal):", parentError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

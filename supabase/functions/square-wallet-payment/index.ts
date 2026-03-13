@@ -204,6 +204,24 @@ serve(async (req: Request) => {
       console.error("Failed to notify instructor:", notifyError);
     }
 
+    // Notify parent of wallet payment
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          pupilId,
+          type: "payment_received",
+          body: `£${amount.toFixed(2)} payment confirmed for ${pupil?.name || "your child"}'s driving lessons via ${walletType === "apple" ? "Apple Pay" : "Google Pay"}.`,
+        }),
+      });
+    } catch (parentErr) {
+      console.error("Parent notification error (non-fatal):", parentErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

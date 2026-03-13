@@ -211,6 +211,24 @@ serve(async (req: Request) => {
         } catch (e) {
           console.error("Instructor notification error:", e);
         }
+        // Notify parent of payment (if linked)
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              pupilId,
+              type: "payment_received",
+              body: `£${creditAmount.toFixed(2)} payment confirmed via Square Checkout.`,
+            }),
+          });
+          console.log("Parent payment notification triggered");
+        } catch (parentError) {
+          console.error("Parent notification error:", parentError);
+        }
 
         break;
       }
