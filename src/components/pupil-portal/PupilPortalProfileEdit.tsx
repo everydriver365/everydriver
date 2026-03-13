@@ -265,6 +265,42 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
             )}
           </div>
         </div>
+
+        {/* Parent Portal Access - only for 18+ */}
+        {pupil.date_of_birth && differenceInYears(new Date(), new Date(pupil.date_of_birth)) >= 18 && (
+          <>
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2 px-1 py-1.5">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] text-muted-foreground block">Parent / Guardian</span>
+                  <div className="flex items-center justify-between mt-1">
+                    <div>
+                      <Label htmlFor="parent-portal-toggle" className="text-sm text-foreground cursor-pointer">
+                        Parent Portal Access
+                      </Label>
+                      <p className="text-[10px] text-muted-foreground">
+                        Allow your parent to view your progress and lessons
+                      </p>
+                    </div>
+                    <Switch
+                      id="parent-portal-toggle"
+                      checked={pupil.parent_portal_enabled !== false}
+                      onCheckedChange={async (checked) => {
+                        try {
+                          await updateField("parent_portal_enabled", checked ? "true" : "false");
+                          onPupilUpdate({ parent_portal_enabled: checked });
+                        } catch {
+                          // error toast already shown by updateField
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </InstructorCard>
   );
