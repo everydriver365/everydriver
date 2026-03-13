@@ -1859,11 +1859,11 @@ export default function BookingSummary() {
               )}
 
               <Button
-                onClick={handleNPICheckout}
-                disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available}
+                onClick={handleElavonCheckout}
+                disabled={!canSubmit || isElavonLoading || !gatewayHealth.elavon.available}
                 className="w-full"
               >
-                {isNPILoading ? (
+                {isElavonLoading ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
                 ) : (
                   <>Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal} with Card</>
