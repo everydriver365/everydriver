@@ -409,7 +409,7 @@ export function MobileBookingView({
                     <Calendar className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold text-sm">Start Dates</h3>
+                    <h3 className="font-semibold text-sm">Choose Your Lessons</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {firstSlotDate || "Select your lesson times below"}
                     </p>
