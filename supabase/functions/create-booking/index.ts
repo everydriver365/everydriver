@@ -89,6 +89,7 @@ serve(async (req) => {
         pickup_address: booking.pickupAddress || null,
         pickup_postcode: booking.pickupPostcode || null,
         what3words: booking.pickupWhat3words || null,
+        special_needs: booking.specialNeeds || null,
         course_type: booking.courseType,
         prepaid_hours: booking.courseHours,
         account_balance: -remainingBalance,
