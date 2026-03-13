@@ -79,7 +79,7 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     
     // Build callback URL that routes back to payment-callback
-    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=${gateway}&pupilId=${pupilId}&ref=${orderReference}&type=balance`;
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=${gateway}&pupilId=${pupilId}&ref=${orderReference}&type=balance&baseAmount=${amount}&adminFee=${adminFee}`;
 
     // Handle each gateway
     switch (gateway) {
