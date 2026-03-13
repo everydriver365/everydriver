@@ -10,6 +10,7 @@ interface PupilPaymentRequest {
   pupilId: string;
   instructorId: string;
   amount: number;
+  adminFee?: number;
   gateway: "npi" | "clearpay" | "klarna" | "elavon";
   customerName: string;
   customerEmail?: string;
