@@ -75,6 +75,11 @@ export function PostcodeAutocomplete({
       clearTimeout(debounceRef.current);
     }
 
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
+    }
+
     if (value.length >= 2) {
       debounceRef.current = setTimeout(() => {
         fetchSuggestions(value);
