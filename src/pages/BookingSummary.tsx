@@ -1596,22 +1596,12 @@ export default function BookingSummary() {
                 placeholder="07123 456789"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="pupilPostcode">Postcode *</Label>
-              <Input
-                id="pupilPostcode"
-                value={pupilPostcode}
-                onChange={(e) => setPupilPostcode(e.target.value)}
-                placeholder="SW1A 1AA"
-              />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="pupilAddress">Home Address *</Label>
-              <GoogleAddressAutocomplete
-                value={pupilAddress}
-                onChange={setPupilAddress}
+            <div className="sm:col-span-2">
+              <PostcodeAddressLookup
+                postcode={pupilPostcode}
+                address={pupilAddress}
                 onPostcodeChange={setPupilPostcode}
-                placeholder="Start typing your home address..."
+                onAddressChange={setPupilAddress}
               />
             </div>
             
