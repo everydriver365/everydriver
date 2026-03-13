@@ -130,6 +130,10 @@ export default function BookingSummary() {
   const [pupilPhone, setPupilPhone] = useState("");
   const [pupilAddress, setPupilAddress] = useState("");
   const [pupilPostcode, setPupilPostcode] = useState("");
+  const [differentPickup, setDifferentPickup] = useState(false);
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [pickupPostcode, setPickupPostcode] = useState("");
+  const [pickupWhat3words, setPickupWhat3words] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
