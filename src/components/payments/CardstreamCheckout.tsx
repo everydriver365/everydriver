@@ -81,6 +81,15 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+function toPromise<T>(value: T | PromiseLike<T>): Promise<T> {
+  if (value && typeof (value as PromiseLike<T>).then === "function") {
+    return new Promise<T>((resolve, reject) => {
+      (value as PromiseLike<T>).then(resolve, reject);
+    });
+  }
+  return Promise.resolve(value);
+}
+
 export function CardstreamCheckout({
   amount,
   pupilId,
