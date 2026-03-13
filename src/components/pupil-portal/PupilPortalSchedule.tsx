@@ -10,6 +10,7 @@ import { format, parseISO, isBefore, startOfDay, addHours, isAfter } from "date-
 import { toast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
+import { CancellationPolicyCard } from "./CancellationPolicyCard";
 
 interface PupilPortalScheduleProps {
   pupilId: string;
