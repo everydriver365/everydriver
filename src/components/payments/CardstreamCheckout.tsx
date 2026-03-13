@@ -137,6 +137,7 @@ export function CardstreamCheckout({
         // Render field containers first, then initialize SDK
         setLoading(false);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        await new Promise<void>((resolve) => setTimeout(resolve, 50));
 
         if (cancelled) return;
 
