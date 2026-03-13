@@ -186,6 +186,7 @@ export function PostcodeAutocomplete({
             
             console.log('Found postcode:', formattedPostcode, areaName);
             
+            skipNextFetchRef.current = true;
             onChange(formattedPostcode);
             onSelect?.(formattedPostcode, areaName);
             
