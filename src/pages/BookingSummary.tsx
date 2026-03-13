@@ -357,7 +357,7 @@ export default function BookingSummary() {
     }
 
     setBookingPupilId(data.pupilId);
-    toast.success(`Booking confirmed! ${data.lessonsCreated} lessons scheduled.`);
+    toast.info(`Booking created — completing payment...`);
     return data.pupilId as string;
   };
 
