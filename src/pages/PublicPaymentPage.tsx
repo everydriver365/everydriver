@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,15 @@ export default function PublicPaymentPage() {
   const { instructorId } = useParams<{ instructorId: string }>();
   const [instructor, setInstructor] = useState<InstructorInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [amount, setAmount] = useState("");
+  const [searchParams] = useSearchParams();
+  const prefillAmount = searchParams.get("amount");
+  const [amount, setAmount] = useState(() => {
+    if (prefillAmount) {
+      const parsed = parseFloat(prefillAmount);
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 5000) return parsed.toString();
+    }
+    return "";
+  });
   const [showCheckout, setShowCheckout] = useState(false);
   const [paid, setPaid] = useState(false);
 
