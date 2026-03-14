@@ -126,12 +126,49 @@ export function CardstreamCheckout({
   const [fieldsReady, setFieldsReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [canGooglePay, setCanGooglePay] = useState(false);
+  const googlePayClientRef = useRef<GooglePayClient | null>(null);
 
   const canApplePay = useMemo(() => {
     return typeof window !== 'undefined' && 
            !!window.ApplePaySession && 
            window.ApplePaySession.canMakePayments?.();
   }, []);
+
+  const baseCardPaymentMethod = useMemo(() => ({
+    type: "CARD",
+    parameters: {
+      allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+      allowedCardNetworks: ["VISA", "MASTERCARD", "AMEX"],
+    },
+  }), []);
+
+  // Detect Google Pay availability
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await loadScript("https://pay.google.com/gp/p/js/pay.js");
+        const PaymentsClient = window.google?.payments?.api?.PaymentsClient;
+        if (!PaymentsClient) return;
+
+        const env = window.location.hostname.includes("lovable.app") ? "TEST" : "PRODUCTION";
+        const client = new PaymentsClient({ environment: env });
+        const ready = await client.isReadyToPay({
+          apiVersion: 2,
+          apiVersionMinor: 0,
+          allowedPaymentMethods: [baseCardPaymentMethod],
+        });
+        if (!cancelled && ready.result) {
+          googlePayClientRef.current = client;
+          setCanGooglePay(true);
+        }
+      } catch (e) {
+        console.warn("Google Pay not available:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [baseCardPaymentMethod]);
 
   useEffect(() => {
     let cancelled = false;
