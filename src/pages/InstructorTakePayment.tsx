@@ -21,7 +21,8 @@ export default function InstructorTakePayment() {
   useEffect(() => {
     if (!instructor?.id) return;
     const fetchPupils = async () => {
-      const result: any = await supabase
+      // @ts-ignore - deep type instantiation workaround
+      const result = await supabase
         .from("pupils")
         .select("id, name, phone, email, account_balance")
         .eq("instructor_id", instructor.id)
