@@ -71,28 +71,8 @@ export function TakePaymentModal({
     setView("picker");
   };
 
-  // Card Entry: create intent to get merchantId
-  const handleProceedToCard = async () => {
-    if (!instructorId || parsedAmount <= 0) return;
-    setCreatingIntent(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("payment-intent-create", {
-        body: {
-          amount: totalCharge,
-          pupilId: selectedPupilId || undefined,
-          instructorId,
-          customerName: selectedPupil?.name,
-          currency: "GBP",
-        },
-      });
-      if (error || !data?.success) throw new Error("Failed to create payment session");
-      setMerchantId(data.merchantId);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Payment error");
-    } finally {
-      setCreatingIntent(false);
-    }
-  };
+
+
 
   // Send Link
   const handleSendLink = async () => {
