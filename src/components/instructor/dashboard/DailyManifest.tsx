@@ -35,7 +35,7 @@ interface DailyManifestProps {
 
 export function DailyManifest({ instructorId }: DailyManifestProps) {
   const [lessons, setLessons] = useState<ManifestLesson[]>([]);
-  const [overdueBalances, setOverdueBalances] = useState<Array<{ name: string; balance: number }>>([]);
+  const [overdueBalances, setOverdueBalances] = useState<Array<{ id: string; name: string; balance: number }>>([]);
   const [loading, setLoading] = useState(true);
 
   const today = format(new Date(), "yyyy-MM-dd");
