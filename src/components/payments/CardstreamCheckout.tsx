@@ -565,8 +565,8 @@ export function CardstreamCheckout({
               <input
                 type="hostedfield:cardNumber"
                 className="w-full"
-                placeholder="1234 5678 9012 3456"
-                data-hostedfield-placeholder="1234 5678 9012 3456"
+                placeholder="Card number"
+                data-hostedfield-placeholder="Card number"
               />
             </div>
           </div>
