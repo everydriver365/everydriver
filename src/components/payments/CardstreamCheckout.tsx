@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CreditCard, Shield } from "lucide-react";
+import { Loader2, CreditCard, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
@@ -71,11 +71,16 @@ type Props = {
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
-    if (existing) return resolve();
+    if (existing) {
+      if (existing.dataset.loaded === "true") return resolve();
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+      return;
+    }
     const s = document.createElement("script");
     s.src = src;
     s.async = true;
-    s.onload = () => resolve();
+    s.onload = () => { s.dataset.loaded = "true"; resolve(); };
     s.onerror = () => reject(new Error(`Failed to load ${src}`));
     document.head.appendChild(s);
   });
@@ -104,6 +109,8 @@ export function CardstreamCheckout({
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const hostedFieldsRef = useRef<HostedFieldsInstance | null>(null);
   const [fieldsReady, setFieldsReady] = useState(false);
+  const [sdkError, setSdkError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const canApplePay = useMemo(() => {
     return typeof window !== 'undefined' && 
@@ -118,6 +125,7 @@ export function CardstreamCheckout({
       try {
         setLoading(true);
         setFieldsReady(false);
+        setSdkError(null);
 
         // Create intent
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
@@ -137,17 +145,24 @@ export function CardstreamCheckout({
         
         if (cancelled) return;
 
+        // Poll for jQuery + hostedForm availability (up to 2s)
+        let attempts = 0;
+        while (!((window.jQuery || window.$)?.fn?.hostedForm) && attempts < 20) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+
+        const $ = window.jQuery || window.$;
+        if (!$?.fn?.hostedForm) {
+          throw new Error("Secure card fields SDK unavailable — please retry");
+        }
+
         // Render field containers first, then initialize SDK
         setLoading(false);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         await new Promise<void>((resolve) => setTimeout(resolve, 50));
 
         if (cancelled) return;
-
-        const $ = window.jQuery || window.$;
-        if (!$?.fn?.hostedForm) {
-          throw new Error("Secure card fields SDK unavailable");
-        }
 
         const formSelection = $("#cs-payment-form") as {
           hostedForm: (...args: unknown[]) => unknown;
@@ -193,8 +208,10 @@ export function CardstreamCheckout({
       } catch (e) {
         if (!cancelled) {
           setLoading(false);
+          const msg = e instanceof Error ? e.message : "Failed to initialize payment";
           console.error("CardstreamCheckout init error:", e);
-          toast.error(e instanceof Error ? e.message : "Failed to initialize payment");
+          setSdkError(msg);
+          toast.error(msg);
         }
       }
     })();
@@ -205,7 +222,7 @@ export function CardstreamCheckout({
         hostedFieldsRef.current.destroy?.();
       }
     };
-  }, [amount, pupilId, instructorId, customerName, customerEmail, merchantIdForHPF]);
+  }, [amount, pupilId, instructorId, customerName, customerEmail, merchantIdForHPF, retryCount]);
 
   const payWithCard = useCallback(async () => {
     if (!orderRef || !hostedFieldsRef.current) return;
@@ -330,6 +347,20 @@ export function CardstreamCheckout({
           <div className="text-2xl font-bold">Pay £{amount.toFixed(2)}</div>
           <p className="text-sm text-muted-foreground mt-1">Secure payment</p>
         </div>
+
+        {sdkError && !loading && (
+          <div className="flex flex-col items-center justify-center py-8 space-y-3">
+            <p className="text-sm text-destructive text-center">{sdkError}</p>
+            <Button
+              variant="outline"
+              onClick={() => setRetryCount(c => c + 1)}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        )}
 
         {loading && (
           <div className="flex flex-col items-center justify-center py-8">
