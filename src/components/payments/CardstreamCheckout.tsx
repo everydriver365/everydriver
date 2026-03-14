@@ -178,7 +178,6 @@ export function CardstreamCheckout({
 
         formSelection.hostedForm({
           merchantID: merchantIdForHPF || data.merchantId,
-          stylesheet: "https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css",
           autoSetup: true,
           autoSubmit: false,
           fields: {
