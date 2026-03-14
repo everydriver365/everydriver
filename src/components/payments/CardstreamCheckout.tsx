@@ -553,21 +553,59 @@ export function CardstreamCheckout({
             <input key={key} type="hidden" name={key} value={value} />
           ))}
 
-          {/* Combined card details field — SDK replaces this with a secure iframe */}
+          {/* Card Number */}
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">
-              Card details
+              Card number
             </label>
             <div
               className="rounded-md border border-input bg-background overflow-hidden"
               style={{ minHeight: '48px' }}
             >
               <input
-                type="hostedfield:cardDetails"
+                type="hostedfield:cardNumber"
                 className="w-full"
-                placeholder="Card number, MM/YY, CVV"
-                data-hostedfield-placeholder="Card number, MM/YY, CVV"
+                placeholder="1234 5678 9012 3456"
+                data-hostedfield-placeholder="1234 5678 9012 3456"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Expiry Date */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Expiry date
+              </label>
+              <div
+                className="rounded-md border border-input bg-background overflow-hidden"
+                style={{ minHeight: '48px' }}
+              >
+                <input
+                  type="hostedfield:cardExpiryDate"
+                  className="w-full"
+                  placeholder="MM / YY"
+                  data-hostedfield-placeholder="MM / YY"
+                />
+              </div>
+            </div>
+
+            {/* CVV */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                CVV
+              </label>
+              <div
+                className="rounded-md border border-input bg-background overflow-hidden"
+                style={{ minHeight: '48px' }}
+              >
+                <input
+                  type="hostedfield:cardCVV"
+                  className="w-full"
+                  placeholder="123"
+                  data-hostedfield-placeholder="123"
+                />
+              </div>
             </div>
           </div>
 
