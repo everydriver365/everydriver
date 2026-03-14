@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CreditCard, Shield } from "lucide-react";
+import { Loader2, CreditCard, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
