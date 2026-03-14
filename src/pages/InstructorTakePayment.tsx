@@ -21,13 +21,13 @@ export default function InstructorTakePayment() {
   useEffect(() => {
     if (!instructor?.id) return;
     const fetchPupils = async () => {
-      const { data } = await supabase
+      const result: any = await supabase
         .from("pupils")
         .select("id, name, phone, email, account_balance")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true)
-        .order("name") as { data: Pupil[] | null };
-      if (data) setPupils(data);
+        .order("name");
+      if (result.data) setPupils(result.data);
     };
     fetchPupils();
   }, [instructor?.id]);
