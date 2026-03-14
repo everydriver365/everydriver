@@ -205,77 +205,64 @@ export function TakePaymentModal({
             </div>
           )}
 
-          {/* === Card Entry === */}
           {view === "card" && (
             <div className="space-y-4">
-              {!merchantId ? (
-                <>
-                  {/* Pupil selector */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Select Pupil</Label>
-                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
-                      <SelectTrigger className="w-full h-10">
-                        <SelectValue placeholder="-- Select a pupil --" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[200]">
-                        {pupils.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              {/* Pupil selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Select Pupil</Label>
+                <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="-- Select a pupil --" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[200]">
+                    {pupils.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Amount (£)</Label>
+                <Input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+
+              {/* Fee breakdown */}
+              {parsedAmount > 0 && hasFee && (
+                <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Lesson amount</span>
+                    <span>£{parsedAmount.toFixed(2)}</span>
                   </div>
-
-                  {/* Amount */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Amount (£)</Label>
-                    <Input
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Admin fee</span>
+                    <span>£{adminFee.toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between font-semibold border-t pt-1">
+                    <span>Total charge</span>
+                    <span>£{totalCharge.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
 
-                  {/* Fee breakdown */}
-                  {parsedAmount > 0 && hasFee && (
-                    <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Lesson amount</span>
-                        <span>£{parsedAmount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Admin fee</span>
-                        <span>£{adminFee.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between font-semibold border-t pt-1">
-                        <span>Total charge</span>
-                        <span>£{totalCharge.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <Button
-                    className="w-full"
-                    disabled={parsedAmount <= 0 || !selectedPupilId || creatingIntent}
-                    onClick={handleProceedToCard}
-                  >
-                    {creatingIntent && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Proceed to Card Entry
-                  </Button>
-                </>
-              ) : (
-                <CardstreamCheckout
+              {parsedAmount > 0 && selectedPupilId && (
+                <CardstreamPayButton
                   amount={totalCharge}
-                  pupilId={selectedPupilId || undefined}
+                  pupilId={selectedPupilId}
                   instructorId={instructorId}
                   customerName={selectedPupil?.name}
-                  onPaid={() => {
-                    toast.success("Payment successful!");
-                    handleClose(false);
-                  }}
-                  merchantIdForHPF={merchantId}
+                  customerEmail={selectedPupil?.email || undefined}
+                  customerPhone={selectedPupil?.phone || undefined}
+                  description="Driving lesson payment"
+                  onError={(msg) => toast.error(msg)}
                 />
               )}
             </div>
