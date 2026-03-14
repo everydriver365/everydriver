@@ -55,6 +55,7 @@ export function TakePaymentModal({
   const [linkSent, setLinkSent] = useState(false);
   const [manualPhone, setManualPhone] = useState("");
   const [manualEmail, setManualEmail] = useState("");
+  const [clearForManual, setClearForManual] = useState(false);
 
   const parsedAmount = parseFloat(amount) || 0;
   const { adminFee, totalCharge, hasFee } = useAdminFee(parsedAmount, commissionPayer);
@@ -69,6 +70,7 @@ export function TakePaymentModal({
       setLinkSent(false);
       setManualPhone("");
       setManualEmail("");
+      setClearForManual(false);
     }
     onOpenChange(o);
   };
@@ -86,11 +88,24 @@ export function TakePaymentModal({
 
   const handlePupilSelectForLink = (pupilId: string) => {
     setSelectedPupilId(pupilId);
+    if (clearForManual) return; // Don't auto-fill when manual mode is active
     if (pupilId === "_manual") {
       setManualPhone("");
       setManualEmail("");
     } else {
       const pupil = pupils.find((p) => p.id === pupilId);
+      setManualPhone(pupil?.phone || "");
+      setManualEmail(pupil?.email || "");
+    }
+  };
+
+  const handleToggleManual = (checked: boolean) => {
+    setClearForManual(checked);
+    if (checked) {
+      setManualPhone("");
+      setManualEmail("");
+    } else if (selectedPupilId && selectedPupilId !== "_manual") {
+      const pupil = pupils.find((p) => p.id === selectedPupilId);
       setManualPhone(pupil?.phone || "");
       setManualEmail(pupil?.email || "");
     }
@@ -329,7 +344,7 @@ export function TakePaymentModal({
                     <Check className="h-6 w-6 text-emerald-600" />
                   </div>
                   <p className="font-medium text-sm">Link sent!</p>
-                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); setClearForManual(false); }}>
                     Send Another
                   </Button>
                 </div>
@@ -353,6 +368,17 @@ export function TakePaymentModal({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Clear for manual entry checkbox */}
+                  {selectedPupilId && selectedPupilId !== "_manual" && (
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={clearForManual}
+                        onCheckedChange={(c) => handleToggleManual(!!c)}
+                      />
+                      <span className="text-xs text-muted-foreground">Clear fields for manual entry</span>
+                    </label>
+                  )}
 
                   {/* Manual phone */}
                   <div className="space-y-1.5">
