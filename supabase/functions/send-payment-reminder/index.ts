@@ -12,6 +12,9 @@ interface PaymentReminderRequest {
   pupilIds?: string[];
   method?: "sms" | "email" | "both"; // default: sms
   paymentLink?: string; // optional custom payment link
+  manualPhone?: string; // override phone number
+  manualEmail?: string; // override email address
+  manualName?: string; // name for manual-only sends
 }
 
 serve(async (req) => {
@@ -32,6 +35,49 @@ serve(async (req) => {
     const method = data.method || "sms";
 
     console.log("Payment reminder request:", { ...data, method });
+
+    // If manual-only (no pupilIds), send directly using manual contact info
+    if (!data.pupilIds || data.pupilIds.length === 0) {
+      const results = { sent: 0, emailSent: 0, failed: 0, skipped: 0, details: [] as { name: string; status: string; error?: string }[] };
+      const recipientName = data.manualName || "there";
+      const paymentLink = data.paymentLink || `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/pay/${data.instructorId}`;
+
+      // SMS
+      if ((method === "sms" || method === "both") && data.manualPhone && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
+        const message = `💳 Payment Reminder: Hi ${recipientName}, pay here: ${paymentLink} — ${data.instructorName}`;
+        try {
+          const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`, {
+            method: "POST",
+            headers: { Authorization: `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`, "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ To: data.manualPhone, From: twilioPhoneNumber, Body: message }),
+          });
+          const result = await response.json();
+          if (response.ok) { results.sent++; results.details.push({ name: recipientName, status: "sms_sent" }); }
+          else { results.failed++; results.details.push({ name: recipientName, status: "sms_failed", error: result.message }); }
+        } catch (e) { results.failed++; results.details.push({ name: recipientName, status: "sms_failed", error: e instanceof Error ? e.message : "Unknown error" }); }
+      }
+
+      // Email
+      if ((method === "email" || method === "both") && data.manualEmail && resendApiKey) {
+        try {
+          const emailResponse = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: `${data.instructorName} <payments@everydriver.lovable.app>`,
+              to: [data.manualEmail],
+              subject: `Payment Link from ${data.instructorName}`,
+              html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;"><h2 style="color: #1a1a1a;">Payment Link</h2><p>Hi ${recipientName},</p><p>${data.instructorName} has sent you a payment link.</p><p style="margin: 24px 0;"><a href="${paymentLink}" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Pay Now</a></p><p style="color: #666; font-size: 14px;">Thank you!<br/>${data.instructorName}</p></div>`,
+            }),
+          });
+          if (emailResponse.ok) { results.emailSent++; results.details.push({ name: recipientName, status: "email_sent" }); }
+          else { const errBody = await emailResponse.text(); results.failed++; results.details.push({ name: recipientName, status: "email_failed", error: errBody }); }
+        } catch (e) { results.failed++; results.details.push({ name: recipientName, status: "email_failed", error: e instanceof Error ? e.message : "Unknown error" }); }
+      }
+
+      console.log("Manual send results:", results);
+      return new Response(JSON.stringify({ success: true, ...results }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Fetch pupils with outstanding balances (negative balance)
     let query = supabase
@@ -71,10 +117,12 @@ serve(async (req) => {
       const amountOwed = Math.abs(Number(pupil.account_balance));
       const formattedAmount = `£${amountOwed.toFixed(2)}`;
       const paymentLink = data.paymentLink || `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/pay/${data.instructorId}?pupil=${pupil.id}`;
+      const phoneToUse = data.manualPhone || pupil.phone;
+      const emailToUse = data.manualEmail || pupil.email;
 
       // --- SMS ---
       if ((method === "sms" || method === "both") && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
-        if (!pupil.phone) {
+        if (!phoneToUse) {
           results.skipped++;
           results.details.push({ name: pupil.name, status: "skipped_sms", error: "No phone number" });
         } else {
@@ -89,7 +137,7 @@ serve(async (req) => {
                   "Content-Type": "application/x-www-form-urlencoded",
                 },
                 body: new URLSearchParams({
-                  To: pupil.phone,
+                  To: phoneToUse,
                   From: twilioPhoneNumber,
                   Body: message,
                 }),
@@ -112,7 +160,7 @@ serve(async (req) => {
 
       // --- Email ---
       if ((method === "email" || method === "both") && resendApiKey) {
-        if (!pupil.email) {
+        if (!emailToUse) {
           results.skipped++;
           results.details.push({ name: pupil.name, status: "skipped_email", error: "No email" });
         } else {
@@ -125,7 +173,7 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 from: `${data.instructorName} <payments@everydriver.lovable.app>`,
-                to: [pupil.email],
+                to: [emailToUse],
                 subject: `Payment Reminder — ${formattedAmount} outstanding`,
                 html: `
                   <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
