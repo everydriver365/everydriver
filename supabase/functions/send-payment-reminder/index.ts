@@ -173,7 +173,7 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 from: `${data.instructorName} <payments@everydriver.lovable.app>`,
-                to: [pupil.email],
+                to: [emailToUse],
                 subject: `Payment Reminder — ${formattedAmount} outstanding`,
                 html: `
                   <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
