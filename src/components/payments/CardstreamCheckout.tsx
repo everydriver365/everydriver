@@ -252,10 +252,10 @@ export function CardstreamCheckout({
 
       // Create the hosted form instance — SDK auto-detects hostedfield: inputs
       // autoSetup: true  → auto-replaces hostedfield inputs with iframes
-      // autoSubmit: true  → intercepts submit, tokenizes, then submits form
+      // autoSubmit: false → we handle submission manually via payment-direct-sale
       const instance = new Form(cardFormRef.current, {
         autoSetup: true,
-        autoSubmit: true,
+        autoSubmit: false,
         stylesheet: cardFormRef.current.querySelector('style.hostedfield'),
       });
 
