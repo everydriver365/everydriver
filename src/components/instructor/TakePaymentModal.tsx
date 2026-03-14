@@ -69,7 +69,6 @@ export function TakePaymentModal({
 
   const handleBack = () => {
     setView("picker");
-    setMerchantId(null);
   };
 
   // Card Entry: create intent to get merchantId
