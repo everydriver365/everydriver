@@ -252,10 +252,10 @@ export function CardstreamCheckout({
 
       // Create the hosted form instance — SDK auto-detects hostedfield: inputs
       // autoSetup: true  → auto-replaces hostedfield inputs with iframes
-      // autoSubmit: true  → intercepts submit, tokenizes, then submits form
+      // autoSubmit: false → we handle submission manually via payment-direct-sale
       const instance = new Form(cardFormRef.current, {
         autoSetup: true,
-        autoSubmit: true,
+        autoSubmit: false,
         stylesheet: cardFormRef.current.querySelector('style.hostedfield'),
       });
 
@@ -304,6 +304,55 @@ export function CardstreamCheckout({
       }
     })();
   }, [amount, pupilId, instructorId, customerName, customerEmail]);
+
+  // Handle card form submission — extract paymentToken and call payment-direct-sale
+  const handleCardSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!orderRef) {
+      toast.error("Payment not ready — please wait and try again");
+      return;
+    }
+
+    try {
+      setPaying(true);
+
+      // The SDK injects a hidden paymentToken field after tokenization
+      // We need to trigger the SDK's getPaymentDetails first
+      const instance = hostedFormInstanceRef.current;
+      if (instance && typeof instance.getPaymentDetails === 'function') {
+        await instance.getPaymentDetails();
+      }
+
+      // Read the paymentToken from the form
+      const fd = new FormData(e.currentTarget);
+      const paymentToken = fd.get("paymentToken") as string;
+
+      if (!paymentToken) {
+        throw new Error("There was a problem generating the payment token. Please check your card details and try again.");
+      }
+
+      const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
+        body: {
+          orderRef,
+          method: "card_token" as const,
+          cardPaymentToken: paymentToken,
+          customerName,
+          customerEmail,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.success) throw new Error(data?.responseMessage || "Card payment failed");
+
+      toast.success("Payment successful!");
+      onPaid?.();
+    } catch (err: any) {
+      console.error("Card payment error:", err);
+      toast.error(err?.message || "Card payment failed");
+    } finally {
+      setPaying(false);
+    }
+  }, [orderRef, customerName, customerEmail, onPaid]);
 
   // Apple Pay
   const payWithApplePay = useCallback(async () => {
@@ -518,8 +567,9 @@ export function CardstreamCheckout({
       {!sdkError && formData && (
         <form
           ref={cardFormRef}
-          action={gatewayUrl}
+          action="https://gateway.cardstream.com/direct/"
           method="POST"
+          onSubmit={handleCardSubmit}
           className="space-y-4"
         >
           {/* Hosted field styling — SDK reads <style class="hostedfield"> for iframe CSS */}
