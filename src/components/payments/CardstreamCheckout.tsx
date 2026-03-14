@@ -14,8 +14,8 @@ declare global {
       new (version: number, request: ApplePayPaymentRequest): ApplePaySessionInstance;
     };
     google?: {
-      payments?: {
-        api?: {
+      payments: {
+        api: {
           PaymentsClient: new (config: { environment: string }) => GooglePayClient;
         };
       };
@@ -25,6 +25,7 @@ declare global {
 
 interface GooglePayClient {
   isReadyToPay(request: Record<string, unknown>): Promise<{ result: boolean }>;
+  createButton(options: object): HTMLElement;
   loadPaymentData(request: Record<string, unknown>): Promise<{
     paymentMethodData: {
       tokenizationData: { token: string };
