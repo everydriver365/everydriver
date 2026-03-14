@@ -56,7 +56,7 @@ export default function InstructorNotifications() {
   ].filter(c => c.count > 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-primary">
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
       <div className="px-4 py-4 space-y-4">
