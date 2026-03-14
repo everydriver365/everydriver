@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import { useAdminFee } from "@/hooks/useAdminFee";
 import { supabase } from "@/integrations/supabase/client";
@@ -238,16 +239,16 @@ export function TakePaymentModal({
                   {/* Pupil selector */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Select Pupil</Label>
-                    <select
-                      value={selectedPupilId}
-                      onChange={(e) => setSelectedPupilId(e.target.value)}
-                      className="w-full h-10 rounded-lg border bg-background px-3 text-sm"
-                    >
-                      <option value="">-- Select a pupil --</option>
-                      {pupils.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
+                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                      <SelectTrigger className="w-full h-10">
+                        <SelectValue placeholder="-- Select a pupil --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pupils.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Amount */}
@@ -324,19 +325,19 @@ export function TakePaymentModal({
                   {/* Pupil selector */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Select Pupil</Label>
-                    <select
-                      value={selectedPupilId}
-                      onChange={(e) => setSelectedPupilId(e.target.value)}
-                      className="w-full h-10 rounded-lg border bg-background px-3 text-sm"
-                    >
-                      <option value="">-- Select a pupil --</option>
-                      {pupils.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                          {p.account_balance && p.account_balance < 0 ? ` (owes £${Math.abs(p.account_balance).toFixed(2)})` : ""}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                      <SelectTrigger className="w-full h-10">
+                        <SelectValue placeholder="-- Select a pupil --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pupils.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                            {p.account_balance && p.account_balance < 0 ? ` (owes £${Math.abs(p.account_balance).toFixed(2)})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Send method checkboxes */}
