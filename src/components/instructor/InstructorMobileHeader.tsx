@@ -134,7 +134,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               </button>
             )}
             <button
-              onClick={() => setPaymentSheetOpen(true)}
+              onClick={() => setPaymentModalOpen(true)}
               className="h-8 px-3 rounded-full bg-primary-foreground/90 flex items-center gap-1.5 hover:bg-primary-foreground transition-colors"
             >
               <PoundSterling className="h-3.5 w-3.5 text-primary" />
