@@ -219,15 +219,23 @@ export function DailyManifest({ instructorId }: DailyManifestProps) {
         {/* Overdue balances strip */}
         {overdueBalances.length > 0 && (
           <div className="border-t bg-destructive/5 px-4 py-2.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-destructive/70 mb-1.5 flex items-center gap-1">
+            <Link
+              to="/instructor/payments"
+              className="text-[10px] font-bold uppercase tracking-wider text-destructive/70 mb-1.5 flex items-center gap-1 hover:text-destructive transition-colors"
+            >
               <PoundSterling className="h-3 w-3" />
               Outstanding Balances
-            </p>
+              <ChevronRight className="h-3 w-3 ml-auto" />
+            </Link>
             <div className="flex flex-wrap gap-2">
               {overdueBalances.map((d) => (
-                <span key={d.name} className="text-xs text-destructive font-medium">
+                <Link
+                  key={d.id}
+                  to={`/instructor/pupils?pupil=${d.id}`}
+                  className="text-xs text-destructive font-medium hover:underline"
+                >
                   {d.name}: £{d.balance.toFixed(0)}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
