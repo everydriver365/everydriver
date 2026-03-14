@@ -208,8 +208,10 @@ export function CardstreamCheckout({
       } catch (e) {
         if (!cancelled) {
           setLoading(false);
+          const msg = e instanceof Error ? e.message : "Failed to initialize payment";
           console.error("CardstreamCheckout init error:", e);
-          toast.error(e instanceof Error ? e.message : "Failed to initialize payment");
+          setSdkError(msg);
+          toast.error(msg);
         }
       }
     })();
