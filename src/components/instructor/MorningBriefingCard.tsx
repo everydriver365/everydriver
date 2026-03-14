@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BriefingActionCards } from "./BriefingActionCards";
+import { BriefingActionModal } from "./BriefingActionModal";
 
 interface MorningBriefingCardProps {
   instructorId: string | undefined;
