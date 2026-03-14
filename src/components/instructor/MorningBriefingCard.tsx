@@ -218,6 +218,13 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
           </div>
         </div>
       </div>
+
+      <BriefingActionModal
+        actionId={activeAction}
+        instructorId={instructorId}
+        open={!!activeAction}
+        onClose={() => setActiveAction(null)}
+      />
     </motion.div>
   );
 }
