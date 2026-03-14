@@ -328,21 +328,22 @@ export function TakePaymentModal({
                   <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <Check className="h-6 w-6 text-emerald-600" />
                   </div>
-                  <p className="font-medium text-sm">Link sent to {selectedPupil?.name}!</p>
-                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); }}>
+                  <p className="font-medium text-sm">Link sent!</p>
+                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); }}>
                     Send Another
                   </Button>
                 </div>
               ) : (
                 <>
-                  {/* Pupil selector */}
+                  {/* Pupil selector (optional) */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Select Pupil</Label>
-                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                    <Label className="text-xs font-medium">Select Pupil (optional)</Label>
+                    <Select value={selectedPupilId} onValueChange={handlePupilSelectForLink}>
                       <SelectTrigger className="w-full h-10">
-                        <SelectValue placeholder="-- Select a pupil --" />
+                        <SelectValue placeholder="-- None (manual entry) --" />
                       </SelectTrigger>
                       <SelectContent className="z-[200]">
+                        <SelectItem value="_manual">None (manual entry)</SelectItem>
                         {pupils.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
                             {p.name}
@@ -353,6 +354,28 @@ export function TakePaymentModal({
                     </Select>
                   </div>
 
+                  {/* Manual phone */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Phone number</Label>
+                    <Input
+                      type="tel"
+                      placeholder="07700 900000"
+                      value={manualPhone}
+                      onChange={(e) => setManualPhone(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Manual email */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Email address</Label>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={manualEmail}
+                      onChange={(e) => setManualEmail(e.target.value)}
+                    />
+                  </div>
+
                   {/* Send method checkboxes */}
                   <div className="space-y-2">
                     <Label className="text-xs font-medium">Send via</Label>
@@ -361,32 +384,26 @@ export function TakePaymentModal({
                         <Checkbox
                           checked={sendViaSms}
                           onCheckedChange={(c) => setSendViaSms(!!c)}
-                          disabled={!selectedPupil?.phone}
+                          disabled={!manualPhone.trim()}
                         />
                         <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm">SMS</span>
-                        {selectedPupil && !selectedPupil.phone && (
-                          <span className="text-[10px] text-destructive">No phone</span>
-                        )}
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox
                           checked={sendViaEmail}
                           onCheckedChange={(c) => setSendViaEmail(!!c)}
-                          disabled={!selectedPupil?.email}
+                          disabled={!manualEmail.trim()}
                         />
                         <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm">Email</span>
-                        {selectedPupil && !selectedPupil.email && (
-                          <span className="text-[10px] text-destructive">No email</span>
-                        )}
                       </label>
                     </div>
                   </div>
 
                   <Button
                     className="w-full"
-                    disabled={!selectedPupilId || (!sendViaSms && !sendViaEmail) || sending}
+                    disabled={(!sendViaSms && !sendViaEmail) || sending}
                     onClick={handleSendLink}
                   >
                     {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
