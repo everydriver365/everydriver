@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, CreditCard, Shield, Lock } from "lucide-react";
+import { Loader2, CreditCard, Shield, Lock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
   interface Window {
+    jQuery?: any;
+    hostedFields?: {
+      classes: {
+        Form: new (element: HTMLElement, options?: Record<string, unknown>) => any;
+        Field: any;
+      };
+    };
     ApplePaySession?: {
       canMakePayments(): boolean;
       STATUS_SUCCESS: number;
@@ -67,6 +74,18 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+/** Poll for a condition to become true */
+function waitFor(fn: () => boolean, timeoutMs = 5000, intervalMs = 100): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (fn()) return resolve();
+    const start = Date.now();
+    const timer = setInterval(() => {
+      if (fn()) { clearInterval(timer); resolve(); }
+      else if (Date.now() - start > timeoutMs) { clearInterval(timer); reject(new Error("Timed out waiting")); }
+    }, intervalMs);
+  });
+}
+
 type Props = {
   amount: number; // pounds
   pupilId?: string;
@@ -89,7 +108,15 @@ export function CardstreamCheckout({
   const [merchantId, setMerchantId] = useState<string>("");
   const [canGooglePay, setCanGooglePay] = useState(false);
   const googlePayClientRef = useRef<GooglePayClient | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+
+  // Hosted Fields state
+  const [formData, setFormData] = useState<Record<string, string> | null>(null);
+  const [gatewayUrl, setGatewayUrl] = useState<string>("");
+  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkError, setSdkError] = useState<string | null>(null);
+  const [cardFormReady, setCardFormReady] = useState(false);
+  const cardFormRef = useRef<HTMLFormElement>(null);
+  const hostedFormInstanceRef = useRef<any>(null);
 
   const canApplePay = useMemo(() => {
     return typeof window !== 'undefined' && 
@@ -132,7 +159,7 @@ export function CardstreamCheckout({
     return () => { cancelled = true; };
   }, [baseCardPaymentMethod]);
 
-  // Create payment intent for wallet payments (Apple/Google Pay still need orderRef)
+  // Create payment intent for wallet payments
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -151,57 +178,131 @@ export function CardstreamCheckout({
     return () => { cancelled = true; };
   }, [amount, pupilId, instructorId, customerName, customerEmail]);
 
-  // HPP redirect for card payments
-  const payWithCard = useCallback(async () => {
+  // Load jQuery + Hosted Fields SDK
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        // Load jQuery first
+        await loadScript("https://code.jquery.com/jquery-3.7.1.min.js");
+        await waitFor(() => !!window.jQuery, 5000);
+
+        // Load Hosted Fields SDK
+        await loadScript("https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js");
+        await waitFor(() => !!window.hostedFields?.classes?.Form, 5000);
+
+        if (!cancelled) setSdkReady(true);
+      } catch (e: any) {
+        console.error("Hosted Fields SDK load error:", e);
+        if (!cancelled) setSdkError(e?.message || "Failed to load payment SDK");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Get signed form data from edge function
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const ref = `ED-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=elavon&pupilId=${pupilId || ""}&ref=${ref}`;
+
+        const { data, error } = await supabase.functions.invoke("elavon-checkout", {
+          body: {
+            amount,
+            currency: "GBP",
+            orderReference: ref,
+            customerEmail: customerEmail || "",
+            customerName: customerName || "",
+            description: "Payment",
+            returnUrl: `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`,
+            instructorId,
+            pupilId,
+            formResponsive: true,
+            merchantName: "EveryDriver",
+          },
+        });
+
+        if (cancelled) return;
+        if (error) throw new Error(error.message);
+        if (!data?.success) throw new Error(data?.error || "Failed to prepare payment");
+
+        setFormData(data.formData);
+        setGatewayUrl(data.gatewayUrl);
+      } catch (e: any) {
+        console.error("Form data fetch error:", e);
+        if (!cancelled) setSdkError(e?.message || "Failed to prepare payment form");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [amount, pupilId, instructorId, customerName, customerEmail]);
+
+  // Initialize the SDK on the form once both SDK and form data are ready
+  useEffect(() => {
+    if (!sdkReady || !formData || !cardFormRef.current || cardFormReady) return;
+
     try {
-      setPaying(true);
-
-      const hppOrderRef = `ED-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const returnUrl = `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`;
-      const cancelUrl = window.location.href;
-
-      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
-        body: {
-          amount,
-          currency: "GBP",
-          orderReference: hppOrderRef,
-          customerEmail: customerEmail || "",
-          customerName: customerName || "",
-          description: "Payment",
-          returnUrl,
-          cancelUrl,
-          instructorId,
-          pupilId,
-          formResponsive: true,
-          merchantName: "EveryDriver",
-        },
-      });
-
-      if (error) throw new Error(error.message);
-      if (!data?.success) throw new Error(data?.error || "Failed to create checkout session");
-
-      // Build hidden form and auto-submit to Cardstream HPP
-      const form = formRef.current;
-      if (!form) throw new Error("Form element not found");
-
-      form.innerHTML = "";
-      form.action = data.gatewayUrl;
-      form.method = "POST";
-
-      for (const [key, value] of Object.entries(data.formData as Record<string, string>)) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
+      const Form = window.hostedFields?.classes?.Form;
+      if (!Form) {
+        setSdkError("Payment SDK not available");
+        return;
       }
 
-      form.submit();
+      // Create the hosted form instance — SDK auto-detects hostedfield: inputs
+      // autoSetup: true  → auto-replaces hostedfield inputs with iframes
+      // autoSubmit: true  → intercepts submit, tokenizes, then submits form
+      const instance = new Form(cardFormRef.current, {
+        autoSetup: true,
+        autoSubmit: true,
+        stylesheet: cardFormRef.current.querySelector('style.hostedfield'),
+      });
+
+      hostedFormInstanceRef.current = instance;
+      setCardFormReady(true);
+      console.log("Hosted Fields SDK initialized successfully");
     } catch (e: any) {
-      const msg = e?.message || "Payment failed";
-      setPaying(false);
-      toast.error(msg);
+      console.error("Hosted Fields init error:", e);
+      setSdkError(e?.message || "Failed to initialize card form");
     }
+  }, [sdkReady, formData, cardFormReady]);
+
+  // Retry initialization
+  const handleRetry = useCallback(() => {
+    setSdkError(null);
+    setCardFormReady(false);
+    setFormData(null);
+    hostedFormInstanceRef.current = null;
+
+    // Re-trigger form data fetch
+    (async () => {
+      try {
+        const ref = `ED-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const { data, error } = await supabase.functions.invoke("elavon-checkout", {
+          body: {
+            amount,
+            currency: "GBP",
+            orderReference: ref,
+            customerEmail: customerEmail || "",
+            customerName: customerName || "",
+            description: "Payment",
+            returnUrl: `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`,
+            instructorId,
+            pupilId,
+            formResponsive: true,
+            merchantName: "EveryDriver",
+          },
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data?.success) throw new Error(data?.error || "Failed to prepare payment");
+        setFormData(data.formData);
+        setGatewayUrl(data.gatewayUrl);
+      } catch (e: any) {
+        setSdkError(e?.message || "Failed to prepare payment form");
+      }
+    })();
   }, [amount, pupilId, instructorId, customerName, customerEmail]);
 
   // Apple Pay
@@ -330,12 +431,10 @@ export function CardstreamCheckout({
   }, [orderRef, amount, merchantId, baseCardPaymentMethod, customerName, customerEmail, onPaid]);
 
   const hasWalletButtons = canApplePay || canGooglePay;
+  const isLoading = !sdkReady || !formData;
 
   return (
     <div className="w-full space-y-3">
-      {/* Hidden form for HPP redirect */}
-      <form ref={formRef} style={{ display: "none" }} />
-
       {/* Apple Pay Button */}
       {canApplePay && (
         paying ? (
@@ -384,7 +483,7 @@ export function CardstreamCheckout({
         )
       )}
 
-      {/* Divider between wallet buttons and card button */}
+      {/* Divider between wallet buttons and card form */}
       {hasWalletButtons && (
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -396,30 +495,113 @@ export function CardstreamCheckout({
         </div>
       )}
 
-      {/* Pay with Card Button (HPP redirect) */}
-      <Button
-        onClick={payWithCard}
-        disabled={paying}
-        className="w-full h-12"
-      >
-        {paying ? (
-          <>
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            Redirecting to secure payment…
-          </>
-        ) : (
-          <>
-            <Lock className="h-4 w-4 mr-2" />
-            <CreditCard className="h-5 w-5 mr-2" />
-            Pay £{amount.toFixed(2)}
-          </>
-        )}
-      </Button>
+      {/* Error state with retry */}
+      {sdkError && (
+        <div className="text-center space-y-2 py-4">
+          <p className="text-sm text-destructive">{sdkError}</p>
+          <Button variant="outline" size="sm" onClick={handleRetry}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {!sdkError && isLoading && (
+        <div className="flex items-center justify-center py-6 gap-2">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Loading secure card form…</span>
+        </div>
+      )}
+
+      {/* Hosted Fields Card Form */}
+      {!sdkError && formData && (
+        <form
+          ref={cardFormRef}
+          action={gatewayUrl}
+          method="POST"
+          className="space-y-4"
+        >
+          {/* Hosted field styling — SDK reads <style class="hostedfield"> for iframe CSS */}
+          <style className="hostedfield">{`
+            body { margin: 0; padding: 0; }
+            input {
+              width: 100%;
+              height: 44px;
+              padding: 0 12px;
+              border: 1px solid hsl(0 0% 80%);
+              border-radius: 6px;
+              font-size: 16px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              color: hsl(0 0% 10%);
+              background: hsl(0 0% 100%);
+              box-sizing: border-box;
+              outline: none;
+              transition: border-color 0.15s ease;
+            }
+            input:focus {
+              border-color: hsl(222.2 47.4% 51.2%);
+              box-shadow: 0 0 0 2px hsla(222.2, 47.4%, 51.2%, 0.2);
+            }
+            input.hosted-field-invalid {
+              border-color: hsl(0 84.2% 60.2%);
+            }
+          `}</style>
+
+          {/* Hidden signed fields from the edge function */}
+          {Object.entries(formData).map(([key, value]) => (
+            <input key={key} type="hidden" name={key} value={value} />
+          ))}
+
+          {/* Combined card details field — SDK replaces this with a secure iframe */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              Card details
+            </label>
+            <div
+              className="rounded-md border border-input bg-background overflow-hidden"
+              style={{ minHeight: '48px' }}
+            >
+              <input
+                type="hostedfield:cardDetails"
+                className="w-full"
+                placeholder="Card number, MM/YY, CVV"
+                data-hostedfield-placeholder="Card number, MM/YY, CVV"
+              />
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <Button
+            type="submit"
+            disabled={paying || !cardFormReady}
+            className="w-full h-12"
+          >
+            {paying ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Processing payment…
+              </>
+            ) : !cardFormReady ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Preparing…
+              </>
+            ) : (
+              <>
+                <Lock className="h-4 w-4 mr-2" />
+                <CreditCard className="h-5 w-5 mr-2" />
+                Pay £{amount.toFixed(2)}
+              </>
+            )}
+          </Button>
+        </form>
+      )}
 
       {/* Security Notice */}
       <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <Shield className="h-4 w-4 text-emerald-600" />
-        <span>You'll be redirected to a secure payment page</span>
+        <span>Secured by Elavon — card details never touch our servers</span>
       </div>
     </div>
   );
