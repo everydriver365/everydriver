@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { QrCode, CreditCard, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAdminFee } from "@/hooks/useAdminFee";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type View = "picker" | "qr" | "card" | "card-entry" | "link";
+type View = "picker" | "qr" | "link";
 
 interface Pupil {
   id: string;
@@ -57,9 +55,6 @@ export function TakePaymentModal({
   const [manualEmail, setManualEmail] = useState("");
   const [clearForManual, setClearForManual] = useState(false);
 
-  const parsedAmount = parseFloat(amount) || 0;
-  const { adminFee, totalCharge, hasFee } = useAdminFee(parsedAmount, commissionPayer);
-
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
   const handleClose = (o: boolean) => {
@@ -76,19 +71,12 @@ export function TakePaymentModal({
   };
 
   const handleBack = () => {
-    if (view === "card-entry") {
-      setView("card");
-    } else {
-      setView("picker");
-    }
+    setView("picker");
   };
-
-
-
 
   const handlePupilSelectForLink = (pupilId: string) => {
     setSelectedPupilId(pupilId);
-    if (clearForManual) return; // Don't auto-fill when manual mode is active
+    if (clearForManual) return;
     if (pupilId === "_manual") {
       setManualPhone("");
       setManualEmail("");
@@ -160,14 +148,6 @@ export function TakePaymentModal({
       bg: "bg-primary/10",
     },
     {
-      id: "card" as const,
-      icon: CreditCard,
-      label: "Card Entry",
-      desc: "Manually enter card details",
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
-    },
-    {
       id: "link" as const,
       icon: Send,
       label: "Send Link",
@@ -192,22 +172,18 @@ export function TakePaymentModal({
                <DialogTitle className="text-base">
                 {view === "picker" && "Take Payment"}
                 {view === "qr" && "QR Code"}
-                {view === "card" && "Card Entry"}
-                {view === "card-entry" && "Enter Card Details"}
                 {view === "link" && "Send Payment Link"}
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {view === "picker" && "Choose a payment method"}
                 {view === "qr" && "Pupil scans to pay"}
-                {view === "card" && "Enter card details manually"}
-                {view === "card-entry" && "Complete payment"}
                 {view === "link" && "Send a link via SMS or email"}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className={`p-4 ${view === "card-entry" ? "" : "max-h-[70vh] overflow-y-auto"}`}>
+        <div className="p-4 max-h-[70vh] overflow-y-auto">
           {/* === Picker === */}
           {view === "picker" && (
             <div className="grid gap-3">
@@ -232,8 +208,8 @@ export function TakePaymentModal({
             </div>
           )}
 
-          {/* === Payment type switcher (shown on sub-views, not card-entry) === */}
-          {view !== "picker" && view !== "card-entry" && (
+          {/* === Payment type switcher (shown on sub-views) === */}
+          {view !== "picker" && (
             <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
               {options.map((opt) => {
                 const Icon = opt.icon;
@@ -275,86 +251,6 @@ export function TakePaymentModal({
               <p className="text-sm text-muted-foreground text-center font-medium">
                 Scan to pay {instructorName}
               </p>
-            </div>
-          )}
-
-          {view === "card" && (
-            <div className="space-y-4">
-              {/* Pupil selector */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Select Pupil</Label>
-                <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
-                  <SelectTrigger className="w-full h-10">
-                    <SelectValue placeholder="-- Select a pupil --" />
-                  </SelectTrigger>
-                  <SelectContent className="z-[200]">
-                    {pupils.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Amount */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Amount (£)</Label>
-                <Input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </div>
-
-              {/* Fee breakdown */}
-              {parsedAmount > 0 && hasFee && (
-                <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Lesson amount</span>
-                    <span>£{parsedAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Admin fee</span>
-                    <span>£{adminFee.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold border-t pt-1">
-                    <span>Total charge</span>
-                    <span>£{totalCharge.toFixed(2)}</span>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                className="w-full"
-                disabled={!selectedPupilId || parsedAmount <= 0}
-                onClick={() => setView("card-entry")}
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Continue to Payment
-              </Button>
-            </div>
-          )}
-
-          {/* === Card Entry === */}
-          {view === "card-entry" && (
-            <div className="space-y-4">
-              <div className="rounded-lg bg-muted/50 p-3 flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">{selectedPupil?.name}</span>
-                <span className="font-semibold">£{totalCharge.toFixed(2)}</span>
-              </div>
-              <CardstreamCheckout
-                amount={totalCharge}
-                pupilId={selectedPupilId}
-                instructorId={instructorId}
-                customerName={selectedPupil?.name}
-                customerEmail={selectedPupil?.email || undefined}
-                onPaid={() => {
-                  toast.success("Payment successful!");
-                  handleClose(false);
-                }}
-              />
             </div>
           )}
 
