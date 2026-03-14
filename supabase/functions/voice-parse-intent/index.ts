@@ -179,7 +179,7 @@ Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest m
                       "pupil_test_date", "unpaid_pupils", "nearest_fuel", "call_office",
                       "add_pupil", "pupil_contact", "monthly_earnings", "lesson_count",
                       "add_todo", "next_test", "week_schedule", "pupil_progress",
-                      "record_expense", "total_hours_today", "unknown"
+                      "record_expense", "total_hours_today", "general_query", "unknown"
                     ],
                   },
                   pupil_name: { type: "string", description: "Matched pupil name from the available list" },

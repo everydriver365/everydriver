@@ -45,7 +45,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes, phone, todo_text, expense_category } = await req.json();
+    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes, phone, todo_text, expense_category, original_text } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
