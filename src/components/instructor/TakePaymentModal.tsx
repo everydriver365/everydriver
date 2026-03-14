@@ -239,16 +239,16 @@ export function TakePaymentModal({
                   {/* Pupil selector */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Select Pupil</Label>
-                    <select
-                      value={selectedPupilId}
-                      onChange={(e) => setSelectedPupilId(e.target.value)}
-                      className="w-full h-10 rounded-lg border bg-background px-3 text-sm"
-                    >
-                      <option value="">-- Select a pupil --</option>
-                      {pupils.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
+                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                      <SelectTrigger className="w-full h-10">
+                        <SelectValue placeholder="-- Select a pupil --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pupils.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Amount */}
