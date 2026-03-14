@@ -211,7 +211,6 @@ export default function PublicPaymentPage() {
             pupilId={pupilParam || undefined}
             customerName={payerName.trim() || undefined}
             customerEmail={payerEmail.trim() || undefined}
-            merchantIdForHPF=""
             onPaid={() => setPaid(true)}
           />
         )}

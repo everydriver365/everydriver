@@ -873,7 +873,7 @@ export function MobileBookingView({
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    merchantIdForHPF=""
+                    
                     onPaid={onEmbeddedCheckoutSuccess}
                   />
                   <button 

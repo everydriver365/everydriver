@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, CreditCard, Shield, RefreshCw } from "lucide-react";
+import { Loader2, CreditCard, Shield, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
@@ -19,21 +19,6 @@ declare global {
         };
       };
     };
-    hostedFields?: {
-      classes: {
-        Form: unknown;
-        Field: unknown;
-      };
-    };
-    jQuery?: {
-      fn?: {
-        hostedForm?: (...args: unknown[]) => unknown;
-      };
-      (selector: string): {
-        hostedForm: (...args: unknown[]) => unknown;
-      };
-    };
-    $?: Window["jQuery"];
   }
 }
 
@@ -64,25 +49,6 @@ interface ApplePaySessionInstance {
   completePayment(status: number): void;
 }
 
-interface HostedFieldsInstance {
-  getPaymentDetails(options?: { customerName?: string; customerEmail?: string }): Promise<{
-    success: boolean;
-    paymentToken?: string;
-    error?: string;
-  }>;
-  destroy(): void;
-}
-
-type Props = {
-  amount: number; // pounds
-  pupilId?: string;
-  instructorId?: string;
-  customerName?: string;
-  customerEmail?: string;
-  onPaid?: () => void;
-  merchantIdForHPF: string;
-};
-
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
@@ -101,14 +67,14 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
-function toPromise<T>(value: T | PromiseLike<T>): Promise<T> {
-  if (value && typeof (value as PromiseLike<T>).then === "function") {
-    return new Promise<T>((resolve, reject) => {
-      (value as PromiseLike<T>).then(resolve, reject);
-    });
-  }
-  return Promise.resolve(value);
-}
+type Props = {
+  amount: number; // pounds
+  pupilId?: string;
+  instructorId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  onPaid?: () => void;
+};
 
 export function CardstreamCheckout({
   amount,
@@ -117,17 +83,13 @@ export function CardstreamCheckout({
   customerName,
   customerEmail,
   onPaid,
-  merchantIdForHPF,
 }: Props) {
-  const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
-  const hostedFieldsRef = useRef<HostedFieldsInstance | null>(null);
-  const [fieldsReady, setFieldsReady] = useState(false);
-  const [sdkError, setSdkError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [merchantId, setMerchantId] = useState<string>("");
   const [canGooglePay, setCanGooglePay] = useState(false);
   const googlePayClientRef = useRef<GooglePayClient | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const canApplePay = useMemo(() => {
     return typeof window !== 'undefined' && 
@@ -170,157 +132,79 @@ export function CardstreamCheckout({
     return () => { cancelled = true; };
   }, [baseCardPaymentMethod]);
 
+  // Create payment intent for wallet payments (Apple/Google Pay still need orderRef)
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
       try {
-        setLoading(true);
-        setFieldsReady(false);
-        setSdkError(null);
-
-        // Create intent
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
           body: { amount, pupilId, instructorId, customerName, customerEmail, currency: "GBP" },
         });
-        
         if (cancelled) return;
-        if (error || !data?.success) throw new Error(error?.message || "Failed to create payment intent");
-
+        if (error || !data?.success) return;
         setOrderRef(data.orderRef);
-
-        // Load stylesheet manually (avoids jQuery selector error when SDK tries to parse URL)
-        if (!document.querySelector('link[href="https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css"]')) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = 'https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css';
-          document.head.appendChild(link);
-        }
-
-        // Load jQuery (required by Cardstream Hosted Fields SDK)
-        await loadScript("https://code.jquery.com/jquery-3.7.1.min.js");
-
-        // Load Hosted Fields script
-        await loadScript(data.hostedFieldsScriptUrl);
-        
-        if (cancelled) return;
-
-        // Poll for jQuery + hostedForm availability (up to 2s)
-        let attempts = 0;
-        while (!((window.jQuery || window.$)?.fn?.hostedForm) && attempts < 20) {
-          await new Promise(r => setTimeout(r, 100));
-          attempts++;
-        }
-
-        const $ = window.jQuery || window.$;
-        if (!$?.fn?.hostedForm) {
-          throw new Error("Secure card fields SDK unavailable — please retry");
-        }
-
-        // Render field containers first, then initialize SDK
-        setLoading(false);
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-        await new Promise<void>((resolve) => setTimeout(resolve, 50));
-
-        if (cancelled) return;
-
-        const formSelection = $("#cs-payment-form") as {
-          hostedForm: (...args: unknown[]) => unknown;
-        };
-
-        formSelection.hostedForm({
-          merchantID: merchantIdForHPF || data.merchantId,
-          autoSetup: true,
-          autoSubmit: false,
-          fields: {
-            cardNumber: { selector: "#cs-card-number", placeholder: "•••• •••• •••• ••••" },
-            cardExpiryDate: { selector: "#cs-card-expiry", placeholder: "MM/YY" },
-            cardCVV: { selector: "#cs-card-cvv", placeholder: "•••" },
-          },
-        });
-
-        const instance = formSelection.hostedForm("instance") as {
-          getPaymentDetails: (options?: { customerName?: string; customerEmail?: string }) => PromiseLike<{
-            success: boolean;
-            paymentToken?: string;
-            error?: string;
-          }>;
-          destroy?: () => void;
-        } | null;
-
-        if (!instance) {
-          throw new Error("Failed to initialize secure card fields");
-        }
-
-        hostedFieldsRef.current = {
-          getPaymentDetails: (options) =>
-            toPromise(
-              instance.getPaymentDetails({
-                customerName: options?.customerName,
-                customerEmail: options?.customerEmail,
-              }),
-            ),
-          destroy: () => instance.destroy?.(),
-        };
-
-        setFieldsReady(true);
+        if (data.merchantId) setMerchantId(data.merchantId);
       } catch (e) {
-        if (!cancelled) {
-          setLoading(false);
-          const msg = e instanceof Error ? e.message : "Failed to initialize payment";
-          console.error("CardstreamCheckout init error:", e);
-          setSdkError(msg);
-          toast.error(msg);
-        }
+        console.error("Payment intent creation error:", e);
       }
     })();
+    return () => { cancelled = true; };
+  }, [amount, pupilId, instructorId, customerName, customerEmail]);
 
-    return () => {
-      cancelled = true;
-      if (hostedFieldsRef.current) {
-        hostedFieldsRef.current.destroy?.();
-      }
-    };
-  }, [amount, pupilId, instructorId, customerName, customerEmail, merchantIdForHPF, retryCount]);
-
+  // HPP redirect for card payments
   const payWithCard = useCallback(async () => {
-    if (!orderRef || !hostedFieldsRef.current) return;
-
     try {
       setPaying(true);
 
-      const details = await hostedFieldsRef.current.getPaymentDetails({
-        customerName: customerName ?? "",
-        customerEmail: customerEmail ?? "",
-      });
+      const hppOrderRef = `ED-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const returnUrl = `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`;
+      const cancelUrl = window.location.href;
 
-      if (!details?.success || !details?.paymentToken) {
-        throw new Error(details?.error || "Card details invalid or tokenization failed");
-      }
-
-      const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
+      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
         body: {
-          orderRef,
-          method: "card_token",
-          cardPaymentToken: details.paymentToken,
-          customerName,
-          customerEmail,
+          amount,
+          currency: "GBP",
+          orderReference: hppOrderRef,
+          customerEmail: customerEmail || "",
+          customerName: customerName || "",
+          description: "Payment",
+          returnUrl,
+          cancelUrl,
+          instructorId,
+          pupilId,
+          formResponsive: true,
+          merchantName: "EveryDriver",
         },
       });
 
       if (error) throw new Error(error.message);
-      if (!data?.success) throw new Error(data?.responseMessage || "Payment failed");
+      if (!data?.success) throw new Error(data?.error || "Failed to create checkout session");
 
-      toast.success("Payment successful!");
-      onPaid?.();
-    } catch (e) {
-      console.error("Card payment error:", e);
-      toast.error(e instanceof Error ? e.message : "Payment failed");
-    } finally {
+      // Build hidden form and auto-submit to Cardstream HPP
+      const form = formRef.current;
+      if (!form) throw new Error("Form element not found");
+
+      form.innerHTML = "";
+      form.action = data.gatewayUrl;
+      form.method = "POST";
+
+      for (const [key, value] of Object.entries(data.formData as Record<string, string>)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+      }
+
+      form.submit();
+    } catch (e: any) {
+      const msg = e?.message || "Payment failed";
       setPaying(false);
+      toast.error(msg);
     }
-  }, [orderRef, customerName, customerEmail, onPaid]);
+  }, [amount, pupilId, instructorId, customerName, customerEmail]);
 
+  // Apple Pay
   const payWithApplePay = useCallback(async () => {
     if (!orderRef || !window.ApplePaySession) return;
 
@@ -340,17 +224,14 @@ export function CardstreamCheckout({
           const { data, error } = await supabase.functions.invoke("applepay-validate-merchant", {
             body: { validationURL: event.validationURL, domainName: window.location.hostname },
           });
-          
           if (error || !data) {
             session.abort();
             toast.error("Apple Pay validation failed");
             setPaying(false);
             return;
           }
-          
           session.completeMerchantValidation(data);
-        } catch (err) {
-          console.error("Apple Pay merchant validation error:", err);
+        } catch {
           session.abort();
           toast.error("Apple Pay validation failed");
           setPaying(false);
@@ -360,7 +241,6 @@ export function CardstreamCheckout({
       session.onpaymentauthorized = async (event) => {
         try {
           const tokenStr = JSON.stringify(event.payment.token);
-
           const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
             body: {
               orderRef,
@@ -370,35 +250,29 @@ export function CardstreamCheckout({
               customerEmail,
             },
           });
-
           if (error || !data?.success) {
             session.completePayment(window.ApplePaySession!.STATUS_FAILURE);
             toast.error(data?.responseMessage || "Apple Pay payment failed");
             return;
           }
-
           session.completePayment(window.ApplePaySession!.STATUS_SUCCESS);
           toast.success("Apple Pay payment successful!");
           onPaid?.();
-        } catch (err) {
-          console.error("Apple Pay authorization error:", err);
+        } catch {
           session.completePayment(window.ApplePaySession!.STATUS_FAILURE);
           toast.error("Apple Pay payment failed");
         }
       };
 
-      session.oncancel = () => {
-        setPaying(false);
-      };
-
+      session.oncancel = () => setPaying(false);
       session.begin();
-    } catch (e) {
-      console.error("Apple Pay error:", e);
+    } catch {
       toast.error("Failed to start Apple Pay");
       setPaying(false);
     }
   }, [orderRef, amount, customerName, customerEmail, onPaid]);
 
+  // Google Pay
   const payWithGooglePay = useCallback(async () => {
     if (!orderRef || !googlePayClientRef.current) return;
 
@@ -414,7 +288,7 @@ export function CardstreamCheckout({
             type: "PAYMENT_GATEWAY",
             parameters: {
               gateway: "cardstream",
-              gatewayMerchantId: merchantIdForHPF,
+              gatewayMerchantId: merchantId,
             },
           },
         }],
@@ -424,9 +298,7 @@ export function CardstreamCheckout({
           currencyCode: "GBP",
           countryCode: "GB",
         },
-        merchantInfo: {
-          merchantName: "EveryDriver",
-        },
+        merchantInfo: { merchantName: "EveryDriver" },
       };
 
       const paymentData = await googlePayClientRef.current.loadPaymentData(paymentDataRequest);
@@ -448,164 +320,107 @@ export function CardstreamCheckout({
       toast.success("Google Pay payment successful!");
       onPaid?.();
     } catch (e: any) {
-      if (e?.statusCode === "CANCELED") {
-        // User closed the Google Pay sheet
-      } else {
+      if (e?.statusCode !== "CANCELED") {
         console.error("Google Pay error:", e);
         toast.error(e instanceof Error ? e.message : "Google Pay payment failed");
       }
     } finally {
       setPaying(false);
     }
-  }, [orderRef, amount, merchantIdForHPF, baseCardPaymentMethod, customerName, customerEmail, onPaid]);
+  }, [orderRef, amount, merchantId, baseCardPaymentMethod, customerName, customerEmail, onPaid]);
 
   const hasWalletButtons = canApplePay || canGooglePay;
 
   return (
     <div className="w-full space-y-3">
-      {sdkError && !loading && (
-        <div className="flex flex-col items-center justify-center py-4 space-y-3">
-          <p className="text-sm text-destructive text-center">{sdkError}</p>
-          <Button
-            variant="outline"
-            onClick={() => setRetryCount(c => c + 1)}
-            className="gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Retry
-          </Button>
-        </div>
+      {/* Hidden form for HPP redirect */}
+      <form ref={formRef} style={{ display: "none" }} />
+
+      {/* Apple Pay Button */}
+      {canApplePay && (
+        paying ? (
+          <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-white" />
+          </div>
+        ) : (
+          <button
+            onClick={payWithApplePay}
+            disabled={paying || !orderRef}
+            className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+            style={{
+              // @ts-ignore — Apple Pay native button styling
+              WebkitAppearance: '-apple-pay-button',
+              appearance: '-apple-pay-button' as any,
+              '--apple-pay-button-type': 'pay',
+              '--apple-pay-button-style': 'black',
+            } as React.CSSProperties}
+          />
+        )
       )}
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-          <p className="text-sm text-muted-foreground">Loading secure payment fields…</p>
-        </div>
+      {/* Google Pay Button */}
+      {canGooglePay && (
+        paying ? (
+          <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-white" />
+          </div>
+        ) : (
+          <button
+            onClick={payWithGooglePay}
+            disabled={paying || !orderRef}
+            className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none border-0 overflow-hidden"
+            style={{ background: '#000', padding: 0 }}
+          >
+            <div className="flex items-center justify-center gap-2 h-full text-white font-medium text-base">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.24 10.28V14.06H18.72C18.43 15.6 17.56 16.9 16.22 17.78L19.4 20.28C21.2 18.62 22.24 16.16 22.24 13.12C22.24 12.36 22.17 11.64 22.04 10.96H12.24V10.28Z" fill="#4285F4"/>
+                <path d="M5.33 14.27L4.44 14.95L1.84 16.95C3.72 20.68 7.56 23.24 12 23.24C14.88 23.24 17.32 22.32 19.16 20.72L15.98 18.22C15.04 18.86 13.84 19.24 12 19.24C9.2 19.24 6.84 17.56 5.92 15.22L5.33 14.27Z" fill="#34A853"/>
+                <path d="M1.84 7.05C0.96 8.78 0.48 10.74 0.48 12.84C0.48 14.94 0.96 16.9 1.84 18.63L5.92 15.22C5.64 14.38 5.48 13.5 5.48 12.56C5.48 11.62 5.64 10.74 5.92 9.9L1.84 7.05Z" fill="#FBBC05"/>
+                <path d="M12 4.76C13.76 4.76 15.34 5.36 16.58 6.52L19.24 3.86C17.3 2.06 14.86 0.96 12 0.96C7.56 0.96 3.72 3.52 1.84 7.25L5.92 10.1C6.84 7.76 9.2 6.08 12 4.76Z" fill="#EA4335"/>
+              </svg>
+              <span>Pay</span>
+            </div>
+          </button>
+        )
       )}
 
-      {!loading && (
-        <div className="space-y-3">
-          {/* Apple Pay Button */}
-          {canApplePay && (
-            paying ? (
-              <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
-              </div>
-            ) : (
-              <button
-                onClick={payWithApplePay}
-                disabled={paying || !orderRef}
-                className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                style={{
-                  // @ts-ignore — Apple Pay native button styling
-                  WebkitAppearance: '-apple-pay-button',
-                  appearance: '-apple-pay-button' as any,
-                  '--apple-pay-button-type': 'pay',
-                  '--apple-pay-button-style': 'black',
-                } as React.CSSProperties}
-              />
-            )
-          )}
-
-          {/* Google Pay Button */}
-          {canGooglePay && (
-            paying ? (
-              <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
-              </div>
-            ) : (
-              <button
-                onClick={payWithGooglePay}
-                disabled={paying || !orderRef}
-                className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none border-0 overflow-hidden"
-                style={{
-                  background: '#000',
-                  padding: 0,
-                }}
-              >
-                <div className="flex items-center justify-center gap-2 h-full text-white font-medium text-base">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.24 10.28V14.06H18.72C18.43 15.6 17.56 16.9 16.22 17.78L19.4 20.28C21.2 18.62 22.24 16.16 22.24 13.12C22.24 12.36 22.17 11.64 22.04 10.96H12.24V10.28Z" fill="#4285F4"/>
-                    <path d="M5.33 14.27L4.44 14.95L1.84 16.95C3.72 20.68 7.56 23.24 12 23.24C14.88 23.24 17.32 22.32 19.16 20.72L15.98 18.22C15.04 18.86 13.84 19.24 12 19.24C9.2 19.24 6.84 17.56 5.92 15.22L5.33 14.27Z" fill="#34A853"/>
-                    <path d="M1.84 7.05C0.96 8.78 0.48 10.74 0.48 12.84C0.48 14.94 0.96 16.9 1.84 18.63L5.92 15.22C5.64 14.38 5.48 13.5 5.48 12.56C5.48 11.62 5.64 10.74 5.92 9.9L1.84 7.05Z" fill="#FBBC05"/>
-                    <path d="M12 4.76C13.76 4.76 15.34 5.36 16.58 6.52L19.24 3.86C17.3 2.06 14.86 0.96 12 0.96C7.56 0.96 3.72 3.52 1.84 7.25L5.92 10.1C6.84 7.76 9.2 6.08 12 4.76Z" fill="#EA4335"/>
-                  </svg>
-                  <span>Pay</span>
-                </div>
-              </button>
-            )
-          )}
-
-          {/* Divider between wallet buttons and card fields */}
-          {hasWalletButtons && (
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or pay with card</span>
-              </div>
-            </div>
-          )}
-
-          {/* Card Fields */}
-          <form id="cs-payment-form" className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Card number</label>
-              <input
-                id="cs-card-number"
-                type="hostedfield:cardNumber"
-                className="h-10 w-full border rounded-md bg-background px-3"
-                autoComplete="off"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Expiry</label>
-                <input
-                  id="cs-card-expiry"
-                  type="hostedfield:cardExpiryDate"
-                  className="h-10 w-full border rounded-md bg-background px-3"
-                  autoComplete="off"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">CVV</label>
-                <input
-                  id="cs-card-cvv"
-                  type="hostedfield:cardCVV"
-                  className="h-10 w-full border rounded-md bg-background px-3"
-                  autoComplete="off"
-                />
-              </div>
-            </div>
-          </form>
-
-          {/* Pay Button */}
-          <Button
-            onClick={payWithCard}
-            disabled={paying || !orderRef || !fieldsReady}
-            className="w-full h-12"
-          >
-            {paying ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <>
-                <CreditCard className="h-5 w-5 mr-2" />
-                Pay £{amount.toFixed(2)}
-              </>
-            )}
-          </Button>
-
-          {/* Security Notice */}
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <Shield className="h-4 w-4 text-emerald-600" />
-            <span>Secured via hosted fields</span>
+      {/* Divider between wallet buttons and card button */}
+      {hasWalletButtons && (
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or pay with card</span>
           </div>
         </div>
       )}
+
+      {/* Pay with Card Button (HPP redirect) */}
+      <Button
+        onClick={payWithCard}
+        disabled={paying}
+        className="w-full h-12"
+      >
+        {paying ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            Redirecting to secure payment…
+          </>
+        ) : (
+          <>
+            <Lock className="h-4 w-4 mr-2" />
+            <CreditCard className="h-5 w-5 mr-2" />
+            Pay £{amount.toFixed(2)}
+          </>
+        )}
+      </Button>
+
+      {/* Security Notice */}
+      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <Shield className="h-4 w-4 text-emerald-600" />
+        <span>You'll be redirected to a secure payment page</span>
+      </div>
     </div>
   );
 }

@@ -1953,7 +1953,7 @@ export default function BookingSummary() {
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                merchantIdForHPF=""
+                
                 onPaid={() => {
                   toast.success("Payment successful!");
                   if (bookingPupilId) {

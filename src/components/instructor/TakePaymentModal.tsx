@@ -350,7 +350,6 @@ export function TakePaymentModal({
                 instructorId={instructorId}
                 customerName={selectedPupil?.name}
                 customerEmail={selectedPupil?.email || undefined}
-                merchantIdForHPF=""
                 onPaid={() => {
                   toast.success("Payment successful!");
                   handleClose(false);
