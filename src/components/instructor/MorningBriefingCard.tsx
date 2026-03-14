@@ -136,6 +136,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   };
 
   const handleActionClick = (actionId: string) => {
+    setActiveAction(actionId);
     onNavigate?.(actionId);
   };
 
