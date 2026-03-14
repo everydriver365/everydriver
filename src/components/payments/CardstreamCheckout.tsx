@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CreditCard, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -348,127 +347,120 @@ export function CardstreamCheckout({
   }, [orderRef, amount, customerName, customerEmail, onPaid]);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardContent className="p-6">
-        <div className="text-center mb-6">
-          <div className="text-2xl font-bold">Pay £{amount.toFixed(2)}</div>
-          <p className="text-sm text-muted-foreground mt-1">Secure payment</p>
+    <div className="w-full space-y-3">
+      {sdkError && !loading && (
+        <div className="flex flex-col items-center justify-center py-4 space-y-3">
+          <p className="text-sm text-destructive text-center">{sdkError}</p>
+          <Button
+            variant="outline"
+            onClick={() => setRetryCount(c => c + 1)}
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </Button>
         </div>
+      )}
 
-        {sdkError && !loading && (
-          <div className="flex flex-col items-center justify-center py-8 space-y-3">
-            <p className="text-sm text-destructive text-center">{sdkError}</p>
-            <Button
-              variant="outline"
-              onClick={() => setRetryCount(c => c + 1)}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Retry
-            </Button>
-          </div>
-        )}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+          <p className="text-sm text-muted-foreground">Loading secure payment fields…</p>
+        </div>
+      )}
 
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
-            <p className="text-sm text-muted-foreground">Loading secure payment fields…</p>
-          </div>
-        )}
-
-        {!loading && (
-          <div className="space-y-4">
-            {/* Apple Pay Button */}
-            {canApplePay && (
-              paying ? (
-                <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-white" />
-                </div>
-              ) : (
-                <button
-                  onClick={payWithApplePay}
-                  disabled={paying || !orderRef}
-                  className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                  style={{
-                    // @ts-ignore — Apple Pay native button styling
-                    WebkitAppearance: '-apple-pay-button',
-                    appearance: '-apple-pay-button' as any,
-                    '--apple-pay-button-type': 'pay',
-                    '--apple-pay-button-style': 'black',
-                  } as React.CSSProperties}
-                />
-              )
-            )}
-
-            {canApplePay && (
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or pay with card</span>
-                </div>
+      {!loading && (
+        <div className="space-y-3">
+          {/* Apple Pay Button */}
+          {canApplePay && (
+            paying ? (
+              <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
               </div>
-            )}
+            ) : (
+              <button
+                onClick={payWithApplePay}
+                disabled={paying || !orderRef}
+                className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                style={{
+                  // @ts-ignore — Apple Pay native button styling
+                  WebkitAppearance: '-apple-pay-button',
+                  appearance: '-apple-pay-button' as any,
+                  '--apple-pay-button-type': 'pay',
+                  '--apple-pay-button-style': 'black',
+                } as React.CSSProperties}
+              />
+            )
+          )}
 
-            {/* Card Fields */}
-            <form id="cs-payment-form" className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+          {canApplePay && (
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or pay with card</span>
+              </div>
+            </div>
+          )}
+
+          {/* Card Fields */}
+          <form id="cs-payment-form" className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Card number</label>
+              <input
+                id="cs-card-number"
+                type="hostedfield:cardNumber"
+                className="h-10 w-full border rounded-md bg-background px-3"
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Card number</label>
+                <label className="text-sm font-medium mb-1 block">Expiry</label>
                 <input
-                  id="cs-card-number"
-                  type="hostedfield:cardNumber"
+                  id="cs-card-expiry"
+                  type="hostedfield:cardExpiryDate"
                   className="h-10 w-full border rounded-md bg-background px-3"
                   autoComplete="off"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Expiry</label>
-                  <input
-                    id="cs-card-expiry"
-                    type="hostedfield:cardExpiryDate"
-                    className="h-10 w-full border rounded-md bg-background px-3"
-                    autoComplete="off"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">CVV</label>
-                  <input
-                    id="cs-card-cvv"
-                    type="hostedfield:cardCVV"
-                    className="h-10 w-full border rounded-md bg-background px-3"
-                    autoComplete="off"
-                  />
-                </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">CVV</label>
+                <input
+                  id="cs-card-cvv"
+                  type="hostedfield:cardCVV"
+                  className="h-10 w-full border rounded-md bg-background px-3"
+                  autoComplete="off"
+                />
               </div>
-            </form>
-
-            {/* Pay Button */}
-            <Button
-              onClick={payWithCard}
-              disabled={paying || !orderRef || !fieldsReady}
-              className="w-full h-12"
-            >
-              {paying ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  Pay £{amount.toFixed(2)}
-                </>
-              )}
-            </Button>
-
-            {/* Security Notice */}
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">
-              <Shield className="h-4 w-4 text-emerald-600" />
-              <span>Card details are collected securely via hosted fields</span>
             </div>
+          </form>
+
+          {/* Pay Button */}
+          <Button
+            onClick={payWithCard}
+            disabled={paying || !orderRef || !fieldsReady}
+            className="w-full h-12"
+          >
+            {paying ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <CreditCard className="h-5 w-5 mr-2" />
+                Pay £{amount.toFixed(2)}
+              </>
+            )}
+          </Button>
+
+          {/* Security Notice */}
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Shield className="h-4 w-4 text-emerald-600" />
+            <span>Secured via hosted fields</span>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
