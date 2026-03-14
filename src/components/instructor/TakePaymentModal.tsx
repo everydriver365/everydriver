@@ -67,6 +67,8 @@ export function TakePaymentModal({
       setSelectedPupilId("");
       setAmount("");
       setLinkSent(false);
+      setManualPhone("");
+      setManualEmail("");
     }
     onOpenChange(o);
   };
