@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
 interface GooglePayClient {
   isReadyToPay(request: Record<string, unknown> | object): Promise<{ result: boolean }>;
   createButton(options: object): HTMLElement;
@@ -26,22 +28,18 @@ interface ApplePaySessionInstance {
   completePayment(status: number): void;
 }
 
-declare global {
-  interface Window {
-    google?: {
-      payments: {
-        api: {
-          PaymentsClient: new (config: { environment: string }) => GooglePayClient;
-        };
+interface Window {
+  google?: {
+    payments: {
+      api: {
+        PaymentsClient: new (config: { environment: string }) => GooglePayClient;
       };
     };
-    ApplePaySession?: {
-      canMakePayments(): boolean;
-      STATUS_SUCCESS: number;
-      STATUS_FAILURE: number;
-      new (version: number, request: ApplePayPaymentRequest): ApplePaySessionInstance;
-    };
-  }
+  };
+  ApplePaySession?: {
+    canMakePayments(): boolean;
+    STATUS_SUCCESS: number;
+    STATUS_FAILURE: number;
+    new (version: number, request: ApplePayPaymentRequest): ApplePaySessionInstance;
+  };
 }
-
-
