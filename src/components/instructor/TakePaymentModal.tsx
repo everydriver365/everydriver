@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { QrCode, CreditCard, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
-import { CardstreamPayButton } from "@/components/payments/CardstreamPayButton";
+import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
 import {
   Dialog,
   DialogContent,
