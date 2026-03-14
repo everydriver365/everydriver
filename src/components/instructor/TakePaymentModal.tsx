@@ -148,16 +148,18 @@ export function TakePaymentModal({
               </button>
             )}
             <div>
-              <DialogTitle className="text-base">
+               <DialogTitle className="text-base">
                 {view === "picker" && "Take Payment"}
                 {view === "qr" && "QR Code"}
                 {view === "card" && "Card Entry"}
+                {view === "card-entry" && "Enter Card Details"}
                 {view === "link" && "Send Payment Link"}
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {view === "picker" && "Choose a payment method"}
                 {view === "qr" && "Pupil scans to pay"}
                 {view === "card" && "Enter card details manually"}
+                {view === "card-entry" && "Complete payment"}
                 {view === "link" && "Send a link via SMS or email"}
               </DialogDescription>
             </div>
