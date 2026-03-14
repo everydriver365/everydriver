@@ -1042,7 +1042,7 @@ serve(async (req) => {
       }
 
       case "general_query": {
-        const originalText = note || todo_text || message || "";
+        const originalText = original_text || note || todo_text || message || "";
         
         // Fetch instructor profile for context
         const { data: instructor } = await supabase
