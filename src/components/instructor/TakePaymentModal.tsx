@@ -17,7 +17,7 @@ import { useAdminFee } from "@/hooks/useAdminFee";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type View = "picker" | "qr" | "card" | "link";
+type View = "picker" | "qr" | "card" | "card-entry" | "link";
 
 interface Pupil {
   id: string;
