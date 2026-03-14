@@ -102,6 +102,7 @@ const InstructorReferrals = lazy(() => import("./pages/InstructorReferrals"));
 const InstructorPipeline = lazy(() => import("./pages/InstructorPipeline"));
 const InstructorAutomations = lazy(() => import("./pages/InstructorAutomations"));
 const InstructorSubscriptions = lazy(() => import("./pages/InstructorSubscriptions"));
+const InstructorTakePayment = lazy(() => import("./pages/InstructorTakePayment"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -270,6 +271,7 @@ const App = () => (
                 <Route path="/instructor/diary" element={<InstructorDiary />} />
                 <Route path="/instructor/jobs" element={<InstructorJobs />} />
                 <Route path="/instructor/pay" element={<InstructorPay />} />
+                <Route path="/instructor/take-payment" element={<InstructorTakePayment />} />
                 <Route path="/instructor/contact" element={<InstructorContact />} />
                 <Route path="/instructor/settings" element={<InstructorSettings />} />
                 <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
