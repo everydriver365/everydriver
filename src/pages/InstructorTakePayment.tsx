@@ -26,7 +26,7 @@ export default function InstructorTakePayment() {
         .from("pupils")
         .select("id, name, phone, email, account_balance")
         .eq("instructor_id", instructor.id)
-        .eq("is_active", true)
+        .is("deleted_at", null)
         .order("name");
       if (result.data) setPupils(result.data);
     };
