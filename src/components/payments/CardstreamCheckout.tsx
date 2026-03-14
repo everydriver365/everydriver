@@ -399,6 +399,68 @@ export function CardstreamCheckout({
     }
   }, [orderRef, amount, customerName, customerEmail, onPaid]);
 
+  const payWithGooglePay = useCallback(async () => {
+    if (!orderRef || !googlePayClientRef.current) return;
+
+    try {
+      setPaying(true);
+
+      const paymentDataRequest = {
+        apiVersion: 2,
+        apiVersionMinor: 0,
+        allowedPaymentMethods: [{
+          ...baseCardPaymentMethod,
+          tokenizationSpecification: {
+            type: "PAYMENT_GATEWAY",
+            parameters: {
+              gateway: "cardstream",
+              gatewayMerchantId: merchantIdForHPF,
+            },
+          },
+        }],
+        transactionInfo: {
+          totalPriceStatus: "FINAL",
+          totalPrice: amount.toFixed(2),
+          currencyCode: "GBP",
+          countryCode: "GB",
+        },
+        merchantInfo: {
+          merchantName: "EveryDriver",
+        },
+      };
+
+      const paymentData = await googlePayClientRef.current.loadPaymentData(paymentDataRequest);
+      const token = paymentData.paymentMethodData.tokenizationData.token;
+
+      const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
+        body: {
+          orderRef,
+          method: "google_pay",
+          googlePayPaymentToken: token,
+          customerName,
+          customerEmail,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.success) throw new Error(data?.responseMessage || "Google Pay payment failed");
+
+      toast.success("Google Pay payment successful!");
+      onPaid?.();
+    } catch (e: any) {
+      if (e?.statusCode === "CANCELED") {
+        // User closed the Google Pay sheet
+      } else {
+        console.error("Google Pay error:", e);
+        toast.error(e instanceof Error ? e.message : "Google Pay payment failed");
+      }
+    } finally {
+      setPaying(false);
+    }
+  }, [orderRef, amount, merchantIdForHPF, baseCardPaymentMethod, customerName, customerEmail, onPaid]);
+
+  const hasWalletButtons = canApplePay || canGooglePay;
+
   return (
     <div className="w-full space-y-3">
       {sdkError && !loading && (
@@ -446,7 +508,37 @@ export function CardstreamCheckout({
             )
           )}
 
-          {canApplePay && (
+          {/* Google Pay Button */}
+          {canGooglePay && (
+            paying ? (
+              <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
+              </div>
+            ) : (
+              <button
+                onClick={payWithGooglePay}
+                disabled={paying || !orderRef}
+                className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none border-0 overflow-hidden"
+                style={{
+                  background: '#000',
+                  padding: 0,
+                }}
+              >
+                <div className="flex items-center justify-center gap-2 h-full text-white font-medium text-base">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.24 10.28V14.06H18.72C18.43 15.6 17.56 16.9 16.22 17.78L19.4 20.28C21.2 18.62 22.24 16.16 22.24 13.12C22.24 12.36 22.17 11.64 22.04 10.96H12.24V10.28Z" fill="#4285F4"/>
+                    <path d="M5.33 14.27L4.44 14.95L1.84 16.95C3.72 20.68 7.56 23.24 12 23.24C14.88 23.24 17.32 22.32 19.16 20.72L15.98 18.22C15.04 18.86 13.84 19.24 12 19.24C9.2 19.24 6.84 17.56 5.92 15.22L5.33 14.27Z" fill="#34A853"/>
+                    <path d="M1.84 7.05C0.96 8.78 0.48 10.74 0.48 12.84C0.48 14.94 0.96 16.9 1.84 18.63L5.92 15.22C5.64 14.38 5.48 13.5 5.48 12.56C5.48 11.62 5.64 10.74 5.92 9.9L1.84 7.05Z" fill="#FBBC05"/>
+                    <path d="M12 4.76C13.76 4.76 15.34 5.36 16.58 6.52L19.24 3.86C17.3 2.06 14.86 0.96 12 0.96C7.56 0.96 3.72 3.52 1.84 7.25L5.92 10.1C6.84 7.76 9.2 6.08 12 4.76Z" fill="#EA4335"/>
+                  </svg>
+                  <span>Pay</span>
+                </div>
+              </button>
+            )
+          )}
+
+          {/* Divider between wallet buttons and card fields */}
+          {hasWalletButtons && (
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
