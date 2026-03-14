@@ -36,6 +36,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState<{ lessons: number; earnings: number }>({ lessons: 0, earnings: 0 });
 
   const hour = new Date().getHours();
