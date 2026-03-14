@@ -17,6 +17,9 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const pupilNamesRef = useRef<string[]>([]);
+  const conversationModeRef = useRef(false);
+  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startListeningRef = useRef<() => void>(() => {});
 
   // Load pupil names for fuzzy matching
   useEffect(() => {
@@ -54,11 +57,20 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
         }
       );
 
+      const autoListenAfter = () => {
+        if (conversationModeRef.current) {
+          // Auto-listen for next command
+          setTimeout(() => startListeningRef.current(), 300);
+        } else {
+          setState("idle");
+        }
+      };
+
       if (!response.ok) {
         // Fallback to browser TTS
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1.1;
-        utterance.onend = () => setState("idle");
+        utterance.onend = () => autoListenAfter();
         speechSynthesis.speak(utterance);
         return;
       }
@@ -68,24 +80,31 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       audio.src = audioUrl;
       audioRef.current = audio;
       audio.onended = () => {
-        setState("idle");
         URL.revokeObjectURL(audioUrl);
+        autoListenAfter();
       };
       audio.onerror = () => {
         // Fallback to browser TTS if audio fails
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1.1;
-        utterance.onend = () => setState("idle");
+        utterance.onend = () => autoListenAfter();
         speechSynthesis.speak(utterance);
         URL.revokeObjectURL(audioUrl);
       };
       await audio.play();
     } catch (err) {
       console.error("TTS error:", err);
+      const autoListenAfter = () => {
+        if (conversationModeRef.current) {
+          setTimeout(() => startListeningRef.current(), 300);
+        } else {
+          setState("idle");
+        }
+      };
       // Fallback to browser TTS
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1.1;
-      utterance.onend = () => setState("idle");
+      utterance.onend = () => autoListenAfter();
       speechSynthesis.speak(utterance);
     }
   }, []);
@@ -128,6 +147,7 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
               phone,
               todo_text,
               expense_category,
+              original_text: original_text || spokenText,
               instructor_id: instructorId,
             },
           }
@@ -171,6 +191,15 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
     }
     speechSynthesis.cancel();
 
+    // Clear any silence timeout
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+
+    // Enter conversation mode on first activation
+    conversationModeRef.current = true;
+
     setTranscript("");
     setResponseText("");
     setState("listening");
@@ -181,7 +210,10 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
 
+    let gotResult = false;
+
     recognition.onresult = (event: any) => {
+      gotResult = true;
       const text = event.results[0]?.[0]?.transcript || "";
       processCommand(text);
     };
@@ -190,19 +222,37 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Please enable it in your browser settings.");
+        conversationModeRef.current = false;
+        setState("idle");
+      } else if (event.error === "no-speech" || event.error === "aborted") {
+        // No speech detected — end conversation after timeout
+        silenceTimeoutRef.current = setTimeout(() => {
+          conversationModeRef.current = false;
+          setState("idle");
+        }, 1500);
+      } else {
+        setState("idle");
       }
-      setState("idle");
     };
 
     recognition.onend = () => {
-      if (state === "listening") {
-        // If still in listening state and no result, reset
+      if (!gotResult && conversationModeRef.current) {
+        // Recognition ended without a result (silence) — end conversation
+        silenceTimeoutRef.current = setTimeout(() => {
+          conversationModeRef.current = false;
+          setState((s) => (s === "listening" ? "idle" : s));
+        }, 1500);
       }
     };
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [processCommand, state]);
+  }, [processCommand]);
+
+  // Keep startListeningRef in sync
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -211,6 +261,11 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       audioRef.current = null;
     }
     speechSynthesis.cancel();
+    conversationModeRef.current = false;
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
     setState("idle");
   }, []);
 
@@ -221,6 +276,11 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       audioRef.current = null;
     }
     speechSynthesis.cancel();
+    conversationModeRef.current = false;
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
     setState("idle");
     setTranscript("");
     setResponseText("");

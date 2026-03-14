@@ -45,7 +45,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes, phone, todo_text, expense_category } = await req.json();
+    const { action, pupil_name, message, page, instructor_id, amount, note, date, new_date, delay_minutes, phone, todo_text, expense_category, original_text } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -1038,6 +1038,78 @@ serve(async (req) => {
         const totalMins = lessons.reduce((s: number, l: any) => s + (l.duration_minutes || 60), 0);
         const hours = totalMins / 60;
         responseText = `You have ${hours} hour${hours !== 1 ? 's' : ''} of teaching today across ${lessons.length} lesson${lessons.length > 1 ? 's' : ''}.`;
+        break;
+      }
+
+      case "general_query": {
+        const originalText = original_text || note || todo_text || message || "";
+        
+        // Fetch instructor profile for context
+        const { data: instructor } = await supabase
+          .from("instructors")
+          .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, adi_number, adi_grade, qualifications, bio, email")
+          .eq("id", instructor_id)
+          .single();
+
+        if (!instructor) {
+          responseText = "I couldn't find your profile information.";
+          break;
+        }
+
+        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+        if (!LOVABLE_API_KEY) {
+          responseText = "AI is not configured. Please try again later.";
+          break;
+        }
+
+        const areasText = instructor.areas_covered
+          ? (Array.isArray(instructor.areas_covered) ? instructor.areas_covered.join(", ") : instructor.areas_covered)
+          : "not set";
+
+        const contextPrompt = `You are ED, a voice assistant for a driving instructor. Answer the question naturally and concisely (1-2 sentences max, suitable for spoken response).
+
+Instructor profile:
+- Name: ${instructor.name || "Not set"}
+- Phone: ${instructor.phone || "Not set"}
+- Email: ${instructor.email || "Not set"}
+- Hourly rate: ${instructor.hourly_rate ? `£${instructor.hourly_rate}` : "Not set"}
+- Transmission: ${instructor.transmission_type || "Not set"}
+- Car: ${instructor.car_make ? `${instructor.car_make} ${instructor.car_model || ""}`.trim() : "Not set"}
+- Areas covered: ${areasText}
+- ADI number: ${instructor.adi_number || "Not set"}
+- ADI grade: ${instructor.adi_grade || "Not set"}
+- Qualifications: ${instructor.qualifications || "Not set"}
+- Bio: ${instructor.bio || "Not set"}
+
+If you don't have the information to answer, say so briefly.`;
+
+        try {
+          const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-3-flash-preview",
+              messages: [
+                { role: "system", content: contextPrompt },
+                { role: "user", content: originalText },
+              ],
+            }),
+          });
+
+          if (!aiResponse.ok) {
+            responseText = "Sorry, I couldn't process that question right now.";
+            break;
+          }
+
+          const aiData = await aiResponse.json();
+          responseText = aiData.choices?.[0]?.message?.content || "Sorry, I couldn't find an answer to that.";
+        } catch (aiErr) {
+          console.error("general_query AI error:", aiErr);
+          responseText = "Sorry, something went wrong while answering your question.";
+        }
         break;
       }
 

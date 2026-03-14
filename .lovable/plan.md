@@ -1,73 +1,107 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Fix ED Voice Assistant: Speak Responses + Auto-Listen
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-### Problems Identified
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
-1. **General questions get no real answer**: ED can only handle structured commands (send message, check schedule, etc). When you ask a general question like "What areas do I cover?" or "What car do I drive?", the intent parser maps it to `unknown` and returns a canned "I didn't understand" message instead of answering intelligently.
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-2. **No auto-listen after response**: After ED finishes speaking, state goes to `idle`. You have to tap the mic button again for each follow-up. There's no continuous conversation mode.
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-### Plan
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-#### 1. Add a `general_query` action to voice-parse-intent
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-**File: `supabase/functions/voice-parse-intent/index.ts`**
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-- Add a new action `general_query` with parameter `original_text` for questions that don't match a specific command (e.g. "What areas do I cover?", "What car do you drive?", "Do you do automatic lessons?").
-- This prevents general questions from falling into `unknown`.
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-#### 2. Handle `general_query` in voice-execute with AI
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-**File: `supabase/functions/voice-execute/index.ts`**
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-- Add a `case "general_query"` that fetches the instructor's profile data (name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, etc.)
-- Sends the question + instructor context to Lovable AI (Gemini) to generate a natural spoken answer
-- Returns the AI response as `responseText`
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-#### 3. Auto-listen after ED finishes speaking
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-**File: `src/hooks/useVoiceAssistant.ts`**
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-- After TTS playback ends (`audio.onended` / `utterance.onend`), instead of going to `idle`, automatically call `startListening()` to begin a new recognition session.
-- Add a `conversationMode` ref that stays `true` while the user is actively interacting. Set to `false` after ~10 seconds of silence (recognition `onend` with no result).
-- The cancel/stop buttons will still immediately end the conversation.
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
-### Technical Details
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-**voice-parse-intent** — add to the system prompt:
-```
-31. general_query - Answer a general question about the instructor's business
-    Parameters: original_text (string)
-    Examples: "What areas do you cover?", "Do you do automatic?", "What car do you teach in?"
-```
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-**voice-execute** — new case:
-```typescript
-case "general_query": {
-  // Fetch instructor profile
-  const { data: instructor } = await supabase
-    .from("instructors")
-    .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, ...")
-    .eq("id", instructor_id)
-    .single();
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
-  // Call Lovable AI with instructor context + question
-  const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { ... });
-  responseText = aiResponse answer;
-  break;
-}
-```
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
 
-**useVoiceAssistant.ts** — auto-listen loop:
-```typescript
-// In speak(), change onended callback:
-audio.onended = () => {
-  URL.revokeObjectURL(audioUrl);
-  // Auto-listen for next command instead of going idle
-  startListening();
-};
-
-// In recognition.onend, if no result was captured, go idle after timeout
-```
-
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding
