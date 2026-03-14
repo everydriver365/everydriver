@@ -165,23 +165,14 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           </div>
         </div>
       </div>
-      <TakePaymentSheet
-        open={paymentSheetOpen}
-        onOpenChange={setPaymentSheetOpen}
+      <TakePaymentModal
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
         paymentQrUrl={getActivePaymentQrUrl(instructor)}
         commissionPayer={instructor?.commission_payer}
         instructorName={instructor?.name}
         instructorId={instructor?.id}
         pupils={pupils}
-        onShowQR={() => { setPaymentSheetOpen(false); setQrOpen(true); }}
-        onRecordPayment={() => { setPaymentSheetOpen(false); navigate("/instructor/pupils"); }}
-      />
-      <PaymentQRModal 
-        open={qrOpen} 
-        onOpenChange={setQrOpen} 
-        paymentQrUrl={getActivePaymentQrUrl(instructor)}
-        commissionPayer={instructor?.commission_payer}
-        instructorName={instructor?.name}
       />
       <SOSEmergencySheet
         open={sosOpen}
