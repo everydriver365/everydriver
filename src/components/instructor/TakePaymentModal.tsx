@@ -166,7 +166,7 @@ export function TakePaymentModal({
           </div>
         </DialogHeader>
 
-        <div className="p-4 max-h-[70vh] overflow-y-auto">
+        <div className={`p-4 ${view === "card-entry" ? "" : "max-h-[70vh] overflow-y-auto"}`}>
           {/* === Picker === */}
           {view === "picker" && (
             <div className="grid gap-3">
