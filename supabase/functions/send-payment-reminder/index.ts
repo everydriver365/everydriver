@@ -12,6 +12,9 @@ interface PaymentReminderRequest {
   pupilIds?: string[];
   method?: "sms" | "email" | "both"; // default: sms
   paymentLink?: string; // optional custom payment link
+  manualPhone?: string; // override phone number
+  manualEmail?: string; // override email address
+  manualName?: string; // name for manual-only sends
 }
 
 serve(async (req) => {
