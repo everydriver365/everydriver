@@ -88,11 +88,24 @@ export function TakePaymentModal({
 
   const handlePupilSelectForLink = (pupilId: string) => {
     setSelectedPupilId(pupilId);
+    if (clearForManual) return; // Don't auto-fill when manual mode is active
     if (pupilId === "_manual") {
       setManualPhone("");
       setManualEmail("");
     } else {
       const pupil = pupils.find((p) => p.id === pupilId);
+      setManualPhone(pupil?.phone || "");
+      setManualEmail(pupil?.email || "");
+    }
+  };
+
+  const handleToggleManual = (checked: boolean) => {
+    setClearForManual(checked);
+    if (checked) {
+      setManualPhone("");
+      setManualEmail("");
+    } else if (selectedPupilId && selectedPupilId !== "_manual") {
+      const pupil = pupils.find((p) => p.id === selectedPupilId);
       setManualPhone(pupil?.phone || "");
       setManualEmail(pupil?.email || "");
     }
