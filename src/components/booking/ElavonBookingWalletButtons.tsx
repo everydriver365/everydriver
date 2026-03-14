@@ -44,23 +44,7 @@ interface ElavonBookingWalletButtonsProps {
   specialNeeds?: string;
 }
 
-declare global {
-  interface Window {
-    google?: {
-      payments: {
-        api: {
-          PaymentsClient: new (config: { environment: string }) => GooglePayClient;
-        };
-      };
-    };
-  }
-}
-
-interface GooglePayClient {
-  isReadyToPay: (request: object) => Promise<{ result: boolean }>;
-  createButton: (options: object) => HTMLElement;
-  loadPaymentData: (request: object) => Promise<{ paymentMethodData: { tokenizationData: { token: string } } }>;
-}
+import type { GooglePayClient } from "@/types/payment-types";
 
 export function ElavonBookingWalletButtons({
   amount,

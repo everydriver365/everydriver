@@ -3,23 +3,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-declare global {
-  interface Window {
-    google?: {
-      payments: {
-        api: {
-          PaymentsClient: new (config: { environment: string }) => GooglePayClient;
-        };
-      };
-    };
-  }
-}
-
-interface GooglePayClient {
-  isReadyToPay: (request: object) => Promise<{ result: boolean }>;
-  createButton: (options: object) => HTMLElement;
-  loadPaymentData: (request: object) => Promise<{ paymentMethodData: { tokenizationData: { token: string } } }>;
-}
+import type { GooglePayClient } from "@/types/payment-types";
 
 interface ElavonWalletButtonsProps {
   amount: number;
