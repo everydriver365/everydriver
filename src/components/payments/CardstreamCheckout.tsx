@@ -137,6 +137,14 @@ export function CardstreamCheckout({
 
         setOrderRef(data.orderRef);
 
+        // Load stylesheet manually (avoids jQuery selector error when SDK tries to parse URL)
+        if (!document.querySelector('link[href="https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css"]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://gateway.cardstream.com/sdk/web/v1/css/hostedfields.min.css';
+          document.head.appendChild(link);
+        }
+
         // Load jQuery (required by Cardstream Hosted Fields SDK)
         await loadScript("https://code.jquery.com/jquery-3.7.1.min.js");
 
