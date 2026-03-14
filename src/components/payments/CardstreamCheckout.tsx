@@ -222,7 +222,7 @@ export function CardstreamCheckout({
         hostedFieldsRef.current.destroy?.();
       }
     };
-  }, [amount, pupilId, instructorId, customerName, customerEmail, merchantIdForHPF]);
+  }, [amount, pupilId, instructorId, customerName, customerEmail, merchantIdForHPF, retryCount]);
 
   const payWithCard = useCallback(async () => {
     if (!orderRef || !hostedFieldsRef.current) return;
