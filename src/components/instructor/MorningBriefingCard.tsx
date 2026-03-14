@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BriefingActionCards } from "./BriefingActionCards";
+import { BriefingActionModal } from "./BriefingActionModal";
 
 interface MorningBriefingCardProps {
   instructorId: string | undefined;
@@ -35,6 +36,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState<{ lessons: number; earnings: number }>({ lessons: 0, earnings: 0 });
 
   const hour = new Date().getHours();
@@ -134,6 +136,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   };
 
   const handleActionClick = (actionId: string) => {
+    setActiveAction(actionId);
     onNavigate?.(actionId);
   };
 
@@ -215,6 +218,13 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
           </div>
         </div>
       </div>
+
+      <BriefingActionModal
+        actionId={activeAction}
+        instructorId={instructorId}
+        open={!!activeAction}
+        onClose={() => setActiveAction(null)}
+      />
     </motion.div>
   );
 }
