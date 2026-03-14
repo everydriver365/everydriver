@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
+import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
 import {
   Dialog,
   DialogContent,
