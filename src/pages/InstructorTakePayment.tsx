@@ -20,15 +20,16 @@ export default function InstructorTakePayment() {
 
   useEffect(() => {
     if (!instructor?.id) return;
-    supabase
-      .from("pupils")
-      .select("id, name, phone, email, account_balance")
-      .eq("instructor_id", instructor.id)
-      .eq("is_active", true)
-      .order("name")
-      .then(({ data }) => {
-        if (data) setPupils(data);
-      });
+    const fetchPupils = async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, phone, email, account_balance")
+        .eq("instructor_id", instructor.id)
+        .eq("is_active", true)
+        .order("name") as { data: Pupil[] | null };
+      if (data) setPupils(data);
+    };
+    fetchPupils();
   }, [instructor?.id]);
 
   return (
