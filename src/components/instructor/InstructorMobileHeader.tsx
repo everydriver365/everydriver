@@ -14,9 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
-import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,11 +38,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { instructor, signOut } = useInstructorAuth();
-  const [qrOpen, setQrOpen] = useState(false);
-  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
-  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
-  const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const { total: totalNotifCount } = useCombinedNotificationCount(instructor?.id);
 
@@ -139,7 +134,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               </button>
             )}
             <button
-              onClick={() => setPaymentSheetOpen(true)}
+              onClick={() => setPaymentModalOpen(true)}
               className="h-8 px-3 rounded-full bg-primary-foreground/90 flex items-center gap-1.5 hover:bg-primary-foreground transition-colors"
             >
               <PoundSterling className="h-3.5 w-3.5 text-primary" />
@@ -170,23 +165,14 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           </div>
         </div>
       </div>
-      <TakePaymentSheet
-        open={paymentSheetOpen}
-        onOpenChange={setPaymentSheetOpen}
+      <TakePaymentModal
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
         paymentQrUrl={getActivePaymentQrUrl(instructor)}
         commissionPayer={instructor?.commission_payer}
         instructorName={instructor?.name}
         instructorId={instructor?.id}
         pupils={pupils}
-        onShowQR={() => { setPaymentSheetOpen(false); setQrOpen(true); }}
-        onRecordPayment={() => { setPaymentSheetOpen(false); navigate("/instructor/pupils"); }}
-      />
-      <PaymentQRModal 
-        open={qrOpen} 
-        onOpenChange={setQrOpen} 
-        paymentQrUrl={getActivePaymentQrUrl(instructor)}
-        commissionPayer={instructor?.commission_payer}
-        instructorName={instructor?.name}
       />
       <SOSEmergencySheet
         open={sosOpen}
