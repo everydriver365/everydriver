@@ -261,20 +261,36 @@ export function TakePaymentModal({
                 </div>
               )}
 
-              {parsedAmount > 0 && selectedPupilId && (
-                <CardstreamCheckout
-                  amount={totalCharge}
-                  pupilId={selectedPupilId}
-                  instructorId={instructorId}
-                  customerName={selectedPupil?.name}
-                  customerEmail={selectedPupil?.email || undefined}
-                  merchantIdForHPF=""
-                  onPaid={() => {
-                    toast.success("Payment successful!");
-                    handleClose(false);
-                  }}
-                />
-              )}
+              <Button
+                className="w-full"
+                disabled={!selectedPupilId || parsedAmount <= 0}
+                onClick={() => setView("card-entry")}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Continue to Payment
+              </Button>
+            </div>
+          )}
+
+          {/* === Card Entry === */}
+          {view === "card-entry" && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/50 p-3 flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">{selectedPupil?.name}</span>
+                <span className="font-semibold">£{totalCharge.toFixed(2)}</span>
+              </div>
+              <CardstreamCheckout
+                amount={totalCharge}
+                pupilId={selectedPupilId}
+                instructorId={instructorId}
+                customerName={selectedPupil?.name}
+                customerEmail={selectedPupil?.email || undefined}
+                merchantIdForHPF=""
+                onPaid={() => {
+                  toast.success("Payment successful!");
+                  handleClose(false);
+                }}
+              />
             </div>
           )}
 
