@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CreditCard, Cloud, Users, Calendar, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -90,12 +91,12 @@ const DAILY_TIPS = [
   "💡 Practice parallel parking in different road widths.",
 ];
 
-export function BriefingActionCards({ briefingText, todayLessons, expectedEarnings, onActionClick }: BriefingActionCardsProps) {
+export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCardsProps>(({ briefingText, todayLessons, expectedEarnings, onActionClick }, ref) => {
   const actions = extractActions(briefingText);
   const tipIndex = new Date().getDate() % DAILY_TIPS.length;
 
   return (
-    <div className="space-y-3 mt-3">
+    <div ref={ref} className="space-y-3 mt-3">
       {/* Quick Stats Strip */}
       {(todayLessons !== undefined || expectedEarnings !== undefined) && (
         <div className="flex gap-2">
@@ -152,4 +153,5 @@ export function BriefingActionCards({ briefingText, todayLessons, expectedEarnin
       </motion.div>
     </div>
   );
-}
+});
+BriefingActionCards.displayName = "BriefingActionCards";
