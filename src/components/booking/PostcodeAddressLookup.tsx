@@ -123,7 +123,8 @@ export function PostcodeAddressLookup({
   const handlePostcodeKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      lookupAddresses(postcode);
+      (e.target as HTMLInputElement).blur();
+      lookupAddresses();
     }
   };
 
