@@ -117,7 +117,7 @@ export function PostcodeAddressLookup({
 
   const handlePostcodeBlur = () => {
     onBlurPostcode?.();
-    lookupAddresses(postcode);
+    // Don't auto-lookup on blur — use the "Find Address" button instead
   };
 
   const handlePostcodeKeyDown = (e: React.KeyboardEvent) => {
