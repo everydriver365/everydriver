@@ -64,9 +64,6 @@ export function TakePaymentModal({
       setView("picker");
       setSelectedPupilId("");
       setAmount("");
-      setMerchantId(null);
-      setLinkSent(false);
-    }
     onOpenChange(o);
   };
 
