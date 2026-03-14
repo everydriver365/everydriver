@@ -49,8 +49,6 @@ export function TakePaymentModal({
   const [view, setView] = useState<View>("picker");
   const [selectedPupilId, setSelectedPupilId] = useState("");
   const [amount, setAmount] = useState("");
-  const [merchantId, setMerchantId] = useState<string | null>(null);
-  const [creatingIntent, setCreatingIntent] = useState(false);
   const [sendViaSms, setSendViaSms] = useState(true);
   const [sendViaEmail, setSendViaEmail] = useState(false);
   const [sending, setSending] = useState(false);
