@@ -76,13 +76,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
     <div className="sticky top-0 z-50">
       {/* Safe area fill — solid primary */}
       <div className="bg-primary pt-[env(safe-area-inset-top)]" />
-      {/* Header with graduated fade */}
-      <div
-        className="text-primary-foreground relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(to bottom, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 60%, hsl(var(--primary) / 0.7) 100%)'
-        }}
-      >
+      {/* Header bar */}
+      <div className="bg-primary text-primary-foreground relative overflow-hidden">
         <div className="relative flex items-center justify-between px-4 py-3">
           {/* Left: Back button OR Avatar + Greeting */}
           <div className="flex items-center gap-3">
