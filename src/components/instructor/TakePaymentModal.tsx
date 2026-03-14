@@ -256,15 +256,17 @@ export function TakePaymentModal({
               )}
 
               {parsedAmount > 0 && selectedPupilId && (
-                <CardstreamPayButton
+                <CardstreamCheckout
                   amount={totalCharge}
                   pupilId={selectedPupilId}
                   instructorId={instructorId}
                   customerName={selectedPupil?.name}
                   customerEmail={selectedPupil?.email || undefined}
-                  customerPhone={selectedPupil?.phone || undefined}
-                  description="Driving lesson payment"
-                  onError={(msg) => toast.error(msg)}
+                  merchantIdForHPF=""
+                  onPaid={() => {
+                    toast.success("Payment successful!");
+                    handleClose(false);
+                  }}
                 />
               )}
             </div>
