@@ -12,6 +12,13 @@ declare global {
       STATUS_FAILURE: number;
       new (version: number, request: ApplePayPaymentRequest): ApplePaySessionInstance;
     };
+    google?: {
+      payments?: {
+        api?: {
+          PaymentsClient: new (config: { environment: string }) => GooglePayClient;
+        };
+      };
+    };
     hostedFields?: {
       classes: {
         Form: unknown;
@@ -28,6 +35,15 @@ declare global {
     };
     $?: Window["jQuery"];
   }
+}
+
+interface GooglePayClient {
+  isReadyToPay(request: Record<string, unknown>): Promise<{ result: boolean }>;
+  loadPaymentData(request: Record<string, unknown>): Promise<{
+    paymentMethodData: {
+      tokenizationData: { token: string };
+    };
+  }>;
 }
 
 interface ApplePayPaymentRequest {
