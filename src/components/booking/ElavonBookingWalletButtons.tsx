@@ -402,17 +402,24 @@ export function ElavonBookingWalletButtons({
 
       <div className="grid gap-2">
         {applePayAvailable && (
-          <button
-            onClick={handleApplePay}
-            disabled={disabled || !!processingWallet || amount <= 0}
-            className="w-full h-[44px] bg-black text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-black/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {processingWallet === "apple" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <> Pay with Apple Pay</>
-            )}
-          </button>
+          {processingWallet === "apple" ? (
+            <div className="w-full h-[44px] bg-black rounded-lg flex items-center justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
+            </div>
+          ) : (
+            <button
+              onClick={handleApplePay}
+              disabled={disabled || !!processingWallet || amount <= 0}
+              className="w-full h-[44px] rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+              style={{
+                // @ts-ignore — Apple Pay native button styling
+                WebkitAppearance: '-apple-pay-button',
+                appearance: '-apple-pay-button' as any,
+                '--apple-pay-button-type': 'pay',
+                '--apple-pay-button-style': 'black',
+              } as React.CSSProperties}
+            />
+          )}
         )}
 
         {googlePayAvailable && (
