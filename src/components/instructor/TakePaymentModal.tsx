@@ -232,6 +232,30 @@ export function TakePaymentModal({
             </div>
           )}
 
+          {/* === Payment type switcher (shown on sub-views, not card-entry) === */}
+          {view !== "picker" && view !== "card-entry" && (
+            <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
+              {options.map((opt) => {
+                const Icon = opt.icon;
+                const isActive = view === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setView(opt.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-colors ${
+                      isActive
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* === QR Code === */}
           {view === "qr" && (
             <div className="flex flex-col items-center gap-4">
