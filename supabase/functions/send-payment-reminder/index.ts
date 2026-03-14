@@ -160,7 +160,7 @@ serve(async (req) => {
 
       // --- Email ---
       if ((method === "email" || method === "both") && resendApiKey) {
-        if (!pupil.email) {
+        if (!emailToUse) {
           results.skipped++;
           results.details.push({ name: pupil.name, status: "skipped_email", error: "No email" });
         } else {
