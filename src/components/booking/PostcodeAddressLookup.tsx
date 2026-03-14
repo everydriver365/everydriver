@@ -69,8 +69,8 @@ export function PostcodeAddressLookup({
     }
   }, [showDoorPrompt]);
 
-  const lookupAddresses = useCallback(async (pc: string) => {
-    const clean = pc.trim();
+  const lookupAddresses = useCallback(async (pc?: string) => {
+    const clean = (pc ?? postcode).trim();
     if (!ukPostcodeRegex.test(clean) || clean === lastLookedUp.current) return;
     lastLookedUp.current = clean;
 
@@ -85,8 +85,11 @@ export function PostcodeAddressLookup({
       const results: AddressOption[] = data?.addresses || [];
       setAddresses(results);
       if (results.length > 0) {
-        setShowDropdown(true);
-        setManualEntry(false);
+        // Small delay to let mobile keyboard dismiss and viewport settle
+        setTimeout(() => {
+          setShowDropdown(true);
+          setManualEntry(false);
+        }, 150);
       } else {
         setNoResults(true);
         setManualEntry(true);
@@ -98,7 +101,7 @@ export function PostcodeAddressLookup({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [postcode]);
 
   const handlePostcodeChange = (value: string) => {
     onPostcodeChange(value);
