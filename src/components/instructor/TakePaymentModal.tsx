@@ -344,7 +344,7 @@ export function TakePaymentModal({
                     <Check className="h-6 w-6 text-emerald-600" />
                   </div>
                   <p className="font-medium text-sm">Link sent!</p>
-                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); setClearForManual(false); }}>
                     Send Another
                   </Button>
                 </div>
