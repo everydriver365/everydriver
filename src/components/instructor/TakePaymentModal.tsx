@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
+import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
 import {
   Dialog,
   DialogContent,
@@ -233,24 +234,19 @@ export function TakePaymentModal({
           )}
 
           {/* === QR Code === */}
-          {view === "qr" && (
-            <div className="flex flex-col items-center gap-4">
-              {paymentQrUrl ? (
-                <div className="bg-white p-4 rounded-xl shadow-md">
-                  <img src={paymentQrUrl} alt="Payment QR Code" className="w-56 h-56 object-contain" />
-                </div>
-              ) : (
-                <div className="w-56 h-56 bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30">
-                  <div className="text-center">
-                    <QrCode className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No QR code configured</p>
-                    <p className="text-xs text-muted-foreground mt-1">Set up in Settings → Payments</p>
-                  </div>
-                </div>
-              )}
-              <p className="text-sm text-muted-foreground text-center font-medium">
-                Scan to pay {instructorName}
-              </p>
+          {view === "qr" && instructorId && (
+            <PaymentLinkShare
+              instructorId={instructorId}
+              instructorName={instructorName}
+              pupils={pupils.map((p) => ({ id: p.id, name: p.name }))}
+            />
+          )}
+          {view === "qr" && !instructorId && (
+            <div className="w-56 h-56 bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 mx-auto">
+              <div className="text-center">
+                <QrCode className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Unable to generate QR</p>
+              </div>
             </div>
           )}
 
