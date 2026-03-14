@@ -114,14 +114,14 @@ export function TakePaymentSheet({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-sm text-foreground">Send Payment Link</p>
-                <p className="text-xs text-muted-foreground">Send via SMS or email to a pupil</p>
+                <p className="text-xs text-muted-foreground">Send via SMS or email, or share a link</p>
               </div>
             </button>
           ) : (
             <div className="border border-border bg-card p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-sm text-foreground">Send Payment Link</p>
-                <Button variant="ghost" size="sm" onClick={() => { setLinkMode(null); setSelectedPupil(null); }}>
+                <Button variant="ghost" size="sm" onClick={() => { setLinkMode(null); setSelectedPupil(null); setShowPaymentLink(false); }}>
                   Cancel
                 </Button>
               </div>
@@ -182,47 +182,13 @@ export function TakePaymentSheet({
                   ))}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Record Cash/Manual Payment */}
-          <button
-            onClick={handleRecordPayment}
-            className="w-full flex items-center gap-3 p-4 border border-border bg-card hover:bg-accent transition-colors text-left"
-          >
-            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <Banknote className="h-5 w-5 text-emerald-500" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-sm text-foreground">Record Manual Payment</p>
-              <p className="text-xs text-muted-foreground">Cash, card, or bank transfer</p>
-            </div>
-          </button>
-
-          {/* Share Payment Link */}
-          {!showPaymentLink ? (
-            <button
-              onClick={() => setShowPaymentLink(true)}
-              className="w-full flex items-center gap-3 p-4 border border-border bg-card hover:bg-accent transition-colors text-left"
-            >
-              <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
-                <Link className="h-5 w-5 text-purple-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-sm text-foreground">Share Payment Link</p>
-                <p className="text-xs text-muted-foreground">QR code & link for anyone to pay you</p>
-              </div>
-            </button>
-          ) : (
-            <div className="border border-border bg-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-sm text-foreground">Payment Link & QR</p>
-                <Button variant="ghost" size="sm" onClick={() => setShowPaymentLink(false)}>
-                  Close
-                </Button>
-              </div>
+              {/* Shareable link section */}
               {instructorId && (
-                <PaymentLinkShare instructorId={instructorId} instructorName={instructorName} pupils={pupils} />
+                <div className="border-t pt-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Or share a general payment link</p>
+                  <PaymentLinkShare instructorId={instructorId} instructorName={instructorName} pupils={pupils} />
+                </div>
               )}
             </div>
           )}
