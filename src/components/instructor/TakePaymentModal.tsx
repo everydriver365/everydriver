@@ -369,6 +369,17 @@ export function TakePaymentModal({
                     </Select>
                   </div>
 
+                  {/* Clear for manual entry checkbox */}
+                  {selectedPupilId && selectedPupilId !== "_manual" && (
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={clearForManual}
+                        onCheckedChange={(c) => handleToggleManual(!!c)}
+                      />
+                      <span className="text-xs text-muted-foreground">Clear fields for manual entry</span>
+                    </label>
+                  )}
+
                   {/* Manual phone */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Phone number</Label>
