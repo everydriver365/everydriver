@@ -245,4 +245,5 @@ export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCard
       </motion.div>
     </div>
   );
-}
+});
+BriefingActionCards.displayName = "BriefingActionCards";
