@@ -308,6 +308,8 @@ export function CardstreamCheckout({
   // Handle card form submission — extract paymentToken and call payment-direct-sale
   const handleCardSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Capture form element synchronously — e.currentTarget is nullified after await
+    const formEl = e.currentTarget;
     if (!orderRef) {
       toast.error("Payment not ready — please wait and try again");
       return;
@@ -323,9 +325,9 @@ export function CardstreamCheckout({
         await instance.getPaymentDetails();
       }
 
-      // Read the paymentToken from the form
-      const fd = new FormData(e.currentTarget);
-      const paymentToken = fd.get("paymentToken") as string;
+      // Read the paymentToken from the form using the captured reference
+      const fd = new FormData(formEl);
+      const paymentToken = (fd.get("paymentToken") || fd.get("paymenttoken")) as string;
 
       if (!paymentToken) {
         throw new Error("There was a problem generating the payment token. Please check your card details and try again.");
