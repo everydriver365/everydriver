@@ -358,7 +358,7 @@ export function ElavonWalletButtons({
 
       <div className="grid gap-2">
         {applePayAvailable && (
-          {processingWallet === "apple" ? (
+          processingWallet === "apple" ? (
             <div className="w-full h-[44px] bg-black rounded-lg flex items-center justify-center">
               <Loader2 className="h-4 w-4 animate-spin text-white" />
             </div>
@@ -375,7 +375,7 @@ export function ElavonWalletButtons({
                 '--apple-pay-button-style': 'black',
               } as React.CSSProperties}
             />
-          )}
+          )
         )}
 
         {googlePayAvailable && (
