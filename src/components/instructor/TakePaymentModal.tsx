@@ -243,7 +243,7 @@ export function TakePaymentModal({
                       <SelectTrigger className="w-full h-10">
                         <SelectValue placeholder="-- Select a pupil --" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[200]">
                         {pupils.map((p) => (
                           <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                         ))}
