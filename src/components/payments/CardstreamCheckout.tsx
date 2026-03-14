@@ -348,6 +348,20 @@ export function CardstreamCheckout({
           <p className="text-sm text-muted-foreground mt-1">Secure payment</p>
         </div>
 
+        {sdkError && !loading && (
+          <div className="flex flex-col items-center justify-center py-8 space-y-3">
+            <p className="text-sm text-destructive text-center">{sdkError}</p>
+            <Button
+              variant="outline"
+              onClick={() => setRetryCount(c => c + 1)}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        )}
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
