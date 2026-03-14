@@ -84,27 +84,49 @@ export function TakePaymentModal({
 
 
 
+  const handlePupilSelectForLink = (pupilId: string) => {
+    setSelectedPupilId(pupilId);
+    if (pupilId === "_manual") {
+      setManualPhone("");
+      setManualEmail("");
+    } else {
+      const pupil = pupils.find((p) => p.id === pupilId);
+      setManualPhone(pupil?.phone || "");
+      setManualEmail(pupil?.email || "");
+    }
+  };
+
   // Send Link
   const handleSendLink = async () => {
-    if (!instructorId || !selectedPupilId) return;
+    if (!instructorId) return;
+    if (!manualPhone && !manualEmail) return;
     const method = sendViaSms && sendViaEmail ? "both" : sendViaSms ? "sms" : "email";
     setSending(true);
     try {
+      const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
+      const paymentLink = isManualOnly
+        ? `${window.location.origin}/pay/${instructorId}`
+        : `${window.location.origin}/pay/${instructorId}?pupil=${selectedPupilId}`;
+
       const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
         body: {
           instructorId,
           instructorName,
-          pupilIds: [selectedPupilId],
+          pupilIds: isManualOnly ? [] : [selectedPupilId],
           method,
-          paymentLink: `${window.location.origin}/pay/${instructorId}?pupil=${selectedPupilId}`,
+          paymentLink,
+          manualPhone: manualPhone || undefined,
+          manualEmail: manualEmail || undefined,
+          manualName: isManualOnly ? "there" : undefined,
         },
       });
       if (error) throw error;
       if (data?.sent > 0 || data?.emailSent > 0) {
         setLinkSent(true);
-        toast.success(`Payment link sent to ${selectedPupil?.name}`);
+        const recipientName = isManualOnly ? (manualPhone || manualEmail) : selectedPupil?.name;
+        toast.success(`Payment link sent to ${recipientName}`);
       } else {
-        toast.error("Failed to send — check pupil contact details");
+        toast.error("Failed to send — check contact details");
       }
     } catch {
       toast.error("Failed to send payment link");
