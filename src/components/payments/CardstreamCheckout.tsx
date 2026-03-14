@@ -567,8 +567,9 @@ export function CardstreamCheckout({
       {!sdkError && formData && (
         <form
           ref={cardFormRef}
-          action={gatewayUrl}
+          action="https://gateway.cardstream.com/direct/"
           method="POST"
+          onSubmit={handleCardSubmit}
           className="space-y-4"
         >
           {/* Hosted field styling — SDK reads <style class="hostedfield"> for iframe CSS */}
