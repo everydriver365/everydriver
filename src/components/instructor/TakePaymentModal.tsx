@@ -70,6 +70,7 @@ export function TakePaymentModal({
       setLinkSent(false);
       setManualPhone("");
       setManualEmail("");
+      setClearForManual(false);
     }
     onOpenChange(o);
   };
