@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CreditCard, Shield, Apple } from "lucide-react";
+import { Loader2, CreditCard, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
@@ -339,20 +339,24 @@ export function CardstreamCheckout({
           <div className="space-y-4">
             {/* Apple Pay Button */}
             {canApplePay && (
-              <Button
-                onClick={payWithApplePay}
-                disabled={paying || !orderRef}
-                className="w-full bg-black hover:bg-gray-800 text-white h-12"
-              >
-                {paying ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <Apple className="h-5 w-5 mr-2" />
-                    Pay with Apple Pay
-                  </>
-                )}
-              </Button>
+              paying ? (
+                <div className="w-full h-12 bg-black rounded-lg flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                </div>
+              ) : (
+                <button
+                  onClick={payWithApplePay}
+                  disabled={paying || !orderRef}
+                  className="w-full h-12 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  style={{
+                    // @ts-ignore — Apple Pay native button styling
+                    WebkitAppearance: '-apple-pay-button',
+                    appearance: '-apple-pay-button' as any,
+                    '--apple-pay-button-type': 'pay',
+                    '--apple-pay-button-style': 'black',
+                  } as React.CSSProperties}
+                />
+              )
             )}
 
             {canApplePay && (
