@@ -125,6 +125,7 @@ export function CardstreamCheckout({
       try {
         setLoading(true);
         setFieldsReady(false);
+        setSdkError(null);
 
         // Create intent
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
