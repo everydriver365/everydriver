@@ -70,7 +70,11 @@ export function TakePaymentModal({
   };
 
   const handleBack = () => {
-    setView("picker");
+    if (view === "card-entry") {
+      setView("card");
+    } else {
+      setView("picker");
+    }
   };
 
 
