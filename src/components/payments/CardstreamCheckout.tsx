@@ -5,7 +5,7 @@ import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { CardstreamPayButton } from "./CardstreamPayButton";
 
-// Types are in src/types/google-pay.d.ts
+import type { GooglePayClient, ApplePayPaymentRequest, ApplePaySessionInstance } from "@/types/payment-types";
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {

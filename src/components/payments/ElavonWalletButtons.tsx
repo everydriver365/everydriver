@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// Types are in src/types/google-pay.d.ts
+import type { GooglePayClient } from "@/types/payment-types";
 
 interface ElavonWalletButtonsProps {
   amount: number;

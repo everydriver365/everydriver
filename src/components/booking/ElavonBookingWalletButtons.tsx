@@ -44,7 +44,7 @@ interface ElavonBookingWalletButtonsProps {
   specialNeeds?: string;
 }
 
-// Types are in src/types/google-pay.d.ts
+import type { GooglePayClient } from "@/types/payment-types";
 
 export function ElavonBookingWalletButtons({
   amount,
