@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Lock, CreditCard } from "lucide-react";
+import { Loader2, Lock, CreditCard, X } from "lucide-react";
 
 type Props = {
   amount: number; // pounds
@@ -14,16 +14,19 @@ type Props = {
   customerPostcode?: string;
   description?: string;
   onError?: (msg: string) => void;
+  onSuccess?: () => void;
   className?: string;
   disabled?: boolean;
 };
 
 /**
- * CardstreamPayButton — HPP redirect-based payment.
+ * CardstreamPayButton — HPP embedded in an iframe.
  *
- * Calls `npi-checkout` edge function to get signed form data,
- * then auto-submits a hidden HTML form to Cardstream's Hosted Payment Page.
- * No jQuery, no iframes, no SDK — works everywhere.
+ * Calls `elavon-checkout` edge function to get signed form data,
+ * then auto-submits a hidden HTML form targeting a named iframe.
+ * The Cardstream HPP loads inside the iframe. After payment,
+ * the callback redirects to our domain — we detect success by
+ * reading the iframe URL on load.
  */
 export function CardstreamPayButton({
   amount,
@@ -36,17 +39,58 @@ export function CardstreamPayButton({
   customerPostcode,
   description,
   onError,
+  onSuccess,
   className,
   disabled,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const [showIframe, setShowIframe] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeLoadCountRef = useRef(0);
 
   const amountLabel = `£${amount.toFixed(2)}`;
+
+  // Listen for iframe loads to detect when it redirects back to our domain
+  const handleIframeLoad = useCallback(() => {
+    iframeLoadCountRef.current += 1;
+    
+    // Skip the first load (blank) and second load (cardstream HPP)
+    // The third+ load is when it redirects back to our domain
+    if (iframeLoadCountRef.current < 2) return;
+
+    try {
+      const iframeUrl = iframeRef.current?.contentWindow?.location?.href;
+      if (!iframeUrl) return;
+
+      // Check if the iframe has navigated to our domain (same-origin)
+      const url = new URL(iframeUrl);
+      const isOurDomain = url.origin === window.location.origin;
+      
+      if (isOurDomain) {
+        const params = url.searchParams;
+        const isSuccess = params.get("npi") === "success" || params.get("payment") === "success";
+        
+        if (isSuccess) {
+          setShowIframe(false);
+          setSubmitting(false);
+          onSuccess?.();
+        } else {
+          const errorMsg = params.get("responseMessage") || "Payment was not successful";
+          setShowIframe(false);
+          setSubmitting(false);
+          onError?.(errorMsg);
+        }
+      }
+    } catch {
+      // Cross-origin error — iframe is still on Cardstream's domain, ignore
+    }
+  }, [onSuccess, onError]);
 
   const handlePay = useCallback(async () => {
     try {
       setSubmitting(true);
+      iframeLoadCountRef.current = 0;
 
       const orderRef = `ED-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const returnUrl = `${window.location.origin}/booking-confirmation?pupilId=${pupilId || ""}&npi=success`;
@@ -75,7 +119,7 @@ export function CardstreamPayButton({
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || "Failed to create checkout session");
 
-      // Build hidden form and auto-submit to Cardstream HPP
+      // Build hidden form and auto-submit into the iframe
       const form = formRef.current;
       if (!form) throw new Error("Form element not found");
 
@@ -83,6 +127,7 @@ export function CardstreamPayButton({
       form.innerHTML = "";
       form.action = data.gatewayUrl;
       form.method = "POST";
+      form.target = "cardstream-hpp-frame";
 
       // Add all signed form fields as hidden inputs
       for (const [key, value] of Object.entries(data.formData as Record<string, string>)) {
@@ -93,18 +138,59 @@ export function CardstreamPayButton({
         form.appendChild(input);
       }
 
-      // Submit — redirects to Cardstream HPP
-      form.submit();
+      // Show iframe first, then submit form into it
+      setShowIframe(true);
+
+      // Small delay to ensure iframe is mounted before form submission
+      requestAnimationFrame(() => {
+        form.submit();
+      });
     } catch (e: any) {
       const msg = e?.message || "Payment failed";
       setSubmitting(false);
+      setShowIframe(false);
       onError?.(msg);
     }
   }, [amount, pupilId, instructorId, customerName, customerEmail, customerPhone, customerAddress, customerPostcode, description, onError]);
 
+  const handleCancel = useCallback(() => {
+    setShowIframe(false);
+    setSubmitting(false);
+  }, []);
+
+  if (showIframe) {
+    return (
+      <div className="w-full space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-foreground">Enter card details below</p>
+          <Button variant="ghost" size="sm" onClick={handleCancel} className="h-7 px-2">
+            <X className="h-4 w-4 mr-1" />
+            Cancel
+          </Button>
+        </div>
+        <div className="w-full rounded-lg border border-border overflow-hidden bg-white">
+          {/* Hidden form that POSTs into the iframe */}
+          <form ref={formRef} style={{ display: "none" }} />
+          <iframe
+            ref={iframeRef}
+            name="cardstream-hpp-frame"
+            title="Secure Card Payment"
+            onLoad={handleIframeLoad}
+            className="w-full border-none"
+            style={{ height: "480px", minHeight: "400px" }}
+            sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation-by-user-activation"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          Secured by Elavon — card details never touch our servers
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {/* Hidden form for HPP redirect */}
+      {/* Hidden form for HPP — will be shown later */}
       <form ref={formRef} style={{ display: "none" }} />
 
       <Button
@@ -117,7 +203,7 @@ export function CardstreamPayButton({
         {submitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Redirecting to secure payment…
+            Loading secure payment…
           </>
         ) : (
           <>
@@ -129,7 +215,7 @@ export function CardstreamPayButton({
       </Button>
 
       <p className="text-xs text-muted-foreground text-center mt-2">
-        You'll be redirected to a secure payment page
+        Secure card payment via Elavon
       </p>
     </div>
   );
