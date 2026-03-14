@@ -117,10 +117,12 @@ serve(async (req) => {
       const amountOwed = Math.abs(Number(pupil.account_balance));
       const formattedAmount = `£${amountOwed.toFixed(2)}`;
       const paymentLink = data.paymentLink || `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/pay/${data.instructorId}?pupil=${pupil.id}`;
+      const phoneToUse = data.manualPhone || pupil.phone;
+      const emailToUse = data.manualEmail || pupil.email;
 
       // --- SMS ---
       if ((method === "sms" || method === "both") && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
-        if (!pupil.phone) {
+        if (!phoneToUse) {
           results.skipped++;
           results.details.push({ name: pupil.name, status: "skipped_sms", error: "No phone number" });
         } else {
