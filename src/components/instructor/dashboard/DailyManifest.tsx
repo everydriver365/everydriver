@@ -59,7 +59,7 @@ export function DailyManifest({ instructorId }: DailyManifestProps) {
         // Fetch pupils with negative balances
         const { data: debtors } = await supabase
           .from("pupils")
-          .select("name, account_balance")
+          .select("id, name, account_balance")
           .eq("instructor_id", instructorId)
           .is("deleted_at", null)
           .lt("account_balance", 0)
@@ -67,7 +67,7 @@ export function DailyManifest({ instructorId }: DailyManifestProps) {
           .limit(5);
 
         if (debtors) {
-          setOverdueBalances(debtors.map(d => ({ name: d.name, balance: Math.abs(d.account_balance || 0) })));
+          setOverdueBalances(debtors.map(d => ({ id: d.id, name: d.name, balance: Math.abs(d.account_balance || 0) })));
         }
       } catch (error) {
         console.error("Error loading manifest:", error);
