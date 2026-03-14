@@ -14,9 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
-import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
