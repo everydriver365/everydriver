@@ -129,6 +129,9 @@ export function CardstreamCheckout({
 
         setOrderRef(data.orderRef);
 
+        // Load jQuery (required by Cardstream Hosted Fields SDK)
+        await loadScript("https://code.jquery.com/jquery-3.7.1.min.js");
+
         // Load Hosted Fields script
         await loadScript(data.hostedFieldsScriptUrl);
         
