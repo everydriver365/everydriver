@@ -145,17 +145,24 @@ export function CardstreamCheckout({
         
         if (cancelled) return;
 
+        // Poll for jQuery + hostedForm availability (up to 2s)
+        let attempts = 0;
+        while (!((window.jQuery || window.$)?.fn?.hostedForm) && attempts < 20) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+
+        const $ = window.jQuery || window.$;
+        if (!$?.fn?.hostedForm) {
+          throw new Error("Secure card fields SDK unavailable — please retry");
+        }
+
         // Render field containers first, then initialize SDK
         setLoading(false);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         await new Promise<void>((resolve) => setTimeout(resolve, 50));
 
         if (cancelled) return;
-
-        const $ = window.jQuery || window.$;
-        if (!$?.fn?.hostedForm) {
-          throw new Error("Secure card fields SDK unavailable");
-        }
 
         const formSelection = $("#cs-payment-form") as {
           hostedForm: (...args: unknown[]) => unknown;
