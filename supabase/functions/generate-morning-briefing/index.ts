@@ -25,7 +25,7 @@ serve(async (req) => {
     // Fetch today's lessons
     const { data: lessons } = await supabase
       .from("scheduled_lessons")
-      .select("id, start_time, duration_minutes, status, pupil_id, pickup_postcode, pupils!inner(name)")
+      .select("id, start_time, duration_minutes, status, pupil_id, pickup_postcode, pupils!inner(id, name)")
       .eq("instructor_id", instructor_id)
       .eq("lesson_date", today)
       .neq("status", "cancelled")
@@ -56,14 +56,34 @@ serve(async (req) => {
       .lte("test_date", weekEnd)
       .order("test_date");
 
+    // Fetch last lesson plan per pupil for today's lessons
+    const todayLessons = await Promise.all(
+      (lessons || []).map(async (lesson) => {
+        const pupil = (lesson as any).pupils;
+        let plan: string | null = null;
+        const { data: lastReview } = await supabase
+          .from("lesson_history")
+          .select("next_lesson_plan")
+          .eq("instructor_id", instructor_id)
+          .eq("pupil_id", pupil.id)
+          .not("next_lesson_plan", "is", null)
+          .order("lesson_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (lastReview?.next_lesson_plan) plan = lastReview.next_lesson_plan;
+        return {
+          time: lesson.start_time?.slice(0, 5),
+          pupilName: pupil.name,
+          plan,
+        };
+      })
+    );
+
     const rate = instructor?.hourly_rate || 35;
     const lessonCount = lessons?.length || 0;
     const totalMinutes = lessons?.reduce((s, l) => s + (l.duration_minutes || 60), 0) || 0;
     const totalHours = totalMinutes / 60;
     const earnings = Math.round(totalHours * rate);
-    const firstLesson = lessons?.[0];
-    const firstTime = firstLesson?.start_time || null;
-    const firstPupil = (firstLesson?.pupils as any)?.name || null;
 
     // Build context for AI summary
     const context = {
@@ -71,8 +91,7 @@ serve(async (req) => {
       lessonCount,
       totalHours: Math.round(totalHours * 10) / 10,
       earnings,
-      firstTime,
-      firstPupil,
+      todayLessons,
       overduePupils: (overduePupils || []).map(p => ({ name: p.name, owed: Math.abs(p.account_balance || 0) })),
       upcomingTests: (upcomingTests || []).map(t => ({ name: t.name, date: t.test_date })),
       instructorName: instructor?.name?.split(" ")[0] || "there",
@@ -94,7 +113,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are ED, a friendly driving instructor assistant. Write a brief, warm morning briefing (3-5 sentences max). Be conversational and encouraging. Use the instructor's first name. Mention key facts: lessons, earnings, any overdue payments, upcoming tests. Keep it under 80 words. Do NOT use markdown.`
+            content: `You are ED, a friendly driving instructor assistant. Write a brief, warm morning briefing (3-5 sentences max). Be conversational and encouraging. Use the instructor's first name. Mention key facts: lessons, earnings, any overdue payments, upcoming tests. For each lesson, mention the pupil's name and time. If a lesson plan exists, briefly mention the focus area. Do NOT invent or guess lesson content when no plan is provided. Keep it under 100 words. Do NOT use markdown.`
           },
           { role: "user", content: JSON.stringify(context) }
         ],
