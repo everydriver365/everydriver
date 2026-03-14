@@ -69,8 +69,8 @@ export function PostcodeAddressLookup({
     }
   }, [showDoorPrompt]);
 
-  const lookupAddresses = useCallback(async (pc: string) => {
-    const clean = pc.trim();
+  const lookupAddresses = useCallback(async (pc?: string) => {
+    const clean = (pc ?? postcode).trim();
     if (!ukPostcodeRegex.test(clean) || clean === lastLookedUp.current) return;
     lastLookedUp.current = clean;
 
@@ -85,8 +85,11 @@ export function PostcodeAddressLookup({
       const results: AddressOption[] = data?.addresses || [];
       setAddresses(results);
       if (results.length > 0) {
-        setShowDropdown(true);
-        setManualEntry(false);
+        // Small delay to let mobile keyboard dismiss and viewport settle
+        setTimeout(() => {
+          setShowDropdown(true);
+          setManualEntry(false);
+        }, 150);
       } else {
         setNoResults(true);
         setManualEntry(true);
@@ -98,7 +101,7 @@ export function PostcodeAddressLookup({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [postcode]);
 
   const handlePostcodeChange = (value: string) => {
     onPostcodeChange(value);
@@ -114,13 +117,14 @@ export function PostcodeAddressLookup({
 
   const handlePostcodeBlur = () => {
     onBlurPostcode?.();
-    lookupAddresses(postcode);
+    // Don't auto-lookup on blur — use the "Find Address" button instead
   };
 
   const handlePostcodeKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      lookupAddresses(postcode);
+      (e.target as HTMLInputElement).blur();
+      lookupAddresses();
     }
   };
 
@@ -174,7 +178,7 @@ export function PostcodeAddressLookup({
         <Label htmlFor="postcodeLookup" className="text-xs">
           Postcode *
         </Label>
-        <div className="relative">
+        <div className="flex gap-2">
           <Input
             id="postcodeLookup"
             value={postcode}
@@ -182,15 +186,25 @@ export function PostcodeAddressLookup({
             onBlur={handlePostcodeBlur}
             onKeyDown={handlePostcodeKeyDown}
             placeholder="SW1A 1AA"
-            className={cn("h-10 pr-9", postcodeError && "border-destructive focus-visible:ring-destructive")}
+            className={cn("h-10 flex-1", postcodeError && "border-destructive focus-visible:ring-destructive")}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            ) : (
-              <Search className="h-4 w-4 text-muted-foreground" />
+          <button
+            type="button"
+            onClick={() => lookupAddresses()}
+            disabled={loading || !ukPostcodeRegex.test(postcode.trim())}
+            className={cn(
+              "h-10 px-3 rounded-md text-sm font-medium flex items-center gap-1.5 shrink-0 transition-colors",
+              "bg-primary text-primary-foreground hover:bg-primary/90",
+              "disabled:opacity-50 disabled:pointer-events-none"
             )}
-          </div>
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            Find Address
+          </button>
         </div>
         {postcodeError && (
           <p className="text-[11px] text-destructive font-medium">{postcodeError}</p>
