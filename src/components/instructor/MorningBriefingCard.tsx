@@ -1,17 +1,3 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Sun, Volume2, VolumeX, RefreshCw, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BriefingActionCards } from "./BriefingActionCards";
-
-interface MorningBriefingCardProps {
-  instructorId: string | undefined;
-  onNavigate?: (section: string) => void;
-}
-
-// Typewriter text component
 import { useState, useEffect, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Sun, Volume2, VolumeX, RefreshCw, X } from "lucide-react";
@@ -25,7 +11,6 @@ interface MorningBriefingCardProps {
   onNavigate?: (section: string) => void;
 }
 
-// Typewriter text component
 const TypewriterText = forwardRef<HTMLParagraphElement, { text: string }>(({ text }, ref) => {
   const words = text.split(" ");
   return (
@@ -194,7 +179,6 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
             ) : null}
           </div>
 
-          {/* Action Cards + Stats */}
           {briefing && (
             <BriefingActionCards
               briefingText={briefing}
