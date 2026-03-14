@@ -346,7 +346,7 @@ export function CardstreamCheckout({
         </div>
       )}
 
-      {/* Card Payment via HPP redirect */}
+      {/* Card Payment via HPP in iframe */}
       <CardstreamPayButton
         amount={amount}
         pupilId={pupilId}
@@ -358,6 +358,7 @@ export function CardstreamCheckout({
         customerPostcode={customerPostcode}
         description="Payment"
         onError={(msg) => toast.error(msg)}
+        onSuccess={() => onPaid?.()}
         disabled={paying}
       />
 
