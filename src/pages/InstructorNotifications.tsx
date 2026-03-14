@@ -59,7 +59,7 @@ export default function InstructorNotifications() {
     <div className="min-h-screen bg-primary">
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="bg-background min-h-screen px-4 py-4 space-y-4">
         {/* Messages tile - always visible */}
         <button
           onClick={() => navigate("/instructor/messages")}
