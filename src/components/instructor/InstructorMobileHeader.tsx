@@ -38,11 +38,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { instructor, signOut } = useInstructorAuth();
-  const [qrOpen, setQrOpen] = useState(false);
-  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
-  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
-  const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const { total: totalNotifCount } = useCombinedNotificationCount(instructor?.id);
 
