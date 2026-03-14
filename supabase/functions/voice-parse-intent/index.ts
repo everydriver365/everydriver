@@ -137,8 +137,14 @@ Return a JSON tool call with one of these actions:
     Parameters: none
     Examples: "How many hours am I teaching today?", "Total hours today", "How long am I working today?"
 
-30. unknown - Could not understand the command
+30. general_query - Answer a general question about the instructor's business, schedule, car, areas, pricing, or anything else that doesn't match a specific command above
     Parameters: original_text (string)
+    Examples: "What areas do I cover?", "Do you do automatic?", "What car do I teach in?", "How much do I charge?", "What's my phone number?", "Am I insured?", "What transmission do I teach?"
+
+31. unknown - Could not understand the command
+    Parameters: original_text (string)
+
+IMPORTANT: Prefer general_query over unknown when the user asks a question. Only use unknown for truly unintelligible speech.
 
 Match pupil names fuzily (e.g. "sara" matches "Sarah Jones"). Pick the closest match from the available pupils list.`;
 
