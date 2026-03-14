@@ -53,6 +53,8 @@ export function TakePaymentModal({
   const [sendViaEmail, setSendViaEmail] = useState(false);
   const [sending, setSending] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const [manualPhone, setManualPhone] = useState("");
+  const [manualEmail, setManualEmail] = useState("");
 
   const parsedAmount = parseFloat(amount) || 0;
   const { adminFee, totalCharge, hasFee } = useAdminFee(parsedAmount, commissionPayer);
