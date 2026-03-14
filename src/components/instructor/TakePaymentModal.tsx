@@ -17,7 +17,7 @@ import { useAdminFee } from "@/hooks/useAdminFee";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type View = "picker" | "qr" | "card" | "link";
+type View = "picker" | "qr" | "card" | "card-entry" | "link";
 
 interface Pupil {
   id: string;
@@ -70,7 +70,11 @@ export function TakePaymentModal({
   };
 
   const handleBack = () => {
-    setView("picker");
+    if (view === "card-entry") {
+      setView("card");
+    } else {
+      setView("picker");
+    }
   };
 
 
@@ -144,16 +148,18 @@ export function TakePaymentModal({
               </button>
             )}
             <div>
-              <DialogTitle className="text-base">
+               <DialogTitle className="text-base">
                 {view === "picker" && "Take Payment"}
                 {view === "qr" && "QR Code"}
                 {view === "card" && "Card Entry"}
+                {view === "card-entry" && "Enter Card Details"}
                 {view === "link" && "Send Payment Link"}
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {view === "picker" && "Choose a payment method"}
                 {view === "qr" && "Pupil scans to pay"}
                 {view === "card" && "Enter card details manually"}
+                {view === "card-entry" && "Complete payment"}
                 {view === "link" && "Send a link via SMS or email"}
               </DialogDescription>
             </div>
@@ -255,20 +261,36 @@ export function TakePaymentModal({
                 </div>
               )}
 
-              {parsedAmount > 0 && selectedPupilId && (
-                <CardstreamCheckout
-                  amount={totalCharge}
-                  pupilId={selectedPupilId}
-                  instructorId={instructorId}
-                  customerName={selectedPupil?.name}
-                  customerEmail={selectedPupil?.email || undefined}
-                  merchantIdForHPF=""
-                  onPaid={() => {
-                    toast.success("Payment successful!");
-                    handleClose(false);
-                  }}
-                />
-              )}
+              <Button
+                className="w-full"
+                disabled={!selectedPupilId || parsedAmount <= 0}
+                onClick={() => setView("card-entry")}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Continue to Payment
+              </Button>
+            </div>
+          )}
+
+          {/* === Card Entry === */}
+          {view === "card-entry" && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/50 p-3 flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">{selectedPupil?.name}</span>
+                <span className="font-semibold">£{totalCharge.toFixed(2)}</span>
+              </div>
+              <CardstreamCheckout
+                amount={totalCharge}
+                pupilId={selectedPupilId}
+                instructorId={instructorId}
+                customerName={selectedPupil?.name}
+                customerEmail={selectedPupil?.email || undefined}
+                merchantIdForHPF=""
+                onPaid={() => {
+                  toast.success("Payment successful!");
+                  handleClose(false);
+                }}
+              />
             </div>
           )}
 
