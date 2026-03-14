@@ -109,6 +109,8 @@ export function CardstreamCheckout({
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const hostedFieldsRef = useRef<HostedFieldsInstance | null>(null);
   const [fieldsReady, setFieldsReady] = useState(false);
+  const [sdkError, setSdkError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const canApplePay = useMemo(() => {
     return typeof window !== 'undefined' && 
