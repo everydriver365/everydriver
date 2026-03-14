@@ -137,7 +137,7 @@ serve(async (req) => {
                   "Content-Type": "application/x-www-form-urlencoded",
                 },
                 body: new URLSearchParams({
-                  To: pupil.phone,
+                  To: phoneToUse,
                   From: twilioPhoneNumber,
                   Body: message,
                 }),
