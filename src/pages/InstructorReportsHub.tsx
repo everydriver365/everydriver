@@ -51,10 +51,10 @@ export default function InstructorReportsHub() {
           { label: "Total Earnings", value: totalEarnings.toFixed(2) },
         ];
         reportData.transactions = (lessons || []).map((l: any) => ({
-          date: l.date,
+          date: l.lesson_date,
           pupil: l.pupils?.name || "Unknown",
           type: "Lesson",
-          amount: (l.price || 0).toFixed(2),
+          amount: (l.amount_due || 0).toFixed(2),
         }));
       }
 
