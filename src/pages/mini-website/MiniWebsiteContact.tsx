@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, Mail, MapPin, Globe, Facebook, Instagram, Twitter, Linkedin, Calendar, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { WaitlistJoinCard } from "@/components/mini-website/WaitlistJoinCard";
 
 interface MiniWebsiteContactProps {
   subdomainSlug?: string | null;
@@ -215,6 +216,14 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
               headingColor={headingColor}
               textColor={textColor}
             />
+
+            {/* Waitlist card when availability paused */}
+            {instructor.availability_paused && (
+              <WaitlistJoinCard
+                instructorId={instructor.id}
+                instructorName={instructor.business_name || instructor.name}
+              />
+            )}
           </div>
         </div>
       </section>

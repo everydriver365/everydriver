@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, eachDayOfInterval, getDay } from "date-fns";
+import { format, eachDayOfInterval, getDay, startOfMonth, endOfMonth, addMonths, isSameDay } from "date-fns";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const WEEKS = [
@@ -143,6 +143,7 @@ export function AvailabilityRulesManager({ instructorId }: Props) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
+
         <CardTitle className="text-base flex items-center gap-2">
           <CalendarOff className="h-4 w-4 text-primary" />
           Availability Rules
@@ -241,7 +242,53 @@ export function AvailabilityRulesManager({ instructorId }: Props) {
             ))}
           </div>
         )}
+
+        {/* Calendar Preview */}
+        {rules.length > 0 && <CalendarPreview rules={rules} />}
       </CardContent>
     </Card>
+  );
+}
+
+function CalendarPreview({ rules }: { rules: Rule[] }) {
+  const today = new Date();
+  const monthStart = startOfMonth(today);
+  const monthEnd = endOfMonth(today);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  const blockedDates = new Set<string>();
+  rules.forEach(rule => {
+    if (rule.rule_type === "holiday_block" && rule.start_date) {
+      const end = rule.end_date || rule.start_date;
+      eachDayOfInterval({ start: new Date(rule.start_date), end: new Date(end) }).forEach(d => {
+        blockedDates.add(format(d, "yyyy-MM-dd"));
+      });
+    }
+  });
+
+  const startPad = (monthStart.getDay() + 6) % 7; // Monday-start
+
+  return (
+    <div className="mt-4 pt-4 border-t">
+      <p className="text-xs text-muted-foreground mb-2">{format(today, "MMMM yyyy")} — blocked days in red</p>
+      <div className="grid grid-cols-7 gap-0.5 text-center">
+        {["M","T","W","T","F","S","S"].map((d, i) => (
+          <div key={i} className="text-[10px] text-muted-foreground font-medium py-1">{d}</div>
+        ))}
+        {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} />)}
+        {days.map(day => {
+          const isBlocked = blockedDates.has(format(day, "yyyy-MM-dd"));
+          const isToday = isSameDay(day, today);
+          return (
+            <div
+              key={day.toISOString()}
+              className={`text-[11px] py-1 rounded ${isBlocked ? "bg-destructive/20 text-destructive font-semibold" : ""} ${isToday ? "ring-1 ring-primary" : ""}`}
+            >
+              {day.getDate()}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

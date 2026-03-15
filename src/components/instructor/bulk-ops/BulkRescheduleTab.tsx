@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, Loader2, ArrowRight } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -127,10 +128,29 @@ export function BulkRescheduleTab({ instructorId }: BulkRescheduleTabProps) {
               ))}
             </div>
 
-            <Button onClick={handleReschedule} disabled={saving || !targetDate || selectedLessons.length === 0} className="w-full gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-              Move {selectedLessons.length} Lesson{selectedLessons.length !== 1 ? "s" : ""} to {targetDate ? format(new Date(targetDate), "dd MMM") : "..."}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={saving || !targetDate || selectedLessons.length === 0} className="w-full gap-2">
+                  <ArrowRight className="h-4 w-4" />
+                  Move {selectedLessons.length} Lesson{selectedLessons.length !== 1 ? "s" : ""} to {targetDate ? format(new Date(targetDate), "dd MMM") : "..."}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Reschedule</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will move {selectedLessons.length} lesson{selectedLessons.length !== 1 ? "s" : ""} from {sourceDate ? format(new Date(sourceDate), "EEE dd MMM") : "..."} to {targetDate ? format(new Date(targetDate), "EEE dd MMM") : "..."}. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReschedule} disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
 

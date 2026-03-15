@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, GraduationCap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, GraduationCap, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { DVSA_SYLLABUS, SYLLABUS_CATEGORIES } from "@/constants/dvsaSyllabus";
 
 interface ParentSyllabusOverviewProps {
@@ -44,6 +46,26 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
   const testReadyCount = DVSA_SYLLABUS.filter(c => (progressMap[c.id] || 0) >= 4).length;
   const testReadiness = Math.round((testReadyCount / DVSA_SYLLABUS.length) * 100);
 
+  const [exporting, setExporting] = useState(false);
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-pdf", {
+        body: { report_type: "progress", instructor_id: null, data: { title: `Progress Report — ${childName}`, pupil_name: childName, test_readiness: testReadiness, categories: categoryData } },
+      });
+      if (error) throw error;
+      const link = document.createElement("a");
+      link.href = `data:application/pdf;base64,${data.pdf_base64}`;
+      link.download = data.filename || `${childName}-progress.pdf`;
+      link.click();
+      toast.success("Progress report downloaded!");
+    } catch {
+      toast.error("Failed to export progress report");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Category progress
   const categoryData = SYLLABUS_CATEGORIES.map(category => {
     const competencies = DVSA_SYLLABUS.filter(c => c.category === category);
@@ -61,9 +83,14 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
             <GraduationCap className="h-4 w-4 text-primary" />
             DVSA Syllabus Progress
           </CardTitle>
-          <Badge variant={testReadiness >= 80 ? "default" : "secondary"}>
-            {testReadiness}% Test Ready
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={testReadiness >= 80 ? "default" : "secondary"}>
+              {testReadiness}% Test Ready
+            </Badge>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleExportPDF} disabled={exporting}>
+              {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

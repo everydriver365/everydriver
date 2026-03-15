@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PoundSterling, Loader2, Check } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -111,10 +112,29 @@ export function BulkPriceUpdateTab({ instructorId }: BulkPriceUpdateTabProps) {
           </div>
         )}
 
-        <Button onClick={handleUpdate} disabled={saving || !newPrice || selectedPupils.length === 0} className="w-full gap-2">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-          Update {selectedPupils.length} Pupil{selectedPupils.length !== 1 ? "s" : ""} to £{newPrice || "..."}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button disabled={saving || !newPrice || selectedPupils.length === 0} className="w-full gap-2">
+              <Check className="h-4 w-4" />
+              Update {selectedPupils.length} Pupil{selectedPupils.length !== 1 ? "s" : ""} to £{newPrice || "..."}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Price Update</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will change the lesson price for {selectedPupils.length} pupil{selectedPupils.length !== 1 ? "s" : ""} to £{newPrice}. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleUpdate} disabled={saving}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code, Car } from "lucide-react";
+import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code, Car, Pencil } from "lucide-react";
 import { CarStickerGenerator } from "@/components/instructor/CarStickerGenerator";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -7,6 +7,7 @@ import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
 import { WordPressEmbedSnippet } from "@/components/instructor/WordPressEmbedSnippet";
+import { WebsitePageEditor } from "@/components/instructor/WebsitePageEditor";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -120,7 +121,7 @@ export default function InstructorMiniWebsiteSettings() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="pages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
               <Layout className="h-4 w-4" />
               <span className="hidden sm:inline">Pages</span>
@@ -136,6 +137,10 @@ export default function InstructorMiniWebsiteSettings() {
             <TabsTrigger value="sticker" className="gap-1.5 text-xs sm:text-sm">
               <Car className="h-4 w-4" />
               <span className="hidden sm:inline">Sticker</span>
+            </TabsTrigger>
+            <TabsTrigger value="editor" className="gap-1.5 text-xs sm:text-sm">
+              <Pencil className="h-4 w-4" />
+              <span className="hidden sm:inline">Editor</span>
             </TabsTrigger>
             <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm">
               <Code className="h-4 w-4" />
@@ -234,6 +239,11 @@ export default function InstructorMiniWebsiteSettings() {
               logoUrl={authInstructor?.logo_url || null}
               brandColour={authInstructor?.brand_colour || null}
             />
+          </TabsContent>
+
+          {/* Page Editor Tab */}
+          <TabsContent value="editor">
+            <WebsitePageEditor instructorId={instructorId} />
           </TabsContent>
 
           {/* Embed Tab */}
