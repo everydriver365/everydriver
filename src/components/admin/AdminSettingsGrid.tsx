@@ -383,8 +383,44 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
     },
   ];
 
+  // Build "needs attention" items from non-zero badge counts
+  const attentionItems = [
+    { key: "enquiries", label: "Enquiries", count: badgeCounts.enquiries, icon: Headphones, color: "text-red-500 bg-red-500/10" },
+    { key: "instructor-messages", label: "Instructor Msgs", count: badgeCounts.instructorMessages, icon: Mail, color: "text-amber-500 bg-amber-500/10" },
+    { key: "live-chat", label: "Visitor Chats", count: badgeCounts.liveChats, icon: Headphones, color: "text-emerald-500 bg-emerald-500/10" },
+    { key: "email", label: "Unread Emails", count: badgeCounts.emails, icon: Mail, color: "text-blue-500 bg-blue-500/10" },
+    { key: "instructor-payouts", label: "Pending Payouts", count: badgeCounts.pendingPayouts, icon: CreditCard, color: "text-purple-500 bg-purple-500/10" },
+  ].filter(i => i.count > 0);
+
   return (
     <div className="space-y-8">
+      {/* Needs Attention Strip */}
+      {attentionItems.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-destructive/70 flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+            Needs Attention
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {attentionItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => onNavigate(item.key)}
+                className="flex items-center gap-3 p-3 bg-card rounded-xl border border-destructive/20 hover:border-destructive/40 hover:shadow-sm transition-all text-left w-full group"
+              >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-lg shrink-0 ${item.color}`}>
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold leading-none">{item.count}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.label}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Tiles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {statTiles.map((tile) => (
