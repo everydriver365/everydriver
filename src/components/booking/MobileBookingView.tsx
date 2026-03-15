@@ -30,6 +30,8 @@ import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanne
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
+import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
+import { useAdminFee } from "@/hooks/useAdminFee";
 
 
 interface Instructor {
