@@ -807,7 +807,7 @@ export function MobileBookingView({
         <div className="px-4 pb-4">
           <UpsellSelector
             upsells={availableUpsells}
-            selectedIds={selectedUpsells}
+            selectedUpsells={selectedUpsells}
             onSelectionChange={onUpsellsChange}
           />
         </div>
