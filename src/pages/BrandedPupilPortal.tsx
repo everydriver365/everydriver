@@ -2,18 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Calendar, Clock, Phone, MessageSquare, CreditCard, 
-  BookOpen, Car, History, ChevronRight, AlertCircle,
-  Loader2, MapPin, User, StickyNote, Sparkles, TrendingUp,
-  Route, Video, Gauge
+  Phone, MessageSquare, AlertCircle,
+  ChevronRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 import { toast } from "@/hooks/use-toast";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { PupilMobileHeader } from "@/components/pupil-portal/PupilMobileHeader";
 import { PupilBottomNav } from "@/components/pupil-portal/PupilBottomNav";
 import { PupilPortalLessonCountdown } from "@/components/pupil-portal/PupilPortalLessonCountdown";
@@ -27,7 +23,6 @@ import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
 import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
-import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PupilPortalProfileEdit } from "@/components/pupil-portal/PupilPortalProfileEdit";
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
@@ -36,9 +31,7 @@ import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PupilDashboardInsights } from "@/components/pupil-portal/PupilDashboardInsights";
 import { PupilAICoaching } from "@/components/pupil-portal/PupilAICoaching";
 import { PupilTestRequests } from "@/components/test-requests/PupilTestRequests";
-import { RefreshCw, PenLine, CalendarPlus } from "lucide-react";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
-import { PupilFeedbackPrompt } from "@/components/pupil-portal/PupilFeedbackPrompt";
 import { PupilEndOfLessonWizard } from "@/components/pupil-portal/PupilEndOfLessonWizard";
 import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { AchievementBadges } from "@/components/pupil-portal/AchievementBadges";
@@ -64,6 +57,12 @@ import { PupilDashboardSkeleton } from "@/components/ui/skeletons/PupilDashboard
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { PostLessonRating } from "@/components/pupil-portal/PostLessonRating";
 import { PassShareCard } from "@/components/pupil-portal/PassShareCard";
+import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
+import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
+import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
+import { GroupedNavMenu } from "@/components/pupil-portal/GroupedNavMenu";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface InstructorBranding {
   id: string;
@@ -107,6 +106,26 @@ interface Pupil {
 
 type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell';
 
+const sectionTitles: Record<string, string> = {
+  schedule: "My Lessons",
+  payments: "Payments",
+  theory: "Theory",
+  progress: "My Progress",
+  history: "Lesson History",
+  gaps: "Available Slots",
+  messages: "Messages",
+  profile: "My Profile",
+  notes: "My Notes",
+  coaching: "AI Coaching",
+  "test-requests": "Test Swap",
+  reflections: "My Reflections",
+  book: "Book a Lesson",
+  "lesson-tracks": "Lesson Tracks",
+  "lesson-videos": "Lesson Videos",
+  "driving-style": "Driving Style",
+  "show-tell": "Show Me / Tell Me",
+};
+
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -119,6 +138,7 @@ export default function BrandedPupilPortal() {
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(true);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Handle payment return params
@@ -241,7 +261,6 @@ export default function BrandedPupilPortal() {
     setActiveSection('home');
   };
 
-  // Wallpaper color - use brand-derived light tint or default
   const wallpaperColor = effectiveDarkMode ? '#111111' : '#E8F1FE';
 
   if (loading) {
@@ -268,39 +287,25 @@ export default function BrandedPupilPortal() {
   if (!instructor) return null;
 
   const isSubPage = activeSection !== 'home';
-  
-  // Drive365 standard blue for portal chrome; instructor colour for tile accents only
   const drive365Blue = '#141b43';
-
-  // Section back handler
   const handleBack = () => { setBookingRequested(false); setActiveSection('home'); };
 
-  // Render a sub-page wrapper with back button
-  const renderSubPage = (content: React.ReactNode) => (
-    <div className="p-4">
-      <button 
-        onClick={handleBack}
-        className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors"
-      >
-        ← Back
-      </button>
-      {content}
-    </div>
-  );
+  // Compute payment badge
+  const paymentBadge = pupil && (pupil.account_balance || 0) < 0
+    ? `£${Math.abs(pupil.account_balance!).toFixed(0)}`
+    : undefined;
 
   return (
     <div 
       className="min-h-screen transition-colors"
       style={{ backgroundColor: wallpaperColor }}
     >
-      {/* iOS Install Banner */}
       <PortalIOSInstallBanner 
         appName={instructor.name}
         storageKey={`ios-install-pupil-${instructor.id}`}
         primaryColor={'#141b43'}
       />
 
-      {/* Header */}
       <PupilMobileHeader
         pupilName={pupil?.name}
         pupilImageUrl={pupil?.profile_image_url}
@@ -308,17 +313,15 @@ export default function BrandedPupilPortal() {
         instructorLogoUrl={instructor.logo_url}
         brandColour="#141b43"
         showBackButton={isSubPage}
-        title={activeSection !== 'home' ? activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/-/g, ' ') : undefined}
+        title={isSubPage ? sectionTitles[activeSection] || activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/-/g, ' ') : undefined}
         darkMode={effectiveDarkMode}
         onToggleDarkMode={toggleDarkMode}
         onLogout={pupil ? handleLogout : undefined}
         onAvatarClick={() => setDetailsOpen(true)}
       />
 
-      {/* Main Content */}
       <main className="pb-20">
         {!pupil ? (
-          /* Sign In Screen */
           <div className="p-4 max-w-md mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -337,10 +340,7 @@ export default function BrandedPupilPortal() {
                 <Button 
                   className="w-full h-12 text-base"
                   onClick={() => navigate("/pupil/login")}
-                    style={{ 
-                      backgroundColor: '#141b43',
-                    color: '#ffffff'
-                  }}
+                  style={{ backgroundColor: '#141b43', color: '#ffffff' }}
                 >
                   Sign In
                   <ChevronRight className="ml-2 h-4 w-4" />
@@ -350,30 +350,19 @@ export default function BrandedPupilPortal() {
                 </p>
               </InstructorCard>
 
-              {/* Contact if issues */}
               <div className="mt-6 text-center">
                 <p className="text-sm mb-2 text-muted-foreground">
                   Having trouble? Contact your instructor:
                 </p>
                 <div className="flex justify-center gap-3">
                   {instructor.phone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = `tel:${instructor.phone}`}
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call
+                    <Button variant="outline" size="sm" onClick={() => window.location.href = `tel:${instructor.phone}`}>
+                      <Phone className="h-4 w-4 mr-2" />Call
                     </Button>
                   )}
                   {instructor.phone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = `sms:${instructor.phone}`}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Text
+                    <Button variant="outline" size="sm" onClick={() => window.location.href = `sms:${instructor.phone}`}>
+                      <MessageSquare className="h-4 w-4 mr-2" />Text
                     </Button>
                   )}
                 </div>
@@ -381,7 +370,6 @@ export default function BrandedPupilPortal() {
             </motion.div>
           </div>
         ) : (
-          /* Logged In Pupil View */
           <AnimatePresence mode="wait">
             {activeSection === 'home' && (
               <motion.div
@@ -390,162 +378,75 @@ export default function BrandedPupilPortal() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                {/* Welcome Tour */}
                 <PupilWelcomeTour pupilId={pupil.id} />
                 
                 <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
                 <div className="p-4 space-y-4">
-                {/* iOS Greeting */}
-                <div className="pt-1">
-                  <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
-                  <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
-                </div>
+                  {/* iOS Greeting */}
+                  <div className="pt-1">
+                    <p className="text-xs text-muted-foreground">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</p>
+                    <h1 className="text-xl font-bold text-foreground">Hi {pupil.name.split(' ')[0]} 👋</h1>
+                  </div>
 
-                {/* Live Slot Offers */}
-                <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
+                  {/* ═══ ZONE 1: RIGHT NOW ═══ */}
+                  <SlotOfferNotification pupilId={pupil.id} onAccept={() => setActiveSection('schedule')} />
+                  <PupilCheckInCard pupilId={pupil.id} />
+                  <PushNotificationBanner pupilId={pupil.id} brandColour={drive365Blue} />
 
-                {/* Lesson Check-In */}
-                <PupilCheckInCard pupilId={pupil.id} />
+                  {instructor.lesson_feedback_enabled !== false && (
+                    <PupilEndOfLessonWizard pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
+                  )}
+                  <PostLessonRating pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
+                  <LessonSummaryCard pupilId={pupil.id} />
+                  <LessonPrepChecklist pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
 
-                {/* Push Notification Banner */}
-                <PushNotificationBanner 
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                />
-
-                {/* End-of-Lesson Wizard (replaces simple feedback prompt) */}
-                {instructor.lesson_feedback_enabled !== false && (
-                  <PupilEndOfLessonWizard
+                  <PupilPortalLessonCountdown
                     pupilId={pupil.id}
                     instructorId={instructor.id}
                     brandColour={drive365Blue}
+                    darkMode={instructor.pupil_app_dark_mode}
+                    onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
                   />
-                )}
 
-                {/* Post-Lesson Star Rating (Uber pattern) */}
-                <PostLessonRating
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={drive365Blue}
-                />
+                  {/* Test Countdown */}
+                  <TestCountdownCard pupilId={pupil.id} brandColour={drive365Blue} />
 
-                {/* Last Lesson Summary */}
-                <LessonSummaryCard pupilId={pupil.id} />
+                  {/* ═══ ZONE 2: YOUR STATS (collapsible) ═══ */}
+                  <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
+                    <CollapsibleTrigger className="w-full flex items-center justify-between py-2">
+                      <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">Your Progress</span>
+                      <motion.div animate={{ rotate: statsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground/60" />
+                      </motion.div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4">
+                      <PupilWidgetGrid
+                        pupil={{
+                          lessons_completed: pupil.lessons_completed,
+                          progress: pupil.progress,
+                          account_balance: pupil.account_balance,
+                          prepaid_hours: pupil.prepaid_hours,
+                        }}
+                        brandColour={drive365Blue}
+                        onNavigate={(section) => setActiveSection(section as ActiveSection)}
+                      />
+                      <LessonStreakCard pupilId={pupil.id} brandColour={drive365Blue} />
+                      <AchievementBadges pupilId={pupil.id} brandColour={drive365Blue} />
+                    </CollapsibleContent>
+                  </Collapsible>
 
-                {/* Lesson Prep Checklist */}
-                <LessonPrepChecklist
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={drive365Blue}
-                />
+                  <WhatsNewModal portalType="pupil" userId={pupil.id} />
 
-                {/* Lesson Countdown */}
-                <PupilPortalLessonCountdown
-                  pupilId={pupil.id} 
-                  instructorId={instructor.id}
-                  brandColour={drive365Blue}
-                  darkMode={instructor.pupil_app_dark_mode}
-                  onBookLesson={() => { setBookingRequested(true); setActiveSection('schedule'); }}
-                />
+                  {/* ═══ ZONE 3: QUICK ACCESS ═══ */}
+                  <GroupedNavMenu
+                    onNavigate={(section) => setActiveSection(section as ActiveSection)}
+                    brandColour={instructor.brand_colour || drive365Blue}
+                    selfBookingEnabled={instructor.pupil_self_booking_enabled ?? false}
+                    reflectiveLogsEnabled={instructor.reflective_logs_enabled !== false}
+                  />
 
-                {/* Widget Grid — replaces static stats strip */}
-                <PupilWidgetGrid
-                  pupil={{
-                    lessons_completed: pupil.lessons_completed,
-                    progress: pupil.progress,
-                    account_balance: pupil.account_balance,
-                    prepaid_hours: pupil.prepaid_hours,
-                  }}
-                  brandColour={drive365Blue}
-                  onNavigate={(section) => setActiveSection(section as ActiveSection)}
-                />
-
-                {/* Journey Timeline */}
-                <PupilJourneyTimeline
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                />
-
-                {/* Personal Goals */}
-                <PupilGoals
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                  lessonsCompleted={pupil.lessons_completed}
-                  progress={pupil.progress}
-                />
-
-                {/* Lesson Streak */}
-                <LessonStreakCard
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                />
-
-                {/* Achievement Badges */}
-                <AchievementBadges
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                />
-
-                {/* What's New */}
-                <WhatsNewModal portalType="pupil" userId={pupil.id} />
-
-                {/* AI Driving Insights */}
-                <PupilDashboardInsights
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={drive365Blue}
-                />
-
-                {/* Navigation Menu — iOS List Style */}
-                <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
-                  {[
-                    { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
-                    { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'Book, reschedule & manage' },
-                    ...(instructor.pupil_self_booking_enabled ? [{ id: 'book' as const, icon: CalendarPlus, label: 'Book a Lesson', desc: 'Find available slots' }] : []),
-                    { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with instructor' },
-                    { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal & shared notes' },
-                    ...(instructor.reflective_logs_enabled !== false ? [{ id: 'reflections' as const, icon: PenLine, label: 'My Reflections', desc: 'Reflect on lessons' }] : []),
-                    { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & history' },
-                    { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & revision' },
-                    { id: 'show-tell' as const, icon: Car, label: 'Show Me / Tell Me', desc: 'Vehicle safety questions' },
-                    { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised insights' },
-                    { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
-                    { id: 'lesson-tracks' as const, icon: Route, label: 'Lesson Tracks', desc: 'View your lesson routes' },
-                    { id: 'lesson-videos' as const, icon: Video, label: 'Lesson Videos', desc: 'Watch lesson recordings' },
-                    { id: 'driving-style' as const, icon: Gauge, label: 'Driving Style', desc: 'Speeds, braking & reports' },
-                    { id: 'test-requests' as const, icon: RefreshCw, label: 'Test Swap', desc: 'Request or swap test' },
-                    { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveSection(item.id)}
-                      className="w-full flex items-center gap-3.5 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
-                    >
-                      <div 
-                        className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: `${instructor.brand_colour || 'hsl(var(--primary))'}15` }}
-                      >
-                        <item.icon className="h-4.5 w-4.5" style={{ color: instructor.brand_colour || 'hsl(var(--primary))' }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-foreground">{item.label}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.desc}</div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-                    </button>
-                  ))}
-                </div>
-
-                {/* Referral Card */}
-                <ReferralCard 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  instructorSlug={slug}
-                  brandColour={drive365Blue}
-                />
-
-                {/* Contact Instructor */}
-                <PupilPortalContact instructor={instructor} />
+                  <ReferralCard pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug} brandColour={drive365Blue} />
+                  <PupilPortalContact instructor={instructor} />
                 </div>
                 </PullToRefresh>
               </motion.div>
@@ -553,15 +454,10 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'schedule' && (
               <motion.div key="schedule" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="My Lessons" onBack={handleBack} />
                 <PupilPortalSchedule 
-                  pupilId={pupil.id}
-                  instructorId={instructor.id}
-                  brandColour={drive365Blue}
-                  darkMode={instructor.pupil_app_dark_mode}
-                  instructorPhone={instructor.phone}
+                  pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue}
+                  darkMode={instructor.pupil_app_dark_mode} instructorPhone={instructor.phone}
                   initialShowBooking={bookingRequested}
                 />
               </motion.div>
@@ -569,28 +465,15 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'payments' && (
               <motion.div key="payments" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
-                <PupilPaymentFeed
-                  pupilId={pupil.id}
-                  brandColour={drive365Blue}
-                  currentBalance={pupil.account_balance}
-                />
+                <SubPageHeader title="Payments" onBack={handleBack} />
+                <PupilPaymentFeed pupilId={pupil.id} brandColour={drive365Blue} currentBalance={pupil.account_balance} />
                 <div className="px-4 pt-4">
                   <PupilPortalPayments 
-                    pupilId={pupil.id}
-                    instructorId={instructor.id}
-                    instructorSlug={slug}
-                    brandColour={drive365Blue}
-                    darkMode={instructor.pupil_app_dark_mode}
-                    accountBalance={pupil.account_balance}
-                    prepaidHours={pupil.prepaid_hours}
-                    pupilName={pupil.name}
-                    pupilEmail={pupil.email}
-                    pupilPhone={pupil.phone}
-                    onBalanceUpdate={() => fetchPupil(pupil.id)}
-                    paymentQrUrl={instructor.payment_qr_url}
+                    pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug}
+                    brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode}
+                    accountBalance={pupil.account_balance} prepaidHours={pupil.prepaid_hours}
+                    pupilName={pupil.name} pupilEmail={pupil.email} pupilPhone={pupil.phone}
+                    onBalanceUpdate={() => fetchPupil(pupil.id)} paymentQrUrl={instructor.payment_qr_url}
                     paymentQrUrlPupilPays={instructor.payment_qr_url_pupil_pays}
                     paymentQrUrlInstructorPays={instructor.payment_qr_url_instructor_pays}
                     paymentLinkBaseUrl={instructor.payment_link_base_url}
@@ -602,13 +485,8 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'theory' && (
               <motion.div key="theory" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
-                <PupilPortalTheory 
-                  brandColour={drive365Blue}
-                  darkMode={instructor.pupil_app_dark_mode}
-                />
+                <SubPageHeader title="Theory" onBack={handleBack} />
+                <PupilPortalTheory brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4 space-y-4">
                   <TheoryStreakTracker pupilId={pupil.id} brandColour={drive365Blue} />
                   <TheoryMockTest pupilId={pupil.id} />
@@ -620,18 +498,14 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'progress' && (
               <motion.div key="progress" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="My Progress" onBack={handleBack} />
                 <PupilPortalProgress pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'coaching' && (
               <motion.div key="coaching" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="AI Coaching" onBack={handleBack} />
                 <PupilAICoaching pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
@@ -644,9 +518,7 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'history' && (
               <motion.div key="history" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Lesson History" onBack={handleBack} />
                 <PupilPortalHistory pupilId={pupil.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
                 <div className="px-4 pb-4">
                   <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
@@ -656,8 +528,8 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'show-tell' && (
               <motion.div key="show-tell" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                <SubPageHeader title="Show Me / Tell Me" onBack={handleBack} />
+                <div className="px-4">
                   <ShowMeTellMeSection pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
@@ -665,35 +537,29 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'gaps' && (
               <motion.div key="gaps" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Available Slots" onBack={handleBack} />
                 <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'notes' && (
               <motion.div key="notes" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="My Notes" onBack={handleBack} />
                 <PupilNotes pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} instructorName={instructor.name} />
               </motion.div>
             )}
 
             {activeSection === 'test-requests' && (
               <motion.div key="test-requests" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Test Swap" onBack={handleBack} />
                 <PupilTestRequests pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
             {activeSection === 'reflections' && (
               <motion.div key="reflections" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
+                <SubPageHeader title="My Reflections" onBack={handleBack} />
+                <div className="px-4">
                   <ReflectiveLog pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
               </motion.div>
@@ -701,18 +567,14 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'book' && (
               <motion.div key="book" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Book a Lesson" onBack={handleBack} />
                 <PupilPortalGaps pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} darkMode={instructor.pupil_app_dark_mode} />
               </motion.div>
             )}
 
             {activeSection === 'lesson-tracks' && (
               <motion.div key="lesson-tracks" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Lesson Tracks" onBack={handleBack} />
                 <div className="px-4 pb-4">
                   <PupilRouteHistory pupilId={pupil.id} brandColour={drive365Blue} />
                 </div>
@@ -721,36 +583,41 @@ export default function BrandedPupilPortal() {
 
             {activeSection === 'lesson-videos' && (
               <motion.div key="lesson-videos" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Lesson Videos" onBack={handleBack} />
                 <PupilLessonVideos pupilId={pupil.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
             {activeSection === 'driving-style' && (
               <motion.div key="driving-style" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="p-4">
-                  <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                </div>
+                <SubPageHeader title="Driving Style" onBack={handleBack} />
                 <PupilDrivingStyleReport pupilId={pupil.id} brandColour={drive365Blue} />
               </motion.div>
             )}
 
             {activeSection === 'profile' && (
-              <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-4">
-                <button onClick={handleBack} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-4 hover:text-foreground transition-colors">← Back</button>
-                
-                <PupilPortalProfileEdit
-                  pupil={pupil}
-                  onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
-                  brandColour={drive365Blue}
-                />
+              <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <SubPageHeader title="My Profile" onBack={handleBack} />
+                <div className="px-4">
+                  <PupilPortalProfileEdit
+                    pupil={pupil}
+                    onPupilUpdate={(updates) => setPupil(prev => prev ? { ...prev, ...updates } : null)}
+                    brandColour={drive365Blue}
+                  />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         )}
       </main>
+
+      {/* Floating Quick Actions */}
+      {pupil && activeSection === 'home' && (
+        <PupilQuickActions
+          onNavigate={(section) => setActiveSection(section as ActiveSection)}
+          brandColour={drive365Blue}
+        />
+      )}
 
       {/* Bottom Nav */}
       {pupil && (
@@ -760,6 +627,9 @@ export default function BrandedPupilPortal() {
           brandColour={drive365Blue}
           wallpaperColor={wallpaperColor}
           courseProgress={pupil.progress || 0}
+          badges={{
+            payments: paymentBadge,
+          }}
         />
       )}
 
