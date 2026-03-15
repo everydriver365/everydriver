@@ -46,6 +46,26 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
   const testReadyCount = DVSA_SYLLABUS.filter(c => (progressMap[c.id] || 0) >= 4).length;
   const testReadiness = Math.round((testReadyCount / DVSA_SYLLABUS.length) * 100);
 
+  const [exporting, setExporting] = useState(false);
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-pdf", {
+        body: { report_type: "progress", instructor_id: null, data: { title: `Progress Report — ${childName}`, pupil_name: childName, test_readiness: testReadiness, categories: categoryData } },
+      });
+      if (error) throw error;
+      const link = document.createElement("a");
+      link.href = `data:application/pdf;base64,${data.pdf_base64}`;
+      link.download = data.filename || `${childName}-progress.pdf`;
+      link.click();
+      toast.success("Progress report downloaded!");
+    } catch {
+      toast.error("Failed to export progress report");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Category progress
   const categoryData = SYLLABUS_CATEGORIES.map(category => {
     const competencies = DVSA_SYLLABUS.filter(c => c.category === category);
