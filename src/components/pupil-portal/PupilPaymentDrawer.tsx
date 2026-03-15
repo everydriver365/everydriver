@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { CreditCard, ChevronRight, ChevronDown, Shield, Loader2, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CreditCard, ChevronRight, ChevronDown, Shield, Loader2, ArrowLeft, History } from "lucide-react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { ElavonWalletButtons } from "@/components/payments/ElavonWalletButtons";
 import { useAdminFee } from "@/hooks/useAdminFee";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
+import { format } from "date-fns";
 
 interface PupilPaymentDrawerProps {
   open: boolean;
@@ -27,6 +28,13 @@ interface PupilPaymentDrawerProps {
 
 type PaymentGateway = "npi" | "clearpay" | "klarna";
 type Stage = "amount" | "method";
+
+interface RecentPayment {
+  id: string;
+  amount: number;
+  payment_method: string | null;
+  recorded_at: string;
+}
 
 export function PupilPaymentDrawer({
   open,
@@ -46,10 +54,25 @@ export function PupilPaymentDrawer({
   const [processing, setProcessing] = useState(false);
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
   const [bnplExpanded, setBnplExpanded] = useState(false);
+  const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
   const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, commissionPayer);
+
+  // Fetch recent payments when drawer opens
+  useEffect(() => {
+    if (open && pupilId) {
+      supabase
+        .from("payment_history")
+        .select("id, amount, payment_method, recorded_at")
+        .eq("pupil_id", pupilId)
+        .gt("amount", 0)
+        .order("recorded_at", { ascending: false })
+        .limit(3)
+        .then(({ data }) => setRecentPayments(data || []));
+    }
+  }, [open, pupilId]);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -127,6 +150,12 @@ export function PupilPaymentDrawer({
       setProcessing(false);
       setSelectedGateway(null);
     }
+  };
+
+  const formatMethod = (m: string | null) => {
+    if (!m) return "";
+    const map: Record<string, string> = { cash: "Cash", card: "Card", bank_transfer: "Transfer", apple_pay: "Apple Pay", google_pay: "Google Pay" };
+    return map[m.toLowerCase()] || m;
   };
 
   return (
@@ -225,6 +254,27 @@ export function PupilPaymentDrawer({
                 totalCharge={totalCharge}
                 hasFee={hasFee}
               />
+
+              {/* Recent Payments */}
+              {recentPayments.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <History className="h-3 w-3" />
+                    Recent Payments
+                  </p>
+                  <div className="space-y-1.5">
+                    {recentPayments.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between text-xs bg-muted/50 rounded-lg px-3 py-2">
+                        <span className="text-muted-foreground">
+                          {format(new Date(p.recorded_at), "d MMM")}
+                          {p.payment_method ? ` · ${formatMethod(p.payment_method)}` : ""}
+                        </span>
+                        <span className="font-semibold text-emerald-600">+£{Number(p.amount).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Continue button */}
               <Button

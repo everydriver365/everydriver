@@ -30,6 +30,8 @@ import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanne
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
+import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
+import { useAdminFee } from "@/hooks/useAdminFee";
 
 
 interface Instructor {
@@ -220,6 +222,10 @@ export function MobileBookingView({
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  // Admin fee for order review
+  const { adminFee: reviewAdminFee, hasFee: reviewHasFee } = useAdminFee(totalPrice + upsellTotal, undefined);
   
   // Booking recovery: save form state to localStorage
   const storageKey = `booking_draft_${instructor.id}`;
@@ -242,6 +248,30 @@ export function MobileBookingView({
     const draft = { pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode };
     localStorage.setItem(storageKey, JSON.stringify(draft));
   }, [pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode]);
+
+  // Abandoned booking capture: save to server when email is entered
+  useEffect(() => {
+    if (!pupilEmail || draftSaved) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(pupilEmail)) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        await supabase.from("booking_drafts").insert({
+          email: pupilEmail,
+          phone: pupilPhone || null,
+          name: pupilName || null,
+          instructor_id: instructor.id,
+          course_name: courseName,
+          course_hours: hours,
+          total_price: totalPrice,
+        });
+        setDraftSaved(true);
+      } catch {}
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [pupilEmail, draftSaved]);
   
   const handleResumeDraft = () => {
     const saved = localStorage.getItem(storageKey);
@@ -769,6 +799,38 @@ export function MobileBookingView({
               onSlotsChange={onSlotsChange}
             />
           </div>
+        </div>
+      )}
+
+      {/* Upsells — between schedule and payment */}
+      {availableUpsells.length > 0 && onUpsellsChange && isPupilDetailsComplete && (
+        <div className="px-4 pb-4">
+          <UpsellSelector
+            upsells={availableUpsells}
+            selectedUpsells={selectedUpsells}
+            onSelectionChange={onUpsellsChange}
+          />
+        </div>
+      )}
+
+      {/* Order Review Summary — before payment */}
+      {canSubmit && (
+        <div className="px-4 pb-4">
+          <OrderReviewSummary
+            courseName={courseName}
+            courseHours={hours}
+            coursePrice={totalPrice}
+            selectedSlots={selectedSlots}
+            selectedUpsells={availableUpsells
+              .filter((u) => selectedUpsells.includes(u.id))
+              .map((u) => ({ id: u.id, name: u.name, price: Number(u.price) }))}
+            upsellTotal={upsellTotal}
+            depositEnabled={depositEnabled}
+            depositAmount={depositAmount}
+            paymentOption={paymentOption}
+            adminFee={reviewAdminFee}
+            hasFee={reviewHasFee}
+          />
         </div>
       )}
 

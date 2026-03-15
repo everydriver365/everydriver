@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car, AlertTriangle, CalendarPlus } from "lucide-react";
+import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car, AlertTriangle, CalendarPlus, Users } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { downloadMultiEventICS, getGoogleCalendarUrl } from "@/lib/calendar-export";
+import { shareContent } from "@/lib/share-utils";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
@@ -51,25 +52,20 @@ export default function BookingConfirmation() {
   const [searchParams] = useSearchParams();
   const pupilId = searchParams.get("pupilId");
   
-  // Cardstream response parameters
   const responseCode = searchParams.get("responseCode");
   const responseMessage = searchParams.get("responseMessage");
   const transactionId = searchParams.get("xref") || searchParams.get("transactionUnique");
   const authorisationCode = searchParams.get("authorisationCode");
   const amountReceived = searchParams.get("amountReceived");
   
-  // Payment provider parameters
   const clearpaySuccess = searchParams.get("clearpay") === "success";
   const klarnaSuccess = searchParams.get("klarna") === "success";
   const npiSuccess = searchParams.get("npi") === "success";
   const elavonSuccess = searchParams.get("elavon") === "success";
   const squareSuccess = searchParams.get("square") === "success";
   const paymentRef = searchParams.get("ref");
-  
-  // Free booking flag (£0 courses bypass payment)
   const freeBooking = searchParams.get("free") === "true";
   
-  // Payment was successful if Cardstream approved OR provider success flag OR free booking
   const paymentSuccessful =
     responseCode === "0" ||
     clearpaySuccess ||
@@ -110,13 +106,11 @@ export default function BookingConfirmation() {
       ]);
 
       if (pupilRes.data) {
-        // Transform the data to match our interface
         const pupilData = pupilRes.data as any;
         setPupil({
           ...pupilData,
           instructor: Array.isArray(pupilData.instructor) ? pupilData.instructor[0] : pupilData.instructor,
         });
-        // Invalidate payment caches when booking confirmation loads with successful payment
         if (paymentSuccessful) {
           invalidatePaymentQueries({ pupilId: pupilData.id, instructorId: pupilData.instructor_id || (Array.isArray(pupilData.instructor) ? pupilData.instructor[0]?.id : pupilData.instructor?.id) });
         }
@@ -135,18 +129,12 @@ export default function BookingConfirmation() {
       const end = Date.now() + duration;
       const frame = () => {
         confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ['#10b981', '#34d399', '#6ee7b7'],
+          particleCount: 3, angle: 60, spread: 55,
+          origin: { x: 0 }, colors: ['#10b981', '#34d399', '#6ee7b7'],
         });
         confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ['#10b981', '#34d399', '#6ee7b7'],
+          particleCount: 3, angle: 120, spread: 55,
+          origin: { x: 1 }, colors: ['#10b981', '#34d399', '#6ee7b7'],
         });
         if (Date.now() < end) requestAnimationFrame(frame);
       };
@@ -178,7 +166,6 @@ export default function BookingConfirmation() {
     );
   }
 
-  // Payment failed state
   if (!paymentSuccessful) {
     return (
       <MainLayout>
@@ -191,9 +178,7 @@ export default function BookingConfirmation() {
             {responseMessage || "Your payment could not be processed. Please try again."}
           </p>
           {responseCode && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Error code: {responseCode}
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">Error code: {responseCode}</p>
           )}
           <Button asChild className="mt-6">
             <Link to="/courses">Try Again</Link>
@@ -205,73 +190,45 @@ export default function BookingConfirmation() {
 
   const totalHours = lessons.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
 
+  const handleShare = () => {
+    shareContent({
+      title: "I just booked driving lessons!",
+      text: `I've booked a ${pupil.prepaid_hours || totalHours}h driving course with ${pupil.instructor.name}. Check them out!`,
+      url: window.location.origin + "/courses",
+    });
+  };
+
   return (
     <MainLayout>
       {/* Success Hero */}
       <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-        <div className="container py-12 text-center">
+        <div className="container py-10 md:py-12 text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6 }}
-            className="mx-auto mb-6 w-20 h-20 rounded-full bg-white/20 flex items-center justify-center"
+            className="mx-auto mb-4 w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center"
           >
-            <CheckCircle className="h-12 w-12 text-white" />
+            <CheckCircle className="h-10 w-10 md:h-12 md:w-12 text-white" />
           </motion.div>
           
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold"
+            className="text-2xl md:text-4xl font-bold"
           >
             {pupil.payment_type === "deposit" ? "Deposit Received! 🎉" : "Booking Confirmed! 🎉"}
           </motion.h1>
           
-          <motion.div
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-3 text-emerald-100 max-w-md mx-auto"
+            className="mt-2 text-emerald-100 max-w-md mx-auto text-sm md:text-base"
           >
-            <p>Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.</p>
-            {lessons.length > 0 && (
-              <div className="mt-3 space-y-1 text-sm">
-                {lessons.map((lesson, i) => (
-                  <p key={lesson.id} className="text-emerald-50">
-                    Lesson {i + 1}: {format(parseISO(lesson.lesson_date), "EEE d MMM")} at {lesson.start_time} ({lesson.duration_minutes / 60}h)
-                  </p>
-                ))}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Deposit Payment Notice */}
-          {pupil.payment_type === "deposit" && pupil.balance_due_date && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="mt-4 mx-auto max-w-lg bg-white/10 backdrop-blur rounded-lg p-4 text-left"
-            >
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-300 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-white">
-                    Deposit of £{pupil.deposit_paid} received
-                  </p>
-                  <p className="text-sm text-emerald-100 mt-1">
-                    Your remaining balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> is due by{" "}
-                    <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { 
-                      weekday: 'long', 
-                      day: 'numeric', 
-                      month: 'long' 
-                    })}</strong> (30 days before your first lesson).
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
+            Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.
+          </motion.p>
 
           {/* Payment confirmation details */}
           {(transactionId || paymentRef) && (
@@ -279,7 +236,7 @@ export default function BookingConfirmation() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="mt-4 text-sm text-emerald-100"
+              className="mt-3 text-sm text-emerald-100"
             >
               {amountReceived && <span>Payment of £{(parseInt(amountReceived) / 100).toFixed(2)} confirmed</span>}
               {authorisationCode && <span className="ml-2">• Auth: {authorisationCode}</span>}
@@ -289,72 +246,106 @@ export default function BookingConfirmation() {
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
+      {/* Mobile-first CTAs — shown prominently on mobile */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="container py-4 md:hidden space-y-2"
+      >
+        <Button className="w-full gap-2 h-12" asChild>
+          <Link to={`/pupil?id=${pupil.id}`}>
+            <ArrowRight className="h-4 w-4" />
+            Go to My Dashboard
+          </Link>
+        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1 gap-2" asChild>
+            <Link to="/theory">Start Theory Practice</Link>
+          </Button>
+          <Button variant="outline" className="flex-1 gap-2" onClick={handleShare}>
+            <Share2 className="h-4 w-4" />
+            Share
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Deposit Warning */}
+      {pupil.payment_type === "deposit" && pupil.balance_due_date && (
+        <div className="container py-4">
+          <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-amber-800 dark:text-amber-300">Balance Payment Required</h4>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                  Deposit of £{pupil.deposit_paid} received. Remaining balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> due by{" "}
+                  <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container py-4 md:py-8">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Scheduled Lessons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
+            {/* Lessons — compact on mobile */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <Calendar className="h-5 w-5 text-primary" />
-                    Your Scheduled Lessons
+                    Your Lessons ({lessons.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  {/* Compact lesson list for mobile */}
+                  <div className="space-y-2 md:space-y-3">
                     {lessons.map((lesson, index) => (
                       <motion.div
                         key={lesson.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                        className="flex items-center gap-4 p-4 rounded-lg bg-secondary/50 border"
+                        transition={{ delay: 0.5 + index * 0.05 }}
+                        className="flex items-center gap-3 p-3 md:p-4 rounded-lg bg-secondary/50 border"
                       >
-                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
-                          <span className="text-lg font-bold text-primary">
+                        <div className="flex-shrink-0 w-11 h-11 md:w-14 md:h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
+                          <span className="text-sm md:text-lg font-bold text-primary">
                             {format(parseISO(lesson.lesson_date), "d")}
                           </span>
-                          <span className="text-xs text-primary font-medium">
+                          <span className="text-[10px] md:text-xs text-primary font-medium">
                             {format(parseISO(lesson.lesson_date), "MMM")}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium">
+                          <div className="font-medium text-sm">
                             {format(parseISO(lesson.lesson_date), "EEEE")}
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {lesson.start_time} ({lesson.duration_minutes / 60}h)
-                            </span>
-                            <Badge variant="secondary" className="text-xs">
-                              {lesson.duration_minutes / 60}h
-                            </Badge>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            <Clock className="h-3 w-3" />
+                            {lesson.start_time} ({lesson.duration_minutes / 60}h)
                           </div>
                           {lesson.pickup_location && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
                               <MapPin className="h-3 w-3" />
                               <span className="truncate">{lesson.pickup_location}</span>
                             </div>
                           )}
                         </div>
-                        <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50">
+                        <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 text-[10px] md:text-xs shrink-0">
                           Confirmed
                         </Badge>
                       </motion.div>
                     ))}
                   </div>
 
-                   <Separator className="my-6" />
+                  <Separator className="my-4 md:my-6" />
 
-                  {/* Add to Calendar */}
-                  <div className="flex gap-2 mb-4">
+                  {/* Calendar export */}
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -375,7 +366,7 @@ export default function BookingConfirmation() {
                       }}
                     >
                       <CalendarPlus className="h-4 w-4" />
-                      Download .ics ({lessons.length})
+                      <span className="hidden sm:inline">Download</span> .ics
                     </Button>
                     <Button
                       variant="outline"
@@ -383,7 +374,6 @@ export default function BookingConfirmation() {
                       className="flex-1 gap-1.5"
                       onClick={() => {
                         if (lessons.length > 0) {
-                          // Open Google Calendar for each lesson
                           lessons.forEach((lesson, i) => {
                             setTimeout(() => {
                               window.open(
@@ -397,22 +387,22 @@ export default function BookingConfirmation() {
                                 }),
                                 "_blank"
                               );
-                            }, i * 500); // Stagger to avoid popup blocking
+                            }, i * 500);
                           });
                         }
                       }}
                     >
                       <Calendar className="h-4 w-4" />
-                      Google Calendar
+                      Google Cal
                     </Button>
                   </div>
 
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm mt-4">
                     <span className="text-muted-foreground">Total lessons</span>
                     <span className="font-medium">{lessons.length}</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-muted-foreground">Total hours scheduled</span>
+                    <span className="text-muted-foreground">Total hours</span>
                     <span className="font-medium">{totalHours}h</span>
                   </div>
                 </CardContent>
@@ -420,84 +410,42 @@ export default function BookingConfirmation() {
             </motion.div>
 
             {/* Next Steps */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
               <Card>
-                <CardHeader>
-                  <CardTitle>What's Next?</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">What's Next?</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Deposit Warning Card */}
                   {pupil.payment_type === "deposit" && pupil.balance_due_date && (
-                    <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="font-semibold text-amber-800 dark:text-amber-300">Important: Balance Payment Required</h4>
-                          <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                            Your remaining balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> must be paid by{" "}
-                            <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { 
-                              weekday: 'long', 
-                              day: 'numeric', 
-                              month: 'long' 
-                            })}</strong>.
-                          </p>
-                          <p className="text-sm text-amber-600 dark:text-amber-500 mt-2">
-                            ⚠️ If payment is not received by this date, your booking will be cancelled and your £{pupil.deposit_paid} deposit will be forfeited.
-                          </p>
-                        </div>
+                    <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                          Balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> due by{" "}
+                          <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}</strong>.
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {[
-                      {
-                        step: 1,
-                        title: "Confirmation Email Sent",
-                        description: `We've sent your booking details to ${pupil.email || "your email address"}.`,
-                        done: true,
-                      },
-                      {
-                        step: 2,
-                        title: "Prepare for Your First Lesson",
-                        description: "Bring your provisional licence and wear comfortable shoes.",
-                        done: false,
-                      },
-                      {
-                        step: 3,
-                        title: "Your Instructor Will Arrive",
-                        description: `${pupil.instructor.name} will pick you up at your address on your lesson day.`,
-                        done: false,
-                      },
-                      ...(pupil.payment_type === "deposit" ? [{
-                        step: 4,
-                        title: "Pay Outstanding Balance",
-                        description: `Contact ${pupil.instructor.name} to arrange payment of the remaining £${Math.abs(pupil.account_balance || 0)} before your deadline.`,
-                        done: false,
-                      }] : [{
-                        step: 4,
-                        title: "Payment Complete",
-                        description: "Your course is fully paid - you're all set!",
-                        done: true,
-                      }]),
+                      { step: 1, title: "Confirmation Email Sent", description: `Details sent to ${pupil.email || "your email"}.`, done: true },
+                      { step: 2, title: "Prepare for Your First Lesson", description: "Bring your provisional licence and wear comfortable shoes.", done: false },
+                      { step: 3, title: "Your Instructor Will Arrive", description: `${pupil.instructor.name} will pick you up on your lesson day.`, done: false },
+                      ...(pupil.payment_type === "deposit"
+                        ? [{ step: 4, title: "Pay Outstanding Balance", description: `Remaining £${Math.abs(pupil.account_balance || 0)} due before deadline.`, done: false }]
+                        : [{ step: 4, title: "Payment Complete", description: "Your course is fully paid!", done: true }]),
                     ].map((item) => (
-                      <div key={item.step} className="flex gap-4">
-                        <div
-                          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                            item.done
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-secondary text-muted-foreground"
-                          }`}
-                        >
-                          {item.done ? <CheckCircle className="h-4 w-4" /> : item.step}
+                      <div key={item.step} className="flex gap-3">
+                        <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                          item.done ? "bg-emerald-100 text-emerald-700" : "bg-secondary text-muted-foreground"
+                        }`}>
+                          {item.done ? <CheckCircle className="h-3.5 w-3.5" /> : item.step}
                         </div>
                         <div>
-                          <div className="font-medium">{item.title}</div>
-                          <div className="text-sm text-muted-foreground">{item.description}</div>
+                          <div className="font-medium text-sm">{item.title}</div>
+                          <div className="text-xs text-muted-foreground">{item.description}</div>
                         </div>
                       </div>
                     ))}
@@ -505,31 +453,51 @@ export default function BookingConfirmation() {
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Referral Card */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+              <Card className="border-dashed border-2 border-primary/30 bg-primary/[0.03]">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">Know someone learning to drive?</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Share your experience and help a friend find a great instructor. You could earn reward points!
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 gap-1.5"
+                        onClick={handleShare}
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        Share with Friends
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar — hidden on mobile (CTAs already shown above) */}
+          <div className="hidden md:block space-y-6">
             {/* Instructor Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Your Instructor</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                       {pupil.instructor.profile_image_url ? (
-                        <img
-                          src={pupil.instructor.profile_image_url}
-                          alt={pupil.instructor.name}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={pupil.instructor.profile_image_url} alt={pupil.instructor.name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xl font-bold text-primary">
+                        <span className="text-lg font-bold text-primary">
                           {pupil.instructor.name.split(" ").map(n => n[0]).join("")}
                         </span>
                       )}
@@ -538,30 +506,20 @@ export default function BookingConfirmation() {
                       <div className="font-semibold">{pupil.instructor.name}</div>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Car className="h-3.5 w-3.5" />
-                        <span>
-                          {pupil.instructor.car_make} {pupil.instructor.car_model} ({pupil.instructor.car_type})
-                        </span>
+                        {pupil.instructor.car_make} {pupil.instructor.car_model} ({pupil.instructor.car_type})
                       </div>
                     </div>
                   </div>
-
                   <Separator className="my-4" />
-
                   <div className="space-y-3">
                     {pupil.instructor.phone && (
-                      <a
-                        href={`tel:${pupil.instructor.phone}`}
-                        className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
-                      >
+                      <a href={`tel:${pupil.instructor.phone}`} className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         {pupil.instructor.phone}
                       </a>
                     )}
                     {pupil.instructor.email && (
-                      <a
-                        href={`mailto:${pupil.instructor.email}`}
-                        className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
-                      >
+                      <a href={`mailto:${pupil.instructor.email}`} className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         {pupil.instructor.email}
                       </a>
@@ -571,48 +529,8 @@ export default function BookingConfirmation() {
               </Card>
             </motion.div>
 
-            {/* Your Details */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Your Details</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2">
-                  <div>
-                    <span className="text-muted-foreground">Name:</span>{" "}
-                    <span className="font-medium">{pupil.name}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Pickup:</span>{" "}
-                    <span className="font-medium">{pupil.address}, {pupil.postcode}</span>
-                  </div>
-                  {pupil.phone && (
-                    <div>
-                      <span className="text-muted-foreground">Phone:</span>{" "}
-                      <span className="font-medium">{pupil.phone}</span>
-                    </div>
-                  )}
-                  {pupil.email && (
-                    <div>
-                      <span className="text-muted-foreground">Email:</span>{" "}
-                      <span className="font-medium">{pupil.email}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="space-y-3"
-            >
+            {/* Desktop CTAs */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="space-y-3">
               <Button className="w-full gap-2" asChild>
                 <Link to={`/pupil?id=${pupil.id}`}>
                   <ArrowRight className="h-4 w-4" />
@@ -632,6 +550,43 @@ export default function BookingConfirmation() {
                 </Link>
               </Button>
             </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile sticky instructor contact bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe">
+        <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+              {pupil.instructor.profile_image_url ? (
+                <img src={pupil.instructor.profile_image_url} alt={pupil.instructor.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-primary">
+                  {pupil.instructor.name.split(" ").map(n => n[0]).join("")}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{pupil.instructor.name}</p>
+              <p className="text-[10px] text-muted-foreground">Your instructor</p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {pupil.instructor.phone && (
+              <Button variant="outline" size="icon" className="h-9 w-9" asChild>
+                <a href={`tel:${pupil.instructor.phone}`}>
+                  <Phone className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+            {pupil.instructor.email && (
+              <Button variant="outline" size="icon" className="h-9 w-9" asChild>
+                <a href={`mailto:${pupil.instructor.email}`}>
+                  <Mail className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
