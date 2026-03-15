@@ -307,6 +307,9 @@ export default function InstructorPortal() {
           </Button>
         </div>
 
+        {/* Today at a Glance */}
+        <TodayAtAGlance instructorId={instructorId} />
+
         {/* Setup Checklist for new instructors */}
         <InstructorSetupChecklist instructorId={instructorId} variant="full" />
 
