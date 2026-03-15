@@ -86,10 +86,10 @@ export default function InstructorReportsHub() {
       if (reportType === "tax") {
         const { data: lessons } = await supabase
           .from("scheduled_lessons")
-          .select("price")
+          .select("amount_due")
           .eq("instructor_id", instructor.id)
-          .gte("date", startDate)
-          .lte("date", endDate)
+          .gte("lesson_date", startDate)
+          .lte("lesson_date", endDate)
           .eq("status", "completed");
 
         const { data: expenses } = await supabase
