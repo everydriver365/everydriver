@@ -121,7 +121,7 @@ export default function InstructorMiniWebsiteSettings() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="pages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
               <Layout className="h-4 w-4" />
               <span className="hidden sm:inline">Pages</span>
