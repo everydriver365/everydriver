@@ -103,6 +103,9 @@ const InstructorPipeline = lazy(() => import("./pages/InstructorPipeline"));
 const InstructorAutomations = lazy(() => import("./pages/InstructorAutomations"));
 const InstructorSubscriptions = lazy(() => import("./pages/InstructorSubscriptions"));
 const InstructorTakePayment = lazy(() => import("./pages/InstructorTakePayment"));
+const InstructorBulkOperations = lazy(() => import("./pages/InstructorBulkOperations"));
+const InstructorReportsHub = lazy(() => import("./pages/InstructorReportsHub"));
+const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
