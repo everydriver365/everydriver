@@ -60,7 +60,7 @@ export function BulkPriceUpdateTab({ instructorId }: BulkPriceUpdateTabProps) {
     try {
       const results = await Promise.allSettled(
         selectedPupils.map(id =>
-          supabase.from("pupils").update({ lesson_price: price }).eq("id", id)
+          supabase.from("pupils").update({ custom_hourly_rate: price }).eq("id", id)
         )
       );
       const ok = results.filter(r => r.status === "fulfilled").length;
