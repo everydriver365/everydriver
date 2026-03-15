@@ -494,6 +494,9 @@ export default function InstructorQuickAvailability() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Availability Rules Engine */}
+      {instructorId && <AvailabilityRulesManager instructorId={instructorId} />}
     </InstructorPortalLayout>
   );
 }
