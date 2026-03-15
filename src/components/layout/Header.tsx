@@ -98,6 +98,8 @@ export function Header() {
             size="icon"
             className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
