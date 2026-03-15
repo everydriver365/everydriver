@@ -138,6 +138,10 @@ export default function InstructorMiniWebsiteSettings() {
               <Car className="h-4 w-4" />
               <span className="hidden sm:inline">Sticker</span>
             </TabsTrigger>
+            <TabsTrigger value="editor" className="gap-1.5 text-xs sm:text-sm">
+              <Pencil className="h-4 w-4" />
+              <span className="hidden sm:inline">Editor</span>
+            </TabsTrigger>
             <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm">
               <Code className="h-4 w-4" />
               <span className="hidden sm:inline">Embed</span>
