@@ -248,6 +248,30 @@ export function MobileBookingView({
     const draft = { pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode };
     localStorage.setItem(storageKey, JSON.stringify(draft));
   }, [pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode]);
+
+  // Abandoned booking capture: save to server when email is entered
+  useEffect(() => {
+    if (!pupilEmail || draftSaved) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(pupilEmail)) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        await supabase.from("booking_drafts").insert({
+          email: pupilEmail,
+          phone: pupilPhone || null,
+          name: pupilName || null,
+          instructor_id: instructor.id,
+          course_name: courseName,
+          course_hours: hours,
+          total_price: totalPrice,
+        });
+        setDraftSaved(true);
+      } catch {}
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [pupilEmail, draftSaved]);
   
   const handleResumeDraft = () => {
     const saved = localStorage.getItem(storageKey);
