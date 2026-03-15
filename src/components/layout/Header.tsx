@@ -44,7 +44,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="bg-primary overflow-x-hidden">
-      <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
+      <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative" role="navigation" aria-label="Main navigation">
         <Link to="/drive365" className="hidden md:flex items-center">
           <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
         </Link>
@@ -98,6 +98,8 @@ export function Header() {
             size="icon"
             className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -112,6 +114,7 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+            aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {resolvedTheme === 'dark' ? (
               <Moon className="h-5 w-5" />

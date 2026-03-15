@@ -1256,11 +1256,22 @@ export default function Courses() {
                     </div>
                   )
                 ) : (
-                  <div className="py-16 text-center">
-                    <h2 className="text-xl font-semibold">No courses available</h2>
+                  <div className="py-16 text-center max-w-md mx-auto">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                      <Search className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground">No courses found</h2>
                     <p className="mt-2 text-muted-foreground">
-                      Try adjusting your filters or selecting a different date.
+                      We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters.
                     </p>
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); }}>
+                        Clear Filters
+                      </Button>
+                      <Button asChild>
+                        <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
+                      </Button>
+                    </div>
                   </div>
                 )}
               </>

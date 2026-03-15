@@ -1,133 +1,162 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-# Site-Wide UX Improvements
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-After auditing the full codebase across all portals (public site, instructor app, pupil portal, parent portal, admin panel), here are the gaps and improvements organized by impact.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
----
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-## 1. Accessibility — Almost No ARIA Labels
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-Only 1 file in the entire layout layer has `aria-label` (the promo banner close button). Navigation, buttons, modals, and interactive elements across all portals are missing accessible labels.
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-**Work:**
-- Add `aria-label` to all icon-only buttons (theme toggle, menu, settings gear, close, SOS, bell)
-- Add `role="navigation"` and `aria-label` to all nav components (Header, MobileBottomNav, InstructorBottomNav, PupilBottomNav, AdminLayout sidebar)
-- Add `aria-current="page"` to active nav items
-- Add `sr-only` labels to badge counts (e.g., "3 unread messages")
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
----
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-## 2. 404 Page — Bare Minimum, No Branding
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-The NotFound page is a plain div with no logo, no helpful links, no search — just "404" and a home link. Competitors show suggested pages, search, and branding.
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-**Work:**
-- Redesign with Drive365 logo, branded illustration, suggested links (Home, Courses, FAQs, Contact)
-- Add postcode search bar so users can still find courses
-- Detect if the URL looks like an instructor/pupil path and show relevant login links
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
----
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-## 3. Public Mobile Bottom Nav — No Active Indicator Animation
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-The learner `MobileBottomNav` uses a static 1px dot for active state. The instructor and pupil navs both use `motion.div` with `layoutId` spring animations. The public nav should match.
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-**Work:**
-- Add `motion.div` with `layoutId="public-nav-pill"` sliding indicator
-- Add haptic feedback on tap (matching instructor/pupil pattern)
-- Add scale animation on active icon (matching pupil nav pattern)
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
----
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-## 4. No "Back to Top" Button on Long Pages
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-Index.tsx is 1115 lines, Courses.tsx is 1273 lines. Long scroll pages have no back-to-top affordance. The `ScrollToTop` component only resets on route change — it doesn't help within a page.
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
-**Work:**
-- Create a `BackToTopButton` component: shows after scrolling 400px, smooth scrolls to top
-- Add to `MainLayout` for all public pages
-- Fade-in/out animation with spring physics
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
 
----
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding
 
-## 5. No Global Loading/Transition State Between Routes
+### Feature 9: 8 New Features (All Except Stripe Connect) ✅
 
-Route transitions are instant with no visual continuity. When navigating between heavy pages (Courses, Index), there's a flash of empty content before data loads.
+#### 9a. Bulk Operations Panel ✅
+- New page `/instructor/bulk-operations` with 3 tabs
+- **Bulk SMS**: audience filters (all, test-date, overdue balance), template library, send via `send-gap-sms`
+- **Bulk Reschedule**: pick source date → find lessons → move to target date (bank holidays)
+- **Bulk Price Update**: select pupils → set new `custom_hourly_rate`
+- Components: `BulkSMSTab`, `BulkRescheduleTab`, `BulkPriceUpdateTab`
+- Added to Instructor Menu under Tools
 
-**Work:**
-- Add a thin progress bar at the top of the page during route transitions (NProgress-style)
-- Use `React.Suspense` with skeleton fallbacks for lazy-loaded route components
-- Apply `animate-in fade-in` transition to page mounts
+#### 9b. Smart Reporting & PDF Export Hub ✅
+- New page `/instructor/reports` — Reports Hub
+- 5 report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary, Pupil Progress, Mileage Log
+- Date range picker with quick-select (This Month, Last Month, This Year)
+- Calls existing `generate-pdf` edge function, downloads as PDF
+- Saves report records to `instructor_reports` table
+- Added to Instructor Menu under Tools
 
----
+#### 9c. Availability Rules Engine ✅
+- DB: `availability_rules` table (rule_type enum: recurring_exception, holiday_block, seasonal)
+- `AvailabilityRulesManager` component integrated into `/instructor/availability` page
+- Holiday blocks auto-generate `instructor_date_overrides` rows
+- Recurring exceptions: "No lessons on first Monday of each month"
+- Optional auto-notify affected pupils toggle
 
-## 6. Toast Inconsistency — Mixed Systems
+#### 9d. Pupil Milestone Certificates ✅
+- DB: `pupil_certificates` table (milestone_type, certificate_url, issued_at)
+- `CertificateGenerator` component using jsPDF — landscape A4 with decorative border
+- Milestones: first_lesson, 10_lessons, 20_lessons, theory_pass, test_pass
+- Branded PDF with pupil name, date, instructor name, achievement text
 
-Some files use `toast()` from `sonner`, others use `useToast()` from `@/hooks/use-toast`. This causes inconsistent toast positioning and styling.
+#### 9e. Parent Portal Enhancements ✅
+- `ParentAttendanceReport`: attendance rate, completed/cancelled/no-show counts
+- `ParentLessonNotes`: read-only view of instructor's post-lesson feedback (from `lesson_feedback`)
+- Both integrated into Parent Portal overview section
 
-**Work:**
-- Audit all toast calls and standardize on `sonner` (the more modern, positioned-correctly one)
-- Replace `useToast()` calls with `toast()` from `sonner` across the remaining files
+#### 9f. Waiting List Capacity UI ✅
+- DB: `waitlist_entries` table with RLS (anon INSERT, instructor CRUD)
+- `WaitlistJoinCard` component for mini-website — name, phone, email, preferred days
+- Shows confirmation after submission
 
----
+#### 9g. Marketing Landing Page Builder ✅
+- `WebsitePageEditor` component — visual block editor for `content_blocks` JSONB
+- 8 block types: Text, Features List, CTA Button, FAQ, Video Embed, Stats Counter, Testimonial, Pricing Table
+- Drag-and-drop reordering, add/remove blocks
+- SEO settings: meta_title, meta_description per page
+- Hero heading/subheading editing
 
-## 7. Empty States — Inconsistent Treatment
-
-Some components show friendly empty states with icons ("No test results recorded yet"), many others just show nothing or a bare text string. No consistent empty state component.
-
-**Work:**
-- Create a reusable `EmptyState` component: icon, title, description, optional action button
-- Apply across: Reports Hub (no reports generated), Bulk Operations (no pupils), Availability Rules (no rules), Waitlist (no entries), Certificates (none issued)
-
----
-
-## 8. Mobile Header Inconsistency Across Portals
-
-Each portal has a completely different mobile header pattern:
-- Public: Primary-colored sticky header with hamburger
-- Instructor: Branded header with avatar, SOS, bell, pay
-- Pupil: Branded header with avatar and settings dropdown
-- Admin: Navy blue header with hamburger
-- Parent: Same as pupil but with instructor branding
-
-**Work:**
-- Not full unification (they serve different roles), but add consistent safe-area handling, consistent blur/frosted-glass treatment, and consistent animation patterns to all headers
-
----
-
-## 9. No Keyboard Shortcuts
-
-The `CommandPalette` component exists but there's no evidence of keyboard shortcut bindings (Cmd+K for search, Escape for close, etc.) being wired up globally.
-
-**Work:**
-- Wire `Cmd+K` / `Ctrl+K` to open CommandPalette globally in instructor portal
-- Add `Escape` to close all sheets/modals
-- Add keyboard nav hints in the command palette
-
----
-
-## 10. Course Search — No "No Results" Friendly State
-
-Courses.tsx is 1273 lines but the "no results" state likely just shows an empty grid. Competitors show helpful messaging with suggestions.
-
-**Work:**
-- Add a branded empty state when course search returns 0 results
-- Suggest: widening radius, trying a different postcode, or browsing all courses
-- Show a "Can't find what you need? Contact us" CTA
-
----
-
-## Implementation Priority
-
-1. **Accessibility (ARIA)** — highest impact, affects all users, SEO benefits
-2. **Toast standardization** — quick fix, reduces code debt
-3. **404 page redesign** — high visibility, low effort
-4. **EmptyState component** — reusable, improves many pages at once
-5. **Mobile nav animation** — polish, matches existing patterns
-6. **Back to top button** — quick win for long pages
-7. **Route transitions** — polish
-8. **Course "no results" state** — conversion impact
-9. **Keyboard shortcuts** — power user feature
-10. **Header consistency** — lower priority polish
-
+#### 9h. Franchise / Multi-Instructor School Portal ✅
+- DB: `schools` table + `school_instructors` join table with `school_role` enum
+- `/school/dashboard` page with aggregate stats (lessons, earnings, pupils, pass rate)
+- Instructor list with role badges
+- School creation flow + invite via school ID code
+- RLS: school owners manage, instructors view own membership
