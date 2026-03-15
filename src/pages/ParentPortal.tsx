@@ -2,14 +2,18 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, Clock, Bell, Phone, LogOut, Star, 
-  MessageSquare, ChevronRight, Loader2, CheckCircle2, Car, TrendingUp, Shield, MapPin
+  MessageSquare, ChevronRight, Loader2, CheckCircle2, Car, TrendingUp, Shield, MapPin,
+  Wallet, Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
+import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
@@ -65,8 +69,16 @@ interface LessonFeedback {
 
 type AuthStep = 'phone' | 'otp' | 'verified';
 type ParentSection = 'dashboard' | 'children' | 'feedback' | 'settings' | 'child-detail';
+type ChildDetailTab = 'overview' | 'lessons' | 'progress' | 'payments';
 
 const WALLPAPER_COLOR = "#E8F1FE";
+
+const childDetailSegments = [
+  { value: "overview", label: "Overview" },
+  { value: "lessons", label: "Lessons" },
+  { value: "progress", label: "Progress" },
+  { value: "payments", label: "Payments" },
+];
 
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
@@ -78,6 +90,8 @@ export default function ParentPortal() {
   const [recentFeedback, setRecentFeedback] = useState<LessonFeedback[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [activeSection, setActiveSection] = useState<ParentSection>('dashboard');
+  const [childDetailTab, setChildDetailTab] = useState<ChildDetailTab>('overview');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useEffect(() => {
     const savedPhone = localStorage.getItem('parent_phone_verified');
@@ -237,6 +251,8 @@ export default function ParentPortal() {
     }
   };
 
+  const negativeBalanceCount = children.filter(c => c.account_balance < 0).length;
+
   // Phone entry screen
   if (authStep === 'phone') {
     return (
@@ -345,7 +361,7 @@ export default function ParentPortal() {
     );
   }
 
-  // Child detail view
+  // Child detail view — tabbed
   if (selectedChild) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: WALLPAPER_COLOR }}>
@@ -353,23 +369,54 @@ export default function ParentPortal() {
           showBackButton
           title={selectedChild.name}
           onLogout={handleLogout}
-          onBackClick={() => { setSelectedChild(null); setActiveSection('dashboard'); }}
+          onBackClick={() => { setSelectedChild(null); setActiveSection('dashboard'); setChildDetailTab('overview'); }}
         />
         <main className="p-4 pb-20 space-y-4">
-          {/* Child Info Card — iOS Style */}
+          {/* Child Info Card */}
           <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-lg font-bold text-primary-foreground shrink-0">
                 {selectedChild.name.split(" ").map(n => n[0]).join("")}
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-lg font-bold text-foreground">{selectedChild.name}</h2>
                 <p className="text-xs text-muted-foreground">with {selectedChild.instructor_name}</p>
               </div>
             </div>
 
+            {/* Quick Action Buttons */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setChildDetailTab('payments')}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              >
+                <Wallet className="h-3.5 w-3.5" />
+                Top Up
+              </button>
+              <button
+                onClick={() => {
+                  setChildDetailTab('overview');
+                  // Scroll to chat after a tick
+                  setTimeout(() => {
+                    document.getElementById('parent-chat-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Message
+              </button>
+              <button
+                onClick={() => setChildDetailTab('progress')}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              >
+                <TrendingUp className="h-3.5 w-3.5" />
+                Progress
+              </button>
+            </div>
+
             {/* 4-Column Stats Strip */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="grid grid-cols-4 gap-2">
               {[
                 { label: "Lessons", value: selectedChild.lessons_completed },
                 { label: "Progress", value: `${selectedChild.progress}%` },
@@ -384,99 +431,135 @@ export default function ParentPortal() {
                 </div>
               ))}
             </div>
-
-            {/* Progress Bar */}
-            <div className="mb-3">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-muted-foreground">Learning Progress</span>
-                <span className="font-medium text-foreground">{selectedChild.progress}%</span>
-              </div>
-              <Progress value={selectedChild.progress} className="h-2" />
-            </div>
-
-            {/* Next Lesson */}
-            {selectedChild.next_lesson_date && (
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-primary/10 mb-2 text-xs">
-                <Clock className="h-4 w-4 text-primary" />
-                <div>
-                  <div className="font-medium text-foreground">Next Lesson</div>
-                  <div className="text-muted-foreground">
-                    {format(parseISO(selectedChild.next_lesson_date), 'EEEE, d MMMM')}
-                    {selectedChild.next_lesson_time && ` at ${formatTime(selectedChild.next_lesson_time)}`}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Test Date */}
-            {selectedChild.test_date && (
-              <div className="rounded-xl p-2.5 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-white/80" />
-                    <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
-                  </div>
-                  <span className="font-bold text-sm">
-                    {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Instructor Feedback */}
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
-            <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              Instructor Feedback
-            </h2>
-            {recentFeedback.filter(f => f.pupil_name === selectedChild.name).length === 0 ? (
-              <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet for {selectedChild.name}</p>
-            ) : (
-              <div className="space-y-3">
-                {recentFeedback.filter(f => f.pupil_name === selectedChild.name).map((feedback) => (
-                  <div key={feedback.id} className="p-3 rounded-xl bg-secondary/50">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
-                      {feedback.rating && (
-                        <div className="flex gap-0.5">
-                          {[1,2,3,4,5].map((star) => (
-                            <Star key={star} className={`h-3 w-3 ${star <= feedback.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted'}`} />
-                          ))}
-                        </div>
-                      )}
+          {/* Segmented Control */}
+          <IOSSegmentedControl
+            segments={childDetailSegments}
+            value={childDetailTab}
+            onChange={(v) => setChildDetailTab(v as ChildDetailTab)}
+          />
+
+          {/* Tab Content */}
+          <AnimatePresence mode="wait">
+            {childDetailTab === 'overview' && (
+              <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                {/* Progress Bar */}
+                <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-muted-foreground">Learning Progress</span>
+                    <span className="font-medium text-foreground">{selectedChild.progress}%</span>
+                  </div>
+                  <Progress value={selectedChild.progress} className="h-2" />
+                </div>
+
+                {/* Next Lesson */}
+                {selectedChild.next_lesson_date && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border shadow-sm text-xs">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <div>
+                      <div className="font-medium text-foreground">Next Lesson</div>
+                      <div className="text-muted-foreground">
+                        {format(parseISO(selectedChild.next_lesson_date), 'EEEE, d MMMM')}
+                        {selectedChild.next_lesson_time && ` at ${formatTime(selectedChild.next_lesson_time)}`}
+                      </div>
                     </div>
-                    <p className="text-xs text-foreground leading-relaxed">{feedback.notes}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                )}
 
-          <ParentUpcomingLessons childId={selectedChild.id} />
-          <ParentAttendanceReport childId={selectedChild.id} />
-          <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
-          <ParentLessonNotes childId={selectedChild.id} />
-          <ParentPaymentHistory childId={selectedChild.id} />
-          <ParentSafetyScores childId={selectedChild.id} />
-          <div className="px-0">
-            <PupilRouteHistory pupilId={selectedChild.id} />
-          </div>
-          <ParentPaymentTopUp
-            childId={selectedChild.id}
-            childName={selectedChild.name}
-            instructorId={selectedChild.instructor_id}
-            currentBalance={selectedChild.account_balance}
-          />
-          <ParentChat
-            parentPhone={parentPhone}
-            instructorId={selectedChild.instructor_id}
-            instructorName={selectedChild.instructor_name}
-            pupilId={selectedChild.id}
-            childName={selectedChild.name}
-          />
+                {/* Test Date */}
+                {selectedChild.test_date && (
+                  <div className="rounded-2xl p-3 text-white text-xs" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-white/80" />
+                        <span className="text-white/80">Test: {format(parseISO(selectedChild.test_date), 'd MMM yyyy')}</span>
+                      </div>
+                      <span className="font-bold text-sm">
+                        {Math.max(0, Math.ceil((new Date(selectedChild.test_date).getTime() - Date.now()) / 86400000))} days
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Chat */}
+                <div id="parent-chat-section">
+                  <ParentChat
+                    parentPhone={parentPhone}
+                    instructorId={selectedChild.instructor_id}
+                    instructorName={selectedChild.instructor_name}
+                    pupilId={selectedChild.id}
+                    childName={selectedChild.name}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {childDetailTab === 'lessons' && (
+              <motion.div key="lessons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                <ParentUpcomingLessons childId={selectedChild.id} />
+                <ParentAttendanceReport childId={selectedChild.id} />
+                <ParentLessonNotes childId={selectedChild.id} />
+                <div className="px-0">
+                  <PupilRouteHistory pupilId={selectedChild.id} />
+                </div>
+              </motion.div>
+            )}
+
+            {childDetailTab === 'progress' && (
+              <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+                <ParentSafetyScores childId={selectedChild.id} />
+                {/* Instructor Feedback */}
+                <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                  <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-primary" />
+                    Instructor Feedback
+                  </h2>
+                  {recentFeedback.filter(f => f.pupil_name === selectedChild.name).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4 text-xs">No feedback yet for {selectedChild.name}</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentFeedback.filter(f => f.pupil_name === selectedChild.name).map((feedback) => (
+                        <div key={feedback.id} className="p-3 rounded-xl bg-secondary/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] text-muted-foreground">{format(parseISO(feedback.lesson_date), 'EEE d MMM')}</span>
+                            {feedback.rating && (
+                              <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map((star) => (
+                                  <Star key={star} className={`h-3 w-3 ${star <= feedback.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted'}`} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-foreground leading-relaxed">{feedback.notes}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {childDetailTab === 'payments' && (
+              <motion.div key="payments" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                <ParentPaymentTopUp
+                  childId={selectedChild.id}
+                  childName={selectedChild.name}
+                  instructorId={selectedChild.instructor_id}
+                  currentBalance={selectedChild.account_balance}
+                />
+                <ParentPaymentHistory childId={selectedChild.id} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
-        <ParentBottomNav activeSection="children" onNavigate={(s) => { if (s !== 'children') { setSelectedChild(null); setActiveSection(s as ParentSection); } }} />
+        <ParentBottomNav
+          activeSection="children"
+          onNavigate={(s) => { if (s !== 'children') { setSelectedChild(null); setActiveSection(s as ParentSection); setChildDetailTab('overview'); } }}
+          negativeBadgeCount={negativeBalanceCount}
+          feedbackBadgeCount={recentFeedback.length}
+        />
       </div>
     );
   }
@@ -528,7 +611,7 @@ export default function ParentPortal() {
                       {/* Quick Actions */}
                       <div className="flex gap-2 mb-3">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); setChildDetailTab('payments'); }}
                           className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                         >
                           Top Up
@@ -540,7 +623,7 @@ export default function ParentPortal() {
                           Message
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); }}
+                          onClick={(e) => { e.stopPropagation(); setSelectedChild(child); setActiveSection('children'); setChildDetailTab('lessons'); }}
                           className="flex-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                         >
                           Lessons
@@ -599,7 +682,7 @@ export default function ParentPortal() {
                 </motion.div>
               ))}
 
-              {/* Recent Activity — iOS Card Style */}
+              {/* Recent Activity */}
               <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
                 <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Bell className="h-4 w-4 text-primary" />
@@ -688,11 +771,12 @@ export default function ParentPortal() {
           )}
 
           {activeSection === 'settings' && (
-            <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              {/* Account Info */}
               <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
                 <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" />
-                  Settings
+                  Account
                 </h2>
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs">
@@ -704,17 +788,67 @@ export default function ParentPortal() {
                     <span className="font-medium text-foreground">{children.length}</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full mt-4 h-9 text-xs" onClick={handleLogout}>
-                  <LogOut className="h-3.5 w-3.5 mr-2" />
-                  Sign Out
-                </Button>
               </div>
+
+              {/* Notifications */}
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-primary" />
+                  Notifications
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-foreground">Push Notifications</p>
+                      <p className="text-[10px] text-muted-foreground">Lesson reminders & updates</p>
+                    </div>
+                    <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Linked Children */}
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
+                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Car className="h-4 w-4 text-primary" />
+                  Linked Children
+                </h2>
+                <div className="space-y-3">
+                  {children.map((child) => (
+                    <div key={child.id} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/50">
+                      <div>
+                        <p className="text-xs font-medium text-foreground">{child.name}</p>
+                        <p className="text-[10px] text-muted-foreground">Instructor: {child.instructor_name}</p>
+                        {child.instructor_phone && (
+                          <a href={`tel:${child.instructor_phone}`} className="text-[10px] text-primary hover:underline">
+                            {child.instructor_phone}
+                          </a>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-foreground">{child.progress}%</p>
+                        <p className="text-[10px] text-muted-foreground">{child.lessons_completed} lessons</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full h-9 text-xs" onClick={handleLogout}>
+                <LogOut className="h-3.5 w-3.5 mr-2" />
+                Sign Out
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      <ParentBottomNav activeSection={activeSection} onNavigate={(s) => setActiveSection(s as ParentSection)} />
+      <ParentBottomNav
+        activeSection={activeSection}
+        onNavigate={(s) => setActiveSection(s as ParentSection)}
+        negativeBadgeCount={negativeBalanceCount}
+        feedbackBadgeCount={recentFeedback.length}
+      />
     </div>
   );
 }

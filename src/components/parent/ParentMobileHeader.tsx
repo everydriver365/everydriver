@@ -39,6 +39,7 @@ export function ParentMobileHeader({
               <button
                 onClick={onBackClick || (() => navigate(-1))}
                 className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+                aria-label="Go back"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -66,7 +67,10 @@ export function ParentMobileHeader({
             {onLogout && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+                  <button
+                    className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+                    aria-label="Account settings"
+                  >
                     <Settings className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
