@@ -33,7 +33,7 @@ export function BulkPriceUpdateTab({ instructorId }: BulkPriceUpdateTabProps) {
     setLoading(true);
     const { data } = await supabase
       .from("pupils")
-      .select("id, name, lesson_price")
+      .select("id, name, custom_hourly_rate")
       .eq("instructor_id", instructorId!)
       .is("deleted_at", null)
       .order("name");
