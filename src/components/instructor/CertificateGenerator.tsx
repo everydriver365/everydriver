@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
 
 const MILESTONES = [
   { value: "first_lesson", label: "First Lesson Complete", heading: "First Lesson Certificate" },
