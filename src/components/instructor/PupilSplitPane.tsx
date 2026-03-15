@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
+import { CertificateGenerator } from "@/components/instructor/CertificateGenerator";
 
 interface Pupil {
   id: string;
