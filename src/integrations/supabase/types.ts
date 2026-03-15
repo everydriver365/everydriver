@@ -313,6 +313,63 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_rules: {
+        Row: {
+          auto_notify_pupils: boolean
+          created_at: string
+          day_of_week: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          instructor_id: string
+          is_available: boolean
+          rule_type: Database["public"]["Enums"]["availability_rule_type"]
+          start_date: string | null
+          week_of_month: number | null
+        }
+        Insert: {
+          auto_notify_pupils?: boolean
+          created_at?: string
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          instructor_id: string
+          is_available?: boolean
+          rule_type: Database["public"]["Enums"]["availability_rule_type"]
+          start_date?: string | null
+          week_of_month?: number | null
+        }
+        Update: {
+          auto_notify_pupils?: boolean
+          created_at?: string
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          instructor_id?: string
+          is_available?: boolean
+          rule_type?: Database["public"]["Enums"]["availability_rule_type"]
+          start_date?: string | null
+          week_of_month?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_rules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_rules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_intake_answers: {
         Row: {
           answer_text: string
@@ -4885,6 +4942,51 @@ export type Database = {
           },
         ]
       }
+      instructor_reports: {
+        Row: {
+          filename: string
+          generated_at: string
+          id: string
+          instructor_id: string
+          parameters: Json | null
+          pdf_url: string | null
+          report_type: string
+        }
+        Insert: {
+          filename: string
+          generated_at?: string
+          id?: string
+          instructor_id: string
+          parameters?: Json | null
+          pdf_url?: string | null
+          report_type: string
+        }
+        Update: {
+          filename?: string
+          generated_at?: string
+          id?: string
+          instructor_id?: string
+          parameters?: Json | null
+          pdf_url?: string | null
+          report_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_resources: {
         Row: {
           category: string
@@ -9152,6 +9254,55 @@ export type Database = {
           },
         ]
       }
+      pupil_certificates: {
+        Row: {
+          certificate_url: string | null
+          id: string
+          instructor_id: string
+          issued_at: string
+          milestone_type: string
+          pupil_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          id?: string
+          instructor_id: string
+          issued_at?: string
+          milestone_type: string
+          pupil_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          id?: string
+          instructor_id?: string
+          issued_at?: string
+          milestone_type?: string
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_certificates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_certificates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_certificates_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_churn_scores: {
         Row: {
           calculated_at: string
@@ -11247,6 +11398,82 @@ export type Database = {
           },
         ]
       }
+      school_instructors: {
+        Row: {
+          id: string
+          instructor_id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["school_role"]
+          school_id: string
+        }
+        Insert: {
+          id?: string
+          instructor_id: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["school_role"]
+          school_id: string
+        }
+        Update: {
+          id?: string
+          instructor_id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["school_role"]
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_instructors_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schools: {
+        Row: {
+          brand_colour: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          owner_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          brand_colour?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          brand_colour?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_images: {
         Row: {
           alt_text: string | null
@@ -12717,6 +12944,63 @@ export type Database = {
           },
         ]
       }
+      waitlist_entries: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          instructor_id: string
+          name: string
+          notes: string | null
+          notified_at: string | null
+          phone: string | null
+          preferred_days: string[] | null
+          preferred_times: string[] | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          instructor_id: string
+          name: string
+          notes?: string | null
+          notified_at?: string | null
+          phone?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          instructor_id?: string
+          name?: string
+          notes?: string | null
+          notified_at?: string | null
+          phone?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       public_instructors: {
@@ -12997,6 +13281,10 @@ export type Database = {
         | "test_passed"
         | "payment_overdue"
         | "new_enquiry"
+      availability_rule_type:
+        | "recurring_exception"
+        | "holiday_block"
+        | "seasonal"
       friendship_status: "pending" | "accepted" | "declined"
       pipeline_stage:
         | "new_lead"
@@ -13006,6 +13294,7 @@ export type Database = {
         | "active"
         | "test_passed"
         | "lost"
+      school_role: "school_owner" | "school_admin" | "instructor"
       service_type:
         | "oil_change"
         | "full_service"
@@ -13159,6 +13448,11 @@ export const Constants = {
         "payment_overdue",
         "new_enquiry",
       ],
+      availability_rule_type: [
+        "recurring_exception",
+        "holiday_block",
+        "seasonal",
+      ],
       friendship_status: ["pending", "accepted", "declined"],
       pipeline_stage: [
         "new_lead",
@@ -13169,6 +13463,7 @@ export const Constants = {
         "test_passed",
         "lost",
       ],
+      school_role: ["school_owner", "school_admin", "instructor"],
       service_type: [
         "oil_change",
         "full_service",

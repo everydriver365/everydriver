@@ -1,134 +1,162 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-## Implementation Plan: 8 Features (All Except Stripe Connect)
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-This is a large build covering 8 features. Here's a concise plan organized by implementation order.
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
----
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-### Feature 1: Waiting List & Capacity Management UI
-**What exists:** `lesson_waitlist` table, `process-cancellation-waitlist` edge function, `WaitlistManager` component, `WaitlistDialog` — all already built.
-**What's needed:** A public-facing waitlist join form when instructor is fully booked, and an auto-notification flow when cancellations create openings.
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-**Work:**
-- Add a `waitlist_entries` table (name, phone, email, preferred_days, preferred_times, instructor_id, status, created_at) via migration
-- RLS: anon INSERT (for public form), instructor SELECT/UPDATE/DELETE
-- Add a "Join Waiting List" card on the mini-website when `availability_paused = true` or no slots available
-- Edge function enhancement: when `process-cancellation-waitlist` finds matches, send SMS notifications to matched waitlist pupils
-- Add waitlist count badge to instructor dashboard
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
----
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
-### Feature 2: Franchise / Multi-Instructor School Portal
-**What exists:** Marketing pages reference "multi-instructor management" but no actual implementation.
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-**Work:**
-- DB migration: `schools` table (id, name, owner_user_id, logo_url, brand_colour, created_at), `school_instructors` join table (school_id, instructor_id, role enum school_owner/school_admin/instructor, joined_at)
-- RLS: school owners can manage their school's instructors
-- New pages: `/school/dashboard`, `/school/instructors`, `/school/reports`
-- School dashboard: aggregate stats across all instructors (total lessons, earnings, pass rates, pupil counts)
-- Instructor comparison table with performance metrics
-- School owner auth: reuse existing Supabase Auth, resolve school via `schools.owner_user_id = auth.uid()`
-- Add school invite flow: generate invite link, instructor accepts to join school
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
----
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-### Feature 3: Bulk Operations Panel
-**What exists:** `BulkSMSDialog` component, `send-campaign` edge function.
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-**Work:**
-- New page: `/instructor/bulk-operations` with 3 tabs: Bulk SMS, Bulk Reschedule, Bulk Price Update
-- **Bulk SMS tab**: Enhance existing `BulkSMSDialog` into a full-page experience with audience filters (all pupils, active only, test-date pupils, overdue balance)
-- **Bulk Reschedule tab**: Select a date range → show all lessons → select/deselect → pick new dates/times → batch update `lessons` table. Use case: bank holidays
-- **Bulk Price Update tab**: Select pupils (all, filtered) → set new lesson price → batch update `pupils.lesson_price`
-- Add tile to instructor dashboard/More menu
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
----
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-### Feature 4: Smart Reporting & PDF Export Hub
-**What exists:** `generate-pdf` edge function (earnings, progress, mileage, tax reports), `WeeklyReportCard` component, `generate-weekly-report` edge function.
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-**Work:**
-- New page: `/instructor/reports` — Reports Hub with cards for each report type
-- Report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary (HMRC format), Pupil Progress (for parents), Mileage Log
-- Each card shows preview stats + "Generate PDF" button that calls `generate-pdf` edge function
-- Date range picker for filtering
-- Download history list (store in `instructor_reports` table: id, instructor_id, report_type, filename, generated_at, pdf_url)
-- Upload generated PDFs to `instructor-resources` storage bucket for re-download
-- Add tile to instructor dashboard
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
----
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-### Feature 5: Instructor Availability Rules Engine
-**What exists:** `instructor_working_hours`, `instructor_date_overrides` tables, `AvailabilityCalendar` and `InstructorQuickAvailability` components.
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-**Work:**
-- DB migration: `availability_rules` table (id, instructor_id, rule_type enum recurring_exception/holiday_block/seasonal, description, day_of_week, week_of_month, start_date, end_date, is_available, auto_notify_pupils, created_at)
-- New component: `AvailabilityRulesManager` in scheduling settings
-- Rule types:
-  - Recurring exceptions: "No lessons on first Monday of each month"
-  - Holiday blocks: date range picker → marks all days unavailable, optionally auto-SMS affected pupils
-  - Seasonal hours: different working hours for summer/winter
-- When rules are saved, auto-generate `instructor_date_overrides` rows for the next 90 days
-- Edge function `apply-availability-rules`: cron job to refresh overrides monthly
-- "Holiday Mode" toggle: one-click to block out a date range and notify all pupils with lessons in that period
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
----
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
 
-### Feature 6: Pupil Milestone Certificates
-**What exists:** `PupilMilestoneFeed` component, `pupil_milestones` table (cast as `any`), `generate-pdf` edge function with jsPDF.
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding
 
-**Work:**
-- DB migration: `pupil_certificates` table (id, pupil_id, instructor_id, milestone_type, certificate_url, issued_at)
-- Milestone types: first_lesson, 10_lessons, 20_lessons, test_pass, theory_pass
-- New component: `CertificateGenerator` using jsPDF — branded PDF with instructor logo, pupil name, date, achievement, decorative border
-- Auto-detect milestones: trigger on lesson completion count or test result insert
-- Edge function `generate-certificate`: creates PDF, uploads to storage, records in `pupil_certificates`
-- Display certificates in pupil portal with download button
-- Instructor can manually issue certificates from pupil detail screen
+### Feature 9: 8 New Features (All Except Stripe Connect) ✅
 
----
+#### 9a. Bulk Operations Panel ✅
+- New page `/instructor/bulk-operations` with 3 tabs
+- **Bulk SMS**: audience filters (all, test-date, overdue balance), template library, send via `send-gap-sms`
+- **Bulk Reschedule**: pick source date → find lessons → move to target date (bank holidays)
+- **Bulk Price Update**: select pupils → set new `custom_hourly_rate`
+- Components: `BulkSMSTab`, `BulkRescheduleTab`, `BulkPriceUpdateTab`
+- Added to Instructor Menu under Tools
 
-### Feature 7: Parent Portal Enhancements
-**What exists:** Full parent portal with OTP auth, tabs for overview/lessons/payments/messages/safety, `ParentPaymentHistory`, `ParentUpcomingLessons`, `ParentSyllabusOverview`, `ParentSafetyScores`, `ParentChat`, `ParentPaymentTopUp`.
+#### 9b. Smart Reporting & PDF Export Hub ✅
+- New page `/instructor/reports` — Reports Hub
+- 5 report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary, Pupil Progress, Mileage Log
+- Date range picker with quick-select (This Month, Last Month, This Year)
+- Calls existing `generate-pdf` edge function, downloads as PDF
+- Saves report records to `instructor_reports` table
+- Added to Instructor Menu under Tools
 
-**Work:**
-- **Attendance report**: New `ParentAttendanceReport` component showing lesson attendance rate, cancellation history, punctuality
-- **DVSA Progress Dashboard**: Enhanced `ParentSyllabusOverview` with visual progress bars per category, competency level colours, and "test readiness" score
-- **Lesson notes viewer**: Show instructor's post-lesson notes/comments to parents (read-only from `lesson_feedback` or `instructor_notes`)
-- **Export progress PDF**: Button to generate and download pupil progress report PDF (calls `generate-pdf` with `progress` type)
-- Add these as new sub-tabs or sections within existing parent portal tabs
+#### 9c. Availability Rules Engine ✅
+- DB: `availability_rules` table (rule_type enum: recurring_exception, holiday_block, seasonal)
+- `AvailabilityRulesManager` component integrated into `/instructor/availability` page
+- Holiday blocks auto-generate `instructor_date_overrides` rows
+- Recurring exceptions: "No lessons on first Monday of each month"
+- Optional auto-notify affected pupils toggle
 
----
+#### 9d. Pupil Milestone Certificates ✅
+- DB: `pupil_certificates` table (milestone_type, certificate_url, issued_at)
+- `CertificateGenerator` component using jsPDF — landscape A4 with decorative border
+- Milestones: first_lesson, 10_lessons, 20_lessons, theory_pass, test_pass
+- Branded PDF with pupil name, date, instructor name, achievement text
 
-### Feature 8: Marketing Landing Page Builder
-**What exists:** Full mini-website system with 5 page types (home, about, services, reviews, contact), `instructor_website_pages` table with `content_blocks` JSONB, `PageContentRenderer` component.
+#### 9e. Parent Portal Enhancements ✅
+- `ParentAttendanceReport`: attendance rate, completed/cancelled/no-show counts
+- `ParentLessonNotes`: read-only view of instructor's post-lesson feedback (from `lesson_feedback`)
+- Both integrated into Parent Portal overview section
 
-**Work:**
-- New component: `WebsitePageEditor` — visual block editor for `content_blocks` JSONB
-- Block types: Text, Features List, Image Gallery, Testimonial Carousel, CTA Button, Video Embed, FAQ Accordion, Pricing Table, Stats Counter
-- Drag-and-drop reordering of blocks (using existing patterns)
-- Live preview pane showing how blocks render
-- SEO settings panel: meta_title, meta_description, og_image per page
-- Custom sections: instructor can add/remove pages beyond the default 5
-- Integration with existing `InstructorMiniWebsiteSettings` page as a new "Page Editor" tab
+#### 9f. Waiting List Capacity UI ✅
+- DB: `waitlist_entries` table with RLS (anon INSERT, instructor CRUD)
+- `WaitlistJoinCard` component for mini-website — name, phone, email, preferred days
+- Shows confirmation after submission
 
----
+#### 9g. Marketing Landing Page Builder ✅
+- `WebsitePageEditor` component — visual block editor for `content_blocks` JSONB
+- 8 block types: Text, Features List, CTA Button, FAQ, Video Embed, Stats Counter, Testimonial, Pricing Table
+- Drag-and-drop reordering, add/remove blocks
+- SEO settings: meta_title, meta_description per page
+- Hero heading/subheading editing
 
-### Build Order
-1. Bulk Operations Panel (quick win — UI for existing backend)
-2. Smart Reporting Hub (extends existing PDF edge function)
-3. Availability Rules Engine (extends existing tables)
-4. Pupil Milestone Certificates (new table + PDF generation)
-5. Parent Portal Enhancements (extends existing portal)
-6. Waiting List Capacity UI (extends existing edge function)
-7. Marketing Landing Page Builder (largest UI effort)
-8. Franchise/School Portal (largest feature — new auth flow + dashboard)
-
-### Database Migrations Summary
-- `waitlist_entries` table + RLS
-- `schools` + `school_instructors` tables + RLS
-- `availability_rules` table + RLS
-- `pupil_certificates` table + RLS
-- `instructor_reports` table + RLS
-
+#### 9h. Franchise / Multi-Instructor School Portal ✅
+- DB: `schools` table + `school_instructors` join table with `school_role` enum
+- `/school/dashboard` page with aggregate stats (lessons, earnings, pupils, pass rate)
+- Instructor list with role badges
+- School creation flow + invite via school ID code
+- RLS: school owners manage, instructors view own membership

@@ -103,6 +103,9 @@ const InstructorPipeline = lazy(() => import("./pages/InstructorPipeline"));
 const InstructorAutomations = lazy(() => import("./pages/InstructorAutomations"));
 const InstructorSubscriptions = lazy(() => import("./pages/InstructorSubscriptions"));
 const InstructorTakePayment = lazy(() => import("./pages/InstructorTakePayment"));
+const InstructorBulkOperations = lazy(() => import("./pages/InstructorBulkOperations"));
+const InstructorReportsHub = lazy(() => import("./pages/InstructorReportsHub"));
+const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -332,6 +335,9 @@ const App = () => (
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
+                <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
+                <Route path="/instructor/reports" element={<InstructorReportsHub />} />
+                <Route path="/school/dashboard" element={<SchoolDashboard />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />

@@ -20,6 +20,8 @@ import { ParentBottomNav } from "@/components/parent/ParentBottomNav";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
 import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOverview";
+import { ParentAttendanceReport } from "@/components/parent/ParentAttendanceReport";
+import { ParentLessonNotes } from "@/components/parent/ParentLessonNotes";
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
 import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
@@ -452,7 +454,9 @@ export default function ParentPortal() {
           </div>
 
           <ParentUpcomingLessons childId={selectedChild.id} />
+          <ParentAttendanceReport childId={selectedChild.id} />
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+          <ParentLessonNotes childId={selectedChild.id} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
           <div className="px-0">
