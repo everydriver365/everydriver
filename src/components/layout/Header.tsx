@@ -44,7 +44,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="bg-primary overflow-x-hidden">
-      <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
+      <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative" role="navigation" aria-label="Main navigation">
         <Link to="/drive365" className="hidden md:flex items-center">
           <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
         </Link>
