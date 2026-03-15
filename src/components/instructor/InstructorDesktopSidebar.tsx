@@ -1,15 +1,17 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Satellite,
+  LogOut, Car, Camera, Satellite, Pin, ChevronDown,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
   SidebarSeparator, useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
@@ -18,6 +20,9 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { cn } from "@/lib/utils";
+
+const PINNED_STORAGE_KEY = "instructor-pinned-nav";
+const DEFAULT_PINS = ["/instructor", "/instructor/schedule", "/instructor/pupils", "/instructor/messages"];
 
 const sidebarGroups = [
   {
@@ -71,6 +76,9 @@ const sidebarGroups = [
   },
 ];
 
+// Flatten all items for pinning lookup
+const allItems = sidebarGroups.flatMap(g => g.items);
+
 interface InstructorDesktopSidebarProps {
   instructor: {
     id: string;
@@ -88,6 +96,101 @@ export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+
+  // Pinned favourites
+  const [pinnedHrefs, setPinnedHrefs] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(PINNED_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : DEFAULT_PINS;
+    } catch {
+      return DEFAULT_PINS;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(pinnedHrefs));
+  }, [pinnedHrefs]);
+
+  const togglePin = (href: string) => {
+    setPinnedHrefs(prev =>
+      prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
+    );
+  };
+
+  const pinnedItems = pinnedHrefs
+    .map(href => allItems.find(i => i.href === href))
+    .filter(Boolean) as typeof allItems;
+
+  // Accordion: determine which group is active
+  const activeGroupLabel = sidebarGroups.find(g =>
+    g.items.some(item => location.pathname === item.href)
+  )?.label || "TEACHING";
+
+  const [openGroup, setOpenGroup] = useState<string>(activeGroupLabel);
+
+  // Update open group when route changes
+  useEffect(() => {
+    const newGroup = sidebarGroups.find(g =>
+      g.items.some(item => location.pathname === item.href)
+    )?.label;
+    if (newGroup) setOpenGroup(newGroup);
+  }, [location.pathname]);
+
+  const renderNavItem = (link: typeof allItems[0], showPinAction = false) => {
+    const isActive = location.pathname === link.href;
+    const isMessages = link.href === "/instructor/messages";
+    const isAdminChat = link.href === "/instructor/admin-chat";
+    const isVisitorChats = link.href === "/instructor/visitor-chats";
+    const isPending = link.href === "/instructor/pending-scheduling";
+    const isHighlighted = 'highlight' in link && link.highlight;
+    const isPinned = pinnedHrefs.includes(link.href);
+
+    return (
+      <SidebarMenuItem key={link.href}>
+        <SidebarMenuButton
+          asChild
+          isActive={isActive}
+          tooltip={link.label}
+          className={cn(
+            isActive && "bg-primary/10 text-primary font-medium border-l-2 border-primary",
+            isHighlighted && !isActive && "text-emerald-600 dark:text-emerald-400",
+          )}
+        >
+          <Link to={link.href}>
+            <span className="relative shrink-0">
+              <link.icon className={cn(
+                "h-4 w-4",
+                isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+              )} />
+              {isAdminChat && !isActive && <AdminMessageBadge />}
+            </span>
+            <span className="flex-1 truncate text-[13px]">{link.label}</span>
+            {isVisitorChats && !isActive && (
+              <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+            )}
+            {isMessages && !isActive && (
+              <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+            )}
+            {isPending && !isActive && (
+              <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+            )}
+            {showPinAction && !collapsed && (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(link.href); }}
+                className={cn(
+                  "ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0",
+                  isPinned && "opacity-100 text-primary"
+                )}
+                aria-label={isPinned ? `Unpin ${link.label}` : `Pin ${link.label}`}
+              >
+                <Pin className={cn("h-3 w-3", isPinned && "fill-current")} />
+              </button>
+            )}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -111,62 +214,64 @@ export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }
 
       {/* Navigation Groups */}
       <SidebarContent className="py-1">
+        {/* Pinned Section */}
+        {pinnedItems.length > 0 && (
+          <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="text-[10px] font-bold tracking-widest uppercase text-primary/60">
+              <Pin className="h-3 w-3 mr-1 inline fill-current" />
+              {!collapsed && "PINNED"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {pinnedItems.map(item => renderNavItem(item))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        <SidebarSeparator />
+
+        {/* Accordion Groups */}
         {sidebarGroups.map((group) => {
-          const hasActiveItem = group.items.some(item => location.pathname === item.href);
-          const isVehicleIntel = group.label === "VEHICLE INTELLIGENCE";
+          const isOpen = openGroup === group.label;
+
+          if (collapsed) {
+            // When collapsed, show all items (icon-only mode)
+            return (
+              <SidebarGroup key={group.label} className="py-1">
+                <SidebarGroupLabel className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60">
+                  {group.label}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((link) => renderNavItem(link))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          }
 
           return (
-            <SidebarGroup key={group.label} className="py-1">
-              <SidebarGroupLabel className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60">
-                {group.label}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {group.items.map((link) => {
-                    const isActive = location.pathname === link.href;
-                    const isMessages = link.href === "/instructor/messages";
-                    const isAdminChat = link.href === "/instructor/admin-chat";
-                    const isVisitorChats = link.href === "/instructor/visitor-chats";
-                    const isPending = link.href === "/instructor/pending-scheduling";
-                    const isHighlighted = 'highlight' in link && link.highlight;
-
-                    return (
-                      <SidebarMenuItem key={link.href}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          tooltip={link.label}
-                          className={cn(
-                            isActive && "bg-primary/10 text-primary font-medium border-l-2 border-primary",
-                            isHighlighted && !isActive && "text-emerald-600 dark:text-emerald-400",
-                          )}
-                        >
-                          <Link to={link.href}>
-                            <span className="relative shrink-0">
-                              <link.icon className={cn(
-                                "h-4 w-4",
-                                isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-                              )} />
-                              {isAdminChat && !isActive && <AdminMessageBadge />}
-                            </span>
-                            <span className="flex-1 truncate text-[13px]">{link.label}</span>
-                            {isVisitorChats && !isActive && (
-                              <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                            )}
-                            {isMessages && !isActive && (
-                              <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                            )}
-                            {isPending && !isActive && (
-                              <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            <Collapsible key={group.label} open={isOpen} onOpenChange={() => setOpenGroup(isOpen ? "" : group.label)}>
+              <SidebarGroup className="py-0.5">
+                <CollapsibleTrigger className="w-full">
+                  <SidebarGroupLabel className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60 cursor-pointer hover:text-foreground transition-colors flex items-center justify-between pr-2">
+                    <span>{group.label}</span>
+                    <ChevronDown className={cn(
+                      "h-3 w-3 transition-transform duration-200",
+                      !isOpen && "-rotate-90"
+                    )} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {group.items.map((link) => renderNavItem(link, true))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
           );
         })}
       </SidebarContent>
