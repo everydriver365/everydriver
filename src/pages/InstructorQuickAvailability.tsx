@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { AvailabilityRulesManager } from "@/components/instructor/AvailabilityRulesManager";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
