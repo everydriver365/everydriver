@@ -454,7 +454,9 @@ export default function ParentPortal() {
           </div>
 
           <ParentUpcomingLessons childId={selectedChild.id} />
+          <ParentAttendanceReport childId={selectedChild.id} />
           <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+          <ParentLessonNotes childId={selectedChild.id} />
           <ParentPaymentHistory childId={selectedChild.id} />
           <ParentSafetyScores childId={selectedChild.id} />
           <div className="px-0">
