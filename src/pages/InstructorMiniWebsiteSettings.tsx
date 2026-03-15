@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code, Car } from "lucide-react";
+import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code, Car, Pencil } from "lucide-react";
 import { CarStickerGenerator } from "@/components/instructor/CarStickerGenerator";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
