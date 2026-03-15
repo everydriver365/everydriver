@@ -249,3 +249,46 @@ export function AvailabilityRulesManager({ instructorId }: Props) {
     </Card>
   );
 }
+
+function CalendarPreview({ rules }: { rules: Rule[] }) {
+  const today = new Date();
+  const monthStart = startOfMonth(today);
+  const monthEnd = endOfMonth(today);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  const blockedDates = new Set<string>();
+  rules.forEach(rule => {
+    if (rule.rule_type === "holiday_block" && rule.start_date) {
+      const end = rule.end_date || rule.start_date;
+      eachDayOfInterval({ start: new Date(rule.start_date), end: new Date(end) }).forEach(d => {
+        blockedDates.add(format(d, "yyyy-MM-dd"));
+      });
+    }
+  });
+
+  const startPad = (monthStart.getDay() + 6) % 7; // Monday-start
+
+  return (
+    <div className="mt-4 pt-4 border-t">
+      <p className="text-xs text-muted-foreground mb-2">{format(today, "MMMM yyyy")} — blocked days in red</p>
+      <div className="grid grid-cols-7 gap-0.5 text-center">
+        {["M","T","W","T","F","S","S"].map((d, i) => (
+          <div key={i} className="text-[10px] text-muted-foreground font-medium py-1">{d}</div>
+        ))}
+        {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} />)}
+        {days.map(day => {
+          const isBlocked = blockedDates.has(format(day, "yyyy-MM-dd"));
+          const isToday = isSameDay(day, today);
+          return (
+            <div
+              key={day.toISOString()}
+              className={`text-[11px] py-1 rounded ${isBlocked ? "bg-destructive/20 text-destructive font-semibold" : ""} ${isToday ? "ring-1 ring-primary" : ""}`}
+            >
+              {day.getDate()}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
