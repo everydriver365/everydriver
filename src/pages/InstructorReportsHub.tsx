@@ -8,7 +8,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, startOfWeek, endOfWeek } from "date-fns";
 
 const REPORT_TYPES = [
   { key: "earnings", title: "Weekly Business Summary", description: "Lessons, earnings & pupil stats for the period", icon: TrendingUp, color: "bg-emerald-500" },
