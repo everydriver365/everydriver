@@ -370,6 +370,69 @@ export type Database = {
           },
         ]
       }
+      booking_drafts: {
+        Row: {
+          converted_at: string | null
+          course_hours: number | null
+          course_name: string | null
+          created_at: string
+          email: string
+          follow_up_sent_at: string | null
+          form_data: Json | null
+          id: string
+          instructor_id: string
+          name: string | null
+          phone: string | null
+          total_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          converted_at?: string | null
+          course_hours?: number | null
+          course_name?: string | null
+          created_at?: string
+          email: string
+          follow_up_sent_at?: string | null
+          form_data?: Json | null
+          id?: string
+          instructor_id: string
+          name?: string | null
+          phone?: string | null
+          total_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          converted_at?: string | null
+          course_hours?: number | null
+          course_name?: string | null
+          created_at?: string
+          email?: string
+          follow_up_sent_at?: string | null
+          form_data?: Json | null
+          id?: string
+          instructor_id?: string
+          name?: string | null
+          phone?: string | null
+          total_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_drafts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_drafts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_intake_answers: {
         Row: {
           answer_text: string
