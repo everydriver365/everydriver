@@ -105,3 +105,58 @@ All 6 features + security hardening have been built and deployed.
 - `PassShareCard` component generates branded celebration card
 - Uses Web Share API with clipboard fallback via `share-utils.ts`
 - Shows "Share Your Pass!" button with instructor branding
+
+### Feature 9: 8 New Features (All Except Stripe Connect) ✅
+
+#### 9a. Bulk Operations Panel ✅
+- New page `/instructor/bulk-operations` with 3 tabs
+- **Bulk SMS**: audience filters (all, test-date, overdue balance), template library, send via `send-gap-sms`
+- **Bulk Reschedule**: pick source date → find lessons → move to target date (bank holidays)
+- **Bulk Price Update**: select pupils → set new `custom_hourly_rate`
+- Components: `BulkSMSTab`, `BulkRescheduleTab`, `BulkPriceUpdateTab`
+- Added to Instructor Menu under Tools
+
+#### 9b. Smart Reporting & PDF Export Hub ✅
+- New page `/instructor/reports` — Reports Hub
+- 5 report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary, Pupil Progress, Mileage Log
+- Date range picker with quick-select (This Month, Last Month, This Year)
+- Calls existing `generate-pdf` edge function, downloads as PDF
+- Saves report records to `instructor_reports` table
+- Added to Instructor Menu under Tools
+
+#### 9c. Availability Rules Engine ✅
+- DB: `availability_rules` table (rule_type enum: recurring_exception, holiday_block, seasonal)
+- `AvailabilityRulesManager` component integrated into `/instructor/availability` page
+- Holiday blocks auto-generate `instructor_date_overrides` rows
+- Recurring exceptions: "No lessons on first Monday of each month"
+- Optional auto-notify affected pupils toggle
+
+#### 9d. Pupil Milestone Certificates ✅
+- DB: `pupil_certificates` table (milestone_type, certificate_url, issued_at)
+- `CertificateGenerator` component using jsPDF — landscape A4 with decorative border
+- Milestones: first_lesson, 10_lessons, 20_lessons, theory_pass, test_pass
+- Branded PDF with pupil name, date, instructor name, achievement text
+
+#### 9e. Parent Portal Enhancements ✅
+- `ParentAttendanceReport`: attendance rate, completed/cancelled/no-show counts
+- `ParentLessonNotes`: read-only view of instructor's post-lesson feedback (from `lesson_feedback`)
+- Both integrated into Parent Portal overview section
+
+#### 9f. Waiting List Capacity UI ✅
+- DB: `waitlist_entries` table with RLS (anon INSERT, instructor CRUD)
+- `WaitlistJoinCard` component for mini-website — name, phone, email, preferred days
+- Shows confirmation after submission
+
+#### 9g. Marketing Landing Page Builder ✅
+- `WebsitePageEditor` component — visual block editor for `content_blocks` JSONB
+- 8 block types: Text, Features List, CTA Button, FAQ, Video Embed, Stats Counter, Testimonial, Pricing Table
+- Drag-and-drop reordering, add/remove blocks
+- SEO settings: meta_title, meta_description per page
+- Hero heading/subheading editing
+
+#### 9h. Franchise / Multi-Instructor School Portal ✅
+- DB: `schools` table + `school_instructors` join table with `school_role` enum
+- `/school/dashboard` page with aggregate stats (lessons, earnings, pupils, pass rate)
+- Instructor list with role badges
+- School creation flow + invite via school ID code
+- RLS: school owners manage, instructors view own membership
