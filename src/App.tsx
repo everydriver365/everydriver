@@ -335,6 +335,9 @@ const App = () => (
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
+                <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
+                <Route path="/instructor/reports" element={<InstructorReportsHub />} />
+                <Route path="/school/dashboard" element={<SchoolDashboard />} />
 
                 {/* Other portals */}
                 <Route path="/parent" element={<ParentPortal />} />
