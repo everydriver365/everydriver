@@ -114,6 +114,7 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+            aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {resolvedTheme === 'dark' ? (
               <Moon className="h-5 w-5" />

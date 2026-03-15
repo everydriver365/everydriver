@@ -17,7 +17,7 @@ export function MiniWebsiteMobileBottomNav({ slug }: MiniWebsiteMobileBottomNavP
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 md:hidden" role="navigation" aria-label="Instructor website navigation">
       <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive = item.path === `/i/${slug}`
