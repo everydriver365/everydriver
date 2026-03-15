@@ -34,15 +34,15 @@ export function BulkRescheduleTab({ instructorId }: BulkRescheduleTabProps) {
     setLoading(true);
     const { data } = await supabase
       .from("scheduled_lessons")
-      .select("id, date, start_time, duration_minutes, pupils!inner(name)")
+      .select("id, lesson_date, start_time, duration_minutes, pupils!inner(name)")
       .eq("instructor_id", instructorId)
-      .eq("date", sourceDate)
+      .eq("lesson_date", sourceDate)
       .neq("status", "cancelled")
       .order("start_time") as any;
 
     const mapped = (data || []).map((l: any) => ({
       id: l.id,
-      date: l.date,
+      date: l.lesson_date,
       start_time: l.start_time,
       duration_minutes: l.duration_minutes,
       pupil_name: l.pupils?.name || "Unknown",
