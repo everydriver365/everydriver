@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Calendar, Users, PoundSterling, MapPin, MessageSquare, Plus,
+  Calendar, Users, PoundSterling, MapPin, MessageSquare,
 } from "lucide-react";
 import {
   Tooltip, TooltipContent, TooltipTrigger,
@@ -25,14 +25,15 @@ export function DesktopQuickActionBar() {
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/10"
+              size="sm"
+              className="h-8 text-white/50 hover:text-white hover:bg-white/10 gap-1.5 px-2 xl:px-3"
               onClick={() => navigate(action.route)}
             >
-              <action.icon className="h-4 w-4" />
+              <action.icon className="h-4 w-4 shrink-0" />
+              <span className="hidden xl:inline text-xs font-medium">{action.label}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs">
+          <TooltipContent side="bottom" className="text-xs xl:hidden">
             {action.label}
           </TooltipContent>
         </Tooltip>

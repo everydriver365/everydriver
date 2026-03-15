@@ -1,99 +1,162 @@
+## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
+All 6 features + security hardening have been built and deployed.
 
-# Dashboard Layout & Navigation UX Improvements
+### Feature 1: Pipeline Board ✅
+- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
+- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
+- "Convert to Pupil" button creates pupil record and moves lead to active
+- Tile added to home screen
 
-Based on auditing the current admin and instructor dashboards and comparing with patterns from MyDriveTime, Learnr, and modern SaaS admin UX best practices (task-centric design, escalation cues, role-aware views).
+### Feature 2: On-My-Way Texts ✅
+- DB: `on_my_way_notifications` table with RLS
+- UI: `OnMyWayButton` component integrated into SatNav lesson cards
+- Opens native SMS with pre-filled ETA message
 
----
+### Feature 3: Workflow Automations ✅
+- DB: `instructor_automations` table with trigger/action enums, RLS
+- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
+- Builder has templates + step-by-step trigger→action flow
+- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
+- Tile added to home screen
 
-## Current Issues Found
+### Feature 4: AI Receptionist ✅
+- DB: `ai_receptionist_enabled` column on instructors table
+- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
+- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
+- Instructor context (name, rate, areas, car) included in AI prompt
+- Messages prefixed with 🤖 emoji for visual distinction
 
-### Admin Dashboard
-1. **No persistent desktop sidebar** — On desktop, the admin has NO sidebar at all. Navigation is only via the overview grid cards or the mobile hamburger sheet. Every action requires returning to overview first. Competitors (Stripe Dashboard, Shopify Admin, MyDriveTime) all use a persistent collapsible sidebar on desktop.
-2. **Flat overview grid is overwhelming** — 8 category groups × 4-8 links each = 40+ tiles on one scrollable page. No visual priority hierarchy. The "Communications" section with live badge counts is buried at the same visual weight as "Engagement & Rewards."
-3. **No notification/action center in the header** — Only a search box and logout button. No bell icon, no pending-action count, no quick-jump to items needing attention.
-4. **Breadcrumb is the only wayfinding** — Once inside a section, the only way back is the breadcrumb or browser back. No persistent context of where you are in the hierarchy.
+### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
+- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
+- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
+- UI: New `SmartBufferSettings` component in Scheduling settings section
+- 3 modes: flat buffer, travel time only, travel time + padding
+- Uses TomTom Routing API for accurate drive time calculations
 
-### Instructor Dashboard
-5. **Sidebar has 28 items across 5 groups** — Too many items visible at once. The "TOOLS" group alone has 7 items. MyDriveTime and Learnr use collapsible accordion groups so only the active group is expanded.
-6. **No "pinned" or "favourites"** — Instructors likely use 5-6 pages daily (Dashboard, Schedule, Pupils, Messages, Pay). These should be pinnable to the top for fast access.
-7. **Desktop header quick-action bar is icon-only** — 5 unlabelled icon buttons (Calendar, Users, £, MapPin, MessageSquare) with only tooltip labels. New users won't discover these. Best practice: show labels on wider screens, icons-only when sidebar is expanded.
-8. **No contextual "What's happening now" widget** — The instructor dashboard exists but there's no at-a-glance "today" view showing next lesson, hours remaining, earnings today. Competitors show a "Today" card prominently.
+### Feature 6: Recurring Lesson Subscriptions ✅
+- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
+- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
+- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
+- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
+- Tile added to home screen dashboard
+- Route added to App.tsx
 
----
+### Security Hardening ✅
+- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
+- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
+- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
+- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
 
-## Proposed Improvements
+### Feature 7: Competitor Feature Gap — 4 New Features ✅
 
-### 1. Add Persistent Desktop Sidebar to Admin Portal
-The biggest structural gap. Convert `AdminLayout` from header-only to header + collapsible sidebar (using the existing Shadcn `Sidebar` component, matching the instructor portal pattern).
+#### 7a. Pupil Selfie / Profile Photo Upload ✅
+- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
+- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
+- Instructors can snap/upload photos directly from the pupil card
 
-- Reuse the `mobileNavGroups` data as sidebar groups
-- Collapsible icon mode (matching instructor sidebar)
-- Badge counts on Communications items (already computed)
-- Keep the mobile hamburger sheet as-is
+#### 7b. Lesson Route Recording & Viewer ✅
+- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
+- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
+- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
+- RLS: Instructor-scoped CRUD, anon read for pupil portal
 
-### 2. Admin Overview: Task-Centric "Needs Attention" Section
-Replace the flat grid-first layout with a priority hierarchy:
+#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
+- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
+- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
+- Shows category breakdown on results, saves results to DB
+- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
 
-```text
-┌─────────────────────────────────────────────┐
-│  NEEDS ATTENTION (red/amber items)          │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐      │
-│  │3 Enq │ │2 Chat│ │5 Pend│ │1 Comp│      │
-│  └──────┘ └──────┘ └──────┘ └──────┘      │
-├─────────────────────────────────────────────┤
-│  STATS ROW (instructors, revenue, bookings) │
-├─────────────────────────────────────────────┤
-│  QUICK ACTIONS (Bespoke, Alert, Campaign)   │
-├─────────────────────────────────────────────┤
-│  CATEGORY GRID (existing, but below the fold│
-└─────────────────────────────────────────────┘
-```
+#### 7d. Branded Car Window Sticker PDF Generator ✅
+- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
+- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
+- Brand colour applied throughout; downloadable PDF
+- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
 
-Move items with non-zero badge counts into a prominent "Needs Attention" strip at the top. This is the "exception routing" pattern — surfaces only what requires action.
+### Feature 8: UX Improvements Inspired by Leading Platforms ✅
 
-### 3. Admin Header: Add Notification Bell
-Add a bell icon with aggregate unread count (enquiries + chats + messages + emails) that opens a dropdown with quick-jump links to each source. Matches the instructor portal pattern.
+#### 8a. Smart Empty States ✅
+- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
+- Friendly headlines and descriptions replace plain icons
 
-### 4. Instructor Sidebar: Collapsible Accordion Groups
-Change sidebar groups from all-expanded to accordion-style: only the group containing the active page is expanded, others collapse to just the group label. Clicking a group label expands it and collapses others. Reduces visible items from 28 to ~8.
+#### 8b. Booking Abandonment Recovery ✅
+- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
+- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
+- Cleared on successful payment
 
-### 5. Instructor Sidebar: Pinned Favourites Section
-Add a "PINNED" group at the top of the sidebar. Default pins: Dashboard, Schedule, Pupils, Messages. Users can right-click or long-press any sidebar item to pin/unpin. Store pins in `localStorage`.
+#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
+- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
+- `PostLessonRating` component: auto-appears after completed lessons on dashboard
+- 5-star interactive rating with optional comment, dismissible per session
+- Mounted in `BrandedPupilPortal` home section
 
-### 6. Instructor Header: Labelled Quick Actions on Wide Screens
-On screens > 1280px (`xl`), show text labels next to quick-action icons ("New Lesson", "New Pupil", etc.). On narrower screens, keep icon-only with tooltips.
+#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
+- `CancellationPolicyCard` component with traffic-light visual breakdown
+- Green (free), Amber (late fee), Red (no-show full charge)
+- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
 
-### 7. Instructor Dashboard: "Today at a Glance" Card
-Add a prominent card at the top of the instructor dashboard showing:
-- Next lesson (pupil name, time, countdown)
-- Lessons remaining today
-- Earnings today
-- Hours taught today
+#### 8e. Lesson SMS Reminders ✅
+- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
+- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
+- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
+- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
 
-This is the #1 pattern across MyDriveTime, Learnr, and ADI Diary Pro.
+#### 8f. Share Your Pass Social Card ✅
+- `PassShareCard` component generates branded celebration card
+- Uses Web Share API with clipboard fallback via `share-utils.ts`
+- Shows "Share Your Pass!" button with instructor branding
 
-### 8. Both Portals: Keyboard Shortcut Hints in Sidebar
-Show subtle keyboard shortcut hints (e.g., `⌘1` for Dashboard, `⌘2` for Schedule) next to sidebar items when sidebar is expanded. Wire up the shortcuts globally.
+### Feature 9: 8 New Features (All Except Stripe Connect) ✅
 
----
+#### 9a. Bulk Operations Panel ✅
+- New page `/instructor/bulk-operations` with 3 tabs
+- **Bulk SMS**: audience filters (all, test-date, overdue balance), template library, send via `send-gap-sms`
+- **Bulk Reschedule**: pick source date → find lessons → move to target date (bank holidays)
+- **Bulk Price Update**: select pupils → set new `custom_hourly_rate`
+- Components: `BulkSMSTab`, `BulkRescheduleTab`, `BulkPriceUpdateTab`
+- Added to Instructor Menu under Tools
 
-## Implementation Order
-1. **Admin desktop sidebar** (biggest structural fix, uses existing Shadcn Sidebar)
-2. **Admin "Needs Attention" strip** (quick win, reorders existing data)
-3. **Admin notification bell** (small component, high impact)
-4. **Instructor accordion sidebar** (CSS/state change only)
-5. **Instructor pinned favourites** (localStorage + small UI)
-6. **Instructor "Today" card** (new component, queries existing tables)
-7. **Quick action labels on xl screens** (CSS tweak)
-8. **Keyboard shortcut hints** (polish)
+#### 9b. Smart Reporting & PDF Export Hub ✅
+- New page `/instructor/reports` — Reports Hub
+- 5 report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary, Pupil Progress, Mileage Log
+- Date range picker with quick-select (This Month, Last Month, This Year)
+- Calls existing `generate-pdf` edge function, downloads as PDF
+- Saves report records to `instructor_reports` table
+- Added to Instructor Menu under Tools
 
-### Files to Create/Modify
-- `src/components/admin/AdminDesktopSidebar.tsx` — new, mirrors `InstructorDesktopSidebar`
-- `src/components/admin/AdminLayout.tsx` — wrap with `SidebarProvider`, add sidebar on desktop
-- `src/components/admin/AdminSettingsGrid.tsx` — add "Needs Attention" strip above stats
-- `src/components/admin/AdminNotificationBell.tsx` — new, bell dropdown
-- `src/components/instructor/InstructorDesktopSidebar.tsx` — accordion groups, pinned section
-- `src/components/instructor/DesktopQuickActionBar.tsx` — conditional labels
-- `src/components/instructor/TodayAtAGlance.tsx` — new dashboard card
+#### 9c. Availability Rules Engine ✅
+- DB: `availability_rules` table (rule_type enum: recurring_exception, holiday_block, seasonal)
+- `AvailabilityRulesManager` component integrated into `/instructor/availability` page
+- Holiday blocks auto-generate `instructor_date_overrides` rows
+- Recurring exceptions: "No lessons on first Monday of each month"
+- Optional auto-notify affected pupils toggle
 
+#### 9d. Pupil Milestone Certificates ✅
+- DB: `pupil_certificates` table (milestone_type, certificate_url, issued_at)
+- `CertificateGenerator` component using jsPDF — landscape A4 with decorative border
+- Milestones: first_lesson, 10_lessons, 20_lessons, theory_pass, test_pass
+- Branded PDF with pupil name, date, instructor name, achievement text
+
+#### 9e. Parent Portal Enhancements ✅
+- `ParentAttendanceReport`: attendance rate, completed/cancelled/no-show counts
+- `ParentLessonNotes`: read-only view of instructor's post-lesson feedback (from `lesson_feedback`)
+- Both integrated into Parent Portal overview section
+
+#### 9f. Waiting List Capacity UI ✅
+- DB: `waitlist_entries` table with RLS (anon INSERT, instructor CRUD)
+- `WaitlistJoinCard` component for mini-website — name, phone, email, preferred days
+- Shows confirmation after submission
+
+#### 9g. Marketing Landing Page Builder ✅
+- `WebsitePageEditor` component — visual block editor for `content_blocks` JSONB
+- 8 block types: Text, Features List, CTA Button, FAQ, Video Embed, Stats Counter, Testimonial, Pricing Table
+- Drag-and-drop reordering, add/remove blocks
+- SEO settings: meta_title, meta_description per page
+- Hero heading/subheading editing
+
+#### 9h. Franchise / Multi-Instructor School Portal ✅
+- DB: `schools` table + `school_instructors` join table with `school_role` enum
+- `/school/dashboard` page with aggregate stats (lessons, earnings, pupils, pass rate)
+- Instructor list with role badges
+- School creation flow + invite via school ID code
+- RLS: school owners manage, instructors view own membership

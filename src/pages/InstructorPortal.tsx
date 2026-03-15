@@ -33,6 +33,7 @@ import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
+import { TodayAtAGlance } from "@/components/instructor/TodayAtAGlance";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -305,6 +306,9 @@ export default function InstructorPortal() {
             <CalendarCheck className="h-3 w-3" /> Availability
           </Button>
         </div>
+
+        {/* Today at a Glance */}
+        <TodayAtAGlance instructorId={instructorId} />
 
         {/* Setup Checklist for new instructors */}
         <InstructorSetupChecklist instructorId={instructorId} variant="full" />
