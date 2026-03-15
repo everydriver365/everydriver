@@ -99,7 +99,7 @@ export default function InstructorReportsHub() {
           .gte("date", startDate)
           .lte("date", endDate);
 
-        const income = (lessons || []).reduce((s: number, l: any) => s + (l.price || 0), 0);
+        const income = (lessons || []).reduce((s: number, l: any) => s + (l.amount_due || 0), 0);
         const totalExpenses = (expenses || []).reduce((s: number, e: any) => s + (e.amount || 0), 0);
 
         reportData.sections = [
