@@ -42,7 +42,7 @@ export default function InstructorReportsHub() {
           .lte("lesson_date", endDate)
           .neq("status", "cancelled");
 
-        const totalEarnings = (lessons || []).reduce((sum: number, l: any) => sum + (l.price || 0), 0);
+        const totalEarnings = (lessons || []).reduce((sum: number, l: any) => sum + (l.amount_due || 0), 0);
         const totalHours = (lessons || []).reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0) / 60;
 
         reportData.summary = [
