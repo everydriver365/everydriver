@@ -65,7 +65,7 @@ export default function SchoolDashboard() {
     if (instructorIds.length > 0) {
       const { data: lessons } = await supabase
         .from("scheduled_lessons")
-        .select("price, status")
+        .select("amount_due, status")
         .in("instructor_id", instructorIds);
 
       const { data: pupils } = await supabase
