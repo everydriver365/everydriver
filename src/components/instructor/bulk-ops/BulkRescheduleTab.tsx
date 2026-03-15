@@ -65,7 +65,7 @@ export function BulkRescheduleTab({ instructorId }: BulkRescheduleTabProps) {
     try {
       const results = await Promise.allSettled(
         selectedLessons.map(id =>
-          supabase.from("scheduled_lessons").update({ date: targetDate }).eq("id", id)
+          supabase.from("scheduled_lessons").update({ lesson_date: targetDate }).eq("id", id)
         )
       );
       const ok = results.filter(r => r.status === "fulfilled").length;

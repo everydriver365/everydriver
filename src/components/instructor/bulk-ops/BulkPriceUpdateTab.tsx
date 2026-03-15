@@ -105,7 +105,7 @@ export function BulkPriceUpdateTab({ instructorId }: BulkPriceUpdateTabProps) {
               <div key={p.id} className="flex items-center gap-3 p-2 hover:bg-muted/50 cursor-pointer" onClick={() => togglePupil(p.id)}>
                 <Checkbox checked={selectedPupils.includes(p.id)} />
                 <span className="flex-1 text-sm">{p.name}</span>
-                <span className="text-xs text-muted-foreground">£{p.lesson_price || 0}</span>
+                <span className="text-xs text-muted-foreground">£{p.custom_hourly_rate || 0}</span>
               </div>
             ))}
           </div>

@@ -84,7 +84,7 @@ export default function SchoolDashboard() {
 
       setStats({
         totalLessons: completedLessons.length,
-        totalEarnings: completedLessons.reduce((s, l) => s + (l.price || 0), 0),
+        totalEarnings: completedLessons.reduce((s: number, l: any) => s + (l.amount_due || 0), 0),
         totalPupils: (pupils || []).length,
         passRate: (tests || []).length > 0 ? Math.round((passedTests / (tests || []).length) * 100) : 0,
       });
