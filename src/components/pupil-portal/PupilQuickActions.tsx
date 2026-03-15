@@ -80,7 +80,7 @@ export function PupilQuickActions({ onNavigate, brandColour }: PupilQuickActions
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => {
-            haptics.impact();
+            haptics.medium();
             setOpen((v) => !v);
           }}
           className="h-14 w-14 rounded-full shadow-xl flex items-center justify-center"
