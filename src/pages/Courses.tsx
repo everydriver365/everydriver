@@ -1265,11 +1265,11 @@ export default function Courses() {
                       We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters.
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      <Button variant="outline" onClick={() => { setSelectedHours(null); setSort("soonest"); }}>
+                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); }}>
                         Clear Filters
                       </Button>
-                      <Button onClick={() => navigate("/contact")}>
-                        <MapPin className="h-4 w-4 mr-1" /> Contact Us
+                      <Button asChild>
+                        <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
                       </Button>
                     </div>
                   </div>
