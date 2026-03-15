@@ -241,6 +241,9 @@ export function AvailabilityRulesManager({ instructorId }: Props) {
             ))}
           </div>
         )}
+
+        {/* Calendar Preview */}
+        {rules.length > 0 && <CalendarPreview rules={rules} />}
       </CardContent>
     </Card>
   );
