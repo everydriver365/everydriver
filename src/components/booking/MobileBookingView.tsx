@@ -802,6 +802,38 @@ export function MobileBookingView({
         </div>
       )}
 
+      {/* Upsells — between schedule and payment */}
+      {availableUpsells.length > 0 && onUpsellsChange && isPupilDetailsComplete && (
+        <div className="px-4 pb-4">
+          <UpsellSelector
+            upsells={availableUpsells}
+            selectedIds={selectedUpsells}
+            onSelectionChange={onUpsellsChange}
+          />
+        </div>
+      )}
+
+      {/* Order Review Summary — before payment */}
+      {canSubmit && (
+        <div className="px-4 pb-4">
+          <OrderReviewSummary
+            courseName={courseName}
+            courseHours={hours}
+            coursePrice={totalPrice}
+            selectedSlots={selectedSlots}
+            selectedUpsells={availableUpsells
+              .filter((u) => selectedUpsells.includes(u.id))
+              .map((u) => ({ id: u.id, name: u.name, price: Number(u.price) }))}
+            upsellTotal={upsellTotal}
+            depositEnabled={depositEnabled}
+            depositAmount={depositAmount}
+            paymentOption={paymentOption}
+            adminFee={reviewAdminFee}
+            hasFee={reviewHasFee}
+          />
+        </div>
+      )}
+
       {/* Step 3: Payment */}
       <div className="px-4 pb-8" ref={paymentRef}>
         <div className="rounded-xl border bg-card p-4">
