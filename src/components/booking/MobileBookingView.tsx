@@ -222,6 +222,10 @@ export function MobileBookingView({
   // Wallet processing state
   const [isWalletProcessing, setIsWalletProcessing] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  // Admin fee for order review
+  const { adminFee: reviewAdminFee, hasFee: reviewHasFee } = useAdminFee(totalPrice + upsellTotal, undefined);
   
   // Booking recovery: save form state to localStorage
   const storageKey = `booking_draft_${instructor.id}`;
