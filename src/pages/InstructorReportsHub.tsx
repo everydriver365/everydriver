@@ -36,10 +36,10 @@ export default function InstructorReportsHub() {
       if (reportType === "earnings") {
         const { data: lessons } = await supabase
           .from("scheduled_lessons")
-          .select("date, start_time, duration_minutes, price, status, pupils(name)")
+          .select("lesson_date, start_time, duration_minutes, amount_due, status, pupils(name)")
           .eq("instructor_id", instructor.id)
-          .gte("date", startDate)
-          .lte("date", endDate)
+          .gte("lesson_date", startDate)
+          .lte("lesson_date", endDate)
           .neq("status", "cancelled");
 
         const totalEarnings = (lessons || []).reduce((sum: number, l: any) => sum + (l.price || 0), 0);
