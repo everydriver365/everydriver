@@ -11,7 +11,7 @@ import { toast } from "sonner";
 interface Pupil {
   id: string;
   name: string;
-  lesson_price: number | null;
+  custom_hourly_rate: number | null;
 }
 
 interface BulkPriceUpdateTabProps {
