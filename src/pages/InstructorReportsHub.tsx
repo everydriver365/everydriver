@@ -162,10 +162,12 @@ export default function InstructorReportsHub() {
                 <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
               </div>
             </div>
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setStartDate(format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd")); setEndDate(format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd")); }}>This Week</Button>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setStartDate(format(startOfMonth(new Date()), "yyyy-MM-dd")); setEndDate(format(endOfMonth(new Date()), "yyyy-MM-dd")); }}>This Month</Button>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => { const lm = subMonths(new Date(), 1); setStartDate(format(startOfMonth(lm), "yyyy-MM-dd")); setEndDate(format(endOfMonth(lm), "yyyy-MM-dd")); }}>Last Month</Button>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setStartDate(format(startOfYear(new Date()), "yyyy-MM-dd")); setEndDate(format(endOfYear(new Date()), "yyyy-MM-dd")); }}>This Year</Button>
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => { const now = new Date(); const taxStart = now.getMonth() >= 3 ? new Date(now.getFullYear(), 3, 6) : new Date(now.getFullYear() - 1, 3, 6); const taxEnd = new Date(taxStart.getFullYear() + 1, 3, 5); setStartDate(format(taxStart, "yyyy-MM-dd")); setEndDate(format(taxEnd, "yyyy-MM-dd")); }}>Tax Year</Button>
             </div>
           </CardContent>
         </Card>

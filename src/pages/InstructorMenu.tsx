@@ -124,8 +124,8 @@ export default function InstructorMenu() {
         { icon: MapPin, label: "Jotter", description: "Draw on map", iconColor: "text-white", iconBg: "bg-orange-500", gateKey: "doodlepad", path: "/instructor/doodlepad" },
         { icon: MapPin, label: "Fill Gaps", description: "Schedule gaps", iconColor: "text-white", iconBg: "bg-pink-500", gateKey: "gaps", path: "/instructor/gaps" },
         { icon: StickyNote, label: "Notes", description: "Notebook", iconColor: "text-white", iconBg: "bg-yellow-500", gateKey: "notes", path: "/instructor/notes" },
-        { icon: Users, label: "Bulk Operations", description: "SMS, reschedule, pricing", iconColor: "text-white", iconBg: "bg-indigo-500", path: "/instructor/bulk-operations" },
-        { icon: TrendingUp, label: "Reports Hub", description: "PDF reports", iconColor: "text-white", iconBg: "bg-violet-500", path: "/instructor/reports" },
+        { icon: Users, label: "Bulk Operations", description: "SMS, reschedule, pricing", iconColor: "text-white", iconBg: "bg-indigo-500", gateKey: "bulk-operations", path: "/instructor/bulk-operations" },
+        { icon: TrendingUp, label: "Reports Hub", description: "PDF reports", iconColor: "text-white", iconBg: "bg-violet-500", gateKey: "reports-hub", path: "/instructor/reports" },
       ],
     },
     {

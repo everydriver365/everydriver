@@ -102,6 +102,15 @@ export function CertificateGenerator({ pupilName, pupilId, instructorName, instr
 
       // Download
       doc.save(`${pupilName.replace(/\s+/g, "-")}-${milestone}-certificate.pdf`);
+
+      // Save to DB
+      await supabase.from("pupil_certificates").insert({
+        pupil_id: pupilId,
+        instructor_id: instructorId,
+        milestone_type: milestone,
+        issued_at: new Date().toISOString(),
+      } as any);
+
       toast.success("Certificate downloaded!");
     } catch (err) {
       toast.error("Failed to generate certificate");

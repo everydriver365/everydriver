@@ -216,6 +216,14 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
               headingColor={headingColor}
               textColor={textColor}
             />
+
+            {/* Waitlist card when availability paused */}
+            {instructor.availability_paused && (
+              <WaitlistJoinCard
+                instructorId={instructor.id}
+                instructorName={instructor.business_name || instructor.name}
+              />
+            )}
           </div>
         </div>
       </section>

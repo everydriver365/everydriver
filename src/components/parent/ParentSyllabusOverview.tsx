@@ -83,9 +83,14 @@ export function ParentSyllabusOverview({ childId, childName }: ParentSyllabusOve
             <GraduationCap className="h-4 w-4 text-primary" />
             DVSA Syllabus Progress
           </CardTitle>
-          <Badge variant={testReadiness >= 80 ? "default" : "secondary"}>
-            {testReadiness}% Test Ready
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={testReadiness >= 80 ? "default" : "secondary"}>
+              {testReadiness}% Test Ready
+            </Badge>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleExportPDF} disabled={exporting}>
+              {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -241,6 +241,11 @@ export default function InstructorMiniWebsiteSettings() {
             />
           </TabsContent>
 
+          {/* Page Editor Tab */}
+          <TabsContent value="editor">
+            <WebsitePageEditor instructorId={instructorId} />
+          </TabsContent>
+
           {/* Embed Tab */}
           <TabsContent value="embed">
             {authInstructor?.app_slug && (

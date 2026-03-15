@@ -320,6 +320,14 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
             <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-md p-3">{pupil.notes}</p>
           </div>
         )}
+
+        {/* Certificate Generator */}
+        <CertificateGenerator
+          pupilName={pupil.name}
+          pupilId={pupil.id}
+          instructorName=""
+          instructorId={instructorId}
+        />
       </div>
     </ScrollArea>
   );

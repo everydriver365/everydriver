@@ -110,8 +110,15 @@ export function BulkSMSTab({ instructorId }: BulkSMSTabProps) {
 
         <div className="space-y-2">
           <Label>Message</Label>
-          <Textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Type your message..." rows={4} maxLength={160} />
-          <p className="text-xs text-muted-foreground text-right">{message.length}/160</p>
+          <Textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Type your message..." rows={4} />
+          <div className="flex items-center justify-between">
+            {message.length > 160 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">⚠ {Math.ceil(message.length / 153)} SMS segments — costs more</p>
+            )}
+            <p className={`text-xs text-right ml-auto ${message.length > 160 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+              {message.length}/{message.length <= 160 ? "160" : `${Math.ceil(message.length / 153) * 153}`} • {message.length <= 160 ? "1" : Math.ceil(message.length / 153)} SMS
+            </p>
+          </div>
         </div>
 
         <div className="space-y-2">
