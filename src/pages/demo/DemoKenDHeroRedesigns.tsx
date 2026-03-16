@@ -580,6 +580,9 @@ export default function DemoKenDHeroRedesigns() {
     { id: "E", label: "Warm & Welcoming", desc: "Centred text with 3-column photo collage and soft warm tones", component: <HeroDesignE /> },
     { id: "F", label: "Minimal Stripe", desc: "Ultra-clean SaaS-inspired layout with metrics bar and floating review", component: <HeroDesignF /> },
     { id: "G", label: "Vibrant Banner", desc: "Bold blue brand colour with stacked course cards on the right", component: <HeroDesignG /> },
+    { id: "H", label: "Mobile App Style", desc: "Stacked mobile-first with full-bleed image, floating card overlay and sticky CTA", component: <HeroDesignH /> },
+    { id: "I", label: "Stories Card", desc: "Instagram-stories-inspired vertical card with gradient text and pill badges", component: <HeroDesignI /> },
+    { id: "J", label: "Clean Stack", desc: "Minimal mobile stack with large type, inline stats row and bottom-anchored search", component: <HeroDesignJ /> },
   ];
 
   return (
