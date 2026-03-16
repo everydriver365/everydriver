@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { ukPostcodeRegex } from "@/lib/booking-validation";
 
 interface AddressOption {
+  placeId?: string;
   label: string;
   street: string;
   houseNumber: string;
@@ -50,6 +51,7 @@ export function PostcodeAddressLookup({
   const containerRef = useRef<HTMLDivElement>(null);
   const doorInputRef = useRef<HTMLInputElement>(null);
   const lastLookedUp = useRef("");
+  const [sessionToken] = useState(() => crypto.randomUUID());
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -77,15 +79,25 @@ export function PostcodeAddressLookup({
     setLoading(true);
     setNoResults(false);
     try {
-      const { data, error } = await supabase.functions.invoke("address-lookup", {
-        body: { postcode: clean },
+      const { data, error } = await supabase.functions.invoke("google-places-autocomplete", {
+        body: { input: clean, sessionToken },
       });
       if (error) throw error;
 
-      const results: AddressOption[] = data?.addresses || [];
+      const predictions = data?.predictions || [];
+      const results: AddressOption[] = predictions.map((p: any) => ({
+        placeId: p.placeId,
+        label: p.description,
+        street: p.mainText,
+        houseNumber: "",
+        district: "",
+        city: "",
+        county: "",
+        postcode: clean,
+      }));
+
       setAddresses(results);
       if (results.length > 0) {
-        // Small delay to let mobile keyboard dismiss and viewport settle
         setTimeout(() => {
           setShowDropdown(true);
           setManualEntry(false);
@@ -101,7 +113,7 @@ export function PostcodeAddressLookup({
     } finally {
       setLoading(false);
     }
-  }, [postcode]);
+  }, [postcode, sessionToken]);
 
   const handlePostcodeChange = (value: string) => {
     onPostcodeChange(value);
@@ -133,23 +145,61 @@ export function PostcodeAddressLookup({
     return parts.join(", ");
   };
 
-  const handleSelectAddress = (addr: AddressOption) => {
-    setSelectedAddress(addr);
+  const handleSelectAddress = async (addr: AddressOption) => {
     setShowDropdown(false);
-    
-    // If the address already has a house number, use it as default door number
-    if (addr.houseNumber) {
-      setDoorNumber(addr.houseNumber);
+
+    if (addr.placeId) {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("google-places-details", {
+          body: { placeId: addr.placeId, sessionToken },
+        });
+        if (error) throw error;
+
+        const enriched: AddressOption = {
+          ...addr,
+          street: data.streetAddress || addr.street,
+          houseNumber: "",
+          city: data.locality || "",
+          district: "",
+          county: "",
+          postcode: data.postalCode || addr.postcode,
+        };
+
+        // Extract house number from street address if present
+        const streetMatch = (data.streetAddress || "").match(/^(\d+\w*)\s+(.+)/);
+        if (streetMatch) {
+          enriched.houseNumber = streetMatch[1];
+          enriched.street = streetMatch[2];
+        }
+
+        setSelectedAddress(enriched);
+        setDoorNumber(enriched.houseNumber);
+        setShowDoorPrompt(true);
+        const preliminary = buildFullAddress(enriched, enriched.houseNumber);
+        onAddressChange(preliminary);
+        if (enriched.postcode) {
+          onPostcodeChange(enriched.postcode);
+        }
+      } catch (err) {
+        console.error("Place details failed:", err);
+        // Fallback to basic selection
+        setSelectedAddress(addr);
+        setDoorNumber("");
+        setShowDoorPrompt(true);
+        onAddressChange(addr.label);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      setDoorNumber("");
-    }
-    
-    // Show door/property prompt and set preliminary address
-    setShowDoorPrompt(true);
-    const preliminary = buildFullAddress(addr, addr.houseNumber);
-    onAddressChange(preliminary);
-    if (addr.postcode) {
-      onPostcodeChange(addr.postcode);
+      setSelectedAddress(addr);
+      setDoorNumber(addr.houseNumber);
+      setShowDoorPrompt(true);
+      const preliminary = buildFullAddress(addr, addr.houseNumber);
+      onAddressChange(preliminary);
+      if (addr.postcode) {
+        onPostcodeChange(addr.postcode);
+      }
     }
   };
 
