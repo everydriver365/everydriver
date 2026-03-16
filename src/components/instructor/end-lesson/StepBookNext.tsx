@@ -38,6 +38,14 @@ export function StepBookNext({
 
   const findAvailableSlots = async () => {
     try {
+      // Fetch instructor buffer_minutes
+      const { data: instructorData } = await supabase
+        .from("instructors")
+        .select("buffer_minutes")
+        .eq("id", instructorId)
+        .single();
+      const bufferMins = instructorData?.buffer_minutes || 0;
+
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
       const today = new Date();
@@ -81,14 +89,15 @@ export function StepBookNext({
           const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
           const candidateEnd = candidateStart + durationMinutes * 60000;
 
+          const bufferMs = bufferMins * 60000;
           const lessonConflict = (existing || []).some((ex) => {
-            const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
-            const exEnd = exStart + (ex.duration_minutes || 60) * 60000;
+            const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime() - bufferMs;
+            const exEnd = exStart + bufferMs + (ex.duration_minutes || 60) * 60000 + bufferMs;
             return candidateStart < exEnd && candidateEnd > exStart;
           });
 
           const calConflict = dayCalBusy.some(ev =>
-            candidateStart < ev.end.getTime() && candidateEnd > ev.start.getTime()
+            candidateStart < (ev.end.getTime() + bufferMs) && candidateEnd > (ev.start.getTime() - bufferMs)
           );
 
           if (!lessonConflict && !calConflict) {

@@ -57,6 +57,7 @@ interface Instructor {
   instructor_grade: string | null;
   welcome_video_url: string | null;
   booking_mode?: string | null;
+  buffer_minutes: number;
 }
 
 interface CourseTemplate {
@@ -798,6 +799,7 @@ export function MobileBookingView({
               bookingAdvanceDays={instructor.booking_advance_days || 28}
               availableFrom={instructor.available_from}
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+              bufferMinutes={instructor.buffer_minutes}
               onSlotsChange={onSlotsChange}
             />
           </div>
