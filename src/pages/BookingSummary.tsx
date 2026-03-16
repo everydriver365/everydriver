@@ -1063,10 +1063,16 @@ export default function BookingSummary() {
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
-        onEmbeddedCheckoutSuccess={() => {
+        onEmbeddedCheckoutSuccess={async () => {
+          const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+          const fullPaymentAmount = totalPrice + upsellTotal;
+          const pupilId = await ensureBookingCreated(
+            isDepositPayment ? 'deposit' : 'full',
+            isDepositPayment ? depositAmount : fullPaymentAmount
+          );
           toast.success("Payment successful!");
-          if (bookingPupilId) {
-            navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+          if (pupilId) {
+            navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
           }
         }}
         onEmbeddedCheckoutCancel={() => setShowHostedFields(false)}
