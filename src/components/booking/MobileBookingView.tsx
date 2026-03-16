@@ -929,11 +929,11 @@ export function MobileBookingView({
                 </div>
               )}
 
-              {showEmbeddedCheckout && embeddedCheckoutPupilId ? (
+              {showEmbeddedCheckout ? (
                 <div>
                   <CardstreamCheckout
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                    pupilId={embeddedCheckoutPupilId}
+                    pupilId={embeddedCheckoutPupilId || undefined}
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}

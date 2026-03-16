@@ -566,25 +566,8 @@ export default function BookingSummary() {
       return;
     }
 
-    setIsNPILoading(true);
-    try {
-      // Determine payment type based on selection
-      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-      const fullPaymentAmount = totalPrice + upsellTotal;
-      const pupilId = await ensureBookingCreated(
-        isDepositPayment ? 'deposit' : 'full',
-        isDepositPayment ? depositAmount : fullPaymentAmount
-      );
-      if (!pupilId) return;
-
-      // Show embedded checkout instead of redirecting
-      setShowHostedFields(true);
-    } catch (err) {
-      console.error("NPI error:", err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsNPILoading(false);
-    }
+    // Show embedded checkout directly — booking will be created after payment succeeds
+    setShowHostedFields(true);
   };
 
   // Handler for showing embedded hosted fields
@@ -595,9 +578,7 @@ export default function BookingSummary() {
       return;
     }
 
-    const pupilId = await ensureBookingCreated();
-    if (!pupilId) return;
-    
+    // Show hosted fields directly — booking will be created after payment succeeds
     setShowHostedFields(true);
   };
 
@@ -665,24 +646,8 @@ export default function BookingSummary() {
       return;
     }
 
-    setIsElavonLoading(true);
-    try {
-      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-      const fullPaymentAmount = totalPrice + upsellTotal;
-      const pupilId = await ensureBookingCreated(
-        isDepositPayment ? 'deposit' : 'full',
-        isDepositPayment ? depositAmount : fullPaymentAmount
-      );
-      if (!pupilId) return;
-
-      // Show inline hosted fields instead of redirecting
-      setShowHostedFields(true);
-    } catch (err) {
-      console.error("Elavon error:", err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsElavonLoading(false);
-    }
+    // Show inline hosted fields directly — booking will be created after payment succeeds
+    setShowHostedFields(true);
   };
 
   // Step 1: Create WooCommerce order and show in-app payment options
@@ -1098,10 +1063,16 @@ export default function BookingSummary() {
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
-        onEmbeddedCheckoutSuccess={() => {
+        onEmbeddedCheckoutSuccess={async () => {
+          const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+          const fullPaymentAmount = totalPrice + upsellTotal;
+          const pupilId = await ensureBookingCreated(
+            isDepositPayment ? 'deposit' : 'full',
+            isDepositPayment ? depositAmount : fullPaymentAmount
+          );
           toast.success("Payment successful!");
-          if (bookingPupilId) {
-            navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+          if (pupilId) {
+            navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
           }
         }}
         onEmbeddedCheckoutCancel={() => setShowHostedFields(false)}
@@ -1929,7 +1900,7 @@ export default function BookingSummary() {
 
 
           {/* Cardstream Embedded Card Form */}
-          {showHostedFields && bookingPupilId && courseDetails && (
+          {showHostedFields && courseDetails && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1954,10 +1925,16 @@ export default function BookingSummary() {
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
                 
-                onPaid={() => {
+                onPaid={async () => {
+                  const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+                  const fullPaymentAmount = totalPrice + upsellTotal;
+                  const pupilId = await ensureBookingCreated(
+                    isDepositPayment ? 'deposit' : 'full',
+                    isDepositPayment ? depositAmount : fullPaymentAmount
+                  );
                   toast.success("Payment successful!");
-                  if (bookingPupilId) {
-                    navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+                  if (pupilId) {
+                    navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
                   }
                 }}
               />
