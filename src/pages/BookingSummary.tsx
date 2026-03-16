@@ -566,25 +566,8 @@ export default function BookingSummary() {
       return;
     }
 
-    setIsNPILoading(true);
-    try {
-      // Determine payment type based on selection
-      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-      const fullPaymentAmount = totalPrice + upsellTotal;
-      const pupilId = await ensureBookingCreated(
-        isDepositPayment ? 'deposit' : 'full',
-        isDepositPayment ? depositAmount : fullPaymentAmount
-      );
-      if (!pupilId) return;
-
-      // Show embedded checkout instead of redirecting
-      setShowHostedFields(true);
-    } catch (err) {
-      console.error("NPI error:", err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsNPILoading(false);
-    }
+    // Show embedded checkout directly — booking will be created after payment succeeds
+    setShowHostedFields(true);
   };
 
   // Handler for showing embedded hosted fields
