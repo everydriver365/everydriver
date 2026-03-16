@@ -84,7 +84,6 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
   const navLinks = [
     { path: `/i/${slug}`, label: "Home" },
     { path: `/i/${slug}/about`, label: "About" },
-    { path: `/i/${slug}/services`, label: "Services" },
     { path: `/i/${slug}/courses`, label: "Courses" },
     { path: `/i/${slug}/tests`, label: "Tests" },
     { path: `/i/${slug}/reviews`, label: "Reviews" },
