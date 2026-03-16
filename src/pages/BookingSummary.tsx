@@ -1900,7 +1900,7 @@ export default function BookingSummary() {
 
 
           {/* Cardstream Embedded Card Form */}
-          {showHostedFields && bookingPupilId && courseDetails && (
+          {showHostedFields && courseDetails && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1925,10 +1925,16 @@ export default function BookingSummary() {
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
                 
-                onPaid={() => {
+                onPaid={async () => {
+                  const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+                  const fullPaymentAmount = totalPrice + upsellTotal;
+                  const pupilId = await ensureBookingCreated(
+                    isDepositPayment ? 'deposit' : 'full',
+                    isDepositPayment ? depositAmount : fullPaymentAmount
+                  );
                   toast.success("Payment successful!");
-                  if (bookingPupilId) {
-                    navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+                  if (pupilId) {
+                    navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
                   }
                 }}
               />
