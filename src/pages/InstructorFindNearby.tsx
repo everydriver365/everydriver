@@ -152,8 +152,8 @@ export default function InstructorFindNearby() {
                     : "border-border bg-card hover:border-primary/20"
                 }`}
               >
-                <div className={`h-10 w-10 rounded-full ${cat.bg} flex items-center justify-center overflow-hidden`}>
-                  <img src={cat.image} alt={cat.label} className="h-7 w-7 object-contain" />
+                <div className={`h-14 w-14 rounded-full ${cat.bg} flex items-center justify-center overflow-hidden`}>
+                  <img src={cat.image} alt={cat.label} className="h-10 w-10 object-contain" />
                 </div>
                 <span className="text-xs font-medium text-foreground">{cat.label}</span>
               </button>
