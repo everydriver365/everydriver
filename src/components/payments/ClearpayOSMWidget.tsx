@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import clearpayLogo from "@/assets/clearpay-logo.svg";
 
 interface ClearpayOSMWidgetProps {
   amount: number; // Price in GBP (e.g., 500 for £500)
