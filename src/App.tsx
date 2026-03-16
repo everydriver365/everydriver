@@ -387,6 +387,7 @@ const App = () => (
                 <Route path="/demo/course-cards" element={<DemoCourseCards />} />
                 <Route path="/demo/promo-bars" element={<DemoPromoBars />} />
                 <Route path="/demo/mini-website-course-cards" element={<DemoMiniWebsiteCourseCards />} />
+                <Route path="/demo/ken-d-hero-images" element={<DemoKenDHeroImages />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
