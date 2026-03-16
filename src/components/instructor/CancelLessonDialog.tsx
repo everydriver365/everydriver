@@ -214,17 +214,17 @@ export function CancelLessonDialog({
                 <RadioGroupItem value="charge" id="charge" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="charge" className="font-medium cursor-pointer">
-                    Charge cancellation fee
+                    Charge cancellation fee ({chargePercent}%)
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
                     Deduct{" "}
                     <span className="font-semibold text-foreground">
-                      £{amountDue.toFixed(2)}
+                      £{chargeAmount.toFixed(2)}
                     </span>{" "}
                     from {pupilName}'s balance
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - amountDue).toFixed(2)}
+                    Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - chargeAmount).toFixed(2)}
                   </p>
                 </div>
               </div>
