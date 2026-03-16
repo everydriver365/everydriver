@@ -27,7 +27,7 @@ const categories = [
   { id: "petrol", label: "Petrol Station", icon: Fuel, color: "text-emerald-600", bg: "bg-emerald-500/12" },
   { id: "ae", label: "A&E", icon: Heart, color: "text-rose-600", bg: "bg-rose-500/12" },
   { id: "defib", label: "Defibrillator", icon: Zap, color: "text-violet-600", bg: "bg-violet-500/12" },
-  { id: "drive-through", label: "Drive Through", icon: Car, color: "text-teal-600", bg: "bg-teal-500/12" },
+  { id: "drive-through", label: "Drive Thru", icon: UtensilsCrossed, color: "text-teal-600", bg: "bg-teal-500/12" },
   { id: "coffee", label: "Coffee Shops", icon: Coffee, color: "text-amber-800", bg: "bg-amber-700/12" },
   { id: "supermarket", label: "Supermarket", icon: ShoppingCart, color: "text-green-600", bg: "bg-green-500/12" },
   { id: "pharmacy", label: "Pharmacy", icon: Pill, color: "text-pink-600", bg: "bg-pink-500/12" },
