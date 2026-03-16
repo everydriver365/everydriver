@@ -77,6 +77,8 @@ export function CancelLessonDialog({
     if (open) checkWaitlistAndPolicy();
   }, [open, instructorId]);
 
+  const chargeAmount = Math.round((amountDue * chargePercent / 100) * 100) / 100;
+
   const handleCancel = async () => {
     setCancelling(true);
     try {
