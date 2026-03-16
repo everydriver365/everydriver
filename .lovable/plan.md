@@ -1,19 +1,16 @@
 
 
-## Swap Elavon/Cardstream Credentials
+## Update Elavon Credentials
 
-The error `#00065539` ("INVALID CREDENTIALS") means the gateway is rejecting the current `ELAVON_MERCHANT_ALIAS` and/or `ELAVON_SECRET_KEY` values. Since you said it was working before, these may have expired or been rotated on the Cardstream side.
+You've provided four new Cardstream/Elavon credentials. The code uses two of them directly (`ELAVON_MERCHANT_ALIAS` and `ELAVON_SECRET_KEY`) across five edge functions. The other two (`ELAVON_PROCESSOR_ID` and `ELAVON_PUBLIC_KEY`) are stored as secrets but not currently referenced in code -- they should still be updated for completeness.
 
 ### Plan
 
-1. **Update `ELAVON_MERCHANT_ALIAS`** -- prompt you to enter the correct merchant ID from your Cardstream dashboard
-2. **Update `ELAVON_SECRET_KEY`** -- prompt you to enter the correct secret/signature key from your Cardstream dashboard
+1. **Update four secrets** with the new values:
+   - `ELAVON_MERCHANT_ALIAS` → `kdmdvcm76qqkvbh378dxr3f7g447`
+   - `ELAVON_SECRET_KEY` → `sk_9mvcwpj93jg8bh2t9jcj7y6636t3`
+   - `ELAVON_PROCESSOR_ID` → `qytrqgpm2py7phkx9fvmtjrdv9gv`
+   - `ELAVON_PUBLIC_KEY` → `pk_g9gc3tj9vmfgd8r3y94d3wdww8fm`
 
-Both secrets already exist in the backend, so this is just updating their values. No code changes needed.
-
-### Where to find these values
-- Log into your **Cardstream** merchant dashboard (or Elavon portal)
-- Navigate to your integration/API settings
-- Copy the **Merchant ID** (sometimes called "Merchant Alias") and **Signature Key** (sometimes called "Secret Key")
-- Make sure you're copying from the correct environment (test vs live)
+No code changes needed -- the edge functions already read these from environment variables.
 
