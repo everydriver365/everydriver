@@ -32,7 +32,8 @@ export function MessageNotificationBadge({ instructorId, className }: MessageNot
           .select("*", { count: "exact", head: true })
           .in("conversation_id", conversations.map((c) => c.id))
           .eq("sender_type", "pupil")
-          .is("read_at", null);
+          .is("read_at", null)
+          .is("deleted_at", null);
 
         setUnreadCount(count || 0);
       } catch (error) {
@@ -44,7 +45,7 @@ export function MessageNotificationBadge({ instructorId, className }: MessageNot
 
     // Subscribe to new messages
     const channel = supabase
-      .channel("unread-messages")
+      .channel(`unread-messages-${instructorId}`)
       .on(
         "postgres_changes",
         {

@@ -24,7 +24,8 @@ export function useCombinedNotificationCount(instructorId: string | undefined) {
           .select("*", { count: "exact", head: true })
           .in("conversation_id", convos.map(c => c.id))
           .eq("sender_type", "pupil")
-          .is("read_at", null);
+          .is("read_at", null)
+          .is("deleted_at", null);
         setMessageCount(count || 0);
       }
 

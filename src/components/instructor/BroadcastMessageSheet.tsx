@@ -76,6 +76,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
         .from("pupils")
         .select("id, name, status")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("name");
       setPupils(data || []);
     } catch (e) {

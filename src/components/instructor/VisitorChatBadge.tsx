@@ -34,7 +34,7 @@ export function VisitorChatBadge({ instructorId, className }: VisitorChatBadgePr
 
     // Subscribe to new messages
     const channel = supabase
-      .channel("visitor-chat-unread")
+      .channel(`visitor-chat-unread-${instructorId}`)
       .on(
         "postgres_changes",
         {

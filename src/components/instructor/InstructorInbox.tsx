@@ -156,6 +156,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
         .from("pupils")
         .select("id, name, phone, email")
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("name");
 
       if (error) throw error;
