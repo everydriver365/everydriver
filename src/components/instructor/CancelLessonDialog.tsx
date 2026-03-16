@@ -56,15 +56,25 @@ export function CancelLessonDialog({
 
   // Check waitlist count when dialog opens
   useEffect(() => {
-    const checkWaitlist = async () => {
-      const { count } = await supabase
-        .from("lesson_waitlist")
-        .select("*", { count: "exact", head: true })
-        .eq("instructor_id", instructorId)
-        .eq("is_active", true);
-      setWaitlistCount(count || 0);
+    const checkWaitlistAndPolicy = async () => {
+      const [waitlistRes, policyRes] = await Promise.all([
+        supabase
+          .from("lesson_waitlist")
+          .select("*", { count: "exact", head: true })
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true),
+        supabase
+          .from("instructors")
+          .select("cancellation_charge_percent")
+          .eq("id", instructorId)
+          .single(),
+      ]);
+      setWaitlistCount(waitlistRes.count || 0);
+      if (policyRes.data?.cancellation_charge_percent != null) {
+        setChargePercent(policyRes.data.cancellation_charge_percent);
+      }
     };
-    if (open) checkWaitlist();
+    if (open) checkWaitlistAndPolicy();
   }, [open, instructorId]);
 
   const handleCancel = async () => {

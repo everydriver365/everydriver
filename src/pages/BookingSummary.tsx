@@ -2030,6 +2030,24 @@ export default function BookingSummary() {
             </motion.div>
           )}
         </motion.div>
+
+        {/* Cancellation Policy */}
+        {cancellationPolicyText && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mt-6"
+          >
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Cancellation Policy
+            </h3>
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {cancellationPolicyText}
+            </p>
+          </motion.div>
+        )}
       </div>
     </MainLayout>
   );
