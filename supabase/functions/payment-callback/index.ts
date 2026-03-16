@@ -35,11 +35,12 @@ serve(async (req: Request) => {
   const paymentType = url.searchParams.get("type"); // "balance" for pupil payments
   const baseAmountParam = parseFloat(url.searchParams.get("baseAmount") || "0");
   const adminFeeParam = parseFloat(url.searchParams.get("adminFee") || "0");
+  const callerOrigin = url.searchParams.get("origin"); // origin passed from checkout
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const siteBaseUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
+  const siteBaseUrl = callerOrigin ? decodeURIComponent(callerOrigin) : (Deno.env.get("SITE_URL") || "https://everydriver.lovable.app");
 
   // Helper: atomically update pupil balance using RPC
   async function creditPupilBalance(pPupilId: string, amount: number) {
