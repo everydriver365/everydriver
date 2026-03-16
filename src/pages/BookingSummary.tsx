@@ -162,7 +162,11 @@ export default function BookingSummary() {
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
   const [depositAmount, setDepositAmount] = useState(350);
+  const [depositDeadlineDays, setDepositDeadlineDays] = useState(30);
   const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('full');
+  
+  // Cancellation policy text
+  const [cancellationPolicyText, setCancellationPolicyText] = useState("");
   
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
