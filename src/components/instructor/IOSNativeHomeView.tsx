@@ -518,8 +518,8 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
           <p className="text-[20px] font-bold text-foreground px-5 mb-3">More Features</p>
           <div className="flex gap-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
             <MoreTile icon={Fuel} title="Fuel Finder" color="#FF9500" onClick={() => navigate("/instructor/fuel")} />
-            <MoreTile icon={MapPin} title="Live Tracking" color="#007AFF" onClick={() => navigate("/instructor/track")} />
-            <MoreTile icon={BarChart3} title="Dashboard" color="#34C759" onClick={() => navigate("/instructor/dashboard")} />
+            <MoreTile icon={MapPin} title="Live Tracking" color="#007AFF" onClick={() => navigate("/instructor/tracking")} />
+            <MoreTile icon={BarChart3} title="Dashboard" color="#34C759" onClick={() => navigate("/instructor")} />
             <MoreTile icon={Settings} title="Settings" color="#8E8E93" onClick={() => navigate("/instructor/settings")} />
             <MoreTile icon={PlusCircle} title="Add Lesson" color="#00C7BE" onClick={() => navigate("/instructor/diary?action=add")} />
           </div>

@@ -51,20 +51,33 @@ export function CancelLessonDialog({
   const [cancelling, setCancelling] = useState(false);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
   const [showBackfill, setShowBackfill] = useState(false);
+  const [chargePercent, setChargePercent] = useState(100);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Check waitlist count when dialog opens
   useEffect(() => {
-    const checkWaitlist = async () => {
-      const { count } = await supabase
-        .from("lesson_waitlist")
-        .select("*", { count: "exact", head: true })
-        .eq("instructor_id", instructorId)
-        .eq("is_active", true);
-      setWaitlistCount(count || 0);
+    const checkWaitlistAndPolicy = async () => {
+      const [waitlistRes, policyRes] = await Promise.all([
+        supabase
+          .from("lesson_waitlist")
+          .select("*", { count: "exact", head: true })
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true),
+        supabase
+          .from("instructors")
+          .select("cancellation_charge_percent")
+          .eq("id", instructorId)
+          .single(),
+      ]);
+      setWaitlistCount(waitlistRes.count || 0);
+      if (policyRes.data?.cancellation_charge_percent != null) {
+        setChargePercent(policyRes.data.cancellation_charge_percent);
+      }
     };
-    if (open) checkWaitlist();
+    if (open) checkWaitlistAndPolicy();
   }, [open, instructorId]);
+
+  const chargeAmount = Math.round((amountDue * chargePercent / 100) * 100) / 100;
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -78,8 +91,8 @@ export function CancelLessonDialog({
       if (lessonError) throw lessonError;
 
       // 2. If charging, deduct from pupil's account balance
-      if (chargeOption === "charge" && amountDue > 0) {
-        const newBalance = pupilBalance - amountDue;
+      if (chargeOption === "charge" && chargeAmount > 0) {
+        const newBalance = pupilBalance - chargeAmount;
         
         const { error: balanceError } = await supabase
           .from("pupils")
@@ -92,16 +105,16 @@ export function CancelLessonDialog({
         await supabase.from("payment_history").insert({
           pupil_id: pupilId,
           instructor_id: instructorId,
-          amount: -amountDue,
+          amount: -chargeAmount,
           payment_method: "Cancellation Fee",
-          notes: `Cancellation charge for ${lessonDate} ${lessonTime}`,
+          notes: `Cancellation charge (${chargePercent}%) for ${lessonDate} ${lessonTime}`,
         });
 
         invalidatePaymentQueries({ pupilId, instructorId });
 
         toast({
           title: "Lesson cancelled with charge",
-          description: `£${amountDue.toFixed(2)} deducted from ${pupilName}'s balance`,
+          description: `£${chargeAmount.toFixed(2)} deducted from ${pupilName}'s balance`,
         });
       } else {
         toast({
@@ -201,17 +214,17 @@ export function CancelLessonDialog({
                 <RadioGroupItem value="charge" id="charge" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="charge" className="font-medium cursor-pointer">
-                    Charge cancellation fee
+                    Charge cancellation fee ({chargePercent}%)
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
                     Deduct{" "}
                     <span className="font-semibold text-foreground">
-                      £{amountDue.toFixed(2)}
+                      £{chargeAmount.toFixed(2)}
                     </span>{" "}
                     from {pupilName}'s balance
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - amountDue).toFixed(2)}
+                    Current balance: £{pupilBalance.toFixed(2)} → New balance: £{(pupilBalance - chargeAmount).toFixed(2)}
                   </p>
                 </div>
               </div>

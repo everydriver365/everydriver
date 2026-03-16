@@ -115,7 +115,7 @@ const InstructorTestRequests = lazy(() => import("./pages/InstructorTestRequests
 const InstructorNearbyFriends = lazy(() => import("./pages/InstructorNearbyFriends"));
 const InstructorGPSSetup = lazy(() => import("./pages/InstructorGPSSetup"));
 const InstructorLiveSession = lazy(() => import("./pages/InstructorLiveSession"));
-const InstructorMiniWebsite = lazy(() => import("./pages/InstructorMiniWebsite"));
+const InstructorPerformance = lazy(() => import("./pages/InstructorPerformance"));
 
 const InstructorPortalLogin = lazy(() => import("./pages/InstructorPortalLogin"));
 const InstructorGeotabHub = lazy(() => import("./pages/InstructorGeotabHub"));
@@ -339,6 +339,7 @@ const App = () => (
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />
+                <Route path="/instructor/performance" element={<InstructorPerformance />} />
                 <Route path="/school/dashboard" element={<SchoolDashboard />} />
 
                 {/* Other portals */}

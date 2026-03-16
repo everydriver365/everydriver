@@ -14,12 +14,14 @@ interface DepositSettingsEditorProps {
 interface DepositSettings {
   deposit_enabled: boolean;
   deposit_amount: number;
+  deposit_deadline_days: number;
 }
 
 export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorProps) {
   const [settings, setSettings] = useState<DepositSettings>({
     deposit_enabled: false,
     deposit_amount: 350,
+    deposit_deadline_days: 30,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,7 +34,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("deposit_enabled, deposit_amount")
+        .select("deposit_enabled, deposit_amount, deposit_deadline_days")
         .eq("id", instructorId)
         .single();
 
@@ -41,6 +43,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
       setSettings({
         deposit_enabled: data.deposit_enabled ?? false,
         deposit_amount: data.deposit_amount ?? 350,
+        deposit_deadline_days: data.deposit_deadline_days ?? 30,
       });
     } catch (error) {
       console.error("Error fetching deposit settings:", error);
@@ -140,11 +143,11 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
               <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  30-Day Payment Deadline
+                  {settings.deposit_deadline_days}-Day Payment Deadline
                 </p>
                 <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
                   Customers who pay a deposit must pay the remaining balance at least 
-                  30 days before their first lesson. If payment is not received by 
+                  {settings.deposit_deadline_days} days before their first lesson. If payment is not received by 
                   this date, the booking will be cancelled and the deposit will be forfeited.
                 </p>
               </div>

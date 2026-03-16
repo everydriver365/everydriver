@@ -162,7 +162,11 @@ export default function BookingSummary() {
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
   const [depositAmount, setDepositAmount] = useState(350);
+  const [depositDeadlineDays, setDepositDeadlineDays] = useState(30);
   const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('full');
+  
+  // Cancellation policy text
+  const [cancellationPolicyText, setCancellationPolicyText] = useState("");
   
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
@@ -247,7 +251,7 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes, workingHoursRes, dateOverridesRes] = await Promise.all([
-        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, booking_mode").eq("id", instructorId).maybeSingle(),
+        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, deposit_deadline_days, cancellation_policy_text, booking_mode").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
@@ -259,6 +263,8 @@ export default function BookingSummary() {
       if (instructorRes.data) {
         setDepositEnabled(instructorRes.data.deposit_enabled ?? false);
         setDepositAmount(instructorRes.data.deposit_amount ?? 350);
+        setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
+        setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
       }
 
       if (instructorRes.error || !instructorRes.data) {
@@ -1818,7 +1824,7 @@ export default function BookingSummary() {
                   </div>
                   {paymentOption === 'deposit' && (
                     <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded p-2">
-                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid 30 days before your first lesson, or booking will be cancelled and deposit forfeited.
+                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid {depositDeadlineDays} days before your first lesson, or booking will be cancelled and deposit forfeited.
                     </div>
                   )}
                 </div>
@@ -2024,6 +2030,24 @@ export default function BookingSummary() {
             </motion.div>
           )}
         </motion.div>
+
+        {/* Cancellation Policy */}
+        {cancellationPolicyText && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mt-6"
+          >
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Cancellation Policy
+            </h3>
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {cancellationPolicyText}
+            </p>
+          </motion.div>
+        )}
       </div>
     </MainLayout>
   );
