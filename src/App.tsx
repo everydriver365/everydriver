@@ -169,6 +169,7 @@ const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
 const DemoPromoBars = lazy(() => import("./pages/demo/DemoPromoBars"));
 const DemoMiniWebsiteCourseCards = lazy(() => import("./pages/DemoMiniWebsiteCourseCards"));
 const DemoKenDHeroImages = lazy(() => import("./pages/demo/DemoKenDHeroImages"));
+const DemoKenDHeroRedesigns = lazy(() => import("./pages/demo/DemoKenDHeroRedesigns"));
 
 // Lazy-load ConditionalRoutes
 const ConditionalContact = lazy(() => import("./components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -388,6 +389,7 @@ const App = () => (
                 <Route path="/demo/promo-bars" element={<DemoPromoBars />} />
                 <Route path="/demo/mini-website-course-cards" element={<DemoMiniWebsiteCourseCards />} />
                 <Route path="/demo/ken-d-hero-images" element={<DemoKenDHeroImages />} />
+                <Route path="/demo/ken-d-hero-redesigns" element={<DemoKenDHeroRedesigns />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
