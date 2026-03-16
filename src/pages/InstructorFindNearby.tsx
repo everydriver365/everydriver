@@ -42,9 +42,11 @@ const categories = [
 export default function InstructorFindNearby() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { instructor } = useInstructorAuth();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
+  const { nearest, cheapest, loading: fuelLoading, refetch: refetchFuel } = useFuelPrices(instructor?.id);
 
   const searchNearby = async (categoryId: string) => {
     setActiveCategory(categoryId);
