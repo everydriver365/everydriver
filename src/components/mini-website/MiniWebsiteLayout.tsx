@@ -137,7 +137,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                 <img
                   src={instructor.logo_url}
                   alt={instructor.name}
-                  className="h-12 sm:h-24 w-auto object-contain rounded p-1"
+                  className="h-8 sm:h-12 w-auto object-contain rounded p-1"
                 />
               ) : (
                 <div
