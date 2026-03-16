@@ -125,6 +125,7 @@ const additionalTiles: QuickAction[] = [
   { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
   { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
   { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
+  { id: "find-nearby", title: "Find Nearby", icon: "MapPin", route: "/instructor/find-nearby", display_order: 115 },
 ];
 
 interface QuickActionTilesProps {
@@ -313,6 +314,7 @@ export function QuickActionTiles({
     if (action.id === "settings") return "App preferences";
     if (action.id === "health-hub") return "Wellbeing resources";
     if (action.id === "find-fuel") return "Nearest stations";
+    if (action.id === "find-nearby") return "Toilets, food & more";
     if (action.id === "vehicle-health") return "Vehicle checks";
     if (action.id === "expenses") return "Track spending";
     if (action.id === "todos") return "Your task list";
