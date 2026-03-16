@@ -21,6 +21,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
   const [settings, setSettings] = useState<DepositSettings>({
     deposit_enabled: false,
     deposit_amount: 350,
+    deposit_deadline_days: 30,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
