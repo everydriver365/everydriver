@@ -16,60 +16,51 @@ serve(async (req) => {
     const apiKey = Deno.env.get("HERE_API_KEY");
     if (!apiKey) throw new Error("HERE_API_KEY not configured");
 
-    // Mode 1: Postcode lookup - two-step: geocode for centroid, then browse for premises
+    // Mode 1: Postcode lookup using Ideal Postcodes (Royal Mail PAF data)
     if (postcode) {
-      // Step 1: Geocode postcode to get lat/lng centroid
-      const geoUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=1&apiKey=${apiKey}`;
-      const geoRes = await fetch(geoUrl);
-      const geoData = await geoRes.json();
+      const idealApiKey = Deno.env.get("IDEAL_POSTCODES_API_KEY");
+      if (!idealApiKey) throw new Error("IDEAL_POSTCODES_API_KEY not configured");
 
-      const centroid = geoData.items?.[0]?.position;
-      if (!centroid) {
+      const cleanPostcode = postcode.trim().replace(/\s+/g, "").toUpperCase();
+      const url = `https://api.ideal-postcodes.co.uk/v1/postcodes/${encodeURIComponent(cleanPostcode)}?api_key=${idealApiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.code !== 2000 || !data.result?.length) {
         return new Response(JSON.stringify({ addresses: [] }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Step 2: Browse for individual premises near the centroid
-      const browseUrl = `https://browse.search.hereapi.com/v1/browse?at=${centroid.lat},${centroid.lng}&categories=700-7600-7610&in=circle:${centroid.lat},${centroid.lng};r=400&limit=100&apiKey=${apiKey}`;
-      const browseRes = await fetch(browseUrl);
-      const browseData = await browseRes.json();
-
-      // Filter to only results matching the requested postcode
-      const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
-      const addresses = (browseData.items || [])
-        .filter((item: any) => {
-          const itemPc = (item.address?.postalCode || "").replace(/\s+/g, "").toUpperCase();
-          return itemPc === cleanPostcode;
-        })
-        .map((item: any) => ({
-          label: item.address?.label || "",
-          street: item.address?.street || "",
-          houseNumber: item.address?.houseNumber || "",
-          district: item.address?.district || "",
-          city: item.address?.city || "",
-          county: item.address?.county || "",
-          postcode: item.address?.postalCode || "",
-        }));
-
-      // Deduplicate by label and sort by street then house number
-      const seen = new Set<string>();
-      const unique = addresses.filter((a: any) => {
-        const key = `${a.houseNumber}|${a.street}`.toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
+      const addresses = data.result.map((item: any) => {
+        const parts = [item.line_1, item.line_2, item.line_3, item.post_town, item.postcode].filter(Boolean);
+        return {
+          label: parts.join(", "),
+          street: item.thoroughfare || "",
+          houseNumber: item.building_number || "",
+          buildingName: item.building_name || "",
+          subBuildingName: item.sub_building_name || "",
+          district: item.dependant_locality || item.double_dependant_locality || "",
+          city: item.post_town || "",
+          county: item.county || "",
+          postcode: item.postcode || "",
+          line1: item.line_1 || "",
+          line2: item.line_2 || "",
+          line3: item.line_3 || "",
+        };
       });
 
-      unique.sort((a: any, b: any) => {
+      // Sort by street, then building number, then building name
+      addresses.sort((a: any, b: any) => {
         const streetCmp = (a.street || "").localeCompare(b.street || "");
         if (streetCmp !== 0) return streetCmp;
         const numA = parseInt(a.houseNumber) || 0;
         const numB = parseInt(b.houseNumber) || 0;
-        return numA - numB;
+        if (numA !== numB) return numA - numB;
+        return (a.buildingName || "").localeCompare(b.buildingName || "");
       });
 
-      return new Response(JSON.stringify({ addresses: unique }), {
+      return new Response(JSON.stringify({ addresses }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
