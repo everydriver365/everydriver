@@ -82,6 +82,7 @@ const InstructorTax = lazy(() => import("./pages/InstructorTax"));
 const InstructorVehicleHealth = lazy(() => import("./pages/InstructorVehicleHealth"));
 const InstructorTripReplay = lazy(() => import("./pages/InstructorTripReplay"));
 const InstructorFuel = lazy(() => import("./pages/InstructorFuel"));
+const InstructorFindNearby = lazy(() => import("./pages/InstructorFindNearby"));
 const InstructorMileageTracker = lazy(() => import("./pages/InstructorMileageTracker"));
 const InstructorLocations = lazy(() => import("./pages/InstructorLocations"));
 const InstallPupil = lazy(() => import("./pages/InstallPupil"));
