@@ -578,9 +578,7 @@ export default function BookingSummary() {
       return;
     }
 
-    const pupilId = await ensureBookingCreated();
-    if (!pupilId) return;
-    
+    // Show hosted fields directly — booking will be created after payment succeeds
     setShowHostedFields(true);
   };
 
