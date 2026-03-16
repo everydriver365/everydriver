@@ -35,6 +35,7 @@ const LEARNER_ALLOWED_ROUTES = [
   "/learner-app/",       // Learner app routes
   "/benefits",           // Benefits page
   "/instructor-app/login", // Instructor login page
+  "/instructor",         // Instructor portal (used after login)
   "/admin/login",        // Admin login page
 ];
 
