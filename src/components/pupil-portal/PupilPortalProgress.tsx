@@ -27,25 +27,14 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
 
   const fetchProgress = async () => {
     try {
-      // Fetch hours completed
-      const { data: pupilData } = await supabase
-        .from("pupils")
-        .select("total_hours")
-        .eq("id", pupilId)
-        .maybeSingle();
-      
-      if (pupilData?.total_hours) {
-        setTotalHoursCompleted(pupilData.total_hours);
-      } else {
-        // Fallback: sum from lesson_history
-        const { data: lessonData } = await supabase
-          .from("lesson_history")
-          .select("duration_minutes")
-          .eq("pupil_id", pupilId);
-        if (lessonData) {
-          const totalMins = lessonData.reduce((s, l) => s + (l.duration_minutes || 60), 0);
-          setTotalHoursCompleted(Math.round((totalMins / 60) * 10) / 10);
-        }
+      // Calculate hours from lesson_history
+      const { data: hoursData } = await supabase
+        .from("lesson_history")
+        .select("duration_minutes")
+        .eq("pupil_id", pupilId);
+      if (hoursData) {
+        const totalMins = hoursData.reduce((s, l) => s + (l.duration_minutes || 60), 0);
+        setTotalHoursCompleted(Math.round((totalMins / 60) * 10) / 10);
       }
 
       // First check if pupil has syllabus progress
