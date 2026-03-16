@@ -147,12 +147,6 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                   {instructor.name.charAt(0)}
                 </div>
               )}
-              <span 
-                className="font-semibold text-sm sm:text-lg"
-                style={{ color: "#ffffff" }}
-              >
-                {instructor.business_name || instructor.name}
-              </span>
             </Link>
 
             {/* Desktop nav */}
