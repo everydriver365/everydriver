@@ -974,7 +974,7 @@ export function MobileBookingView({
               className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-gradient-to-br from-[#b2fce4]/10 to-[#b2fce4]/20 hover:from-[#b2fce4]/20 hover:to-[#b2fce4]/30 transition-colors text-left disabled:opacity-50"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-[10px] font-bold text-black">clearpay</span>
+                <img src={clearpayLogo} alt="Clearpay" className="h-5 w-5" />
                 <span className="text-xs text-muted-foreground">Interest-free</span>
               </div>
               <p className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>

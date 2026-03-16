@@ -99,7 +99,7 @@ export function PaymentOptionsSettings({ instructorId, compact = false }: Paymen
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">Clearpay</span>
+            <img src={clearpayLogo} alt="Clearpay" className="h-5 w-5" />
             <Label className="text-sm font-medium">Pay in 4</Label>
             {!isPro && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
           </div>
