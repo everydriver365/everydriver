@@ -214,7 +214,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                       </div>
                       {course.discounted_price && (instructor as any).klarna_enabled && (
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">Klarna</span>
+                          <img src={klarnaLogo} alt="Klarna" className="h-4 w-4" />
                           <span className="text-xs text-gray-600">
                             3 × £{(course.discounted_price / 3).toFixed(2)}
                           </span>

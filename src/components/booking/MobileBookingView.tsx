@@ -984,7 +984,7 @@ export function MobileBookingView({
             {/* Klarna */}
             <div className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20">
               <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-[10px] font-bold text-black">Klarna.</span>
+                <img src={klarnaLogo} alt="Klarna" className="h-5 w-5" />
                 <span className="text-xs text-muted-foreground">Pay in 3</span>
               </div>
               <p className="font-semibold text-sm mb-2">3 × £{((totalPrice + upsellTotal) / 3).toFixed(2)}</p>
