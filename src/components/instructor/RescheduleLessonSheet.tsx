@@ -122,6 +122,11 @@ export function RescheduleLessonSheet({
           .neq("status", "cancelled")
           .neq("id", lessonId)
           .gte("lesson_date", todayStr),
+        supabase
+          .from("instructors")
+          .select("buffer_minutes")
+          .eq("id", instructorId)
+          .single(),
       ]);
 
       setWorkingHours(
