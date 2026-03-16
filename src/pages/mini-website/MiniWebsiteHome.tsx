@@ -206,7 +206,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
               {/* Heading */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
-                Learn to Drive in Winchester
+                Learn to Drive in Winchester, Southampton and Portsmouth
               </h1>
 
               <p className="text-muted-foreground text-base sm:text-lg">
