@@ -22,6 +22,7 @@ import defaultHeroImage from "@/assets/frontpagesquare-4.png";
 import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
 import klarnaCleanpayLogos from "@/assets/klarna-clearpay-logos.png";
+import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
