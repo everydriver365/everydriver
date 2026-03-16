@@ -248,3 +248,12 @@ verify_jwt = false
 
 [functions.google-places-nearby]
 verify_jwt = false
+
+[functions.postcode-address-lookup]
+verify_jwt = false
+
+[functions.google-places-autocomplete]
+verify_jwt = false
+
+[functions.google-places-details]
+verify_jwt = false

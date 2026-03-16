@@ -106,10 +106,14 @@ export function PostcodeAddressLookup({
         setNoResults(true);
         setManualEntry(true);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Address lookup failed:", err);
+      const isServiceError = err?.message?.includes("non-2xx") || err?.status >= 400;
       setNoResults(true);
       setManualEntry(true);
+      if (isServiceError) {
+        console.warn("Address lookup service unavailable — falling back to manual entry");
+      }
     } finally {
       setLoading(false);
     }
