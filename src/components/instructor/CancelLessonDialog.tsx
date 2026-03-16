@@ -51,6 +51,7 @@ export function CancelLessonDialog({
   const [cancelling, setCancelling] = useState(false);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
   const [showBackfill, setShowBackfill] = useState(false);
+  const [chargePercent, setChargePercent] = useState(100);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Check waitlist count when dialog opens
