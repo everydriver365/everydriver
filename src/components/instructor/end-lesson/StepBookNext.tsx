@@ -38,6 +38,14 @@ export function StepBookNext({
 
   const findAvailableSlots = async () => {
     try {
+      // Fetch instructor buffer_minutes
+      const { data: instructorData } = await supabase
+        .from("instructors")
+        .select("buffer_minutes")
+        .eq("id", instructorId)
+        .single();
+      const bufferMins = instructorData?.buffer_minutes || 0;
+
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
       const today = new Date();
