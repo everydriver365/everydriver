@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import klarnaLogo from "@/assets/klarna-logo.svg";
 
 interface KlarnaOSMWidgetProps {
   amount: number; // Price in GBP (e.g., 500 for £500)
