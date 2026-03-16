@@ -35,7 +35,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS") || "";
+    const merchantId = Deno.env.get("NPI_MERCHANT_ID") || "";
     const directUrl =
       Deno.env.get("CARDSTREAM_DIRECT_URL") ||
       Deno.env.get("NPI_DIRECT_URL") ||

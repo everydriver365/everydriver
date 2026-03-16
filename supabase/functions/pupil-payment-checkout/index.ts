@@ -128,8 +128,8 @@ serve(async (req: Request) => {
       }
 
       case "elavon": {
-        const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS");
-        const secretKey = Deno.env.get("ELAVON_SECRET_KEY");
+        const merchantId = Deno.env.get("NPI_MERCHANT_ID");
+        const secretKey = Deno.env.get("NPI_MERCHANT_SECRET");
 
         if (!merchantId || !secretKey) {
           return new Response(
