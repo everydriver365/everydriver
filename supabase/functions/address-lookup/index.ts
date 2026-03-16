@@ -16,13 +16,32 @@ serve(async (req) => {
     const apiKey = Deno.env.get("HERE_API_KEY");
     if (!apiKey) throw new Error("HERE_API_KEY not configured");
 
-    // Mode 1: Postcode lookup - returns list of addresses at that postcode
+    // Mode 1: Postcode lookup - two-step: geocode for centroid, then browse for premises
     if (postcode) {
-      const url = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=50&apiKey=${apiKey}`;
-      const res = await fetch(url);
-      const data = await res.json();
+      // Step 1: Geocode postcode to get lat/lng centroid
+      const geoUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=1&apiKey=${apiKey}`;
+      const geoRes = await fetch(geoUrl);
+      const geoData = await geoRes.json();
 
-      const addresses = (data.items || [])
+      const centroid = geoData.items?.[0]?.position;
+      if (!centroid) {
+        return new Response(JSON.stringify({ addresses: [] }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Step 2: Browse for individual premises near the centroid
+      const browseUrl = `https://browse.search.hereapi.com/v1/browse?at=${centroid.lat},${centroid.lng}&categories=700-7600-7610&in=circle:${centroid.lat},${centroid.lng};r=400&limit=100&apiKey=${apiKey}`;
+      const browseRes = await fetch(browseUrl);
+      const browseData = await browseRes.json();
+
+      // Filter to only results matching the requested postcode
+      const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
+      const addresses = (browseData.items || [])
+        .filter((item: any) => {
+          const itemPc = (item.address?.postalCode || "").replace(/\s+/g, "").toUpperCase();
+          return itemPc === cleanPostcode;
+        })
         .map((item: any) => ({
           label: item.address?.label || "",
           street: item.address?.street || "",
@@ -33,7 +52,24 @@ serve(async (req) => {
           postcode: item.address?.postalCode || "",
         }));
 
-      return new Response(JSON.stringify({ addresses }), {
+      // Deduplicate by label and sort by street then house number
+      const seen = new Set<string>();
+      const unique = addresses.filter((a: any) => {
+        const key = `${a.houseNumber}|${a.street}`.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      unique.sort((a: any, b: any) => {
+        const streetCmp = (a.street || "").localeCompare(b.street || "");
+        if (streetCmp !== 0) return streetCmp;
+        const numA = parseInt(a.houseNumber) || 0;
+        const numB = parseInt(b.houseNumber) || 0;
+        return numA - numB;
+      });
+
+      return new Response(JSON.stringify({ addresses: unique }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
