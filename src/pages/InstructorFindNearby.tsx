@@ -241,6 +241,12 @@ export default function InstructorFindNearby() {
                             {place.open_now ? "Open" : "Closed"}
                           </Badge>
                         )}
+                        {(activeCategory === "greggs" || activeCategory === "drive-through") &&
+                          /drive|thru/i.test(place.name) && (
+                          <Badge className="text-[10px] px-1.5 py-0 bg-teal-100 text-teal-700 border-teal-200">
+                            🚗 Drive Through
+                          </Badge>
+                        )}
                         {place.rating && (
                           <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
