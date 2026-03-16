@@ -60,6 +60,7 @@ serve(async (req) => {
       petrol: { type: "gas_station" },
       ae: { keyword: "accident emergency hospital" },
       defib: { keyword: "defibrillator" },
+      "drive-through": { keyword: "drive through food" },
       coffee: { type: "cafe", keyword: "coffee" },
       supermarket: { type: "supermarket" },
       pharmacy: { type: "pharmacy" },
