@@ -314,6 +314,7 @@ export function QuickActionTiles({
     if (action.id === "settings") return "App preferences";
     if (action.id === "health-hub") return "Wellbeing resources";
     if (action.id === "find-fuel") return "Nearest stations";
+    if (action.id === "find-nearby") return "Toilets, food & more";
     if (action.id === "vehicle-health") return "Vehicle checks";
     if (action.id === "expenses") return "Track spending";
     if (action.id === "todos") return "Your task list";

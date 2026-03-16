@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
-import { InstructorPortalLayout } from "@/components/instructor/InstructorPortalLayout";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
