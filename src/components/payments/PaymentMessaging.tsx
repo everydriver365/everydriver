@@ -87,10 +87,11 @@ export function CompactPaymentBadges({
         £{klarnaInstalment}/mo × 3
       </span>
       <span 
-        className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
+        className="inline-flex items-center gap-1 rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
         title={`£${amount} in 4 monthly payments of £${clearpayInstalment}`}
       >
-        clearpay £{clearpayInstalment}/mo × 4
+        <img src={clearpayRoundLogo} alt="Clearpay" className="h-3.5 w-3.5" />
+        £{clearpayInstalment}/mo × 4
       </span>
     </div>
   );
