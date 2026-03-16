@@ -82,9 +82,7 @@ export function KlarnaOSMWidget({
       {/* Fallback display - always show the calculated amount */}
       {!sdkLoaded && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-            Klarna.
-          </span>
+          <img src={klarnaLogo} alt="Klarna" className="h-5 w-5" />
           <span className="text-muted-foreground">
             £{amount} over 3 months – £{instalmentAmount}/mo
           </span>
