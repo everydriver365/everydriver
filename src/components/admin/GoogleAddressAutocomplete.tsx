@@ -1,32 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, Check, X } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { MapPin, Loader2, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-interface AddressPrediction {
-  placeId: string;
-  description: string;
-  mainText: string;
-  secondaryText: string;
-}
-
-interface AddressDetails {
-  formattedAddress: string;
-  streetAddress: string;
-  locality: string;
-  postalCode: string;
-  country: string;
-  lat?: number;
-  lng?: number;
+interface AddressSuggestion {
+  label: string;
+  street: string;
+  houseNumber: string;
+  buildingName?: string;
+  subBuildingName?: string;
+  district: string;
+  city: string;
+  county: string;
+  postcode: string;
 }
 
 interface GoogleAddressAutocompleteProps {
   value: string;
   onChange: (address: string) => void;
   onPostcodeChange?: (postcode: string) => void;
-  onAddressVerified?: (verified: boolean, details?: AddressDetails) => void;
+  onAddressVerified?: (verified: boolean, details?: any) => void;
   placeholder?: string;
   className?: string;
 }
@@ -39,15 +33,13 @@ export function GoogleAddressAutocomplete({
   placeholder = "Start typing an address...",
   className,
 }: GoogleAddressAutocompleteProps) {
-  const [predictions, setPredictions] = useState<AddressPrediction[]>([]);
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [verified, setVerified] = useState<boolean | null>(null);
-  const [sessionToken] = useState(() => crypto.randomUUID());
   const debounceRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -58,29 +50,41 @@ export function GoogleAddressAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchPredictions = useCallback(async (input: string) => {
+  const fetchSuggestions = useCallback(async (input: string) => {
     if (input.length < 3) {
-      setPredictions([]);
+      setSuggestions([]);
       return;
     }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("google-places-autocomplete", {
-        body: { input, sessionToken },
+      const { data, error } = await supabase.functions.invoke("address-lookup", {
+        body: { query: input },
       });
 
       if (error) throw error;
 
-      setPredictions(data.predictions || []);
-      setShowDropdown(true);
+      const items: AddressSuggestion[] = (data?.addresses || []).map((a: any) => ({
+        label: a.label || "",
+        street: a.street || "",
+        houseNumber: a.houseNumber || "",
+        buildingName: a.buildingName || "",
+        subBuildingName: a.subBuildingName || "",
+        district: a.district || "",
+        city: a.city || "",
+        county: a.county || "",
+        postcode: a.postcode || "",
+      }));
+
+      setSuggestions(items);
+      setShowDropdown(items.length > 0);
     } catch (error) {
-      console.error("Error fetching predictions:", error);
-      setPredictions([]);
+      console.error("Address autocomplete error:", error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
-  }, [sessionToken]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -88,48 +92,30 @@ export function GoogleAddressAutocomplete({
     setVerified(null);
     onAddressVerified?.(false);
 
-    // Debounce the API call
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
-      fetchPredictions(newValue);
+      fetchSuggestions(newValue);
     }, 300);
   };
 
-  const handleSelectPrediction = async (prediction: AddressPrediction) => {
-    setLoading(true);
+  const handleSelectSuggestion = (suggestion: AddressSuggestion) => {
     setShowDropdown(false);
+    onChange(suggestion.label);
 
-    try {
-      const { data, error } = await supabase.functions.invoke("google-places-details", {
-        body: { placeId: prediction.placeId, sessionToken },
-      });
-
-      if (error) throw error;
-
-      const details = data as AddressDetails;
-      onChange(details.streetAddress || prediction.mainText);
-      
-      if (details.postalCode && onPostcodeChange) {
-        onPostcodeChange(details.postalCode);
-      }
-
-      setVerified(true);
-      onAddressVerified?.(true, details);
-    } catch (error) {
-      console.error("Error fetching place details:", error);
-      onChange(prediction.description);
-      setVerified(false);
-      onAddressVerified?.(false);
-    } finally {
-      setLoading(false);
+    if (suggestion.postcode && onPostcodeChange) {
+      onPostcodeChange(suggestion.postcode);
     }
-  };
 
-  const clearVerification = () => {
-    setVerified(null);
-    onAddressVerified?.(false);
+    setVerified(true);
+    onAddressVerified?.(true, {
+      formattedAddress: suggestion.label,
+      streetAddress: [suggestion.houseNumber, suggestion.street].filter(Boolean).join(" "),
+      locality: suggestion.city,
+      postalCode: suggestion.postcode,
+      country: "GB",
+    });
   };
 
   return (
@@ -139,12 +125,11 @@ export function GoogleAddressAutocomplete({
         <Input
           value={value}
           onChange={handleInputChange}
-          onFocus={() => predictions.length > 0 && setShowDropdown(true)}
+          onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
           placeholder={placeholder}
           className={cn(
             "pl-9 pr-10",
-            verified === true && "border-green-500 focus-visible:ring-green-500",
-            verified === false && "border-amber-500 focus-visible:ring-amber-500"
+            verified === true && "border-green-500 focus-visible:ring-green-500"
           )}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -152,48 +137,35 @@ export function GoogleAddressAutocomplete({
           {!loading && verified === true && (
             <Check className="h-4 w-4 text-green-500" />
           )}
-          {!loading && verified === false && (
-            <button
-              type="button"
-              onClick={clearVerification}
-              className="text-amber-500 hover:text-amber-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Predictions Dropdown */}
-      {showDropdown && predictions.length > 0 && (
+      {showDropdown && suggestions.length > 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
           <ul className="max-h-60 overflow-auto py-1">
-            {predictions.map((prediction) => (
-              <li key={prediction.placeId}>
-                <button
-                  type="button"
-                  onClick={() => handleSelectPrediction(prediction)}
-                  className="w-full px-3 py-2 text-left hover:bg-muted transition-colors"
-                >
-                  <div className="font-medium text-sm">{prediction.mainText}</div>
-                  <div className="text-xs text-muted-foreground">{prediction.secondaryText}</div>
-                </button>
-              </li>
-            ))}
+            {suggestions.map((s, i) => {
+              const line1 = [s.houseNumber, s.street].filter(Boolean).join(" ") || s.label;
+              const line2 = [s.district, s.city, s.postcode].filter(Boolean).join(", ");
+              return (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectSuggestion(s)}
+                    className="w-full px-3 py-2 text-left hover:bg-muted transition-colors"
+                  >
+                    <div className="font-medium text-sm">{line1}</div>
+                    {line2 && <div className="text-xs text-muted-foreground">{line2}</div>}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
-          <div className="border-t px-3 py-1.5 text-xs text-muted-foreground flex items-center gap-1">
-            <img
-              src="https://developers.google.com/static/maps/documentation/images/powered_by_google_on_white.png"
-              alt="Powered by Google"
-              className="h-3"
-            />
-          </div>
         </div>
       )}
 
       {verified === true && (
         <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
-          <Check className="h-3 w-3" /> Address verified by Google
+          <Check className="h-3 w-3" /> Address verified
         </p>
       )}
     </div>
