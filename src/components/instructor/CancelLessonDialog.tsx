@@ -91,8 +91,8 @@ export function CancelLessonDialog({
       if (lessonError) throw lessonError;
 
       // 2. If charging, deduct from pupil's account balance
-      if (chargeOption === "charge" && amountDue > 0) {
-        const newBalance = pupilBalance - amountDue;
+      if (chargeOption === "charge" && chargeAmount > 0) {
+        const newBalance = pupilBalance - chargeAmount;
         
         const { error: balanceError } = await supabase
           .from("pupils")
