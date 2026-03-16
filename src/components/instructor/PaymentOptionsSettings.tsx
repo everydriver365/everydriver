@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import klarnaLogo from "@/assets/klarna-logo.svg";
+import clearpayLogo from "@/assets/clearpay-logo.svg";
 
 interface PaymentOptionsSettingsProps {
   instructorId: string;
