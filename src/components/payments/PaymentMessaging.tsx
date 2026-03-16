@@ -1,5 +1,6 @@
 import { KlarnaInstalmentBadge } from "./KlarnaOSMWidget";
 import { ClearpayInstalmentBadge } from "./ClearpayOSMWidget";
+import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";
 
 interface PaymentMessagingProps {
   amount: number;
