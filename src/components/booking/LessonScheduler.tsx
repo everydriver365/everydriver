@@ -302,6 +302,7 @@ export function LessonScheduler({
       const slotStartDateTime = new Date(`${dateStr}T${slotStart}:00`);
       const slotEndDateTime = new Date(`${dateStr}T${slotEnd}:00`);
 
+      const bufferMs = bufferMinutes * 60 * 1000;
       return externalEvents.some((event) => {
         const eventStart = new Date(event.start_time);
         const eventEnd = new Date(event.end_time);
@@ -310,11 +311,14 @@ export function LessonScheduler({
         const diffMs = eventEnd.getTime() - eventStart.getTime();
         if (diffMs >= 24 * 60 * 60 * 1000) return false;
         
-        // Check if the slot overlaps with the external event
+        // Expand conflict zone by buffer
+        const bufferedStart = new Date(eventStart.getTime() - bufferMs);
+        const bufferedEnd = new Date(eventEnd.getTime() + bufferMs);
+        
         return (
-          (slotStartDateTime >= eventStart && slotStartDateTime < eventEnd) ||
-          (slotEndDateTime > eventStart && slotEndDateTime <= eventEnd) ||
-          (slotStartDateTime < eventStart && slotEndDateTime > eventStart)
+          (slotStartDateTime >= bufferedStart && slotStartDateTime < bufferedEnd) ||
+          (slotEndDateTime > bufferedStart && slotEndDateTime <= bufferedEnd) ||
+          (slotStartDateTime < bufferedStart && slotEndDateTime > bufferedStart)
         );
       });
     };
