@@ -263,6 +263,8 @@ export default function BookingSummary() {
       if (instructorRes.data) {
         setDepositEnabled(instructorRes.data.deposit_enabled ?? false);
         setDepositAmount(instructorRes.data.deposit_amount ?? 350);
+        setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
+        setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
       }
 
       if (instructorRes.error || !instructorRes.data) {
