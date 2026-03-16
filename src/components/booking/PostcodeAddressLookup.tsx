@@ -89,6 +89,8 @@ export function PostcodeAddressLookup({
         label: a.label || "",
         street: a.street || "",
         houseNumber: a.houseNumber || "",
+        buildingName: a.buildingName || "",
+        subBuildingName: a.subBuildingName || "",
         district: a.district || "",
         city: a.city || "",
         county: a.county || "",
