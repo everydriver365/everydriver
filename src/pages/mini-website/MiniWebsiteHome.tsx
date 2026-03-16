@@ -157,23 +157,63 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       )}
 
-      {/* Hero Section — Warm & Welcoming */}
-      <section style={{ background: 'linear-gradient(180deg, #fff8f0 0%, #fff 100%)' }}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 lg:py-20">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      {/* Hero Section */}
+      <section style={{ backgroundColor: '#e9f4f9' }}>
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center">
+            {/* Left: Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="relative"
+            >
+              <img
+                src={defaultHeroImage}
+                alt={instructorName}
+                className="w-full h-[300px] sm:h-[420px] lg:h-[580px] object-cover rounded-2xl sm:rounded-3xl shadow-xl"
+              />
+              <img
+                src={earlyTestBadge}
+                alt="Earlier Test Guaranteed"
+                className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-36 sm:h-36 object-contain drop-shadow-lg"
+              />
+            </motion.div>
+
+            {/* Right: Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col gap-5"
+            >
+              {/* Rating */}
               {avgRating && (
-                <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 font-bold text-sm px-4 py-2 rounded-full mb-6">
-                  <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Rated {avgRating} by {reviews.length} students
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`h-5 w-5 ${
+                        s <= Math.round(Number(avgRating))
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-muted-foreground/30"
+                      }`}
+                    />
+                  ))}
+                  <span className="font-bold text-muted-foreground">
+                    {avgRating} ({reviews.length} reviews)
+                  </span>
                 </div>
               )}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-5" style={{ color: '#142040' }}>
-                Pass Your Driving Test<br />
-                <span style={{ color: primaryColor }}>With Confidence</span>
+
+              {/* Heading */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
+                Learn to Drive in Winchester, Southampton and Portsmouth
               </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-                Professional driving lessons across Winchester, Southampton &amp; Portsmouth. Book direct for the best prices.
+
+              <p className="text-muted-foreground text-base sm:text-lg">
+                Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
               </p>
+
+              {/* Search Bar */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -181,13 +221,13 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
                   navigate(`/i/${slug}/courses${params}`);
                 }}
-                className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto"
+                className="flex flex-col sm:flex-row gap-2"
               >
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Enter your postcode"
+                    placeholder="Your postcode"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
                     className="pl-10 h-12 rounded-full border-border shadow-sm"
@@ -196,65 +236,53 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Button
                   type="submit"
                   size="lg"
-                  className="h-12 px-8 rounded-full font-bold text-white shrink-0"
+                  className="h-12 px-8 rounded-full font-bold text-white"
                   style={{ backgroundColor: primaryColor }}
                 >
                   Find Lessons
                 </Button>
               </form>
+
+              {/* Course Type Cards */}
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <Link to={links.courses}>
+                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={intensiveCourseTile}
+                        alt="Intensive Courses"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Intensive Courses</h3>
+                       <p className="text-xs text-muted-foreground">Fast-track your test</p>
+                     </CardContent>
+                  </Card>
+                </Link>
+                <Link to={links.services}>
+                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={weeklyLessonsTile}
+                        alt="Weekly Lessons"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Weekly Lessons</h3>
+                       <p className="text-xs text-muted-foreground">At your own pace</p>
+                     </CardContent>
+                  </Card>
+                </Link>
+              </div>
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
+                <img src={klarnaRoundLogo} alt="Klarna" className="h-8 w-8" />
+                <img src={clearpayRoundLogo} alt="Clearpay" className="h-8 w-8" />
+                <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-12 object-contain" />
+              </div>
             </motion.div>
-          </div>
-
-          {/* 3-column photo collage */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-3 gap-4 max-w-4xl mx-auto"
-          >
-            <Link to={links.courses} className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] group">
-              <img src={intensiveCourseTile} alt="Intensive Courses" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <p className="font-bold text-sm">Intensive Courses</p>
-                <p className="text-xs text-white/80">Pass in 1–2 weeks</p>
-              </div>
-            </Link>
-            <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] -mt-6">
-              <img src={defaultHeroImage} alt={instructorName} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="absolute top-3 right-3 w-16 h-16 object-contain drop-shadow-lg" />
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <p className="font-bold text-sm">Earlier Test Guaranteed</p>
-                <p className="text-xs text-white/80">Or your money back</p>
-              </div>
-            </div>
-            <Link to={links.services} className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] group">
-              <img src={weeklyLessonsTile} alt="Weekly Lessons" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <p className="font-bold text-sm">Weekly Lessons</p>
-                <p className="text-xs text-white/80">Learn at your pace</p>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Trust bar */}
-          <div className="flex flex-wrap justify-center items-center gap-6 mt-10">
-            {[
-              { icon: Shield, label: "Earlier Test Guaranteed" },
-              { icon: CheckCircle, label: "Free Re-Test" },
-              { icon: Award, label: "DVSA Approved" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm font-semibold" style={{ color: '#142040' }}>
-                <item.icon className="h-5 w-5" style={{ color: primaryColor }} />
-                {item.label}
-              </div>
-            ))}
-            <div className="flex items-center gap-2">
-              <img src={klarnaRoundLogo} alt="Klarna" className="h-7 w-7" />
-              <img src={clearpayRoundLogo} alt="Clearpay" className="h-7 w-7" />
-            </div>
           </div>
         </div>
       </section>
