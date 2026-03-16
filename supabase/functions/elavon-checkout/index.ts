@@ -35,6 +35,16 @@ serve(async (req: Request) => {
     const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS")?.trim() ?? "";
     const secretKey = Deno.env.get("ELAVON_SECRET_KEY")?.trim() ?? "";
 
+    // Diagnostic logging (non-sensitive prefixes/suffixes only)
+    console.log("[elavon-checkout] Credential check:", {
+      merchantId_length: merchantId.length,
+      merchantId_prefix: merchantId.substring(0, 4),
+      merchantId_suffix: merchantId.substring(merchantId.length - 4),
+      secretKey_length: secretKey.length,
+      secretKey_prefix: secretKey.substring(0, 4),
+      secretKey_suffix: secretKey.substring(secretKey.length - 4),
+    });
+
     if (!merchantId || !secretKey) {
       console.error("Elavon credentials not configured");
       return new Response(
