@@ -169,6 +169,7 @@ const DemoCourseCards = lazy(() => import("./pages/DemoCourseCards"));
 const DemoPromoBars = lazy(() => import("./pages/demo/DemoPromoBars"));
 const DemoMiniWebsiteCourseCards = lazy(() => import("./pages/DemoMiniWebsiteCourseCards"));
 const DemoKenDHeroImages = lazy(() => import("./pages/demo/DemoKenDHeroImages"));
+const DemoKenDHeroRedesigns = lazy(() => import("./pages/demo/DemoKenDHeroRedesigns"));
 
 // Lazy-load ConditionalRoutes
 const ConditionalContact = lazy(() => import("./components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
