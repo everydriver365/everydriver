@@ -157,95 +157,132 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       )}
 
-      {/* Hero Section — Stories Card (Design I) */}
-      <section className="relative overflow-hidden" style={{ background: `linear-gradient(145deg, ${primaryColor} 0%, ${primaryColor}dd 100%)` }}>
-        <div className="px-5 py-10 lg:py-20 space-y-6 text-center max-w-6xl mx-auto">
-          {/* Pill badges */}
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center justify-center gap-2">
-            {["DVSA Approved", `${reviews.length > 0 ? avgRating + '★' : '98%'} Pass Rate`, "Finance Available"].map((t) => (
-              <span key={t} className="px-3 py-1 rounded-full bg-white/10 backdrop-blur text-white/90 text-[11px] font-semibold">{t}</span>
-            ))}
-          </motion.div>
+      {/* Hero Section */}
+      <section style={{ backgroundColor: '#e9f4f9' }}>
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center">
+            {/* Left: Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="relative"
+            >
+              <img
+                src={defaultHeroImage}
+                alt={instructorName}
+                className="w-full h-[300px] sm:h-[420px] lg:h-[580px] object-cover rounded-2xl sm:rounded-3xl shadow-xl"
+              />
+              <img
+                src={earlyTestBadge}
+                alt="Earlier Test Guaranteed"
+                className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-36 sm:h-36 object-contain drop-shadow-lg"
+              />
+            </motion.div>
 
-          {/* Big headline */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <h1 className="text-4xl lg:text-6xl font-black text-white leading-[1.1]">
-              Your Driving<br />
-              <span className="bg-gradient-to-r from-amber-300 to-amber-400 bg-clip-text text-transparent">Journey</span><br />
-              Starts Here
-            </h1>
-          </motion.div>
-
-          <p className="text-white/70 text-sm lg:text-base max-w-md mx-auto">
-            Professional lessons with {instructorName}. From first lesson to test day.
-          </p>
-
-          {/* Photo + avatar */}
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-            className="relative mx-auto w-56 h-56 lg:w-72 lg:h-72"
-          >
-            <img src={instructor.profile_image_url || defaultHeroImage} alt={instructorName} className="w-full h-full rounded-3xl object-cover shadow-2xl border-2 border-white/20" />
-            <div className="absolute -bottom-3 -right-3 bg-white rounded-2xl px-3 py-2 shadow-lg flex items-center gap-2">
-              {reviews.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-bold text-foreground">{avgRating} ({reviews.length})</span>
+            {/* Right: Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col gap-5"
+            >
+              {/* Rating */}
+              {avgRating && (
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`h-5 w-5 ${
+                        s <= Math.round(Number(avgRating))
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-muted-foreground/30"
+                      }`}
+                    />
+                  ))}
+                  <span className="font-bold text-muted-foreground">
+                    {avgRating} ({reviews.length} reviews)
+                  </span>
                 </div>
               )}
-              {!reviews.length && <span className="text-xs font-bold text-foreground">500+ taught</span>}
-            </div>
-          </motion.div>
 
-          {/* Search */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="max-w-lg mx-auto"
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
-                navigate(`/i/${slug}/courses${params}`);
-              }}
-              className="flex flex-col sm:flex-row gap-2 w-full"
-            >
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Enter your postcode"
-                  value={postcode}
-                  onChange={(e) => setPostcode(e.target.value)}
-                  className="pl-10 h-12 rounded-full border-border shadow-sm bg-white/90 text-foreground"
-                />
-              </div>
-              <Button type="submit" size="lg" className="h-12 px-8 rounded-full font-bold text-white shrink-0 bg-amber-500 hover:bg-amber-600">
-                Find Lessons
-              </Button>
-            </form>
-          </motion.div>
+              {/* Heading */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
+                Learn to Drive in Winchester, Southampton and Portsmouth
+              </h1>
 
-          {/* Quick links */}
-          <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto lg:max-w-sm">
-            <Link to={links.services} className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-xl px-3 py-3 text-left hover:bg-white/20 transition-colors">
-              <Clock className="h-5 w-5 text-amber-300 shrink-0" />
-              <div>
-                <div className="text-white text-xs font-bold">Weekly Lessons</div>
-                <div className="text-white/50 text-[10px]">At your own pace</div>
-              </div>
-            </Link>
-            <Link to={links.courses} className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-xl px-3 py-3 text-left hover:bg-white/20 transition-colors">
-              <Award className="h-5 w-5 text-amber-300 shrink-0" />
-              <div>
-                <div className="text-white text-xs font-bold">Intensive</div>
-                <div className="text-white/50 text-[10px]">Fast-track your test</div>
-              </div>
-            </Link>
-          </div>
+              <p className="text-muted-foreground text-base sm:text-lg">
+                Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
+              </p>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-[10px] text-white/40">Pay in instalments</span>
-            <img src={klarnaRoundLogo} alt="Klarna" className="h-5 opacity-60" />
-            <img src={clearpayRoundLogo} alt="Clearpay" className="h-5 opacity-60" />
+              {/* Search Bar */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const slug = instructor.app_slug;
+                  const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
+                  navigate(`/i/${slug}/courses${params}`);
+                }}
+                className="flex flex-col sm:flex-row gap-2"
+              >
+                <div className="flex-1 relative">
+                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Your postcode"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    className="pl-10 h-12 rounded-full border-border shadow-sm"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 px-8 rounded-full font-bold text-white"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Find Lessons
+                </Button>
+              </form>
+
+              {/* Course Type Cards */}
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <Link to={links.courses}>
+                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={intensiveCourseTile}
+                        alt="Intensive Courses"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Intensive Courses</h3>
+                       <p className="text-xs text-muted-foreground">Fast-track your test</p>
+                     </CardContent>
+                  </Card>
+                </Link>
+                <Link to={links.services}>
+                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={weeklyLessonsTile}
+                        alt="Weekly Lessons"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                     <CardContent className="p-3">
+                       <h3 className="font-bold text-sm text-foreground">Weekly Lessons</h3>
+                       <p className="text-xs text-muted-foreground">At your own pace</p>
+                     </CardContent>
+                  </Card>
+                </Link>
+              </div>
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
+                <img src={klarnaRoundLogo} alt="Klarna" className="h-8 w-8" />
+                <img src={clearpayRoundLogo} alt="Clearpay" className="h-8 w-8" />
+                <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-12 object-contain" />
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
