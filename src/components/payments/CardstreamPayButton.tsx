@@ -45,6 +45,7 @@ export function CardstreamPayButton({
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
+  const [formPayload, setFormPayload] = useState<{ gatewayUrl: string; formData: Record<string, string> } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeLoadCountRef = useRef(0);
