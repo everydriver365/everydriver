@@ -106,7 +106,7 @@ export function useInstructorAdminChat(instructorId: string | undefined) {
     }
   };
 
-  const markAsRead = async () => {
+  const markAsRead = useCallback(async () => {
     if (!conversation || !instructorId) return;
 
     await supabase
@@ -115,7 +115,7 @@ export function useInstructorAdminChat(instructorId: string | undefined) {
       .eq("conversation_id", conversation.id)
       .eq("sender_type", "admin")
       .is("read_at", null);
-  };
+  }, [conversation?.id, instructorId]);
 
   // Subscribe to realtime updates
   useEffect(() => {
