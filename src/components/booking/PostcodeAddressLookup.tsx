@@ -10,6 +10,8 @@ interface AddressOption {
   label: string;
   street: string;
   houseNumber: string;
+  buildingName?: string;
+  subBuildingName?: string;
   district: string;
   city: string;
   county: string;
