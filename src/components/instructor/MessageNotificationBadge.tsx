@@ -45,7 +45,7 @@ export function MessageNotificationBadge({ instructorId, className }: MessageNot
 
     // Subscribe to new messages
     const channel = supabase
-      .channel("unread-messages")
+      .channel(`unread-messages-${instructorId}`)
       .on(
         "postgres_changes",
         {

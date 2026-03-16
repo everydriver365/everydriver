@@ -313,7 +313,7 @@ export function useAdminConversationMessages(conversationId: string | null, inst
     }
   };
 
-  const markAsRead = async () => {
+  const markAsRead = useCallback(async () => {
     if (!conversationId) return;
 
     await supabase
@@ -322,7 +322,7 @@ export function useAdminConversationMessages(conversationId: string | null, inst
       .eq("conversation_id", conversationId)
       .eq("sender_type", "instructor")
       .is("read_at", null);
-  };
+  }, [conversationId]);
 
   // Subscribe to realtime updates
   useEffect(() => {
