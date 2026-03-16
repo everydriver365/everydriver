@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench } from "lucide-react";
+import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface Place {
   name: string;
