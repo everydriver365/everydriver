@@ -251,7 +251,7 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes, workingHoursRes, dateOverridesRes] = await Promise.all([
-        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, booking_mode").eq("id", instructorId).maybeSingle(),
+        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, deposit_deadline_days, cancellation_policy_text, booking_mode").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
