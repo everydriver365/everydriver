@@ -105,16 +105,16 @@ export function CancelLessonDialog({
         await supabase.from("payment_history").insert({
           pupil_id: pupilId,
           instructor_id: instructorId,
-          amount: -amountDue,
+          amount: -chargeAmount,
           payment_method: "Cancellation Fee",
-          notes: `Cancellation charge for ${lessonDate} ${lessonTime}`,
+          notes: `Cancellation charge (${chargePercent}%) for ${lessonDate} ${lessonTime}`,
         });
 
         invalidatePaymentQueries({ pupilId, instructorId });
 
         toast({
           title: "Lesson cancelled with charge",
-          description: `£${amountDue.toFixed(2)} deducted from ${pupilName}'s balance`,
+          description: `£${chargeAmount.toFixed(2)} deducted from ${pupilName}'s balance`,
         });
       } else {
         toast({
