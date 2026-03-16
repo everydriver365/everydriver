@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import clearpayLogo from "@/assets/clearpay-logo.svg";
 
 interface ClearpayOSMWidgetProps {
   amount: number; // Price in GBP (e.g., 500 for £500)
@@ -89,9 +90,7 @@ export function ClearpayOSMWidget({
       {/* Fallback display - always show the calculated amount */}
       {!sdkLoaded && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
-            clearpay
-          </span>
+          <img src={clearpayLogo} alt="Clearpay" className="h-5 w-5" />
           <span className="text-muted-foreground">
             £{amount} over 4 months – £{instalmentAmount}/mo
           </span>
@@ -115,9 +114,7 @@ export function ClearpayInstalmentBadge({
   
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
-        clearpay
-      </span>
+      <img src={clearpayLogo} alt="Clearpay" className="h-5 w-5" />
       <span className="text-xs text-muted-foreground">
         £{amount} over 4 months (£{instalmentAmount}/mo)
       </span>
