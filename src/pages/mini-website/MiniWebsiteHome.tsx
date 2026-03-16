@@ -25,7 +25,7 @@ import klarnaCleanpayLogos from "@/assets/klarna-clearpay-logos.png";
 import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";
 import clearpayRoundLogo from "@/assets/clearpay-round-logo.svg";
 import courseIntensive from "@/assets/course-intensive.jpg";
-import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
+import courseSemiIntensive from "@/assets/semi-intensive-tile.jpg";
 import courseWeekly from "@/assets/weekly-lessons-tile.jpeg";
 import drivingTestCentreImg from "@/assets/search-compare-book.avif";
 import localInstructorImg from "@/assets/local-instructor.jpg";
