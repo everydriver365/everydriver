@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,15 @@ const categories = [
   { id: "petrol", label: "Petrol Station", icon: Fuel, color: "text-emerald-600", bg: "bg-emerald-500/12" },
   { id: "ae", label: "A&E", icon: Heart, color: "text-rose-600", bg: "bg-rose-500/12" },
   { id: "defib", label: "Defibrillator", icon: Zap, color: "text-violet-600", bg: "bg-violet-500/12" },
+  { id: "coffee", label: "Coffee Shops", icon: Coffee, color: "text-amber-800", bg: "bg-amber-700/12" },
+  { id: "supermarket", label: "Supermarket", icon: ShoppingCart, color: "text-green-600", bg: "bg-green-500/12" },
+  { id: "pharmacy", label: "Pharmacy", icon: Pill, color: "text-pink-600", bg: "bg-pink-500/12" },
+  { id: "car-wash", label: "Car Wash", icon: Car, color: "text-blue-600", bg: "bg-blue-500/12" },
+  { id: "parking", label: "Parking", icon: CircleParking, color: "text-slate-600", bg: "bg-slate-500/12" },
+  { id: "garage", label: "Tyre & Garage", icon: Wrench, color: "text-orange-600", bg: "bg-orange-500/12" },
+  { id: "atm", label: "ATMs", icon: CreditCard, color: "text-indigo-600", bg: "bg-indigo-500/12" },
+  { id: "ev-charging", label: "EV Charging", icon: BatteryCharging, color: "text-lime-600", bg: "bg-lime-500/12" },
+  { id: "post-office", label: "Post Office", icon: Mail, color: "text-red-600", bg: "bg-red-500/12" },
 ];
 
 export default function InstructorFindNearby() {
