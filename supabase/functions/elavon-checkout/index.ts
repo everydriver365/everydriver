@@ -123,7 +123,11 @@ serve(async (req: Request) => {
 
     const gatewayUrl = "https://gateway.cardstream.com/hosted/";
 
-    console.log("Elavon HPP form data generated for order:", orderReference);
+    // Log all non-sensitive fields for debugging (exclude signature)
+    const debugFields = { ...requestData };
+    delete debugFields.signature;
+    console.log("[elavon-checkout] HPP form fields (excl. signature):", JSON.stringify(debugFields));
+    console.log("[elavon-checkout] Signature length:", requestData.signature?.length);
 
     return new Response(
       JSON.stringify({
