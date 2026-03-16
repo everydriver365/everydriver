@@ -2,7 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -17,7 +18,7 @@ serve(async (req) => {
 
     // Mode 1: Postcode lookup - returns list of addresses at that postcode
     if (postcode) {
-      const url = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=20&apiKey=${apiKey}`;
+      const url = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=50&apiKey=${apiKey}`;
       const res = await fetch(url);
       const data = await res.json();
 

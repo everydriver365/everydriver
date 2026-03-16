@@ -257,3 +257,6 @@ verify_jwt = false
 
 [functions.google-places-details]
 verify_jwt = false
+
+[functions.address-lookup]
+verify_jwt = false

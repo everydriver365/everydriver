@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { ukPostcodeRegex } from "@/lib/booking-validation";
 
 interface AddressOption {
-  placeId?: string;
   label: string;
   street: string;
   houseNumber: string;
@@ -51,7 +50,6 @@ export function PostcodeAddressLookup({
   const containerRef = useRef<HTMLDivElement>(null);
   const doorInputRef = useRef<HTMLInputElement>(null);
   const lastLookedUp = useRef("");
-  const [sessionToken] = useState(() => crypto.randomUUID());
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -79,21 +77,20 @@ export function PostcodeAddressLookup({
     setLoading(true);
     setNoResults(false);
     try {
-      const { data, error } = await supabase.functions.invoke("postcode-address-lookup", {
+      const { data, error } = await supabase.functions.invoke("address-lookup", {
         body: { postcode: clean },
       });
       if (error) throw error;
 
       const items = data?.addresses || [];
       const results: AddressOption[] = items.map((a: any) => ({
-        placeId: a.placeId,
-        label: a.label,
-        street: a.mainText,
-        houseNumber: "",
-        district: "",
-        city: a.secondaryText || "",
-        county: "",
-        postcode: clean,
+        label: a.label || "",
+        street: a.street || "",
+        houseNumber: a.houseNumber || "",
+        district: a.district || "",
+        city: a.city || "",
+        county: a.county || "",
+        postcode: a.postcode || clean,
       }));
 
       setAddresses(results);
@@ -133,7 +130,6 @@ export function PostcodeAddressLookup({
 
   const handlePostcodeBlur = () => {
     onBlurPostcode?.();
-    // Don't auto-lookup on blur — use the "Find Address" button instead
   };
 
   const handlePostcodeKeyDown = (e: React.KeyboardEvent) => {
@@ -149,61 +145,15 @@ export function PostcodeAddressLookup({
     return parts.join(", ");
   };
 
-  const handleSelectAddress = async (addr: AddressOption) => {
+  const handleSelectAddress = (addr: AddressOption) => {
     setShowDropdown(false);
-
-    if (addr.placeId) {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("google-places-details", {
-          body: { placeId: addr.placeId, sessionToken },
-        });
-        if (error) throw error;
-
-        const enriched: AddressOption = {
-          ...addr,
-          street: data.streetAddress || addr.street,
-          houseNumber: "",
-          city: data.locality || "",
-          district: "",
-          county: "",
-          postcode: data.postalCode || addr.postcode,
-        };
-
-        // Extract house number from street address if present
-        const streetMatch = (data.streetAddress || "").match(/^(\d+\w*)\s+(.+)/);
-        if (streetMatch) {
-          enriched.houseNumber = streetMatch[1];
-          enriched.street = streetMatch[2];
-        }
-
-        setSelectedAddress(enriched);
-        setDoorNumber(enriched.houseNumber);
-        setShowDoorPrompt(true);
-        const preliminary = buildFullAddress(enriched, enriched.houseNumber);
-        onAddressChange(preliminary);
-        if (enriched.postcode) {
-          onPostcodeChange(enriched.postcode);
-        }
-      } catch (err) {
-        console.error("Place details failed:", err);
-        // Fallback to basic selection
-        setSelectedAddress(addr);
-        setDoorNumber("");
-        setShowDoorPrompt(true);
-        onAddressChange(addr.label);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setSelectedAddress(addr);
-      setDoorNumber(addr.houseNumber);
-      setShowDoorPrompt(true);
-      const preliminary = buildFullAddress(addr, addr.houseNumber);
-      onAddressChange(preliminary);
-      if (addr.postcode) {
-        onPostcodeChange(addr.postcode);
-      }
+    setSelectedAddress(addr);
+    setDoorNumber(addr.houseNumber);
+    setShowDoorPrompt(true);
+    const preliminary = buildFullAddress(addr, addr.houseNumber);
+    onAddressChange(preliminary);
+    if (addr.postcode) {
+      onPostcodeChange(addr.postcode);
     }
   };
 
