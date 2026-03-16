@@ -70,6 +70,7 @@ serve(async (req) => {
       atm: { type: "atm" },
       "ev-charging": { keyword: "electric vehicle charging station" },
       "post-office": { keyword: "post office" },
+      greggs: { keyword: "Greggs" },
     };
 
     const mapping = categoryMap[category];
