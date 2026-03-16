@@ -29,9 +29,14 @@ serve(async (req) => {
     const params = new URLSearchParams({
       input,
       key: apiKey,
-      types: "address",
       components: "country:gb", // UK addresses only
     });
+
+    // Only restrict to address type if input doesn't look like a postcode
+    const isPostcode = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(input.trim());
+    if (!isPostcode) {
+      params.append("types", "address");
+    }
 
     if (sessionToken) {
       params.append("sessiontoken", sessionToken);
