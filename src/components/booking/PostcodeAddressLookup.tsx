@@ -51,6 +51,7 @@ export function PostcodeAddressLookup({
   const containerRef = useRef<HTMLDivElement>(null);
   const doorInputRef = useRef<HTMLInputElement>(null);
   const lastLookedUp = useRef("");
+  const [sessionToken] = useState(() => crypto.randomUUID());
 
   // Close dropdown on outside click
   useEffect(() => {
