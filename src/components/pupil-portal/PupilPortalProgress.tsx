@@ -5,6 +5,9 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { DVSA_SYLLABUS, calculateSyllabusProgress } from "@/constants/dvsaSyllabus";
 import { PupilSyllabusView } from "@/components/pupil-portal/PupilSyllabusView";
+import { PupilProgressTimeline } from "@/components/pupil-portal/PupilProgressTimeline";
+import { TestReadinessCard } from "@/components/pupil-portal/TestReadinessCard";
+import { HoursTracker } from "@/components/pupil-portal/HoursTracker";
 
 interface PupilPortalProgressProps {
   pupilId: string;
@@ -16,6 +19,7 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
   const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasSyllabusProgress, setHasSyllabusProgress] = useState(false);
+  const [totalHoursCompleted, setTotalHoursCompleted] = useState(0);
 
   useEffect(() => {
     fetchProgress();
@@ -23,6 +27,16 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
 
   const fetchProgress = async () => {
     try {
+      // Calculate hours from lesson_history
+      const { data: hoursData } = await supabase
+        .from("lesson_history")
+        .select("duration_minutes")
+        .eq("pupil_id", pupilId);
+      if (hoursData) {
+        const totalMins = hoursData.reduce((s, l) => s + (l.duration_minutes || 60), 0);
+        setTotalHoursCompleted(Math.round((totalMins / 60) * 10) / 10);
+      }
+
       // First check if pupil has syllabus progress
       const { data: syllabusData, error: syllabusError } = await supabase
         .from("pupil_syllabus_progress")
@@ -40,7 +54,6 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
           .eq("pupil_id", pupilId);
 
         if (!lessonError && lessonData) {
-          // Count skill occurrences - consider level based on practices
           const skillCounts: Record<string, number> = {};
           lessonData.forEach(lesson => {
             (lesson.skills_practiced || []).forEach((skill: string) => {
@@ -48,10 +61,9 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
             });
           });
 
-          // Convert to progress entries (1 practice = level 1, 3+ = level 5)
           const derivedProgress = Object.entries(skillCounts).map(([skill, count]) => ({
             competency_id: skill,
-            level: Math.min(5, Math.ceil(count / 0.6)) // Scale: 1, 2, 3, 4, 5+ practices → levels
+            level: Math.min(5, Math.ceil(count / 0.6))
           }));
 
           if (derivedProgress.length > 0) {
@@ -131,6 +143,26 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
           />
         </CardContent>
       </Card>
+
+      {/* Test Readiness */}
+      <TestReadinessCard
+        progress={progress}
+        totalHoursCompleted={totalHoursCompleted}
+        brandColour={brandColour}
+      />
+
+      {/* Hours Tracker */}
+      <HoursTracker
+        hoursCompleted={totalHoursCompleted}
+        estimatedTotal={40}
+        brandColour={brandColour}
+      />
+
+      {/* Lesson Timeline */}
+      <PupilProgressTimeline
+        pupilId={pupilId}
+        brandColour={brandColour}
+      />
 
       {/* Encouragement */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>

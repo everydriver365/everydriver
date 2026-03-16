@@ -108,6 +108,29 @@ export function LessonScheduler({
     fetchAvailability();
   }, [instructorId]);
 
+  // Real-time subscription: refetch when new lessons are booked
+  useEffect(() => {
+    const channel = supabase
+      .channel('booking-slot-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scheduled_lessons',
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        () => {
+          fetchAvailability();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [instructorId]);
+
   // Navigate to the first available date's month when data loads
   useEffect(() => {
     if (!loading && workingHours.length > 0) {

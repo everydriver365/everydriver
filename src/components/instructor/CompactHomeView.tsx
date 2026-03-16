@@ -36,6 +36,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { SmartScheduleCard } from "@/components/instructor/SmartScheduleCard";
 
 import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
@@ -294,6 +295,11 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
       {/* Morning Briefing */}
       <MorningBriefingCard instructorId={instructorId} />
+
+      {/* Smart Scheduling Suggestions */}
+      <div className="px-4 mb-3">
+        <SmartScheduleCard instructorId={instructorId} />
+      </div>
 
       {/* Activity Tiles */}
       <ActivityTilesGrid
