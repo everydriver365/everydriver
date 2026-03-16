@@ -68,7 +68,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
 
   // Per-instructor style overrides (highest priority)
   const STYLE_OVERRIDES: Record<string, { primaryColor?: string; headerBg?: string; footerBg?: string }> = {
-    "ken-d": { primaryColor: "#1e3a5f", headerBg: "#1e3a5f", footerBg: "#1e3a5f" },
+    "ken-d": { primaryColor: "#142040", headerBg: "#142040", footerBg: "#142040" },
   };
   const styleOverride = STYLE_OVERRIDES[slug] || {};
 
