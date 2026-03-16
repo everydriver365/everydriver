@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench } from "lucide-react";
+import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface Place {
   name: string;
@@ -40,9 +42,11 @@ const categories = [
 export default function InstructorFindNearby() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { instructor } = useInstructorAuth();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
+  const { nearest, cheapest, loading: fuelLoading, refetch: refetchFuel } = useFuelPrices(instructor?.id);
 
   const searchNearby = async (categoryId: string) => {
     setActiveCategory(categoryId);
@@ -148,12 +152,75 @@ export default function InstructorFindNearby() {
           </div>
         )}
 
+        {/* Fuel Summary - Nearest & Cheapest */}
+        {!loading && activeCategory === "petrol" && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground px-1">Fuel prices</p>
+            {fuelLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="ml-2 text-xs text-muted-foreground">Loading fuel prices…</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {nearest && (
+                  <Card className="border-blue-200 bg-blue-500/5">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <MapPin className="h-3.5 w-3.5 text-blue-600" />
+                        <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Nearest</span>
+                      </div>
+                      <h4 className="text-xs font-semibold text-foreground truncate">{nearest.name}</h4>
+                      <p className="text-[10px] text-muted-foreground truncate">{nearest.address}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {nearest.distance_miles.toFixed(1)} mi
+                        </Badge>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${nearest.lat},${nearest.lng}`, "_blank")}>
+                          <Navigation className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {cheapest && (
+                  <Card className="border-green-200 bg-green-500/5">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <TrendingDown className="h-3.5 w-3.5 text-green-600" />
+                        <span className="text-[10px] font-semibold text-green-600 uppercase tracking-wide">Cheapest</span>
+                      </div>
+                      <h4 className="text-xs font-semibold text-foreground truncate">{cheapest.name}</h4>
+                      <p className="text-[10px] text-muted-foreground truncate">{cheapest.address}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {cheapest.distance_miles.toFixed(1)} mi
+                        </Badge>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${cheapest.lat},${cheapest.lng}`, "_blank")}>
+                          <Navigation className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+            {places.length > 0 && (
+              <p className="text-sm font-medium text-muted-foreground px-1 pt-2">
+                {places.length} station{places.length !== 1 ? "s" : ""} nearby
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Results */}
         {!loading && places.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground px-1">
-              {places.length} result{places.length !== 1 ? "s" : ""} found
-            </p>
+            {activeCategory !== "petrol" && (
+              <p className="text-sm font-medium text-muted-foreground px-1">
+                {places.length} result{places.length !== 1 ? "s" : ""} found
+              </p>
+            )}
             {places.map((place, i) => (
               <Card key={i} className="overflow-hidden">
                 <CardContent className="p-4">
