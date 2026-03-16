@@ -19,6 +19,7 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
   const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasSyllabusProgress, setHasSyllabusProgress] = useState(false);
+  const [totalHoursCompleted, setTotalHoursCompleted] = useState(0);
 
   useEffect(() => {
     fetchProgress();
