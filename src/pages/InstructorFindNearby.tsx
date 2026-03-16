@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Fuel, Coffee, Heart, Zap, Navigation, Star, Loader2, ShoppingCart, Pill, Car, CircleParking, CreditCard, BatteryCharging, Mail, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
