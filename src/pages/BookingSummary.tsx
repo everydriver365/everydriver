@@ -646,24 +646,8 @@ export default function BookingSummary() {
       return;
     }
 
-    setIsElavonLoading(true);
-    try {
-      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-      const fullPaymentAmount = totalPrice + upsellTotal;
-      const pupilId = await ensureBookingCreated(
-        isDepositPayment ? 'deposit' : 'full',
-        isDepositPayment ? depositAmount : fullPaymentAmount
-      );
-      if (!pupilId) return;
-
-      // Show inline hosted fields instead of redirecting
-      setShowHostedFields(true);
-    } catch (err) {
-      console.error("Elavon error:", err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsElavonLoading(false);
-    }
+    // Show inline hosted fields directly — booking will be created after payment succeeds
+    setShowHostedFields(true);
   };
 
   // Step 1: Create WooCommerce order and show in-app payment options
