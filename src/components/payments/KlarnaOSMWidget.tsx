@@ -106,9 +106,7 @@ export function KlarnaInstalmentBadge({
   
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-        Klarna.
-      </span>
+      <img src={klarnaLogo} alt="Klarna" className="h-5 w-5" />
       <span className="text-xs text-muted-foreground">
         £{amount} over 3 months (£{instalmentAmount}/mo)
       </span>
