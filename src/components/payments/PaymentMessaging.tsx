@@ -1,5 +1,6 @@
 import { KlarnaInstalmentBadge } from "./KlarnaOSMWidget";
 import { ClearpayInstalmentBadge } from "./ClearpayOSMWidget";
+import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";
 
 interface PaymentMessagingProps {
   amount: number;
@@ -78,10 +79,11 @@ export function CompactPaymentBadges({
   return (
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
       <span 
-        className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black"
+        className="inline-flex items-center gap-1 rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black"
         title={`£${amount} in 3 monthly payments of £${klarnaInstalment}`}
       >
-        Klarna. £{klarnaInstalment}/mo × 3
+        <img src={klarnaRoundLogo} alt="Klarna" className="h-3.5 w-3.5" />
+        £{klarnaInstalment}/mo × 3
       </span>
       <span 
         className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
