@@ -116,7 +116,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   }
 
   const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#1e3a5f" },
+    "ken-d": { primaryColor: "#142040" },
   };
   const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
@@ -137,15 +137,15 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
     <MiniWebsiteLayout instructor={instructor} pageTitle="Home" pageDescription={`Book driving lessons with ${instructor.business_name || instructor.name}. Professional driving instruction to help you pass your test.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
       {/* Announcement Bar - Dismissible Banner */}
       {showPromoBanner && (
-        <div className="hidden md:block bg-gradient-to-r from-[#1e3a5f] to-[#2e5a8f] py-3 px-4 relative">
+        <div className="hidden md:block bg-gradient-to-r from-[#142040] to-[#1e3a5f] py-3 px-4 relative">
           <div className="max-w-6xl mx-auto flex items-center justify-center gap-3">
             <div className="bg-amber-400 rounded-full p-1">
-              <Gift className="h-4 w-4 text-[#1e3a5f]" />
+              <Gift className="h-4 w-4 text-[#142040]" />
             </div>
             <p className="text-sm text-white font-medium">
               <span className="font-bold">New Student Offer:</span> Get 10% off your first lesson + free theory test access
             </p>
-            <a href="tel:07506782870" className="hidden md:inline-flex items-center gap-1 bg-white text-[#1e3a5f] text-xs font-bold px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors ml-2">
+            <a href="tel:07506782870" className="hidden md:inline-flex items-center gap-1 bg-white text-[#142040] text-xs font-bold px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors ml-2">
               Call Now <ChevronRight className="h-3 w-3" />
             </a>
           </div>

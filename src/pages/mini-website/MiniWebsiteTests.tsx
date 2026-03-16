@@ -99,7 +99,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
   }
 
   const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#1e3a5f" },
+    "ken-d": { primaryColor: "#142040" },
   };
   const primaryColor = STYLE_OVERRIDES[slug!]?.primaryColor || instructor.brand_colour || "#1e3a5f";
 
