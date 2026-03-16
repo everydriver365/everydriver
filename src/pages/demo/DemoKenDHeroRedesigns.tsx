@@ -347,6 +347,227 @@ const HeroDesignD = () => (
   </section>
 );
 
+// ─── DESIGN E: "Warm & Welcoming" — Soft rounded, friendly with photo collage feel ───
+const HeroDesignE = () => (
+  <section style={{ background: 'linear-gradient(180deg, #fff8f0 0%, #fff 100%)' }}>
+    <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 lg:py-20">
+      <div className="text-center max-w-3xl mx-auto mb-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 font-bold text-sm px-4 py-2 rounded-full mb-6">
+            <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Rated 5.0 by 47 students
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-5" style={{ color: DARK }}>
+            Pass Your Driving Test<br />
+            <span style={{ color: PRIMARY }}>With Confidence</span>
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            Professional driving lessons across Winchester, Southampton &amp; Portsmouth. Book direct for the best prices.
+          </p>
+          <div className="flex justify-center">
+            <SearchBar />
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Image row with 3 rounded cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-3 gap-4 max-w-4xl mx-auto"
+      >
+        <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4]">
+          <img src={intensiveCourseTile} alt="Intensive" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <p className="font-bold text-sm">Intensive Courses</p>
+            <p className="text-xs text-white/80">Pass in 1–2 weeks</p>
+          </div>
+        </div>
+        <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] -mt-6">
+          <img src={defaultHeroImage} alt="Learn to drive" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <img src={earlyTestBadge} alt="ETG" className="absolute top-3 right-3 w-16 h-16 object-contain drop-shadow-lg" />
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <p className="font-bold text-sm">Earlier Test Guaranteed</p>
+            <p className="text-xs text-white/80">Or your money back</p>
+          </div>
+        </div>
+        <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4]">
+          <img src={weeklyLessonsTile} alt="Weekly" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <p className="font-bold text-sm">Weekly Lessons</p>
+            <p className="text-xs text-white/80">Learn at your pace</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Trust bar */}
+      <div className="flex flex-wrap justify-center items-center gap-6 mt-10">
+        {[
+          { icon: Shield, label: "Earlier Test Guaranteed" },
+          { icon: CheckCircle, label: "Free Re-Test" },
+          { icon: Award, label: "DVSA Approved" },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-2 text-sm font-semibold" style={{ color: DARK }}>
+            <item.icon className="h-5 w-5" style={{ color: PRIMARY }} />
+            {item.label}
+          </div>
+        ))}
+        <div className="flex items-center gap-2">
+          <img src={klarnaRoundLogo} alt="Klarna" className="h-7 w-7" />
+          <img src={clearpayRoundLogo} alt="Clearpay" className="h-7 w-7" />
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+// ─── DESIGN F: "Minimal Stripe" — Ultra-clean, inspired by modern SaaS ───
+const HeroDesignF = () => (
+  <section className="bg-white">
+    <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-14 lg:py-24">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="order-2 lg:order-1">
+          <p className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: PRIMARY }}>
+            Driving Lessons in Hampshire
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-[3.6rem] font-black leading-[1.06] tracking-tight mb-6" style={{ color: DARK }}>
+            The smarter way<br />to learn to drive
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8 max-w-md leading-relaxed">
+            Winchester · Southampton · Portsmouth. Intensive or weekly courses with earlier test dates guaranteed.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 mb-10">
+            <Button size="lg" className="h-13 px-8 rounded-xl font-bold text-white text-base" style={{ backgroundColor: PRIMARY }}>
+              Browse Courses <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+            <Button size="lg" variant="ghost" className="h-13 px-6 rounded-xl font-bold text-base" style={{ color: DARK }}>
+              <Phone className="h-4 w-4 mr-2" /> 07506 782870
+            </Button>
+          </div>
+
+          {/* Metric row */}
+          <div className="flex items-center gap-8 border-t pt-8">
+            {[
+              { value: "500+", label: "Students passed" },
+              { value: "5.0★", label: "Average rating" },
+              { value: "98%", label: "Pass rate" },
+            ].map((m, i) => (
+              <div key={i}>
+                <p className="font-black text-2xl" style={{ color: DARK }}>{m.value}</p>
+                <p className="text-xs text-muted-foreground font-medium">{m.label}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="order-1 lg:order-2 relative"
+        >
+          <div className="rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5">
+            <img src={defaultHeroImage} alt="Learn to drive" className="w-full h-[340px] sm:h-[460px] object-cover" />
+          </div>
+          <img src={earlyTestBadge} alt="ETG" className="absolute -top-5 -right-5 w-28 h-28 lg:w-32 lg:h-32 object-contain drop-shadow-xl" />
+
+          {/* Floating review */}
+          <div className="absolute -bottom-6 left-6 bg-white rounded-2xl px-5 py-4 shadow-xl border border-black/5 max-w-[240px]">
+            <div className="flex items-center gap-1 mb-1">
+              {[1,2,3,4,5].map(s => <Star key={s} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}
+            </div>
+            <p className="text-sm font-medium text-foreground">"Passed first time! Best instructor ever."</p>
+            <p className="text-xs text-muted-foreground mt-1">— Sarah, Winchester</p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  </section>
+);
+
+// ─── DESIGN G: "Vibrant Banner" — Bright, energetic with horizontal scroll cards ───
+const HeroDesignG = () => (
+  <section className="relative overflow-hidden" style={{ backgroundColor: PRIMARY }}>
+    <div className="absolute inset-0 opacity-10">
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-white/20 -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-white/10 translate-y-1/2 -translate-x-1/4" />
+    </div>
+
+    <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-16">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
+        {/* Text — 3 cols */}
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-3 text-white">
+          <div className="flex items-center gap-3 mb-5">
+            <img src={earlyTestBadge} alt="ETG" className="w-14 h-14 object-contain" />
+            <div className="flex items-center gap-1">
+              {[1,2,3,4,5].map(s => <Star key={s} className="h-4 w-4 fill-amber-300 text-amber-300" />)}
+              <span className="text-white/80 text-sm ml-1">5.0</span>
+            </div>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black leading-[1.08] tracking-tight mb-5">
+            Learn to Drive in<br />Winchester, Southampton<br />&amp; Portsmouth
+          </h1>
+
+          <p className="text-lg text-white/75 mb-8 max-w-lg">
+            Book direct for earlier test dates, free re-tests, and flexible payment options.
+          </p>
+
+          <SearchBar dark />
+
+          <div className="flex flex-wrap gap-4 mt-8">
+            {["Earlier Test Guaranteed", "Free Re-Test", "Klarna Available"].map((label) => (
+              <span key={label} className="flex items-center gap-1.5 text-sm text-white font-medium">
+                <CheckCircle className="h-4 w-4 text-green-300" />
+                {label}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Right — 2 cols, stacked cards */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="lg:col-span-2 flex flex-col gap-4"
+        >
+          {[
+            { img: intensiveCourseTile, title: "Intensive Courses", sub: "Pass in 1–2 weeks", price: "From £1,200" },
+            { img: defaultHeroImage, title: "Weekly Lessons", sub: "At your own pace", price: "From £35/hr" },
+          ].map((card, i) => (
+            <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all cursor-pointer group">
+              <div className="flex items-center gap-4 p-3">
+                <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
+                  <img src={card.img} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm" style={{ color: DARK }}>{card.title}</p>
+                  <p className="text-xs text-muted-foreground">{card.sub}</p>
+                  <p className="font-black text-sm mt-1" style={{ color: PRIMARY }}>{card.price}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+              </div>
+            </div>
+          ))}
+
+          {/* Quick call card */}
+          <div className="bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl p-4 text-center">
+            <p className="text-white font-bold text-sm mb-2">Prefer to chat?</p>
+            <Button size="sm" className="rounded-full font-bold bg-white hover:bg-white/90 text-sm px-6" style={{ color: PRIMARY }}>
+              <Phone className="h-3.5 w-3.5 mr-1.5" /> Call Ken D
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  </section>
+);
+
 // ─── Demo Page ───
 export default function DemoKenDHeroRedesigns() {
   const [selected, setSelected] = useState<string | null>(null);
@@ -356,6 +577,9 @@ export default function DemoKenDHeroRedesigns() {
     { id: "B", label: "Full-Width Cinematic", desc: "Full-bleed hero image with dark gradient overlay — bold and immersive", component: <HeroDesignB /> },
     { id: "C", label: "Card Stack", desc: "White background with integrated course cards and image overlay badges", component: <HeroDesignC /> },
     { id: "D", label: "Bold Gradient", desc: "Dark-to-blue gradient with floating feature pills and stat cards", component: <HeroDesignD /> },
+    { id: "E", label: "Warm & Welcoming", desc: "Centred text with 3-column photo collage and soft warm tones", component: <HeroDesignE /> },
+    { id: "F", label: "Minimal Stripe", desc: "Ultra-clean SaaS-inspired layout with metrics bar and floating review", component: <HeroDesignF /> },
+    { id: "G", label: "Vibrant Banner", desc: "Bold blue brand colour with stacked course cards on the right", component: <HeroDesignG /> },
   ];
 
   return (
