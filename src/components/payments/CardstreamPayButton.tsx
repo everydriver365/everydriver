@@ -45,6 +45,7 @@ export function CardstreamPayButton({
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
+  const [formPayload, setFormPayload] = useState<{ gatewayUrl: string; formData: Record<string, string> } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeLoadCountRef = useRef(0);
@@ -90,6 +91,28 @@ export function CardstreamPayButton({
     }
   }, [onSuccess, onError]);
 
+  // When iframe is shown and we have a payload, populate and submit the form
+  useEffect(() => {
+    if (!showIframe || !formPayload || !formRef.current) return;
+
+    const form = formRef.current;
+    form.innerHTML = "";
+    form.action = formPayload.gatewayUrl;
+    form.method = "POST";
+    form.target = "cardstream-hpp-frame";
+
+    for (const [key, value] of Object.entries(formPayload.formData)) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    form.submit();
+    setFormPayload(null);
+  }, [showIframe, formPayload]);
+
   const handlePay = useCallback(async () => {
     try {
       setSubmitting(true);
@@ -122,32 +145,12 @@ export function CardstreamPayButton({
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || "Failed to create checkout session");
 
-      // Build hidden form and auto-submit into the iframe
-      const form = formRef.current;
-      if (!form) throw new Error("Form element not found");
-
-      // Clear any existing inputs
-      form.innerHTML = "";
-      form.action = data.gatewayUrl;
-      form.method = "POST";
-      form.target = "cardstream-hpp-frame";
-
-      // Add all signed form fields as hidden inputs
-      for (const [key, value] of Object.entries(data.formData as Record<string, string>)) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-      }
-
-      // Show iframe first, then submit form into it
-      setShowIframe(true);
-
-      // Small delay to ensure iframe is mounted before form submission
-      requestAnimationFrame(() => {
-        form.submit();
+      // Store payload and show iframe — useEffect will handle form submission
+      setFormPayload({
+        gatewayUrl: data.gatewayUrl,
+        formData: data.formData as Record<string, string>,
       });
+      setShowIframe(true);
     } catch (e: any) {
       const msg = e?.message || "Payment failed";
       setSubmitting(false);
