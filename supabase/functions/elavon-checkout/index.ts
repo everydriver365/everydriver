@@ -35,6 +35,16 @@ serve(async (req: Request) => {
     const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS")?.trim() ?? "";
     const secretKey = Deno.env.get("ELAVON_SECRET_KEY")?.trim() ?? "";
 
+    // Diagnostic logging (non-sensitive prefixes/suffixes only)
+    console.log("[elavon-checkout] Credential check:", {
+      merchantId_length: merchantId.length,
+      merchantId_prefix: merchantId.substring(0, 4),
+      merchantId_suffix: merchantId.substring(merchantId.length - 4),
+      secretKey_length: secretKey.length,
+      secretKey_prefix: secretKey.substring(0, 4),
+      secretKey_suffix: secretKey.substring(secretKey.length - 4),
+    });
+
     if (!merchantId || !secretKey) {
       console.error("Elavon credentials not configured");
       return new Response(
@@ -113,7 +123,11 @@ serve(async (req: Request) => {
 
     const gatewayUrl = "https://gateway.cardstream.com/hosted/";
 
-    console.log("Elavon HPP form data generated for order:", orderReference);
+    // Log all non-sensitive fields for debugging (exclude signature)
+    const debugFields = { ...requestData };
+    delete debugFields.signature;
+    console.log("[elavon-checkout] HPP form fields (excl. signature):", JSON.stringify(debugFields));
+    console.log("[elavon-checkout] Signature length:", requestData.signature?.length);
 
     return new Response(
       JSON.stringify({
