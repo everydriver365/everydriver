@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { ClearpayInstalmentBadge } from "@/components/payments/ClearpayOSMWidget";
+import klarnaLogo from "@/assets/klarna-logo.svg";
 
 interface Course {
   id: string;
