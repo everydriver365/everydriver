@@ -90,13 +90,15 @@ export function RescheduleLessonSheet({
     }
   }, [open, instructorId]);
 
+  const [bufferMinutes, setBufferMinutes] = useState(0);
+
   const fetchAvailability = async () => {
     setLoading(true);
     try {
       const todayStr = format(new Date(), "yyyy-MM-dd");
       const maxDateStr = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
 
-      const [hoursRes, overridesRes, calendarRes, lessonsRes] = await Promise.all([
+      const [hoursRes, overridesRes, calendarRes, lessonsRes, instructorRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
