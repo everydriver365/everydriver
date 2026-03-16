@@ -27,6 +27,27 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
 
   const fetchProgress = async () => {
     try {
+      // Fetch hours completed
+      const { data: pupilData } = await supabase
+        .from("pupils")
+        .select("total_hours")
+        .eq("id", pupilId)
+        .maybeSingle();
+      
+      if (pupilData?.total_hours) {
+        setTotalHoursCompleted(pupilData.total_hours);
+      } else {
+        // Fallback: sum from lesson_history
+        const { data: lessonData } = await supabase
+          .from("lesson_history")
+          .select("duration_minutes")
+          .eq("pupil_id", pupilId);
+        if (lessonData) {
+          const totalMins = lessonData.reduce((s, l) => s + (l.duration_minutes || 60), 0);
+          setTotalHoursCompleted(Math.round((totalMins / 60) * 10) / 10);
+        }
+      }
+
       // First check if pupil has syllabus progress
       const { data: syllabusData, error: syllabusError } = await supabase
         .from("pupil_syllabus_progress")
@@ -44,7 +65,6 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
           .eq("pupil_id", pupilId);
 
         if (!lessonError && lessonData) {
-          // Count skill occurrences - consider level based on practices
           const skillCounts: Record<string, number> = {};
           lessonData.forEach(lesson => {
             (lesson.skills_practiced || []).forEach((skill: string) => {
@@ -52,10 +72,9 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
             });
           });
 
-          // Convert to progress entries (1 practice = level 1, 3+ = level 5)
           const derivedProgress = Object.entries(skillCounts).map(([skill, count]) => ({
             competency_id: skill,
-            level: Math.min(5, Math.ceil(count / 0.6)) // Scale: 1, 2, 3, 4, 5+ practices → levels
+            level: Math.min(5, Math.ceil(count / 0.6))
           }));
 
           if (derivedProgress.length > 0) {
