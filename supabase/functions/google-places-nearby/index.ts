@@ -60,6 +60,15 @@ serve(async (req) => {
       petrol: { type: "gas_station" },
       ae: { keyword: "accident emergency hospital" },
       defib: { keyword: "defibrillator" },
+      coffee: { type: "cafe", keyword: "coffee" },
+      supermarket: { type: "supermarket" },
+      pharmacy: { type: "pharmacy" },
+      "car-wash": { keyword: "car wash" },
+      parking: { type: "parking" },
+      garage: { keyword: "tyre garage car repair" },
+      atm: { type: "atm" },
+      "ev-charging": { keyword: "electric vehicle charging station" },
+      "post-office": { keyword: "post office" },
     };
 
     const mapping = categoryMap[category];
