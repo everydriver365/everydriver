@@ -80,6 +80,7 @@ export function LessonScheduler({
   bookingAdvanceDays = 28,
   availableFrom,
   allowedLessonLengths,
+  bufferMinutes = 0,
   pupilId,
   onSlotsChange,
 }: LessonSchedulerProps) {
