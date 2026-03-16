@@ -5,6 +5,9 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { DVSA_SYLLABUS, calculateSyllabusProgress } from "@/constants/dvsaSyllabus";
 import { PupilSyllabusView } from "@/components/pupil-portal/PupilSyllabusView";
+import { PupilProgressTimeline } from "@/components/pupil-portal/PupilProgressTimeline";
+import { TestReadinessCard } from "@/components/pupil-portal/TestReadinessCard";
+import { HoursTracker } from "@/components/pupil-portal/HoursTracker";
 
 interface PupilPortalProgressProps {
   pupilId: string;
