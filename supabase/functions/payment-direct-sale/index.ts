@@ -43,8 +43,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS")!;
-    const secretKey = Deno.env.get("ELAVON_SECRET_KEY")!;
+    const merchantId = Deno.env.get("NPI_MERCHANT_ID")!;
+    const secretKey = Deno.env.get("NPI_MERCHANT_SECRET")!;
     const directUrl = Deno.env.get("CARDSTREAM_DIRECT_URL") ?? "https://gateway.cardstream.com/direct/";
 
     if (!merchantId || !secretKey) {
