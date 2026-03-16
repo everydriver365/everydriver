@@ -34,7 +34,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("deposit_enabled, deposit_amount")
+        .select("deposit_enabled, deposit_amount, deposit_deadline_days")
         .eq("id", instructorId)
         .single();
 
@@ -43,6 +43,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
       setSettings({
         deposit_enabled: data.deposit_enabled ?? false,
         deposit_amount: data.deposit_amount ?? 350,
+        deposit_deadline_days: data.deposit_deadline_days ?? 30,
       });
     } catch (error) {
       console.error("Error fetching deposit settings:", error);
