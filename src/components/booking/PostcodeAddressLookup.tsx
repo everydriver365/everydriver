@@ -152,12 +152,21 @@ export function PostcodeAddressLookup({
   const handleSelectAddress = (addr: AddressOption) => {
     setShowDropdown(false);
     setSelectedAddress(addr);
-    setDoorNumber(addr.houseNumber);
-    setShowDoorPrompt(true);
-    const preliminary = buildFullAddress(addr, addr.houseNumber);
-    onAddressChange(preliminary);
     if (addr.postcode) {
       onPostcodeChange(addr.postcode);
+    }
+
+    // If address already has a premise identifier, skip the door prompt
+    if (addr.houseNumber || addr.buildingName || addr.subBuildingName) {
+      setDoorNumber(addr.houseNumber || addr.buildingName || addr.subBuildingName || "");
+      setShowDoorPrompt(false);
+      onAddressChange(addr.label);
+    } else {
+      // No premise identifier — ask for door number
+      setDoorNumber("");
+      setShowDoorPrompt(true);
+      const preliminary = buildFullAddress(addr, "");
+      onAddressChange(preliminary);
     }
   };
 
