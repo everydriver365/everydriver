@@ -77,9 +77,9 @@ serve(async (req: Request) => {
       else if (!squareAppId) response.square.error = "SQUARE_APPLICATION_ID not set";
     }
 
-    // Check Elavon/Cardstream credentials
-    const elavonMerchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS");
-    const elavonSecretKey = Deno.env.get("ELAVON_SECRET_KEY");
+    // Check Elavon/Cardstream credentials (uses NPI credentials)
+    const elavonMerchantAlias = Deno.env.get("NPI_MERCHANT_ID") || Deno.env.get("ELAVON_MERCHANT_ALIAS");
+    const elavonSecretKey = Deno.env.get("NPI_MERCHANT_SECRET") || Deno.env.get("ELAVON_SECRET_KEY");
     if (elavonMerchantAlias && elavonSecretKey) {
       response.elavon.configured = true;
       response.elavon.available = true;
