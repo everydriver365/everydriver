@@ -51,6 +51,7 @@ interface LessonSchedulerProps {
   bookingAdvanceDays?: number;
   availableFrom?: string | null;
   allowedLessonLengths?: number[];
+  bufferMinutes?: number;
   pupilId?: string; // Optional - needed for waitlist functionality
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
