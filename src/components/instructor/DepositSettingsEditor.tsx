@@ -14,6 +14,7 @@ interface DepositSettingsEditorProps {
 interface DepositSettings {
   deposit_enabled: boolean;
   deposit_amount: number;
+  deposit_deadline_days: number;
 }
 
 export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorProps) {
