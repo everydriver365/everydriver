@@ -141,7 +141,6 @@ export default function InstructorFindNearby() {
         {/* Category Grid */}
         <div className="grid grid-cols-3 gap-3">
           {categories.map((cat) => {
-            const Icon = cat.icon;
             const isActive = activeCategory === cat.id;
             return (
               <button
@@ -153,8 +152,8 @@ export default function InstructorFindNearby() {
                     : "border-border bg-card hover:border-primary/20"
                 }`}
               >
-                <div className={`h-10 w-10 rounded-full ${cat.bg} flex items-center justify-center`}>
-                  <Icon className={`h-5 w-5 ${cat.color}`} />
+                <div className={`h-10 w-10 rounded-full ${cat.bg} flex items-center justify-center overflow-hidden`}>
+                  <img src={cat.image} alt={cat.label} className="h-7 w-7 object-contain" />
                 </div>
                 <span className="text-xs font-medium text-foreground">{cat.label}</span>
               </button>
