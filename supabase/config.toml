@@ -138,6 +138,9 @@ verify_jwt = false
 [functions.applepay-validate-merchant]
 verify_jwt = false
 
+[functions.elavon-checkout]
+verify_jwt = false
+
 [functions.cardstream-hostedfields-init]
 verify_jwt = false
 

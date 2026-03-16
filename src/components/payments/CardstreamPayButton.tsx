@@ -63,9 +63,12 @@ export function CardstreamPayButton({
       const iframeUrl = iframeRef.current?.contentWindow?.location?.href;
       if (!iframeUrl) return;
 
-      // Check if the iframe has navigated to our domain (same-origin)
+      // Check if the iframe has navigated to our domain (same-origin or known domains)
       const url = new URL(iframeUrl);
-      const isOurDomain = url.origin === window.location.origin;
+      const isOurDomain = url.origin === window.location.origin ||
+        url.hostname.includes('everydriver.lovable.app') ||
+        url.hostname.includes('everydriver.co.uk') ||
+        url.hostname.includes('drive365.co.uk');
       
       if (isOurDomain) {
         const params = url.searchParams;

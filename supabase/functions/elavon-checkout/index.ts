@@ -79,7 +79,9 @@ serve(async (req: Request) => {
     });
 
     // Build callback URL via payment-callback edge function
-    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=elavon&pupilId=${body.pupilId || ""}&ref=${orderReference}${body.type === "balance" ? "&type=balance" : ""}`;
+    // Pass the caller's origin so payment-callback redirects back to the correct domain
+    const callerOrigin = encodeURIComponent(new URL(returnUrl).origin);
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=elavon&pupilId=${body.pupilId || ""}&ref=${orderReference}${body.type === "balance" ? "&type=balance" : ""}&origin=${callerOrigin}`;
 
     // Build request data
     const requestData: Record<string, string> = {
