@@ -764,6 +764,236 @@ const HeroDesignJ = () => (
   </section>
 );
 
+
+// ─── DESIGN K: "Notification Stack" — iOS notification-inspired stacked cards ───
+const HeroDesignK = () => (
+  <section className="relative min-h-[620px] overflow-hidden" style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+    <div className="px-4 pt-10 pb-6 space-y-4">
+      {/* Time & greeting like a lock screen */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-2">
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Driving Lessons in Doncaster</p>
+        <h1 className="text-[38px] font-black text-foreground leading-none mt-1" style={{ fontFamily: 'system-ui' }}>
+          Ken D
+        </h1>
+        <RatingStars />
+      </motion.div>
+
+      {/* Notification card 1 — Main offer */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl p-4 shadow-lg border border-border/50"
+      >
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: PRIMARY }}>
+            <Award className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm text-foreground">98% First-Time Pass Rate</p>
+            <p className="text-xs text-muted-foreground mt-0.5">DVSA approved instructor · 500+ students taught</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Notification card 2 — Courses */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+        className="bg-white rounded-2xl overflow-hidden shadow-lg border border-border/50"
+      >
+        <div className="p-4 pb-3">
+          <p className="font-bold text-sm text-foreground">Available Courses</p>
+        </div>
+        <div className="flex gap-2 px-4 pb-4 overflow-x-auto">
+          {[
+            { img: weeklyLessonsTile, name: "Weekly", price: "£40/hr" },
+            { img: intensiveCourseTile, name: "Intensive", price: "From £600" },
+          ].map((c) => (
+            <div key={c.name} className="shrink-0 w-32 rounded-xl overflow-hidden border border-border/30">
+              <img src={c.img} alt={c.name} className="w-full h-20 object-cover" />
+              <div className="p-2">
+                <p className="text-xs font-bold text-foreground">{c.name}</p>
+                <p className="text-[10px] text-muted-foreground">{c.price}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Notification card 3 — Search */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26 }}
+        className="bg-white rounded-2xl p-4 shadow-lg border border-border/50 space-y-3"
+      >
+        <p className="font-bold text-sm text-foreground">Start Your Journey</p>
+        <SearchBar />
+        <div className="flex items-center gap-3 pt-1">
+          <span className="text-[10px] text-muted-foreground">Pay in instalments</span>
+          <img src={klarnaRoundLogo} alt="Klarna" className="h-4" />
+          <img src={clearpayRoundLogo} alt="Clearpay" className="h-4" />
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+// ─── DESIGN L: "Bold Headline" — Oversized typography with colour accent blocks ───
+const HeroDesignL = () => (
+  <section className="relative overflow-hidden bg-background">
+    <div className="px-5 pt-6 pb-8">
+      {/* Top bar */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        className="flex items-center justify-between mb-6"
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full overflow-hidden">
+            <img src={defaultHeroImage} alt="Ken" className="w-full h-full object-cover" />
+          </div>
+          <span className="text-sm font-bold text-foreground">KEN D</span>
+        </div>
+        <Badge className="border-0 text-white text-[10px] font-bold px-3 py-1" style={{ backgroundColor: PRIMARY }}>
+          Book Now
+        </Badge>
+      </motion.div>
+
+      {/* Giant headline */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <h1 className="text-[44px] font-black text-foreground leading-[0.95] tracking-tight">
+          LEARN<br />
+          TO<br />
+          <span className="inline-block px-3 py-1 rounded-lg text-white" style={{ backgroundColor: PRIMARY }}>DRIVE</span>
+        </h1>
+      </motion.div>
+
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+        className="text-muted-foreground text-sm mt-4 max-w-[260px]"
+      >
+        Professional driving lessons in Doncaster with a 98% first-time pass rate.
+      </motion.p>
+
+      {/* Image strip */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+        className="flex gap-2 mt-5 -mx-1"
+      >
+        {[defaultHeroImage, intensiveCourseTile, weeklyLessonsTile].map((img, i) => (
+          <div key={i} className={`rounded-2xl overflow-hidden flex-1 ${i === 0 ? 'h-36' : 'h-36'}`}>
+            <img src={img} alt="" className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Stats ribbon */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+        className="flex items-center justify-between mt-5 py-3 px-4 rounded-2xl" style={{ backgroundColor: PRIMARY }}
+      >
+        {[
+          { val: "500+", lab: "Students" },
+          { val: "98%", lab: "Pass Rate" },
+          { val: "5.0★", lab: "Rated" },
+        ].map((s, i) => (
+          <div key={s.lab} className={`text-center ${i < 2 ? 'border-r border-white/20 pr-4' : ''}`}>
+            <div className="text-white font-black text-lg">{s.val}</div>
+            <div className="text-white/60 text-[10px]">{s.lab}</div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Search */}
+      <div className="mt-5">
+        <SearchBar />
+      </div>
+
+      <div className="flex items-center gap-3 mt-4">
+        <span className="text-[10px] text-muted-foreground">Spread the cost</span>
+        <img src={klarnaRoundLogo} alt="Klarna" className="h-5" />
+        <img src={clearpayRoundLogo} alt="Clearpay" className="h-5" />
+      </div>
+    </div>
+  </section>
+);
+
+// ─── DESIGN M: "Map Preview" — Location-first with map-style background ───
+const HeroDesignM = () => (
+  <section className="relative overflow-hidden" style={{ backgroundColor: '#f0f4f8' }}>
+    {/* Faux map texture */}
+    <div className="absolute inset-0 opacity-[0.04]" style={{
+      backgroundImage: `radial-gradient(circle, ${PRIMARY} 1px, transparent 1px)`,
+      backgroundSize: '20px 20px'
+    }} />
+    <div className="relative z-10 px-5 pt-8 pb-6 space-y-5">
+      {/* Location header */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2"
+      >
+        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: PRIMARY }}>
+          <MapPin className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground font-medium">Driving Lessons Near You</p>
+          <p className="text-sm font-bold text-foreground">Doncaster, South Yorkshire</p>
+        </div>
+      </motion.div>
+
+      {/* Instructor feature card */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl p-5 shadow-xl border border-border/30 space-y-4"
+      >
+        <div className="flex items-center gap-4">
+          <img src={defaultHeroImage} alt="Ken D" className="w-16 h-16 rounded-2xl object-cover shadow-md" />
+          <div>
+            <h1 className="text-xl font-black text-foreground">Ken D</h1>
+            <RatingStars />
+            <div className="flex items-center gap-1 mt-1">
+              <Shield className="h-3 w-3" style={{ color: PRIMARY }} />
+              <span className="text-[10px] text-muted-foreground font-medium">DVSA Approved · Grade A</span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-sm text-muted-foreground">Professional, patient driving instructor with over 500 students taught and a 98% pass rate.</p>
+
+        {/* Quick-stat pills */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { icon: Users, text: "500+ Students" },
+            { icon: Award, text: "98% Pass Rate" },
+            { icon: Clock, text: "From £40/hr" },
+          ].map((item) => (
+            <div key={item.text} className="flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5">
+              <item.icon className="h-3.5 w-3.5" style={{ color: PRIMARY }} />
+              <span className="text-xs font-semibold text-foreground">{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <SearchBar />
+      </motion.div>
+
+      {/* Course thumbnails */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+        className="flex gap-3"
+      >
+        {[
+          { img: weeklyLessonsTile, label: "Weekly", price: "£40/hr" },
+          { img: intensiveCourseTile, label: "Intensive", price: "From £600" },
+        ].map((c) => (
+          <div key={c.label} className="flex-1 bg-white rounded-xl overflow-hidden shadow-md border border-border/30">
+            <img src={c.img} alt={c.label} className="w-full h-24 object-cover" />
+            <div className="p-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground">{c.label}</p>
+                <p className="text-[10px] text-muted-foreground">{c.price}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+        ))}
+      </motion.div>
+
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-[10px] text-muted-foreground">Spread the cost</span>
+        <img src={klarnaRoundLogo} alt="Klarna" className="h-5" />
+        <img src={clearpayRoundLogo} alt="Clearpay" className="h-5" />
+      </div>
+    </div>
+  </section>
+);
+
 // ─── Demo Page ───
 export default function DemoKenDHeroRedesigns() {
   const [selected, setSelected] = useState<string | null>(null);
@@ -779,6 +1009,9 @@ export default function DemoKenDHeroRedesigns() {
     { id: "H", label: "Mobile App Style", desc: "Stacked mobile-first with full-bleed image, floating card overlay and sticky CTA", component: <HeroDesignH /> },
     { id: "I", label: "Stories Card", desc: "Instagram-stories-inspired vertical card with gradient text and pill badges", component: <HeroDesignI /> },
     { id: "J", label: "Clean Stack", desc: "Minimal mobile stack with large type, inline stats row and bottom-anchored search", component: <HeroDesignJ /> },
+    { id: "K", label: "Notification Stack", desc: "iOS lock-screen-inspired stacked notification cards", component: <HeroDesignK /> },
+    { id: "L", label: "Bold Headline", desc: "Oversized typography with colour accent block and image strip", component: <HeroDesignL /> },
+    { id: "M", label: "Map Preview", desc: "Location-first design with instructor feature card and course thumbnails", component: <HeroDesignM /> },
   ];
 
   return (
