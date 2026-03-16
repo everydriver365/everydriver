@@ -57,6 +57,7 @@ interface Instructor {
   instructor_grade: string | null;
   welcome_video_url: string | null;
   booking_mode?: string | null;
+  buffer_minutes: number;
 }
 
 interface CourseTemplate {
