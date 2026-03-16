@@ -37,6 +37,7 @@ const categories = [
   { id: "atm", label: "ATMs", icon: CreditCard, color: "text-indigo-600", bg: "bg-indigo-500/12" },
   { id: "ev-charging", label: "EV Charging", icon: BatteryCharging, color: "text-lime-600", bg: "bg-lime-500/12" },
   { id: "post-office", label: "Post Office", icon: Mail, color: "text-red-600", bg: "bg-red-500/12" },
+  { id: "greggs", label: "Greggs", icon: Coffee, color: "text-sky-700", bg: "bg-sky-600/12" },
 ];
 
 export default function InstructorFindNearby() {
