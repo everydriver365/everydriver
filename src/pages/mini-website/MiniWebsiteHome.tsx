@@ -23,6 +23,7 @@ import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
 import klarnaCleanpayLogos from "@/assets/klarna-clearpay-logos.png";
 import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";
+import clearpayRoundLogo from "@/assets/clearpay-round-logo.svg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
@@ -278,6 +279,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               <div className="flex items-center gap-3 mt-3">
                 <span className="text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
                 <img src={klarnaRoundLogo} alt="Klarna" className="h-8 w-8" />
+                <img src={clearpayRoundLogo} alt="Clearpay" className="h-8 w-8" />
                 <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-12 object-contain" />
               </div>
             </motion.div>
