@@ -78,6 +78,7 @@ const additionalTiles: QuickAction[] = [
   { id: "end-of-day", title: "End of Day", icon: "Moon", route: "/instructor/end-of-day", display_order: 112 },
   { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
   { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
+  { id: "find-nearby", title: "Find Nearby", icon: "MapPin", route: "/instructor/find-nearby", display_order: 114.5 },
 ];
 
 interface AppStyleHomeViewProps {
