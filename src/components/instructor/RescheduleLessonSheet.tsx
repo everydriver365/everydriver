@@ -150,6 +150,7 @@ export function RescheduleLessonSheet({
 
       setCalendarEvents(calendarRes.data || []);
       setExistingLessons(lessonsRes.data || []);
+      setBufferMinutes(instructorRes.data?.buffer_minutes || 0);
     } catch (error) {
       console.error("Error fetching availability:", error);
     } finally {
