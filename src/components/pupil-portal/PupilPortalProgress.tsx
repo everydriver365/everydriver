@@ -155,6 +155,26 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
         </CardContent>
       </Card>
 
+      {/* Test Readiness */}
+      <TestReadinessCard
+        progress={progress}
+        totalHoursCompleted={totalHoursCompleted}
+        brandColour={brandColour}
+      />
+
+      {/* Hours Tracker */}
+      <HoursTracker
+        hoursCompleted={totalHoursCompleted}
+        estimatedTotal={40}
+        brandColour={brandColour}
+      />
+
+      {/* Lesson Timeline */}
+      <PupilProgressTimeline
+        pupilId={pupilId}
+        brandColour={brandColour}
+      />
+
       {/* Encouragement */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
         <CardContent className="p-4 text-center">

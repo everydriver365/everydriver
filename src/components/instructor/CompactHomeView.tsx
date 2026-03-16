@@ -296,6 +296,11 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
       {/* Morning Briefing */}
       <MorningBriefingCard instructorId={instructorId} />
 
+      {/* Smart Scheduling Suggestions */}
+      <div className="px-4 mb-3">
+        <SmartScheduleCard instructorId={instructorId} />
+      </div>
+
       {/* Activity Tiles */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
