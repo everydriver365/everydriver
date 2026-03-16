@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { ukPostcodeRegex } from "@/lib/booking-validation";
 
 interface AddressOption {
+  placeId?: string;
   label: string;
   street: string;
   houseNumber: string;
