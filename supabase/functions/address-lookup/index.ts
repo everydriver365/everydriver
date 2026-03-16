@@ -18,7 +18,7 @@ serve(async (req) => {
 
     // Mode 1: Postcode lookup - returns list of addresses at that postcode
     if (postcode) {
-      const url = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=20&apiKey=${apiKey}`;
+      const url = `https://geocode.search.hereapi.com/v1/geocode?qq=postalCode=${encodeURIComponent(postcode)};country=GBR&limit=50&apiKey=${apiKey}`;
       const res = await fetch(url);
       const data = await res.json();
 
