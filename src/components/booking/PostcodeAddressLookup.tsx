@@ -10,6 +10,8 @@ interface AddressOption {
   label: string;
   street: string;
   houseNumber: string;
+  buildingName?: string;
+  subBuildingName?: string;
   district: string;
   city: string;
   county: string;
@@ -87,6 +89,8 @@ export function PostcodeAddressLookup({
         label: a.label || "",
         street: a.street || "",
         houseNumber: a.houseNumber || "",
+        buildingName: a.buildingName || "",
+        subBuildingName: a.subBuildingName || "",
         district: a.district || "",
         city: a.city || "",
         county: a.county || "",
@@ -148,12 +152,21 @@ export function PostcodeAddressLookup({
   const handleSelectAddress = (addr: AddressOption) => {
     setShowDropdown(false);
     setSelectedAddress(addr);
-    setDoorNumber(addr.houseNumber);
-    setShowDoorPrompt(true);
-    const preliminary = buildFullAddress(addr, addr.houseNumber);
-    onAddressChange(preliminary);
     if (addr.postcode) {
       onPostcodeChange(addr.postcode);
+    }
+
+    // If address already has a premise identifier, skip the door prompt
+    if (addr.houseNumber || addr.buildingName || addr.subBuildingName) {
+      setDoorNumber(addr.houseNumber || addr.buildingName || addr.subBuildingName || "");
+      setShowDoorPrompt(false);
+      onAddressChange(addr.label);
+    } else {
+      // No premise identifier — ask for door number
+      setDoorNumber("");
+      setShowDoorPrompt(true);
+      const preliminary = buildFullAddress(addr, "");
+      onAddressChange(preliminary);
     }
   };
 
