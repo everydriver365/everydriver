@@ -143,11 +143,11 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
               <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  30-Day Payment Deadline
+                  {settings.deposit_deadline_days}-Day Payment Deadline
                 </p>
                 <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
                   Customers who pay a deposit must pay the remaining balance at least 
-                  30 days before their first lesson. If payment is not received by 
+                  {settings.deposit_deadline_days} days before their first lesson. If payment is not received by 
                   this date, the booking will be cancelled and the deposit will be forfeited.
                 </p>
               </div>

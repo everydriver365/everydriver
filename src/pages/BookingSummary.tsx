@@ -1824,7 +1824,7 @@ export default function BookingSummary() {
                   </div>
                   {paymentOption === 'deposit' && (
                     <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded p-2">
-                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid 30 days before your first lesson, or booking will be cancelled and deposit forfeited.
+                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid {depositDeadlineDays} days before your first lesson, or booking will be cancelled and deposit forfeited.
                     </div>
                   )}
                 </div>

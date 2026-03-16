@@ -339,6 +339,7 @@ const App = () => (
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />
+                <Route path="/instructor/performance" element={<InstructorPerformance />} />
                 <Route path="/school/dashboard" element={<SchoolDashboard />} />
 
                 {/* Other portals */}
