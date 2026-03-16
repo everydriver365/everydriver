@@ -79,19 +79,19 @@ export function PostcodeAddressLookup({
     setLoading(true);
     setNoResults(false);
     try {
-      const { data, error } = await supabase.functions.invoke("google-places-autocomplete", {
-        body: { input: clean, sessionToken },
+      const { data, error } = await supabase.functions.invoke("postcode-address-lookup", {
+        body: { postcode: clean },
       });
       if (error) throw error;
 
-      const predictions = data?.predictions || [];
-      const results: AddressOption[] = predictions.map((p: any) => ({
-        placeId: p.placeId,
-        label: p.description,
-        street: p.mainText,
+      const items = data?.addresses || [];
+      const results: AddressOption[] = items.map((a: any) => ({
+        placeId: a.placeId,
+        label: a.label,
+        street: a.mainText,
         houseNumber: "",
         district: "",
-        city: "",
+        city: a.secondaryText || "",
         county: "",
         postcode: clean,
       }));
@@ -113,7 +113,7 @@ export function PostcodeAddressLookup({
     } finally {
       setLoading(false);
     }
-  }, [postcode, sessionToken]);
+  }, [postcode]);
 
   const handlePostcodeChange = (value: string) => {
     onPostcodeChange(value);
