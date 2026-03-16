@@ -339,13 +339,18 @@ export function LessonScheduler({
             }
           }
 
-          // Check if slot conflicts with already selected slots
+          // Check if slot conflicts with already selected slots (with buffer)
           const conflictsWithSelected = selectedSlots.some(
-            (s) =>
-              isSameDay(s.date, date) &&
-              ((time >= s.startTime && time < s.endTime) ||
-                (slotEnd > s.startTime && slotEnd <= s.endTime) ||
-                (time < s.startTime && slotEnd > s.startTime))
+            (s) => {
+              if (!isSameDay(s.date, date)) return false;
+              const bufferedStart = addMinutesToTime(s.startTime, -bufferMinutes);
+              const bufferedEnd = addMinutesToTime(s.endTime, bufferMinutes);
+              return (
+                (time >= bufferedStart && time < bufferedEnd) ||
+                (slotEnd > bufferedStart && slotEnd <= bufferedEnd) ||
+                (time < bufferedStart && slotEnd > bufferedStart)
+              );
+            }
           );
           
           // Check if slot conflicts with external calendar events

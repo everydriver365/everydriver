@@ -229,29 +229,31 @@ export function RescheduleLessonSheet({
       if (time >= startTime && time < endTime) {
         const slotEnd = addMinutesToTime(time, durationMinutes);
         if (slotEnd <= endTime) {
-          // Check against existing lessons
+          // Check against existing lessons (with buffer)
           const conflictsWithLesson = existingLessons.some((l) => {
             if (l.lesson_date !== dateStr) return false;
-            const lessonEnd = addMinutesToTime(l.start_time.slice(0, 5), l.duration_minutes);
+            const lessonStart = addMinutesToTime(l.start_time.slice(0, 5), -bufferMinutes);
+            const lessonEnd = addMinutesToTime(l.start_time.slice(0, 5), l.duration_minutes + bufferMinutes);
             return (
-              (time >= l.start_time.slice(0, 5) && time < lessonEnd) ||
-              (slotEnd > l.start_time.slice(0, 5) && slotEnd <= lessonEnd) ||
-              (time < l.start_time.slice(0, 5) && slotEnd > l.start_time.slice(0, 5))
+              (time >= lessonStart && time < lessonEnd) ||
+              (slotEnd > lessonStart && slotEnd <= lessonEnd) ||
+              (time < lessonStart && slotEnd > lessonStart)
             );
           });
 
-          // Check against Google Calendar events (skip all-day events)
+          // Check against Google Calendar events (skip all-day events, with buffer)
           const conflictsWithCalendar = calendarEvents.some((e) => {
             const eventDate = e.start_time.slice(0, 10);
             if (eventDate !== dateStr) return false;
             const eventStart = e.start_time.slice(11, 16);
             const eventEnd = e.end_time.slice(11, 16);
-            // Skip all-day events (00:00 to 23:59) - these are informational, not time-specific blocks
             if (eventStart === "00:00" && (eventEnd === "23:59" || eventEnd === "00:00")) return false;
+            const bufferedStart = addMinutesToTime(eventStart, -bufferMinutes);
+            const bufferedEnd = addMinutesToTime(eventEnd, bufferMinutes);
             return (
-              (time >= eventStart && time < eventEnd) ||
-              (slotEnd > eventStart && slotEnd <= eventEnd) ||
-              (time < eventStart && slotEnd > eventStart)
+              (time >= bufferedStart && time < bufferedEnd) ||
+              (slotEnd > bufferedStart && slotEnd <= bufferedEnd) ||
+              (time < bufferedStart && slotEnd > bufferedStart)
             );
           });
 

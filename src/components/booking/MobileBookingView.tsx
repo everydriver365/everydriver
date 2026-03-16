@@ -798,6 +798,7 @@ export function MobileBookingView({
               bookingAdvanceDays={instructor.booking_advance_days || 28}
               availableFrom={instructor.available_from}
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+              bufferMinutes={instructor.buffer_minutes}
               onSlotsChange={onSlotsChange}
             />
           </div>
