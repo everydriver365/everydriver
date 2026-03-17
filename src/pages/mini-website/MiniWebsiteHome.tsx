@@ -213,8 +213,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Award className="h-3 w-3 mr-1" />Free Re-Test If You Fail
               </Badge>
               <h1 className="text-xl sm:text-3xl lg:text-5xl font-extrabold leading-tight text-foreground">
-                Driving Lessons in{" "}
-                <span style={{ color: primaryColor }}>Winchester, Southampton &amp; Portsmouth</span>
+                {page?.hero_heading ? (
+                  <>{page.hero_heading}</>
+                ) : (
+                  <>Driving Lessons with{" "}<span style={{ color: primaryColor }}>{instructorName}</span></>
+                )}
               </h1>
               {avgRating && (
                 <div className="flex items-center gap-1.5 mt-2 sm:mt-3">
