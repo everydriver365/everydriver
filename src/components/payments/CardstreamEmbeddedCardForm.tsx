@@ -97,10 +97,16 @@ export function CardstreamEmbeddedCardForm({
         }
         console.log("[CardForm] $.fn.hostedForm plugin found");
 
+        // Suppress native alert() calls from the SDK — show toast instead
+        const origAlert = window.alert;
+        window.alert = (msg: string) => {
+          console.warn("[CardForm] Suppressed alert:", msg);
+          // Don't show native alert — handled via hostedform:error event
+        };
+
         const $form = window.jQuery(formRef.current);
 
         // Set form action/method via jQuery BEFORE initializing Hosted Fields
-        // so the SDK knows where to POST
         $form.attr("action", gatewayUrl);
         $form.attr("method", "POST");
 
@@ -131,12 +137,31 @@ export function CardstreamEmbeddedCardForm({
 
         $form.on("hostedform:error", (_e: any, err: any) => {
           console.error("[CardForm] hostedform:error:", err);
-          if (!cancelledRef.current) setSubmitting(false);
+          if (!cancelledRef.current) {
+            setSubmitting(false);
+            // Show validation errors as toast
+            if (err?.invalid) {
+              const msgs = Object.values(err.invalid).filter(Boolean);
+              if (msgs.length > 0) {
+                onError?.(msgs.join(". "));
+              }
+            } else if (err?.message) {
+              onError?.(err.message);
+            }
+          }
         });
 
         $form.on("hostedform:invalid", (_e: any, details: any) => {
           console.warn("[CardForm] hostedform:invalid:", details);
-          if (!cancelledRef.current) setSubmitting(false);
+          if (!cancelledRef.current) {
+            setSubmitting(false);
+            if (details?.invalid) {
+              const msgs = Object.values(details.invalid).filter(Boolean);
+              if (msgs.length > 0) {
+                onError?.(msgs.join(". "));
+              }
+            }
+          }
         });
 
         setTimeout(() => {
@@ -146,6 +171,9 @@ export function CardstreamEmbeddedCardForm({
             setSdkReady(true);
           }
         }, 6000);
+
+        // Restore original alert after init
+        setTimeout(() => { window.alert = origAlert; }, 10000);
 
       } catch (e: any) {
         console.error("[CardForm] init error:", e);
