@@ -17,7 +17,7 @@ import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
+import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
