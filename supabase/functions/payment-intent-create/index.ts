@@ -93,13 +93,24 @@ serve(async (req) => {
       formFields.customerCountryCode = "826";
     }
 
-    // Debug: log exact fields being signed
-    console.log("[payment-intent-create] Signing payload:", JSON.stringify(formFields));
+    // Sign ONLY the core gateway fields — exclude customer fields because
+    // the Hosted Fields SDK injects extra parameters at submit time which
+    // would cause a signature mismatch if customer fields are included.
+    const signatureFields: Record<string, string> = {
+      merchantID: merchantId,
+      action: "SALE",
+      type: "1",
+      countryCode: "826",
+      currencyCode: "826",
+      amount: String(amountPence),
+      orderRef,
+      transactionUnique,
+      redirectURL: callbackUrl,
+    };
 
-    // Sign the form fields with the merchant secret
-    formFields.signature = await createCardstreamSignature(formFields, merchantSecret);
-
-    console.log("[payment-intent-create] Signed field keys:", Object.keys(formFields).sort().join(", "));
+    console.log("[payment-intent-create] Signature fields:", JSON.stringify(signatureFields));
+    formFields.signature = await createCardstreamSignature(signatureFields, merchantSecret);
+    console.log("[payment-intent-create] All form field keys:", Object.keys(formFields).sort().join(", "));
 
     return new Response(
       JSON.stringify({
