@@ -874,22 +874,12 @@ export function MobileBookingView({
           <div className="space-y-2">
             {/* Express Checkout - Apple/Google Pay */}
             {canSubmit && (
-              <ElavonBookingWalletButtons
+              <SquareWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
-                pupilName={pupilName}
-                pupilEmail={pupilEmail}
-                pupilPhone={pupilPhone}
-                pupilAddress={pupilAddress}
-                pupilPostcode={pupilPostcode}
-                courseType={courseName}
-                courseHours={hours}
-                totalPrice={totalPrice}
-                slots={selectedSlots}
-                upsells={availableUpsells
-                  .filter((u) => selectedUpsells.includes(u.id))
-                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
-                onSuccess={onWalletSuccess}
+                customerName={pupilName}
+                customerEmail={pupilEmail}
+                onPaid={() => onWalletSuccess(embeddedCheckoutPupilId || "")}
                 onProcessing={setIsWalletProcessing}
                 disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
               />

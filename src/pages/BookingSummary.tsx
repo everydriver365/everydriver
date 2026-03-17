@@ -1756,25 +1756,21 @@ export default function BookingSummary() {
           {/* Express Checkout - Apple/Google Pay */}
           {canSubmit && (
             <div className="sm:col-span-2 mb-2">
-              <ElavonBookingWalletButtons
+              <SquareWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
-                pupilName={pupilName}
-                pupilEmail={pupilEmail}
-                pupilPhone={pupilPhone}
-                pupilAddress={pupilAddress}
-                pupilPostcode={pupilPostcode}
-                courseType={courseName}
-                courseHours={hours}
-                totalPrice={totalPrice}
-                slots={selectedSlots}
-                upsells={availableUpsells
-                  .filter((u) => selectedUpsells.includes(u.id))
-                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
-                onSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+                customerName={pupilName}
+                customerEmail={pupilEmail}
+                onPaid={() => {
+                  const pupilId = bookingPupilId;
+                  if (pupilId) navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                }}
                 onProcessing={(p) => setIsSubmitting(p)}
                 disabled={isSubmitting || isElavonLoading || isClearpayLoading}
-                ensureBookingCreated={ensureBookingCreated}
+                ensureBookingCreated={async () => {
+                  const id = await ensureBookingCreated();
+                  return id;
+                }}
               />
             </div>
           )}
