@@ -6,6 +6,7 @@ import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
+import { ParentPortalPreviewModal } from "@/components/mini-website/ParentPortalPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [showPromoBanner, setShowPromoBanner] = useState(true);
+  const [parentPortalOpen, setParentPortalOpen] = useState(false);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
@@ -521,7 +523,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { title: "Search, Compare & Book", description: "Find and compare local instructors, check real-time availability, and book directly online.", image: drivingTestCentreImg, link: links.courses },
-              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: links.contact },
+              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: null, onClick: () => setParentPortalOpen(true) },
               { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: links.courses },
               { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
               { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: links.courses },
@@ -545,6 +547,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   </div>
                 </motion.div>
               );
+              if ((f as any).onClick) return <div key={i} onClick={(f as any).onClick}>{content}</div>;
               return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
             })}
           </div>
@@ -688,6 +691,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         feature={selectedFeature}
         open={featureModalOpen}
         onClose={() => setFeatureModalOpen(false)}
+      />
+      <ParentPortalPreviewModal
+        open={parentPortalOpen}
+        onOpenChange={setParentPortalOpen}
+        primaryColor={primaryColor}
       />
     </MiniWebsiteLayout>
   );
