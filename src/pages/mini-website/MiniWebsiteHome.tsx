@@ -547,6 +547,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   </div>
                 </motion.div>
               );
+              if ((f as any).onClick) return <div key={i} onClick={(f as any).onClick}>{content}</div>;
               return f.link ? <Link key={i} to={f.link}>{content}</Link> : <div key={i}>{content}</div>;
             })}
           </div>
