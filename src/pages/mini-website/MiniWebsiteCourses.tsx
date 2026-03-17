@@ -223,6 +223,16 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
           {/* Left Column: Calendar */}
           <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="sticky top-20 space-y-4">
+              {isMobile && !selectedDate && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 px-1 mb-1"
+                >
+                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                  <p className="text-sm font-semibold text-foreground">Pick your start date below</p>
+                </motion.div>
+              )}
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
@@ -287,14 +297,29 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
             )}
 
             {!selectedDate ? (
-              <div className="flex h-full items-center justify-center py-16">
-                <div className="text-center">
-                  <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    Choose an available date from the calendar
+              <div className="flex h-full items-center justify-center py-10">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center max-w-xs mx-auto"
+                >
+                  <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15` }}>
+                    <CalendarIcon className="h-8 w-8" style={{ color: primaryColor }} />
+                  </div>
+                  <h2 className="text-lg font-bold text-foreground mb-1">Choose Your Start Date</h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {isMobile ? "Tap a highlighted date above to see available courses" : "Select an available date from the calendar"}
                   </p>
-                </div>
+                  {isMobile && (
+                    <motion.div
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      className="text-2xl"
+                    >
+                      ☝️
+                    </motion.div>
+                  )}
+                </motion.div>
               </div>
             ) : (
               <>
