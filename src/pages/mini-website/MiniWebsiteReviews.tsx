@@ -29,6 +29,7 @@ interface MiniWebsiteReviewsProps {
 export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviewsProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
+  const links = useMiniWebsiteLinks(slug);
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "reviews");
   const [reviews, setReviews] = useState<Review[]>([]);
 
