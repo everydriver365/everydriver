@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
   Clock, MapPin, Car, Zap, Calendar, Star, ChevronLeft, ChevronRight,
-  Check, X, ArrowRight, CreditCard, Shield, Sparkles
+  Check, X, ArrowRight, CreditCard, Shield, Sparkles, User, Phone, Mail,
+  ChevronDown, ChevronUp, Lock, Gift, FileText, CheckCircle, Circle,
+  GraduationCap, MessageSquare, Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
