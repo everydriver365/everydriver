@@ -110,7 +110,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <p className="text-muted-foreground mb-6">
             Sorry, we couldn't find this instructor's website.
           </p>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Find Instructors</Button>
           </Link>
         </Card>
