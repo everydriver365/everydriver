@@ -670,6 +670,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       </section>
 
+
       {/* CTA Section */}
       <section className="relative overflow-hidden py-14 sm:py-20">
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, ${secondaryColor} 100%)` }} />
