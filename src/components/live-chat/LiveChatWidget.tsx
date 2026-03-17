@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PreChatForm, PreChatFormData } from "./PreChatForm";
 import { LiveChatWindow } from "./LiveChatWindow";
 import { useCreateLiveChatSession } from "@/hooks/useLiveChat";
+import { useInstructorOnlineStatus } from "@/hooks/useInstructorOnlineStatus";
 import { cn } from "@/lib/utils";
 
 interface LiveChatWidgetProps {
