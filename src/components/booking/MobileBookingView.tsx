@@ -24,7 +24,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
