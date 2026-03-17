@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS last_active_at timestamptz;

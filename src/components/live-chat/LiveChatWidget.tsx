@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PreChatForm, PreChatFormData } from "./PreChatForm";
 import { LiveChatWindow } from "./LiveChatWindow";
 import { useCreateLiveChatSession } from "@/hooks/useLiveChat";
+import { useInstructorOnlineStatus } from "@/hooks/useInstructorOnlineStatus";
 import { cn } from "@/lib/utils";
 
 interface LiveChatWidgetProps {
@@ -27,6 +28,7 @@ export function LiveChatWidget({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [visitorInfo, setVisitorInfo] = useState<PreChatFormData | null>(null);
   const { createSession, creating } = useCreateLiveChatSession();
+  const instructorOnline = useInstructorOnlineStatus(instructorId);
 
   // Persist session in localStorage
   useEffect(() => {
@@ -141,11 +143,21 @@ export function LiveChatWidget({
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">
-                      {instructorName || "Live Chat"}
-                    </h3>
+                   <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "inline-block h-2.5 w-2.5 rounded-full",
+                          instructorOnline ? "bg-green-400 animate-pulse" : "bg-white/40"
+                        )}
+                      />
+                      <h3 className="font-semibold text-sm">
+                        {instructorName || "Live Chat"}
+                      </h3>
+                    </div>
                     <p className="text-xs text-white/80">
-                      {sessionId ? "We're here to help" : "Start a conversation"}
+                      {instructorOnline
+                        ? "Online now"
+                        : `${instructorName || "Instructor"} will reply shortly`}
                     </p>
                   </div>
                 </div>

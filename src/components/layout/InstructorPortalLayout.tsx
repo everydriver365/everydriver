@@ -8,6 +8,7 @@ import { LessonEndAlert } from "@/components/instructor/LessonEndAlert";
 import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { VoiceAssistantHeaderButton, VoiceAssistantOverlay } from "@/components/instructor/VoiceAssistantButton";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
+import { useInstructorPresence } from "@/hooks/useInstructorPresence";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -219,6 +220,7 @@ interface InstructorPortalLayoutProps {
 
 export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
+  useInstructorPresence(instructor?.id);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();

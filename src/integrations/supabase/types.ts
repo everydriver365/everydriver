@@ -5991,6 +5991,7 @@ export type Database = {
           is_active: boolean
           is_online: boolean | null
           klarna_enabled: boolean | null
+          last_active_at: string | null
           last_calendar_sync: string | null
           last_compliance_reminder_sent: string | null
           last_seen_at: string | null
@@ -6116,6 +6117,7 @@ export type Database = {
           is_active?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
+          last_active_at?: string | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
@@ -6241,6 +6243,7 @@ export type Database = {
           is_active?: boolean
           is_online?: boolean | null
           klarna_enabled?: boolean | null
+          last_active_at?: string | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
