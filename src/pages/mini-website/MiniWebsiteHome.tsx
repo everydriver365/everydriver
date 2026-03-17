@@ -6,6 +6,7 @@ import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
+import { ParentPortalPreviewModal } from "@/components/mini-website/ParentPortalPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
