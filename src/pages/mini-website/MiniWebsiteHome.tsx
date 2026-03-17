@@ -151,7 +151,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <p className="text-sm text-[#142040] font-medium">
               <span className="font-bold">New Student Offer:</span> Get 10% off your first lesson + free theory test access
             </p>
-            <a href="tel:07506782870" className="hidden md:inline-flex items-center gap-1 bg-[#142040] text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-[#1e3a5f] transition-colors ml-2">
+            <a href={`tel:${instructor.phone || ''}`} className="hidden md:inline-flex items-center gap-1 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors ml-2" style={{ backgroundColor: primaryColor }}>
               Call Now <ChevronRight className="h-3 w-3" />
             </a>
           </div>
