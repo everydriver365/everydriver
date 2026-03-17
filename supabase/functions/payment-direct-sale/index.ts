@@ -113,8 +113,20 @@ serve(async (req) => {
     if (body.customerEmail) requestFields.customerEmail = body.customerEmail;
     if (body.customerName) requestFields.customerName = body.customerName;
     if (body.customerPostcode) requestFields.customerPostcode = body.customerPostcode;
-    if (body.customerAddress1) requestFields.customerAddress1 = body.customerAddress1;
     if (body.customerCountryCode) requestFields.customerCountryCode = body.customerCountryCode;
+
+    // Map address: prefer structured fields, fall back to splitting full string
+    if (body.customerAddress1) {
+      requestFields.customerAddress1 = body.customerAddress1;
+    } else if (body.customerAddress) {
+      const structured = splitCustomerAddress(body.customerAddress);
+      if (structured) {
+        requestFields.customerAddress1 = structured.line1;
+        if (structured.line2) requestFields.customerAddress2 = structured.line2;
+        if (structured.town) requestFields.customerCity = structured.town;
+        if (structured.county) requestFields.customerCounty = structured.county;
+      }
+    }
 
     if (body.method === "card_token") {
       if (!body.cardPaymentToken) {
