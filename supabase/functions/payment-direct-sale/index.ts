@@ -29,8 +29,20 @@ interface DirectSaleRequest {
   customerName?: string;
   customerEmail?: string;
   customerPostcode?: string;
+  customerAddress?: string;       // full comma-separated address string
   customerAddress1?: string;
   customerCountryCode?: string; // "826"
+}
+
+function splitCustomerAddress(address?: string) {
+  if (!address?.trim()) return null;
+  const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
+  return {
+    line1: parts[0] ?? address.trim(),
+    line2: parts[1] ?? "",
+    town: parts[2] ?? "",
+    county: parts[3] ?? "",
+  };
 }
 
 function toFormUrlEncoded(data: Record<string, string>): string {
