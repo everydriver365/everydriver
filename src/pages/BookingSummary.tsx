@@ -1828,7 +1828,7 @@ export default function BookingSummary() {
 
               <Button
                 onClick={handleElavonCheckout}
-                disabled={!canSubmit || isElavonLoading || !gatewayHealth.elavon.available}
+                disabled={!canSubmit || isElavonLoading || !gatewayHealth.square.available}
                 className="w-full"
               >
                 {isElavonLoading ? (
