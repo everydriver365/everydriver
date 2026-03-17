@@ -120,12 +120,17 @@ serve(async (req: Request) => {
 
     // Handle NPI/Elavon Payments response
     if (provider === "npi" || provider === "elavon") {
+      // Log raw gateway response BEFORE signature check so errors aren't masked
+      const rawResponseCode = formData.responseCode || formData.ResponseCode || "unknown";
+      const rawResponseMessage = formData.responseMessage || formData.ResponseMessage || "";
+      console.log(`[Callback] Raw gateway response — code: ${rawResponseCode}, message: ${rawResponseMessage}`);
+
       // 🔐 Verify Cardstream gateway signature to prevent forged callbacks
       const merchantSecret = Deno.env.get("NPI_MERCHANT_SECRET") || "";
       if (merchantSecret && Object.keys(formData).length > 0) {
         const validSig = await verifyCardstreamSignature(formData, merchantSecret);
         if (!validSig) {
-          console.error("Invalid Cardstream signature on callback - possible forgery attempt");
+          console.error(`Invalid Cardstream signature on callback — responseCode: ${rawResponseCode}, responseMessage: ${rawResponseMessage}`);
           return new Response("Invalid signature", {
             status: 400,
             headers: { ...corsHeaders, "Content-Type": "text/plain" },

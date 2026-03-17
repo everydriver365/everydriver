@@ -106,7 +106,11 @@ export function CardstreamCheckout({
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
-          body: { amount, pupilId, instructorId, customerName, customerEmail, currency: "GBP" },
+          body: {
+            amount, pupilId, instructorId, customerName, customerEmail, currency: "GBP",
+            customerAddress: customerAddress || undefined,
+            customerPostcode: customerPostcode || undefined,
+          },
         });
         if (cancelled) return;
         if (error || !data?.success) return;
