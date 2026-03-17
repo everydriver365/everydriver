@@ -99,12 +99,17 @@ export function CardstreamEmbeddedCardForm({
 
         const $form = window.jQuery(formRef.current);
 
+        // Set form action/method via jQuery BEFORE initializing Hosted Fields
+        // so the SDK knows where to POST
+        $form.attr("action", gatewayUrl);
+        $form.attr("method", "POST");
+
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
           merchantID: merchantId,
         });
-        console.log("[CardForm] hostedForm() called");
+        console.log("[CardForm] hostedForm() called with action:", gatewayUrl);
 
         const inst = $form.hostedForm("instance");
         if (!inst) throw new Error("Hosted form instance not created");
