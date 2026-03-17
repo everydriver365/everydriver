@@ -47,7 +47,9 @@ serve(async (req: Request) => {
     }
 
     const amountInPence = Math.round(amount * 100);
-    const baseUrl = environment === "production"
+    const env = environment.toLowerCase();
+    const isProduction = env === "production" || env === "prod" || env === "live";
+    const baseUrl = isProduction
       ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
 
