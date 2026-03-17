@@ -699,6 +699,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         onOpenChange={setParentPortalOpen}
         primaryColor={primaryColor}
       />
+      <LiveBookingPreviewModal
+        open={liveBookingOpen}
+        onOpenChange={setLiveBookingOpen}
+        primaryColor={primaryColor}
+      />
     </MiniWebsiteLayout>
   );
 }
