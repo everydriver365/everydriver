@@ -671,47 +671,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       </section>
 
 
-      {/* CTA Section */}
-      <section className="relative overflow-hidden py-14 sm:py-20">
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, ${secondaryColor} 100%)` }} />
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="inline-block text-4xl mb-4">🏁</span>
-            <h2 className="text-2xl sm:text-4xl font-black text-white mb-3 tracking-tight">
-              Ready to Hit the Road?
-            </h2>
-            <p className="text-white/80 text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
-              Book your first lesson today and join our growing list of first-time passers.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Link to={links.courses}>
-                <Button
-                  size="lg"
-                  className="h-14 px-10 text-base font-bold rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
-                  style={{ backgroundColor: 'white', color: primaryColor }}
-                >
-                  Browse Courses
-                </Button>
-              </Link>
-              <Link to={links.contact}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 px-10 text-base font-bold rounded-full border-2 border-white/40 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300"
-                >
-                  Get in Touch
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
       <FeatureDetailModal
         feature={selectedFeature}
         open={featureModalOpen}
