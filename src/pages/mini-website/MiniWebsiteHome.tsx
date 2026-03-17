@@ -207,7 +207,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               className="pt-1 sm:pt-4 flex-1"
             >
               <Badge className="bg-green-100 text-green-800 border-0 text-[10px] sm:text-xs mb-2 sm:mb-3">
-                <Award className="h-3 w-3 mr-1" />Enrolling Now
+                <Award className="h-3 w-3 mr-1" />Free Re-Test If You Fail
               </Badge>
               <h1 className="text-xl sm:text-3xl lg:text-5xl font-extrabold leading-tight text-foreground">
                 Driving Lessons in{" "}
