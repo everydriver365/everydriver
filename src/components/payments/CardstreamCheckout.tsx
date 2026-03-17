@@ -326,34 +326,16 @@ export function CardstreamCheckout({
           disabled={paying}
         />
       ) : orderRef && embedFailed ? (
-        <Button
-          variant="outline"
-          className="w-full h-12 text-base font-semibold"
-          disabled={redirecting}
-          onClick={async () => {
-            setRedirecting(true);
-            try {
-              const { data, error } = await supabase.functions.invoke("cardstream-hosted-redirect", {
-                body: { orderRef },
-              });
-              if (error || !data?.redirectUrl) {
-                toast.error("Unable to start card payment — please try again");
-                setRedirecting(false);
-                return;
-              }
-              window.location.href = data.redirectUrl;
-            } catch {
-              toast.error("Unable to start card payment");
-              setRedirecting(false);
-            }
-          }}
-        >
-          {redirecting ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirecting…</>
-          ) : (
-            <><CreditCard className="mr-2 h-4 w-4" />Pay £{amount.toFixed(2)} by card</>
-          )}
-        </Button>
+        <div className="text-center space-y-3 py-4">
+          <p className="text-sm text-destructive">The secure card form could not load.</p>
+          <Button
+            variant="outline"
+            className="w-full h-12 text-base font-semibold"
+            onClick={() => setEmbedFailed(false)}
+          >
+            <CreditCard className="mr-2 h-4 w-4" />Retry card form
+          </Button>
+        </div>
       ) : (
         <div className="w-full h-12 flex items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
