@@ -165,8 +165,8 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-auto bg-primary/5 text-primary border-primary/20">
-                  <Calendar className="h-3 w-3 mr-1" />{formattedDate}
+                <Badge className="text-[11px] px-2.5 py-1 h-auto bg-primary text-primary-foreground border-0 font-bold shadow-sm">
+                  <Calendar className="h-3 w-3 mr-1" />Starts {formattedDate}
                 </Badge>
                 <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
