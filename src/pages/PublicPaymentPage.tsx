@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
 
 interface InstructorInfo {
