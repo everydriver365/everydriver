@@ -97,7 +97,9 @@ export function SquarePaymentForm({
     (async () => {
       try {
         // Load Square SDK
-        const sdkUrl = config.environment === "production"
+        const env = (config.environment || "").toLowerCase();
+        const isProduction = env === "production" || env === "prod" || env === "live";
+        const sdkUrl = isProduction
           ? "https://web.squarecdn.com/v1/square.js"
           : "https://sandbox.web.squarecdn.com/v1/square.js";
 
