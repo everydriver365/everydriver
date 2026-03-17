@@ -156,7 +156,7 @@ export default function InstructorMiniWebsite() {
           <p className="text-gray-600 mb-6">
             Sorry, we couldn't find an instructor with this profile.
           </p>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Find Instructors</Button>
           </Link>
         </Card>
