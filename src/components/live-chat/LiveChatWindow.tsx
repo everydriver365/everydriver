@@ -104,17 +104,32 @@ export function LiveChatWindow({
   const triggerAIReceptionist = async (visitorMessage: string) => {
     if (userType !== "visitor") return;
     try {
+      let response;
       if (instructorId) {
-        await supabase.functions.invoke("ai-receptionist", {
+        response = await supabase.functions.invoke("ai-receptionist", {
           body: { session_id: sessionId, message: visitorMessage, instructor_id: instructorId },
         });
       } else {
-        await supabase.functions.invoke("ai-admin-receptionist", {
+        response = await supabase.functions.invoke("ai-admin-receptionist", {
           body: { session_id: sessionId, message: visitorMessage },
         });
       }
+      if (response.error) {
+        console.error("AI receptionist error:", response.error);
+        // Insert a fallback message so the visitor isn't left hanging
+        await sendMessage(
+          "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
+          "system",
+          undefined
+        );
+      }
     } catch (e) {
       console.error("AI receptionist error:", e);
+      await sendMessage(
+        "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
+        "system",
+        undefined
+      );
     }
   };
 
