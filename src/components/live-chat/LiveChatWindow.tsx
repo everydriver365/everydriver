@@ -119,7 +119,7 @@ export function LiveChatWindow({
         // Insert a fallback message so the visitor isn't left hanging
         await sendMessage(
           "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
-          "system",
+          "admin",
           undefined
         );
       }
