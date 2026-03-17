@@ -523,7 +523,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { title: "Search, Compare & Book", description: "Find and compare local instructors, check real-time availability, and book directly online.", image: drivingTestCentreImg, link: links.courses },
-              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: links.contact },
+              { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: null, onClick: () => setParentPortalOpen(true) },
               { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: links.courses },
               { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
               { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: links.courses },
