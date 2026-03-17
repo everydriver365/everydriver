@@ -157,132 +157,137 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         </div>
       )}
 
-      {/* Hero Section */}
-      <section style={{ backgroundColor: '#e9f4f9' }}>
-        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center">
-            {/* Left: Hero Image */}
+      {/* Hero Section — Polaroid Stack */}
+      <section className="bg-gradient-to-br from-amber-50 via-background to-blue-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8">
+          {/* Top row: Polaroid photo + headline */}
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="relative"
+              initial={{ rotate: -3, opacity: 0 }}
+              animate={{ rotate: -3, opacity: 1 }}
+              className="shrink-0 bg-white p-2 sm:p-3 rounded-xl shadow-xl -rotate-3 relative"
             >
               <img
                 src={defaultHeroImage}
                 alt={instructorName}
-                className="w-full h-[300px] sm:h-[420px] lg:h-[580px] object-cover rounded-2xl sm:rounded-3xl shadow-xl"
+                className="w-28 h-28 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
               />
+              <div className="text-center mt-1.5 sm:mt-2">
+                <span className="text-[10px] sm:text-sm font-bold" style={{ color: primaryColor }}>
+                  {instructorName} — ADI
+                </span>
+              </div>
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
-                className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-36 sm:h-36 object-contain drop-shadow-lg"
+                className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
               />
             </motion.div>
 
-            {/* Right: Content */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col gap-5"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="pt-1 sm:pt-4 flex-1"
             >
-              {/* Rating */}
+              <Badge className="bg-green-100 text-green-800 border-0 text-[10px] sm:text-xs mb-2 sm:mb-3">
+                <Award className="h-3 w-3 mr-1" />Enrolling Now
+              </Badge>
+              <h1 className="text-xl sm:text-3xl lg:text-5xl font-extrabold leading-tight text-foreground">
+                Driving Lessons in{" "}
+                <span style={{ color: primaryColor }}>Winchester, Southampton &amp; Portsmouth</span>
+              </h1>
               {avgRating && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 mt-2 sm:mt-3">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Star
                       key={s}
-                      className={`h-5 w-5 ${
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
                         s <= Math.round(Number(avgRating))
                           ? "fill-amber-400 text-amber-400"
                           : "text-muted-foreground/30"
                       }`}
                     />
                   ))}
-                  <span className="font-bold text-muted-foreground">
+                  <span className="font-semibold text-xs sm:text-sm text-muted-foreground ml-1">
                     {avgRating} ({reviews.length} reviews)
                   </span>
                 </div>
               )}
-
-              {/* Heading */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
-                Learn to Drive in Winchester, Southampton and Portsmouth
-              </h1>
-
-              <p className="text-muted-foreground text-base sm:text-lg">
-                Book direct and pass, weekly or intensive driving courses in Winchester, Southampton &amp; Portsmouth
+              <p className="text-muted-foreground text-sm sm:text-base mt-2 sm:mt-3 max-w-lg">
+                Book direct and pass — weekly or intensive driving courses available now
               </p>
-
-              {/* Search Bar */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const slug = instructor.app_slug;
-                  const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
-                  navigate(`/i/${slug}/courses${params}`);
-                }}
-                className="flex flex-col sm:flex-row gap-2"
-              >
-                <div className="flex-1 relative">
-                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Your postcode"
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="pl-10 h-12 rounded-full border-border shadow-sm"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="h-12 px-8 rounded-full font-bold text-white"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Find Lessons
-                </Button>
-              </form>
-
-              {/* Course Type Cards */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <Link to={links.courses}>
-                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
-                    <div className="h-40 overflow-hidden">
-                      <img
-                        src={intensiveCourseTile}
-                        alt="Intensive Courses"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                     <CardContent className="p-3">
-                       <h3 className="font-bold text-sm text-foreground">Intensive Courses</h3>
-                       <p className="text-xs text-muted-foreground">Fast-track your test</p>
-                     </CardContent>
-                  </Card>
-                </Link>
-                <Link to={links.services}>
-                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition cursor-pointer rounded-2xl">
-                    <div className="h-40 overflow-hidden">
-                      <img
-                        src={weeklyLessonsTile}
-                        alt="Weekly Lessons"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                     <CardContent className="p-3">
-                       <h3 className="font-bold text-sm text-foreground">Weekly Lessons</h3>
-                       <p className="text-xs text-muted-foreground">At your own pace</p>
-                     </CardContent>
-                  </Card>
-                </Link>
-              </div>
-              <div className="flex items-center gap-3 mt-3">
-                <span className="text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
-                <img src={klarnaRoundLogo} alt="Klarna" className="h-8 w-8" />
-                <img src={clearpayRoundLogo} alt="Clearpay" className="h-8 w-8" />
-                <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-12 object-contain" />
-              </div>
             </motion.div>
+          </div>
+
+          {/* Search Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const appSlug = instructor.app_slug;
+              const params = postcode.trim() ? `?postcode=${encodeURIComponent(postcode.trim())}` : '';
+              navigate(`/i/${appSlug}/courses${params}`);
+            }}
+            className="flex gap-2 max-w-xl"
+          >
+            <div className="flex-1 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Enter your postcode"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
+                className="pl-9 sm:pl-10 h-11 sm:h-12 rounded-full border-border shadow-sm"
+              />
+            </div>
+            <Button
+              type="submit"
+              size="lg"
+              className="h-11 sm:h-12 px-5 sm:px-8 rounded-full font-bold text-white shrink-0"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <Search className="h-4 w-4 mr-1.5" />
+              Search
+            </Button>
+          </form>
+
+          {/* Course Tiles */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <Link to={links.services}>
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
+                <img src={courseWeekly} alt="Weekly Lessons" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <div className="p-2 sm:p-3 text-center">
+                  <div className="font-bold text-[11px] sm:text-sm text-foreground">Weekly</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground">From £{instructor.hourly_rate || 40}/hr</div>
+                </div>
+              </div>
+            </Link>
+            <Link to={links.courses}>
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
+                <img src={courseSemiIntensive} alt="Semi-Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <div className="p-2 sm:p-3 text-center">
+                  <div className="font-bold text-[11px] sm:text-sm text-foreground">Semi-Intensive</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground">20-30 hours</div>
+                </div>
+              </div>
+            </Link>
+            <Link to={links.courses}>
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
+                <img src={courseIntensive} alt="Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <div className="p-2 sm:p-3 text-center">
+                  <div className="font-bold text-[11px] sm:text-sm text-foreground">Intensive</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground">Test in a week</div>
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Finance badges */}
+          <div className="flex items-center gap-3 justify-center">
+            <span className="text-[10px] sm:text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
+            <img src={klarnaRoundLogo} alt="Klarna" className="h-6 w-6 sm:h-8 sm:w-8" />
+            <img src={clearpayRoundLogo} alt="Clearpay" className="h-6 w-6 sm:h-8 sm:w-8" />
+            <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-10 sm:h-12 object-contain" />
           </div>
         </div>
       </section>
