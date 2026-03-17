@@ -46,9 +46,8 @@ serve(async (req) => {
       content: m.content,
     }));
 
-    // Build system prompt with instructor context
-    const areasText = instructor.areas_covered 
-      ? (Array.isArray(instructor.areas_covered) ? instructor.areas_covered.join(", ") : instructor.areas_covered)
+    const areasText = instructor.postcode 
+      ? `around ${instructor.postcode}`
       : "local area";
 
     const systemPrompt = `You are a friendly, helpful receptionist for ${instructor.name}'s driving school. You answer questions from website visitors.
