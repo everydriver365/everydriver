@@ -1925,15 +1925,12 @@ export default function BookingSummary() {
                   Cancel
                 </button>
               </div>
-              <CardstreamCheckout
+              <SquarePaymentForm
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                 pupilId={bookingPupilId || undefined}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                customerPhone={pupilPhone.trim()}
-                customerAddress={pupilAddress.trim()}
-                customerPostcode={pupilPostcode.trim()}
                 onCancel={() => setShowHostedFields(false)}
                 onPaid={async () => {
                   const isDepositPayment = paymentOption === 'deposit' && depositEnabled;

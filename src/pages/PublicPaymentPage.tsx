@@ -216,7 +216,7 @@ export default function PublicPaymentPage() {
         )}
 
         <p className="text-xs text-center text-muted-foreground">
-          Payments are processed securely via Elavon
+          Payments are processed securely via Square
         </p>
       </div>
     </div>

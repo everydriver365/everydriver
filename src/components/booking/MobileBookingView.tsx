@@ -933,15 +933,12 @@ export function MobileBookingView({
 
               {showEmbeddedCheckout ? (
                 <div>
-                  <CardstreamCheckout
+                  <SquarePaymentForm
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                     pupilId={embeddedCheckoutPupilId || undefined}
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    customerPhone={pupilPhone.trim()}
-                    customerAddress={pupilAddress.trim()}
-                    customerPostcode={pupilPostcode.trim()}
                     onPaid={onEmbeddedCheckoutSuccess}
                     onCancel={onEmbeddedCheckoutCancel}
                   />
