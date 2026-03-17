@@ -30,6 +30,7 @@ export function LiveChatWindow({
   userName,
   otherPartyName,
   instructorId,
+  onResetChat,
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [showAgentButton, setShowAgentButton] = useState(false);
