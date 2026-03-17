@@ -180,7 +180,7 @@ export function LiveChatWindow({
         if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
         aiTimeoutRef.current = setTimeout(() => {
           triggerAIReceptionist(messageText);
-        }, 5000);
+        }, 2000);
       }
     }
   };
