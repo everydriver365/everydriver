@@ -174,13 +174,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
               </motion.div>
             ))}
           </div>
-        ) : (
-          <Card style={{ backgroundColor: "#e9f4f9" }}>
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-500">No reviews yet. Be the first to leave a review!</p>
-            </CardContent>
-          </Card>
-        )}
+        ) : null}
 
         {/* Testimonials */}
         {homepageTestimonials.filter(t => !t.is_featured).length > 0 && (
