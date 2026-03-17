@@ -85,6 +85,16 @@ export function LiveChatWidget({
     setIsOpen(false);
   };
 
+  const handleResetChat = () => {
+    // Clear all related localStorage keys
+    localStorage.removeItem(`live_chat_session_${sessionType}_${instructorId || "admin"}`);
+    if (sessionId) {
+      localStorage.removeItem(`quick_reply_step_${sessionId}`);
+    }
+    setSessionId(null);
+    setVisitorInfo(null);
+  };
+
   const chatColor = primaryColor || "#10b981"; // Emerald green, distinct from site navy blue
   const brandStyles = primaryColor
     ? { "--widget-primary": primaryColor } as React.CSSProperties
