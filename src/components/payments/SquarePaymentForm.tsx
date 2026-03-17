@@ -240,7 +240,13 @@ export function SquarePaymentForm({
       onPaid?.();
     } catch (e: any) {
       console.error("[SquarePayment] Payment error:", e);
-      toast.error(e?.message || "Payment failed. Please try again.");
+      const msg = e?.message || "Payment failed. Please try again.";
+      const isDecline = msg.toLowerCase().includes("declined") || msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("invalid card");
+      toast.error(msg, {
+        duration: isDecline ? 8000 : 5000,
+        icon: isDecline ? "🚫" : undefined,
+        style: isDecline ? { border: "2px solid hsl(var(--destructive))", background: "hsl(var(--destructive) / 0.08)" } : undefined,
+      });
     } finally {
       setPaying(false);
     }
