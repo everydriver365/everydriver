@@ -8,6 +8,7 @@ import { PageContentRenderer } from "@/components/mini-website/PageContentRender
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { ParentPortalPreviewModal } from "@/components/mini-website/ParentPortalPreviewModal";
 import { LiveBookingPreviewModal } from "@/components/mini-website/LiveBookingPreviewModal";
+import { TrackProgressPreviewModal } from "@/components/mini-website/TrackProgressPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [parentPortalOpen, setParentPortalOpen] = useState(false);
   const [liveBookingOpen, setLiveBookingOpen] = useState(false);
+  const [trackProgressOpen, setTrackProgressOpen] = useState(false);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
@@ -528,7 +530,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: null, onClick: () => setParentPortalOpen(true) },
               { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: null, onClick: () => setLiveBookingOpen(true) },
               { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
-              { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: links.courses },
+              { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: null, onClick: () => setTrackProgressOpen(true) },
               { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile, link: links.courses },
             ].map((f, i) => {
               const content = (
@@ -702,6 +704,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       <LiveBookingPreviewModal
         open={liveBookingOpen}
         onOpenChange={setLiveBookingOpen}
+        primaryColor={primaryColor}
+      />
+      <TrackProgressPreviewModal
+        open={trackProgressOpen}
+        onOpenChange={setTrackProgressOpen}
         primaryColor={primaryColor}
       />
     </MiniWebsiteLayout>
