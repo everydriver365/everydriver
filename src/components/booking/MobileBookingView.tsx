@@ -937,7 +937,7 @@ export function MobileBookingView({
                 <>
                   <Button
                     onClick={onNPICheckout}
-                    disabled={!canSubmit || isNPILoading || !gatewayHealth.elavon.available || isWalletProcessing}
+                    disabled={!canSubmit || isNPILoading || !gatewayHealth.square.available || isWalletProcessing}
                     className="w-full h-12"
                   >
                     {isNPILoading ? (

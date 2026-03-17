@@ -1972,16 +1972,16 @@ export default function BookingSummary() {
               </p>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                {/* NPI Card Payment */}
+                {/* Card Payment via Square */}
                 <button
-                  onClick={handleWooNPIPayment}
-                  disabled={isNPILoading}
+                  onClick={handleElavonCheckout}
+                  disabled={isElavonLoading || !gatewayHealth.square.available}
                   className="w-full rounded-lg border-2 border-emerald-400 p-3 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 hover:from-emerald-100 hover:to-green-100 transition-all text-left disabled:opacity-50"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Banknote className="h-4 w-4 text-emerald-600" />
                     <span className="font-semibold text-sm text-emerald-900 dark:text-emerald-100">
-                      {isNPILoading ? "Loading..." : "Debit/Credit Card"}
+                      {isElavonLoading ? "Loading..." : "Debit/Credit Card"}
                     </span>
                   </div>
                   <div className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
