@@ -300,7 +300,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
           {/* Finance badges */}
           <div className="flex items-center gap-3 justify-center">
-            <span className="text-[10px] sm:text-sm font-bold text-foreground bg-accent px-3 py-1 rounded-full shadow-sm">Spread the Cost</span>
             <img src={klarnaRoundLogo} alt="Klarna" className="h-6 w-6 sm:h-8 sm:w-8" />
             <img src={clearpayRoundLogo} alt="Clearpay" className="h-6 w-6 sm:h-8 sm:w-8" />
             <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-10 sm:h-12 object-contain" />
