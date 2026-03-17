@@ -298,78 +298,121 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
               </div>
             ) : (
               <>
-                {/* Selected date header */}
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-bold">
-                      {format(selectedDate, "EEEE, d MMMM")}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {overriddenCourses.length} course{overriddenCourses.length !== 1 ? "s" : ""} available
-                    </p>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-foreground`}>
+                        {format(selectedDate, "EEEE, d MMMM")}
+                      </h2>
+                      <p className="text-xs text-muted-foreground">
+                        {overriddenCourses.length} course{overriddenCourses.length !== 1 ? "s" : ""} available
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Transmission Filter + Sort buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Transmission Pills */}
-                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                  {/* Filters — compact horizontal scroll on mobile */}
+                  {isMobile ? (
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4" style={{ scrollbarWidth: "none" }}>
+                      {/* Transmission chips */}
                       {[
                         { value: "all", label: "All" },
                         { value: "manual", label: "Manual" },
-                        { value: "automatic", label: "Automatic" },
+                        { value: "automatic", label: "Auto" },
                       ].map((option) => (
                         <button
                           key={option.value}
                           onClick={() => setTransmission(option.value)}
-                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                          className={`shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold border transition-all active:scale-95 touch-manipulation ${
                             transmission === option.value
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-card text-foreground border-border"
                           }`}
                         >
                           {option.label}
                         </button>
                       ))}
-                    </div>
 
-                    {/* Sort Pills */}
-                    <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
-                      <button
-                        onClick={() => setSortBy("soonest")}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                          sortBy === "soonest"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <CalendarIcon className="h-3.5 w-3.5" />
-                        Soonest
-                      </button>
-                      <button
-                        onClick={() => setSortBy("nearest")}
-                        disabled={!userLocation}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                          sortBy === "nearest"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        } ${!userLocation ? "opacity-40 cursor-not-allowed" : ""}`}
-                      >
-                        <Navigation className="h-3.5 w-3.5" />
-                        Nearest
-                      </button>
-                      <button
-                        onClick={() => setSortBy("price-low")}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                          sortBy === "price-low"
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <PoundSterling className="h-3.5 w-3.5" />
-                        Price
-                      </button>
+                      {/* Divider */}
+                      <div className="shrink-0 w-px bg-border my-1" />
+
+                      {/* Sort chips */}
+                      {[
+                        { value: "soonest", label: "Soonest", icon: CalendarIcon, disabled: false },
+                        { value: "nearest", label: "Nearest", icon: Navigation, disabled: !userLocation },
+                        { value: "price-low", label: "Price ↓", icon: PoundSterling, disabled: false },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => !option.disabled && setSortBy(option.value as any)}
+                          disabled={option.disabled}
+                          className={`shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold border transition-all active:scale-95 touch-manipulation ${
+                            sortBy === option.value
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-card text-foreground border-border"
+                          } ${option.disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                        >
+                          <option.icon className="h-3 w-3" />
+                          {option.label}
+                        </button>
+                      ))}
                     </div>
-                  </div>
+                  ) : (
+                    /* Desktop: existing pill groups */
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "manual", label: "Manual" },
+                          { value: "automatic", label: "Automatic" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => setTransmission(option.value)}
+                            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                              transmission === option.value
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center rounded-full bg-muted p-1 gap-0.5">
+                        <button
+                          onClick={() => setSortBy("soonest")}
+                          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                            sortBy === "soonest"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <CalendarIcon className="h-3.5 w-3.5" />Soonest
+                        </button>
+                        <button
+                          onClick={() => setSortBy("nearest")}
+                          disabled={!userLocation}
+                          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                            sortBy === "nearest"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          } ${!userLocation ? "opacity-40 cursor-not-allowed" : ""}`}
+                        >
+                          <Navigation className="h-3.5 w-3.5" />Nearest
+                        </button>
+                        <button
+                          onClick={() => setSortBy("price-low")}
+                          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                            sortBy === "price-low"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <PoundSterling className="h-3.5 w-3.5" />Price
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {overriddenCourses.length > 0 ? (
