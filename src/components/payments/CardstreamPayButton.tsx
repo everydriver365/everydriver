@@ -112,7 +112,7 @@ export function CardstreamPayButton({
       // Auto-submit after a short delay so user can see the cancel option
       redirectTimerRef.current = setTimeout(() => {
         form.submit();
-      }, 2000);
+      }, 3500);
     } catch (e: any) {
       const msg = e?.message || "Payment failed";
       setSubmitting(false);

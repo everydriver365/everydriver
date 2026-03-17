@@ -939,15 +939,12 @@ export function MobileBookingView({
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    
+                    customerPhone={pupilPhone.trim()}
+                    customerAddress={pupilAddress.trim()}
+                    customerPostcode={pupilPostcode.trim()}
                     onPaid={onEmbeddedCheckoutSuccess}
+                    onCancel={onEmbeddedCheckoutCancel}
                   />
-                  <button 
-                    onClick={onEmbeddedCheckoutCancel}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 text-center"
-                  >
-                    Cancel
-                  </button>
                 </div>
               ) : (
                 <>
