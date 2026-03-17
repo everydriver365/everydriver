@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { CardstreamPayButton } from "./CardstreamPayButton";
+import { CardstreamEmbeddedCardForm } from "./CardstreamEmbeddedCardForm";
 
 import type { GooglePayClient, ApplePayPaymentRequest, ApplePaySessionInstance } from "@/types/payment-types";
 
@@ -305,21 +305,28 @@ export function CardstreamCheckout({
         </div>
       )}
 
-      {/* Card Payment via full-page redirect */}
-      <CardstreamPayButton
-        amount={amount}
-        pupilId={pupilId}
-        instructorId={instructorId}
-        customerName={customerName}
-        customerEmail={customerEmail}
-        customerPhone={customerPhone}
-        customerAddress={customerAddress}
-        customerPostcode={customerPostcode}
-        description="Payment"
-        onError={(msg) => toast.error(msg)}
-        onSuccess={() => onPaid?.()}
-        disabled={paying}
-      />
+      {/* Embedded Card Payment Form */}
+      {orderRef && merchantId ? (
+        <CardstreamEmbeddedCardForm
+          amount={amount}
+          orderRef={orderRef}
+          merchantId={merchantId}
+          pupilId={pupilId}
+          instructorId={instructorId}
+          customerName={customerName}
+          customerEmail={customerEmail}
+          customerPhone={customerPhone}
+          customerAddress={customerAddress}
+          customerPostcode={customerPostcode}
+          onPaid={() => onPaid?.()}
+          onError={(msg) => toast.error(msg)}
+          disabled={paying}
+        />
+      ) : (
+        <div className="w-full h-12 flex items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      )}
 
       {/* Security Notice */}
       <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

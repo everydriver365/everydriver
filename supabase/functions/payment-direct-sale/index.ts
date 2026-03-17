@@ -29,8 +29,20 @@ interface DirectSaleRequest {
   customerName?: string;
   customerEmail?: string;
   customerPostcode?: string;
+  customerAddress?: string;       // full comma-separated address string
   customerAddress1?: string;
   customerCountryCode?: string; // "826"
+}
+
+function splitCustomerAddress(address?: string) {
+  if (!address?.trim()) return null;
+  const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
+  return {
+    line1: parts[0] ?? address.trim(),
+    line2: parts[1] ?? "",
+    town: parts[2] ?? "",
+    county: parts[3] ?? "",
+  };
 }
 
 function toFormUrlEncoded(data: Record<string, string>): string {
@@ -101,8 +113,20 @@ serve(async (req) => {
     if (body.customerEmail) requestFields.customerEmail = body.customerEmail;
     if (body.customerName) requestFields.customerName = body.customerName;
     if (body.customerPostcode) requestFields.customerPostcode = body.customerPostcode;
-    if (body.customerAddress1) requestFields.customerAddress1 = body.customerAddress1;
     if (body.customerCountryCode) requestFields.customerCountryCode = body.customerCountryCode;
+
+    // Map address: prefer structured fields, fall back to splitting full string
+    if (body.customerAddress1) {
+      requestFields.customerAddress1 = body.customerAddress1;
+    } else if (body.customerAddress) {
+      const structured = splitCustomerAddress(body.customerAddress);
+      if (structured) {
+        requestFields.customerAddress1 = structured.line1;
+        if (structured.line2) requestFields.customerAddress2 = structured.line2;
+        if (structured.town) requestFields.customerCity = structured.town;
+        if (structured.county) requestFields.customerCounty = structured.county;
+      }
+    }
 
     if (body.method === "card_token") {
       if (!body.cardPaymentToken) {
