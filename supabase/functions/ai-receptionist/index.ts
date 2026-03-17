@@ -24,8 +24,6 @@ serve(async (req) => {
       .eq("id", instructor_id)
       .single();
 
-    console.log("Instructor lookup:", { instructor_id, ai_enabled: instructor?.ai_receptionist_enabled, error: instructorError?.message });
-
     if (!instructor?.ai_receptionist_enabled) {
       return new Response(JSON.stringify({ reply: null, reason: "ai_disabled" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
