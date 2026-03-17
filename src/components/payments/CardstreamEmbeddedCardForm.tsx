@@ -23,7 +23,7 @@ declare global {
   interface Window {
     hostedFields?: {
       classes: {
-        Forms: new (config: any) => any;
+        Forms: new (...args: any[]) => any;
       };
     };
   }
