@@ -223,6 +223,16 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
           {/* Left Column: Calendar */}
           <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="sticky top-20 space-y-4">
+              {isMobile && !selectedDate && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 px-1 mb-1"
+                >
+                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                  <p className="text-sm font-semibold text-foreground">Pick your start date below</p>
+                </motion.div>
+              )}
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
