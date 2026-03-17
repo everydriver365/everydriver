@@ -1,0 +1,1 @@
+UPDATE instructor_website_pages SET hero_heading = 'Book Now and Pass', hero_subheading = 'in Winchester, Southampton and Portsmouth' WHERE id = '729d8293-b085-4f5e-94ab-ac316e127b5e';
