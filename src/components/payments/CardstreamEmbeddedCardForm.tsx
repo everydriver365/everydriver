@@ -99,12 +99,17 @@ export function CardstreamEmbeddedCardForm({
 
         const $form = window.jQuery(formRef.current);
 
+        // Set form action/method via jQuery BEFORE initializing Hosted Fields
+        // so the SDK knows where to POST
+        $form.attr("action", gatewayUrl);
+        $form.attr("method", "POST");
+
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
           merchantID: merchantId,
         });
-        console.log("[CardForm] hostedForm() called");
+        console.log("[CardForm] hostedForm() called with action:", gatewayUrl);
 
         const inst = $form.hostedForm("instance");
         if (!inst) throw new Error("Hosted form instance not created");
@@ -152,10 +157,15 @@ export function CardstreamEmbeddedCardForm({
     setSubmitting(true);
 
     try {
+      // Debug: log exact form payload before submission
+      const debugData = Object.fromEntries(new FormData(formRef.current).entries());
+      console.log("[CardForm] form payload before submit:", debugData);
       console.log("[CardForm] calling SDK submitForm for 3DS flow");
       if (instanceRef.current?.submitForm) {
         instanceRef.current.submitForm();
-      } else {
+      } else if (instanceRef.current?.submit) {
+        console.warn("[CardForm] submitForm not found, trying .submit()");
+        instanceRef.current.submit();
         // Fallback: native submit — SDK should have its own listener attached
         console.warn("[CardForm] submitForm not available, using native submit");
         formRef.current.submit();

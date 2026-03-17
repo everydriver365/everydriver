@@ -93,8 +93,13 @@ serve(async (req) => {
       formFields.customerCountryCode = "826";
     }
 
+    // Debug: log exact fields being signed
+    console.log("[payment-intent-create] Signing payload:", JSON.stringify(formFields));
+
     // Sign the form fields with the merchant secret
     formFields.signature = await createCardstreamSignature(formFields, merchantSecret);
+
+    console.log("[payment-intent-create] Signed field keys:", Object.keys(formFields).sort().join(", "));
 
     return new Response(
       JSON.stringify({
