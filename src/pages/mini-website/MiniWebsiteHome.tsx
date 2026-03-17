@@ -219,6 +219,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   <>Driving Lessons with{" "}<span style={{ color: primaryColor }}>{instructorName}</span></>
                 )}
               </h1>
+              {page?.hero_subheading && (
+                <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2 font-medium">
+                  {page.hero_subheading}
+                </p>
+              )}
               {avgRating && (
                 <div className="flex items-center gap-1.5 mt-2 sm:mt-3">
                   {[1, 2, 3, 4, 5].map((s) => (
