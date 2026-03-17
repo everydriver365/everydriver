@@ -28,6 +28,7 @@ import courseIntensive from "@/assets/intensive-course-tile.jpg";
 import courseSemiIntensive from "@/assets/semi-intensive-tile.jpg";
 import courseWeekly from "@/assets/weekly-lessons-tile.jpeg";
 import drivingTestCentreImg from "@/assets/search-compare-book.avif";
+import studentPassPolaroid from "@/assets/student-pass-polaroid.jpg";
 import localInstructorImg from "@/assets/local-instructor.jpg";
 import referFriends from "@/assets/refer-friends.png";
 
@@ -162,22 +163,42 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8">
           {/* Top row: Polaroid photo + headline */}
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
-            <motion.div
-              initial={{ rotate: -3, opacity: 0 }}
-              animate={{ rotate: -3, opacity: 1 }}
-              className="shrink-0 bg-white p-2 sm:p-3 rounded-xl shadow-xl -rotate-3 relative"
-            >
-              <img
-                src={defaultHeroImage}
-                alt={instructorName}
-                className="w-28 h-28 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
-              />
-              <img
-                src={earlyTestBadge}
-                alt="Earlier Test Guaranteed"
-                className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
-              />
-            </motion.div>
+            <div className="flex items-end gap-2 sm:gap-3 shrink-0">
+              {/* Polaroid 1 — Instructor */}
+              <motion.div
+                initial={{ rotate: -3, opacity: 0 }}
+                animate={{ rotate: -3, opacity: 1 }}
+                className="bg-white p-1.5 sm:p-3 rounded-xl shadow-xl -rotate-3 relative z-10"
+              >
+                <img
+                  src={defaultHeroImage}
+                  alt={instructorName}
+                  className="w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 rounded-lg object-cover"
+                />
+                <img
+                  src={earlyTestBadge}
+                  alt="Earlier Test Guaranteed"
+                  className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 w-14 h-14 sm:w-20 sm:h-20 object-contain drop-shadow-lg"
+                />
+              </motion.div>
+
+              {/* Polaroid 2 — Student passing */}
+              <motion.div
+                initial={{ rotate: 4, opacity: 0 }}
+                animate={{ rotate: 4, opacity: 1 }}
+                transition={{ delay: 0.15 }}
+                className="bg-white p-1.5 sm:p-3 rounded-xl shadow-xl rotate-[4deg] relative -ml-6 sm:-ml-8"
+              >
+                <img
+                  src={studentPassPolaroid}
+                  alt="Student passing their driving test"
+                  className="w-20 h-20 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-lg object-cover"
+                />
+                <div className="text-center mt-1">
+                  <span className="text-[8px] sm:text-xs font-bold text-green-600">First Time Pass! 🎉</span>
+                </div>
+              </motion.div>
+            </div>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
