@@ -170,6 +170,7 @@ const DemoPromoBars = lazy(() => import("./pages/demo/DemoPromoBars"));
 const DemoMiniWebsiteCourseCards = lazy(() => import("./pages/DemoMiniWebsiteCourseCards"));
 const DemoKenDHeroImages = lazy(() => import("./pages/demo/DemoKenDHeroImages"));
 const DemoKenDHeroRedesigns = lazy(() => import("./pages/demo/DemoKenDHeroRedesigns"));
+const DemoMobileBookingUX = lazy(() => import("./pages/demo/DemoMobileBookingUX"));
 const DemoKenDMobileHeroes = lazy(() => import("./pages/demo/DemoKenDMobileHeroes"));
 
 // Lazy-load ConditionalRoutes
@@ -391,6 +392,7 @@ const App = () => (
                 <Route path="/demo/mini-website-course-cards" element={<DemoMiniWebsiteCourseCards />} />
                 <Route path="/demo/ken-d-hero-images" element={<DemoKenDHeroImages />} />
                 <Route path="/demo/ken-d-hero-redesigns" element={<DemoKenDHeroRedesigns />} />
+                <Route path="/demo/mobile-booking-ux" element={<DemoMobileBookingUX />} />
                 <Route path="/demo/ken-d-mobile-heroes" element={<DemoKenDMobileHeroes />} />
 
                 {/* Catch-all */}
