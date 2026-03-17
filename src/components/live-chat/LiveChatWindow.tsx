@@ -20,6 +20,7 @@ interface LiveChatWindowProps {
   userName?: string;
   otherPartyName?: string;
   instructorId?: string;
+  onResetChat?: () => void;
 }
 
 export function LiveChatWindow({
@@ -29,6 +30,7 @@ export function LiveChatWindow({
   userName,
   otherPartyName,
   instructorId,
+  onResetChat,
 }: LiveChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [showAgentButton, setShowAgentButton] = useState(false);
@@ -102,17 +104,32 @@ export function LiveChatWindow({
   const triggerAIReceptionist = async (visitorMessage: string) => {
     if (userType !== "visitor") return;
     try {
+      let response;
       if (instructorId) {
-        await supabase.functions.invoke("ai-receptionist", {
+        response = await supabase.functions.invoke("ai-receptionist", {
           body: { session_id: sessionId, message: visitorMessage, instructor_id: instructorId },
         });
       } else {
-        await supabase.functions.invoke("ai-admin-receptionist", {
+        response = await supabase.functions.invoke("ai-admin-receptionist", {
           body: { session_id: sessionId, message: visitorMessage },
         });
       }
+      if (response.error) {
+        console.error("AI receptionist error:", response.error);
+        // Insert a fallback message so the visitor isn't left hanging
+        await sendMessage(
+          "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
+          "admin",
+          undefined
+        );
+      }
     } catch (e) {
       console.error("AI receptionist error:", e);
+      await sendMessage(
+        "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
+        "admin",
+        undefined
+      );
     }
   };
 
@@ -134,7 +151,7 @@ export function LiveChatWindow({
       if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
       aiTimeoutRef.current = setTimeout(() => {
         triggerAIReceptionist(text);
-      }, 5000);
+      }, 2000);
     }
   };
 
@@ -163,7 +180,7 @@ export function LiveChatWindow({
         if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
         aiTimeoutRef.current = setTimeout(() => {
           triggerAIReceptionist(messageText);
-        }, 5000);
+        }, 2000);
       }
     }
   };
@@ -379,6 +396,14 @@ export function LiveChatWindow({
             )}
           </Button>
         </div>
+        {userType === "visitor" && onResetChat && messages.length > 0 && (
+          <button
+            onClick={onResetChat}
+            className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+          >
+            Start new chat
+          </button>
+        )}
       </div>
     </div>
   );
