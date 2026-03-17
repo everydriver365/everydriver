@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { CardstreamPayButton } from "./CardstreamPayButton";
+import { CardstreamEmbeddedCardForm } from "./CardstreamEmbeddedCardForm";
 
 import type { GooglePayClient, ApplePayPaymentRequest, ApplePaySessionInstance } from "@/types/payment-types";
 
