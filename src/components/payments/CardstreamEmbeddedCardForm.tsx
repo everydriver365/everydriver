@@ -152,31 +152,13 @@ export function CardstreamEmbeddedCardForm({
     return () => { cancelledRef.current = true; };
   }, [gatewayUrl, merchantId]);
 
-  const handlePay = useCallback(() => {
-    if (!formRef.current || submitting) return;
+  const handleSubmit = useCallback(() => {
+    if (submitting) return;
+    console.log("[CardForm] submit triggered — letting SDK handle submission");
     setSubmitting(true);
-
-    try {
-      // Debug: log exact form payload before submission
-      const debugData = Object.fromEntries(new FormData(formRef.current).entries());
-      console.log("[CardForm] form payload before submit:", debugData);
-      console.log("[CardForm] calling SDK submitForm for 3DS flow");
-      if (instanceRef.current?.submitForm) {
-        instanceRef.current.submitForm();
-      } else if (instanceRef.current?.submit) {
-        console.warn("[CardForm] submitForm not found, trying .submit()");
-        instanceRef.current.submit();
-        // Fallback: native submit — SDK should have its own listener attached
-        console.warn("[CardForm] submitForm not available, using native submit");
-        formRef.current.submit();
-      }
-    } catch (err: any) {
-      const msg = err?.message || "Payment submission failed";
-      console.error("[CardForm] submit error:", msg);
-      onError?.(msg);
-      setSubmitting(false);
-    }
-  }, [onError, submitting]);
+    // Do NOT preventDefault or manually submit — the Hosted Fields SDK
+    // intercepts the native form submit, tokenizes card data, and redirects.
+  }, [submitting]);
 
   if (sdkError) {
     return (
