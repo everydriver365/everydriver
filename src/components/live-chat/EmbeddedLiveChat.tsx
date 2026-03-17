@@ -4,6 +4,8 @@ import { MessageCircle } from "lucide-react";
 import { PreChatForm, PreChatFormData } from "./PreChatForm";
 import { LiveChatWindow } from "./LiveChatWindow";
 import { useCreateLiveChatSession } from "@/hooks/useLiveChat";
+import { useInstructorOnlineStatus } from "@/hooks/useInstructorOnlineStatus";
+import { cn } from "@/lib/utils";
 
 interface EmbeddedLiveChatProps {
   sessionType: "admin" | "instructor";
