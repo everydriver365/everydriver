@@ -20,6 +20,7 @@ interface LiveChatWindowProps {
   userName?: string;
   otherPartyName?: string;
   instructorId?: string;
+  onResetChat?: () => void;
 }
 
 export function LiveChatWindow({
