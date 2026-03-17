@@ -260,7 +260,7 @@ export default function InstructorMiniWebsite() {
           transition={{ delay: 0.2 }}
           className="flex flex-wrap gap-3 justify-center sm:justify-start"
         >
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={`/i/${slug}/contact`}>
             <Button 
               size="lg" 
               className="text-white shadow-lg"
