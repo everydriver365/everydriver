@@ -222,14 +222,31 @@ export function SquarePaymentForm({
         },
       });
 
-      if (error) throw new Error(error.message || "Payment failed");
+      if (error) {
+        // The edge function returned a non-2xx - parse the body for a friendly message
+        const bodyText = typeof error === "object" && error.context?.body ? error.context.body : null;
+        let friendlyMsg = "Payment failed. Please try again.";
+        if (bodyText) {
+          try {
+            const parsed = JSON.parse(bodyText);
+            if (parsed?.error) friendlyMsg = parsed.error;
+          } catch { /* use default */ }
+        }
+        throw new Error(friendlyMsg);
+      }
       if (!data?.success) throw new Error(data?.error || "Payment was not completed");
 
       toast.success("Payment successful!");
       onPaid?.();
     } catch (e: any) {
       console.error("[SquarePayment] Payment error:", e);
-      toast.error(e?.message || "Payment failed. Please try again.");
+      const msg = e?.message || "Payment failed. Please try again.";
+      const isDecline = msg.toLowerCase().includes("declined") || msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("invalid card");
+      toast.error(msg, {
+        duration: isDecline ? 8000 : 5000,
+        icon: isDecline ? "🚫" : undefined,
+        style: isDecline ? { border: "2px solid hsl(var(--destructive))", background: "hsl(var(--destructive) / 0.08)" } : undefined,
+      });
     } finally {
       setPaying(false);
     }

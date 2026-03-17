@@ -89,9 +89,33 @@ serve(async (req: Request) => {
 
     if (!response.ok) {
       console.error("[square-payment] Square API error:", responseText);
+      
+      // Parse Square error for user-friendly message
+      let userMessage = "Payment failed";
+      try {
+        const errData = JSON.parse(responseText);
+        const errors = errData?.errors || [];
+        const firstError = errors[0];
+        if (firstError) {
+          const code = firstError.code || "";
+          const category = firstError.category || "";
+          if (category === "PAYMENT_METHOD_ERROR" || code.includes("DECLINED") || code.includes("CVV") || code.includes("EXPIRATION") || code.includes("INSUFFICIENT_FUNDS")) {
+            userMessage = "Payment declined — please check your card details and try again";
+          } else if (code === "CARD_EXPIRED") {
+            userMessage = "Card expired — please use a different card";
+          } else if (code === "INVALID_CARD") {
+            userMessage = "Invalid card — please check your card number";
+          } else if (code === "CARD_DECLINED_VERIFICATION_REQUIRED") {
+            userMessage = "Additional verification required by your bank";
+          } else {
+            userMessage = firstError.detail || "Payment was declined";
+          }
+        }
+      } catch { /* keep default message */ }
+      
       return new Response(
-        JSON.stringify({ error: "Payment failed", details: responseText }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: userMessage, declined: true }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
