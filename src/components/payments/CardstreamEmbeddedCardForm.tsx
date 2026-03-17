@@ -152,13 +152,9 @@ export function CardstreamEmbeddedCardForm({
     return () => { cancelledRef.current = true; };
   }, [gatewayUrl, merchantId]);
 
-  const handleSubmit = useCallback(() => {
-    if (submitting) return;
-    console.log("[CardForm] submit triggered — letting SDK handle submission");
-    setSubmitting(true);
-    // Do NOT preventDefault or manually submit — the Hosted Fields SDK
-    // intercepts the native form submit, tokenizes card data, and redirects.
-  }, [submitting]);
+  // No manual submit handler needed — the SDK with autoSubmit:true
+  // intercepts native form submit, tokenizes card data via iframes,
+  // adds a paymentToken hidden input, then re-submits the form to the gateway.
 
   if (sdkError) {
     return (
