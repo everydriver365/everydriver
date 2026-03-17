@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { CardstreamEmbeddedCardForm } from "./CardstreamEmbeddedCardForm";
 
