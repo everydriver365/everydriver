@@ -56,7 +56,7 @@ Key information:
 - Instructor: ${instructor.name}
 - Phone: ${instructor.phone || "Contact via the website"}
 - Hourly rate: ${instructor.hourly_rate ? `£${instructor.hourly_rate}/hour` : "Please enquire for pricing"}
-- Transmission: ${instructor.transmission_type || "Manual"}
+- Transmission: ${instructor.car_type || "Manual"}
 - Car: ${instructor.car_make ? `${instructor.car_make} ${instructor.car_model || ""}`.trim() : "Modern dual-control vehicle"}
 - Areas covered: ${areasText}
 
