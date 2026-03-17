@@ -165,8 +165,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       <section className="bg-gradient-to-br from-amber-50 via-background to-blue-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8">
           {/* Top row: Polaroid photo + headline */}
-          <div className="flex flex-col gap-4 sm:flex-row items-start sm:gap-8">
-            <div className="flex items-end w-full sm:w-auto sm:shrink-0">
+          <div className="flex flex-col gap-4 sm:flex-row items-center sm:items-start sm:gap-8">
+            <div className="flex items-end justify-center w-full sm:w-auto sm:shrink-0">
               {/* Polaroid 1 — Instructor */}
               <motion.div
                 initial={{ rotate: -3, opacity: 0 }}
