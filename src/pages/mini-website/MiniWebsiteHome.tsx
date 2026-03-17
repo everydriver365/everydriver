@@ -673,7 +673,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
       {/* CTA Section */}
       <section className="relative overflow-hidden py-14 sm:py-20">
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 50%, ${secondaryColor} 100%)` }} />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, ${secondaryColor} 100%)` }} />
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
           <motion.div
