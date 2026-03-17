@@ -104,7 +104,7 @@ serve(async (req) => {
         merchantId,
         hostedFieldsScriptUrl,
         signedFormFields: formFields,
-        gatewayUrl: directUrl,
+        gatewayUrl: hostedUrl,
         applePay: { supported: true },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
