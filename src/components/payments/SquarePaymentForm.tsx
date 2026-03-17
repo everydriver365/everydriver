@@ -222,7 +222,18 @@ export function SquarePaymentForm({
         },
       });
 
-      if (error) throw new Error(error.message || "Payment failed");
+      if (error) {
+        // The edge function returned a non-2xx - parse the body for a friendly message
+        const bodyText = typeof error === "object" && error.context?.body ? error.context.body : null;
+        let friendlyMsg = "Payment failed. Please try again.";
+        if (bodyText) {
+          try {
+            const parsed = JSON.parse(bodyText);
+            if (parsed?.error) friendlyMsg = parsed.error;
+          } catch { /* use default */ }
+        }
+        throw new Error(friendlyMsg);
+      }
       if (!data?.success) throw new Error(data?.error || "Payment was not completed");
 
       toast.success("Payment successful!");
