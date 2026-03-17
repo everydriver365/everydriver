@@ -194,7 +194,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   alt="Student passing their driving test"
                   className="w-[38vw] h-[38vw] max-w-[190px] max-h-[190px] sm:w-40 sm:h-40 lg:w-56 lg:h-56 rounded-lg object-cover"
                 />
-                <div className="text-center py-1.5 sm:py-2">
+                <div className="text-right py-1.5 sm:py-2 pr-1">
                   <span className="text-[10px] sm:text-sm font-bold text-green-600">First Time Pass! 🎉</span>
                 </div>
               </motion.div>
