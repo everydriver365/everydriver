@@ -54,6 +54,8 @@ export function CardstreamCheckout({
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [merchantId, setMerchantId] = useState<string>("");
   const [canGooglePay, setCanGooglePay] = useState(false);
+  const [embedFailed, setEmbedFailed] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const googlePayClientRef = useRef<GooglePayClient | null>(null);
 
   const canApplePay = useMemo(() => {
