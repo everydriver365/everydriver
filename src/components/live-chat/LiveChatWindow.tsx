@@ -396,6 +396,14 @@ export function LiveChatWindow({
             )}
           </Button>
         </div>
+        {userType === "visitor" && onResetChat && messages.length > 0 && (
+          <button
+            onClick={onResetChat}
+            className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+          >
+            Start new chat
+          </button>
+        )}
       </div>
     </div>
   );
