@@ -692,6 +692,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         open={featureModalOpen}
         onClose={() => setFeatureModalOpen(false)}
       />
+      <ParentPortalPreviewModal
+        open={parentPortalOpen}
+        onOpenChange={setParentPortalOpen}
+        primaryColor={primaryColor}
+      />
     </MiniWebsiteLayout>
   );
 }
