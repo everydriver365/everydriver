@@ -407,7 +407,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">From</span>
-                    <div className="text-2xl font-bold text-primary">£999</div>
+                    <div className="text-2xl font-bold text-primary">£{((instructor.hourly_rate || 40) * 25).toLocaleString()}</div>
                   </div>
                   <Link to={links.courses}>
                     <Button className="gap-2">View Courses <ArrowRight className="h-4 w-4" /></Button>
