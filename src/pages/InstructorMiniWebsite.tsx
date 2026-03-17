@@ -581,7 +581,7 @@ export default function InstructorMiniWebsite() {
           transition={{ delay: 0.8 }}
           className="text-center py-8"
         >
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={`/i/${slug}/contact`}>
             <Button 
               size="lg" 
               className="text-white shadow-xl px-8"

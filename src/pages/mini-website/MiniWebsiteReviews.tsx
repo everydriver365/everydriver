@@ -181,7 +181,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
 
         {/* CTA */}
         <div className="text-center pt-6">
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={links.contact}>
             <Button size="lg" style={{ backgroundColor: primaryColor }} className="text-white">
               <Calendar className="h-5 w-5 mr-2" />
               Book Your Lesson Today
