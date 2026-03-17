@@ -1,0 +1,1 @@
+UPDATE instructors SET hourly_rate = 45.00 WHERE id = 'c9843b58-6edb-4b97-8238-65d725e30aea';
