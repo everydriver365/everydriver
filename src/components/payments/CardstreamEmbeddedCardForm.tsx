@@ -178,7 +178,7 @@ export function CardstreamEmbeddedCardForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
+    <form ref={formRef} action={gatewayUrl} method="POST" className="space-y-3">
       {/* All signed hidden fields from payment-intent-create */}
       {Object.entries(signedFormFields).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
