@@ -99,11 +99,6 @@ export function CardstreamEmbeddedCardForm({
 
         const $form = window.jQuery(formRef.current);
 
-        // Form submission mode: set the form action to the gateway URL
-        // The SDK will POST the form (including hidden fields + card data) directly to the gateway
-        $form.attr("action", gatewayUrl);
-        $form.attr("method", "POST");
-
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
@@ -152,23 +147,18 @@ export function CardstreamEmbeddedCardForm({
     return () => { cancelledRef.current = true; };
   }, [gatewayUrl, merchantId]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePay = useCallback(() => {
     if (!formRef.current || submitting) return;
-
     setSubmitting(true);
 
     try {
-      // Use jQuery trigger so the Hosted Fields plugin can intercept submission,
-      // tokenize card data, and include it in the POST to the gateway.
-      // Native form.submit() bypasses event handlers and the SDK never injects card data.
-      console.log("[CardForm] triggering SDK-intercepted submit for 3DS flow");
-      const $form = window.jQuery?.(formRef.current);
-      if ($form?.length) {
-        $form.trigger("submit");
+      console.log("[CardForm] calling SDK submitForm for 3DS flow");
+      if (instanceRef.current?.submitForm) {
+        instanceRef.current.submitForm();
       } else {
-        // Fallback: requestSubmit fires the submit event (unlike .submit())
-        formRef.current.requestSubmit();
+        // Fallback: native submit — SDK should have its own listener attached
+        console.warn("[CardForm] submitForm not available, using native submit");
+        formRef.current.submit();
       }
     } catch (err: any) {
       const msg = err?.message || "Payment submission failed";
@@ -188,7 +178,7 @@ export function CardstreamEmbeddedCardForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
+    <form ref={formRef} action={gatewayUrl} method="POST" className="space-y-3">
       {/* All signed hidden fields from payment-intent-create */}
       {Object.entries(signedFormFields).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
@@ -229,7 +219,8 @@ export function CardstreamEmbeddedCardForm({
       </div>
 
       <Button
-        type="submit"
+        type="button"
+        onClick={handlePay}
         disabled={disabled || !sdkReady || submitting}
         className="w-full h-12 text-base font-semibold"
         size="lg"
