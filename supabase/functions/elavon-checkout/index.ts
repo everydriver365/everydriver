@@ -119,7 +119,13 @@ serve(async (req: Request) => {
     if (body.customerEmail) requestData.customerEmail = body.customerEmail;
     if (body.customerName) requestData.customerName = body.customerName;
     if (body.customerPhone) requestData.customerPhone = body.customerPhone;
-    if (body.customerAddress) requestData.customerAddress1 = body.customerAddress;
+    if (body.customerAddress) {
+      const structuredAddress = splitCustomerAddress(body.customerAddress);
+      requestData.customerAddress1 = structuredAddress?.line1 ?? body.customerAddress;
+      if (structuredAddress?.line2) requestData.customerAddress2 = structuredAddress.line2;
+      if (structuredAddress?.town) requestData.customerCity = structuredAddress.town;
+      if (structuredAddress?.county) requestData.customerCounty = structuredAddress.county;
+    }
     if (body.customerPostcode) {
       requestData.customerPostcode = body.customerPostcode;
       requestData.customerCountryCode = "826";
