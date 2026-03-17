@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createCardstreamSignature } from "../_shared/cardstream_signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +29,6 @@ serve(async (req) => {
       });
     }
 
-    // enforce GBP-only for now
     const amountPence = Math.round(body.amount * 100);
     const orderRef = `ED-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
     const transactionUnique = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -36,6 +36,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const merchantId = Deno.env.get("NPI_MERCHANT_ID") || "";
+    const merchantSecret = Deno.env.get("NPI_MERCHANT_SECRET") || "";
     const directUrl =
       Deno.env.get("CARDSTREAM_DIRECT_URL") ||
       Deno.env.get("NPI_DIRECT_URL") ||
@@ -57,6 +58,30 @@ serve(async (req) => {
 
     if (error) throw error;
 
+    // Build the redirectURL for post-3DS callback
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=elavon&pupilId=${body.pupilId || ""}&ref=${orderRef}&origin=${encodeURIComponent(typeof Deno !== "undefined" ? (Deno.env.get("SITE_URL") || "https://everydriver.lovable.app") : "https://everydriver.lovable.app")}`;
+
+    // Build signed form fields for Hosted Fields form submission mode
+    // These fields will be embedded as hidden inputs in the client form.
+    // The SDK will POST them along with the card data directly to the gateway.
+    const formFields: Record<string, string> = {
+      merchantID: merchantId,
+      action: "SALE",
+      type: "1",
+      countryCode: "826",
+      currencyCode: "826",
+      amount: String(amountPence),
+      orderRef,
+      transactionUnique,
+      redirectURL: callbackUrl,
+    };
+
+    if (body.customerName) formFields.customerName = body.customerName;
+    if (body.customerEmail) formFields.customerEmail = body.customerEmail;
+
+    // Sign the form fields with the merchant secret
+    formFields.signature = await createCardstreamSignature(formFields, merchantSecret);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -64,8 +89,10 @@ serve(async (req) => {
         transactionUnique,
         amountPence,
         currencyCode: "826",
-        merchantId, // Return merchant ID for client-side tokenization
+        merchantId,
         hostedFieldsScriptUrl,
+        signedFormFields: formFields,
+        gatewayUrl: directUrl,
         applePay: { supported: true },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

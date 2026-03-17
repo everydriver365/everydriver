@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Lock, CreditCard, AlertCircle } from "lucide-react";
 
@@ -7,6 +6,8 @@ type Props = {
   amount: number;
   orderRef: string;
   merchantId: string;
+  signedFormFields: Record<string, string>;
+  gatewayUrl: string;
   pupilId?: string;
   instructorId?: string;
   customerName?: string;
@@ -49,10 +50,8 @@ export function CardstreamEmbeddedCardForm({
   amount,
   orderRef,
   merchantId,
-  pupilId,
-  instructorId,
-  customerName,
-  customerEmail,
+  signedFormFields,
+  gatewayUrl,
   customerPhone,
   customerAddress,
   customerPostcode,
@@ -64,18 +63,14 @@ export function CardstreamEmbeddedCardForm({
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [tokenising, setTokenising] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const instanceRef = useRef<any>(null);
   const initAttemptedRef = useRef(false);
   const cancelledRef = useRef(false);
-  const merchantIdRef = useRef(merchantId);
   const onInitErrorRef = useRef(onInitError);
   const sdkReadyRef = useRef(false);
   const amountLabel = `£${amount.toFixed(2)}`;
 
-  // Keep refs in sync with latest props
-  merchantIdRef.current = merchantId;
   onInitErrorRef.current = onInitError;
 
   useEffect(() => {
@@ -103,10 +98,16 @@ export function CardstreamEmbeddedCardForm({
         console.log("[CardForm] $.fn.hostedForm plugin found");
 
         const $form = window.jQuery(formRef.current);
+
+        // Form submission mode: set the form action to the gateway URL
+        // The SDK will POST the form (including hidden fields + card data) directly to the gateway
+        $form.attr("action", gatewayUrl);
+        $form.attr("method", "POST");
+
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
-          merchantID: merchantIdRef.current,
+          merchantID: merchantId,
         });
         console.log("[CardForm] hostedForm() called");
 
@@ -149,52 +150,26 @@ export function CardstreamEmbeddedCardForm({
     })();
 
     return () => { cancelledRef.current = true; };
-  }, []);
+  }, [gatewayUrl, merchantId]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!instanceRef.current || submitting) return;
+    if (!instanceRef.current || submitting || !formRef.current) return;
 
     setSubmitting(true);
-    setTokenising(true);
 
     try {
-      // getPaymentDetails returns a promise with {success, paymentToken, message}
-      const result = await instanceRef.current.getPaymentDetails();
-      setTokenising(false);
-
-      if (!result?.success || !result?.paymentToken) {
-        throw new Error(result?.message || "Card tokenisation failed — please check your details");
-      }
-
-      console.log("[CardForm] token obtained, calling direct sale");
-
-      const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
-        body: {
-          orderRef,
-          method: "card_token" as const,
-          cardPaymentToken: result.paymentToken,
-          customerName,
-          customerEmail,
-          customerPostcode,
-          customerAddress1: customerAddress,
-          customerCountryCode: "826",
-        },
-      });
-
-      if (error) throw new Error(error.message);
-      if (!data?.success) throw new Error(data?.responseMessage || "Payment declined");
-
-      onPaid?.();
+      // In form submission mode, the SDK submits the form directly to the gateway.
+      // The gateway handles 3DS and then redirects to the redirectURL (payment-callback).
+      console.log("[CardForm] submitting form to gateway for 3DS flow");
+      instanceRef.current.submit();
     } catch (err: any) {
-      const msg = err?.message || "Payment failed";
-      console.error("[CardForm] payment error:", msg);
+      const msg = err?.message || "Payment submission failed";
+      console.error("[CardForm] submit error:", msg);
       onError?.(msg);
-    } finally {
       setSubmitting(false);
-      setTokenising(false);
     }
-  }, [orderRef, customerName, customerEmail, customerAddress, customerPostcode, onPaid, onError, submitting]);
+  }, [onError, submitting]);
 
   if (sdkError) {
     return (
@@ -207,13 +182,10 @@ export function CardstreamEmbeddedCardForm({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
-      {/* Hidden fields for Cardstream SDK */}
-      <input type="hidden" name="merchantID" value={merchantId} />
-      <input type="hidden" name="action" value="SALE" />
-      <input type="hidden" name="type" value="1" />
-      <input type="hidden" name="currencyCode" value="826" />
-      <input type="hidden" name="countryCode" value="826" />
-      <input type="hidden" name="amount" value={Math.round(amount * 100)} />
+      {/* All signed hidden fields from payment-intent-create */}
+      {Object.entries(signedFormFields).map(([key, value]) => (
+        <input key={key} type="hidden" name={key} value={value} />
+      ))}
 
       {/* Hosted card fields — SDK scans for INPUT elements with data-hostedfield */}
       <div className="space-y-3">
@@ -258,7 +230,7 @@ export function CardstreamEmbeddedCardForm({
         {submitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {tokenising ? "Securing card…" : "Processing payment…"}
+            Redirecting to 3D Secure…
           </>
         ) : !sdkReady ? (
           <>
