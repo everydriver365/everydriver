@@ -35,6 +35,7 @@ type Props = {
   customerAddress?: string;
   customerPostcode?: string;
   onPaid?: () => void;
+  onCancel?: () => void;
 };
 
 export function CardstreamCheckout({
