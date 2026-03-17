@@ -17,38 +17,34 @@ export function FeatureDetailModal({ feature, open, onClose }: FeatureDetailModa
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <IconComponent className="h-6 w-6" />
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <IconComponent className="h-5 w-5" />
             </div>
-            <DialogTitle className="text-xl">{feature.title}</DialogTitle>
+            <DialogTitle className="text-base">{feature.title}</DialogTitle>
           </div>
         </DialogHeader>
 
-        <div className="py-4">
-          {/* Short description */}
-          <p className="text-muted-foreground mb-4">{feature.description}</p>
+        <div>
+          <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
 
-          {/* Detailed content - render paragraphs */}
           {feature.detailed_content ? (
-            <div className="prose prose-sm max-w-none dark:prose-invert">
+            <div className="text-sm leading-relaxed text-foreground space-y-2">
               {feature.detailed_content.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="text-foreground leading-relaxed mb-3">
-                  {paragraph}
-                </p>
+                <p key={index}>{paragraph}</p>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">
-              More detailed information coming soon.
+            <p className="text-xs text-muted-foreground italic">
+              More details coming soon.
             </p>
           )}
         </div>
 
-        <div className="flex justify-end pt-2">
-          <Button onClick={onClose}>Close</Button>
+        <div className="flex justify-end">
+          <Button size="sm" onClick={onClose}>Close</Button>
         </div>
       </DialogContent>
     </Dialog>
