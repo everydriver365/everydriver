@@ -122,9 +122,7 @@ export function CardstreamEmbeddedCardForm({
     try {
       // Ask the SDK to tokenise the card fields
       const tokenResult = await new Promise<{ paymentToken?: string; error?: string }>((resolve) => {
-        hostedFormRef.current.getPaymentToken((result: any) => {
-          resolve(result);
-        });
+        hostedFormRef.current.getPaymentToken(resolve);
       });
 
       setTokenising(false);
