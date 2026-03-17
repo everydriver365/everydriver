@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
@@ -25,9 +25,12 @@ interface MiniWebsiteCoursesProps {
 export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCoursesProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
+  const [searchParams] = useSearchParams();
+  const initialPostcode = searchParams.get("postcode") || "";
   const { page, instructor, loading: pageLoading, notFound } = useWebsitePage(slug, "services");
   const links = useMiniWebsiteLinks(slug);
   const isMobile = useIsMobile();
+  const autoSearchedRef = useRef(false);
 
   const {
     postcode,
@@ -52,7 +55,15 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     searchedPostcode,
     searchedAreaName,
     clearSearch,
-  } = useCourseDiscovery("all", instructor?.id ?? null);
+  } = useCourseDiscovery("all", instructor?.id ?? null, initialPostcode);
+
+  // Auto-search when arriving with a postcode param
+  useEffect(() => {
+    if (initialPostcode && instructor?.id && !autoSearchedRef.current && !coursesLoading) {
+      autoSearchedRef.current = true;
+      handleSearch();
+    }
+  }, [initialPostcode, instructor?.id, coursesLoading]);
 
   const [showFilters, setShowFilters] = useState(false);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
