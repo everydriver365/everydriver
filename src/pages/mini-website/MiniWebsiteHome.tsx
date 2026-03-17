@@ -124,10 +124,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
@@ -154,7 +151,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             <p className="text-sm text-[#142040] font-medium">
               <span className="font-bold">New Student Offer:</span> Get 10% off your first lesson + free theory test access
             </p>
-            <a href="tel:07506782870" className="hidden md:inline-flex items-center gap-1 bg-[#142040] text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-[#1e3a5f] transition-colors ml-2">
+            <a href={`tel:${instructor.phone || ''}`} className="hidden md:inline-flex items-center gap-1 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors ml-2" style={{ backgroundColor: primaryColor }}>
               Call Now <ChevronRight className="h-3 w-3" />
             </a>
           </div>
@@ -177,7 +174,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 className="bg-white p-2 sm:p-3 rounded-xl shadow-xl -rotate-3 relative z-10"
               >
                 <img
-                  src={defaultHeroImage}
+                  src={instructor.profile_image_url || defaultHeroImage}
                   alt={instructorName}
                   className="w-[45vw] h-[45vw] max-w-[220px] max-h-[220px] sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
                 />
@@ -216,8 +213,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <Award className="h-3 w-3 mr-1" />Free Re-Test If You Fail
               </Badge>
               <h1 className="text-xl sm:text-3xl lg:text-5xl font-extrabold leading-tight text-foreground">
-                Driving Lessons in{" "}
-                <span style={{ color: primaryColor }}>Winchester, Southampton &amp; Portsmouth</span>
+                {page?.hero_heading ? (
+                  <>{page.hero_heading}</>
+                ) : (
+                  <>Driving Lessons with{" "}<span style={{ color: primaryColor }}>{instructorName}</span></>
+                )}
               </h1>
               {avgRating && (
                 <div className="flex items-center gap-1.5 mt-2 sm:mt-3">
@@ -372,7 +372,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">From</span>
-                    <div className="text-2xl font-bold text-primary">£1,299</div>
+                    <div className="text-2xl font-bold text-primary">£{((instructor.hourly_rate || 40) * 35).toLocaleString()}</div>
                   </div>
                   <Link to={links.courses}>
                     <Button className="gap-2">View Courses <ArrowRight className="h-4 w-4" /></Button>
@@ -407,7 +407,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">From</span>
-                    <div className="text-2xl font-bold text-primary">£999</div>
+                    <div className="text-2xl font-bold text-primary">£{((instructor.hourly_rate || 40) * 25).toLocaleString()}</div>
                   </div>
                   <Link to={links.courses}>
                     <Button className="gap-2">View Courses <ArrowRight className="h-4 w-4" /></Button>
@@ -441,7 +441,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">From</span>
-                    <div className="text-2xl font-bold text-primary">£45<span className="text-sm font-normal text-muted-foreground">/hour</span></div>
+                    <div className="text-2xl font-bold text-primary">£{instructor.hourly_rate || 40}<span className="text-sm font-normal text-muted-foreground">/hour</span></div>
                   </div>
                   <Link to={links.courses}>
                     <Button className="gap-2">View Lessons <ArrowRight className="h-4 w-4" /></Button>
@@ -640,7 +640,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       {/* Quick Links */}
       <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8 text-[#1e3a5f]">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8" style={{ color: primaryColor }}>
             Explore More
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -659,10 +659,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   className="group flex flex-col items-center gap-2 p-5 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 >
                   <span className="text-2xl mb-1">{link.icon}</span>
-                  <h3 className="font-bold text-sm text-[#1e3a5f]">
+                  <h3 className="font-bold text-sm" style={{ color: primaryColor }}>
                     {link.label}
                   </h3>
-                  <p className="text-[11px] text-[#1e3a5f]/70">{link.sub}</p>
+                  <p className="text-[11px] text-muted-foreground">{link.sub}</p>
                 </motion.div>
               </Link>
             ))}
