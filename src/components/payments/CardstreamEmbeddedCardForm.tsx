@@ -16,6 +16,7 @@ type Props = {
   customerPostcode?: string;
   onPaid?: () => void;
   onError?: (msg: string) => void;
+  onInitError?: () => void;
   disabled?: boolean;
 };
 
@@ -23,11 +24,6 @@ declare global {
   interface Window {
     jQuery?: any;
     $?: any;
-    hostedFields?: {
-      classes: {
-        Forms: new (...args: any[]) => any;
-      };
-    };
   }
 }
 
@@ -62,6 +58,7 @@ export function CardstreamEmbeddedCardForm({
   customerPostcode,
   onPaid,
   onError,
+  onInitError,
   disabled,
 }: Props) {
   const [sdkReady, setSdkReady] = useState(false);
@@ -69,92 +66,110 @@ export function CardstreamEmbeddedCardForm({
   const [submitting, setSubmitting] = useState(false);
   const [tokenising, setTokenising] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const hostedFormRef = useRef<any>(null);
+  const instanceRef = useRef<any>(null);
+  const initAttemptedRef = useRef(false);
   const amountLabel = `£${amount.toFixed(2)}`;
 
-  // Load jQuery + Hosted Fields SDK
   useEffect(() => {
+    if (initAttemptedRef.current) return;
+    initAttemptedRef.current = true;
+
     let cancelled = false;
     const jqueryUrl = "https://code.jquery.com/jquery-3.7.1.min.js";
     const sdkUrl = "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js";
 
     (async () => {
       try {
-        // jQuery must load first — SDK is a jQuery plugin
+        // Step 1: load jQuery
         await loadScript(jqueryUrl);
         if (cancelled) return;
+        if (!window.jQuery) {
+          throw new Error("jQuery failed to load");
+        }
+        console.log("[CardForm] jQuery loaded");
 
+        // Step 2: load Hosted Fields SDK
         await loadScript(sdkUrl);
         if (cancelled) return;
+        console.log("[CardForm] SDK script loaded");
 
-        if (!window.hostedFields) {
-          setSdkError("Payment SDK failed to initialise");
-          return;
+        // Step 3: verify the jQuery plugin exists
+        if (!window.jQuery.fn.hostedForm) {
+          throw new Error("Hosted Fields plugin missing — $.fn.hostedForm not found");
         }
+        console.log("[CardForm] $.fn.hostedForm plugin found");
 
-        if (formRef.current && !hostedFormRef.current) {
-          const hf = new window.hostedFields.classes.Forms(formRef.current, {
-            autoSetup: true,
-            autoSubmit: false,
-            merchantID: merchantId,
-          });
+        // Step 4: initialise plugin on the form element
+        const $form = window.jQuery(formRef.current);
+        $form.hostedForm({
+          autoSetup: true,
+          autoSubmit: false,
+          merchantID: merchantId,
+        });
+        console.log("[CardForm] hostedForm() called");
 
-          // SDK fires jQuery events on the form element
-          const $form = window.jQuery(formRef.current);
-
-          $form.on("hostedform:ready", () => {
-            if (!cancelled) {
-              console.log("Hosted Fields: ready");
-              setSdkReady(true);
-            }
-          });
-
-          $form.on("hostedform:error", (_e: any, err: any) => {
-            console.error("Hosted Fields error:", err);
-            if (!cancelled) setSdkError("Card form error — please refresh");
-          });
-
-          $form.on("hostedform:invalid", (_e: any, details: any) => {
-            console.warn("Hosted Fields validation:", details);
-          });
-
-          hostedFormRef.current = hf;
-
-          // Fallback: if ready event doesn't fire within 5s but SDK loaded, assume ready
-          setTimeout(() => {
-            if (!cancelled && !sdkReady) {
-              console.log("Hosted Fields: fallback ready");
-              setSdkReady(true);
-            }
-          }, 5000);
+        // Step 5: obtain instance
+        const inst = $form.hostedForm("instance");
+        if (!inst) {
+          throw new Error("Hosted form instance not created");
         }
-      } catch (e) {
-        console.error("SDK load error:", e);
-        if (!cancelled) setSdkError("Failed to load payment SDK");
+        instanceRef.current = inst;
+        console.log("[CardForm] instance obtained");
+
+        // Step 6: listen for ready/error events
+        $form.on("hostedform:ready", () => {
+          if (!cancelled) {
+            console.log("[CardForm] hostedform:ready fired");
+            setSdkReady(true);
+          }
+        });
+
+        $form.on("hostedform:error", (_e: any, err: any) => {
+          console.error("[CardForm] hostedform:error:", err);
+        });
+
+        $form.on("hostedform:invalid", (_e: any, details: any) => {
+          console.warn("[CardForm] hostedform:invalid:", details);
+        });
+
+        // Fallback: if ready event doesn't fire within 6s, assume ready
+        setTimeout(() => {
+          if (!cancelled && !sdkReady) {
+            console.log("[CardForm] fallback: assuming ready after timeout");
+            setSdkReady(true);
+          }
+        }, 6000);
+
+      } catch (e: any) {
+        console.error("[CardForm] init error:", e);
+        if (!cancelled) {
+          setSdkError(e?.message || "Failed to load payment SDK");
+          onInitError?.();
+        }
       }
     })();
 
     return () => { cancelled = true; };
-  }, [merchantId]);
+  }, [merchantId, onInitError]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hostedFormRef.current || submitting) return;
+    if (!instanceRef.current || submitting) return;
 
     setSubmitting(true);
     setTokenising(true);
 
     try {
-      // getPaymentDetails() returns a promise with {success, paymentToken, message}
-      const result = await hostedFormRef.current.getPaymentDetails();
-
+      // getPaymentDetails returns a promise with {success, paymentToken, message}
+      const result = await instanceRef.current.getPaymentDetails();
       setTokenising(false);
 
       if (!result?.success || !result?.paymentToken) {
         throw new Error(result?.message || "Card tokenisation failed — please check your details");
       }
 
-      // Send token + address to direct sale
+      console.log("[CardForm] token obtained, calling direct sale");
+
       const { data, error } = await supabase.functions.invoke("payment-direct-sale", {
         body: {
           orderRef,
@@ -174,7 +189,7 @@ export function CardstreamEmbeddedCardForm({
       onPaid?.();
     } catch (err: any) {
       const msg = err?.message || "Payment failed";
-      console.error("Card payment error:", msg);
+      console.error("[CardForm] payment error:", msg);
       onError?.(msg);
     } finally {
       setSubmitting(false);
@@ -201,32 +216,35 @@ export function CardstreamEmbeddedCardForm({
       <input type="hidden" name="countryCode" value="826" />
       <input type="hidden" name="amount" value={Math.round(amount * 100)} />
 
-      {/* Hosted card fields — iframes injected here by the SDK */}
+      {/* Hosted card fields — SDK scans for INPUT elements with data-hostedfield */}
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">Card number</label>
-          <div
+          <input
+            type="hostedfield:cardNumber"
             data-hostedfield="cardNumber"
-            className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-            style={{ minHeight: 44 }}
+            placeholder="4929 4212 3460 0821"
+            className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 outline-none"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Expiry date</label>
-            <div
+            <input
+              type="hostedfield:cardExpiryDate"
               data-hostedfield="cardExpiryDate"
-              className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-              style={{ minHeight: 44 }}
+              placeholder="12/25"
+              className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 outline-none"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">CVV</label>
-            <div
+            <input
+              type="hostedfield:cardCVV"
               data-hostedfield="cardCVV"
-              className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-              style={{ minHeight: 44 }}
+              placeholder="356"
+              className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 outline-none"
             />
           </div>
         </div>
