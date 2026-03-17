@@ -138,7 +138,7 @@ interface MobileBookingViewProps {
   isNPILoading: boolean;
   isClearpayLoading: boolean;
   klarnaMerchantReference: string;
-  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean } };
+  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean }; square: { available: boolean } };
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
@@ -937,7 +937,7 @@ export function MobileBookingView({
                 <>
                   <Button
                     onClick={onNPICheckout}
-                    disabled={!canSubmit || isNPILoading || !gatewayHealth.elavon.available || isWalletProcessing}
+                    disabled={!canSubmit || isNPILoading || !gatewayHealth.square.available || isWalletProcessing}
                     className="w-full h-12"
                   >
                     {isNPILoading ? (
