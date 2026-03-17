@@ -151,7 +151,7 @@ export function LiveChatWindow({
       if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
       aiTimeoutRef.current = setTimeout(() => {
         triggerAIReceptionist(text);
-      }, 5000);
+      }, 2000);
     }
   };
 
