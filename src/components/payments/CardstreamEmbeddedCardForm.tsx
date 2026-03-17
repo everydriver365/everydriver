@@ -152,23 +152,18 @@ export function CardstreamEmbeddedCardForm({
     return () => { cancelledRef.current = true; };
   }, [gatewayUrl, merchantId]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePay = useCallback(() => {
     if (!formRef.current || submitting) return;
-
     setSubmitting(true);
 
     try {
-      // Use jQuery trigger so the Hosted Fields plugin can intercept submission,
-      // tokenize card data, and include it in the POST to the gateway.
-      // Native form.submit() bypasses event handlers and the SDK never injects card data.
-      console.log("[CardForm] triggering SDK-intercepted submit for 3DS flow");
-      const $form = window.jQuery?.(formRef.current);
-      if ($form?.length) {
-        $form.trigger("submit");
+      console.log("[CardForm] calling SDK submitForm for 3DS flow");
+      if (instanceRef.current?.submitForm) {
+        instanceRef.current.submitForm();
       } else {
-        // Fallback: requestSubmit fires the submit event (unlike .submit())
-        formRef.current.requestSubmit();
+        // Fallback: native submit — SDK should have its own listener attached
+        console.warn("[CardForm] submitForm not available, using native submit");
+        formRef.current.submit();
       }
     } catch (err: any) {
       const msg = err?.message || "Payment submission failed";
