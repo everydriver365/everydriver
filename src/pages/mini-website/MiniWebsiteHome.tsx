@@ -7,6 +7,7 @@ import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { ParentPortalPreviewModal } from "@/components/mini-website/ParentPortalPreviewModal";
+import { LiveBookingPreviewModal } from "@/components/mini-website/LiveBookingPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [parentPortalOpen, setParentPortalOpen] = useState(false);
+  const [liveBookingOpen, setLiveBookingOpen] = useState(false);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
@@ -524,7 +526,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             {[
               { title: "Search, Compare & Book", description: "Find and compare local instructors, check real-time availability, and book directly online.", image: drivingTestCentreImg, link: links.courses },
               { title: "Parent Portal", description: "Stay informed with lesson updates and payment visibility.", image: referFriends, link: null, onClick: () => setParentPortalOpen(true) },
-              { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: links.courses },
+              { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: null, onClick: () => setLiveBookingOpen(true) },
               { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
               { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: links.courses },
               { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile, link: links.courses },
@@ -695,6 +697,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       <ParentPortalPreviewModal
         open={parentPortalOpen}
         onOpenChange={setParentPortalOpen}
+        primaryColor={primaryColor}
+      />
+      <LiveBookingPreviewModal
+        open={liveBookingOpen}
+        onOpenChange={setLiveBookingOpen}
         primaryColor={primaryColor}
       />
     </MiniWebsiteLayout>
