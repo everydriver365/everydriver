@@ -303,7 +303,7 @@ export function CardstreamCheckout({
         </div>
       )}
 
-      {/* Card Payment via HPP in iframe */}
+      {/* Card Payment via full-page redirect */}
       <CardstreamPayButton
         amount={amount}
         pupilId={pupilId}
