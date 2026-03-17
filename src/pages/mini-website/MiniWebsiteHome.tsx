@@ -8,6 +8,7 @@ import { PageContentRenderer } from "@/components/mini-website/PageContentRender
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { ParentPortalPreviewModal } from "@/components/mini-website/ParentPortalPreviewModal";
 import { LiveBookingPreviewModal } from "@/components/mini-website/LiveBookingPreviewModal";
+import { TrackProgressPreviewModal } from "@/components/mini-website/TrackProgressPreviewModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
