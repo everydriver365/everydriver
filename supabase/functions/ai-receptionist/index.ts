@@ -18,11 +18,13 @@ serve(async (req) => {
     );
 
     // Check if AI receptionist is enabled
-    const { data: instructor } = await supabase
+    const { data: instructor, error: instructorError } = await supabase
       .from("instructors")
       .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, ai_receptionist_enabled")
       .eq("id", instructor_id)
       .single();
+
+    console.log("Instructor lookup:", { instructor_id, ai_enabled: instructor?.ai_receptionist_enabled, error: instructorError?.message });
 
     if (!instructor?.ai_receptionist_enabled) {
       return new Response(JSON.stringify({ reply: null, reason: "ai_disabled" }), {
