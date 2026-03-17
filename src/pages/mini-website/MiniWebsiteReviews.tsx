@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
+import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
+import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
