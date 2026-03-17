@@ -384,7 +384,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                   <p className="text-white/90 mb-4">
                     Book your first lesson and begin your driving journey today.
                   </p>
-                  <Link to={`/book/${instructor.id}`}>
+                  <Link to={`/i/${slug}/contact`}>
                     <Button
                       size="lg"
                       className="w-full text-lg"

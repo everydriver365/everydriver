@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";

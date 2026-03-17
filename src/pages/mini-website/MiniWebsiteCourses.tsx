@@ -85,7 +85,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Go Home</Button>
           </Link>
         </Card>

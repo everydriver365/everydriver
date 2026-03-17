@@ -236,7 +236,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                           ))}
                         </ul>
                       )}
-                      <Link to={`/book/${instructor.id}`}>
+                      <Link to={links.contact}>
                         <Button
                           className="w-full text-white"
                           style={{ backgroundColor: primaryColor }}
