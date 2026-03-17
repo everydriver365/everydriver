@@ -18,9 +18,9 @@ serve(async (req) => {
     );
 
     // Check if AI receptionist is enabled
-    const { data: instructor } = await supabase
+    const { data: instructor, error: instructorError } = await supabase
       .from("instructors")
-      .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, ai_receptionist_enabled")
+      .select("name, phone, hourly_rate, car_type, car_make, car_model, ai_receptionist_enabled, home_postcode")
       .eq("id", instructor_id)
       .single();
 
@@ -43,9 +43,8 @@ serve(async (req) => {
       content: m.content,
     }));
 
-    // Build system prompt with instructor context
-    const areasText = instructor.areas_covered 
-      ? (Array.isArray(instructor.areas_covered) ? instructor.areas_covered.join(", ") : instructor.areas_covered)
+    const areasText = instructor.home_postcode 
+      ? `around ${instructor.home_postcode}`
       : "local area";
 
     const systemPrompt = `You are a friendly, helpful receptionist for ${instructor.name}'s driving school. You answer questions from website visitors.
@@ -54,7 +53,7 @@ Key information:
 - Instructor: ${instructor.name}
 - Phone: ${instructor.phone || "Contact via the website"}
 - Hourly rate: ${instructor.hourly_rate ? `£${instructor.hourly_rate}/hour` : "Please enquire for pricing"}
-- Transmission: ${instructor.transmission_type || "Manual"}
+- Transmission: ${instructor.car_type || "Manual"}
 - Car: ${instructor.car_make ? `${instructor.car_make} ${instructor.car_model || ""}`.trim() : "Modern dual-control vehicle"}
 - Areas covered: ${areasText}
 
