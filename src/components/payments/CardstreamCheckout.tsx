@@ -48,6 +48,7 @@ export function CardstreamCheckout({
   customerAddress,
   customerPostcode,
   onPaid,
+  onCancel,
 }: Props) {
   const [paying, setPaying] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
