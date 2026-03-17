@@ -41,6 +41,11 @@ serve(async (req) => {
       Deno.env.get("CARDSTREAM_DIRECT_URL") ||
       Deno.env.get("NPI_DIRECT_URL") ||
       "https://gateway.cardstream.com/direct/";
+    // For Hosted Fields form submissions, use the /hosted/ endpoint
+    // The /direct/ endpoint is for server-to-server calls only.
+    // The /hosted/ endpoint correctly verifies signature over merchant fields only
+    // (excluding SDK-injected card data fields like cardNumber, cardCVV etc.)
+    const hostedUrl = directUrl.replace(/\/direct\/?$/, "/hosted/");
     const gatewayOrigin = new URL(directUrl).origin;
     const hostedFieldsScriptUrl = `${gatewayOrigin}/sdk/web/v1/js/hostedfields.min.js`;
     const supabase = createClient(supabaseUrl, serviceKey);
