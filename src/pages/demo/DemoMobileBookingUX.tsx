@@ -79,6 +79,8 @@ function WeekStripCalendar() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [bookedSlots, setBookedSlots] = useState<{ date: Date; time: string; duration: number }[]>([]);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [courseStartDate, setCourseStartDate] = useState<Date | null>(null);
 
   const startDate = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), weekOffset * 7);
   const days = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
@@ -99,8 +101,94 @@ function WeekStripCalendar() {
     setBookedSlots(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleStartDateSelect = (date: Date) => {
+    setCourseStartDate(date);
+    // Jump the week view to the selected start date's week
+    const today = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const selectedWeekStart = startOfWeek(date, { weekStartsOn: 1 });
+    const diffInDays = Math.round((selectedWeekStart.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    setWeekOffset(Math.round(diffInDays / 7));
+    setShowStartDatePicker(false);
+  };
+
+  // Generate next 8 weeks of start dates for the picker
+  const startDateOptions = Array.from({ length: 8 }, (_, i) => {
+    const date = addDays(new Date(), i * 7 + (availableDays[0] - new Date().getDay() + 7) % 7);
+    return date;
+  });
+
   return (
     <div className="space-y-3">
+      {/* Start date selector */}
+      <div className="rounded-2xl border bg-card overflow-hidden">
+        <button
+          onClick={() => setShowStartDatePicker(!showStartDatePicker)}
+          className="w-full flex items-center justify-between p-3.5 text-left active:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${BRAND_COLOR}15` }}>
+              <Calendar className="h-5 w-5" style={{ color: BRAND_COLOR }} />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium">Course Start Date</p>
+              <p className="text-sm font-bold text-foreground">
+                {courseStartDate ? format(courseStartDate, "EEEE, d MMMM yyyy") : "Choose when to start"}
+              </p>
+            </div>
+          </div>
+          <motion.div animate={{ rotate: showStartDatePicker ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+          </motion.div>
+        </button>
+
+        <AnimatePresence>
+          {showStartDatePicker && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="overflow-hidden border-t"
+            >
+              <div className="p-3 space-y-1.5">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Available start weeks</p>
+                {startDateOptions.map((date, i) => {
+                  const isSelected = courseStartDate && isSameDay(date, courseStartDate);
+                  const weekEnd = addDays(date, 4);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleStartDateSelect(date)}
+                      className={cn(
+                        "w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all text-left",
+                        isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-center min-w-[40px]">
+                          <p className="text-[10px] uppercase text-muted-foreground">{format(date, "MMM")}</p>
+                          <p className="text-lg font-black text-foreground">{format(date, "d")}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">w/c {format(date, "EEEE d MMM")}</p>
+                          <p className="text-xs text-muted-foreground">{format(date, "d MMM")} – {format(weekEnd, "d MMM")}</p>
+                        </div>
+                      </div>
+                      {isSelected ? (
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: BRAND_COLOR }}>
+                          <Check className="h-3.5 w-3.5 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       {/* Progress bar */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs">
