@@ -28,6 +28,7 @@ import courseIntensive from "@/assets/intensive-course-tile.jpg";
 import courseSemiIntensive from "@/assets/semi-intensive-tile.jpg";
 import courseWeekly from "@/assets/weekly-lessons-tile.jpeg";
 import drivingTestCentreImg from "@/assets/search-compare-book.avif";
+import studentPassPolaroid from "@/assets/student-pass-polaroid.jpg";
 import localInstructorImg from "@/assets/local-instructor.jpg";
 import referFriends from "@/assets/refer-friends.png";
 
