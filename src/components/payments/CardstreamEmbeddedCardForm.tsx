@@ -124,12 +124,19 @@ export function CardstreamEmbeddedCardForm({
           }
         });
 
+        $form.on("hostedform:presubmit", () => {
+          console.log("[CardForm] hostedform:presubmit — tokenizing card data");
+          if (!cancelledRef.current) setSubmitting(true);
+        });
+
         $form.on("hostedform:error", (_e: any, err: any) => {
           console.error("[CardForm] hostedform:error:", err);
+          if (!cancelledRef.current) setSubmitting(false);
         });
 
         $form.on("hostedform:invalid", (_e: any, details: any) => {
           console.warn("[CardForm] hostedform:invalid:", details);
+          if (!cancelledRef.current) setSubmitting(false);
         });
 
         setTimeout(() => {
