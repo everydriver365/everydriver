@@ -308,7 +308,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           {/* Earlier Test Guarantee CTA */}
           <Link to="/benefits" className="block">
             <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3 sm:p-4 hover:shadow-md transition-shadow">
-              <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" />
+              <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm sm:text-base text-foreground">Earlier Test Guaranteed</div>
                 <div className="text-[11px] sm:text-xs text-muted-foreground">We find you an earlier test date or your money back</div>
