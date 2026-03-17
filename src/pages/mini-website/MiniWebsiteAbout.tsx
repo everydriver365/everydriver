@@ -17,6 +17,7 @@ interface MiniWebsiteAboutProps {
 export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
+  const links = useMiniWebsiteLinks(slug);
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "about");
 
   if (loading) {
