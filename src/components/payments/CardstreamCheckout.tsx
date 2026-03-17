@@ -5,7 +5,7 @@ import { Loader2, Shield, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { CardstreamEmbeddedCardForm } from "./CardstreamEmbeddedCardForm";
 
-import type { GooglePayClient, ApplePayPaymentRequest, ApplePaySessionInstance } from "@/types/payment-types";
+import type { GooglePayClient } from "@/types/payment-types";
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -53,9 +53,10 @@ export function CardstreamCheckout({
   const [paying, setPaying] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [merchantId, setMerchantId] = useState<string>("");
+  const [signedFormFields, setSignedFormFields] = useState<Record<string, string> | null>(null);
+  const [gatewayUrl, setGatewayUrl] = useState<string>("");
   const [canGooglePay, setCanGooglePay] = useState(false);
   const [embedFailed, setEmbedFailed] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
   const googlePayClientRef = useRef<GooglePayClient | null>(null);
 
   const canApplePay = useMemo(() => {
@@ -99,7 +100,7 @@ export function CardstreamCheckout({
     return () => { cancelled = true; };
   }, [baseCardPaymentMethod]);
 
-  // Create payment intent for wallet payments
+  // Create payment intent — now returns signedFormFields for card form submission
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -111,6 +112,8 @@ export function CardstreamCheckout({
         if (error || !data?.success) return;
         setOrderRef(data.orderRef);
         if (data.merchantId) setMerchantId(data.merchantId);
+        if (data.signedFormFields) setSignedFormFields(data.signedFormFields);
+        if (data.gatewayUrl) setGatewayUrl(data.gatewayUrl);
       } catch (e) {
         console.error("Payment intent creation error:", e);
       }
@@ -308,11 +311,13 @@ export function CardstreamCheckout({
       )}
 
       {/* Embedded Card Payment Form */}
-      {orderRef && merchantId && !embedFailed ? (
+      {orderRef && merchantId && signedFormFields && gatewayUrl && !embedFailed ? (
         <CardstreamEmbeddedCardForm
           amount={amount}
           orderRef={orderRef}
           merchantId={merchantId}
+          signedFormFields={signedFormFields}
+          gatewayUrl={gatewayUrl}
           pupilId={pupilId}
           instructorId={instructorId}
           customerName={customerName}
