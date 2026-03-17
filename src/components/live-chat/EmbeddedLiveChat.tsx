@@ -25,6 +25,7 @@ export function EmbeddedLiveChat({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [visitorInfo, setVisitorInfo] = useState<PreChatFormData | null>(null);
   const { createSession, creating } = useCreateLiveChatSession();
+  const instructorOnline = useInstructorOnlineStatus(instructorId);
 
   // Check for existing session
   useEffect(() => {
