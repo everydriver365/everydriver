@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
-import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
+import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
@@ -1756,25 +1756,21 @@ export default function BookingSummary() {
           {/* Express Checkout - Apple/Google Pay */}
           {canSubmit && (
             <div className="sm:col-span-2 mb-2">
-              <ElavonBookingWalletButtons
+              <SquareWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
-                pupilName={pupilName}
-                pupilEmail={pupilEmail}
-                pupilPhone={pupilPhone}
-                pupilAddress={pupilAddress}
-                pupilPostcode={pupilPostcode}
-                courseType={courseName}
-                courseHours={hours}
-                totalPrice={totalPrice}
-                slots={selectedSlots}
-                upsells={availableUpsells
-                  .filter((u) => selectedUpsells.includes(u.id))
-                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
-                onSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+                customerName={pupilName}
+                customerEmail={pupilEmail}
+                onPaid={() => {
+                  const pupilId = bookingPupilId;
+                  if (pupilId) navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                }}
                 onProcessing={(p) => setIsSubmitting(p)}
                 disabled={isSubmitting || isElavonLoading || isClearpayLoading}
-                ensureBookingCreated={ensureBookingCreated}
+                ensureBookingCreated={async () => {
+                  const id = await ensureBookingCreated();
+                  return id;
+                }}
               />
             </div>
           )}
@@ -1925,15 +1921,12 @@ export default function BookingSummary() {
                   Cancel
                 </button>
               </div>
-              <CardstreamCheckout
+              <SquarePaymentForm
                 amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                 pupilId={bookingPupilId || undefined}
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                customerPhone={pupilPhone.trim()}
-                customerAddress={pupilAddress.trim()}
-                customerPostcode={pupilPostcode.trim()}
                 onCancel={() => setShowHostedFields(false)}
                 onPaid={async () => {
                   const isDepositPayment = paymentOption === 'deposit' && depositEnabled;

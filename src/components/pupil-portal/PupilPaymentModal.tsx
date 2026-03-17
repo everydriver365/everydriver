@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ElavonWalletButtons } from "@/components/payments/ElavonWalletButtons";
+import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdminFee } from "@/hooks/useAdminFee";
@@ -230,13 +230,12 @@ export function PupilPaymentModal({
           />
 
           {/* Apple Pay / Google Pay Express Checkout */}
-          <ElavonWalletButtons
+          <SquareWalletButtons
             amount={totalCharge}
             pupilId={pupilId}
             instructorId={instructorId}
-            instructorSlug={instructorSlug}
-            pupilName={pupilName}
-            pupilEmail={pupilEmail}
+            customerName={pupilName}
+            customerEmail={pupilEmail}
             onProcessing={setProcessing}
             disabled={processing || paymentAmount <= 0}
           />

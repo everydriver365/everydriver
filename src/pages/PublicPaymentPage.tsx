@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
 
 interface InstructorInfo {
@@ -205,7 +205,7 @@ export default function PublicPaymentPage() {
             </Button>
           </div>
         ) : (
-          <CardstreamCheckout
+          <SquarePaymentForm
             amount={parsedAmount}
             instructorId={instructorId}
             pupilId={pupilParam || undefined}
@@ -216,7 +216,7 @@ export default function PublicPaymentPage() {
         )}
 
         <p className="text-xs text-center text-muted-foreground">
-          Payments are processed securely via Elavon
+          Payments are processed securely via Square
         </p>
       </div>
     </div>

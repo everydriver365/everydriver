@@ -17,14 +17,14 @@ import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { ElavonBookingWalletButtons } from "@/components/booking/ElavonBookingWalletButtons";
+import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CardstreamCheckout } from "@/components/payments/CardstreamCheckout";
+import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
@@ -874,22 +874,12 @@ export function MobileBookingView({
           <div className="space-y-2">
             {/* Express Checkout - Apple/Google Pay */}
             {canSubmit && (
-              <ElavonBookingWalletButtons
+              <SquareWalletButtons
                 amount={totalPrice + upsellTotal}
                 instructorId={instructor.id}
-                pupilName={pupilName}
-                pupilEmail={pupilEmail}
-                pupilPhone={pupilPhone}
-                pupilAddress={pupilAddress}
-                pupilPostcode={pupilPostcode}
-                courseType={courseName}
-                courseHours={hours}
-                totalPrice={totalPrice}
-                slots={selectedSlots}
-                upsells={availableUpsells
-                  .filter((u) => selectedUpsells.includes(u.id))
-                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
-                onSuccess={onWalletSuccess}
+                customerName={pupilName}
+                customerEmail={pupilEmail}
+                onPaid={() => onWalletSuccess(embeddedCheckoutPupilId || "")}
                 onProcessing={setIsWalletProcessing}
                 disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
               />
@@ -933,15 +923,12 @@ export function MobileBookingView({
 
               {showEmbeddedCheckout ? (
                 <div>
-                  <CardstreamCheckout
+                  <SquarePaymentForm
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                     pupilId={embeddedCheckoutPupilId || undefined}
                     instructorId={instructor.id}
                     customerName={pupilName.trim()}
                     customerEmail={pupilEmail.trim()}
-                    customerPhone={pupilPhone.trim()}
-                    customerAddress={pupilAddress.trim()}
-                    customerPostcode={pupilPostcode.trim()}
                     onPaid={onEmbeddedCheckoutSuccess}
                     onCancel={onEmbeddedCheckoutCancel}
                   />
