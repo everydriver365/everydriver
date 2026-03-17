@@ -100,7 +100,7 @@ export function SquareWalletButtons({
       if (!window.Square) {
         const script = document.createElement("script");
         const env = (squareConfig.environment || "").toLowerCase();
-        const isProduction = env === "production" || env === "prod";
+        const isProduction = env === "production" || env === "prod" || env === "live";
         script.src = isProduction
           ? "https://web.squarecdn.com/v1/square.js"
           : "https://sandbox.web.squarecdn.com/v1/square.js";
