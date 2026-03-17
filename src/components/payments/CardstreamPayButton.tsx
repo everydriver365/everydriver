@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Loader2, Lock, CreditCard, X } from "lucide-react";
 
@@ -43,6 +44,7 @@ export function CardstreamPayButton({
   className,
   disabled,
 }: Props) {
+  const isMobile = useIsMobile();
   const [submitting, setSubmitting] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
   const [formPayload, setFormPayload] = useState<{ gatewayUrl: string; formData: Record<string, string> } | null>(null);
@@ -183,7 +185,7 @@ export function CardstreamPayButton({
             title="Secure Card Payment"
             onLoad={handleIframeLoad}
             className="w-full border-none"
-            style={{ height: "480px", minHeight: "400px" }}
+            style={{ height: isMobile ? "360px" : "480px", minHeight: isMobile ? "300px" : "400px" }}
             sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation-by-user-activation"
           />
         </div>

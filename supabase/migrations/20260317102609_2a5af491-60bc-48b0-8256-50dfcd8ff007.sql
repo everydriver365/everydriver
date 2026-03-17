@@ -1,0 +1,1 @@
+UPDATE public.booking_upsells SET is_active = false WHERE id = 'd4e5c9a2-b04d-4de3-8e15-e7e27182ac52';
