@@ -33,6 +33,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
   const slug = subdomainSlug || paramSlug;
   const links = useMiniWebsiteLinks(slug);
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "reviews");
+  const { testimonials: homepageTestimonials } = useHomepageTestimonials();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
