@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Lock, CreditCard } from "lucide-react";
+import { Loader2, Lock, CreditCard, X } from "lucide-react";
 
 type Props = {
   amount: number; // pounds
@@ -23,9 +23,8 @@ type Props = {
  * CardstreamPayButton — Full-page redirect to Cardstream HPP.
  *
  * Calls `elavon-checkout` edge function to get signed form data,
- * then auto-submits a hidden HTML form as a full-page POST.
- * The Cardstream HPP loads as a full page (mobile-friendly).
- * After payment, `payment-callback` redirects back to our domain.
+ * then shows a "Redirecting…" state with cancel option before
+ * auto-submitting a hidden form as a full-page POST.
  */
 export function CardstreamPayButton({
   amount,
@@ -42,7 +41,24 @@ export function CardstreamPayButton({
   disabled,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const [readyToRedirect, setReadyToRedirect] = useState(false);
+  const pendingFormRef = useRef<HTMLFormElement | null>(null);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const amountLabel = `£${amount.toFixed(2)}`;
+
+  const handleCancel = useCallback(() => {
+    // Abort the pending redirect
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
+    if (pendingFormRef.current) {
+      pendingFormRef.current.remove();
+      pendingFormRef.current = null;
+    }
+    setReadyToRedirect(false);
+    setSubmitting(false);
+  }, []);
 
   const handlePay = useCallback(async () => {
     try {
@@ -75,7 +91,7 @@ export function CardstreamPayButton({
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || "Failed to create checkout session");
 
-      // Create a form and submit it as a full-page redirect
+      // Build the form but don't submit yet — give user a chance to cancel
       const form = document.createElement("form");
       form.method = "POST";
       form.action = data.gatewayUrl;
@@ -90,14 +106,56 @@ export function CardstreamPayButton({
       }
 
       document.body.appendChild(form);
-      form.submit();
-      // Page will navigate away — no need to clean up
+      pendingFormRef.current = form;
+      setReadyToRedirect(true);
+
+      // Auto-submit after a short delay so user can see the cancel option
+      redirectTimerRef.current = setTimeout(() => {
+        form.submit();
+      }, 2000);
     } catch (e: any) {
       const msg = e?.message || "Payment failed";
       setSubmitting(false);
+      setReadyToRedirect(false);
       onError?.(msg);
     }
   }, [amount, pupilId, instructorId, customerName, customerEmail, customerPhone, customerAddress, customerPostcode, description, onError]);
+
+  const handleRedirectNow = useCallback(() => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
+    pendingFormRef.current?.submit();
+  }, []);
+
+  // Show cancel-able redirect state
+  if (readyToRedirect) {
+    return (
+      <div className="w-full space-y-2">
+        <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
+          <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+          <span className="text-sm text-foreground flex-1">Redirecting to secure payment…</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            onClick={handleCancel}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={handleRedirectNow}
+        >
+          Continue now
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Button
@@ -110,7 +168,7 @@ export function CardstreamPayButton({
       {submitting ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Redirecting to secure payment…
+          Loading secure payment…
         </>
       ) : (
         <>
