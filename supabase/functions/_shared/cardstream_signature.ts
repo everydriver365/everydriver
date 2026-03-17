@@ -16,7 +16,7 @@ export async function createCardstreamSignature(
   data: Record<string, string>,
   secretKey: string,
 ): Promise<string> {
-  const sortedKeys = Object.keys(data).sort();
+  const sortedKeys = Object.keys(data);
   const queryString = sortedKeys
     .map((k) => `${rfc1738Encode(k)}=${rfc1738Encode(data[k] ?? "")}`)
     .join("&");
