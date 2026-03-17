@@ -106,9 +106,13 @@ serve(async (req: Request) => {
 
     // Cardstream may redirect via GET with response in query params
     // Fall back to query params if POST body was empty
+    // Exclude our custom routing params that aren't part of Cardstream's signed payload
+    const routingParams = new Set(["provider", "pupilId", "ref", "origin", "type", "baseAmount", "adminFee"]);
     if (Object.keys(formData).length === 0) {
       url.searchParams.forEach((value, key) => {
-        formData[key] = value;
+        if (!routingParams.has(key)) {
+          formData[key] = value;
+        }
       });
     }
 
