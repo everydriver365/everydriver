@@ -159,10 +159,17 @@ export function CardstreamEmbeddedCardForm({
     setSubmitting(true);
 
     try {
-      // Submit the HTML form directly — the Hosted Fields plugin intercepts the
-      // native submit to tokenize card data before POSTing to the gateway for 3DS.
-      console.log("[CardForm] submitting form to gateway for 3DS flow");
-      formRef.current.submit();
+      // Use jQuery trigger so the Hosted Fields plugin can intercept submission,
+      // tokenize card data, and include it in the POST to the gateway.
+      // Native form.submit() bypasses event handlers and the SDK never injects card data.
+      console.log("[CardForm] triggering SDK-intercepted submit for 3DS flow");
+      const $form = window.jQuery?.(formRef.current);
+      if ($form?.length) {
+        $form.trigger("submit");
+      } else {
+        // Fallback: requestSubmit fires the submit event (unlike .submit())
+        formRef.current.requestSubmit();
+      }
     } catch (err: any) {
       const msg = err?.message || "Payment submission failed";
       console.error("[CardForm] submit error:", msg);
