@@ -154,15 +154,15 @@ export function CardstreamEmbeddedCardForm({
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!instanceRef.current || submitting || !formRef.current) return;
+    if (!formRef.current || submitting) return;
 
     setSubmitting(true);
 
     try {
-      // In form submission mode, the SDK submits the form directly to the gateway.
-      // The gateway handles 3DS and then redirects to the redirectURL (payment-callback).
+      // Submit the HTML form directly — the Hosted Fields plugin intercepts the
+      // native submit to tokenize card data before POSTing to the gateway for 3DS.
       console.log("[CardForm] submitting form to gateway for 3DS flow");
-      instanceRef.current.submit();
+      formRef.current.submit();
     } catch (err: any) {
       const msg = err?.message || "Payment submission failed";
       console.error("[CardForm] submit error:", msg);
