@@ -106,7 +106,7 @@ export function CardstreamEmbeddedCardForm({
 
         $form.hostedForm({
           autoSetup: true,
-          autoSubmit: false,
+          autoSubmit: true,
           merchantID: merchantId,
         });
         console.log("[CardForm] hostedForm() called with action:", gatewayUrl);
