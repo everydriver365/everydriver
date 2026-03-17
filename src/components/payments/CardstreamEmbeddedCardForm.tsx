@@ -21,6 +21,8 @@ type Props = {
 
 declare global {
   interface Window {
+    jQuery?: any;
+    $?: any;
     hostedFields?: {
       classes: {
         Forms: new (...args: any[]) => any;
@@ -70,13 +72,18 @@ export function CardstreamEmbeddedCardForm({
   const hostedFormRef = useRef<any>(null);
   const amountLabel = `£${amount.toFixed(2)}`;
 
-  // Load the Hosted Fields SDK
+  // Load jQuery + Hosted Fields SDK
   useEffect(() => {
     let cancelled = false;
+    const jqueryUrl = "https://code.jquery.com/jquery-3.7.1.min.js";
     const sdkUrl = "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js";
 
     (async () => {
       try {
+        // jQuery must load first — SDK is a jQuery plugin
+        await loadScript(jqueryUrl);
+        if (cancelled) return;
+
         await loadScript(sdkUrl);
         if (cancelled) return;
 
@@ -85,7 +92,6 @@ export function CardstreamEmbeddedCardForm({
           return;
         }
 
-        // Initialise the hosted form once the SDK is loaded
         if (formRef.current && !hostedFormRef.current) {
           const hf = new window.hostedFields.classes.Forms(formRef.current, {
             autoSetup: true,
@@ -93,18 +99,37 @@ export function CardstreamEmbeddedCardForm({
             merchantID: merchantId,
           });
 
-          hf.on("ready", () => {
-            if (!cancelled) setSdkReady(true);
+          // SDK fires jQuery events on the form element
+          const $form = window.jQuery(formRef.current);
+
+          $form.on("hostedform:ready", () => {
+            if (!cancelled) {
+              console.log("Hosted Fields: ready");
+              setSdkReady(true);
+            }
           });
 
-          hf.on("error", (err: any) => {
+          $form.on("hostedform:error", (_e: any, err: any) => {
             console.error("Hosted Fields error:", err);
             if (!cancelled) setSdkError("Card form error — please refresh");
           });
 
+          $form.on("hostedform:invalid", (_e: any, details: any) => {
+            console.warn("Hosted Fields validation:", details);
+          });
+
           hostedFormRef.current = hf;
+
+          // Fallback: if ready event doesn't fire within 5s but SDK loaded, assume ready
+          setTimeout(() => {
+            if (!cancelled && !sdkReady) {
+              console.log("Hosted Fields: fallback ready");
+              setSdkReady(true);
+            }
+          }, 5000);
         }
       } catch (e) {
+        console.error("SDK load error:", e);
         if (!cancelled) setSdkError("Failed to load payment SDK");
       }
     })();
@@ -120,15 +145,13 @@ export function CardstreamEmbeddedCardForm({
     setTokenising(true);
 
     try {
-      // Ask the SDK to tokenise the card fields
-      const tokenResult = await new Promise<{ paymentToken?: string; error?: string }>((resolve) => {
-        hostedFormRef.current.getPaymentToken(resolve);
-      });
+      // getPaymentDetails() returns a promise with {success, paymentToken, message}
+      const result = await hostedFormRef.current.getPaymentDetails();
 
       setTokenising(false);
 
-      if (!tokenResult.paymentToken) {
-        throw new Error(tokenResult.error || "Card tokenisation failed — please check your details");
+      if (!result?.success || !result?.paymentToken) {
+        throw new Error(result?.message || "Card tokenisation failed — please check your details");
       }
 
       // Send token + address to direct sale
@@ -136,7 +159,7 @@ export function CardstreamEmbeddedCardForm({
         body: {
           orderRef,
           method: "card_token" as const,
-          cardPaymentToken: tokenResult.paymentToken,
+          cardPaymentToken: result.paymentToken,
           customerName,
           customerEmail,
           customerPostcode,
