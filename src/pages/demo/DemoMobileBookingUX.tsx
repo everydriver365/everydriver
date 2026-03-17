@@ -414,84 +414,457 @@ function QuickTapTimeGrid() {
   );
 }
 
+// ─── Concept 6: Bottom Sheet Course Detail ────────────────────────────────────
+// Tapping a course slides up a detail sheet instead of navigating away.
+
+function BottomSheetCourseDetail() {
+  const [open, setOpen] = useState(false);
+  const course = MOCK_COURSES[0];
+
+  return (
+    <div className="space-y-3">
+      {/* Trigger card */}
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full text-left rounded-2xl border bg-card p-4 active:scale-[0.98] transition-transform"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-foreground">{course.name}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{course.hours} hours · Automatic · From {format(course.next, "d MMM")}</p>
+          </div>
+          <div className="text-right">
+            <span className="text-xl font-black text-foreground">£{course.price}</span>
+            <p className="text-[10px] text-muted-foreground">Tap for details ↗</p>
+          </div>
+        </div>
+      </button>
+
+      {/* Bottom sheet overlay */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]"
+              onClick={() => setOpen(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-[20px] bg-card shadow-[0_-10px_40px_rgba(0,0,0,0.15)] max-h-[85vh] overflow-auto"
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-10 h-[5px] rounded-full bg-muted-foreground/30" />
+              </div>
+
+              {/* Header with gradient */}
+              <div className="px-5 pb-4 pt-1">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <Badge className="mb-2 text-[10px]" style={{ backgroundColor: BRAND_COLOR }}>⭐ Most Popular</Badge>
+                    <h2 className="text-xl font-black text-foreground">{course.name}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">Perfect for beginners who want consistent weekly lessons</p>
+                  </div>
+                  <button onClick={() => setOpen(false)} className="p-1 rounded-full bg-muted">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="px-5 pb-4 grid grid-cols-3 gap-3">
+                {[
+                  { icon: Clock, label: "Duration", value: `${course.hours} hours` },
+                  { icon: Car, label: "Vehicle", value: "Automatic" },
+                  { icon: Calendar, label: "Next slot", value: format(course.next, "d MMM") },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center p-3 rounded-xl bg-muted/50">
+                    <stat.icon className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                    <p className="text-xs font-bold text-foreground">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* What's included */}
+              <div className="px-5 pb-4">
+                <h3 className="text-sm font-bold mb-2 text-foreground">What's Included</h3>
+                <div className="space-y-2">
+                  {["Pick-up & drop-off from your address", "DVSA approved instructor", "Modern dual-control car", "Progress tracking app access", "Test day support"].map((item) => (
+                    <div key={item} className="flex items-center gap-2.5 text-sm">
+                      <Check className="h-4 w-4 shrink-0" style={{ color: BRAND_COLOR }} />
+                      <span className="text-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price + CTA */}
+              <div className="sticky bottom-0 px-5 py-4 border-t bg-card/95 backdrop-blur-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black text-foreground">£{course.price}</span>
+                    <p className="text-xs text-muted-foreground">or 3× £{Math.ceil(course.price / 3)}/month</p>
+                  </div>
+                  <Button className="rounded-full h-12 px-8 font-bold text-base shadow-lg" style={{ backgroundColor: BRAND_COLOR }}>
+                    Book Now
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Concept 7: Step Wizard with Progress ─────────────────────────────────────
+// A multi-step flow with animated transitions between steps.
+
+function StepWizard() {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { label: "Course", icon: GraduationCap },
+    { label: "Details", icon: User },
+    { label: "Schedule", icon: Calendar },
+    { label: "Pay", icon: CreditCard },
+  ];
+
+  return (
+    <div className="rounded-2xl border bg-card overflow-hidden">
+      {/* Progress header */}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          {steps.map((s, i) => (
+            <div key={s.label} className="flex items-center">
+              <div className="flex flex-col items-center gap-1">
+                <motion.div
+                  animate={{
+                    scale: i === step ? 1.1 : 1,
+                    backgroundColor: i < step ? BRAND_COLOR : i === step ? BRAND_COLOR : "transparent",
+                  }}
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors",
+                    i <= step ? "border-transparent" : "border-muted"
+                  )}
+                >
+                  {i < step ? (
+                    <Check className="h-4 w-4 text-white" />
+                  ) : (
+                    <s.icon className={cn("h-4 w-4", i === step ? "text-white" : "text-muted-foreground")} />
+                  )}
+                </motion.div>
+                <span className={cn(
+                  "text-[9px] font-medium",
+                  i === step ? "text-primary" : i < step ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className={cn("w-6 h-0.5 mx-0.5 mb-4 rounded-full", i < step ? "bg-primary" : "bg-muted")} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step content */}
+      <div className="px-4 pb-4">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {step === 0 && (
+              <div className="space-y-2">
+                {MOCK_COURSES.slice(0, 3).map((c, i) => (
+                  <button
+                    key={i}
+                    className={cn(
+                      "w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all text-left",
+                      i === 0 ? "border-primary bg-primary/5" : "border-border"
+                    )}
+                    onClick={() => setStep(1)}
+                  >
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{c.name}</p>
+                      <p className="text-xs text-muted-foreground">{c.hours}hrs · Auto</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-foreground">£{c.price}</p>
+                      {i === 0 && <div className="w-5 h-5 rounded-full flex items-center justify-center ml-auto mt-1" style={{ backgroundColor: BRAND_COLOR }}><Check className="h-3 w-3 text-white" /></div>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {step === 1 && (
+              <div className="space-y-3">
+                {[
+                  { icon: User, placeholder: "Full name", value: "Sarah Johnson" },
+                  { icon: Mail, placeholder: "Email address", value: "sarah@email.com" },
+                  { icon: Phone, placeholder: "Phone number", value: "07912 345678" },
+                  { icon: MapPin, placeholder: "Pickup postcode", value: "SO21 3BQ" },
+                ].map((field) => (
+                  <div key={field.placeholder} className="relative">
+                    <field.icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      className="w-full h-12 pl-10 pr-4 rounded-xl border bg-muted/30 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder={field.placeholder}
+                      defaultValue={field.value}
+                      readOnly
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            {step === 2 && (
+              <div className="text-center py-6">
+                <Calendar className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm font-semibold text-foreground">Calendar would appear here</p>
+                <p className="text-xs text-muted-foreground">Week strip + time grid from concepts above</p>
+              </div>
+            )}
+            {step === 3 && (
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-muted/50">
+                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">10 Hour Course</span><span className="font-bold text-foreground">£400</span></div>
+                  <div className="flex justify-between text-sm mt-1"><span className="text-muted-foreground">Theory app add-on</span><span className="font-bold text-foreground">£4.99</span></div>
+                  <div className="border-t mt-2 pt-2 flex justify-between text-sm font-black"><span className="text-foreground">Total</span><span className="text-foreground">£404.99</span></div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Secure payment powered by Stripe</span>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation buttons */}
+        <div className="flex gap-2 mt-4">
+          {step > 0 && (
+            <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setStep(s => s - 1)}>
+              Back
+            </Button>
+          )}
+          <Button
+            className="flex-1 rounded-xl h-11 font-bold"
+            style={{ backgroundColor: BRAND_COLOR }}
+            onClick={() => setStep(s => Math.min(s + 1, 3))}
+          >
+            {step === 3 ? "Pay £404.99" : "Continue"}
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Concept 8: Swipe to Confirm ──────────────────────────────────────────────
+// A Uber/Bolt-style slide to book gesture for the final step.
+
+function SwipeToConfirm() {
+  const x = useMotionValue(0);
+  const [confirmed, setConfirmed] = useState(false);
+  const trackWidth = 280;
+  const thumbWidth = 56;
+  const maxX = trackWidth - thumbWidth - 8;
+
+  const bgOpacity = useTransform(x, [0, maxX], [0, 1]);
+  const textOpacity = useTransform(x, [0, maxX * 0.5], [1, 0]);
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (info.point.x > 0 && x.get() > maxX * 0.85) {
+      setConfirmed(true);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Booking summary */}
+      <div className="rounded-2xl border bg-card p-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold" style={{ backgroundColor: BRAND_COLOR }}>KD</div>
+          <div>
+            <p className="font-bold text-foreground">10 Hour Course</p>
+            <p className="text-xs text-muted-foreground">Ken D · Winchester · Automatic</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="p-2 rounded-lg bg-muted/50"><span className="text-muted-foreground">Lessons:</span> <span className="font-bold text-foreground">5 × 2hr</span></div>
+          <div className="p-2 rounded-lg bg-muted/50"><span className="text-muted-foreground">First:</span> <span className="font-bold text-foreground">Wed 19 Mar</span></div>
+        </div>
+        <div className="flex justify-between items-center pt-2 border-t">
+          <span className="text-sm text-muted-foreground">Total</span>
+          <span className="text-xl font-black text-foreground">£400</span>
+        </div>
+      </div>
+
+      {/* Swipe track */}
+      <AnimatePresence mode="wait">
+        {!confirmed ? (
+          <motion.div
+            key="slider"
+            className="relative h-[60px] rounded-full overflow-hidden"
+            style={{ width: trackWidth, backgroundColor: `${BRAND_COLOR}15`, margin: "0 auto" }}
+          >
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ backgroundColor: BRAND_COLOR, opacity: bgOpacity }}
+            />
+            <motion.p
+              className="absolute inset-0 flex items-center justify-center text-sm font-semibold pointer-events-none"
+              style={{ color: BRAND_COLOR, opacity: textOpacity }}
+            >
+              Slide to book →
+            </motion.p>
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: maxX }}
+              dragElastic={0}
+              onDragEnd={handleDragEnd}
+              style={{ x }}
+              className="absolute left-1 top-1 w-[52px] h-[52px] rounded-full bg-white shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing z-10"
+            >
+              <ArrowRight className="h-5 w-5" style={{ color: BRAND_COLOR }} />
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="confirmed"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center py-4"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", damping: 10 }}
+              className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
+              style={{ backgroundColor: BRAND_COLOR }}
+            >
+              <Check className="h-8 w-8 text-white" />
+            </motion.div>
+            <p className="font-bold text-foreground">Booking Confirmed! 🎉</p>
+            <p className="text-xs text-muted-foreground mt-1">Check your email for details</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-2 text-xs"
+              onClick={() => { setConfirmed(false); x.set(0); }}
+            >
+              Reset demo
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Concept 9: Filter Chips Strip ────────────────────────────────────────────
+// Horizontally scrollable filter pills for quick course filtering.
+
+function FilterChipsStrip() {
+  const [activeFilters, setActiveFilters] = useState<string[]>(["Automatic"]);
+
+  const filters = [
+    { group: "Transmission", options: ["Automatic", "Manual"] },
+    { group: "Type", options: ["Standard", "Intensive", "Refresher"] },
+    { group: "Price", options: ["Under £500", "£500–£900", "£900+"] },
+  ];
+
+  const toggle = (opt: string) => {
+    setActiveFilters(prev => prev.includes(opt) ? prev.filter(f => f !== opt) : [...prev, opt]);
+  };
+
+  return (
+    <div className="space-y-3">
+      {filters.map((group) => (
+        <div key={group.group}>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">{group.group}</p>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+            {group.options.map((opt) => {
+              const isActive = activeFilters.includes(opt);
+              return (
+                <motion.button
+                  key={opt}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => toggle(opt)}
+                  className={cn(
+                    "shrink-0 px-4 py-2.5 rounded-full text-xs font-semibold transition-all border",
+                    isActive
+                      ? "text-white border-transparent shadow-md"
+                      : "bg-card border-border text-foreground"
+                  )}
+                  style={isActive ? { backgroundColor: BRAND_COLOR } : undefined}
+                >
+                  {isActive && <Check className="h-3 w-3 inline mr-1" />}
+                  {opt}
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 text-xs">
+        <span className="text-muted-foreground">{activeFilters.length} filter{activeFilters.length !== 1 ? "s" : ""} active</span>
+        <button onClick={() => setActiveFilters([])} className="font-semibold" style={{ color: BRAND_COLOR }}>Clear all</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Demo Page ───────────────────────────────────────────────────────────────
 
 export default function DemoMobileBookingUX() {
+  const concepts = [
+    { num: 1, title: "Compact Course Cards", desc: "No image — just the essential info. Two cards fit per screen vs one with current layout.", content: <div className="space-y-2.5">{MOCK_COURSES.map((c, i) => <CompactCourseCard key={i} course={c} />)}</div> },
+    { num: 2, title: "Swipeable Carousel Cards", desc: "Horizontal scroll-snap for quick browsing without vertical scrolling.", content: <CarouselCourseCards /> },
+    { num: 3, title: "Week Strip Calendar", desc: "Replaces full-month calendar. Shows one week at a time with inline time picker.", content: <WeekStripCalendar /> },
+    { num: 4, title: "Quick-Tap Time Grid", desc: "Bigger 48px touch targets, grouped by morning/afternoon with colour distinction.", content: <QuickTapTimeGrid /> },
+    { num: 5, title: "Sticky Bottom Bar", desc: "Always-visible summary in the thumb zone. Shows progress, price, and next action.", content: <Card className="border-2 border-dashed border-muted-foreground/30"><CardContent className="p-4 text-center text-sm text-muted-foreground">👇 See the sticky bar fixed at the bottom</CardContent></Card> },
+    { num: 6, title: "Bottom Sheet Details", desc: "Tap a course to slide up a detail sheet — no page navigation needed.", content: <BottomSheetCourseDetail /> },
+    { num: 7, title: "Step Wizard Flow", desc: "Multi-step booking with animated transitions. Course → Details → Schedule → Pay.", content: <StepWizard /> },
+    { num: 8, title: "Swipe to Confirm", desc: "Uber-style slide gesture to confirm booking on the final step.", content: <SwipeToConfirm /> },
+    { num: 9, title: "Filter Chips Strip", desc: "Quick-tap pills to filter courses by transmission, type, and price range.", content: <FilterChipsStrip /> },
+  ];
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b px-4 py-3">
         <h1 className="text-lg font-bold text-foreground">Mobile Booking UX Concepts</h1>
-        <p className="text-xs text-muted-foreground">Tap and interact with each concept</p>
+        <p className="text-xs text-muted-foreground">{concepts.length} interactive concepts · Tap to try</p>
       </div>
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-10 pb-32">
-
-        {/* Concept 1 */}
-        <section>
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>1</span>
-              Compact Course Cards
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">No image — just the essential info. Two cards fit per screen vs one with current layout.</p>
-          </div>
-          <div className="space-y-2.5">
-            {MOCK_COURSES.map((c, i) => <CompactCourseCard key={i} course={c} />)}
-          </div>
-        </section>
-
-        {/* Concept 2 */}
-        <section>
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>2</span>
-              Swipeable Carousel Cards
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">Horizontal scroll-snap for quick browsing without vertical scrolling.</p>
-          </div>
-          <CarouselCourseCards />
-        </section>
-
-        {/* Concept 3 */}
-        <section>
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>3</span>
-              Week Strip Calendar
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">Replaces full-month calendar. Shows one week at a time with inline time picker. Tap a day → times appear below.</p>
-          </div>
-          <WeekStripCalendar />
-        </section>
-
-        {/* Concept 4 */}
-        <section>
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>4</span>
-              Quick-Tap Time Grid
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">Bigger 48px touch targets, grouped by morning/afternoon with colour distinction. Instant confirmation inline.</p>
-          </div>
-          <QuickTapTimeGrid />
-        </section>
-
-        {/* Concept 5 */}
-        <section>
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>5</span>
-              Sticky Bottom Booking Bar
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">Always-visible summary in the thumb zone. Shows progress, price, and next action.</p>
-          </div>
-          <Card className="border-2 border-dashed border-muted-foreground/30">
-            <CardContent className="p-4 text-center text-sm text-muted-foreground">
-              👇 See the sticky bar fixed at the bottom of this page
-            </CardContent>
-          </Card>
-        </section>
+        {concepts.map((c) => (
+          <section key={c.num}>
+            <div className="mb-3">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <span className="h-6 w-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style={{ backgroundColor: BRAND_COLOR }}>{c.num}</span>
+                {c.title}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">{c.desc}</p>
+            </div>
+            {c.content}
+          </section>
+        ))}
       </div>
 
       {/* Sticky bar demo */}
