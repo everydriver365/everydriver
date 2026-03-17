@@ -230,13 +230,12 @@ export function PupilPaymentModal({
           />
 
           {/* Apple Pay / Google Pay Express Checkout */}
-          <ElavonWalletButtons
+          <SquareWalletButtons
             amount={totalCharge}
             pupilId={pupilId}
             instructorId={instructorId}
-            instructorSlug={instructorSlug}
-            pupilName={pupilName}
-            pupilEmail={pupilEmail}
+            customerName={pupilName}
+            customerEmail={pupilEmail}
             onProcessing={setProcessing}
             disabled={processing || paymentAmount <= 0}
           />
