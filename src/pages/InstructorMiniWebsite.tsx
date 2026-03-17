@@ -407,7 +407,7 @@ export default function InstructorMiniWebsite() {
                         ))}
                       </ul>
                     )}
-                    <Link to={`/book/${instructor.id}`}>
+                    <Link to={`/i/${slug}/contact`}>
                       <Button 
                         className="w-full mt-4 text-white"
                         style={{ backgroundColor: primaryColor }}
