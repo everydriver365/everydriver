@@ -172,11 +172,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 alt={instructorName}
                 className="w-28 h-28 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
               />
-              <div className="text-center mt-1.5 sm:mt-2">
-                <span className="text-[10px] sm:text-sm font-bold" style={{ color: primaryColor }}>
-                  {instructorName} — ADI
-                </span>
-              </div>
+            </motion.div>
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
