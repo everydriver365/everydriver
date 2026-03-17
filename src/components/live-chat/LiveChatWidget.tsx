@@ -28,6 +28,7 @@ export function LiveChatWidget({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [visitorInfo, setVisitorInfo] = useState<PreChatFormData | null>(null);
   const { createSession, creating } = useCreateLiveChatSession();
+  const instructorOnline = useInstructorOnlineStatus(instructorId);
 
   // Persist session in localStorage
   useEffect(() => {
