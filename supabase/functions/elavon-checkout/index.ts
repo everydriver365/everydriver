@@ -26,6 +26,22 @@ interface ElavonCheckoutRequest {
   type?: string; // "balance" for pupil balance top-ups
 }
 
+function splitCustomerAddress(address?: string) {
+  if (!address?.trim()) return null;
+
+  const parts = address
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    line1: parts[0] ?? address.trim(),
+    line2: parts[1] ?? "",
+    town: parts[2] ?? "",
+    county: parts[3] ?? "",
+  };
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
