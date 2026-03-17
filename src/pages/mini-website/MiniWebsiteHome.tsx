@@ -441,7 +441,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">From</span>
-                    <div className="text-2xl font-bold text-primary">£35<span className="text-sm font-normal text-muted-foreground">/hour</span></div>
+                    <div className="text-2xl font-bold text-primary">£45<span className="text-sm font-normal text-muted-foreground">/hour</span></div>
                   </div>
                   <Link to={links.courses}>
                     <Button className="gap-2">View Lessons <ArrowRight className="h-4 w-4" /></Button>
