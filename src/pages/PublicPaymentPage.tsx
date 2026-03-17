@@ -206,14 +206,24 @@ export default function PublicPaymentPage() {
             </Button>
           </div>
         ) : (
-          <SquarePaymentForm
-            amount={parsedAmount}
-            instructorId={instructorId}
-            pupilId={pupilParam || undefined}
-            customerName={payerName.trim() || undefined}
-            customerEmail={payerEmail.trim() || undefined}
-            onPaid={() => setPaid(true)}
-          />
+          <div className="space-y-3">
+            <SquareWalletButtons
+              amount={parsedAmount}
+              instructorId={instructorId}
+              pupilId={pupilParam || undefined}
+              customerName={payerName.trim() || undefined}
+              customerEmail={payerEmail.trim() || undefined}
+              onPaid={() => setPaid(true)}
+            />
+            <SquarePaymentForm
+              amount={parsedAmount}
+              instructorId={instructorId}
+              pupilId={pupilParam || undefined}
+              customerName={payerName.trim() || undefined}
+              customerEmail={payerEmail.trim() || undefined}
+              onPaid={() => setPaid(true)}
+            />
+          </div>
         )}
 
         <p className="text-xs text-center text-muted-foreground">
