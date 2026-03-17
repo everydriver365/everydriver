@@ -70,6 +70,29 @@ export function SquarePaymentForm({
 
   const orderRef = useRef(`SQ-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
+  const teardownPaymentMethods = useCallback(async () => {
+    await Promise.allSettled([
+      cardInstanceRef.current?.destroy?.(),
+      applePayRef.current?.destroy?.(),
+      googlePayRef.current?.destroy?.(),
+    ]);
+
+    cardInstanceRef.current = null;
+    applePayRef.current = null;
+    googlePayRef.current = null;
+    paymentsRef.current = null;
+
+    if (cardContainerRef.current) cardContainerRef.current.innerHTML = "";
+    if (applePayContainerRef.current) applePayContainerRef.current.innerHTML = "";
+    if (googlePayContainerRef.current) googlePayContainerRef.current.innerHTML = "";
+
+    if (mountedRef.current) {
+      setCardReady(false);
+      setApplePayAvailable(false);
+      setGooglePayAvailable(false);
+    }
+  }, []);
+
   // Fetch Square config
   useEffect(() => {
     mountedRef.current = true;
@@ -96,6 +119,9 @@ export function SquarePaymentForm({
 
     (async () => {
       try {
+        await teardownPaymentMethods();
+        if (cancelled) return;
+
         // Load Square SDK
         const env = (config.environment || "").toLowerCase();
         const isProduction = env === "production" || env === "prod" || env === "live";
@@ -116,7 +142,10 @@ export function SquarePaymentForm({
         // Initialize Card
         if (cardContainerRef.current) {
           const card = await payments.card();
-          if (cancelled) return;
+          if (cancelled) {
+            await card.destroy?.();
+            return;
+          }
           await card.attach(cardContainerRef.current);
           cardInstanceRef.current = card;
           if (!cancelled) setCardReady(true);
@@ -169,8 +198,11 @@ export function SquarePaymentForm({
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [config, amount]);
+    return () => {
+      cancelled = true;
+      void teardownPaymentMethods();
+    };
+  }, [config, amount, teardownPaymentMethods]);
 
   const processPayment = useCallback(async (sourceId: string) => {
     setPaying(true);
