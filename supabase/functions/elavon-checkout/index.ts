@@ -121,6 +121,7 @@ serve(async (req: Request) => {
     if (body.customerPhone) requestData.customerPhone = body.customerPhone;
     if (body.customerAddress) {
       const structuredAddress = splitCustomerAddress(body.customerAddress);
+      console.log("[elavon-checkout] Structured address:", JSON.stringify(structuredAddress));
       requestData.customerAddress1 = structuredAddress?.line1 ?? body.customerAddress;
       if (structuredAddress?.line2) requestData.customerAddress2 = structuredAddress.line2;
       if (structuredAddress?.town) requestData.customerCity = structuredAddress.town;
