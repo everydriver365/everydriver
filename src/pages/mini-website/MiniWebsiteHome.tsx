@@ -706,6 +706,11 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         onOpenChange={setLiveBookingOpen}
         primaryColor={primaryColor}
       />
+      <TrackProgressPreviewModal
+        open={trackProgressOpen}
+        onOpenChange={setTrackProgressOpen}
+        primaryColor={primaryColor}
+      />
     </MiniWebsiteLayout>
   );
 }
