@@ -643,10 +643,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8 text-[#1e3a5f]">
             Explore More
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { to: links.about, label: "About Me", sub: "Learn more", icon: "👤" },
-              { to: links.services, label: "Services", sub: "View options", icon: "🚗" },
               { to: links.courses, label: "Courses", sub: "Search & book", icon: "📚" },
               { to: links.reviews, label: "Reviews", sub: `${reviews.length} reviews`, icon: "⭐" },
               { to: links.contact, label: "Contact", sub: "Get in touch", icon: "📞" },
