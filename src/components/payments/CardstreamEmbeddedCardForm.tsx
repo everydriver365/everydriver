@@ -99,11 +99,6 @@ export function CardstreamEmbeddedCardForm({
 
         const $form = window.jQuery(formRef.current);
 
-        // Form submission mode: set the form action to the gateway URL
-        // The SDK will POST the form (including hidden fields + card data) directly to the gateway
-        $form.attr("action", gatewayUrl);
-        $form.attr("method", "POST");
-
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
