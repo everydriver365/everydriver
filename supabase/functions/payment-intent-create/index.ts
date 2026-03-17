@@ -74,6 +74,9 @@ serve(async (req) => {
       orderRef,
       transactionUnique,
       redirectURL: callbackUrl,
+      customerAddress1: "1 Test Street",
+      customerPostcode: "SW1A1AA",
+      customerCountryCode: "826",
     };
 
     if (body.customerName) formFields.customerName = body.customerName;
