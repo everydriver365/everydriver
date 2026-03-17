@@ -75,7 +75,7 @@ export function LiveBookingPreviewModal({ open, onOpenChange, primaryColor = "#2
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
                     !slot.available ? "opacity-40 bg-muted/30" : i === 1 ? "ring-2 shadow-sm" : "bg-card"
                   }`}
-                  style={i === 1 ? { borderColor: primaryColor, ringColor: primaryColor } : {}}
+                  style={i === 1 ? { borderColor: primaryColor } : {}}
                 >
                   <div className="flex items-center gap-2.5">
                     <div
