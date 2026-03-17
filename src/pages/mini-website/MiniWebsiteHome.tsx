@@ -640,7 +640,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
       {/* Quick Links */}
       <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8 text-[#1e3a5f]">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-6 sm:mb-8" style={{ color: primaryColor }}>
             Explore More
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
