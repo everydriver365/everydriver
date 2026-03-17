@@ -119,20 +119,6 @@ export function TheoryContent() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Hazard Perception
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Interactive hazard perception clips to sharpen your skills.
-                </p>
-                <Button variant="outline">Practice Hazards</Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
