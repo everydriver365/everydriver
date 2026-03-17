@@ -136,6 +136,9 @@ serve(async (req) => {
         });
       }
       requestFields.paymentToken = body.cardPaymentToken;
+      // Hosted Fields tokens are already collected securely; 3DS cannot be
+      // performed via the server-side direct API with a pre-collected token.
+      requestFields.threeDSRequired = "N";
     } else if (body.method === "apple_pay") {
       if (!body.applePayPaymentToken) {
         return new Response(JSON.stringify({ error: "Missing applePayPaymentToken" }), {
