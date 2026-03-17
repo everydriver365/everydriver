@@ -206,6 +206,7 @@ export function LiveChatWidget({
                     userName={visitorInfo?.name}
                     otherPartyName={instructorName || "Support"}
                     instructorId={instructorId}
+                    onResetChat={handleResetChat}
                   />
                 )}
               </div>

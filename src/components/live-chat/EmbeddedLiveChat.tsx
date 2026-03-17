@@ -114,6 +114,7 @@ export function EmbeddedLiveChat({
               userType="visitor"
               userName={visitorInfo?.name}
               otherPartyName={instructorName || "Support"}
+              onResetChat={handleResetChat}
             />
           )}
         </div>
