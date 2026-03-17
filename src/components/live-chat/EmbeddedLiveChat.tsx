@@ -74,8 +74,20 @@ export function EmbeddedLiveChat({
             <MessageCircle className="h-5 w-5" />
           </div>
           <div>
-            <CardTitle className="text-lg">{title}</CardTitle>
-            <p className="text-sm text-primary-foreground/80">{description}</p>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  "inline-block h-2.5 w-2.5 rounded-full",
+                  instructorOnline ? "bg-green-400 animate-pulse" : "bg-white/40"
+                )}
+              />
+              <CardTitle className="text-lg">{title}</CardTitle>
+            </div>
+            <p className="text-sm text-primary-foreground/80">
+              {instructorOnline
+                ? "Online now"
+                : `${instructorName || "Instructor"} will reply shortly`}
+            </p>
           </div>
         </div>
       </CardHeader>
