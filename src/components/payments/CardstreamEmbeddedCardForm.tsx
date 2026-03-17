@@ -219,7 +219,8 @@ export function CardstreamEmbeddedCardForm({
       </div>
 
       <Button
-        type="submit"
+        type="button"
+        onClick={handlePay}
         disabled={disabled || !sdkReady || submitting}
         className="w-full h-12 text-base font-semibold"
         size="lg"
