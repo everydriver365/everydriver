@@ -74,13 +74,24 @@ serve(async (req) => {
       orderRef,
       transactionUnique,
       redirectURL: callbackUrl,
-      customerAddress1: "1 Test Street",
-      customerPostcode: "SW1A1AA",
-      customerCountryCode: "826",
     };
 
-    if (body.customerName) formFields.customerName = body.customerName;
-    if (body.customerEmail) formFields.customerEmail = body.customerEmail;
+    if (body.customerName) {
+      formFields.customerName = body.customerName;
+    }
+
+    if (body.customerEmail) {
+      formFields.customerEmail = body.customerEmail;
+    }
+
+    if ((body as any).customerAddress) {
+      formFields.customerAddress1 = (body as any).customerAddress;
+    }
+
+    if ((body as any).customerPostcode) {
+      formFields.customerPostcode = (body as any).customerPostcode;
+      formFields.customerCountryCode = "826";
+    }
 
     // Sign the form fields with the merchant secret
     formFields.signature = await createCardstreamSignature(formFields, merchantSecret);
