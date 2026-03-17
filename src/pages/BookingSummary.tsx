@@ -1931,7 +1931,10 @@ export default function BookingSummary() {
                 instructorId={instructor.id}
                 customerName={pupilName.trim()}
                 customerEmail={pupilEmail.trim()}
-                
+                customerPhone={pupilPhone.trim()}
+                customerAddress={pupilAddress.trim()}
+                customerPostcode={pupilPostcode.trim()}
+                onCancel={() => setShowHostedFields(false)}
                 onPaid={async () => {
                   const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
                   const fullPaymentAmount = totalPrice + upsellTotal;

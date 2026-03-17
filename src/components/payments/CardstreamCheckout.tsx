@@ -326,6 +326,16 @@ export function CardstreamCheckout({
         <Shield className="h-4 w-4 text-emerald-600" />
         <span>Secured by Elavon — card details never touch our servers</span>
       </div>
+
+      {/* Cancel button */}
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center py-1"
+        >
+          Cancel
+        </button>
+      )}
     </div>
   );
 }
