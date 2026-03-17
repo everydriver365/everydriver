@@ -48,6 +48,9 @@ verify_jwt = false
 [functions.square-checkout]
 verify_jwt = false
 
+[functions.square-payment]
+verify_jwt = false
+
 [functions.payment-callback]
 verify_jwt = false
 
