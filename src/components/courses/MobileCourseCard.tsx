@@ -145,9 +145,9 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 </div>
               </div>
 
-              {/* Price column */}
               <div className="text-right flex-shrink-0">
                 <span className="text-lg font-black text-foreground">£{price.toLocaleString()}</span>
+              </div>
                 <p className="text-[10px] text-muted-foreground">£{Math.round(price / hours)}/hr</p>
               </div>
             </div>

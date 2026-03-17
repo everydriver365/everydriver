@@ -1186,29 +1186,24 @@ export default function Courses() {
 
                 {filteredCourses.length > 0 ? (
                   isMobile ? (
-                    // Mobile: Single column flip cards with load more
-                    <div className="flex flex-col gap-4">
+                    // Mobile: Compact course cards
+                    <div className="flex flex-col gap-3">
                       {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
-                        <motion.div
+                        <MobileCourseCard
                           key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <DynamicCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                          />
-                        </motion.div>
+                          course={{
+                            instructor: course.instructor,
+                            hours: course.hours,
+                            bookableDate: course.bookableDate,
+                            courseImageUrl: course.courseImageUrl,
+                            isPopular: course.isPopular,
+                            distance: course.distance,
+                            isIntensive: course.isIntensive,
+                            discountedPrice: course.discountedPrice,
+                            customFeatures: course.customFeatures,
+                          }}
+                          index={index}
+                        />
                       ))}
                       {mobileVisibleCount < filteredCourses.length && (
                         <motion.div
