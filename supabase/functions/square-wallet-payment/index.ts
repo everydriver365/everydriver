@@ -55,9 +55,10 @@ serve(async (req: Request) => {
     const idempotencyKey = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
     const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
 
-    // Square API base URL
-    const baseUrl = environment === "production" 
-      ? "https://connect.squareup.com" 
+    const env = environment.toLowerCase();
+    const isProduction = env === "production" || env === "prod" || env === "live";
+    const baseUrl = isProduction
+      ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
 
     // Create payment using the token
