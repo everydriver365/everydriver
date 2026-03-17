@@ -76,40 +76,17 @@ serve(async (req) => {
       redirectURL: callbackUrl,
     };
 
-    if (body.customerName) {
-      formFields.customerName = body.customerName;
-    }
-
-    if (body.customerEmail) {
-      formFields.customerEmail = body.customerEmail;
-    }
-
-    if ((body as any).customerAddress) {
-      formFields.customerAddress1 = (body as any).customerAddress;
-    }
-
+    if (body.customerName) formFields.customerName = body.customerName;
+    if (body.customerEmail) formFields.customerEmail = body.customerEmail;
+    if ((body as any).customerAddress) formFields.customerAddress1 = (body as any).customerAddress;
     if ((body as any).customerPostcode) {
       formFields.customerPostcode = (body as any).customerPostcode;
       formFields.customerCountryCode = "826";
     }
 
-    // Sign ONLY the core gateway fields — exclude customer fields because
-    // the Hosted Fields SDK injects extra parameters at submit time which
-    // would cause a signature mismatch if customer fields are included.
-    const signatureFields: Record<string, string> = {
-      merchantID: merchantId,
-      action: "SALE",
-      type: "1",
-      countryCode: "826",
-      currencyCode: "826",
-      amount: String(amountPence),
-      orderRef,
-      transactionUnique,
-      redirectURL: callbackUrl,
-    };
-
-    console.log("[payment-intent-create] Signature fields:", JSON.stringify(signatureFields));
-    formFields.signature = await createCardstreamSignature(signatureFields, merchantSecret);
+    // Sign ALL form fields — gateway verifies signature over every field it receives
+    console.log("[payment-intent-create] Signing fields:", Object.keys(formFields).sort().join(", "));
+    formFields.signature = await createCardstreamSignature(formFields, merchantSecret);
     console.log("[payment-intent-create] All form field keys:", Object.keys(formFields).sort().join(", "));
 
     return new Response(
