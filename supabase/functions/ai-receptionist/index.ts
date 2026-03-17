@@ -46,8 +46,8 @@ serve(async (req) => {
       content: m.content,
     }));
 
-    const areasText = instructor.postcode 
-      ? `around ${instructor.postcode}`
+    const areasText = instructor.home_postcode 
+      ? `around ${instructor.home_postcode}`
       : "local area";
 
     const systemPrompt = `You are a friendly, helpful receptionist for ${instructor.name}'s driving school. You answer questions from website visitors.
