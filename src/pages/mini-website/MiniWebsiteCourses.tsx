@@ -374,31 +374,25 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
 
                 {overriddenCourses.length > 0 ? (
                   isMobile ? (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                       {overriddenCourses.slice(0, mobileVisibleCount).map((course, index) => (
-                        <motion.div
+                        <MobileCourseCard
                           key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <MiniWebsiteCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                            isPremium={course.isPremium}
-                            placementType={course.placementType}
-                            primaryColor={primaryColor}
-                          />
-                        </motion.div>
+                          course={{
+                            instructor: course.instructor,
+                            hours: course.hours,
+                            bookableDate: course.bookableDate,
+                            courseImageUrl: course.courseImageUrl,
+                            isPopular: course.isPopular,
+                            distance: course.distance,
+                            isIntensive: course.isIntensive,
+                            discountedPrice: course.discountedPrice,
+                            customFeatures: course.customFeatures,
+                            isPremium: course.isPremium,
+                            placementType: course.placementType,
+                          }}
+                          index={index}
+                        />
                       ))}
                       {mobileVisibleCount < overriddenCourses.length && (
                         <motion.div
