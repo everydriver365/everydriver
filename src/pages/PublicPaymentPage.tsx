@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
 
 interface InstructorInfo {
@@ -205,14 +206,24 @@ export default function PublicPaymentPage() {
             </Button>
           </div>
         ) : (
-          <SquarePaymentForm
-            amount={parsedAmount}
-            instructorId={instructorId}
-            pupilId={pupilParam || undefined}
-            customerName={payerName.trim() || undefined}
-            customerEmail={payerEmail.trim() || undefined}
-            onPaid={() => setPaid(true)}
-          />
+          <div className="space-y-3">
+            <SquareWalletButtons
+              amount={parsedAmount}
+              instructorId={instructorId}
+              pupilId={pupilParam || undefined}
+              customerName={payerName.trim() || undefined}
+              customerEmail={payerEmail.trim() || undefined}
+              onPaid={() => setPaid(true)}
+            />
+            <SquarePaymentForm
+              amount={parsedAmount}
+              instructorId={instructorId}
+              pupilId={pupilParam || undefined}
+              customerName={payerName.trim() || undefined}
+              customerEmail={payerEmail.trim() || undefined}
+              onPaid={() => setPaid(true)}
+            />
+          </div>
         )}
 
         <p className="text-xs text-center text-muted-foreground">
