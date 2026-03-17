@@ -55,6 +55,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [parentPortalOpen, setParentPortalOpen] = useState(false);
   const [liveBookingOpen, setLiveBookingOpen] = useState(false);
+  const [trackProgressOpen, setTrackProgressOpen] = useState(false);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
