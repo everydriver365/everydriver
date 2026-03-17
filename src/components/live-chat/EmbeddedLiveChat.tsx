@@ -66,6 +66,15 @@ export function EmbeddedLiveChat({
     }
   };
 
+  const handleResetChat = () => {
+    localStorage.removeItem(`live_chat_session_${sessionType}_${instructorId || "admin"}`);
+    if (sessionId) {
+      localStorage.removeItem(`quick_reply_step_${sessionId}`);
+    }
+    setSessionId(null);
+    setVisitorInfo(null);
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-primary text-primary-foreground">
