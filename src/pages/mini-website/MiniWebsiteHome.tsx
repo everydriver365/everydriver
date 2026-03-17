@@ -172,7 +172,6 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 alt={instructorName}
                 className="w-28 h-28 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
               />
-            </motion.div>
               <img
                 src={earlyTestBadge}
                 alt="Earlier Test Guaranteed"
