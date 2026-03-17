@@ -174,7 +174,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 className="bg-white p-2 sm:p-3 rounded-xl shadow-xl -rotate-3 relative z-10"
               >
                 <img
-                  src={instructor.profile_image_url || defaultHeroImage}
+                  src={page?.hero_image_url || defaultHeroImage}
                   alt={instructorName}
                   className="w-[45vw] h-[45vw] max-w-[220px] max-h-[220px] sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
                 />
