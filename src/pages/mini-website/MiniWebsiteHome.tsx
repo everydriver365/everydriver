@@ -659,10 +659,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   className="group flex flex-col items-center gap-2 p-5 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 >
                   <span className="text-2xl mb-1">{link.icon}</span>
-                  <h3 className="font-bold text-sm text-[#1e3a5f]">
+                  <h3 className="font-bold text-sm" style={{ color: primaryColor }}>
                     {link.label}
                   </h3>
-                  <p className="text-[11px] text-[#1e3a5f]/70">{link.sub}</p>
+                  <p className="text-[11px] text-muted-foreground">{link.sub}</p>
                 </motion.div>
               </Link>
             ))}
