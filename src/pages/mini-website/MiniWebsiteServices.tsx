@@ -97,7 +97,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Go Home</Button>
           </Link>
         </Card>
@@ -236,7 +236,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                           ))}
                         </ul>
                       )}
-                      <Link to={`/book/${instructor.id}`}>
+                      <Link to={links.contact}>
                         <Button
                           className="w-full text-white"
                           style={{ backgroundColor: primaryColor }}

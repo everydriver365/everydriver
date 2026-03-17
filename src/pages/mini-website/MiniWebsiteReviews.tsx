@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
@@ -28,6 +29,7 @@ interface MiniWebsiteReviewsProps {
 export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviewsProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
+  const links = useMiniWebsiteLinks(slug);
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "reviews");
   const [reviews, setReviews] = useState<Review[]>([]);
 
@@ -64,7 +66,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
         <Card className="max-w-md w-full text-center p-8">
           <div className="text-6xl mb-4">🚗</div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Go Home</Button>
           </Link>
         </Card>
@@ -179,7 +181,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
 
         {/* CTA */}
         <div className="text-center pt-6">
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={links.contact}>
             <Button size="lg" style={{ backgroundColor: primaryColor }} className="text-white">
               <Calendar className="h-5 w-5 mr-2" />
               Book Your Lesson Today

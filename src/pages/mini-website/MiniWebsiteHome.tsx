@@ -110,7 +110,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <p className="text-muted-foreground mb-6">
             Sorry, we couldn't find this instructor's website.
           </p>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Find Instructors</Button>
           </Link>
         </Card>
@@ -306,7 +306,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           </div>
 
           {/* Earlier Test Guarantee CTA */}
-          <Link to="/benefits" className="block">
+          <Link to={links.contact} className="block">
             <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3 sm:p-4 hover:shadow-md transition-shadow">
               <img src={earlyTestBadge} alt="Earlier Test Guaranteed" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
               <div className="flex-1 min-w-0">

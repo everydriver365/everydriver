@@ -156,7 +156,7 @@ export default function InstructorMiniWebsite() {
           <p className="text-gray-600 mb-6">
             Sorry, we couldn't find an instructor with this profile.
           </p>
-          <Link to="/">
+          <Link to={`/i/${slug}`}>
             <Button>Find Instructors</Button>
           </Link>
         </Card>
@@ -260,7 +260,7 @@ export default function InstructorMiniWebsite() {
           transition={{ delay: 0.2 }}
           className="flex flex-wrap gap-3 justify-center sm:justify-start"
         >
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={`/i/${slug}/contact`}>
             <Button 
               size="lg" 
               className="text-white shadow-lg"
@@ -407,7 +407,7 @@ export default function InstructorMiniWebsite() {
                         ))}
                       </ul>
                     )}
-                    <Link to={`/book/${instructor.id}`}>
+                    <Link to={`/i/${slug}/contact`}>
                       <Button 
                         className="w-full mt-4 text-white"
                         style={{ backgroundColor: primaryColor }}
@@ -581,7 +581,7 @@ export default function InstructorMiniWebsite() {
           transition={{ delay: 0.8 }}
           className="text-center py-8"
         >
-          <Link to={`/book/${instructor.id}`}>
+          <Link to={`/i/${slug}/contact`}>
             <Button 
               size="lg" 
               className="text-white shadow-xl px-8"
