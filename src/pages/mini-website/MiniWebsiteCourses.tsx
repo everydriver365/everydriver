@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MiniWebsiteCourseCard } from "@/components/mini-website/MiniWebsiteCourseCard";
+import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
