@@ -108,6 +108,19 @@ serve(async (req: Request) => {
 
     // Handle NPI/Elavon Payments response
     if (provider === "npi" || provider === "elavon") {
+      // 🔐 Verify Cardstream gateway signature to prevent forged callbacks
+      const merchantSecret = Deno.env.get("NPI_MERCHANT_SECRET") || "";
+      if (merchantSecret && Object.keys(formData).length > 0) {
+        const validSig = await verifyCardstreamSignature(formData, merchantSecret);
+        if (!validSig) {
+          console.error("Invalid Cardstream signature on callback - possible forgery attempt");
+          return new Response("Invalid signature", {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "text/plain" },
+          });
+        }
+        console.log("Cardstream signature verified ✓");
+      }
       // NPI response codes: 0 = approved, others = declined/error
       const responseCode = formData.responseCode || formData.ResponseCode;
       const responseMessage = formData.responseMessage || formData.ResponseMessage || "";
