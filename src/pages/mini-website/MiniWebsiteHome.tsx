@@ -531,7 +531,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               { title: "Live Availability", description: "Real-time calendar sync shows when instructors are free.", image: defaultHeroImage, link: null, onClick: () => setLiveBookingOpen(true) },
               { title: "Local Instructors", description: "Find certified instructors near you by postcode.", image: localInstructorImg, link: links.about },
               { title: "Track Progress", description: "Monitor your journey with detailed progress reports.", image: intensiveCourseTile, link: null, onClick: () => setTrackProgressOpen(true) },
-              { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile, link: links.courses },
+              { title: "Theory Support", description: "Free theory test prep with practice questions and mock tests.", image: weeklyLessonsTile, link: "/theory" },
             ].map((f, i) => {
               const content = (
                 <motion.div
