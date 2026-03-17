@@ -68,58 +68,57 @@ export function CardstreamEmbeddedCardForm({
   const formRef = useRef<HTMLFormElement>(null);
   const instanceRef = useRef<any>(null);
   const initAttemptedRef = useRef(false);
+  const cancelledRef = useRef(false);
+  const merchantIdRef = useRef(merchantId);
+  const onInitErrorRef = useRef(onInitError);
+  const sdkReadyRef = useRef(false);
   const amountLabel = `£${amount.toFixed(2)}`;
+
+  // Keep refs in sync with latest props
+  merchantIdRef.current = merchantId;
+  onInitErrorRef.current = onInitError;
 
   useEffect(() => {
     if (initAttemptedRef.current) return;
     initAttemptedRef.current = true;
+    cancelledRef.current = false;
 
-    let cancelled = false;
     const jqueryUrl = "https://code.jquery.com/jquery-3.7.1.min.js";
     const sdkUrl = "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js";
 
     (async () => {
       try {
-        // Step 1: load jQuery
         await loadScript(jqueryUrl);
-        if (cancelled) return;
-        if (!window.jQuery) {
-          throw new Error("jQuery failed to load");
-        }
+        if (cancelledRef.current) return;
+        if (!window.jQuery) throw new Error("jQuery failed to load");
         console.log("[CardForm] jQuery loaded");
 
-        // Step 2: load Hosted Fields SDK
         await loadScript(sdkUrl);
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         console.log("[CardForm] SDK script loaded");
 
-        // Step 3: verify the jQuery plugin exists
         if (!window.jQuery.fn.hostedForm) {
           throw new Error("Hosted Fields plugin missing — $.fn.hostedForm not found");
         }
         console.log("[CardForm] $.fn.hostedForm plugin found");
 
-        // Step 4: initialise plugin on the form element
         const $form = window.jQuery(formRef.current);
         $form.hostedForm({
           autoSetup: true,
           autoSubmit: false,
-          merchantID: merchantId,
+          merchantID: merchantIdRef.current,
         });
         console.log("[CardForm] hostedForm() called");
 
-        // Step 5: obtain instance
         const inst = $form.hostedForm("instance");
-        if (!inst) {
-          throw new Error("Hosted form instance not created");
-        }
+        if (!inst) throw new Error("Hosted form instance not created");
         instanceRef.current = inst;
         console.log("[CardForm] instance obtained");
 
-        // Step 6: listen for ready/error events
         $form.on("hostedform:ready", () => {
-          if (!cancelled) {
+          if (!cancelledRef.current && !sdkReadyRef.current) {
             console.log("[CardForm] hostedform:ready fired");
+            sdkReadyRef.current = true;
             setSdkReady(true);
           }
         });
@@ -132,25 +131,25 @@ export function CardstreamEmbeddedCardForm({
           console.warn("[CardForm] hostedform:invalid:", details);
         });
 
-        // Fallback: if ready event doesn't fire within 6s, assume ready
         setTimeout(() => {
-          if (!cancelled && !sdkReady) {
+          if (!cancelledRef.current && !sdkReadyRef.current) {
             console.log("[CardForm] fallback: assuming ready after timeout");
+            sdkReadyRef.current = true;
             setSdkReady(true);
           }
         }, 6000);
 
       } catch (e: any) {
         console.error("[CardForm] init error:", e);
-        if (!cancelled) {
+        if (!cancelledRef.current) {
           setSdkError(e?.message || "Failed to load payment SDK");
-          onInitError?.();
+          onInitErrorRef.current?.();
         }
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [merchantId, onInitError]);
+    return () => { cancelledRef.current = true; };
+  }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
