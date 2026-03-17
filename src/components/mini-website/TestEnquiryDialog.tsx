@@ -78,7 +78,7 @@ export function TestEnquiryDialog({ open, onOpenChange, centre, date, time, prim
             {centre} – {date} at {time}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="enquiry-name">Your Name</Label>
             <Input
