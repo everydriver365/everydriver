@@ -111,8 +111,8 @@ interface AreaCache {
   [postcode: string]: string | null;
 }
 
-export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", instructorId?: string | null) {
-  const [postcode, setPostcode] = useState("");
+export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", instructorId?: string | null, initialPostcode?: string) {
+  const [postcode, setPostcode] = useState(initialPostcode || "");
   const [radius, setRadius] = useState("10");
   const [transmission, setTransmission] = useState("all");
   const [loading, setLoading] = useState(true);
