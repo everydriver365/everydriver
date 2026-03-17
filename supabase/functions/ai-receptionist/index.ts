@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log("ai-receptionist invoked at", new Date().toISOString());
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
