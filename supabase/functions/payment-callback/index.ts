@@ -104,6 +104,14 @@ serve(async (req: Request) => {
       }
     }
 
+    // Cardstream may redirect via GET with response in query params
+    // Fall back to query params if POST body was empty
+    if (Object.keys(formData).length === 0) {
+      url.searchParams.forEach((value, key) => {
+        formData[key] = value;
+      });
+    }
+
     console.log("Payment callback data:", JSON.stringify(formData, null, 2));
 
     // Handle NPI/Elavon Payments response
