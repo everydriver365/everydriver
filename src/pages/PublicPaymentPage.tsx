@@ -205,7 +205,7 @@ export default function PublicPaymentPage() {
             </Button>
           </div>
         ) : (
-          <CardstreamCheckout
+          <SquarePaymentForm
             amount={parsedAmount}
             instructorId={instructorId}
             pupilId={pupilParam || undefined}
