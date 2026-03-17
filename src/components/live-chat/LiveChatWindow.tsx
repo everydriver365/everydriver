@@ -127,7 +127,7 @@ export function LiveChatWindow({
       console.error("AI receptionist error:", e);
       await sendMessage(
         "🤖 Sorry, I'm having trouble right now. Please try again in a moment or type 'agent' to speak to a real person.",
-        "system",
+        "admin",
         undefined
       );
     }
