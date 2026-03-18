@@ -29,6 +29,7 @@ import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { WaitingRoomManager } from "@/components/admin/WaitingRoomManager";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
