@@ -98,12 +98,12 @@ export function AdminScrapedMatchesPanel() {
   };
 
   // Group by instructor
-  const grouped = matches.reduce((acc, m) => {
+  const grouped: Record<string, ScrapedMatch[]> = {};
+  matches.forEach((m) => {
     const name = instructorMap.get(m.instructor_id) || "Unknown";
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(m);
-    return acc;
-  }, {} as Record<string, ScrapedMatch[]>);
+    if (!grouped[name]) grouped[name] = [];
+    grouped[name].push(m);
+  });
 
   if (isLoading) {
     return (
