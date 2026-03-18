@@ -103,7 +103,7 @@ export function KlarnaPaymentModal({
           return;
         }
 
-        window.Klarna!.Payments.init({ client_token: data.client_token });
+        getKlarnaPayments()!.init({ client_token: data.client_token });
 
         // Small delay to ensure container is rendered
         setTimeout(() => {
