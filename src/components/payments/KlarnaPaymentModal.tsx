@@ -116,7 +116,7 @@ export function KlarnaPaymentModal({
               } else if (res.error) {
                 console.error("Klarna load error:", res.error);
                 // Try pay_later as fallback
-                window.Klarna!.Payments.load(
+                getKlarnaPayments()!.load(
                   { container: "#klarna-payments-container", payment_method_category: "pay_later" },
                   (res2) => {
                     if (res2.show_form) {
