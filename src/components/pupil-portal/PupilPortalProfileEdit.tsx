@@ -32,6 +32,11 @@ interface PupilData {
   what3words: string | null;
   parent_portal_enabled?: boolean;
   reminder_preferences?: { "24h": boolean; "1h": boolean } | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  medical_notes?: string | null;
+  preferred_duration_minutes?: number | null;
+  communication_preference?: string | null;
 }
 
 interface PupilPortalProfileEditProps {
