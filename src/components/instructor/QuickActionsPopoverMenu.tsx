@@ -26,6 +26,7 @@ const quickActions = [
   
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
   { id: "end-of-day", label: "End of Day", icon: Coffee, color: "bg-indigo-500", route: "/instructor/end-of-day" },
+  { id: "platform-updates", label: "Platform Updates", icon: Megaphone, color: "bg-amber-500", route: "/instructor/platform-updates" },
 ];
 
 function loadPinned(): string[] {
