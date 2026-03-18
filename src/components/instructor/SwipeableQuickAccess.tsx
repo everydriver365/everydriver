@@ -36,7 +36,7 @@ import monthEndIcon from "@/assets/month-end-icon.png";
 import weeklyReportIcon from "@/assets/weekly-report-icon.png";
 import tasksDueIcon from "@/assets/tasks-due-icon.png";
 import endOfDayIcon from "@/assets/end-of-day-icon.png";
-
+import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 interface QuickTile {
   title: string;
   subtitle: string;
@@ -91,6 +91,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, customIcon: weeklyReportIcon, accent: "#7C3AED", route: "/instructor/weekly-report" },
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },
   { title: "End of Day", subtitle: "Day summary", icon: Moon, customIcon: endOfDayIcon, accent: "#6366F1", route: "/instructor/end-of-day" },
+  { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, customIcon: waitingRoomIcon, accent: "#2563EB", route: "/instructor/waiting-room" },
 ];
 
 const TILES_PER_PAGE = 6;
