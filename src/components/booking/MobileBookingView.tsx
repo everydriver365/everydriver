@@ -851,8 +851,8 @@ export function MobileBookingView({
             depositEnabled={depositEnabled}
             depositAmount={depositAmount}
             paymentOption={paymentOption}
-            adminFee={reviewAdminFee}
-            hasFee={reviewHasFee}
+            adminFee={0}
+            hasFee={false}
           />
         </div>
       )}
