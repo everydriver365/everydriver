@@ -116,6 +116,8 @@ const InstructorClockInOut = lazy(() => import("./pages/InstructorClockInOut"));
 const InstructorTeamChannels = lazy(() => import("./pages/InstructorTeamChannels"));
 const InstructorWellbeing = lazy(() => import("./pages/InstructorWellbeing"));
 const InstructorAvailabilityWindows = lazy(() => import("./pages/InstructorAvailabilityWindows"));
+const InstructorAICommand = lazy(() => import("./pages/InstructorAICommand"));
+const InstructorWorkflows = lazy(() => import("./pages/InstructorWorkflows"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
