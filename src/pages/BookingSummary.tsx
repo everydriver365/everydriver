@@ -520,72 +520,30 @@ export default function BookingSummary() {
     try {
       const pupilId = await ensureBookingCreated();
       if (!pupilId) return;
-
-      const merchantReference = `${instructor.id}-${Date.now()}`;
-      const currentUrl = window.location.origin;
-
-      const confirmUrl = `${currentUrl}/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${merchantReference}`;
-      const cancelUrl = `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`;
-
-      const nameParts = pupilName.trim().split(" ");
-      const givenName = nameParts[0] || pupilName.trim();
-      const familyName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : givenName;
-
-      const { data, error } = await supabase.functions.invoke("klarna-checkout", {
-        body: {
-          amount: totalPrice + upsellTotal,
-          currency: "GBP",
-          merchantReference,
-          consumer: {
-            givenName,
-            familyName,
-            email: pupilEmail.trim(),
-            phone: pupilPhone.trim(),
-          },
-          billing: {
-            streetAddress: pupilAddress.trim(),
-            postalCode: pupilPostcode.trim().toUpperCase(),
-            city: locationName || "UK",
-            country: "GB",
-          },
-          items: [
-            {
-              name: `${courseName} - ${hours} Hour Driving Course${upsellTotal > 0 ? ' + extras' : ''}`,
-              quantity: 1,
-              unitPrice: totalPrice + upsellTotal,
-            },
-          ],
-          redirectUrls: {
-            confirmUrl,
-            cancelUrl,
-          },
-        },
-      });
-
-      if (error) {
-        console.error("Klarna checkout error:", error);
-        toast.error("Failed to start Klarna checkout. Please try again.");
-        return;
-      }
-
-      // Klarna Checkout API returns a redirect URL for the hosted payment page
-      if (data?.redirectUrl) {
-        toast.success("Redirecting to Klarna...");
-        window.location.href = data.redirectUrl;
-      } else if (data?.htmlSnippet) {
-        // If we get HTML snippet instead, we can still try to redirect
-        console.log("Klarna returned HTML snippet, attempting to find checkout URL");
-        toast.error("Klarna checkout not available. Please try another payment method.");
-      } else {
-        console.error("Klarna response missing redirect URL:", data);
-        toast.error(data?.error || "Could not start Klarna checkout. Please try another payment method.");
-      }
+      setShowKlarnaModal(true);
     } catch (err) {
       console.error("Klarna error:", err);
-      toast.error("Something went wrong with Klarna. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsKlarnaLoading(false);
     }
+  };
+
+  const handleKlarnaSuccess = async (orderId: string) => {
+    setShowKlarnaModal(false);
+    const pupilId = bookingPupilId;
+    if (!pupilId || !courseDetails) return;
+
+    // Call confirm-booking for notifications
+    try {
+      await supabase.functions.invoke("confirm-booking", {
+        body: { pupilId, instructorId: instructor.id },
+      });
+    } catch (err) {
+      console.error("confirm-booking error:", err);
+    }
+
+    navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${orderId}`);
   };
 
   const handleNPICheckout = async () => {
