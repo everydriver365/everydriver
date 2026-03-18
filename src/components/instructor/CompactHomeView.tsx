@@ -29,6 +29,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { DiscoverFeaturesTile } from "@/components/instructor/DiscoverFeaturesTile";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
