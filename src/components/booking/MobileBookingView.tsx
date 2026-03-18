@@ -31,6 +31,7 @@ import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanne
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 import klarnaLogo from "@/assets/klarna-logo.svg";
 import clearpayLogo from "@/assets/clearpay-logo.svg";
+import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
@@ -956,7 +957,7 @@ export function MobileBookingView({
               className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-gradient-to-br from-[#b2fce4]/10 to-[#b2fce4]/20 hover:from-[#b2fce4]/20 hover:to-[#b2fce4]/30 transition-colors text-left disabled:opacity-50"
             >
               <div className="flex items-center justify-between mb-2">
-                <img src={clearpayLogo} alt="Clearpay" className="h-5 w-5" />
+                <img src={clearpayRoundLogo} alt="Clearpay" className="h-6 object-contain" />
                 <span className="text-xs text-muted-foreground">Interest-free</span>
               </div>
               <p className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>
