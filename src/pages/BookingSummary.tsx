@@ -2000,6 +2000,30 @@ export default function BookingSummary() {
           </motion.div>
         )}
       </div>
+
+      {/* Klarna Payment Modal */}
+      {courseDetails && (
+        <KlarnaPaymentModal
+          open={showKlarnaModal}
+          onClose={() => setShowKlarnaModal(false)}
+          amount={totalPrice + upsellTotal}
+          merchantReference={klarnaMerchantReference}
+          orderDescription={`${courseName} - ${hours} Hour Driving Course`}
+          onSuccess={handleKlarnaSuccess}
+          consumer={{
+            givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
+            familyName: pupilName.trim().split(" ").slice(1).join(" ") || pupilName.trim(),
+            email: pupilEmail.trim(),
+            phone: pupilPhone.trim(),
+          }}
+          billing={{
+            streetAddress: pupilAddress.trim(),
+            postalCode: pupilPostcode.trim().toUpperCase(),
+            city: locationName || "UK",
+            country: "GB",
+          }}
+        />
+      )}
     </MainLayout>
   );
 }
