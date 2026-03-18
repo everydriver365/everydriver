@@ -299,7 +299,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               <SwipeableQuickAccess />
             </div>
 
-            <DiscoverFeaturesTile className="mt-2 mb-4" />
 
             <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} />
 
