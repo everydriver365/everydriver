@@ -971,6 +971,7 @@ export default function BookingSummary() {
   // Mobile View
   if (isMobile) {
     return (
+      <>
       <MobileBookingView
         instructor={instructor}
         courseName={courseName}
