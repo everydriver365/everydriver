@@ -37,6 +37,7 @@ function buildEmailHtml(params: {
   pickupAddress: string | null;
   courseType: string;
   courseHours: number;
+  allLessons?: { date: string; time: string; durationMinutes?: number }[];
 }): string {
   const {
     pupilName, instructorName, instructorPhone, instructorEmail,
