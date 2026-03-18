@@ -345,6 +345,9 @@ export function MobileBookingView({
   );
 
   const scrollToPayment = () => {
+    if (canSubmit) {
+      onNPICheckout();
+    }
     paymentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
