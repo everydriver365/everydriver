@@ -30,6 +30,7 @@ import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 import klarnaLogo from "@/assets/klarna-logo.svg";
+import klarnaRoundLogo from "@/assets/klarna-round-logo.png";
 import clearpayLogo from "@/assets/clearpay-logo.svg";
 import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
@@ -972,7 +973,7 @@ export function MobileBookingView({
               className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 hover:from-[#ffb3c7]/20 hover:to-[#ffb3c7]/30 transition-colors text-left disabled:opacity-50 disabled:pointer-events-none"
             >
               <div className="flex items-center justify-between mb-2">
-                <img src={klarnaLogo} alt="Klarna" className="h-5 w-5" />
+                <img src={klarnaRoundLogo} alt="Klarna" className="h-6 object-contain" />
                 <span className="text-xs text-muted-foreground">Pay in 3</span>
               </div>
               <p className="font-semibold text-sm">
