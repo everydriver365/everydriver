@@ -338,6 +338,7 @@ const App = () => (
                 <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
                 <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
                 <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
+                <Route path="/instructor/waiting-room" element={<WaitingRoomPage />} />
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
