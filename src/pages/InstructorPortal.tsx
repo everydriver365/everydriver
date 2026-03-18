@@ -487,6 +487,7 @@ export default function InstructorPortal() {
         </Dialog>
       </div>
 
+      <AICommandCenter />
     </InstructorPortalLayout>
   );
 }
