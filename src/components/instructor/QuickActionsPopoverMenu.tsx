@@ -6,7 +6,7 @@ import { haptics } from "@/lib/haptics";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
-  ClipboardCheck, CalendarPlus, BookOpen, Gift, Star,
+  ClipboardCheck, CalendarPlus, BookOpen, Gift, Star, Megaphone,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
