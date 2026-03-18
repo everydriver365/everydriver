@@ -34,6 +34,8 @@ serve(async (req) => {
       ? "https://api.gocardless.com"
       : "https://api-sandbox.gocardless.com";
 
+    console.log(`[GoCardless Billing] Environment: "${GOCARDLESS_ENVIRONMENT}" → resolved: "${env}", isLive: ${isLive}, baseUrl: ${baseUrl}`);
+
     const { 
       instructor_id, 
       plan_id, 
