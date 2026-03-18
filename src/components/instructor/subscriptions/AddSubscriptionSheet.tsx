@@ -157,6 +157,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
     setPrice("");
     setPaymentMethod("manual");
     setPickupPostcode("");
+    setMandateUrl(null);
   };
 
   return (
