@@ -98,6 +98,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { EndOfDaySummary } from "@/components/instructor/EndOfDaySummary";
 import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
 import { WeatherWidget } from "@/components/instructor/WeatherWidget";
 import { CardSection } from "@/components/ui/CardSection";
