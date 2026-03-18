@@ -14,6 +14,8 @@ import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Bell } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PupilData {
   id: string;
