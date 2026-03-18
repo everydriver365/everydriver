@@ -142,9 +142,8 @@ interface MobileBookingViewProps {
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
-  onKlarnaSuccess: (authToken: string, orderId: string) => Promise<void>;
-  onKlarnaError: (error: string) => void;
-  onKlarnaCancel: () => void;
+  onKlarnaCheckout: () => void;
+  isKlarnaLoading: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
