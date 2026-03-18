@@ -32,7 +32,7 @@ import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTi
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
