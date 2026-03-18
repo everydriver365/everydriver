@@ -53,7 +53,7 @@ import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
@@ -555,13 +555,6 @@ export function InstructorMobileHome({
         {/* The Waiting Room Promo */}
         <WaitingRoomPromoTile className="mt-6 mb-6" />
 
-        {/* Setup Checklist for new instructors */}
-        {instructorId && (
-          <InstructorSetupChecklist
-            instructorId={instructorId}
-            variant="mobile"
-          />
-        )}
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />

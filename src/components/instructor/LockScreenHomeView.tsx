@@ -36,7 +36,7 @@ import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
@@ -398,11 +398,6 @@ export function LockScreenHomeView({
 
         <WaitingRoomPromoTile className="mt-4" />
 
-        {instructorId && (
-          <FrostedCard className="overflow-hidden mt-2">
-            <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
-          </FrostedCard>
-        )}
 
         <FloatingSessionBar instructorId={instructorId} />
       </div>

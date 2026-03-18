@@ -20,7 +20,7 @@ import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidg
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
@@ -310,8 +310,6 @@ export default function InstructorPortal() {
         {/* Today at a Glance */}
         <TodayAtAGlance instructorId={instructorId} />
 
-        {/* Setup Checklist for new instructors */}
-        <InstructorSetupChecklist instructorId={instructorId} variant="full" />
 
         {/* Stats Grid - Bold Metric Cards */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

@@ -32,7 +32,7 @@ import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTi
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
@@ -218,12 +218,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             </p>
           </div>
 
-          {/* Setup checklist */}
-          {instructorId && (
-            <div className="px-4 mb-4">
-              <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
-            </div>
-          )}
 
           {/* Feature tiles grid */}
           <div className="px-4 mb-5">
