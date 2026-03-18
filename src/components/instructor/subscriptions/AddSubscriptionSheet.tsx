@@ -86,6 +86,8 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
     return next.toISOString().split("T")[0];
   };
 
+  const [mandateUrl, setMandateUrl] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!pupilId || !price) {
       toast({ title: "Missing fields", description: "Select a pupil and enter a price", variant: "destructive" });
@@ -95,7 +97,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
     setSaving(true);
     try {
       const nextDate = getNextDate(parseInt(dayOfWeek));
-      const { error } = await supabase
+      const { data: insertedSub, error } = await supabase
         .from("pupil_subscriptions")
         .insert({
           instructor_id: instructorId,
@@ -108,9 +110,39 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
           payment_method: paymentMethod,
           status: "active",
           next_lesson_date: nextDate,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // If GoCardless DD selected, set up mandate
+      if (paymentMethod === "gocardless" && insertedSub) {
+        const pupil = pupils.find(p => p.id === pupilId);
+        try {
+          const { data: mandateData, error: mandateError } = await supabase.functions.invoke("gocardless-pupil-mandate", {
+            body: {
+              subscriptionId: insertedSub.id,
+              pupilName: pupil?.name || "",
+              pupilEmail: "", // Will need pupil email from DB
+              redirectUrl: window.location.origin,
+            },
+          });
+
+          if (mandateError) {
+            console.error("Mandate setup error:", mandateError);
+            toast({ title: "Subscription created", description: "But Direct Debit setup failed. You can retry later.", variant: "destructive" });
+          } else if (mandateData?.authorisationUrl) {
+            setMandateUrl(mandateData.authorisationUrl);
+            toast({ title: "Subscription created!", description: "Share the Direct Debit link with your pupil to activate payments." });
+            onSuccess();
+            return; // Don't close sheet - show mandate URL
+          }
+        } catch (err) {
+          console.error("Mandate error:", err);
+        }
+      }
+
       toast({ title: "Subscription created", description: `Next lesson on ${new Date(nextDate).toLocaleDateString("en-GB")}` });
       resetForm();
       onSuccess();
