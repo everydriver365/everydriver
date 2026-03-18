@@ -362,6 +362,8 @@ const App = () => (
                 <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
                 <Route path="/instructor/wellbeing" element={<InstructorWellbeing />} />
                 <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
+                <Route path="/instructor/ai-command" element={<InstructorAICommand />} />
+                <Route path="/instructor/workflows" element={<InstructorWorkflows />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />

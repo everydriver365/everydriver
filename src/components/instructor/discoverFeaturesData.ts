@@ -368,4 +368,22 @@ export const DISCOVER_FEATURES: DiscoverFeature[] = [
     detailedDescription: "Define your standard weekly availability with recurring time windows for each day. Toggle slots on and off as needed. Simplifies scheduling by showing pupils when you're available to teach.",
     category: "Scheduling",
   },
+  {
+    title: "AI Command Centre",
+    icon: Sparkles,
+    accent: "#AF52DE",
+    route: "/instructor/ai-command",
+    summary: "Natural language commands to manage your business.",
+    detailedDescription: "Type or speak commands like 'Book Sarah for Thursday 2pm' or 'Show this week's earnings'. The AI understands your pupils, schedule, and finances and executes actions instantly.",
+    category: "Tools & Navigation",
+  },
+  {
+    title: "Workflow Builder",
+    icon: GitBranch,
+    accent: "#5856D6",
+    route: "/instructor/workflows",
+    summary: "Multi-step automations with conditions and delays.",
+    detailedDescription: "Build advanced if-this-then-that workflows with conditions (e.g. pupil balance > £50), time delays, and chained actions like SMS, notes, and pipeline moves. Goes beyond simple automations.",
+    category: "Settings & Admin",
+  },
 ];

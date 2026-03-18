@@ -78,7 +78,7 @@ export function WorkflowBuilder() {
         .eq("instructor_id", instructor!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Workflow[];
+      return data as unknown as Workflow[];
     },
   });
 
