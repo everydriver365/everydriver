@@ -36,6 +36,7 @@ const bookingSchema = z.object({
     id: z.string().uuid(),
     price: z.number().min(0).max(10000),
   })).optional(),
+  skipNotifications: z.boolean().optional(),
 });
 
 serve(async (req) => {
@@ -55,6 +56,9 @@ serve(async (req) => {
     }
 
     const booking = parseResult.data;
+    // Default: skip notifications (caller must invoke confirm-booking separately after payment)
+    const skipNotifications = booking.skipNotifications !== false;
+    
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -162,7 +166,7 @@ serve(async (req) => {
     }
 
     // 4. Update pupil with next lesson date
-    const sortedLessons = lessons?.sort((a, b) =>
+    const sortedLessons = lessons?.sort((a: any, b: any) =>
       new Date(`${a.lesson_date}T${a.start_time}`).getTime() - 
       new Date(`${b.lesson_date}T${b.start_time}`).getTime()
     );
@@ -175,133 +179,7 @@ serve(async (req) => {
         .eq("id", pupil.id);
     }
 
-    // 5. Send upsell notification emails
-    if (booking.upsells && booking.upsells.length > 0) {
-      try {
-        const { data: upsellDetails } = await supabase
-          .from("booking_upsells")
-          .select("id, name, price")
-          .in("id", booking.upsells.map(u => u.id));
-
-        const firstLessonDate = sortedLessons?.[0]?.lesson_date;
-
-        for (const upsell of upsellDetails || []) {
-          await fetch(
-            `${supabaseUrl}/functions/v1/notify-upsell-purchase`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${supabaseServiceKey}`,
-              },
-              body: JSON.stringify({
-                pupilName: booking.pupilName,
-                pupilEmail: booking.pupilEmail,
-                pupilPhone: booking.pupilPhone,
-                upsellName: upsell.name,
-                upsellPrice: upsell.price,
-                instructorId: booking.instructorId,
-                pupilId: pupil.id,
-                firstLessonDate,
-              }),
-            }
-          );
-        }
-        console.log("Upsell notification emails sent");
-      } catch (notifyError) {
-        console.error("Upsell notification error (non-fatal):", notifyError);
-      }
-    }
-
-    // 6. Notify instructor of new booking
-    try {
-      if (sortedLessons && sortedLessons.length > 0) {
-        const allLessons = sortedLessons.map((l: any) => ({
-          date: l.lesson_date,
-          time: l.start_time,
-          durationMinutes: l.duration_minutes,
-        }));
-        const notifyResponse = await fetch(
-          `${supabaseUrl}/functions/v1/notify-instructor`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${supabaseServiceKey}`,
-            },
-            body: JSON.stringify({
-              instructorId: booking.instructorId,
-              type: "new_booking",
-              pupilName: booking.pupilName,
-              lessonDate: sortedLessons[0].lesson_date,
-              lessonTime: sortedLessons[0].start_time,
-              durationMinutes: sortedLessons[0].duration_minutes,
-              allLessons,
-            }),
-          }
-        );
-        console.log("Instructor notification result:", await notifyResponse.json());
-      }
-    } catch (notifyError) {
-      console.error("Instructor notification error (non-fatal):", notifyError);
-    }
-
-    // 7. Sync lessons to Google Calendar — flush the queue now
-    try {
-      const syncResponse = await fetch(
-        `${supabaseUrl}/functions/v1/process-calendar-queue`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({}),
-        }
-      );
-      const syncResult = await syncResponse.json();
-      console.log("Calendar queue processed:", syncResult);
-    } catch (calendarError) {
-      console.error("Calendar sync error (non-fatal):", calendarError);
-    }
-
-    // 8. Send pupil welcome/onboarding email
-    try {
-      const firstLesson = sortedLessons?.[0];
-      const allLessons = sortedLessons?.map((l: any) => ({
-        date: l.lesson_date,
-        time: l.start_time,
-        durationMinutes: l.duration_minutes,
-      })) || [];
-      await fetch(
-        `${supabaseUrl}/functions/v1/send-pupil-welcome`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            pupilId: pupil.id,
-            pupilName: booking.pupilName,
-            pupilEmail: booking.pupilEmail,
-            pupilPhone: booking.pupilPhone,
-            instructorId: booking.instructorId,
-            courseType: booking.courseType,
-            courseHours: booking.courseHours,
-            firstLessonDate: firstLesson?.lesson_date || null,
-            firstLessonTime: firstLesson?.start_time || null,
-            pickupAddress: booking.pupilAddress,
-            allLessons,
-          }),
-        }
-      );
-      console.log("Pupil welcome email triggered");
-    } catch (welcomeError) {
-      console.error("Welcome email error (non-fatal):", welcomeError);
-    }
-
-    // 9. Record payment_history for free bookings (amount=0)
+    // 5. Record payment_history for free bookings (amount=0)
     if (booking.totalPrice === 0) {
       try {
         await supabase.from("payment_history").insert({
@@ -317,23 +195,25 @@ serve(async (req) => {
       }
     }
 
-    // 10. Notify parent (if linked)
-    try {
-      await fetch(`${supabaseUrl}/functions/v1/notify-parent`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({
-          pupilId: pupil.id,
-          type: "booking_confirmed",
-          body: `A ${booking.courseType} course (${booking.courseHours} hours) has been booked for ${booking.pupilName}.${sortedLessons?.[0] ? ` First lesson: ${sortedLessons[0].lesson_date}` : ''}`,
-        }),
-      });
-      console.log("Parent notification triggered");
-    } catch (parentError) {
-      console.error("Parent notification error (non-fatal):", parentError);
+    // 6. Only send notifications if explicitly requested (skipNotifications=false)
+    // This is used for free bookings where no separate payment step exists
+    if (!skipNotifications) {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/confirm-booking`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            pupilId: pupil.id,
+            instructorId: booking.instructorId,
+          }),
+        });
+        console.log("Confirm-booking notifications triggered inline");
+      } catch (confirmError) {
+        console.error("Confirm-booking inline error (non-fatal):", confirmError);
+      }
     }
 
     return new Response(
@@ -341,7 +221,7 @@ serve(async (req) => {
         success: true,
         pupilId: pupil.id,
         lessonsCreated: lessons?.length || 0,
-        message: `Booking confirmed! ${lessons?.length || 0} lessons scheduled.`,
+        message: `Booking created! ${lessons?.length || 0} lessons scheduled.`,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

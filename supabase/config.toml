@@ -266,3 +266,6 @@ verify_jwt = false
 
 [functions.address-lookup]
 verify_jwt = false
+
+[functions.confirm-booking]
+verify_jwt = false
