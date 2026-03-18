@@ -392,6 +392,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
           <SwipeableQuickAccess />
         </div>
 
+        <DiscoverFeaturesTile className="mt-2 mb-4" />
+
         <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
 
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>

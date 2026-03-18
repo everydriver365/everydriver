@@ -299,6 +299,8 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               <SwipeableQuickAccess />
             </div>
 
+            <DiscoverFeaturesTile className="mt-2 mb-4" />
+
             <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} />
 
             <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-2 mb-2">Insights</p>
