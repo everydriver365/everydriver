@@ -960,7 +960,7 @@ export function MobileBookingView({
                 <span className="text-xs text-muted-foreground">Interest-free</span>
               </div>
               <p className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Pay in 4 instalments</p>
+              <p className="text-xs text-muted-foreground mt-1">Pay in 4 instalments (Only available for payments up to £1200)</p>
             </button>
 
             {/* Klarna - Server-side redirect */}
