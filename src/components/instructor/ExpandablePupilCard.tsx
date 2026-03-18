@@ -663,6 +663,58 @@ export function ExpandablePupilCard({
             className="border-t border-border"
           >
             <div className="p-4 space-y-4">
+              {/* Quick Actions Strip - Top of expanded view */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartChat?.(pupil);
+                  }}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 text-purple-500" />
+                  <span className="text-xs">Message</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowRecordPaymentModal(true);
+                  }}
+                >
+                  <PoundSterling className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-xs">Pay</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewHistory(pupil);
+                  }}
+                >
+                  <History className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-xs">Lessons</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSyllabusSheet(true);
+                  }}
+                >
+                  <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs">Progress</span>
+                </Button>
+              </div>
+
               {/* Profile Photo Upload */}
               <div className="flex justify-center">
                 <PupilAvatarUpload

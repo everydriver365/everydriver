@@ -553,6 +553,9 @@ export function InstructorMobileHome({
           </div>
         )}
 
+        {/* End of Day Summary */}
+        <EndOfDaySummary instructorId={instructorId} />
+
         {/* The Waiting Room Promo */}
         <WaitingRoomPromoTile className="mt-6 mb-6" />
 
