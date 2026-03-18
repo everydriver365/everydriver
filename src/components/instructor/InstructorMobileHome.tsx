@@ -78,7 +78,7 @@ import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
@@ -91,7 +91,7 @@ import { CleanHomeView } from "@/components/instructor/CleanHomeView";
 import { IOSNativeHomeView } from "@/components/instructor/IOSNativeHomeView";
 import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
-import { DiscoverFeaturesTile } from "@/components/instructor/DiscoverFeaturesTile";
+
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -557,11 +557,8 @@ export function InstructorMobileHome({
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
-        {/* The Waiting Room Promo */}
-        <WaitingRoomPromoTile className="mt-6" />
-
-        {/* Discover Features Tile */}
-        <DiscoverFeaturesTile className="mt-3 mb-6" />
+        {/* Waiting Room & Discover Features */}
+        <BottomPromoGroup className="mt-6 mb-6" />
 
 
         {/* 10. Floating Session Bar */}

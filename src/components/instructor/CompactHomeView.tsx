@@ -28,8 +28,7 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
-import { DiscoverFeaturesTile } from "@/components/instructor/DiscoverFeaturesTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
@@ -416,8 +415,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
           </div>
         )}
 
-        <WaitingRoomPromoTile className="mt-4" />
-        <DiscoverFeaturesTile className="mt-3 mb-4" />
+        <BottomPromoGroup className="mt-4 mb-4" />
 
 
         <div className="mt-3">

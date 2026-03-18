@@ -27,7 +27,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
@@ -396,7 +396,7 @@ export function LockScreenHomeView({
           <RoadAlertsRow alerts={alerts} />
         </FrostedCard>
 
-        <WaitingRoomPromoTile className="mt-4" />
+        <BottomPromoGroup className="mt-4" />
 
 
         <FloatingSessionBar instructorId={instructorId} />
