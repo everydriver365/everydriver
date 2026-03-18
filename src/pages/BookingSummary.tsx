@@ -554,7 +554,7 @@ export default function BookingSummary() {
     }
   };
 
-
+  const handleKlarnaSuccess = async (orderId: string) => {
     setShowKlarnaModal(false);
     const pupilId = bookingPupilId;
     if (!pupilId || !courseDetails) return;
