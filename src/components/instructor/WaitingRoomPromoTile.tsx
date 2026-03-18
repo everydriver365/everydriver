@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
-import waitingRoomPromo from "@/assets/waiting-room-promo.jpg";
+import { Coffee } from "lucide-react";
 
 export function WaitingRoomPromoTile({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
@@ -10,32 +9,21 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={() => navigate("/instructor/waiting-room")}
-      className={`rounded-2xl overflow-hidden cursor-pointer relative shadow-lg ${className}`}
-      style={{ background: "linear-gradient(135deg, #1e3a5f, #2563eb)" }}
+      className={`rounded-2xl cursor-pointer p-4 flex items-center gap-4 ${className}`}
+      style={{ background: "#e8ecf1", boxShadow: "8px 8px 16px #c5c9cd, -8px -8px 16px #ffffff" }}
     >
-      <div className="absolute inset-0">
-        <img src={waitingRoomPromo} alt="" className="w-full h-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1e3a5f]/90 via-[#1e3a5f]/70 to-transparent" />
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+        style={{ background: "#e8ecf1", boxShadow: "inset 4px 4px 8px #c5c9cd, inset -4px -4px 8px #ffffff" }}
+      >
+        <Coffee className="h-5 w-5 text-blue-600" />
       </div>
-
-      <div className="relative flex items-center gap-4 p-4">
-        <div className="shrink-0 w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-          <span className="text-2xl">☕</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-[15px] font-bold text-white">The Waiting Room</p>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[9px] font-bold uppercase tracking-wider border border-emerald-400/30">
-              Live Weekly
-            </span>
-          </div>
-          <p className="text-[12px] text-blue-100/80 mt-1">
-            Join fellow instructors for an informal weekly Zoom catch-up
-          </p>
-        </div>
-        <div className="shrink-0 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
-          <ChevronRight className="h-4 w-4 text-white" />
-        </div>
+      <div className="flex-1">
+        <p className="text-[14px] font-bold text-gray-800">The Waiting Room</p>
+        <p className="text-[11px] text-gray-500 mt-0.5">Weekly instructor Zoom catch-up</p>
+      </div>
+      <div className="px-4 py-2 rounded-xl text-[11px] font-bold text-white bg-blue-600 shadow-md shadow-blue-600/30">
+        Join
       </div>
     </motion.div>
   );
