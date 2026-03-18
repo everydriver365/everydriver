@@ -98,10 +98,10 @@ export function LearnerDrivingScore({
       const { data: alerts } = await supabase
         .from("telematics_alerts" as any)
         .select("alert_type, severity")
-        .in("telematics_id", sessionIds);
+        .in("telematics_id", sessionIds) as { data: { alert_type: string; severity: string }[] | null };
 
       const totalDistance = sessions.reduce((s, t) => s + (t.total_distance_km || 0), 0);
-      const typedAlerts = (alerts || []) as { alert_type: string; severity: string }[];
+      const typedAlerts = alerts || [];
 
       // Calculate per-type penalties
       const speedingCount = typedAlerts.filter((a) => a.alert_type === "speeding").length;
