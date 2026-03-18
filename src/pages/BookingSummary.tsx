@@ -1054,6 +1054,9 @@ export default function BookingSummary() {
         onClearpayCheckout={handleClearpayCheckout}
         onKlarnaCheckout={handleKlarnaCheckout}
         isKlarnaLoading={isKlarnaLoading}
+        onCashPayment={handleCashPayment}
+        isCashProcessing={isCashProcessing}
+        cashPaymentsEnabled={cashPaymentsEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
