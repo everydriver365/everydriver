@@ -13,6 +13,7 @@ interface PaymentHealthResponse {
   npi: GatewayStatus;
   square: GatewayStatus;
   elavon: GatewayStatus;
+  gocardless: GatewayStatus;
 }
 
 const defaultHealth: PaymentHealthResponse = {
@@ -21,6 +22,7 @@ const defaultHealth: PaymentHealthResponse = {
   npi: { available: false, configured: false },
   square: { available: false, configured: false },
   elavon: { available: false, configured: false },
+  gocardless: { available: false, configured: false },
 };
 
 export function usePaymentGatewayHealth() {
@@ -45,6 +47,7 @@ export function usePaymentGatewayHealth() {
             npi: data.npi || defaultHealth.npi,
             square: data.square || defaultHealth.square,
             elavon: data.elavon || defaultHealth.elavon,
+            gocardless: data.gocardless || defaultHealth.gocardless,
           });
         }
       } catch (err) {
