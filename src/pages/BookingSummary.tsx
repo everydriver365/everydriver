@@ -1957,6 +1957,7 @@ export default function BookingSummary() {
 
 
             {/* Clearpay - Confirmed Working */}
+            {clearpayEnabled && (
             <button
               onClick={handleClearpayCheckout}
               disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
@@ -1973,8 +1974,10 @@ export default function BookingSummary() {
               <div className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</div>
               <div className="text-xs text-muted-foreground mt-auto pt-1">Interest-free instalments</div>
             </button>
+            )}
 
             {/* Klarna - Server-side redirect */}
+            {klarnaEnabled && (
             <button
               onClick={handleKlarnaCheckout}
               disabled={!canSubmit || isKlarnaLoading}
@@ -1997,6 +2000,7 @@ export default function BookingSummary() {
                 </p>
               )}
             </button>
+            )}
 
             {/* Cash Payment */}
             {cashPaymentsEnabled && (
