@@ -310,8 +310,6 @@ export default function InstructorPortal() {
         {/* Today at a Glance */}
         <TodayAtAGlance instructorId={instructorId} />
 
-        {/* Setup Checklist for new instructors */}
-        <InstructorSetupChecklist instructorId={instructorId} variant="full" />
 
         {/* Stats Grid - Bold Metric Cards */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

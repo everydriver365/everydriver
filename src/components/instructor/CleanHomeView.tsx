@@ -434,7 +434,7 @@ export function CleanHomeView({
 
         <WaitingRoomPromoTile className="mt-4" />
 
-        {instructorId && <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />}
+        
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />

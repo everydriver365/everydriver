@@ -555,13 +555,6 @@ export function InstructorMobileHome({
         {/* The Waiting Room Promo */}
         <WaitingRoomPromoTile className="mt-6 mb-6" />
 
-        {/* Setup Checklist for new instructors */}
-        {instructorId && (
-          <InstructorSetupChecklist
-            instructorId={instructorId}
-            variant="mobile"
-          />
-        )}
 
         {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />

@@ -218,12 +218,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             </p>
           </div>
 
-          {/* Setup checklist */}
-          {instructorId && (
-            <div className="px-4 mb-4">
-              <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
-            </div>
-          )}
 
           {/* Feature tiles grid */}
           <div className="px-4 mb-5">

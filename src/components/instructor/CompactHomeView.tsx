@@ -416,9 +416,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <WaitingRoomPromoTile className="mt-4" />
 
-        {instructorId && (
-          <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
-        )}
 
         <div className="mt-3">
           <PlanWidget />

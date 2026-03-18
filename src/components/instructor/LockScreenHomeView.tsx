@@ -398,11 +398,6 @@ export function LockScreenHomeView({
 
         <WaitingRoomPromoTile className="mt-4" />
 
-        {instructorId && (
-          <FrostedCard className="overflow-hidden mt-2">
-            <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
-          </FrostedCard>
-        )}
 
         <FloatingSessionBar instructorId={instructorId} />
       </div>
