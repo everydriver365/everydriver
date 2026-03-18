@@ -23,6 +23,7 @@ const featureToggles: FeatureToggle[] = [
   { key: "lesson_feedback_enabled", label: "Post-Lesson Feedback", description: "Automatically request feedback from pupils after lessons", defaultValue: true },
   { key: "reflective_logs_enabled", label: "Reflective Logs", description: "Let pupils write reflective journal entries in their portal", defaultValue: true },
   { key: "cancellation_analytics_enabled", label: "Cancellation Analytics", description: "Show cancellation trends on the Performance page", defaultValue: true },
+  { key: "cash_payments_enabled", label: "Cash Payments", description: "Allow pupils to select 'Pay by Cash' during booking checkout", defaultValue: false },
 ];
 
 interface FeatureTogglesSettingsProps {
