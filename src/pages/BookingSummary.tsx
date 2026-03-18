@@ -159,6 +159,7 @@ export default function BookingSummary() {
   
   // NPI Hosted Fields state (embedded card form)
   const [showHostedFields, setShowHostedFields] = useState(false);
+  const [showKlarnaModal, setShowKlarnaModal] = useState(false);
   
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
