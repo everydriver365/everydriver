@@ -396,7 +396,7 @@ export function LockScreenHomeView({
           <RoadAlertsRow alerts={alerts} />
         </FrostedCard>
 
-        <WaitingRoomPromoTile className="mt-4" />
+        <BottomPromoGroup className="mt-4" />
 
 
         <FloatingSessionBar instructorId={instructorId} />
