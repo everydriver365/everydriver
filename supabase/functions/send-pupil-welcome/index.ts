@@ -43,7 +43,7 @@ function buildEmailHtml(params: {
     pupilName, instructorName, instructorPhone, instructorEmail,
     vehicleType, transmission, profileImageUrl, slug,
     paymentQrUrl, firstLessonDate, firstLessonTime, pickupAddress,
-    courseType, courseHours,
+    courseType, courseHours, allLessons,
   } = params;
 
   const portalUrl = slug ? `${BASE_URL}/p/${slug}` : `${BASE_URL}/pupil/login`;
