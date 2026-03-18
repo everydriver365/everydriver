@@ -2,6 +2,10 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight, Coffee, Users, Video, ArrowRight,
+  Sparkles, Radio, Zap, MessageCircle, Play, Clock, Heart, Mic,
+} from "lucide-react";
+import waitingRoomPromo from "@/assets/waiting-room-promo.jpg";
+  ChevronRight, Coffee, Users, Video, ArrowRight,
   Sparkles, Radio, Zap, MessageCircle, Play,
 } from "lucide-react";
 import waitingRoomPromo from "@/assets/waiting-room-promo.jpg";
