@@ -1,162 +1,93 @@
-## Completed: Pipeline Board, On-My-Way Texts, Workflow Automations, AI Receptionist, Smart Buffer Time, Recurring Subscriptions & Security Hardening
 
-All 6 features + security hardening have been built and deployed.
 
-### Feature 1: Pipeline Board ✅
-- DB: `pipeline_leads` table with `pipeline_stage` enum, RLS scoped to instructor
-- UI: `/instructor/pipeline` with drag-and-drop Kanban board, lead cards, add/edit sheet
-- "Convert to Pupil" button creates pupil record and moves lead to active
-- Tile added to home screen
+# UX Improvements & Feature Recommendations
 
-### Feature 2: On-My-Way Texts ✅
-- DB: `on_my_way_notifications` table with RLS
-- UI: `OnMyWayButton` component integrated into SatNav lesson cards
-- Opens native SMS with pre-filled ETA message
+After reviewing the full codebase — the instructor app (home, schedule, pupils, pay, messages, menu, tracking), the pupil portal, and the public-facing booking flow — here are the highest-impact improvements grouped by section.
 
-### Feature 3: Workflow Automations ✅
-- DB: `instructor_automations` table with trigger/action enums, RLS
-- UI: `/instructor/automations` with automation list, toggle, delete, builder sheet
-- Builder has templates + step-by-step trigger→action flow
-- Edge function `process-automations` executes SMS, todos, notes, pipeline moves
-- Tile added to home screen
+---
 
-### Feature 4: AI Receptionist ✅
-- DB: `ai_receptionist_enabled` column on instructors table
-- Edge function `ai-receptionist` uses Lovable AI (gemini-3-flash-preview)
-- LiveChatWindow triggers AI auto-response 5s after visitor message if no human reply
-- Instructor context (name, rate, areas, car) included in AI prompt
-- Messages prefixed with 🤖 emoji for visual distinction
+## 1. Schedule — Drag-to-Reschedule & Conflict Warnings
 
-### Feature 5: Smart Buffer Time (Travel-Aware Scheduling) ✅
-- DB: 3 new columns on `instructors`: `smart_buffer_enabled`, `smart_buffer_mode`, `smart_buffer_padding_minutes`
-- Edge function `check-travel-buffer` calculates drive time between postcodes and checks feasibility
-- UI: New `SmartBufferSettings` component in Scheduling settings section
-- 3 modes: flat buffer, travel time only, travel time + padding
-- Uses TomTom Routing API for accurate drive time calculations
+**Problem**: Rescheduling requires opening a lesson, then using a separate sheet. No visual feedback on double-bookings.
+**Improvement**:
+- Add inline conflict detection when adding/editing lessons — highlight overlapping time slots in red with a warning toast.
+- On the month/calendar views, show a small colored dot per lesson type for quick scanning.
 
-### Feature 6: Recurring Lesson Subscriptions ✅
-- DB: `pupil_subscriptions` table with RLS (instructor CRUD, public read for pupil portal)
-- Edge function `process-recurring-subscriptions` auto-creates lessons, skips holidays, advances dates
-- UI: `/instructor/subscriptions` page with subscription list, pause/resume/cancel
-- `AddSubscriptionSheet`: select pupil, day, time, duration, price, payment method
-- Tile added to home screen dashboard
-- Route added to App.tsx
+---
 
-### Security Hardening ✅
-- **P1 Critical RLS**: Removed anon SELECT on `instructors` (use `public_instructors` view), dropped public ALL on `reflective_logs`, fixed `lesson_feedback` tautology UPDATE + restricted to authenticated, added token filter to `quotes` anon SELECT, removed anon SELECT on `pupil_subscriptions`
-- **P2 Permissive Writes**: Removed public INSERT on `lesson_reminders_log` and `payment_reminder_log` (service_role bypasses RLS)
-- **P3 Auth/API**: Added JWT auth to `get-google-maps-key` edge function, added `geotab_session_cache` RLS policy, enabled leaked password protection
-- **P4 Data Exposure**: Removed public SELECT on `instructor_calendar_events`, removed anon SELECT on `lesson_syllabus_updates`, restricted `platform_commissions` to owning instructor + admin
+## 2. Pupil Detail — Quick-Action Swipe Row
 
-### Feature 7: Competitor Feature Gap — 4 New Features ✅
+**Problem**: Viewing a pupil requires navigating to their profile, then finding the right action (message, record payment, add lesson).
+**Improvement**:
+- Add a horizontal quick-action strip at the top of the pupil detail view with icon buttons: Message, Take Payment, Add Lesson, View Progress — reducing taps for the most common workflows.
 
-#### 7a. Pupil Selfie / Profile Photo Upload ✅
-- `PupilAvatarUpload` component integrated into expanded `ExpandablePupilCard.tsx`
-- Uses existing `pupil-avatars` storage bucket and `profile_image_url` column on `pupils` table
-- Instructors can snap/upload photos directly from the pupil card
+---
 
-#### 7b. Lesson Route Recording & Viewer ✅
-- DB: New `lesson_routes` table (coordinates JSONB, distance_km, duration_minutes, pupil_id, instructor_id)
-- UI: `LessonRouteViewer` component added to pupil card's Tracking History section
-- Displays route list with distance/duration badges, renders selected route on Leaflet map with start/end markers
-- RLS: Instructor-scoped CRUD, anon read for pupil portal
+## 3. Money Page — Outstanding Balance Nudge
 
-#### 7c. Full Theory Mock Tests (Timed, DVSA Format) ✅
-- DB: New `theory_mock_results` table (score, total_questions, passed, time_taken_seconds, category_breakdown JSONB)
-- UI: `TheoryMockTest` component with 50-question timed test, 57-minute countdown, pass mark 43/50
-- Shows category breakdown on results, saves results to DB
-- Integrated into pupil portal Theory section in `BrandedPupilPortal.tsx`
+**Problem**: Instructors have to mentally track who owes money. The "Owes Money" card exists but there's no one-tap chase flow.
+**Improvement**:
+- Add a "Send Reminder" button directly on each pupil's outstanding balance row that pre-fills an SMS/message with the amount owed.
+- Show a total outstanding balance prominently at the top of the Pay page.
 
-#### 7d. Branded Car Window Sticker PDF Generator ✅
-- `CarStickerGenerator` component generates A5/A6 PDF stickers using jsPDF
-- Includes instructor name, logo, phone, custom tagline, and QR code linking to booking page
-- Brand colour applied throughout; downloadable PDF
-- Added as new "Sticker" tab in `InstructorMiniWebsiteSettings.tsx`
+---
 
-### Feature 8: UX Improvements Inspired by Leading Platforms ✅
+## 4. Messages — Unread Count Per Conversation & Read Receipts
 
-#### 8a. Smart Empty States ✅
-- Integrated `EmptyState` component into `PupilPortalHistory`, `PupilPortalPayments`
-- Friendly headlines and descriptions replace plain icons
+**Problem**: The inbox shows conversations but it's unclear at a glance which have unread messages.
+**Improvement**:
+- Add a bold unread count badge on each conversation row.
+- Show a subtle "Seen" or timestamp indicator for the last message.
 
-#### 8b. Booking Abandonment Recovery ✅
-- `BookingRecoveryBanner` component with "Continue where you left off?" prompt
-- Auto-saves form state to `localStorage` on every field change in `MobileBookingView`
-- Cleared on successful payment
+---
 
-#### 8c. Post-Lesson Star Rating (Uber Pattern) ✅
-- DB: `lesson_ratings` table (lesson_id, pupil_id, rating 1-5, comment) with RLS
-- `PostLessonRating` component: auto-appears after completed lessons on dashboard
-- 5-star interactive rating with optional comment, dismissible per session
-- Mounted in `BrandedPupilPortal` home section
+## 5. Home Dashboard — "End of Day" One-Tap Summary
 
-#### 8d. Cancellation Policy Card (Airbnb Pattern) ✅
-- `CancellationPolicyCard` component with traffic-light visual breakdown
-- Green (free), Amber (late fee), Red (no-show full charge)
-- Integrated into `PupilPortalSchedule` above lesson list when self-cancel enabled
+**Problem**: At the end of a teaching day, there's no quick way to see a summary of what happened (lessons taught, money earned, notes to follow up).
+**Improvement**:
+- Auto-show an "End of Day" card after the last lesson of the day, summarizing: lessons completed, earnings, any pupils with notes/follow-ups, and a "Share Summary" button (already partially built as `EndOfDaySummary` and `ShareableEODCard` — wire it into the home view automatically).
 
-#### 8e. Lesson SMS Reminders ✅
-- DB: `reminder_preferences` JSONB column on `pupils` table (default: 24h + 1h)
-- Edge function `send-lesson-reminders` queries upcoming lessons and sends SMS via Twilio
-- UI: Reminder preference toggles added to `PupilPortalProfileEdit`
-- Updated `update_pupil_profile` RPC to allow `reminder_preferences` field
+---
 
-#### 8f. Share Your Pass Social Card ✅
-- `PassShareCard` component generates branded celebration card
-- Uses Web Share API with clipboard fallback via `share-utils.ts`
-- Shows "Share Your Pass!" button with instructor branding
+## 6. Pupil Portal — Lesson Countdown & Preparation Tips
 
-### Feature 9: 8 New Features (All Except Stripe Connect) ✅
+**Problem**: Pupils see upcoming lessons but no contextual preparation help.
+**Improvement**:
+- Add a countdown timer on the next lesson card ("Your lesson starts in 2h 15m").
+- Below the countdown, show 2-3 contextual tips based on their syllabus progress (e.g., "You'll be working on roundabouts — review the theory first").
 
-#### 9a. Bulk Operations Panel ✅
-- New page `/instructor/bulk-operations` with 3 tabs
-- **Bulk SMS**: audience filters (all, test-date, overdue balance), template library, send via `send-gap-sms`
-- **Bulk Reschedule**: pick source date → find lessons → move to target date (bank holidays)
-- **Bulk Price Update**: select pupils → set new `custom_hourly_rate`
-- Components: `BulkSMSTab`, `BulkRescheduleTab`, `BulkPriceUpdateTab`
-- Added to Instructor Menu under Tools
+---
 
-#### 9b. Smart Reporting & PDF Export Hub ✅
-- New page `/instructor/reports` — Reports Hub
-- 5 report types: Weekly Business Summary, Monthly Earnings, Tax Year Summary, Pupil Progress, Mileage Log
-- Date range picker with quick-select (This Month, Last Month, This Year)
-- Calls existing `generate-pdf` edge function, downloads as PDF
-- Saves report records to `instructor_reports` table
-- Added to Instructor Menu under Tools
+## 7. Global — Empty State Improvements
 
-#### 9c. Availability Rules Engine ✅
-- DB: `availability_rules` table (rule_type enum: recurring_exception, holiday_block, seasonal)
-- `AvailabilityRulesManager` component integrated into `/instructor/availability` page
-- Holiday blocks auto-generate `instructor_date_overrides` rows
-- Recurring exceptions: "No lessons on first Monday of each month"
-- Optional auto-notify affected pupils toggle
+**Problem**: Several pages show generic "Loading..." or blank states when there's no data.
+**Improvement**:
+- Add illustrated empty states with clear CTAs across: Expenses (no expenses yet → "Track your first expense"), Messages (no conversations → "Message a pupil"), Pupils (no pupils → "Add your first pupil").
 
-#### 9d. Pupil Milestone Certificates ✅
-- DB: `pupil_certificates` table (milestone_type, certificate_url, issued_at)
-- `CertificateGenerator` component using jsPDF — landscape A4 with decorative border
-- Milestones: first_lesson, 10_lessons, 20_lessons, theory_pass, test_pass
-- Branded PDF with pupil name, date, instructor name, achievement text
+---
 
-#### 9e. Parent Portal Enhancements ✅
-- `ParentAttendanceReport`: attendance rate, completed/cancelled/no-show counts
-- `ParentLessonNotes`: read-only view of instructor's post-lesson feedback (from `lesson_feedback`)
-- Both integrated into Parent Portal overview section
+## 8. Booking Flow — Progress Indicator
 
-#### 9f. Waiting List Capacity UI ✅
-- DB: `waitlist_entries` table with RLS (anon INSERT, instructor CRUD)
-- `WaitlistJoinCard` component for mini-website — name, phone, email, preferred days
-- Shows confirmation after submission
+**Problem**: The multi-step booking flow (details → slot selection → payment) lacks a visual progress bar.
+**Improvement**:
+- Add a simple 3-step progress indicator at the top of the booking pages so learners know where they are in the process.
 
-#### 9g. Marketing Landing Page Builder ✅
-- `WebsitePageEditor` component — visual block editor for `content_blocks` JSONB
-- 8 block types: Text, Features List, CTA Button, FAQ, Video Embed, Stats Counter, Testimonial, Pricing Table
-- Drag-and-drop reordering, add/remove blocks
-- SEO settings: meta_title, meta_description per page
-- Hero heading/subheading editing
+---
 
-#### 9h. Franchise / Multi-Instructor School Portal ✅
-- DB: `schools` table + `school_instructors` join table with `school_role` enum
-- `/school/dashboard` page with aggregate stats (lessons, earnings, pupils, pass rate)
-- Instructor list with role badges
-- School creation flow + invite via school ID code
-- RLS: school owners manage, instructors view own membership
+## Recommended Priority Order
+
+| Priority | Improvement | Impact |
+|----------|------------|--------|
+| 1 | Money — Send payment reminder inline | High (revenue) |
+| 2 | End of Day auto-summary | High (engagement) |
+| 3 | Schedule conflict warnings | High (prevents errors) |
+| 4 | Pupil quick-action strip | Medium (efficiency) |
+| 5 | Messages unread badges per conversation | Medium (clarity) |
+| 6 | Pupil portal countdown + tips | Medium (learner experience) |
+| 7 | Booking progress indicator | Medium (conversion) |
+| 8 | Empty state improvements | Low (polish) |
+
+---
+
+Which improvements would you like me to implement? You can pick one, several, or all of them.
+
