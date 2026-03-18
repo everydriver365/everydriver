@@ -132,6 +132,7 @@ export default function InstructorMenu() {
       title: "Resources",
       items: [
         { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-white", iconBg: "bg-primary", gateKey: "resources", path: "/instructor/resources" },
+        { icon: Megaphone, label: "Platform Updates", description: "News & feature ideas", iconColor: "text-white", iconBg: "bg-indigo-500", path: "/instructor/platform-updates" },
       ],
     },
     {

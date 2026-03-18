@@ -18,6 +18,7 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
     { id: "health-hub", label: "Health Hub", subtitle: "Wellness tips", icon: Heart, iconColor: "text-pink-600", route: "/instructor/health" },
     { id: "test-requests", label: "Test Swap", subtitle: "Swap a test", icon: Calendar, iconColor: "text-amber-600", route: "/instructor/test-requests" },
     { id: "find-nearby", label: "Find Nearby", subtitle: "Toilets, food & more", icon: MapPin, iconColor: "text-sky-600", route: "/instructor/find-nearby" },
+    { id: "platform-updates", label: "Updates", subtitle: "News & ideas", icon: Megaphone, iconColor: "text-indigo-600", route: "/instructor/platform-updates" },
   ];
 
   return (

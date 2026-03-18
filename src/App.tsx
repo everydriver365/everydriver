@@ -319,6 +319,7 @@ const App = () => (
                 <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
                 <Route path="/instructor/fuel" element={<InstructorFuel />} />
                 <Route path="/instructor/find-nearby" element={<InstructorFindNearby />} />
+                <Route path="/instructor/platform-updates" element={<InstructorPlatformUpdates />} />
                 <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
                 <Route path="/instructor/locations" element={<InstructorLocations />} />
                 <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
