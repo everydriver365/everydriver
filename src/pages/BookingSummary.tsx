@@ -1107,6 +1107,9 @@ export default function BookingSummary() {
         onCashPayment={handleCashPayment}
         isCashProcessing={isCashProcessing}
         cashPaymentsEnabled={cashPaymentsEnabled}
+        onInstantBankPay={handleInstantBankPay}
+        isInstantBankPayLoading={isInstantBankPayLoading}
+        instantBankPayEnabled={instantBankPayEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
