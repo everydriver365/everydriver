@@ -177,6 +177,7 @@ export function AddLessonSheet({
     setLessonType('standard');
     setSelectedTestCentre('');
     setSelectedExaminer('');
+    setConflictWarning(null);
   };
 
   // Auto-fill pickup address when selecting an existing pupil
@@ -189,6 +190,59 @@ export function AddLessonSheet({
       }
     }
   }, [selectedPupil, pupils]);
+
+  // Check for schedule conflicts when date/time/duration changes
+  useEffect(() => {
+    if (!lessonDate || !lessonStartTime || !open) {
+      setConflictWarning(null);
+      return;
+    }
+
+    const checkConflicts = async () => {
+      setCheckingConflict(true);
+      try {
+        const dateStr = format(lessonDate, 'yyyy-MM-dd');
+        const durationMinutes = parseFloat(lessonDuration) * 60;
+        
+        // Calculate new lesson end time
+        const [startH, startM] = lessonStartTime.split(':').map(Number);
+        const newStartMinutes = startH * 60 + startM;
+        const newEndMinutes = newStartMinutes + durationMinutes;
+
+        const { data: existingLessons } = await supabase
+          .from('scheduled_lessons')
+          .select('start_time, duration_minutes, pupil_id, pupils(name)')
+          .eq('instructor_id', instructorId)
+          .eq('lesson_date', dateStr)
+          .neq('status', 'cancelled');
+
+        if (existingLessons && existingLessons.length > 0) {
+          const conflicts = existingLessons.filter((lesson: any) => {
+            const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
+            const existingStart = h * 60 + m;
+            const existingEnd = existingStart + (lesson.duration_minutes || 60);
+            return newStartMinutes < existingEnd && newEndMinutes > existingStart;
+          });
+
+          if (conflicts.length > 0) {
+            const names = conflicts.map((c: any) => c.pupils?.name || 'Unknown').join(', ');
+            setConflictWarning(`Overlaps with ${names} at this time`);
+          } else {
+            setConflictWarning(null);
+          }
+        } else {
+          setConflictWarning(null);
+        }
+      } catch {
+        setConflictWarning(null);
+      } finally {
+        setCheckingConflict(false);
+      }
+    };
+
+    const timer = setTimeout(checkConflicts, 300);
+    return () => clearTimeout(timer);
+  }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open]);
 
   const buildDrivingTestNotes = () => {
     if (!isDrivingTest) return null;
