@@ -30,7 +30,7 @@ import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAcce
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
