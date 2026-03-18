@@ -83,6 +83,7 @@ const InstructorVehicleHealth = lazy(() => import("./pages/InstructorVehicleHeal
 const InstructorTripReplay = lazy(() => import("./pages/InstructorTripReplay"));
 const InstructorFuel = lazy(() => import("./pages/InstructorFuel"));
 const InstructorFindNearby = lazy(() => import("./pages/InstructorFindNearby"));
+const InstructorPlatformUpdates = lazy(() => import("./pages/InstructorPlatformUpdates"));
 const InstructorMileageTracker = lazy(() => import("./pages/InstructorMileageTracker"));
 const InstructorLocations = lazy(() => import("./pages/InstructorLocations"));
 const InstallPupil = lazy(() => import("./pages/InstallPupil"));
@@ -318,6 +319,7 @@ const App = () => (
                 <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
                 <Route path="/instructor/fuel" element={<InstructorFuel />} />
                 <Route path="/instructor/find-nearby" element={<InstructorFindNearby />} />
+                <Route path="/instructor/platform-updates" element={<InstructorPlatformUpdates />} />
                 <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
                 <Route path="/instructor/locations" element={<InstructorLocations />} />
                 <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
