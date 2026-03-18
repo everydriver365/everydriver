@@ -556,25 +556,22 @@ export function InstructorMobileHome({
         <motion.div
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate("/instructor/waiting-room")}
-          className="mt-6 mb-6 rounded-2xl overflow-hidden cursor-pointer border border-primary/20"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))",
-          }}
+          className="mt-6 mb-6 rounded-2xl overflow-hidden cursor-pointer border border-border shadow-sm"
         >
-          <div className="flex items-center gap-4 p-4">
-            <div className="shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-              <img src={waitingRoomIcon} alt="The Waiting Room" className="w-10 h-10 object-contain" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-[15px] font-bold text-foreground">The Waiting Room</p>
-                <span className="px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold uppercase tracking-wide">Weekly</span>
+          <img src={waitingRoomPromo} alt="The Waiting Room" className="w-full h-36 object-cover" />
+          <div className="p-4" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))" }}>
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-[15px] font-bold text-foreground">The Waiting Room</p>
+                  <span className="px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold uppercase tracking-wide">Weekly</span>
+                </div>
+                <p className="text-[13px] text-muted-foreground mt-0.5">
+                  Informal weekly Zoom get-togethers for instructors. Chat, share tips & unwind ☕
+                </p>
               </div>
-              <p className="text-[13px] text-muted-foreground mt-0.5">
-                Informal weekly Zoom get-togethers for instructors. Chat, share tips & unwind ☕
-              </p>
+              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
           </div>
         </motion.div>
 
