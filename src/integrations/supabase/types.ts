@@ -370,6 +370,57 @@ export type Database = {
           },
         ]
       }
+      availability_windows: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          label: string | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          label?: string | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          label?: string | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_windows_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_windows_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_drafts: {
         Row: {
           converted_at: string | null
@@ -755,6 +806,189 @@ export type Database = {
           version?: string | null
         }
         Relationships: []
+      }
+      checklist_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          photo_urls: string[] | null
+          pupil_id: string | null
+          responses: Json
+          signature_url: string | null
+          status: string
+          submitted_at: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          photo_urls?: string[] | null
+          pupil_id?: string | null
+          responses?: Json
+          signature_url?: string | null
+          status?: string
+          submitted_at?: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          photo_urls?: string[] | null
+          pupil_id?: string | null
+          responses?: Json
+          signature_url?: string | null
+          status?: string
+          submitted_at?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_submissions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_submissions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_submissions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_submissions_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_submissions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          checklist_type: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          items: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_type?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          items?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_type?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          items?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clock_entries: {
+        Row: {
+          clock_in_at: string
+          clock_in_latitude: number | null
+          clock_in_longitude: number | null
+          clock_out_at: string | null
+          clock_out_latitude: number | null
+          clock_out_longitude: number | null
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          total_hours: number | null
+        }
+        Insert: {
+          clock_in_at?: string
+          clock_in_latitude?: number | null
+          clock_in_longitude?: number | null
+          clock_out_at?: string | null
+          clock_out_latitude?: number | null
+          clock_out_longitude?: number | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          total_hours?: number | null
+        }
+        Update: {
+          clock_in_at?: string
+          clock_in_latitude?: number | null
+          clock_in_longitude?: number | null
+          clock_out_at?: string | null
+          clock_out_latitude?: number | null
+          clock_out_longitude?: number | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          total_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clock_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clock_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_road_alerts: {
         Row: {
@@ -1482,6 +1716,106 @@ export type Database = {
           valid_until?: string | null
         }
         Relationships: []
+      }
+      document_read_receipts: {
+        Row: {
+          document_id: string
+          id: string
+          read_at: string
+          reader_instructor_id: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          read_at?: string
+          reader_instructor_id: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          read_at?: string
+          reader_instructor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_read_receipts_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "document_vault"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_read_receipts_reader_instructor_id_fkey"
+            columns: ["reader_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_read_receipts_reader_instructor_id_fkey"
+            columns: ["reader_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_vault: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_size_bytes: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          instructor_id: string
+          is_shared: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          instructor_id: string
+          is_shared?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          instructor_id?: string
+          is_shared?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_vault_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_vault_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       domain_orders: {
         Row: {
@@ -8011,6 +8345,54 @@ export type Database = {
           },
         ]
       }
+      mood_entries: {
+        Row: {
+          created_at: string
+          energy_level: number | null
+          id: string
+          instructor_id: string
+          logged_date: string
+          mood_score: number
+          notes: string | null
+          stress_level: number | null
+        }
+        Insert: {
+          created_at?: string
+          energy_level?: number | null
+          id?: string
+          instructor_id: string
+          logged_date?: string
+          mood_score: number
+          notes?: string | null
+          stress_level?: number | null
+        }
+        Update: {
+          created_at?: string
+          energy_level?: number | null
+          id?: string
+          instructor_id?: string
+          logged_date?: string
+          mood_score?: number
+          notes?: string | null
+          stress_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mood_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movement_alerts: {
         Row: {
           created_at: string
@@ -12044,6 +12426,143 @@ export type Database = {
           {
             foreignKeyName: "syllabus_templates_instructor_id_fkey"
             columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_channel_members: {
+        Row: {
+          channel_id: string
+          id: string
+          instructor_id: string
+          joined_at: string
+        }
+        Insert: {
+          channel_id: string
+          id?: string
+          instructor_id: string
+          joined_at?: string
+        }
+        Update: {
+          channel_id?: string
+          id?: string
+          instructor_id?: string
+          joined_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "team_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_channel_members_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_channel_members_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_channel_messages: {
+        Row: {
+          channel_id: string
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          sender_id: string
+        }
+        Insert: {
+          channel_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          sender_id: string
+        }
+        Update: {
+          channel_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_channel_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "team_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_channel_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_channel_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_channels: {
+        Row: {
+          channel_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_archived: boolean
+          name: string
+        }
+        Insert: {
+          channel_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name: string
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_channels_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_channels_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "public_instructors"
             referencedColumns: ["id"]
