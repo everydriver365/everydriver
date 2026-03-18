@@ -2024,7 +2024,7 @@ export default function BookingSummary() {
             )}
 
             {/* Instant Bank Pay (GoCardless) */}
-            {instantBankPayEnabled && gatewayHealth.gocardless.available && (
+            {instantBankPayEnabled && (
               <button
                 onClick={handleInstantBankPay}
                 disabled={!canSubmit || isInstantBankPayLoading}

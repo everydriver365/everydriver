@@ -999,7 +999,7 @@ export function MobileBookingView({
             )}
 
             {/* Instant Bank Pay (GoCardless) */}
-            {instantBankPayEnabled && onInstantBankPay && gatewayHealth.gocardless.available && (
+            {instantBankPayEnabled && onInstantBankPay && (
               <button
                 onClick={onInstantBankPay}
                 disabled={!canSubmit || isInstantBankPayLoading}
