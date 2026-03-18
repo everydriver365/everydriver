@@ -152,12 +152,13 @@ export function KlarnaPaymentModal({
   }, [open]);
 
   const handleAuthorize = useCallback(() => {
-    if (!window.Klarna || authorizing) return;
+    const kp = getKlarnaPayments();
+    if (!kp || authorizing) return;
     setAuthorizing(true);
 
     const amountInMinor = Math.round(amount * 100);
 
-    window.Klarna.Payments.authorize(
+    kp.authorize(
       { payment_method_category: "pay_over_time" },
       {
         purchase_country: "GB",
