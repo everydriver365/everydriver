@@ -354,6 +354,12 @@ const App = () => (
                 <Route path="/instructor/waiting-room" element={<WaitingRoomPage />} />
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
+                <Route path="/instructor/checklists" element={<InstructorChecklists />} />
+                <Route path="/instructor/document-vault" element={<InstructorDocumentVault />} />
+                <Route path="/instructor/clock" element={<InstructorClockInOut />} />
+                <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
+                <Route path="/instructor/wellbeing" element={<InstructorWellbeing />} />
+                <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />
