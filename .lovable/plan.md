@@ -1,29 +1,16 @@
 
-Issue found:
-- The bank payment failure is not caused by the checkout UI.
-- `src/pages/BookingSummary.tsx` calls the `gocardless-instant-bank-pay` backend function and shows the generic message “Failed to start bank payment” when that call fails.
-- In `supabase/functions/gocardless-instant-bank-pay/index.ts`, the function picks the API base URL from `GOCARDLESS_ENVIRONMENT`, defaulting to `sandbox`.
-- The backend logs show the exact GoCardless error: “The access token you've used is not a valid sandbox API access token” (401).
 
-Root cause:
-- The project currently has both secrets present: `GOCARDLESS_ACCESS_TOKEN` and `GOCARDLESS_ENVIRONMENT`.
-- The function is calling the sandbox GoCardless API, but the stored token is a live token.
-- The same environment pattern is also used in:
-  - `supabase/functions/gocardless-pupil-mandate/index.ts`
-  - `supabase/functions/gocardless-create-billing-request/index.ts`
-So this mismatch can affect other GoCardless flows too.
+## Fix: Square SDK Environment Mismatch
 
-Plan:
-1. Update backend payment configuration so the GoCardless environment matches the token type:
-   - If this project should take real payments: set `GOCARDLESS_ENVIRONMENT` to `live`.
-   - If this project is only for testing: keep `sandbox` and replace `GOCARDLESS_ACCESS_TOKEN` with a sandbox token.
-2. Re-test the instant bank payment flow after the secret change.
-3. Optionally harden the app afterward by improving the frontend/backend error messaging so future token/environment mismatches are easier to diagnose.
+**Problem**: The `SQUARE_ENVIRONMENT` secret is set to `sandbox`, but the `SQUARE_APPLICATION_ID` is a production application ID. This causes the SDK to load the sandbox JS (`sandbox.web.squarecdn.com`) but fail when initialized with a production app ID.
 
-Recommended path:
-- Based on the error, the fastest likely fix is to switch `GOCARDLESS_ENVIRONMENT` from `sandbox` to `live`.
+**Evidence**: Console logs show `ApplicationIdEnvironmentMismatchError` and the `square-wallet-config` response confirms `environment: "live"` — but both `SquareWalletButtons.tsx` and `SquarePaymentForm.tsx` also have their own SDK initialization paths that may be reading the environment differently, or there's a second config fetch path.
 
-Technical notes:
-- No database change is needed.
-- No application code change is required to resolve the current failure.
-- Once fixed, all GoCardless functions that share this secret setup should start using the correct API endpoint.
+Looking at the code:
+- `square-wallet-config` edge function reads `SQUARE_ENVIRONMENT` and returns it — the network response shows `"environment":"live"`, so the config function is correct.
+- `SquarePaymentForm.tsx` likely has its own SDK init that may use a different config source.
+
+**Fix**: Update the `SQUARE_ENVIRONMENT` secret from `sandbox` to `production` (or `live`). The `square-wallet-config` already returns `"live"` so the wallet buttons should work — the error is likely coming from `SquarePaymentForm.tsx` which may have a separate config fetch. I need to check that file's init logic to confirm both components use the same config endpoint.
+
+**Action**: Update the `SQUARE_ENVIRONMENT` secret value to `production` to match the production application ID, ensuring both the card form and wallet buttons load the production Square SDK.
+
