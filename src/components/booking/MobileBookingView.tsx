@@ -987,22 +987,6 @@ export function MobileBookingView({
               </p>
             </button>
 
-            {/* Cash Payment */}
-            {cashPaymentsEnabled && onCashPayment && (
-              <button
-                onClick={onCashPayment}
-                disabled={!canSubmit || isCashProcessing}
-                className="w-full rounded-lg border-2 border-emerald-300 dark:border-emerald-700 p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-emerald-950/50 dark:hover:to-emerald-900/50 transition-colors text-left disabled:opacity-50"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white">💵 Cash</span>
-                  <span className="text-xs text-muted-foreground">Pay your instructor</span>
-                </div>
-                <p className="font-semibold text-sm">{isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}</p>
-                <p className="text-xs text-muted-foreground mt-1">Pay cash on your first lesson to your instructor</p>
-              </button>
-            )}
-
             {/* Instant Bank Pay (GoCardless) */}
             {instantBankPayEnabled && onInstantBankPay && gatewayHealth.gocardless.available && (
               <button
@@ -1016,6 +1000,22 @@ export function MobileBookingView({
                 </div>
                 <p className="font-semibold text-sm">{isInstantBankPayLoading ? "Connecting..." : `£${totalPrice + upsellTotal}`}</p>
                 <p className="text-xs text-muted-foreground mt-1">Pay directly from your bank account</p>
+              </button>
+            )}
+
+            {/* Cash Payment */}
+            {cashPaymentsEnabled && onCashPayment && (
+              <button
+                onClick={onCashPayment}
+                disabled={!canSubmit || isCashProcessing}
+                className="w-full rounded-lg border-2 border-emerald-300 dark:border-emerald-700 p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-emerald-950/50 dark:hover:to-emerald-900/50 transition-colors text-left disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white">💵 Cash</span>
+                  <span className="text-xs text-muted-foreground">Pay your instructor</span>
+                </div>
+                <p className="font-semibold text-sm">{isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}</p>
+                <p className="text-xs text-muted-foreground mt-1">Pay cash on your first lesson to your instructor</p>
               </button>
             )}
 
