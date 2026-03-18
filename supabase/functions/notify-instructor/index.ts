@@ -6,6 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface LessonSlot {
+  date: string;
+  time: string;
+  durationMinutes?: number;
+}
+
 interface NotifyRequest {
   instructorId: string;
   type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
@@ -13,6 +19,7 @@ interface NotifyRequest {
   lessonDate?: string;
   lessonTime?: string;
   durationMinutes?: number;
+  allLessons?: LessonSlot[];
   oldDate?: string;
   oldTime?: string;
   chargeApplied?: boolean;
