@@ -432,7 +432,7 @@ export function CleanHomeView({
 
         <RoadAlertsRow alerts={alerts} className="mt-3" />
 
-        <WaitingRoomPromoTile className="mt-4" />
+        <BottomPromoGroup className="mt-4" />
 
         
 
