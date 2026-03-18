@@ -172,6 +172,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
+  "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
 };
 
 export default function AdminPortal() {
