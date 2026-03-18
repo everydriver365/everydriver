@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import squareCardsLogo from "@/assets/square-cards-2.jpg";
+import squareCardsLogo from "@/assets/square-cards-3.jpg";
 import gocardlessLogo from "@/assets/gocardless-logo.png";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
