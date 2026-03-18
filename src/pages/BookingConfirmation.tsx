@@ -63,6 +63,8 @@ export default function BookingConfirmation() {
   const npiSuccess = searchParams.get("npi") === "success";
   const elavonSuccess = searchParams.get("elavon") === "success";
   const squareSuccess = searchParams.get("square") === "success";
+  const cashPayment = searchParams.get("method") === "cash";
+  const gocardlessSuccess = searchParams.get("gocardless") === "success";
   const paymentRef = searchParams.get("ref");
   const freeBooking = searchParams.get("free") === "true";
   
@@ -73,6 +75,8 @@ export default function BookingConfirmation() {
     npiSuccess ||
     elavonSuccess ||
     squareSuccess ||
+    cashPayment ||
+    gocardlessSuccess ||
     freeBooking;
   
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
