@@ -53,7 +53,7 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: refreshToken }),
+      body: JSON.stringify({ refresh: refreshToken }),
     }
   );
 
@@ -63,13 +63,14 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   }
 
   const data = await res.json();
+  console.log("[RadiusPoller] Refresh response keys:", Object.keys(data));
   const accessToken = data.access || data.token || data.access_token;
   if (!accessToken) {
-    throw new Error("No access token in refresh response");
+    throw new Error("No access token in refresh response: " + JSON.stringify(data));
   }
 
-  // Cache for 24h
-  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  // Cache for 55 minutes (tokens typically expire in 1h)
+  const expiresAt = Date.now() + 55 * 60 * 1000;
   cachedSession = { accessToken, expiresAt };
 
   // 4. Persist to DB
