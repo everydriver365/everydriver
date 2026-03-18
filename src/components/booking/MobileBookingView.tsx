@@ -30,6 +30,7 @@ import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 import klarnaLogo from "@/assets/klarna-logo.svg";
+import klarnaRoundLogo from "@/assets/klarna-round-logo.png";
 import clearpayLogo from "@/assets/clearpay-logo.svg";
 import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
