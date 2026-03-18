@@ -28,6 +28,8 @@ serve(async (req) => {
       ? "https://api.gocardless.com"
       : "https://api-sandbox.gocardless.com";
 
+    console.log(`[GoCardless Mandate] Environment: "${GOCARDLESS_ENVIRONMENT}" → resolved: "${env}", isLive: ${isLive}, baseUrl: ${baseUrl}`);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);

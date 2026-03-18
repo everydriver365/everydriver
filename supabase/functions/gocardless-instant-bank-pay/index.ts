@@ -28,6 +28,8 @@ serve(async (req) => {
       ? "https://api.gocardless.com"
       : "https://api-sandbox.gocardless.com";
 
+    console.log(`[GoCardless IBP] Environment: "${GOCARDLESS_ENVIRONMENT}" → resolved: "${env}", isLive: ${isLive}, baseUrl: ${baseUrl}`);
+
     const { amount, pupilId, bookingRef, redirectUrl, cancelUrl, customerEmail, customerName } = await req.json();
 
     if (!amount || !pupilId || !redirectUrl) {
