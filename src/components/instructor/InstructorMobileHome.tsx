@@ -533,12 +533,24 @@ export function InstructorMobileHome({
           <SwipeableQuickAccess />
         </div>
 
+        {/* Weather Alert */}
+        <WeatherAlertBanner className="mt-4" />
+
+        {/* Impact Alerts */}
+        <div className="mt-4">
+          <ImpactAlertCard instructorId={instructorId} />
+        </div>
+
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
 
         {/* Insights Tiles */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+
+        {/* Vehicle Health & Idle Time */}
+        <VehicleHealthCard instructorId={instructorId} className="mt-4" />
+        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
 
         <div className="h-6" />
 
