@@ -45,7 +45,7 @@ import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBa
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { TestRequestsTile } from "@/components/instructor/TestRequestsTile";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { DailyManifest } from "@/components/instructor/dashboard/DailyManifest";
