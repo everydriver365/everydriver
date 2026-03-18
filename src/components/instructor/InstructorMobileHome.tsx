@@ -528,6 +528,9 @@ export function InstructorMobileHome({
           <SwipeableQuickAccess />
         </div>
 
+        {/* Discover Features Tile */}
+        <DiscoverFeaturesTile className="mt-2 mb-4" />
+
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
 
