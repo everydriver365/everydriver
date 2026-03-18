@@ -4,6 +4,7 @@ import {
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone,
+  FolderLock, Timer, Hash, Heart, CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 
