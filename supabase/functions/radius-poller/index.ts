@@ -149,6 +149,7 @@ Deno.serve(async (req) => {
     // Poll live positions from Velocity Fleet API (with one retry on auth failure)
     async function fetchPositions(token: string) {
       console.log("[RadiusPoller] Fetching live positions for customer:", customerId);
+      const apiToken = Deno.env.get("RADIUS_API_TOKEN") || "";
       return await fetch(
         `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
         {
@@ -156,6 +157,7 @@ Deno.serve(async (req) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "API-Token": apiToken,
           },
           body: JSON.stringify({}),
         }
