@@ -16,7 +16,7 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
-import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
+
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
@@ -142,9 +142,8 @@ interface MobileBookingViewProps {
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
-  onKlarnaSuccess: (authToken: string, orderId: string) => Promise<void>;
-  onKlarnaError: (error: string) => void;
-  onKlarnaCancel: () => void;
+  onKlarnaCheckout: () => void;
+  isKlarnaLoading: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
@@ -210,9 +209,8 @@ export function MobileBookingView({
   onBookingSubmit,
   onNPICheckout,
   onClearpayCheckout,
-  onKlarnaSuccess,
-  onKlarnaError,
-  onKlarnaCancel,
+  onKlarnaCheckout,
+  isKlarnaLoading,
   onWalletSuccess,
   showEmbeddedCheckout,
   embeddedCheckoutPupilId,
@@ -958,23 +956,20 @@ export function MobileBookingView({
               <p className="text-xs text-muted-foreground mt-1">Pay in 4 instalments</p>
             </button>
 
-            {/* Klarna */}
-            <div className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20">
+            {/* Klarna - Server-side redirect */}
+            <button
+              onClick={onKlarnaCheckout}
+              disabled={!canSubmit || isWalletProcessing || isKlarnaLoading}
+              className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 hover:from-[#ffb3c7]/20 hover:to-[#ffb3c7]/30 transition-colors text-left disabled:opacity-50 disabled:pointer-events-none"
+            >
               <div className="flex items-center justify-between mb-2">
                 <img src={klarnaLogo} alt="Klarna" className="h-5 w-5" />
                 <span className="text-xs text-muted-foreground">Pay in 3</span>
               </div>
-              <p className="font-semibold text-sm mb-2">3 × £{((totalPrice + upsellTotal) / 3).toFixed(2)}</p>
-              <KlarnaExpressButton
-                amount={totalPrice + upsellTotal}
-                merchantReference={klarnaMerchantReference}
-                orderDescription={`${courseName} - ${hours} Hour Course${upsellTotal > 0 ? ' + extras' : ''}`}
-                disabled={!canSubmit || isWalletProcessing}
-                onSuccess={onKlarnaSuccess}
-                onError={onKlarnaError}
-                onCancel={onKlarnaCancel}
-              />
-            </div>
+              <p className="font-semibold text-sm">
+                {isKlarnaLoading ? "Redirecting to Klarna..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
+              </p>
+            </button>
 
             {/* Finance Option */}
           </div>
