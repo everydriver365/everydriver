@@ -170,6 +170,10 @@ export default function BookingSummary() {
   // Cancellation policy text
   const [cancellationPolicyText, setCancellationPolicyText] = useState("");
   
+  // Cash payments
+  const [cashPaymentsEnabled, setCashPaymentsEnabled] = useState(false);
+  const [isCashProcessing, setIsCashProcessing] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
@@ -267,6 +271,7 @@ export default function BookingSummary() {
         setDepositAmount(instructorRes.data.deposit_amount ?? 350);
         setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
         setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
+        setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
       }
 
       if (instructorRes.error || !instructorRes.data) {
@@ -526,6 +531,26 @@ export default function BookingSummary() {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsKlarnaLoading(false);
+    }
+  };
+
+  const handleCashPayment = async () => {
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
+      return;
+    }
+    setIsCashProcessing(true);
+    try {
+      const pupilId = await ensureBookingCreated('full', 0);
+      if (!pupilId) return;
+      await triggerConfirmBooking(pupilId);
+      navigate(`/booking-confirmation?pupilId=${pupilId}&method=cash`);
+    } catch (err) {
+      console.error("Cash booking error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsCashProcessing(false);
     }
   };
 
@@ -1029,6 +1054,9 @@ export default function BookingSummary() {
         onClearpayCheckout={handleClearpayCheckout}
         onKlarnaCheckout={handleKlarnaCheckout}
         isKlarnaLoading={isKlarnaLoading}
+        onCashPayment={handleCashPayment}
+        isCashProcessing={isCashProcessing}
+        cashPaymentsEnabled={cashPaymentsEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
@@ -1876,6 +1904,27 @@ export default function BookingSummary() {
                 </p>
               )}
             </button>
+
+            {/* Cash Payment */}
+            {cashPaymentsEnabled && (
+              <button
+                onClick={handleCashPayment}
+                disabled={!canSubmit || isCashProcessing}
+                className="w-full rounded-lg border-2 border-emerald-300 dark:border-emerald-700 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-emerald-950/50 dark:hover:to-emerald-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
+                    <Banknote className="h-3 w-3" />
+                    Cash
+                  </span>
+                  <span className="text-xs text-muted-foreground">Pay your instructor</span>
+                </div>
+                <div className="font-semibold text-sm">
+                  {isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Pay cash directly to your instructor</p>
+              </button>
+            )}
 
           </div>
 
