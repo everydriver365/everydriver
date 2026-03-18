@@ -16,7 +16,7 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
-import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
+
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
