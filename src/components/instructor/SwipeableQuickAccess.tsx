@@ -36,7 +36,7 @@ import monthEndIcon from "@/assets/month-end-icon.png";
 import weeklyReportIcon from "@/assets/weekly-report-icon.png";
 import tasksDueIcon from "@/assets/tasks-due-icon.png";
 import endOfDayIcon from "@/assets/end-of-day-icon.png";
-
+import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 interface QuickTile {
   title: string;
   subtitle: string;
