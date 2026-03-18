@@ -28,6 +28,7 @@ const NextUpTileDemo = lazy(() => import("./pages/instructor/NextUpTileDemo"));
 const BriefingDemo = lazy(() => import("./pages/instructor/BriefingDemo"));
 const HeaderHeroDemo = lazy(() => import("./pages/HeaderHeroDemo"));
 const HeroRedesignDemo = lazy(() => import("./pages/HeroRedesignDemo"));
+const WaitingRoomCtaDemo = lazy(() => import("./pages/WaitingRoomCtaDemo"));
 const InstructorDiary = lazy(() => import("./pages/InstructorDiary"));
 const InstructorJobs = lazy(() => import("./pages/InstructorJobs"));
 const InstructorPay = lazy(() => import("./pages/InstructorPay"));
@@ -277,6 +278,7 @@ const App = () => (
                 <Route path="/instructor/briefing-demo" element={<BriefingDemo />} />
                 <Route path="/instructor/header-demo" element={<HeaderHeroDemo />} />
                 <Route path="/instructor/hero-redesign" element={<HeroRedesignDemo />} />
+                <Route path="/instructor/waiting-room-cta-demo" element={<WaitingRoomCtaDemo />} />
                 <Route path="/instructor/diary" element={<InstructorDiary />} />
                 <Route path="/instructor/jobs" element={<InstructorJobs />} />
                 <Route path="/instructor/pay" element={<InstructorPay />} />
