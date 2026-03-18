@@ -529,9 +529,6 @@ export function InstructorMobileHome({
           <SwipeableQuickAccess />
         </div>
 
-        {/* Discover Features Tile */}
-        <DiscoverFeaturesTile className="mt-2 mb-4" />
-
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
 
@@ -561,7 +558,10 @@ export function InstructorMobileHome({
         <EndOfDaySummary instructorId={instructorId} />
 
         {/* The Waiting Room Promo */}
-        <WaitingRoomPromoTile className="mt-6 mb-6" />
+        <WaitingRoomPromoTile className="mt-6" />
+
+        {/* Discover Features Tile */}
+        <DiscoverFeaturesTile className="mt-3 mb-6" />
 
 
         {/* 10. Floating Session Bar */}
