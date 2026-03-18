@@ -57,8 +57,39 @@ function buildEmailHtml(params: {
     ? `<img src="${profileImageUrl}" alt="${instructorName}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;" />`
     : "";
 
-  const lessonSection = firstLessonDate
-    ? `
+  const formatLessonDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const formatLessonTime = (timeStr: string) => {
+    const [h, m] = timeStr.slice(0, 5).split(":");
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? "pm" : "am";
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${m}${ampm}`;
+  };
+
+  let lessonSection = "";
+  if (allLessons && allLessons.length > 1) {
+    const lessonRows = allLessons.map((l) => {
+      const dur = l.durationMinutes || 60;
+      const durLabel = dur >= 60 ? `${dur / 60}h` : `${dur}min`;
+      return `<tr><td style="padding:4px 0;font-size:15px;color:#333;">📅 ${formatLessonDate(l.date)} at ${formatLessonTime(l.time)} (${durLabel})</td></tr>`;
+    }).join("");
+    lessonSection = `
+      <tr><td style="padding:24px 32px;">
+        <h2 style="margin:0 0 12px;font-size:18px;color:#1a1a2e;">📅 Your Scheduled Lessons (${allLessons.length})</h2>
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          ${lessonRows}
+        </table>
+        ${pickupAddress ? `<p style="margin:12px 0 0;font-size:14px;color:#555;"><strong>Pickup:</strong> ${pickupAddress}</p>` : ""}
+        <p style="margin:8px 0 0;font-size:14px;color:#555;"><strong>Course:</strong> ${courseType} (${courseHours} hours)</p>
+      </td></tr>
+      <tr><td style="padding:0 32px;"><hr style="border:none;border-top:1px solid #e5e7eb;" /></td></tr>
+    `;
+  } else if (firstLessonDate) {
+    lessonSection = `
       <tr><td style="padding:24px 32px;">
         <h2 style="margin:0 0 12px;font-size:18px;color:#1a1a2e;">📅 Your First Lesson</h2>
         <table cellpadding="4" cellspacing="0" style="font-size:15px;color:#333;">
@@ -69,8 +100,8 @@ function buildEmailHtml(params: {
         </table>
       </td></tr>
       <tr><td style="padding:0 32px;"><hr style="border:none;border-top:1px solid #e5e7eb;" /></td></tr>
-    `
-    : "";
+    `;
+  }
 
   const paymentSection = paymentQrUrl
     ? `
