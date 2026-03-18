@@ -1788,9 +1788,12 @@ export default function BookingSummary() {
                 instructorId={instructor.id}
                 customerName={pupilName}
                 customerEmail={pupilEmail}
-                onPaid={() => {
+                onPaid={async () => {
                   const pupilId = bookingPupilId;
-                  if (pupilId) navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                  if (pupilId) {
+                    await triggerConfirmBooking(pupilId);
+                    navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                  }
                 }}
                 onProcessing={(p) => setIsSubmitting(p)}
                 disabled={isSubmitting || isElavonLoading || isClearpayLoading}
