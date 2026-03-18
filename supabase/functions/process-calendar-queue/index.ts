@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       .select("*")
       .is("processed_at", null)
       .order("created_at", { ascending: true })
-      .limit(10);
+      .limit(50);
 
     if (queueError) {
       console.error("Error fetching queue:", queueError);

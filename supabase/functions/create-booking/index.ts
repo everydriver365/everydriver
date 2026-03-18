@@ -268,6 +268,11 @@ serve(async (req) => {
     // 8. Send pupil welcome/onboarding email
     try {
       const firstLesson = sortedLessons?.[0];
+      const allLessons = sortedLessons?.map((l: any) => ({
+        date: l.lesson_date,
+        time: l.start_time,
+        durationMinutes: l.duration_minutes,
+      })) || [];
       await fetch(
         `${supabaseUrl}/functions/v1/send-pupil-welcome`,
         {
@@ -287,6 +292,7 @@ serve(async (req) => {
             firstLessonDate: firstLesson?.lesson_date || null,
             firstLessonTime: firstLesson?.start_time || null,
             pickupAddress: booking.pupilAddress,
+            allLessons,
           }),
         }
       );

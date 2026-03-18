@@ -91,13 +91,28 @@ serve(async (req) => {
 
     switch (data.type) {
       case "new_booking":
-        smsMessage = `📅 New booking! ${data.pupilName} has booked a ${data.durationMinutes || 60}-min lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}. Check your schedule for details.`;
-        pushNotification = {
-          title: "📅 New Booking",
-          body: `${data.pupilName} booked ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}`,
-          tag: "new-booking",
-          data: { type: "new_booking", lessonDate: data.lessonDate }
-        };
+        if (data.allLessons && data.allLessons.length > 1) {
+          const lessonLines = data.allLessons.map((l) => {
+            const dur = l.durationMinutes || 60;
+            const durLabel = dur >= 60 ? `${dur / 60}h` : `${dur}min`;
+            return `• ${formatDate(l.date)} at ${formatTime(l.time)} (${durLabel})`;
+          });
+          smsMessage = `📅 New booking! ${data.pupilName} has booked ${data.allLessons.length} lessons:\n${lessonLines.join("\n")}\nCheck your schedule for details.`;
+          pushNotification = {
+            title: "📅 New Booking",
+            body: `${data.pupilName} booked ${data.allLessons.length} lessons. First: ${formatDate(data.allLessons[0].date)} at ${formatTime(data.allLessons[0].time)}`,
+            tag: "new-booking",
+            data: { type: "new_booking", lessonDate: data.allLessons[0].date }
+          };
+        } else {
+          smsMessage = `📅 New booking! ${data.pupilName} has booked a ${data.durationMinutes || 60}-min lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}. Check your schedule for details.`;
+          pushNotification = {
+            title: "📅 New Booking",
+            body: `${data.pupilName} booked ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}`,
+            tag: "new-booking",
+            data: { type: "new_booking", lessonDate: data.lessonDate }
+          };
+        }
         break;
 
       case "cancellation":

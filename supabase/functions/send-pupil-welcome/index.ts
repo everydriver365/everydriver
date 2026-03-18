@@ -273,6 +273,7 @@ serve(async (req) => {
       pickupAddress,
       courseType: courseType || "Driving Course",
       courseHours: courseHours || 0,
+      allLessons,
     });
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
