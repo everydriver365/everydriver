@@ -107,7 +107,7 @@ export function KlarnaPaymentModal({
 
         // Small delay to ensure container is rendered
         setTimeout(() => {
-          window.Klarna!.Payments.load(
+          getKlarnaPayments()!.load(
             { container: "#klarna-payments-container", payment_method_category: "pay_over_time" },
             (res) => {
               setLoading(false);
