@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash, Users } from "lucide-react";
+import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash, Users, HeartPulse, Clock, MessageCircle } from "lucide-react";
 import { format, differenceInYears } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,8 @@ import { DobCalendarPicker } from "@/components/pupil-portal/DobCalendarPicker";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Bell } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PupilData {
   id: string;
@@ -30,6 +32,11 @@ interface PupilData {
   what3words: string | null;
   parent_portal_enabled?: boolean;
   reminder_preferences?: { "24h": boolean; "1h": boolean } | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  medical_notes?: string | null;
+  preferred_duration_minutes?: number | null;
+  communication_preference?: string | null;
 }
 
 interface PupilPortalProfileEditProps {
@@ -265,6 +272,96 @@ export function PupilPortalProfileEdit({ pupil, onPupilUpdate, brandColour }: Pu
                 Save Pick-up Address
               </Button>
             )}
+          </div>
+        </div>
+
+        {/* Emergency Contact */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2 px-1 py-1.5 mb-1">
+            <HeartPulse className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Emergency & Medical</span>
+          </div>
+          <InlineEditField
+            value={pupil.emergency_contact_name || ""}
+            onSave={(v) => updateField("emergency_contact_name", v)}
+            icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            label="Emergency Contact Name"
+            emptyText="Click to add"
+            placeholder="e.g. Jane Smith"
+          />
+          <InlineEditField
+            value={pupil.emergency_contact_phone || ""}
+            onSave={(v) => updateField("emergency_contact_phone", v)}
+            type="tel"
+            icon={<Phone className="h-4 w-4 text-muted-foreground" />}
+            label="Emergency Contact Phone"
+            emptyText="Click to add"
+            placeholder="e.g. 07700 900000"
+          />
+          <div className="flex items-start gap-2 px-1 py-1.5">
+            <HeartPulse className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] text-muted-foreground block">Medical / Accessibility Notes</span>
+              <Textarea
+                defaultValue={pupil.medical_notes || ""}
+                placeholder="Any medical conditions or accessibility needs..."
+                className="mt-1 text-sm min-h-[60px] border-muted"
+                onBlur={(e) => {
+                  const val = e.target.value.trim();
+                  if (val !== (pupil.medical_notes || "")) {
+                    updateField("medical_notes", val || null);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2 px-1 py-1.5 mb-1">
+            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Preferences</span>
+          </div>
+
+          <div className="flex items-center gap-2 px-1 py-1.5">
+            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] text-muted-foreground block">Preferred Lesson Duration</span>
+              <Select
+                value={String(pupil.preferred_duration_minutes || 60)}
+                onValueChange={(v) => updateField("preferred_duration_minutes", v)}
+              >
+                <SelectTrigger className="h-7 text-sm border-0 shadow-none px-0 focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="60">1 hour</SelectItem>
+                  <SelectItem value="90">1.5 hours</SelectItem>
+                  <SelectItem value="120">2 hours</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 px-1 py-1.5">
+            <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] text-muted-foreground block">Communication Preference</span>
+              <Select
+                value={pupil.communication_preference || "sms"}
+                onValueChange={(v) => updateField("communication_preference", v)}
+              >
+                <SelectTrigger className="h-7 text-sm border-0 shadow-none px-0 focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sms">SMS</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="both">Both SMS & Email</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 

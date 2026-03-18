@@ -58,6 +58,7 @@ import { PupilDashboardSkeleton } from "@/components/ui/skeletons/PupilDashboard
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { PostLessonRating } from "@/components/pupil-portal/PostLessonRating";
 import { PassShareCard } from "@/components/pupil-portal/PassShareCard";
+import { PupilCertificates } from "@/components/pupil-portal/PupilCertificates";
 import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
 import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
@@ -105,7 +106,7 @@ interface Pupil {
   what3words: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell' | 'documents';
 
 const sectionTitles: Record<string, string> = {
   schedule: "My Lessons",
@@ -125,6 +126,7 @@ const sectionTitles: Record<string, string> = {
   "lesson-videos": "Lesson Videos",
   "driving-style": "Driving Style",
   "show-tell": "Show Me / Tell Me",
+  documents: "My Documents",
 };
 
 export default function BrandedPupilPortal() {
@@ -594,6 +596,19 @@ export default function BrandedPupilPortal() {
                 <SubPageHeader title="Driving Style" onBack={handleBack} />
                 <LearnerDrivingScore pupilId={pupil.id} brandColour={drive365Blue} className="mb-4" />
                 <PupilDrivingStyleReport pupilId={pupil.id} brandColour={drive365Blue} />
+              </motion.div>
+            )}
+
+            {activeSection === 'documents' && instructor && (
+              <motion.div key="documents" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <SubPageHeader title="My Documents" onBack={handleBack} />
+                <PupilCertificates
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  instructorId={instructor.id}
+                  instructorName={instructor.name}
+                  brandColour={drive365Blue}
+                />
               </motion.div>
             )}
 
