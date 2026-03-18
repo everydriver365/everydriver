@@ -229,6 +229,8 @@ export function MobileBookingView({
   onInstantBankPay,
   isInstantBankPayLoading = false,
   instantBankPayEnabled = false,
+  klarnaEnabled = false,
+  clearpayEnabled = false,
   onWalletSuccess,
   showEmbeddedCheckout,
   embeddedCheckoutPupilId,
