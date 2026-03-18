@@ -1844,7 +1844,7 @@ export default function BookingSummary() {
                 </span>
               </div>
               <div className="font-semibold text-sm">
-                {isKlarnaLoading ? "Redirecting to Klarna..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
+                {isKlarnaLoading ? "Loading..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
               </div>
               {!canSubmit && (
                 <p className="mt-2 text-xs text-muted-foreground">
