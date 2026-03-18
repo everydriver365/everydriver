@@ -400,6 +400,18 @@ export default function BookingSummary() {
     }
   };
 
+  // Helper: call confirm-booking to trigger all notifications after payment
+  const triggerConfirmBooking = async (pupilId: string) => {
+    try {
+      await supabase.functions.invoke("confirm-booking", {
+        body: { pupilId, instructorId: instructor?.id },
+      });
+      console.log("confirm-booking triggered for", pupilId);
+    } catch (err) {
+      console.error("confirm-booking error (non-fatal):", err);
+    }
+  };
+
   const handleBookingSubmit = async () => {
     if (!canSubmit || !courseDetails) return;
 
@@ -415,6 +427,8 @@ export default function BookingSummary() {
     try {
       const pupilId = await ensureBookingCreated();
       if (!pupilId) return;
+      // Free booking — trigger notifications immediately
+      await triggerConfirmBooking(pupilId);
       navigate(`/booking-confirmation?pupilId=${pupilId}&free=true`);
     } catch (err) {
       console.error("Booking error:", err);
@@ -998,6 +1012,7 @@ export default function BookingSummary() {
     toast.success("Payment authorized with Klarna!");
     const pupilId = await ensureBookingCreated();
     if (pupilId) {
+      await triggerConfirmBooking(pupilId);
       navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
     }
   };
@@ -1085,6 +1100,7 @@ export default function BookingSummary() {
           );
           toast.success("Payment successful!");
           if (pupilId) {
+            await triggerConfirmBooking(pupilId);
             navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
           }
         }}
@@ -1772,9 +1788,12 @@ export default function BookingSummary() {
                 instructorId={instructor.id}
                 customerName={pupilName}
                 customerEmail={pupilEmail}
-                onPaid={() => {
+                onPaid={async () => {
                   const pupilId = bookingPupilId;
-                  if (pupilId) navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                  if (pupilId) {
+                    await triggerConfirmBooking(pupilId);
+                    navigate(`/booking-confirmation?pupilId=${pupilId}`);
+                  }
                 }}
                 onProcessing={(p) => setIsSubmitting(p)}
                 disabled={isSubmitting || isElavonLoading || isClearpayLoading}
@@ -1891,6 +1910,7 @@ export default function BookingSummary() {
                   toast.success("Payment authorized with Klarna!");
                   const pupilId = await ensureBookingCreated();
                   if (pupilId) {
+                    await triggerConfirmBooking(pupilId);
                     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
                   }
                 }}
@@ -1948,6 +1968,7 @@ export default function BookingSummary() {
                   );
                   toast.success("Payment successful!");
                   if (pupilId) {
+                    await triggerConfirmBooking(pupilId);
                     navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
                   }
                 }}

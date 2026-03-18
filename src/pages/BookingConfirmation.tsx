@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car, AlertTriangle, CalendarPlus, Users } from "lucide-react";
@@ -80,6 +80,8 @@ export default function BookingConfirmation() {
   const [loading, setLoading] = useState(true);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
+  const confirmTriggeredRef = useRef(false);
+
   useEffect(() => {
     const fetchBookingDetails = async () => {
       if (!pupilId) {
@@ -93,7 +95,7 @@ export default function BookingConfirmation() {
           .select(`
             id, name, email, phone, address, postcode, course_type, prepaid_hours,
             payment_type, deposit_paid, balance_due_date, account_balance,
-            instructor:instructors(name, phone, email, car_make, car_model, car_type, profile_image_url)
+            instructor:instructors(id, name, phone, email, car_make, car_model, car_type, profile_image_url)
           `)
           .eq("id", pupilId)
           .maybeSingle(),
@@ -107,12 +109,31 @@ export default function BookingConfirmation() {
 
       if (pupilRes.data) {
         const pupilData = pupilRes.data as any;
+        const instructorData = Array.isArray(pupilData.instructor) ? pupilData.instructor[0] : pupilData.instructor;
         setPupil({
           ...pupilData,
-          instructor: Array.isArray(pupilData.instructor) ? pupilData.instructor[0] : pupilData.instructor,
+          instructor: instructorData,
         });
         if (paymentSuccessful) {
-          invalidatePaymentQueries({ pupilId: pupilData.id, instructorId: pupilData.instructor_id || (Array.isArray(pupilData.instructor) ? pupilData.instructor[0]?.id : pupilData.instructor?.id) });
+          invalidatePaymentQueries({ pupilId: pupilData.id, instructorId: pupilData.instructor_id || instructorData?.id });
+          
+          // For redirect-based payments (Clearpay, Klarna, Square), trigger confirm-booking
+          // to send all notifications now that payment has succeeded
+          const isRedirectPayment = clearpaySuccess || klarnaSuccess || squareSuccess;
+          if (isRedirectPayment && !confirmTriggeredRef.current) {
+            confirmTriggeredRef.current = true;
+            const instructorId = pupilData.instructor_id || instructorData?.id;
+            if (instructorId) {
+              try {
+                await supabase.functions.invoke("confirm-booking", {
+                  body: { pupilId, instructorId },
+                });
+                console.log("confirm-booking triggered after redirect payment");
+              } catch (err) {
+                console.error("confirm-booking error (non-fatal):", err);
+              }
+            }
+          }
         }
       }
       if (lessonsRes.data) setLessons(lessonsRes.data);
