@@ -29,6 +29,7 @@ const BriefingDemo = lazy(() => import("./pages/instructor/BriefingDemo"));
 const HeaderHeroDemo = lazy(() => import("./pages/HeaderHeroDemo"));
 const HeroRedesignDemo = lazy(() => import("./pages/HeroRedesignDemo"));
 const WaitingRoomCtaDemo = lazy(() => import("./pages/WaitingRoomCtaDemo"));
+const TileDesignDemo = lazy(() => import("./pages/TileDesignDemo"));
 const InstructorDiary = lazy(() => import("./pages/InstructorDiary"));
 const InstructorJobs = lazy(() => import("./pages/InstructorJobs"));
 const InstructorPay = lazy(() => import("./pages/InstructorPay"));
@@ -247,6 +248,8 @@ const App = () => (
                 {/* Public Payment Page */}
                 <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
 
+                {/* Demo Pages */}
+                <Route path="/demo/tiles" element={<TileDesignDemo />} />
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
                 <Route path="/instructor-app" element={<Navigate to="/" replace />} />
