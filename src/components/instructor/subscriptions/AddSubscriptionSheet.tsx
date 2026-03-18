@@ -252,6 +252,40 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
               {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Create Subscription
             </Button>
+
+            {/* Direct Debit mandate URL */}
+            {mandateUrl && (
+              <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-3 space-y-2">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  📋 Direct Debit Setup Link
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Share this link with your pupil so they can authorise Direct Debit payments:
+                </p>
+                <div className="flex gap-2">
+                  <Input value={mandateUrl} readOnly className="text-xs" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(mandateUrl);
+                      toast({ title: "Copied!", description: "Link copied to clipboard" });
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => window.open(mandateUrl, "_blank")}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  Open Link
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </SheetContent>
