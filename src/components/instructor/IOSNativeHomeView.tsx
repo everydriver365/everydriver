@@ -514,7 +514,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
           </div>
         </div>
 
-        <WaitingRoomPromoTile className="mx-4 mb-4" />
+        <BottomPromoGroup className="mx-4 mb-4" />
 
         {/* ─── 5. MORE FEATURES ─── */}
         <div className="mb-6">
