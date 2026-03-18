@@ -284,6 +284,11 @@ export default function PupilPortal() {
           <PupilDashboardRadar pupilId={pupil.id} />
         </motion.div>
 
+        {/* Driving Score */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+          <LearnerDrivingScore pupilId={pupil.id} />
+        </motion.div>
+
         {/* Telematics */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <PupilTelematicsCard pupilId={pupil.id} />
