@@ -79,6 +79,10 @@ import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
+import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
+import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
 
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
