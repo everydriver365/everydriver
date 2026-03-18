@@ -125,6 +125,7 @@ const AccountingCallback = lazy(() => import("./pages/instructor/AccountingCallb
 const WeeklyReportPage = lazy(() => import("./pages/instructor/WeeklyReportPage"));
 const OutstandingTasksPage = lazy(() => import("./pages/instructor/OutstandingTasksPage"));
 const EndOfDayPage = lazy(() => import("./pages/instructor/EndOfDayPage"));
+const WaitingRoomPage = lazy(() => import("./pages/instructor-app/WaitingRoomPage"));
 
 // Instructor SaaS pages
 const InstructorAppHome = lazy(() => import("./pages/instructor-app/InstructorAppHome"));
