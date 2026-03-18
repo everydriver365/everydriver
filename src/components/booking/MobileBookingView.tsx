@@ -154,6 +154,8 @@ interface MobileBookingViewProps {
   onInstantBankPay?: () => void;
   isInstantBankPayLoading?: boolean;
   instantBankPayEnabled?: boolean;
+  klarnaEnabled?: boolean;
+  clearpayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
@@ -227,6 +229,8 @@ export function MobileBookingView({
   onInstantBankPay,
   isInstantBankPayLoading = false,
   instantBankPayEnabled = false,
+  klarnaEnabled = false,
+  clearpayEnabled = false,
   onWalletSuccess,
   showEmbeddedCheckout,
   embeddedCheckoutPupilId,
@@ -961,6 +965,7 @@ export function MobileBookingView({
             </div>
 
             {/* Clearpay */}
+            {clearpayEnabled && (
             <button
               onClick={onClearpayCheckout}
               disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available || isWalletProcessing}
@@ -974,8 +979,10 @@ export function MobileBookingView({
               <p className="text-xs text-muted-foreground mt-1">Pay in 4 instalments</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">(Only available for payments up to £1200)</p>
             </button>
+            )}
 
             {/* Klarna - Server-side redirect */}
+            {klarnaEnabled && (
             <button
               onClick={onKlarnaCheckout}
               disabled={!canSubmit || isWalletProcessing || isKlarnaLoading}
@@ -989,9 +996,10 @@ export function MobileBookingView({
                 {isKlarnaLoading ? "Loading..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
               </p>
             </button>
+            )}
 
             {/* Instant Bank Pay (GoCardless) */}
-            {instantBankPayEnabled && onInstantBankPay && gatewayHealth.gocardless.available && (
+            {instantBankPayEnabled && onInstantBankPay && (
               <button
                 onClick={onInstantBankPay}
                 disabled={!canSubmit || isInstantBankPayLoading}

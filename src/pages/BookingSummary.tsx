@@ -178,6 +178,10 @@ export default function BookingSummary() {
   const [instantBankPayEnabled, setInstantBankPayEnabled] = useState(false);
   const [isInstantBankPayLoading, setIsInstantBankPayLoading] = useState(false);
   
+  // BNPL toggles
+  const [klarnaEnabled, setKlarnaEnabled] = useState(false);
+  const [clearpayEnabled, setClearpayEnabled] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
@@ -277,6 +281,8 @@ export default function BookingSummary() {
         setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
         setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
         setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
+        setKlarnaEnabled((instructorRes.data as any).klarna_enabled ?? false);
+        setClearpayEnabled((instructorRes.data as any).clearpay_enabled ?? false);
       }
 
       if (instructorRes.error || !instructorRes.data) {
@@ -1142,6 +1148,8 @@ export default function BookingSummary() {
         onInstantBankPay={handleInstantBankPay}
         isInstantBankPayLoading={isInstantBankPayLoading}
         instantBankPayEnabled={instantBankPayEnabled}
+        klarnaEnabled={klarnaEnabled}
+        clearpayEnabled={clearpayEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
@@ -1949,6 +1957,7 @@ export default function BookingSummary() {
 
 
             {/* Clearpay - Confirmed Working */}
+            {clearpayEnabled && (
             <button
               onClick={handleClearpayCheckout}
               disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
@@ -1965,8 +1974,10 @@ export default function BookingSummary() {
               <div className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</div>
               <div className="text-xs text-muted-foreground mt-auto pt-1">Interest-free instalments</div>
             </button>
+            )}
 
             {/* Klarna - Server-side redirect */}
+            {klarnaEnabled && (
             <button
               onClick={handleKlarnaCheckout}
               disabled={!canSubmit || isKlarnaLoading}
@@ -1989,6 +2000,7 @@ export default function BookingSummary() {
                 </p>
               )}
             </button>
+            )}
 
             {/* Cash Payment */}
             {cashPaymentsEnabled && (
@@ -2012,7 +2024,7 @@ export default function BookingSummary() {
             )}
 
             {/* Instant Bank Pay (GoCardless) */}
-            {instantBankPayEnabled && gatewayHealth.gocardless.available && (
+            {instantBankPayEnabled && (
               <button
                 onClick={handleInstantBankPay}
                 disabled={!canSubmit || isInstantBankPayLoading}
