@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_checkouts: {
+        Row: {
+          booking_data: Json | null
+          converted_at: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          pupil_email: string | null
+          pupil_name: string | null
+          pupil_phone: string | null
+          reminder_sent_at: string | null
+          resume_token: string | null
+        }
+        Insert: {
+          booking_data?: Json | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          pupil_email?: string | null
+          pupil_name?: string | null
+          pupil_phone?: string | null
+          reminder_sent_at?: string | null
+          resume_token?: string | null
+        }
+        Update: {
+          booking_data?: Json | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          pupil_email?: string | null
+          pupil_name?: string | null
+          pupil_phone?: string | null
+          reminder_sent_at?: string | null
+          resume_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_checkouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abandoned_checkouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounting_sync_log: {
         Row: {
           error_message: string | null
@@ -1755,6 +1809,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      digital_waivers: {
+        Row: {
+          content_html: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          is_required: boolean
+          title: string
+          updated_at: string
+          waiver_type: string
+        }
+        Insert: {
+          content_html?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          is_required?: boolean
+          title: string
+          updated_at?: string
+          waiver_type?: string
+        }
+        Update: {
+          content_html?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          is_required?: boolean
+          title?: string
+          updated_at?: string
+          waiver_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_waivers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digital_waivers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discount_codes: {
         Row: {
@@ -9974,6 +10079,61 @@ export type Database = {
           },
         ]
       }
+      pupil_certifications: {
+        Row: {
+          awarded_at: string
+          created_at: string
+          id: string
+          instructor_id: string
+          milestone_type: string
+          notes: string | null
+          pupil_id: string
+          title: string
+        }
+        Insert: {
+          awarded_at?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          milestone_type?: string
+          notes?: string | null
+          pupil_id: string
+          title: string
+        }
+        Update: {
+          awarded_at?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          milestone_type?: string
+          notes?: string | null
+          pupil_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_certifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_certifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_certifications_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_churn_scores: {
         Row: {
           calculated_at: string
@@ -12231,6 +12391,7 @@ export type Database = {
       }
       slot_offers: {
         Row: {
+          claim_expires_at: string | null
           created_at: string | null
           duration_mins: number
           end_time: string
@@ -12245,9 +12406,11 @@ export type Database = {
           pupil_notified_at: string | null
           pupil_responded_at: string | null
           pupil_response: string | null
+          queue_position: number | null
           start_time: string
         }
         Insert: {
+          claim_expires_at?: string | null
           created_at?: string | null
           duration_mins: number
           end_time: string
@@ -12262,9 +12425,11 @@ export type Database = {
           pupil_notified_at?: string | null
           pupil_responded_at?: string | null
           pupil_response?: string | null
+          queue_position?: number | null
           start_time: string
         }
         Update: {
+          claim_expires_at?: string | null
           created_at?: string | null
           duration_mins?: number
           end_time?: string
@@ -12279,6 +12444,7 @@ export type Database = {
           pupil_notified_at?: string | null
           pupil_responded_at?: string | null
           pupil_response?: string | null
+          queue_position?: number | null
           start_time?: string
         }
         Relationships: [
@@ -13868,6 +14034,74 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waiver_signatures: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          ip_address: string | null
+          parent_email: string | null
+          parent_name: string | null
+          pupil_id: string
+          signature_data: string | null
+          signed_at: string
+          waiver_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          ip_address?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          pupil_id: string
+          signature_data?: string | null
+          signed_at?: string
+          waiver_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          ip_address?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          pupil_id?: string
+          signature_data?: string | null
+          signed_at?: string
+          waiver_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waiver_signatures_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waiver_signatures_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waiver_signatures_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waiver_signatures_waiver_id_fkey"
+            columns: ["waiver_id"]
+            isOneToOne: false
+            referencedRelation: "digital_waivers"
             referencedColumns: ["id"]
           },
         ]
