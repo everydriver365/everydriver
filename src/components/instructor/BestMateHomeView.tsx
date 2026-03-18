@@ -323,6 +323,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             )}
 
             <WaitingRoomPromoTile className="mt-4" />
+            <DiscoverFeaturesTile className="mt-3 mb-4" />
             
           </div>
 
