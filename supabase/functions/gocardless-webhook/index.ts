@@ -177,7 +177,9 @@ async function createGoCardlessSubscription(supabase: any, subscription: any) {
   
   if (!GOCARDLESS_ACCESS_TOKEN || !subscription) return;
 
-  const baseUrl = GOCARDLESS_ENVIRONMENT === "live" 
+  const env = (GOCARDLESS_ENVIRONMENT || "").toLowerCase();
+  const isLive = env === "live" || env === "production" || env === "prod";
+  const baseUrl = isLive
     ? "https://api.gocardless.com"
     : "https://api-sandbox.gocardless.com";
 

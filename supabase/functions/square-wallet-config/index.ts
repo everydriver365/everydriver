@@ -13,7 +13,8 @@ serve(async (req: Request) => {
   try {
     const appId = Deno.env.get("SQUARE_APPLICATION_ID")?.trim();
     const locationId = Deno.env.get("SQUARE_LOCATION_ID")?.trim();
-    const environment = Deno.env.get("SQUARE_ENVIRONMENT")?.trim() || "sandbox";
+    const rawEnv = Deno.env.get("SQUARE_ENVIRONMENT")?.trim() || "sandbox";
+    const environment = rawEnv.toLowerCase() === "production" || rawEnv.toLowerCase() === "prod" || rawEnv.toLowerCase() === "live" ? "production" : "sandbox";
 
     if (!appId || !locationId) {
       return new Response(
