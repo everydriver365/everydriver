@@ -5,7 +5,8 @@ import {
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone,
   FolderLock, Timer, Hash, Heart, CalendarClock,
-  Sparkles, GitBranch,
+  Sparkles, GitBranch, FileCheck, ShoppingCart, ClipboardList,
+  UserCheck, Award, TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
