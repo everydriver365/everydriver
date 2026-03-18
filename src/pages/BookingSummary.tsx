@@ -329,6 +329,13 @@ export default function BookingSummary() {
   const requiresSlotSelection = bookingMode === 'pupil_choice';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting;
 
+  // Auto-show card form when canSubmit becomes true
+  useEffect(() => {
+    if (canSubmit && !showHostedFields) {
+      setShowHostedFields(true);
+    }
+  }, [canSubmit]);
+
   const bookingInProgressRef = useRef(false);
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
