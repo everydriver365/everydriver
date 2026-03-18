@@ -967,7 +967,7 @@ export function MobileBookingView({
                 <span className="text-xs text-muted-foreground">Pay in 3</span>
               </div>
               <p className="font-semibold text-sm">
-                {isKlarnaLoading ? "Redirecting to Klarna..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
+                {isKlarnaLoading ? "Loading..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
               </p>
             </button>
 
