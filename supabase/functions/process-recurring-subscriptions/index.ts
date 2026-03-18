@@ -18,7 +18,9 @@ serve(async (req) => {
 
     const GOCARDLESS_ACCESS_TOKEN = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
     const GOCARDLESS_ENVIRONMENT = Deno.env.get("GOCARDLESS_ENVIRONMENT") || "sandbox";
-    const gcBaseUrl = GOCARDLESS_ENVIRONMENT === "live"
+    const env = (GOCARDLESS_ENVIRONMENT || "").toLowerCase();
+    const isLive = env === "live" || env === "production" || env === "prod";
+    const gcBaseUrl = isLive
       ? "https://api.gocardless.com"
       : "https://api-sandbox.gocardless.com";
 
