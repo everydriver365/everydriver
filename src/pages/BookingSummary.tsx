@@ -1910,6 +1910,7 @@ export default function BookingSummary() {
                   toast.success("Payment authorized with Klarna!");
                   const pupilId = await ensureBookingCreated();
                   if (pupilId) {
+                    await triggerConfirmBooking(pupilId);
                     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
                   }
                 }}
