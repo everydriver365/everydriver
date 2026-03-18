@@ -1148,6 +1148,8 @@ export default function BookingSummary() {
         onInstantBankPay={handleInstantBankPay}
         isInstantBankPayLoading={isInstantBankPayLoading}
         instantBankPayEnabled={instantBankPayEnabled}
+        klarnaEnabled={klarnaEnabled}
+        clearpayEnabled={clearpayEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
