@@ -116,6 +116,8 @@ const InstructorClockInOut = lazy(() => import("./pages/InstructorClockInOut"));
 const InstructorTeamChannels = lazy(() => import("./pages/InstructorTeamChannels"));
 const InstructorWellbeing = lazy(() => import("./pages/InstructorWellbeing"));
 const InstructorAvailabilityWindows = lazy(() => import("./pages/InstructorAvailabilityWindows"));
+const InstructorAICommand = lazy(() => import("./pages/InstructorAICommand"));
+const InstructorWorkflows = lazy(() => import("./pages/InstructorWorkflows"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -360,6 +362,8 @@ const App = () => (
                 <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
                 <Route path="/instructor/wellbeing" element={<InstructorWellbeing />} />
                 <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
+                <Route path="/instructor/ai-command" element={<InstructorAICommand />} />
+                <Route path="/instructor/workflows" element={<InstructorWorkflows />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />

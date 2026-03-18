@@ -28,6 +28,7 @@ import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
 import { RetentionAlertsTile } from "@/components/instructor/dashboard/RetentionAlertsTile";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
+import { AICommandCenter } from "@/components/instructor/AICommandCenter";
 import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -486,6 +487,7 @@ export default function InstructorPortal() {
         </Dialog>
       </div>
 
+      <AICommandCenter />
     </InstructorPortalLayout>
   );
 }

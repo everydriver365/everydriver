@@ -313,6 +313,96 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_command_logs: {
+        Row: {
+          command_text: string
+          created_at: string
+          id: string
+          instructor_id: string
+          parsed_intent: string | null
+          result: Json | null
+        }
+        Insert: {
+          command_text: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          parsed_intent?: string | null
+          result?: Json | null
+        }
+        Update: {
+          command_text?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          parsed_intent?: string | null
+          result?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_command_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_command_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_workflows: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          name: string
+          steps: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          name: string
+          steps?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          name?: string
+          steps?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_workflows_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_workflows_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       availability_rules: {
         Row: {
           auto_notify_pupils: boolean
