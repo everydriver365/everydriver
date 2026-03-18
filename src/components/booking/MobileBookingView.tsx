@@ -31,6 +31,7 @@ import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanne
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
 import klarnaLogo from "@/assets/klarna-logo.svg";
 import clearpayLogo from "@/assets/clearpay-logo.svg";
+import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
