@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS cash_payments_enabled boolean DEFAULT false;
