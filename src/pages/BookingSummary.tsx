@@ -174,6 +174,10 @@ export default function BookingSummary() {
   const [cashPaymentsEnabled, setCashPaymentsEnabled] = useState(false);
   const [isCashProcessing, setIsCashProcessing] = useState(false);
   
+  // Instant Bank Pay (GoCardless)
+  const [instantBankPayEnabled, setInstantBankPayEnabled] = useState(false);
+  const [isInstantBankPayLoading, setIsInstantBankPayLoading] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
