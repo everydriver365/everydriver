@@ -276,6 +276,7 @@ export default function BookingSummary() {
         setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
         setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
         setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
+        setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
       }
 
       if (instructorRes.error || !instructorRes.data) {
