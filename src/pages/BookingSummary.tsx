@@ -159,6 +159,13 @@ export default function BookingSummary() {
   // NPI Hosted Fields state (embedded card form)
   const [showHostedFields, setShowHostedFields] = useState(false);
   
+  // Auto-show card form when canSubmit becomes true
+  useEffect(() => {
+    if (canSubmit && !showHostedFields) {
+      setShowHostedFields(true);
+    }
+  }, [canSubmit]);
+  
   // Deposit payment state
   const [depositEnabled, setDepositEnabled] = useState(false);
   const [depositAmount, setDepositAmount] = useState(350);
