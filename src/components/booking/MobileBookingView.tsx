@@ -141,7 +141,7 @@ interface MobileBookingViewProps {
   isNPILoading: boolean;
   isClearpayLoading: boolean;
   klarnaMerchantReference: string;
-  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean }; square: { available: boolean } };
+  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean }; square: { available: boolean }; gocardless: { available: boolean } };
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
@@ -150,6 +150,9 @@ interface MobileBookingViewProps {
   onCashPayment?: () => void;
   isCashProcessing?: boolean;
   cashPaymentsEnabled?: boolean;
+  onInstantBankPay?: () => void;
+  isInstantBankPayLoading?: boolean;
+  instantBankPayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
