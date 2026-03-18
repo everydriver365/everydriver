@@ -281,6 +281,8 @@ export default function BookingSummary() {
         setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
         setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
         setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
+        setKlarnaEnabled((instructorRes.data as any).klarna_enabled ?? false);
+        setClearpayEnabled((instructorRes.data as any).clearpay_enabled ?? false);
       }
 
       if (instructorRes.error || !instructorRes.data) {
