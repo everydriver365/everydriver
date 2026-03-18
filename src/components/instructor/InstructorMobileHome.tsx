@@ -555,7 +555,7 @@ export function InstructorMobileHome({
         <motion.div
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate("/instructor/waiting-room")}
-          className="mt-6 rounded-2xl overflow-hidden cursor-pointer border border-primary/20"
+          className="mt-6 mb-6 rounded-2xl overflow-hidden cursor-pointer border border-primary/20"
           style={{
             background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))",
           }}
