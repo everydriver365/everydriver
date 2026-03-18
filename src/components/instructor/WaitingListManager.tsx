@@ -8,7 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 export function WaitingListManager() {
   const { instructor } = useInstructorAuth();
 
-  const { data: waitlist, isLoading } = useQuery({
+  const { data: waitlist, isLoading } = useQuery<any[]>({
     queryKey: ["waiting-list", instructor?.id],
     queryFn: async () => {
       const { data, error } = await supabase

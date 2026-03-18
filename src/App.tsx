@@ -370,6 +370,12 @@ const App = () => (
                 <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
                 <Route path="/instructor/ai-command" element={<InstructorAICommand />} />
                 <Route path="/instructor/workflows" element={<InstructorWorkflows />} />
+                <Route path="/instructor/waivers" element={<InstructorWaivers />} />
+                <Route path="/instructor/abandoned-checkouts" element={<InstructorAbandonedCheckouts />} />
+                <Route path="/instructor/daily-manifest" element={<InstructorDailyManifest />} />
+                <Route path="/instructor/waiting-list" element={<InstructorWaitingList />} />
+                <Route path="/instructor/certifications" element={<InstructorCertifications />} />
+                <Route path="/instructor/eod-report" element={<InstructorEODReport />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />
