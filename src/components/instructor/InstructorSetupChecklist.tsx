@@ -221,34 +221,23 @@ export function InstructorSetupChecklist({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-4 mb-4"
+        whileTap={{ scale: 0.97 }}
+        className="mx-4 mb-4 cursor-pointer"
       >
-        <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <nextItem.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-medium text-primary">
-                    {completedItems.length}/{setupItems.length} complete
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-foreground truncate">
-                  {nextItem.title}
-                </p>
-              </div>
-              <Link to={nextItem.href}>
-                <Button size="sm" variant="default" className="h-8 px-3">
-                  <span className="sr-only md:not-sr-only">Start</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-            <Progress value={progress} className="h-1 mt-3" />
-          </CardContent>
-        </Card>
+        <Link to={nextItem.href} className="flex overflow-hidden rounded-2xl border border-border shadow-sm">
+          <div className="bg-primary p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
+            <nextItem.icon className="h-6 w-6 text-primary-foreground" />
+            <p className="text-[9px] font-bold text-primary-foreground/70 uppercase tracking-widest mt-1">
+              {completedItems.length}/{setupItems.length}
+            </p>
+          </div>
+          <div className="border-l-2 border-dashed border-border" />
+          <div className="bg-card flex-1 p-4 flex flex-col justify-center">
+            <p className="text-sm font-bold text-foreground">{nextItem.title}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{nextItem.description}</p>
+            <Progress value={progress} className="h-1 mt-2" />
+          </div>
+        </Link>
       </motion.div>
     );
   }
