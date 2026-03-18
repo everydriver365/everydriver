@@ -11039,6 +11039,7 @@ export type Database = {
           balance_due_date: string | null
           best_driving_score: number | null
           checklist_completed_at: string | null
+          communication_preference: string | null
           course_status: string
           course_type: string | null
           created_at: string
@@ -11068,6 +11069,7 @@ export type Database = {
           licence_photo_back_url: string | null
           licence_photo_url: string | null
           longest_streak: number | null
+          medical_notes: string | null
           monthly_driving_score: number | null
           name: string
           needs_glasses: boolean | null
@@ -11083,6 +11085,7 @@ export type Database = {
           pickup_postcode: string | null
           postcode: string | null
           preferred_days: string[] | null
+          preferred_duration_minutes: number | null
           preferred_language: string | null
           preferred_times: string[] | null
           prepaid_hours: number | null
@@ -11121,6 +11124,7 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          communication_preference?: string | null
           course_status?: string
           course_type?: string | null
           created_at?: string
@@ -11150,6 +11154,7 @@ export type Database = {
           licence_photo_back_url?: string | null
           licence_photo_url?: string | null
           longest_streak?: number | null
+          medical_notes?: string | null
           monthly_driving_score?: number | null
           name: string
           needs_glasses?: boolean | null
@@ -11165,6 +11170,7 @@ export type Database = {
           pickup_postcode?: string | null
           postcode?: string | null
           preferred_days?: string[] | null
+          preferred_duration_minutes?: number | null
           preferred_language?: string | null
           preferred_times?: string[] | null
           prepaid_hours?: number | null
@@ -11203,6 +11209,7 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          communication_preference?: string | null
           course_status?: string
           course_type?: string | null
           created_at?: string
@@ -11232,6 +11239,7 @@ export type Database = {
           licence_photo_back_url?: string | null
           licence_photo_url?: string | null
           longest_streak?: number | null
+          medical_notes?: string | null
           monthly_driving_score?: number | null
           name?: string
           needs_glasses?: boolean | null
@@ -11247,6 +11255,7 @@ export type Database = {
           pickup_postcode?: string | null
           postcode?: string | null
           preferred_days?: string[] | null
+          preferred_duration_minutes?: number | null
           preferred_language?: string | null
           preferred_times?: string[] | null
           prepaid_hours?: number | null
