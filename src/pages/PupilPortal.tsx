@@ -16,6 +16,7 @@ import { PupilMobileHeader } from "@/components/pupil-portal/PupilMobileHeader";
 import { PupilBottomNav } from "@/components/pupil-portal/PupilBottomNav";
 import { PupilDashboardRadar } from "@/components/pupil-portal/PupilDashboardRadar";
 import { PupilTelematicsCard } from "@/components/pupil-portal/PupilTelematicsCard";
+import { LearnerDrivingScore } from "@/components/pupil-portal/LearnerDrivingScore";
 import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
 import { PupilAIInsightsCard } from "@/components/pupil-portal/PupilAIInsightsCard";
 import { LessonStatusBadge } from "@/components/pupil-portal/LessonStatusBadge";
