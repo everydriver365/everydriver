@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Plus, PoundSterling, Car, Heart, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Plus, PoundSterling, Car, Heart, ChevronRight, Megaphone } from "lucide-react";
 
 interface HomeQuickActionsProps {
   onTakePayment?: () => void;
