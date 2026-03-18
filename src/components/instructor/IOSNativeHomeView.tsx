@@ -9,6 +9,7 @@ import {
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
 } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -512,6 +513,8 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
             <FeatureTile icon={BookOpen} title="Diary" subtitle={`${diaryEntries} entries`} color="#5AC8FA" onClick={() => navigate("/instructor/diary")} />
           </div>
         </div>
+
+        <WaitingRoomPromoTile className="mx-4 mb-4" />
 
         {/* ─── 5. MORE FEATURES ─── */}
         <div className="mb-6">
