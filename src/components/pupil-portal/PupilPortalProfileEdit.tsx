@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash, Users } from "lucide-react";
+import { Calendar, CreditCard, Phone, Mail, MapPin, Home, Navigation, Hash, Users, HeartPulse, Clock, MessageCircle } from "lucide-react";
 import { format, differenceInYears } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
