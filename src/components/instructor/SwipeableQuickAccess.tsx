@@ -92,6 +92,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },
   { title: "End of Day", subtitle: "Day summary", icon: Moon, customIcon: endOfDayIcon, accent: "#6366F1", route: "/instructor/end-of-day" },
   { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, customIcon: waitingRoomIcon, accent: "#2563EB", route: "/instructor/waiting-room" },
+  { title: "Platform Updates", subtitle: "News & ideas", icon: Megaphone, accent: "#6366F1", route: "/instructor/platform-updates" },
 ];
 
 const TILES_PER_PAGE = 6;
