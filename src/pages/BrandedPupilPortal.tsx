@@ -58,6 +58,7 @@ import { PupilDashboardSkeleton } from "@/components/ui/skeletons/PupilDashboard
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { PostLessonRating } from "@/components/pupil-portal/PostLessonRating";
 import { PassShareCard } from "@/components/pupil-portal/PassShareCard";
+import { PupilCertificates } from "@/components/pupil-portal/PupilCertificates";
 import { SubPageHeader } from "@/components/pupil-portal/SubPageHeader";
 import { TestCountdownCard } from "@/components/pupil-portal/TestCountdownCard";
 import { PupilQuickActions } from "@/components/pupil-portal/PupilQuickActions";
