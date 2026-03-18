@@ -244,8 +244,7 @@ export function MobileBookingView({
   const [showRecovery, setShowRecovery] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
 
-  // Admin fee for order review
-  const { adminFee: reviewAdminFee, hasFee: reviewHasFee } = useAdminFee(totalPrice + upsellTotal, undefined);
+  // Admin fee removed from course bookings — only applies to single lesson payments
   
   // Booking recovery: save form state to localStorage
   const storageKey = `booking_draft_${instructor.id}`;
