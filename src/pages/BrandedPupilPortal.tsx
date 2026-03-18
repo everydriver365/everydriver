@@ -599,6 +599,19 @@ export default function BrandedPupilPortal() {
               </motion.div>
             )}
 
+            {activeSection === 'documents' && instructor && (
+              <motion.div key="documents" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <SubPageHeader title="My Documents" onBack={handleBack} />
+                <PupilCertificates
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  instructorId={instructor.id}
+                  instructorName={instructor.name}
+                  brandColour={drive365Blue}
+                />
+              </motion.div>
+            )}
+
             {activeSection === 'profile' && (
               <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <SubPageHeader title="My Profile" onBack={handleBack} />
