@@ -144,6 +144,9 @@ interface MobileBookingViewProps {
   onClearpayCheckout: () => void;
   onKlarnaCheckout: () => void;
   isKlarnaLoading: boolean;
+  onCashPayment?: () => void;
+  isCashProcessing?: boolean;
+  cashPaymentsEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
