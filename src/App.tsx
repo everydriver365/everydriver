@@ -118,6 +118,12 @@ const InstructorWellbeing = lazy(() => import("./pages/InstructorWellbeing"));
 const InstructorAvailabilityWindows = lazy(() => import("./pages/InstructorAvailabilityWindows"));
 const InstructorAICommand = lazy(() => import("./pages/InstructorAICommand"));
 const InstructorWorkflows = lazy(() => import("./pages/InstructorWorkflows"));
+const InstructorWaivers = lazy(() => import("./pages/InstructorWaivers"));
+const InstructorAbandonedCheckouts = lazy(() => import("./pages/InstructorAbandonedCheckouts"));
+const InstructorDailyManifest = lazy(() => import("./pages/InstructorDailyManifest"));
+const InstructorWaitingList = lazy(() => import("./pages/InstructorWaitingList"));
+const InstructorCertifications = lazy(() => import("./pages/InstructorCertifications"));
+const InstructorEODReport = lazy(() => import("./pages/InstructorEODReport"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
