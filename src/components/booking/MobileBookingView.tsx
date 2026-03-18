@@ -151,6 +151,8 @@ interface MobileBookingViewProps {
   embeddedCheckoutPupilId?: string | null;
   onEmbeddedCheckoutSuccess?: () => void;
   onEmbeddedCheckoutCancel?: () => void;
+  /** Called before wallet payment to ensure booking exists */
+  ensureBookingCreated?: () => Promise<string | null>;
 }
 
 export function MobileBookingView({
