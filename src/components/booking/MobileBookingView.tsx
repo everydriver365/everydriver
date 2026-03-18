@@ -37,7 +37,7 @@ import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
-import { useAdminFee } from "@/hooks/useAdminFee";
+
 
 
 interface Instructor {
@@ -244,8 +244,7 @@ export function MobileBookingView({
   const [showRecovery, setShowRecovery] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
 
-  // Admin fee for order review
-  const { adminFee: reviewAdminFee, hasFee: reviewHasFee } = useAdminFee(totalPrice + upsellTotal, undefined);
+  // Admin fee removed from course bookings — only applies to single lesson payments
   
   // Booking recovery: save form state to localStorage
   const storageKey = `booking_draft_${instructor.id}`;
@@ -852,8 +851,8 @@ export function MobileBookingView({
             depositEnabled={depositEnabled}
             depositAmount={depositAmount}
             paymentOption={paymentOption}
-            adminFee={reviewAdminFee}
-            hasFee={reviewHasFee}
+            adminFee={0}
+            hasFee={false}
           />
         </div>
       )}
