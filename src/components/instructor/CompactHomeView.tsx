@@ -416,8 +416,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
           </div>
         )}
 
-        <WaitingRoomPromoTile className="mt-4" />
-        <DiscoverFeaturesTile className="mt-3 mb-4" />
+        <BottomPromoGroup className="mt-4 mb-4" />
 
 
         <div className="mt-3">
