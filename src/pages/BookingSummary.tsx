@@ -1979,6 +1979,24 @@ export default function BookingSummary() {
               </button>
             )}
 
+            {/* Instant Bank Pay (GoCardless) */}
+            {instantBankPayEnabled && gatewayHealth.gocardless.available && (
+              <button
+                onClick={handleInstantBankPay}
+                disabled={!canSubmit || isInstantBankPayLoading}
+                className="w-full rounded-lg border-2 border-blue-300 dark:border-blue-700 p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-950/50 dark:hover:to-blue-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">🏦 Pay by Bank</span>
+                  <span className="text-xs text-muted-foreground">Instant confirmation</span>
+                </div>
+                <div className="font-semibold text-sm">
+                  {isInstantBankPayLoading ? "Connecting..." : `£${totalPrice + upsellTotal}`}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Pay directly from your bank account</p>
+              </button>
+            )}
+
           </div>
 
 
