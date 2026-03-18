@@ -559,6 +559,51 @@ export default function BookingSummary() {
     }
   };
 
+  const handleInstantBankPay = async () => {
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
+      return;
+    }
+    setIsInstantBankPayLoading(true);
+    try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
+      const currentUrl = window.location.origin;
+      const bookingRef = `GC-${instructor.id.slice(0, 8)}-${Date.now()}`;
+
+      const { data, error } = await supabase.functions.invoke("gocardless-instant-bank-pay", {
+        body: {
+          amount: totalPrice + upsellTotal,
+          pupilId,
+          bookingRef,
+          redirectUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&gocardless=success&ref=${bookingRef}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&gocardless=cancelled`,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+        },
+      });
+
+      if (error) {
+        console.error("GoCardless Instant Bank Pay error:", error);
+        toast.error("Failed to start bank payment. Please try again.");
+        return;
+      }
+
+      if (data?.authorisationUrl) {
+        window.location.href = data.authorisationUrl;
+      } else {
+        toast.error("Could not get bank payment URL");
+      }
+    } catch (err) {
+      console.error("Instant Bank Pay error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsInstantBankPayLoading(false);
+    }
+  };
+
   const handleKlarnaSuccess = async (orderId: string) => {
     setShowKlarnaModal(false);
     const pupilId = bookingPupilId;
