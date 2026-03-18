@@ -23,7 +23,7 @@ export function WaitingListManager() {
     enabled: !!instructor?.id,
   });
 
-  const { data: offers } = useQuery({
+  const { data: offers } = useQuery<any[]>({
     queryKey: ["slot-offers", instructor?.id],
     queryFn: async () => {
       const { data, error } = await supabase
