@@ -1889,8 +1889,12 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground mt-auto pt-1">Interest-free instalments</div>
             </button>
 
-            {/* Klarna - Express Button (Client-side) */}
-            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 flex flex-col">
+            {/* Klarna - Server-side redirect */}
+            <button
+              onClick={handleKlarnaCheckout}
+              disabled={!canSubmit || isKlarnaLoading}
+              className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 hover:from-[#ffb3c7]/20 hover:to-[#ffb3c7]/30 transition-colors text-left disabled:opacity-50 disabled:pointer-events-none"
+            >
               <div className="flex items-center justify-between mb-3">
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
                   Klarna.
@@ -1899,36 +1903,15 @@ export default function BookingSummary() {
                   Pay in 3 instalments
                 </span>
               </div>
-              <div className="font-semibold text-sm mb-2">3 × £{((totalPrice + upsellTotal) / 3).toFixed(2)}</div>
-              <KlarnaExpressButton
-                amount={totalPrice + upsellTotal}
-                merchantReference={klarnaMerchantReference}
-                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course${upsellTotal > 0 ? ' + extras' : ''}`}
-                disabled={!canSubmit}
-                onSuccess={async (authToken, orderId) => {
-                  console.log("Klarna Express authorization success:", authToken, orderId);
-                  toast.success("Payment authorized with Klarna!");
-                  const pupilId = await ensureBookingCreated();
-                  if (pupilId) {
-                    await triggerConfirmBooking(pupilId);
-                    navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
-                  }
-                }}
-                onError={(error) => {
-                  console.error("Klarna Express error:", error);
-                  toast.error(error || "Klarna payment failed");
-                }}
-                onCancel={() => {
-                  console.log("Klarna Express cancelled");
-                  toast.info("Klarna payment cancelled");
-                }}
-              />
+              <div className="font-semibold text-sm">
+                {isKlarnaLoading ? "Redirecting to Klarna..." : `3 × £${((totalPrice + upsellTotal) / 3).toFixed(2)}`}
+              </div>
               {!canSubmit && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   To enable Klarna: {isPupilDetailsComplete ? "details ✅" : "complete your details"} and {isFullyScheduled ? "schedule ✅" : `schedule ${(hours - scheduledHours).toFixed(1)} more hour(s)`}.
                 </p>
               )}
-            </div>
+            </button>
 
           </div>
 
