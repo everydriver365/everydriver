@@ -31,6 +31,7 @@ import {
   FolderOpen,
   Star,
   Gauge,
+  Megaphone,
 } from "lucide-react";
 
 // Custom PNG icons from the mobile app
