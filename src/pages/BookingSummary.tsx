@@ -174,6 +174,10 @@ export default function BookingSummary() {
   const [cashPaymentsEnabled, setCashPaymentsEnabled] = useState(false);
   const [isCashProcessing, setIsCashProcessing] = useState(false);
   
+  // Instant Bank Pay (GoCardless)
+  const [instantBankPayEnabled, setInstantBankPayEnabled] = useState(false);
+  const [isInstantBankPayLoading, setIsInstantBankPayLoading] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
@@ -272,6 +276,7 @@ export default function BookingSummary() {
         setDepositDeadlineDays(instructorRes.data.deposit_deadline_days ?? 30);
         setCancellationPolicyText(instructorRes.data.cancellation_policy_text ?? "");
         setCashPaymentsEnabled((instructorRes.data as any).cash_payments_enabled ?? false);
+        setInstantBankPayEnabled((instructorRes.data as any).instant_bank_pay_enabled ?? false);
       }
 
       if (instructorRes.error || !instructorRes.data) {
@@ -551,6 +556,51 @@ export default function BookingSummary() {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsCashProcessing(false);
+    }
+  };
+
+  const handleInstantBankPay = async () => {
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
+      return;
+    }
+    setIsInstantBankPayLoading(true);
+    try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
+      const currentUrl = window.location.origin;
+      const bookingRef = `GC-${instructor.id.slice(0, 8)}-${Date.now()}`;
+
+      const { data, error } = await supabase.functions.invoke("gocardless-instant-bank-pay", {
+        body: {
+          amount: totalPrice + upsellTotal,
+          pupilId,
+          bookingRef,
+          redirectUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&gocardless=success&ref=${bookingRef}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&gocardless=cancelled`,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+        },
+      });
+
+      if (error) {
+        console.error("GoCardless Instant Bank Pay error:", error);
+        toast.error("Failed to start bank payment. Please try again.");
+        return;
+      }
+
+      if (data?.authorisationUrl) {
+        window.location.href = data.authorisationUrl;
+      } else {
+        toast.error("Could not get bank payment URL");
+      }
+    } catch (err) {
+      console.error("Instant Bank Pay error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsInstantBankPayLoading(false);
     }
   };
 
@@ -1057,6 +1107,9 @@ export default function BookingSummary() {
         onCashPayment={handleCashPayment}
         isCashProcessing={isCashProcessing}
         cashPaymentsEnabled={cashPaymentsEnabled}
+        onInstantBankPay={handleInstantBankPay}
+        isInstantBankPayLoading={isInstantBankPayLoading}
+        instantBankPayEnabled={instantBankPayEnabled}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
         showEmbeddedCheckout={showHostedFields}
         embeddedCheckoutPupilId={bookingPupilId}
@@ -1923,6 +1976,24 @@ export default function BookingSummary() {
                   {isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Pay cash directly to your instructor</p>
+              </button>
+            )}
+
+            {/* Instant Bank Pay (GoCardless) */}
+            {instantBankPayEnabled && gatewayHealth.gocardless.available && (
+              <button
+                onClick={handleInstantBankPay}
+                disabled={!canSubmit || isInstantBankPayLoading}
+                className="w-full rounded-lg border-2 border-blue-300 dark:border-blue-700 p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-950/50 dark:hover:to-blue-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">🏦 Pay by Bank</span>
+                  <span className="text-xs text-muted-foreground">Instant confirmation</span>
+                </div>
+                <div className="font-semibold text-sm">
+                  {isInstantBankPayLoading ? "Connecting..." : `£${totalPrice + upsellTotal}`}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Pay directly from your bank account</p>
               </button>
             )}
 

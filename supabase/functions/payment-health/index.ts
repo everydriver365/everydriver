@@ -17,14 +17,9 @@ interface HealthResponse {
   npi: GatewayStatus;
   square: GatewayStatus;
   elavon: GatewayStatus;
+  gocardless: GatewayStatus;
 }
 
-/**
- * Payment Health Check
- * 
- * Checks which payment gateways have their credentials configured
- * and returns their availability status.
- */
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,6 +32,7 @@ serve(async (req: Request) => {
       npi: { available: false, configured: false },
       square: { available: false, configured: false },
       elavon: { available: false, configured: false },
+      gocardless: { available: false, configured: false },
     };
 
     // Check Clearpay credentials
@@ -77,12 +73,19 @@ serve(async (req: Request) => {
       else if (!squareAppId) response.square.error = "SQUARE_APPLICATION_ID not set";
     }
 
-    // Check Elavon/Cardstream credentials (uses NPI credentials)
+    // Check Elavon/Cardstream credentials
     const elavonMerchantAlias = Deno.env.get("NPI_MERCHANT_ID") || Deno.env.get("ELAVON_MERCHANT_ALIAS");
     const elavonSecretKey = Deno.env.get("NPI_MERCHANT_SECRET") || Deno.env.get("ELAVON_SECRET_KEY");
     if (elavonMerchantAlias && elavonSecretKey) {
       response.elavon.configured = true;
       response.elavon.available = true;
+    }
+
+    // Check GoCardless credentials
+    const gocardlessToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (gocardlessToken) {
+      response.gocardless.configured = true;
+      response.gocardless.available = true;
     }
 
     console.log("Payment health check:", response);

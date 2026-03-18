@@ -5965,6 +5965,7 @@ export type Database = {
           deposit_amount: number | null
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
+          direct_debit_enabled: boolean
           drive_time_alerts_enabled: boolean | null
           email: string | null
           extra_info: string | null
@@ -5987,6 +5988,7 @@ export type Database = {
           hourly_rate: number | null
           id: string
           instagram_url: string | null
+          instant_bank_pay_enabled: boolean
           instructor_grade: string | null
           intake_questions_enabled: boolean | null
           is_active: boolean
@@ -6092,6 +6094,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          direct_debit_enabled?: boolean
           drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -6114,6 +6117,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           instagram_url?: string | null
+          instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
@@ -6219,6 +6223,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          direct_debit_enabled?: boolean
           drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -6241,6 +6246,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           instagram_url?: string | null
+          instant_bank_pay_enabled?: boolean
           instructor_grade?: string | null
           intake_questions_enabled?: boolean | null
           is_active?: boolean
@@ -8600,6 +8606,7 @@ export type Database = {
           created_at: string
           currency_code: string
           gateway_response: Json | null
+          gocardless_payment_id: string | null
           id: string
           instructor_id: string | null
           order_ref: string
@@ -8614,6 +8621,7 @@ export type Database = {
           created_at?: string
           currency_code?: string
           gateway_response?: Json | null
+          gocardless_payment_id?: string | null
           id?: string
           instructor_id?: string | null
           order_ref: string
@@ -8628,6 +8636,7 @@ export type Database = {
           created_at?: string
           currency_code?: string
           gateway_response?: Json | null
+          gocardless_payment_id?: string | null
           id?: string
           instructor_id?: string | null
           order_ref?: string
@@ -10027,6 +10036,8 @@ export type Database = {
           created_at: string
           day_of_week: number
           duration_minutes: number
+          gocardless_customer_id: string | null
+          gocardless_mandate_id: string | null
           id: string
           instructor_id: string
           next_lesson_date: string | null
@@ -10043,6 +10054,8 @@ export type Database = {
           created_at?: string
           day_of_week: number
           duration_minutes?: number
+          gocardless_customer_id?: string | null
+          gocardless_mandate_id?: string | null
           id?: string
           instructor_id: string
           next_lesson_date?: string | null
@@ -10059,6 +10072,8 @@ export type Database = {
           created_at?: string
           day_of_week?: number
           duration_minutes?: number
+          gocardless_customer_id?: string | null
+          gocardless_mandate_id?: string | null
           id?: string
           instructor_id?: string
           next_lesson_date?: string | null

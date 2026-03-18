@@ -24,6 +24,8 @@ const featureToggles: FeatureToggle[] = [
   { key: "reflective_logs_enabled", label: "Reflective Logs", description: "Let pupils write reflective journal entries in their portal", defaultValue: true },
   { key: "cancellation_analytics_enabled", label: "Cancellation Analytics", description: "Show cancellation trends on the Performance page", defaultValue: true },
   { key: "cash_payments_enabled", label: "Cash Payments", description: "Allow pupils to select 'Pay by Cash' during booking checkout", defaultValue: false },
+  { key: "instant_bank_pay_enabled", label: "Instant Bank Pay", description: "Offer one-off bank payments at checkout via GoCardless (lower fees than card)", defaultValue: false },
+  { key: "direct_debit_enabled", label: "Direct Debit for Pupils", description: "Collect weekly lesson payments via Direct Debit from recurring pupils", defaultValue: false },
 ];
 
 interface FeatureTogglesSettingsProps {
