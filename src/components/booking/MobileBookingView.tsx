@@ -154,6 +154,8 @@ interface MobileBookingViewProps {
   onInstantBankPay?: () => void;
   isInstantBankPayLoading?: boolean;
   instantBankPayEnabled?: boolean;
+  klarnaEnabled?: boolean;
+  clearpayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
   // Embedded checkout
   showEmbeddedCheckout?: boolean;
