@@ -54,6 +54,7 @@ function getNavGroups(selfBooking: boolean, reflective: boolean): NavGroup[] {
       items: [
         { id: "profile", icon: User, label: "My Profile", desc: "Photo & personal details" },
         { id: "payments", icon: CreditCard, label: "Payments", desc: "Balance & history" },
+        { id: "documents", icon: FileText, label: "My Documents", desc: "Certificates & receipts" },
         { id: "messages", icon: MessageSquare, label: "Messages", desc: "Chat with instructor" },
         { id: "notes", icon: StickyNote, label: "My Notes", desc: "Personal & shared notes" },
       ],
