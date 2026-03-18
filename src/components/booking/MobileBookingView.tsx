@@ -887,6 +887,7 @@ export function MobileBookingView({
                 onPaid={() => onWalletSuccess(embeddedCheckoutPupilId || "")}
                 onProcessing={setIsWalletProcessing}
                 disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
+                ensureBookingCreated={ensureBookingCreated}
               />
             )}
 
