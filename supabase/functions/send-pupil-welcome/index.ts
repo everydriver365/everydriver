@@ -226,6 +226,7 @@ serve(async (req) => {
       pupilId, pupilName, pupilEmail, pupilPhone,
       instructorId, courseType, courseHours,
       firstLessonDate, firstLessonTime, pickupAddress,
+      allLessons,
     } = await req.json();
 
     if (!pupilEmail || !instructorId) {
