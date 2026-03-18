@@ -4,7 +4,7 @@ import { ChevronRight, ChevronDown } from "lucide-react";
 import {
   User, Calendar, CalendarPlus, MessageSquare, StickyNote,
   PenLine, CreditCard, BookOpen, Car, Sparkles,
-  TrendingUp, Route, Video, Gauge, RefreshCw, History, LucideIcon,
+  TrendingUp, Route, Video, Gauge, RefreshCw, History, FileText, LucideIcon,
 } from "lucide-react";
 import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 import { cn } from "@/lib/utils";
