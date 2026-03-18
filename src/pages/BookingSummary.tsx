@@ -170,6 +170,10 @@ export default function BookingSummary() {
   // Cancellation policy text
   const [cancellationPolicyText, setCancellationPolicyText] = useState("");
   
+  // Cash payments
+  const [cashPaymentsEnabled, setCashPaymentsEnabled] = useState(false);
+  const [isCashProcessing, setIsCashProcessing] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
