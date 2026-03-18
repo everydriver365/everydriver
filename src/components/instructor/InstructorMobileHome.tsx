@@ -557,11 +557,8 @@ export function InstructorMobileHome({
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
-        {/* The Waiting Room Promo */}
-        <WaitingRoomPromoTile className="mt-6" />
-
-        {/* Discover Features Tile */}
-        <DiscoverFeaturesTile className="mt-3 mb-6" />
+        {/* Waiting Room & Discover Features */}
+        <BottomPromoGroup className="mt-6 mb-6" />
 
 
         {/* 10. Floating Session Bar */}
