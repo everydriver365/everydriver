@@ -1,56 +1,42 @@
 
 
-# Payment Splitting Between Business and Instructor
+# Fix: Booking Flow "Pay Now" Button Not Working on Mobile
 
-## Current State
+## Problem
+On mobile, the sticky bottom bar shows a "Pay £X" button. When tapped, it only scrolls to the payment section via `scrollToPayment()`. Two issues:
 
-Your platform **already has a commission system** that deducts a platform fee (2.5% + 20p) from digital payments. Here's what's in place:
+1. **The scroll-only behavior feels broken** — users expect tapping "Pay" to trigger payment, but it just scrolls down to reveal the payment options (card, Clearpay, Klarna). If the payment section is already partially visible, it looks like nothing happened.
 
-- **`platform_commission_config` table** — stores the commission rate and fixed fee, editable by admins via the Commission Settings Manager.
-- **`platform_commissions` table** — records every commission deducted, with gross amount, net amount, and fee breakdown.
-- **`commission_payer` setting** — each instructor chooses whether the pupil or the instructor absorbs the fee.
-- **Payment callback logic** — when a card/wallet payment completes, the system splits the amount: the base goes to the pupil's balance, and the fee is recorded as platform revenue.
+2. **Wallet buttons missing `ensureBookingCreated`** — The `SquareWalletButtons` in `MobileBookingView.tsx` (line 877) doesn't pass `ensureBookingCreated`, so Apple/Google Pay would process payment without first creating the booking record.
 
-However, **actual fund movement** (sending money to the instructor's bank account) is not yet implemented. The memory references a Telleroo integration for automated payouts, but no edge function code exists for it yet.
+## Plan
 
-## What "Splitting Payments" Can Mean
+### 1. Fix the bottom bar button behavior
+When `canSubmit` is true and the button says "Pay £X", clicking it should:
+- If the card form isn't visible yet, trigger `handleElavonCheckout` (which shows the embedded Square card form) AND scroll to payment
+- This makes the "Pay" button actually initiate the primary payment flow instead of just scrolling
 
-There are two approaches with Square:
+**File:** `src/pages/BookingSummary.tsx`
+- Create a new handler `handleMobilePayClick` that calls `handleElavonCheckout()` then scrolls to payment
+- Pass this as `onPayClick` to `MobileBookingView` instead of a plain scroll function
 
-### Option A: Post-Payment Split (Current Architecture)
-1. The full payment goes to **your Square account**.
-2. The platform fee is recorded in `platform_commissions`.
-3. The net amount is paid out to instructors separately (via bank transfer / Telleroo / manual).
+**File:** `src/components/booking/MobileBookingView.tsx`
+- Update `scrollToPayment` to also trigger `onNPICheckout` when `canSubmit` is true
 
-This is what's partially built — the recording works, but the automated payout to instructors isn't wired up yet.
+### 2. Pass `ensureBookingCreated` to wallet buttons on mobile
+**File:** `src/components/booking/MobileBookingView.tsx` (line 877-885)
+- Add `ensureBookingCreated` prop to `SquareWalletButtons` so Apple/Google Pay creates the booking before processing payment
 
-### Option B: Square Split Payments (OAuth Marketplace)
-Square supports splitting payments at the point of sale using their **OAuth marketplace model**. Each instructor would connect their own Square account, and payments would be split automatically — your platform takes its fee, and the instructor receives their share directly from Square.
+### 3. Pass `ensureBookingCreated` through MobileBookingView props
+**File:** `src/components/booking/MobileBookingView.tsx`
+- Add `ensureBookingCreated` to the `MobileBookingViewProps` interface
+- Wire it through to `SquareWalletButtons`
 
-**This requires**: Square OAuth onboarding for each instructor, which is a significant integration effort and requires Square approval as a marketplace/platform.
+**File:** `src/pages/BookingSummary.tsx`
+- Pass `ensureBookingCreated` down to `MobileBookingView`
 
-## Recommended Plan
-
-Implement **Option A** — automated payouts to instructors after payments are received. This works with your existing single Square account and commission system.
-
-### Steps
-
-1. **Create `instructor_payouts` table** — track each payout with status, amount, bank details reference, and idempotency key.
-
-2. **Build `auto-payout-instructor` edge function** — triggered after a successful payment, it:
-   - Looks up the instructor's bank details from `instructor_bank_details`
-   - Calculates net amount (gross minus platform commission)
-   - Calls Telleroo API (or alternative bank transfer service) to send funds
-   - Records the payout in `instructor_payouts`
-
-3. **Add payout dashboard for instructors** — show pending/completed payouts with amounts and dates.
-
-4. **Add admin payout overview** — view all payouts, retry failed ones, and see commission revenue vs payouts.
-
-### Prerequisites
-- Instructors need bank details stored (sort code + account number) — check if `instructor_bank_details` table exists
-- A payout provider API key (Telleroo is referenced in memory but not yet configured)
-
-### Alternative: Manual Payouts
-If you prefer to start simpler, the commission recording already works. You could just add a **payout tracking UI** where admins manually mark payouts as sent, without automating the bank transfer.
+### Summary of changes
+- 2 files modified: `BookingSummary.tsx`, `MobileBookingView.tsx`
+- The "Pay £X" bottom bar button will now show the card form and scroll to it
+- Apple/Google Pay will properly create the booking before charging
 
