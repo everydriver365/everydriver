@@ -431,8 +431,9 @@ export function CleanHomeView({
 
         <RoadAlertsRow alerts={alerts} className="mt-3" />
 
-        {instructorId && <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />}
+        <WaitingRoomPromoTile className="mt-4" />
 
+        {instructorId && <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />}
 
         <CelebrationConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
         <FloatingSessionBar instructorId={instructorId} />

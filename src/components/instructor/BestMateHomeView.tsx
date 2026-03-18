@@ -323,6 +323,8 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
                 lessons={tomorrowPreview.lessons}
               />
             )}
+
+            <WaitingRoomPromoTile className="mt-4" />
             
           </div>
 

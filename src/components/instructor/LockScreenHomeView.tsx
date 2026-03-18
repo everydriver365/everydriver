@@ -395,6 +395,8 @@ export function LockScreenHomeView({
           <RoadAlertsRow alerts={alerts} />
         </FrostedCard>
 
+        <WaitingRoomPromoTile className="mt-4" />
+
         {instructorId && (
           <FrostedCard className="overflow-hidden mt-2">
             <InstructorSetupChecklist instructorId={instructorId} variant="mobile" />
