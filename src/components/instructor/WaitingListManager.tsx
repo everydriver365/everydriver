@@ -11,8 +11,8 @@ export function WaitingListManager() {
   const { data: waitlist, isLoading } = useQuery<any[]>({
     queryKey: ["waiting-list", instructor?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lesson_waitlist")
+      const { data, error } = await (supabase
+        .from("lesson_waitlist") as any)
         .select("*, pupils(name, phone)")
         .eq("instructor_id", instructor!.id)
         .eq("status", "waiting")
