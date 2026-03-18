@@ -110,6 +110,12 @@ const InstructorTakePayment = lazy(() => import("./pages/InstructorTakePayment")
 const InstructorBulkOperations = lazy(() => import("./pages/InstructorBulkOperations"));
 const InstructorReportsHub = lazy(() => import("./pages/InstructorReportsHub"));
 const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
+const InstructorChecklists = lazy(() => import("./pages/InstructorChecklists"));
+const InstructorDocumentVault = lazy(() => import("./pages/InstructorDocumentVault"));
+const InstructorClockInOut = lazy(() => import("./pages/InstructorClockInOut"));
+const InstructorTeamChannels = lazy(() => import("./pages/InstructorTeamChannels"));
+const InstructorWellbeing = lazy(() => import("./pages/InstructorWellbeing"));
+const InstructorAvailabilityWindows = lazy(() => import("./pages/InstructorAvailabilityWindows"));
 
 const SubmitReview = lazy(() => import("./pages/mini-website/SubmitReview"));
 const InstructorReviews = lazy(() => import("./pages/InstructorReviews"));
@@ -348,6 +354,12 @@ const App = () => (
                 <Route path="/instructor/waiting-room" element={<WaitingRoomPage />} />
                 <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
                 <Route path="/instructor/automations" element={<InstructorAutomations />} />
+                <Route path="/instructor/checklists" element={<InstructorChecklists />} />
+                <Route path="/instructor/document-vault" element={<InstructorDocumentVault />} />
+                <Route path="/instructor/clock" element={<InstructorClockInOut />} />
+                <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
+                <Route path="/instructor/wellbeing" element={<InstructorWellbeing />} />
+                <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
                 <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
                 <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
                 <Route path="/instructor/reports" element={<InstructorReportsHub />} />
