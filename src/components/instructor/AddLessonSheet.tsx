@@ -95,6 +95,10 @@ export function AddLessonSheet({
   const [selectedExaminer, setSelectedExaminer] = useState('');
   const [checklistOpen, setChecklistOpen] = useState(true);
 
+  // Conflict detection
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [checkingConflict, setCheckingConflict] = useState(false);
+
   // New pupil form state
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
