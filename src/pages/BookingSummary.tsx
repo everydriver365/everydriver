@@ -178,6 +178,10 @@ export default function BookingSummary() {
   const [instantBankPayEnabled, setInstantBankPayEnabled] = useState(false);
   const [isInstantBankPayLoading, setIsInstantBankPayLoading] = useState(false);
   
+  // BNPL toggles
+  const [klarnaEnabled, setKlarnaEnabled] = useState(false);
+  const [clearpayEnabled, setClearpayEnabled] = useState(false);
+  
   // Upsells
   const { data: availableUpsells = [] } = useBookingUpsells();
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
