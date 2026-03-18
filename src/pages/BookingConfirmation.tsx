@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car, AlertTriangle, CalendarPlus, Users } from "lucide-react";
