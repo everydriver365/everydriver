@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Clock, ArrowUp, CheckCircle } from "lucide-react";
+import { Users, Clock, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export function WaitingListManager() {
@@ -28,7 +28,7 @@ export function WaitingListManager() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("slot_offers")
-        .select("*, pupils(name), scheduled_lessons(lesson_date, start_time)")
+        .select("*, pupils(name), scheduled_lessons:original_lesson_id(lesson_date, start_time)")
         .eq("instructor_id", instructor!.id)
         .order("queue_position", { ascending: true });
       if (error) throw error;
@@ -38,8 +38,8 @@ export function WaitingListManager() {
   });
 
   const totalWaiting = waitlist?.length || 0;
-  const pendingOffers = offers?.filter(o => o.status === "pending").length || 0;
-  const claimedOffers = offers?.filter(o => o.status === "accepted").length || 0;
+  const pendingOffers = offers?.filter(o => o.pupil_response === null || o.pupil_response === "pending").length || 0;
+  const claimedOffers = offers?.filter(o => o.pupil_response === "accepted").length || 0;
 
   return (
     <div className="space-y-4">
@@ -83,7 +83,7 @@ export function WaitingListManager() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{(entry as any).pupils?.name || "Unknown"}</p>
                   <p className="text-xs text-muted-foreground">
-                    {entry.preferred_days?.join(", ") || "Any day"} • {entry.preferred_times?.join(", ") || "Any time"}
+                    {(entry.preferred_days as string[] | null)?.join(", ") || "Any day"} • {(entry.preferred_times as string[] | null)?.join(", ") || "Any time"}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -98,11 +98,11 @@ export function WaitingListManager() {
       </Card>
 
       {/* Active Offers */}
-      {offers && offers.filter(o => o.status === "pending").length > 0 && (
+      {offers && offers.filter(o => o.pupil_response === null || o.pupil_response === "pending").length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-sm">Active Slot Offers</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {offers.filter(o => o.status === "pending").map(offer => (
+            {offers.filter(o => o.pupil_response === null || o.pupil_response === "pending").map(offer => (
               <div key={offer.id} className="flex items-center justify-between py-2 border-b last:border-0 border-border">
                 <div>
                   <p className="text-sm font-medium text-foreground">{(offer as any).pupils?.name || "Unknown"}</p>
@@ -111,7 +111,7 @@ export function WaitingListManager() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
                     #{offer.queue_position || 1} in queue
                   </span>
                   {offer.claim_expires_at && (
