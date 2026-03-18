@@ -37,7 +37,7 @@ import clearpayRoundLogo from "@/assets/clearpay-round-logo.png";
 
 import { BookingUpsell } from "@/hooks/useBookingUpsells";
 import { OrderReviewSummary } from "@/components/booking/OrderReviewSummary";
-import { useAdminFee } from "@/hooks/useAdminFee";
+
 
 
 interface Instructor {
