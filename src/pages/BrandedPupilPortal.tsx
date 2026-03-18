@@ -126,6 +126,7 @@ const sectionTitles: Record<string, string> = {
   "lesson-videos": "Lesson Videos",
   "driving-style": "Driving Style",
   "show-tell": "Show Me / Tell Me",
+  documents: "My Documents",
 };
 
 export default function BrandedPupilPortal() {
