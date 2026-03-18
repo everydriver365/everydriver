@@ -215,8 +215,12 @@ serve(async (req) => {
 
     // 6. Notify instructor of new booking
     try {
-      const firstLesson = sortedLessons?.[0];
-      if (firstLesson) {
+      if (sortedLessons && sortedLessons.length > 0) {
+        const allLessons = sortedLessons.map((l: any) => ({
+          date: l.lesson_date,
+          time: l.start_time,
+          durationMinutes: l.duration_minutes,
+        }));
         const notifyResponse = await fetch(
           `${supabaseUrl}/functions/v1/notify-instructor`,
           {
@@ -229,9 +233,10 @@ serve(async (req) => {
               instructorId: booking.instructorId,
               type: "new_booking",
               pupilName: booking.pupilName,
-              lessonDate: firstLesson.lesson_date,
-              lessonTime: firstLesson.start_time,
-              durationMinutes: firstLesson.duration_minutes,
+              lessonDate: sortedLessons[0].lesson_date,
+              lessonTime: sortedLessons[0].start_time,
+              durationMinutes: sortedLessons[0].duration_minutes,
+              allLessons,
             }),
           }
         );
