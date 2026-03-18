@@ -5,23 +5,21 @@ import { Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-declare global {
-  interface Window {
-    Klarna?: {
-      Payments: {
-        init: (config: { client_token: string }) => void;
-        load: (
-          config: { container: string; payment_method_category: string },
-          callback: (res: { show_form: boolean; error?: any }) => void
-        ) => void;
-        authorize: (
-          config: { payment_method_category: string },
-          data: Record<string, any>,
-          callback: (res: { approved: boolean; authorization_token?: string; show_form?: boolean; error?: any }) => void
-        ) => void;
-      };
-    };
-  }
+interface KlarnaPaymentsAPI {
+  init: (config: { client_token: string }) => void;
+  load: (
+    config: { container: string; payment_method_category: string },
+    callback: (res: { show_form: boolean; error?: any }) => void
+  ) => void;
+  authorize: (
+    config: { payment_method_category: string },
+    data: Record<string, any>,
+    callback: (res: { approved: boolean; authorization_token?: string; show_form?: boolean; error?: any }) => void
+  ) => void;
+}
+
+function getKlarnaPayments(): KlarnaPaymentsAPI | null {
+  return (window as any).Klarna?.Payments ?? null;
 }
 
 interface KlarnaPaymentModalProps {
