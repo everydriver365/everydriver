@@ -88,7 +88,75 @@ export default function BookingConfirmation() {
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
-      if (!pupilId) {
+      let resolvedPupilId = pupilId;
+
+      // GoCardless: booking hasn't been created yet — create it now from saved data
+      if (gocardlessSuccess && !resolvedPupilId && !confirmTriggeredRef.current) {
+        const savedData = localStorage.getItem("gc_pending_booking");
+        if (savedData) {
+          try {
+            const bookingData = JSON.parse(savedData);
+            confirmTriggeredRef.current = true;
+
+            // Create the booking
+            const { data: bookingResult, error: bookingError } = await supabase.functions.invoke("create-booking", {
+              body: {
+                instructorId: bookingData.instructorId,
+                pupilName: bookingData.pupilName,
+                pupilEmail: bookingData.pupilEmail,
+                pupilPhone: bookingData.pupilPhone,
+                pupilAddress: bookingData.pupilAddress,
+                pupilPostcode: bookingData.pupilPostcode,
+                pickupAddress: bookingData.pickupAddress,
+                pickupPostcode: bookingData.pickupPostcode,
+                pickupWhat3words: bookingData.pickupWhat3words,
+                specialNeeds: bookingData.specialNeeds,
+                courseType: bookingData.courseType,
+                courseHours: bookingData.courseHours,
+                totalPrice: bookingData.totalPrice,
+                slots: bookingData.slots,
+                paymentType: bookingData.paymentType,
+                amountPaid: bookingData.amountPaid,
+                depositAmount: bookingData.depositAmount,
+                upsells: bookingData.upsells,
+              },
+            });
+
+            if (bookingError || !bookingResult?.pupilId) {
+              console.error("GoCardless post-payment booking creation failed:", bookingError);
+              toast.error("Payment received but booking creation failed. Please contact support.");
+              localStorage.removeItem("gc_pending_booking");
+              setLoading(false);
+              return;
+            }
+
+            resolvedPupilId = bookingResult.pupilId;
+            localStorage.removeItem("gc_pending_booking");
+
+            // Trigger confirm-booking notifications
+            try {
+              await supabase.functions.invoke("confirm-booking", {
+                body: { pupilId: resolvedPupilId, instructorId: bookingData.instructorId },
+              });
+              console.log("confirm-booking triggered after GoCardless payment");
+            } catch (err) {
+              console.error("confirm-booking error (non-fatal):", err);
+            }
+          } catch (parseErr) {
+            console.error("Failed to parse pending booking data:", parseErr);
+            localStorage.removeItem("gc_pending_booking");
+            setLoading(false);
+            return;
+          }
+        } else {
+          // No saved data — can't create booking
+          console.error("GoCardless success but no pending booking data found");
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!resolvedPupilId) {
         setLoading(false);
         return;
       }
@@ -101,12 +169,12 @@ export default function BookingConfirmation() {
             payment_type, deposit_paid, balance_due_date, account_balance,
             instructor:instructors(id, name, phone, email, car_make, car_model, car_type, profile_image_url)
           `)
-          .eq("id", pupilId)
+          .eq("id", resolvedPupilId)
           .maybeSingle(),
         supabase
           .from("scheduled_lessons")
           .select("id, lesson_date, start_time, duration_minutes, pickup_location, status")
-          .eq("pupil_id", pupilId)
+          .eq("pupil_id", resolvedPupilId)
           .order("lesson_date", { ascending: true })
           .order("start_time", { ascending: true }),
       ]);
@@ -122,7 +190,6 @@ export default function BookingConfirmation() {
           invalidatePaymentQueries({ pupilId: pupilData.id, instructorId: pupilData.instructor_id || instructorData?.id });
           
           // For redirect-based payments (Clearpay, Klarna, Square), trigger confirm-booking
-          // to send all notifications now that payment has succeeded
           const isRedirectPayment = clearpaySuccess || klarnaSuccess || squareSuccess;
           if (isRedirectPayment && !confirmTriggeredRef.current) {
             confirmTriggeredRef.current = true;
@@ -130,7 +197,7 @@ export default function BookingConfirmation() {
             if (instructorId) {
               try {
                 await supabase.functions.invoke("confirm-booking", {
-                  body: { pupilId, instructorId },
+                  body: { pupilId: resolvedPupilId, instructorId },
                 });
                 console.log("confirm-booking triggered after redirect payment");
               } catch (err) {
