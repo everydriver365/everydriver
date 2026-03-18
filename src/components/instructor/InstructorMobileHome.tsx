@@ -558,20 +558,16 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/waiting-room")}
           className="mt-6 mb-6 rounded-2xl overflow-hidden cursor-pointer border border-border shadow-sm"
         >
-          <img src={waitingRoomPromo} alt="The Waiting Room" className="w-full h-36 object-cover" />
-          <div className="p-4" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))" }}>
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-[15px] font-bold text-foreground">The Waiting Room</p>
-                  <span className="px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold uppercase tracking-wide">Weekly</span>
-                </div>
-                <p className="text-[13px] text-muted-foreground mt-0.5">
-                  Informal weekly Zoom get-togethers for instructors. Chat, share tips & unwind ☕
-                </p>
+          <div className="flex items-center gap-3 p-3" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))" }}>
+            <img src={waitingRoomPromo} alt="The Waiting Room" className="w-16 h-16 rounded-xl object-cover shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-[14px] font-bold text-foreground">The Waiting Room</p>
+                <span className="px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-semibold uppercase tracking-wide">Weekly</span>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+              <p className="text-[12px] text-muted-foreground mt-0.5">Weekly Zoom catch-ups for instructors ☕</p>
             </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
           </div>
         </motion.div>
 
