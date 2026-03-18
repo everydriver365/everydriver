@@ -29,6 +29,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { DiscoverFeaturesTile } from "@/components/instructor/DiscoverFeaturesTile";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
@@ -297,6 +298,8 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Quick Access</p>
               <SwipeableQuickAccess />
             </div>
+
+            <DiscoverFeaturesTile className="mt-2 mb-4" />
 
             <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} />
 

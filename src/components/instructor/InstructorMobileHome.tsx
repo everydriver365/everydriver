@@ -91,6 +91,7 @@ import { CleanHomeView } from "@/components/instructor/CleanHomeView";
 import { IOSNativeHomeView } from "@/components/instructor/IOSNativeHomeView";
 import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
+import { DiscoverFeaturesTile } from "@/components/instructor/DiscoverFeaturesTile";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -527,6 +528,9 @@ export function InstructorMobileHome({
         <div className="pb-4">
           <SwipeableQuickAccess />
         </div>
+
+        {/* Discover Features Tile */}
+        <DiscoverFeaturesTile className="mt-2 mb-4" />
 
         {/* 8. Today's Lessons Full List */}
         <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} className="mt-4" />
