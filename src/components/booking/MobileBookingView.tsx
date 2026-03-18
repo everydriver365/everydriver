@@ -218,6 +218,7 @@ export function MobileBookingView({
   embeddedCheckoutPupilId,
   onEmbeddedCheckoutSuccess,
   onEmbeddedCheckoutCancel,
+  ensureBookingCreated,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";

@@ -1082,6 +1082,10 @@ export default function BookingSummary() {
           }
         }}
         onEmbeddedCheckoutCancel={() => setShowHostedFields(false)}
+        ensureBookingCreated={async () => {
+          const id = await ensureBookingCreated();
+          return id;
+        }}
       />
     );
   }
