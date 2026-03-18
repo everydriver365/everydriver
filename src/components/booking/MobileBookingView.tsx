@@ -151,6 +151,8 @@ interface MobileBookingViewProps {
   embeddedCheckoutPupilId?: string | null;
   onEmbeddedCheckoutSuccess?: () => void;
   onEmbeddedCheckoutCancel?: () => void;
+  /** Called before wallet payment to ensure booking exists */
+  ensureBookingCreated?: () => Promise<string | null>;
 }
 
 export function MobileBookingView({
@@ -216,6 +218,7 @@ export function MobileBookingView({
   embeddedCheckoutPupilId,
   onEmbeddedCheckoutSuccess,
   onEmbeddedCheckoutCancel,
+  ensureBookingCreated,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
@@ -345,6 +348,9 @@ export function MobileBookingView({
   );
 
   const scrollToPayment = () => {
+    if (canSubmit) {
+      onNPICheckout();
+    }
     paymentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -882,6 +888,7 @@ export function MobileBookingView({
                 onPaid={() => onWalletSuccess(embeddedCheckoutPupilId || "")}
                 onProcessing={setIsWalletProcessing}
                 disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
+                ensureBookingCreated={ensureBookingCreated}
               />
             )}
 
