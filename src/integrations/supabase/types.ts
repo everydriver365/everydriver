@@ -2185,6 +2185,100 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_suggestion_votes: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          suggestion_id: string
+          vote: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          suggestion_id: string
+          vote: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          suggestion_id?: string
+          vote?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_suggestion_votes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_suggestion_votes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_suggestion_votes_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "feature_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_suggestions: {
+        Row: {
+          created_at: string
+          description: string
+          downvotes: number
+          id: string
+          instructor_id: string
+          status: string
+          title: string
+          upvotes: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          downvotes?: number
+          id?: string
+          instructor_id: string
+          status?: string
+          title: string
+          upvotes?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          downvotes?: number
+          id?: string
+          instructor_id?: string
+          status?: string
+          title?: string
+          upvotes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_suggestions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_suggestions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followup_log: {
         Row: {
           booked_lesson_at: string | null
@@ -8952,6 +9046,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_updates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_published: boolean
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_published?: boolean
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_published?: boolean
+          title?: string
+        }
+        Relationships: []
       }
       pre_lesson_checklist_completions: {
         Row: {
