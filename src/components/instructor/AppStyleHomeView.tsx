@@ -172,7 +172,7 @@ export function AppStyleHomeView({
             );
           })}
         </div>
-        <WaitingRoomPromoTile className="mt-6" />
+        <BottomPromoGroup className="mt-6" />
       </div>
     </div>
   );
