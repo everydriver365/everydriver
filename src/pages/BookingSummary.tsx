@@ -534,7 +534,27 @@ export default function BookingSummary() {
     }
   };
 
-  const handleKlarnaSuccess = async (orderId: string) => {
+  const handleCashPayment = async () => {
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
+      return;
+    }
+    setIsCashProcessing(true);
+    try {
+      const pupilId = await ensureBookingCreated('full', 0);
+      if (!pupilId) return;
+      await triggerConfirmBooking(pupilId);
+      navigate(`/booking-confirmation?pupilId=${pupilId}&method=cash`);
+    } catch (err) {
+      console.error("Cash booking error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsCashProcessing(false);
+    }
+  };
+
+
     setShowKlarnaModal(false);
     const pupilId = bookingPupilId;
     if (!pupilId || !courseDetails) return;
