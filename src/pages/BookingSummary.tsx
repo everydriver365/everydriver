@@ -1882,6 +1882,27 @@ export default function BookingSummary() {
               )}
             </button>
 
+            {/* Cash Payment */}
+            {cashPaymentsEnabled && (
+              <button
+                onClick={handleCashPayment}
+                disabled={!canSubmit || isCashProcessing}
+                className="w-full rounded-lg border-2 border-emerald-300 dark:border-emerald-700 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-emerald-950/50 dark:hover:to-emerald-900/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
+                    <Banknote className="h-3 w-3" />
+                    Cash
+                  </span>
+                  <span className="text-xs text-muted-foreground">Pay your instructor</span>
+                </div>
+                <div className="font-semibold text-sm">
+                  {isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Pay cash directly to your instructor</p>
+              </button>
+            )}
+
           </div>
 
 
