@@ -28,7 +28,7 @@ import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { useInstructorHomepageContent, QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
