@@ -9,6 +9,7 @@ import {
   PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
 } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";

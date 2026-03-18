@@ -27,6 +27,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
 
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
