@@ -245,7 +245,13 @@ serve(async (req: Request) => {
     // Send notifications (non-blocking)
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Notify instructor
+    // Notify instructor with all lessons
+    const sortedSlots = [...slots].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const allLessons = sortedSlots.map((s) => ({
+      date: s.date,
+      time: s.startTime,
+      durationMinutes: s.duration,
+    }));
     fetch(`${supabaseUrl}/functions/v1/notify-instructor`, {
       method: "POST",
       headers: {
@@ -254,10 +260,34 @@ serve(async (req: Request) => {
       },
       body: JSON.stringify({
         instructorId,
+        type: "new_booking",
         pupilName,
+        lessonDate: sortedSlots[0]?.date,
+        lessonTime: sortedSlots[0]?.startTime,
+        durationMinutes: sortedSlots[0]?.duration,
+        allLessons,
+      }),
+    }).catch(console.error);
+
+    // Send pupil welcome email with all lessons
+    fetch(`${supabaseUrl}/functions/v1/send-pupil-welcome`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        pupilId,
+        pupilName,
+        pupilEmail,
+        pupilPhone,
+        instructorId,
         courseType,
         courseHours,
-        slots: slots.slice(0, 3), // First 3 lessons
+        firstLessonDate: sortedSlots[0]?.date || null,
+        firstLessonTime: sortedSlots[0]?.startTime || null,
+        pickupAddress: pupilAddress,
+        allLessons,
       }),
     }).catch(console.error);
 
