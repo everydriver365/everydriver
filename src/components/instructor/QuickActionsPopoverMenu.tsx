@@ -6,7 +6,7 @@ import { haptics } from "@/lib/haptics";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
   Car, StickyNote, UsersRound, X, Coffee, Clock, Receipt,
-  ClipboardCheck, CalendarPlus, BookOpen, Gift, Star,
+  ClipboardCheck, CalendarPlus, BookOpen, Gift, Star, Megaphone,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
@@ -26,6 +26,7 @@ const quickActions = [
   
   { id: "availability", label: "Availability", icon: Clock, color: "bg-teal-500", route: "/instructor/availability?action=add" },
   { id: "end-of-day", label: "End of Day", icon: Coffee, color: "bg-indigo-500", route: "/instructor/end-of-day" },
+  { id: "platform-updates", label: "Platform Updates", icon: Megaphone, color: "bg-amber-500", route: "/instructor/platform-updates" },
 ];
 
 function loadPinned(): string[] {
