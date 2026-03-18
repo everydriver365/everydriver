@@ -567,18 +567,47 @@ export default function BookingSummary() {
     }
     setIsInstantBankPayLoading(true);
     try {
-      const pupilId = await ensureBookingCreated();
-      if (!pupilId) return;
-
       const currentUrl = window.location.origin;
       const bookingRef = `GC-${instructor.id.slice(0, 8)}-${Date.now()}`;
+
+      // Save booking data to localStorage so we can create the booking AFTER payment succeeds
+      const pendingBookingData = {
+        instructorId: instructor.id,
+        pupilName: pupilName.trim(),
+        pupilEmail: pupilEmail.trim(),
+        pupilPhone: pupilPhone.trim(),
+        pupilAddress: pupilAddress.trim(),
+        pupilPostcode: pupilPostcode.trim().toUpperCase(),
+        pickupAddress: differentPickup ? pickupAddress.trim() : undefined,
+        pickupPostcode: differentPickup ? pickupPostcode.trim().toUpperCase() : undefined,
+        pickupWhat3words: differentPickup && pickupWhat3words.trim() ? pickupWhat3words.trim() : undefined,
+        specialNeeds: hasSpecialNeeds && specialNeeds.trim() ? specialNeeds.trim() : undefined,
+        courseType: courseName,
+        courseHours: hours,
+        totalPrice,
+        slots: selectedSlots.map((slot) => ({
+          date: format(slot.date, "yyyy-MM-dd"),
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          duration: slot.duration,
+        })),
+        paymentType: paymentOption === 'deposit' && depositEnabled ? 'deposit' : 'full',
+        amountPaid: paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal,
+        depositAmount: paymentOption === 'deposit' && depositEnabled ? depositAmount : 0,
+        upsells: selectedUpsells.map((id) => {
+          const upsell = availableUpsells.find((u) => u.id === id);
+          return { id, price: upsell?.price || 0 };
+        }),
+        bookingRef,
+      };
+      localStorage.setItem("gc_pending_booking", JSON.stringify(pendingBookingData));
 
       const { data, error } = await supabase.functions.invoke("gocardless-instant-bank-pay", {
         body: {
           amount: totalPrice + upsellTotal,
-          pupilId,
+          pupilId: "pending", // placeholder — booking created after payment
           bookingRef,
-          redirectUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&gocardless=success&ref=${bookingRef}`,
+          redirectUrl: `${currentUrl}/booking-confirmation?gocardless=success&ref=${bookingRef}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&gocardless=cancelled`,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
@@ -588,6 +617,7 @@ export default function BookingSummary() {
       if (error) {
         console.error("GoCardless Instant Bank Pay error:", error);
         toast.error("Failed to start bank payment. Please try again.");
+        localStorage.removeItem("gc_pending_booking");
         return;
       }
 
@@ -595,10 +625,12 @@ export default function BookingSummary() {
         window.location.href = data.authorisationUrl;
       } else {
         toast.error("Could not get bank payment URL");
+        localStorage.removeItem("gc_pending_booking");
       }
     } catch (err) {
       console.error("Instant Bank Pay error:", err);
       toast.error("Something went wrong. Please try again.");
+      localStorage.removeItem("gc_pending_booking");
     } finally {
       setIsInstantBankPayLoading(false);
     }
