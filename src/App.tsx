@@ -247,6 +247,8 @@ const App = () => (
                 {/* Public Payment Page */}
                 <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
 
+                {/* Demo Pages */}
+                <Route path="/demo/tiles" element={<TileDesignDemo />} />
 
                 {/* Instructor SaaS Marketing (Drive365 branding) */}
                 <Route path="/instructor-app" element={<Navigate to="/" replace />} />
