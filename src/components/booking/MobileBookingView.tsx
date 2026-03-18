@@ -928,7 +928,7 @@ export function MobileBookingView({
                 </div>
               )}
 
-              {showEmbeddedCheckout ? (
+              {canSubmit && (
                 <div>
                   <SquarePaymentForm
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
@@ -939,25 +939,8 @@ export function MobileBookingView({
                     onPaid={onEmbeddedCheckoutSuccess}
                     onCancel={onEmbeddedCheckoutCancel}
                   />
-                </div>
-              ) : (
-                <>
-                  <Button
-                    onClick={onNPICheckout}
-                    disabled={!canSubmit || isNPILoading || !gatewayHealth.square.available || isWalletProcessing}
-                    className="w-full h-12"
-                  >
-                    {isNPILoading ? (
-                      <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
-                    ) : (
-                      <>
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice} Card
-                      </>
-                    )}
-                  </Button>
                   <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Visa, Mastercard, Amex</p>
-                </>
+                </div>
               )}
             </div>
 
