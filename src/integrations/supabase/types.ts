@@ -13028,6 +13028,63 @@ export type Database = {
           },
         ]
       }
+      waiting_room_config: {
+        Row: {
+          description: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+          zoom_link: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          zoom_link?: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          zoom_link?: string
+        }
+        Relationships: []
+      }
+      waiting_room_sessions: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          is_cancelled: boolean
+          notes: string | null
+          session_date: string
+          start_time: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          is_cancelled?: boolean
+          notes?: string | null
+          session_date: string
+          start_time: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_cancelled?: boolean
+          notes?: string | null
+          session_date?: string
+          start_time?: string
+          title?: string
+        }
+        Relationships: []
+      }
       waitlist_entries: {
         Row: {
           created_at: string

@@ -29,6 +29,7 @@ import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { WaitingRoomManager } from "@/components/admin/WaitingRoomManager";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
@@ -172,6 +173,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
+  "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
 };
 
 export default function AdminPortal() {
@@ -1000,6 +1002,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <InstructorLeaderboard />
+          </motion.div>
+        );
+
+      case "waiting-room":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <WaitingRoomManager />
           </motion.div>
         );
 
