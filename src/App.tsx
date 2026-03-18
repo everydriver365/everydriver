@@ -432,6 +432,7 @@ const App = () => (
                 <Route path="/demo/ken-d-hero-redesigns" element={<DemoKenDHeroRedesigns />} />
                 <Route path="/demo/mobile-booking-ux" element={<DemoMobileBookingUX />} />
                 <Route path="/demo/ken-d-mobile-heroes" element={<DemoKenDMobileHeroes />} />
+                <Route path="/demo/tomorrow-tile-designs" element={<DemoTomorrowTileDesigns />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
