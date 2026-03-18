@@ -944,6 +944,10 @@ export function MobileBookingView({
 
               {canSubmit && (
                 <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="rounded bg-green-600 px-2 py-0.5 text-xs font-bold text-white">💳 Pay by Card</span>
+                    <img src={squareCardsLogo} alt="Visa, Mastercard, Amex" className="h-5 object-contain" />
+                  </div>
                   <SquarePaymentForm
                     amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                     pupilId={embeddedCheckoutPupilId || undefined}
@@ -953,7 +957,6 @@ export function MobileBookingView({
                     onPaid={onEmbeddedCheckoutSuccess}
                     onCancel={onEmbeddedCheckoutCancel}
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Visa, Mastercard, Amex</p>
                 </div>
               )}
             </div>
