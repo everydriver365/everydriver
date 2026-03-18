@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Coffee } from "lucide-react";
+import { Users } from "lucide-react";
 
 export function WaitingRoomPromoTile({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
@@ -9,21 +9,20 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={() => navigate("/instructor/waiting-room")}
-      className={`rounded-2xl cursor-pointer p-4 flex items-center gap-4 ${className}`}
-      style={{ background: "#e8ecf1", boxShadow: "8px 8px 16px #c5c9cd, -8px -8px 16px #ffffff" }}
+      className={`cursor-pointer flex overflow-hidden rounded-2xl border border-border shadow-sm ${className}`}
     >
-      <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-        style={{ background: "#e8ecf1", boxShadow: "inset 4px 4px 8px #c5c9cd, inset -4px -4px 8px #ffffff" }}
-      >
-        <Coffee className="h-5 w-5 text-blue-600" />
+      <div className="bg-blue-600 p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
+        <span className="text-2xl">☕</span>
+        <p className="text-[9px] font-bold text-blue-200 uppercase tracking-widest mt-1">Weekly</p>
       </div>
-      <div className="flex-1">
-        <p className="text-[14px] font-bold text-gray-800">The Waiting Room</p>
-        <p className="text-[11px] text-gray-500 mt-0.5">Weekly instructor Zoom catch-up</p>
-      </div>
-      <div className="px-4 py-2 rounded-xl text-[11px] font-bold text-white bg-blue-600 shadow-md shadow-blue-600/30">
-        Join
+      <div className="border-l-2 border-dashed border-border" />
+      <div className="bg-card flex-1 p-4 flex flex-col justify-center">
+        <p className="text-sm font-bold text-foreground">The Waiting Room</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Informal Zoom for driving instructors</p>
+        <div className="flex items-center gap-1.5 mt-2">
+          <Users className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] text-muted-foreground">Open to all ADIs</span>
+        </div>
       </div>
     </motion.div>
   );
