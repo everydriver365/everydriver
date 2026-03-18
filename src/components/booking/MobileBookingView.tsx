@@ -1003,6 +1003,22 @@ export function MobileBookingView({
               </button>
             )}
 
+            {/* Instant Bank Pay (GoCardless) */}
+            {instantBankPayEnabled && onInstantBankPay && gatewayHealth.gocardless.available && (
+              <button
+                onClick={onInstantBankPay}
+                disabled={!canSubmit || isInstantBankPayLoading}
+                className="w-full rounded-lg border-2 border-blue-300 dark:border-blue-700 p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-950/50 dark:hover:to-blue-900/50 transition-colors text-left disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">🏦 Bank</span>
+                  <span className="text-xs text-muted-foreground">Instant confirmation</span>
+                </div>
+                <p className="font-semibold text-sm">{isInstantBankPayLoading ? "Connecting..." : `£${totalPrice + upsellTotal}`}</p>
+                <p className="text-xs text-muted-foreground mt-1">Pay directly from your bank account</p>
+              </button>
+            )}
+
             {/* Finance Option */}
           </div>
 
