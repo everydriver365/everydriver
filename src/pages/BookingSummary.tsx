@@ -966,26 +966,7 @@ export default function BookingSummary() {
   const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
 
-  // Klarna handlers for mobile view
-  const handleKlarnaSuccess = async (authToken: string, orderId: string) => {
-    console.log("Klarna Express authorization success:", authToken, orderId);
-    toast.success("Payment authorized with Klarna!");
-    const pupilId = await ensureBookingCreated();
-    if (pupilId) {
-      await triggerConfirmBooking(pupilId);
-      navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
-    }
-  };
 
-  const handleKlarnaError = (error: string) => {
-    console.error("Klarna Express error:", error);
-    toast.error(error || "Klarna payment failed");
-  };
-
-  const handleKlarnaCancel = () => {
-    console.log("Klarna Express cancelled");
-    toast.info("Klarna payment cancelled");
-  };
 
   // Mobile View
   if (isMobile) {
