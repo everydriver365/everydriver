@@ -990,7 +990,7 @@ export function MobileBookingView({
                   <span className="text-xs text-muted-foreground">Pay your instructor</span>
                 </div>
                 <p className="font-semibold text-sm">{isCashProcessing ? "Processing..." : `£${totalPrice + upsellTotal}`}</p>
-                <p className="text-xs text-muted-foreground mt-1">Pay cash directly to your instructor</p>
+                <p className="text-xs text-muted-foreground mt-1">Pay cash on your first lesson to your instructor</p>
               </button>
             )}
 
