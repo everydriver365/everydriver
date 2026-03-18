@@ -592,6 +592,7 @@ export default function BrandedPupilPortal() {
             {activeSection === 'driving-style' && (
               <motion.div key="driving-style" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <SubPageHeader title="Driving Style" onBack={handleBack} />
+                <LearnerDrivingScore pupilId={pupil.id} brandColour={drive365Blue} className="mb-4" />
                 <PupilDrivingStyleReport pupilId={pupil.id} brandColour={drive365Blue} />
               </motion.div>
             )}
