@@ -382,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-      <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />
+      {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
         <EndLessonWizard
           open={!!endWizardLesson}
@@ -395,7 +395,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           lessonDate={endWizardLesson.lessonDate}
           startTime={endWizardLesson.startTime}
           currentBalance={endWizardLesson.currentBalance}
-          onCompleted={() => setEndWizardLesson(null)}
+          onCompleted={() => { dismissLessonAlert(endWizardLesson.id); setEndWizardLesson(null); }}
         />
       )}
       <div
@@ -746,7 +746,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-      <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />
+      {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
         <EndLessonWizard
           open={!!endWizardLesson}
@@ -759,7 +759,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           lessonDate={endWizardLesson.lessonDate}
           startTime={endWizardLesson.startTime}
           currentBalance={endWizardLesson.currentBalance}
-          onCompleted={() => setEndWizardLesson(null)}
+          onCompleted={() => { dismissLessonAlert(endWizardLesson.id); setEndWizardLesson(null); }}
         />
       )}
       <CommandPalette variant="instructor" />
