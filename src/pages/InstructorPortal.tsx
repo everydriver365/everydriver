@@ -244,140 +244,111 @@ export default function InstructorPortal() {
   // Desktop Layout - Bold & Branded
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
 
-        {/* Welcome Hero */}
-        <div className="bg-gradient-to-r from-[#142040] to-[#1e3a6e] p-5 text-white flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-14 w-14 border-2 border-white/20">
+        {/* Contextual Status Bar — replaces heavy hero */}
+        <div className="flex items-center justify-between bg-card border border-border rounded-xl px-5 py-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border-2 border-primary/20">
               <AvatarImage src={instructorData?.profile_image_url || undefined} />
-              <AvatarFallback className="bg-white/20 text-white text-lg font-bold">
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
                 {instructorData?.name ? getInitials(instructorData.name) : "I"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-xl font-semibold">
+              <p className="text-sm font-semibold text-foreground">
                 {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
-              </h1>
-              <p className="text-white/70 text-sm mt-0.5">
+              </p>
+              <p className="text-xs text-muted-foreground">
                 {todaysLessonCount > 0
-                  ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? 's' : ''} today · ${authInstructor?.is_active ? 'Online' : 'Offline'}`
-                  : `No lessons today · ${authInstructor?.is_active ? 'Online' : 'Offline'}`}
+                  ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? 's' : ''} today`
+                  : 'No lessons today'}
+                {' · '}
+                {pupils.filter(p => (Number(p.account_balance) || 0) < 0).length > 0
+                  ? `${pupils.filter(p => (Number(p.account_balance) || 0) < 0).length} unpaid`
+                  : 'All paid up'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className={cn("flex items-center gap-2 border px-3 py-2", authInstructor?.is_active ? "bg-emerald-500/20 border-emerald-400/30" : "bg-white/10 border-white/20")}>
-              <Globe className={cn("h-4 w-4", authInstructor?.is_active ? "text-emerald-400" : "text-white/60")} />
-              <span className={cn("text-sm", authInstructor?.is_active ? "text-emerald-300" : "text-white/80")}>Online</span>
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm",
+              authInstructor?.is_active
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                : "bg-muted border-border text-muted-foreground"
+            )}>
+              <Globe className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">{authInstructor?.is_active ? 'Online' : 'Offline'}</span>
               <Switch
                 checked={authInstructor?.is_active ?? false}
                 onCheckedChange={handleVisibilityToggle}
                 disabled={updatingVisibility}
-                className="data-[state=checked]:bg-emerald-500"
+                className="data-[state=checked]:bg-emerald-500 scale-90"
               />
             </div>
           </div>
         </div>
 
-        {/* Action Buttons Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?action=add")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <Plus className="h-3 w-3" /> Add Lesson
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=bespoke")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <Briefcase className="h-3 w-3" /> Bespoke
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setPaymentSheetOpen(true)} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <PoundSterling className="h-3 w-3" /> Payment
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/messages?action=new")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <MessageSquare className="h-3 w-3" /> Text
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=add")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <Users className="h-3 w-3" /> New Pupil
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?tab=gaps")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <Calendar className="h-3 w-3" /> Fill Gaps
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pay?action=reminder")} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <CreditCard className="h-3 w-3" /> Reminder
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setAvailabilityModalOpen(true)} className="gap-1 h-7 px-2 text-xs shrink-0">
-            <CalendarCheck className="h-3 w-3" /> Availability
-          </Button>
+        {/* Inline Stats Strip */}
+        <div className="grid grid-cols-4 gap-3">
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 hover:shadow-sm transition-all text-left group"
+          >
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground">{todaysLessonCount}</p>
+              <p className="text-[11px] text-muted-foreground">Today's Lessons</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/instructor/pay")}
+            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-emerald-500/30 hover:shadow-sm transition-all text-left group"
+          >
+            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground">{statsLoading ? '...' : `£${monthEarnings.toLocaleString()}`}</p>
+              <p className="text-[11px] text-muted-foreground">This Month</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/instructor/pupils")}
+            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-amber-500/30 hover:shadow-sm transition-all text-left group"
+          >
+            <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+              <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground">{pupils.length}</p>
+              <p className="text-[11px] text-muted-foreground">Active Pupils</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-purple-500/30 hover:shadow-sm transition-all text-left group"
+          >
+            <div className="h-9 w-9 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground">{statsLoading ? '...' : hoursThisWeek}</p>
+              <p className="text-[11px] text-muted-foreground">Hours This Week</p>
+            </div>
+          </button>
         </div>
 
         {/* Today at a Glance */}
         <TodayAtAGlance instructorId={instructorId} />
 
-
-        {/* Stats Grid - Bold Metric Cards */}
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          {[
-            { 
-              icon: Calendar, 
-              label: "Today's Lessons", 
-              value: String(todaysLessonCount), 
-              change: todaysLessonCount > 0 ? `${todaysLessonCount} scheduled` : "No lessons",
-              color: "bg-primary/10 text-primary",
-            },
-            { 
-              icon: TrendingUp, 
-              label: "Monthly Earnings", 
-              value: statsLoading ? "..." : `£${monthEarnings.toLocaleString()}`, 
-              change: "This month",
-              color: "bg-emerald-500/10 text-emerald-600",
-            },
-            { 
-              icon: Users, 
-              label: "Active Pupils", 
-              value: String(pupils.length), 
-              change: pupils.length > 0 ? `${pupils.length} enrolled` : "Add pupils",
-              color: "bg-amber-500/10 text-amber-600",
-            },
-            { 
-              icon: Clock, 
-              label: "Hours This Week", 
-              value: statsLoading ? "..." : String(hoursThisWeek), 
-              change: "Teaching hours",
-              color: "bg-purple-500/10 text-purple-600",
-            },
-          ].map((stat) => (
-            <Card key={stat.label} className="border-border">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
-                  </div>
-                  <div className={cn("w-10 h-10 flex items-center justify-center", stat.color)}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Retention Alerts */}
-        <RetentionAlertsTile instructorId={instructorId} />
-
-        {/* Messages & Alerts */}
-        <MessagesWidget instructorId={instructorId} />
-
-        {/* Job Alerts */}
-        <JobOfferAlert instructorId={instructorId} />
-
-        {/* What's New */}
-        <WhatsNewModal portalType="instructor" userId={instructorId} />
-
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main 2-Column Dashboard Grid */}
+        <div className="grid gap-5 lg:grid-cols-3">
           
-          {/* Left Column - Schedule */}
-          <div className="lg:col-span-2">
+          {/* Left Column - Schedule & Primary Content */}
+          <div className="lg:col-span-2 space-y-5">
             <Card className="border-border">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -437,15 +408,20 @@ export default function InstructorPortal() {
               </CardContent>
             </Card>
             <UpcomingTestsView instructorId={instructorId} />
+
+            {/* Job Alerts in main column */}
+            <JobOfferAlert instructorId={instructorId} />
           </div>
 
-          {/* Right Column - Widgets */}
+          {/* Right Column - Messages, Payments, Alerts */}
           <div className="space-y-4">
+            <MessagesWidget instructorId={instructorId} />
             <Card className="border-border">
               <CardContent className="p-4">
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
+            <RetentionAlertsTile instructorId={instructorId} />
             <UnifiedAgendaTile instructorId={instructorId} />
             <NotesWidget instructorId={instructorId} />
             <PlanWidget />
@@ -453,6 +429,8 @@ export default function InstructorPortal() {
           </div>
         </div>
 
+        {/* What's New */}
+        <WhatsNewModal portalType="instructor" userId={instructorId} />
 
         <TakePaymentSheet
           open={paymentSheetOpen}
