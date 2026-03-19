@@ -517,6 +517,11 @@ export function InstructorMobileHome({
               </div>
             )}
 
+            <TodayScheduleAgenda
+              todayLessons={todayLessons || []}
+              tomorrowLessons={tomorrowLessons || []}
+              className="mt-4"
+            />
 
             {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
@@ -554,6 +559,21 @@ export function InstructorMobileHome({
 
         <div className="h-6" />
 
+        {/* Tomorrow Preview */}
+        {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+          <div className="mt-4">
+            <TomorrowPreviewCard
+              lessonCount={tomorrowPreview.lessonCount}
+              totalHours={tomorrowPreview.totalHours}
+              expectedEarnings={tomorrowPreview.expectedEarnings}
+              firstLessonTime={tomorrowPreview.firstLessonTime}
+              lastLessonTime={tomorrowPreview.lastLessonTime}
+              hasGaps={tomorrowPreview.hasGaps}
+              instructorId={instructorId}
+              lessons={tomorrowPreview.lessons}
+            />
+          </div>
+        )}
 
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
