@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, subWeeks } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoWeeklyGoals } from "@/data/demoData";
 
 interface WeeklyGoalData {
   hoursThisWeek: number;
