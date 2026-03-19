@@ -38,6 +38,8 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
     email_enabled: true,
     push_enabled: true,
     reminder_time: "18:00:00",
+    morning_briefing: false,
+    auto_reengagement: false,
   });
 
   useEffect(() => {
