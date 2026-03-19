@@ -226,6 +226,53 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           </p>
         </div>
 
+        {/* Morning Briefing & Re-engagement */}
+        <div className="space-y-4 pt-2 border-t">
+          <p className="text-sm font-medium">Instructor Features</p>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sun className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="briefing-toggle" className="cursor-pointer">
+                  Morning Briefing
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Daily SMS summary of today's schedule
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="briefing-toggle"
+              checked={preferences.morning_briefing}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, morning_briefing: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="reengage-toggle" className="cursor-pointer">
+                  Auto Re-engagement
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Automatically SMS pupils inactive for 21+ days
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="reengage-toggle"
+              checked={preferences.auto_reengagement}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, auto_reengagement: checked }))
+              }
+            />
+          </div>
+        </div>
+
         {/* Save button */}
         <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? (
