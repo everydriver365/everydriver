@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Save } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Save, Sun, UserCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,8 @@ interface ReminderPreferences {
   email_enabled: boolean;
   push_enabled: boolean;
   reminder_time: string;
+  morning_briefing: boolean;
+  auto_reengagement: boolean;
 }
 
 const timeOptions = [
@@ -36,6 +38,8 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
     email_enabled: true,
     push_enabled: true,
     reminder_time: "18:00:00",
+    morning_briefing: false,
+    auto_reengagement: false,
   });
 
   useEffect(() => {
@@ -60,7 +64,24 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           email_enabled: data.email_enabled ?? true,
           push_enabled: data.push_enabled ?? true,
           reminder_time: data.reminder_time ?? "18:00:00",
+          morning_briefing: false,
+          auto_reengagement: false,
         });
+      }
+
+      // Fetch instructor-level settings
+      const { data: instrData } = await supabase
+        .from("instructors")
+        .select("morning_briefing_enabled, auto_reengagement_enabled")
+        .eq("id", instructorId)
+        .single();
+
+      if (instrData) {
+        setPreferences(p => ({
+          ...p,
+          morning_briefing: instrData.morning_briefing_enabled ?? false,
+          auto_reengagement: instrData.auto_reengagement_enabled ?? false,
+        }));
       }
     } catch (error) {
       console.error('Error fetching reminder preferences:', error);
@@ -72,14 +93,25 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const { morning_briefing, auto_reengagement, ...reminderPrefs } = preferences;
+
       const { error } = await supabase
         .from('instructor_reminder_preferences')
         .upsert({
           instructor_id: instructorId,
-          ...preferences,
+          ...reminderPrefs,
         }, {
           onConflict: 'instructor_id',
         });
+
+      // Also save instructor-level toggles
+      await supabase
+        .from("instructors")
+        .update({
+          morning_briefing_enabled: morning_briefing,
+          auto_reengagement_enabled: auto_reengagement,
+        } as any)
+        .eq("id", instructorId);
 
       if (error) throw error;
       toast.success('Reminder settings saved');
@@ -192,6 +224,53 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           <p className="text-xs text-muted-foreground">
             Reminders are sent the day before each scheduled lesson
           </p>
+        </div>
+
+        {/* Morning Briefing & Re-engagement */}
+        <div className="space-y-4 pt-2 border-t">
+          <p className="text-sm font-medium">Instructor Features</p>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sun className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="briefing-toggle" className="cursor-pointer">
+                  Morning Briefing
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Daily SMS summary of today's schedule
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="briefing-toggle"
+              checked={preferences.morning_briefing}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, morning_briefing: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="reengage-toggle" className="cursor-pointer">
+                  Auto Re-engagement
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Automatically SMS pupils inactive for 21+ days
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="reengage-toggle"
+              checked={preferences.auto_reengagement}
+              onCheckedChange={(checked) =>
+                setPreferences(p => ({ ...p, auto_reengagement: checked }))
+              }
+            />
+          </div>
         </div>
 
         {/* Save button */}

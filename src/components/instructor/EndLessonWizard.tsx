@@ -44,6 +44,7 @@ export function EndLessonWizard({
   const { instructor: authInstructor } = useInstructorAuth();
   const [step, setStep] = useState<WizardStep>("summary");
   const [notes, setNotes] = useState("");
+  const [voiceNoteBlob, setVoiceNoteBlob] = useState<Blob | null>(null);
   const [lessonCost, setLessonCost] = useState(0);
   const [completing, setCompleting] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export function EndLessonWizard({
     if (open) {
       setStep("summary");
       setNotes("");
+      setVoiceNoteBlob(null);
       setCompleting(false);
       setHistoryId(null);
       setUpdatedCompetencies([]);
@@ -149,6 +151,18 @@ export function EndLessonWizard({
       // 1. Mark lesson complete
       await supabase.from("scheduled_lessons").update({ status: "completed" }).eq("id", lessonId);
 
+      // Upload voice note if recorded
+      let voiceNoteUrl: string | null = null;
+      if (voiceNoteBlob) {
+        const fileName = `${instructorId}/${lessonId}-${Date.now()}.webm`;
+        const { error: uploadErr } = await supabase.storage.from("voice-notes").upload(fileName, voiceNoteBlob, {
+          contentType: "audio/webm",
+        });
+        if (!uploadErr) {
+          voiceNoteUrl = fileName;
+        }
+      }
+
       // 2. Log to lesson_history
       const { data: historyData } = await supabase
         .from("lesson_history")
@@ -159,7 +173,8 @@ export function EndLessonWizard({
           start_time: startTime,
           duration_minutes: durationMinutes,
           notes: notes || null,
-        })
+          voice_note_url: voiceNoteUrl,
+        } as any)
         .select("id")
         .single();
 
@@ -366,6 +381,7 @@ export function EndLessonWizard({
                 lessonCost={lessonCost}
                 notes={notes}
                 onNotesChange={setNotes}
+                onVoiceNoteRecorded={setVoiceNoteBlob}
               />
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">

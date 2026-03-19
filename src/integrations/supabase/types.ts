@@ -1077,6 +1077,64 @@ export type Database = {
           },
         ]
       }
+      churn_events: {
+        Row: {
+          created_at: string | null
+          detected_at: string | null
+          event_type: string
+          id: string
+          instructor_id: string
+          pupil_id: string
+          re_engaged_at: string | null
+          reason: string | null
+          risk_score: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          detected_at?: string | null
+          event_type?: string
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          re_engaged_at?: string | null
+          reason?: string | null
+          risk_score?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          detected_at?: string | null
+          event_type?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          re_engaged_at?: string | null
+          reason?: string | null
+          risk_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "churn_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "churn_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "churn_events_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clock_entries: {
         Row: {
           clock_in_at: string
@@ -6549,6 +6607,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
+          auto_reengagement_enabled: boolean | null
           availability_paused: boolean
           available_from: string | null
           bio: string | null
@@ -6628,6 +6687,7 @@ export type Database = {
           location_name: string | null
           logo_url: string | null
           mini_website_domain_id: string | null
+          morning_briefing_enabled: boolean | null
           name: string
           payment_link_base_url: string | null
           payment_qr_url: string | null
@@ -6678,6 +6738,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengagement_enabled?: boolean | null
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
@@ -6757,6 +6818,7 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
+          morning_briefing_enabled?: boolean | null
           name: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -6807,6 +6869,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengagement_enabled?: boolean | null
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
@@ -6886,6 +6949,7 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
+          morning_briefing_enabled?: boolean | null
           name?: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -7324,6 +7388,7 @@ export type Database = {
           telematics_session_id: string | null
           updated_at: string
           vehicle_id: string | null
+          voice_note_url: string | null
         }
         Insert: {
           created_at?: string
@@ -7342,6 +7407,7 @@ export type Database = {
           telematics_session_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
+          voice_note_url?: string | null
         }
         Update: {
           created_at?: string
@@ -7360,6 +7426,7 @@ export type Database = {
           telematics_session_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
+          voice_note_url?: string | null
         }
         Relationships: [
           {
@@ -7509,6 +7576,74 @@ export type Database = {
           },
           {
             foreignKeyName: "lesson_ratings_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_reminders: {
+        Row: {
+          channel: string
+          created_at: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id: string
+          reminder_type: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          pupil_id: string
+          reminder_type: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          pupil_id?: string
+          reminder_type?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reminders_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
@@ -11039,6 +11174,8 @@ export type Database = {
           balance_due_date: string | null
           best_driving_score: number | null
           checklist_completed_at: string | null
+          churn_risk_score: number | null
+          churn_risk_updated_at: string | null
           communication_preference: string | null
           course_status: string
           course_type: string | null
@@ -11124,6 +11261,8 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          churn_risk_score?: number | null
+          churn_risk_updated_at?: string | null
           communication_preference?: string | null
           course_status?: string
           course_type?: string | null
@@ -11209,6 +11348,8 @@ export type Database = {
           balance_due_date?: string | null
           best_driving_score?: number | null
           checklist_completed_at?: string | null
+          churn_risk_score?: number | null
+          churn_risk_updated_at?: string | null
           communication_preference?: string | null
           course_status?: string
           course_type?: string | null
