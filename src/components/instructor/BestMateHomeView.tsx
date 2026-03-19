@@ -306,19 +306,6 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
 
             <div className="h-6" />
 
-            {/* Tomorrow Preview */}
-            {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
-              <TomorrowPreviewCard
-                lessonCount={tomorrowPreview.lessonCount}
-                totalHours={tomorrowPreview.totalHours}
-                expectedEarnings={tomorrowPreview.expectedEarnings}
-                firstLessonTime={tomorrowPreview.firstLessonTime}
-                lastLessonTime={tomorrowPreview.lastLessonTime}
-                hasGaps={tomorrowPreview.hasGaps}
-                instructorId={instructorId}
-                lessons={tomorrowPreview.lessons}
-              />
-            )}
 
             <BottomPromoGroup className="mt-4 mb-4" />
             
