@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, subWeeks } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoWeeklyGoals } from "@/data/demoData";
 
 interface WeeklyGoalData {
   hoursThisWeek: number;
@@ -18,9 +20,12 @@ interface WeeklyGoalData {
 }
 
 export function useWeeklyGoals(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["weekly-goals", instructorId],
+    queryKey: ["weekly-goals", instructorId, isDemoMode],
     queryFn: async (): Promise<WeeklyGoalData> => {
+      if (isDemoMode) return demoWeeklyGoals;
       if (!instructorId) {
         return {
           hoursThisWeek: 0,

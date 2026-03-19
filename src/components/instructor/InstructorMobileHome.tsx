@@ -119,6 +119,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
+import { useDemoMode } from "@/context/DemoModeContext";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -189,6 +190,7 @@ export function InstructorMobileHome({
   onPaymentClick 
 }: InstructorMobileHomeProps) {
   const pendingJobsCount = usePendingJobsCount();
+  const { isDemoMode, setDemoMode } = useDemoMode();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setTheme } = useTheme();
@@ -348,6 +350,17 @@ export function InstructorMobileHome({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Demo Mode Banner */}
+      {isDemoMode && (
+        <button
+          onClick={() => setDemoMode(false)}
+          className="flex items-center justify-center gap-2 mx-3 mt-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium"
+        >
+          <span>📊 Viewing demo data</span>
+          <span className="underline">Tap to disable</span>
+        </button>
+      )}
 
       {/* App Style layout: iOS launcher (replaces entire page content) */}
       {layoutStyle === "schedule" ? (

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoTodayOverview } from "@/data/demoData";
 
 interface TodayOverview {
   lessonCount: number;
@@ -19,9 +21,10 @@ interface TodayOverview {
 export function useTodayOverview(instructorId: string | undefined) {
   const today = format(new Date(), "yyyy-MM-dd");
   const currentTime = format(new Date(), "HH:mm:ss");
+  const { isDemoMode } = useDemoMode();
 
   return useQuery({
-    queryKey: ["today-overview", instructorId, today],
+    queryKey: ["today-overview", instructorId, today, isDemoMode],
     queryFn: async (): Promise<TodayOverview> => {
       if (!instructorId) {
         return {

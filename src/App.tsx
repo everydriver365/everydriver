@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
+import { DemoModeProvider } from "@/context/DemoModeContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
@@ -30,6 +31,7 @@ const App = () => (
         <ScrollToTop />
         <AdminAuthProvider>
           <InstructorAuthProvider>
+          <DemoModeProvider>
             <DomainRouter />
             <DynamicPWAMeta />
             <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
@@ -43,6 +45,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+          </DemoModeProvider>
           </InstructorAuthProvider>
         </AdminAuthProvider>
       </BrowserRouter>

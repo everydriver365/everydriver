@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInMinutes } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoNextLesson } from "@/data/demoData";
 
 interface NextLessonDetails {
   lessonId: string;
@@ -21,9 +23,12 @@ interface NextLessonDetails {
 }
 
 export function useNextLessonDetails(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["next-lesson-details", instructorId],
+    queryKey: ["next-lesson-details", instructorId, isDemoMode],
     queryFn: async (): Promise<NextLessonDetails | null> => {
+      if (isDemoMode) return demoNextLesson;
       if (!instructorId) return null;
 
       // Compute fresh timestamps at query execution time

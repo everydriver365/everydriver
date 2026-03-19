@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useDemoMode } from "@/context/DemoModeContext";
 
 interface FeatureToggle {
   key: string;
@@ -34,6 +35,7 @@ interface FeatureTogglesSettingsProps {
 
 export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsProps) {
   const { instructor, refreshInstructor } = useInstructorAuth();
+  const { isDemoMode, setDemoMode } = useDemoMode();
   const [saving, setSaving] = useState<string | null>(null);
 
   const handleToggle = async (key: string, value: boolean) => {
@@ -58,6 +60,27 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
 
   return (
     <div>
+      {/* Demo Mode Toggle — local only */}
+      <div className="flex items-center justify-between py-3 px-1 gap-3 bg-amber-500/5 rounded-lg mb-2 border border-amber-500/20">
+        <div className="space-y-0.5 flex-1 min-w-0 pl-2">
+          <Label htmlFor="demo-mode" className="text-sm font-medium cursor-pointer flex items-center gap-1.5">
+            <Eye className="h-3.5 w-3.5 text-amber-600" />
+            Preview Demo Data
+          </Label>
+          <p className="text-xs text-muted-foreground">Show example data on your dashboard to see what a busy day looks like</p>
+        </div>
+        <div className="shrink-0 pr-2">
+          <Switch
+            id="demo-mode"
+            checked={isDemoMode}
+            onCheckedChange={(v) => {
+              setDemoMode(v);
+              toast({ title: v ? "Demo mode enabled" : "Demo mode disabled", description: v ? "You're now viewing sample data" : "Showing your real data" });
+            }}
+          />
+        </div>
+      </div>
+      <div className="ml-1 border-b border-border/40 mb-1" />
       {featureToggles.map((toggle, index) => {
         const currentValue = instructor?.[toggle.key as keyof typeof instructor] as boolean | null ?? toggle.defaultValue;
         const isSaving = saving === toggle.key;

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoLiveStats } from "@/data/demoData";
 
 interface LiveStats {
   hoursThisWeek: number;
@@ -9,6 +11,8 @@ interface LiveStats {
 }
 
 export function useInstructorLiveStats(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   const [stats, setStats] = useState<LiveStats>({
     hoursThisWeek: 0,
     monthEarnings: 0,
@@ -72,8 +76,14 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
   }, [instructorId]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    if (!isDemoMode) {
+      fetchStats();
+    }
+  }, [fetchStats, isDemoMode]);
+
+  if (isDemoMode) {
+    return { ...demoLiveStats, refresh: fetchStats };
+  }
 
   return { ...stats, refresh: fetchStats };
 }

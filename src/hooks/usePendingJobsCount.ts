@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoPendingJobsCount } from "@/data/demoData";
 
 export function usePendingJobsCount() {
+  const { isDemoMode } = useDemoMode();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -39,5 +42,6 @@ export function usePendingJobsCount() {
     };
   }, []);
 
+  if (isDemoMode) return demoPendingJobsCount;
   return count;
 }
