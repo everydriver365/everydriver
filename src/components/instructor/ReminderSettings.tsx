@@ -93,14 +93,25 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const { morning_briefing, auto_reengagement, ...reminderPrefs } = preferences;
+
       const { error } = await supabase
         .from('instructor_reminder_preferences')
         .upsert({
           instructor_id: instructorId,
-          ...preferences,
+          ...reminderPrefs,
         }, {
           onConflict: 'instructor_id',
         });
+
+      // Also save instructor-level toggles
+      await supabase
+        .from("instructors")
+        .update({
+          morning_briefing_enabled: morning_briefing,
+          auto_reengagement_enabled: auto_reengagement,
+        } as any)
+        .eq("id", instructorId);
 
       if (error) throw error;
       toast.success('Reminder settings saved');
