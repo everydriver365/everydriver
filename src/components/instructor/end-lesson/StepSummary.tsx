@@ -3,6 +3,7 @@ import { Clock, Route, PoundSterling, Mic, MicOff, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
+import { VoiceNoteRecorder } from "./VoiceNoteRecorder";
 
 interface StepSummaryProps {
   pupilName: string;
@@ -11,6 +12,7 @@ interface StepSummaryProps {
   lessonCost: number;
   notes: string;
   onNotesChange: (notes: string) => void;
+  onVoiceNoteRecorded?: (blob: Blob) => void;
 }
 
 export function StepSummary({
@@ -20,6 +22,7 @@ export function StepSummary({
   lessonCost,
   notes,
   onNotesChange,
+  onVoiceNoteRecorded,
 }: StepSummaryProps) {
   const { isListening, transcript, isSupported, startListening, stopListening } = useVoiceToText();
   const [mode, setMode] = useState<"voice" | "text">("text");
@@ -74,7 +77,7 @@ export function StepSummary({
             }}
           >
             <Mic className="h-3.5 w-3.5" />
-            Voice Note
+            Dictate
           </Button>
         )}
         <Button
@@ -110,6 +113,14 @@ export function StepSummary({
         rows={3}
         className="text-sm"
       />
+
+      {/* Voice note recorder */}
+      {onVoiceNoteRecorded && (
+        <div className="pt-1">
+          <p className="text-xs text-muted-foreground mb-2">Or record a voice note to attach:</p>
+          <VoiceNoteRecorder onRecorded={onVoiceNoteRecorded} />
+        </div>
+      )}
     </div>
   );
 }
