@@ -295,6 +295,7 @@ const App = () => (
                 <Route path="/instructor/schedule" element={<InstructorSchedule />} />
                 <Route path="/instructor/next-up-demo" element={<NextUpTileDemo />} />
                 <Route path="/instructor/briefing-demo" element={<BriefingDemo />} />
+                <Route path="/instructor/schedule-design-demo" element={<ScheduleDesignDemo />} />
                 <Route path="/instructor/header-demo" element={<HeaderHeroDemo />} />
                 <Route path="/instructor/hero-redesign" element={<HeroRedesignDemo />} />
                 <Route path="/instructor/waiting-room-cta-demo" element={<WaitingRoomCtaDemo />} />
