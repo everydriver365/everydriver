@@ -17,6 +17,8 @@ interface ReminderPreferences {
   email_enabled: boolean;
   push_enabled: boolean;
   reminder_time: string;
+  morning_briefing: boolean;
+  auto_reengagement: boolean;
 }
 
 const timeOptions = [
