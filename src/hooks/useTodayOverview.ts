@@ -26,8 +26,6 @@ export function useTodayOverview(instructorId: string | undefined) {
   return useQuery({
     queryKey: ["today-overview", instructorId, today, isDemoMode],
     queryFn: async (): Promise<TodayOverview> => {
-      if (isDemoMode) return demoTodayOverview;
-      if (!instructorId) {
       if (!instructorId) {
         return {
           lessonCount: 0,
