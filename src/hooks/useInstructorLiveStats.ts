@@ -11,6 +11,8 @@ interface LiveStats {
 }
 
 export function useInstructorLiveStats(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   const [stats, setStats] = useState<LiveStats>({
     hoursThisWeek: 0,
     monthEarnings: 0,
