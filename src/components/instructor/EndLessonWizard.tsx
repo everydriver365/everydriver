@@ -44,6 +44,7 @@ export function EndLessonWizard({
   const { instructor: authInstructor } = useInstructorAuth();
   const [step, setStep] = useState<WizardStep>("summary");
   const [notes, setNotes] = useState("");
+  const [voiceNoteBlob, setVoiceNoteBlob] = useState<Blob | null>(null);
   const [lessonCost, setLessonCost] = useState(0);
   const [completing, setCompleting] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
