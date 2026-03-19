@@ -395,7 +395,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           lessonDate={endWizardLesson.lessonDate}
           startTime={endWizardLesson.startTime}
           currentBalance={endWizardLesson.currentBalance}
-          onCompleted={() => setEndWizardLesson(null)}
+          onCompleted={() => { dismissLessonAlert(endWizardLesson.id); setEndWizardLesson(null); }}
         />
       )}
       <div
