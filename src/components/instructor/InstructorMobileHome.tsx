@@ -97,6 +97,8 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
+import { TodayScheduleAgenda } from "@/components/instructor/TodayScheduleAgenda";
+import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
@@ -241,6 +243,7 @@ export function InstructorMobileHome({
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
@@ -514,9 +517,11 @@ export function InstructorMobileHome({
               </div>
             )}
 
-            {todayLessons && todayLessons.length > 0 && (
-              <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
-            )}
+            <TodayScheduleAgenda
+              todayLessons={todayLessons || []}
+              tomorrowLessons={tomorrowLessons || []}
+              className="mt-4"
+            />
 
             {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
