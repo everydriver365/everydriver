@@ -26,6 +26,7 @@ const InstructorPupils = lazy(() => import("./pages/InstructorPupils"));
 const InstructorSchedule = lazy(() => import("./pages/InstructorSchedule"));
 const NextUpTileDemo = lazy(() => import("./pages/instructor/NextUpTileDemo"));
 const BriefingDemo = lazy(() => import("./pages/instructor/BriefingDemo"));
+const ScheduleDesignDemo = lazy(() => import("./pages/instructor/ScheduleDesignDemo"));
 const HeaderHeroDemo = lazy(() => import("./pages/HeaderHeroDemo"));
 const HeroRedesignDemo = lazy(() => import("./pages/HeroRedesignDemo"));
 const WaitingRoomCtaDemo = lazy(() => import("./pages/WaitingRoomCtaDemo"));
