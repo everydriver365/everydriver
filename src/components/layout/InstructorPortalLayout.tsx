@@ -382,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-      <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />
+      {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
         <EndLessonWizard
           open={!!endWizardLesson}
