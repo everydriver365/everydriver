@@ -59,6 +59,7 @@ export function EndLessonWizard({
     if (open) {
       setStep("summary");
       setNotes("");
+      setVoiceNoteBlob(null);
       setCompleting(false);
       setHistoryId(null);
       setUpdatedCompetencies([]);
