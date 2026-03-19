@@ -28,8 +28,6 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
     queryKey: ["today-remaining-lessons", instructorId, today, isDemoMode],
     queryFn: async (): Promise<TodayLesson[]> => {
       if (isDemoMode) return demoTodayLessons;
-
-    queryFn: async (): Promise<TodayLesson[]> => {
       if (!instructorId) return [];
 
       const { data, error } = await supabase
