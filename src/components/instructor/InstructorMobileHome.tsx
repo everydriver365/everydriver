@@ -517,9 +517,11 @@ export function InstructorMobileHome({
               </div>
             )}
 
-            {todayLessons && todayLessons.length > 0 && (
-              <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
-            )}
+            <TodayScheduleAgenda
+              todayLessons={todayLessons || []}
+              tomorrowLessons={tomorrowLessons || []}
+              className="mt-4"
+            />
 
             {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
