@@ -190,6 +190,7 @@ export function InstructorMobileHome({
   onPaymentClick 
 }: InstructorMobileHomeProps) {
   const pendingJobsCount = usePendingJobsCount();
+  const { isDemoMode, setDemoMode } = useDemoMode();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setTheme } = useTheme();
