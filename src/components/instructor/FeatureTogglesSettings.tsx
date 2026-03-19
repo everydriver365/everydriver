@@ -35,6 +35,7 @@ interface FeatureTogglesSettingsProps {
 
 export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsProps) {
   const { instructor, refreshInstructor } = useInstructorAuth();
+  const { isDemoMode, setDemoMode } = useDemoMode();
   const [saving, setSaving] = useState<string | null>(null);
 
   const handleToggle = async (key: string, value: boolean) => {
