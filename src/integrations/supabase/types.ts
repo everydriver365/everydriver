@@ -6607,6 +6607,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
+          auto_reengagement_enabled: boolean | null
           availability_paused: boolean
           available_from: string | null
           bio: string | null
@@ -6686,6 +6687,7 @@ export type Database = {
           location_name: string | null
           logo_url: string | null
           mini_website_domain_id: string | null
+          morning_briefing_enabled: boolean | null
           name: string
           payment_link_base_url: string | null
           payment_qr_url: string | null
@@ -6736,6 +6738,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengagement_enabled?: boolean | null
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
@@ -6815,6 +6818,7 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
+          morning_briefing_enabled?: boolean | null
           name: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -6865,6 +6869,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengagement_enabled?: boolean | null
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
@@ -6944,6 +6949,7 @@ export type Database = {
           location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
+          morning_briefing_enabled?: boolean | null
           name?: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
