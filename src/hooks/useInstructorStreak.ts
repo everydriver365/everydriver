@@ -13,9 +13,12 @@ interface StreakData {
 }
 
 export function useInstructorStreak(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["instructor-streak", instructorId],
+    queryKey: ["instructor-streak", instructorId, isDemoMode],
     queryFn: async (): Promise<StreakData> => {
+      if (isDemoMode) return demoStreak;
       if (!instructorId) {
         return { currentStreak: 0, longestStreak: 0, lastTeachingDate: null, isActiveToday: false, streakMilestone: null };
       }

@@ -22,9 +22,13 @@ export interface TodayLesson {
 
 export function useTodayRemainingLessons(instructorId: string | undefined) {
   const today = format(new Date(), "yyyy-MM-dd");
+  const { isDemoMode } = useDemoMode();
 
   return useQuery({
-    queryKey: ["today-remaining-lessons", instructorId, today],
+    queryKey: ["today-remaining-lessons", instructorId, today, isDemoMode],
+    queryFn: async (): Promise<TodayLesson[]> => {
+      if (isDemoMode) return demoTodayLessons;
+
     queryFn: async (): Promise<TodayLesson[]> => {
       if (!instructorId) return [];
 

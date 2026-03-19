@@ -8,9 +8,12 @@ import { demoTomorrowLessons } from "@/data/demoData";
 export function useTomorrowLessons(instructorId: string | undefined) {
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["tomorrow-lessons", instructorId, tomorrow],
+    queryKey: ["tomorrow-lessons", instructorId, tomorrow, isDemoMode],
     queryFn: async (): Promise<TodayLesson[]> => {
+      if (isDemoMode) return demoTomorrowLessons;
       if (!instructorId) return [];
 
       const { data, error } = await supabase

@@ -76,8 +76,14 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
   }, [instructorId]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    if (!isDemoMode) {
+      fetchStats();
+    }
+  }, [fetchStats, isDemoMode]);
+
+  if (isDemoMode) {
+    return { ...demoLiveStats, refresh: fetchStats };
+  }
 
   return { ...stats, refresh: fetchStats };
 }

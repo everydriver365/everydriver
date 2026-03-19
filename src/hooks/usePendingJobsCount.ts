@@ -42,5 +42,6 @@ export function usePendingJobsCount() {
     };
   }, []);
 
+  if (isDemoMode) return demoPendingJobsCount;
   return count;
 }

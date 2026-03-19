@@ -21,8 +21,13 @@ interface TodayOverview {
 export function useTodayOverview(instructorId: string | undefined) {
   const today = format(new Date(), "yyyy-MM-dd");
   const currentTime = format(new Date(), "HH:mm:ss");
+  const { isDemoMode } = useDemoMode();
 
   return useQuery({
+    queryKey: ["today-overview", instructorId, today, isDemoMode],
+    queryFn: async (): Promise<TodayOverview> => {
+      if (isDemoMode) return demoTodayOverview;
+
     queryKey: ["today-overview", instructorId, today],
     queryFn: async (): Promise<TodayOverview> => {
       if (!instructorId) {

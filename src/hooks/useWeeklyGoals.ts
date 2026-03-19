@@ -20,9 +20,12 @@ interface WeeklyGoalData {
 }
 
 export function useWeeklyGoals(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["weekly-goals", instructorId],
+    queryKey: ["weekly-goals", instructorId, isDemoMode],
     queryFn: async (): Promise<WeeklyGoalData> => {
+      if (isDemoMode) return demoWeeklyGoals;
       if (!instructorId) {
         return {
           hoursThisWeek: 0,

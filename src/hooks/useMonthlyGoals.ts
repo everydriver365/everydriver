@@ -11,9 +11,12 @@ interface MonthlyGoalData {
 }
 
 export function useMonthlyGoals(instructorId: string | undefined) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["monthly-goals", instructorId],
+    queryKey: ["monthly-goals", instructorId, isDemoMode],
     queryFn: async (): Promise<MonthlyGoalData> => {
+      if (isDemoMode) return demoMonthlyGoals;
       if (!instructorId) {
         return { lessonsThisMonth: 0, lessonsCompleted: 0, lessonsScheduled: 0 };
       }

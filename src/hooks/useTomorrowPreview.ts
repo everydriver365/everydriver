@@ -26,9 +26,12 @@ interface TomorrowPreviewData {
 export function useTomorrowPreview(instructorId: string | undefined) {
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ["tomorrow-preview", instructorId, tomorrow],
+    queryKey: ["tomorrow-preview", instructorId, tomorrow, isDemoMode],
     queryFn: async (): Promise<TomorrowPreviewData> => {
+      if (isDemoMode) return demoTomorrowPreview;
       if (!instructorId) {
         return {
           lessonCount: 0,
