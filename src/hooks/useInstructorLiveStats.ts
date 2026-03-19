@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoLiveStats } from "@/data/demoData";
 
 interface LiveStats {
   hoursThisWeek: number;
