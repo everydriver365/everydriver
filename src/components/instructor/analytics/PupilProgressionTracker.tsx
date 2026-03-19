@@ -38,14 +38,14 @@ export function PupilProgressionTracker({ instructorId }: PupilProgressionTracke
       if (!pupilList?.length) { setLoading(false); return; }
 
       const { data: competencies } = await supabase
-        .from("pupil_competencies")
-        .select("pupil_id, current_level")
+        .from("pupil_syllabus_progress")
+        .select("pupil_id, level")
         .in("pupil_id", pupilList.map((p) => p.id));
 
       const results: PupilProgress[] = pupilList.map((p) => {
-        const skills = (competencies || []).filter((c) => c.pupil_id === p.id);
+        const skills = (competencies || []).filter((c: any) => c.pupil_id === p.id);
         const totalSkills = skills.length || 1;
-        const atLevel4 = skills.filter((c) => c.current_level >= 4).length;
+        const atLevel4 = skills.filter((c: any) => (c.level || 0) >= 4).length;
         return {
           id: p.id,
           name: p.name,
