@@ -97,6 +97,8 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
+import { TodayScheduleAgenda } from "@/components/instructor/TodayScheduleAgenda";
+import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
