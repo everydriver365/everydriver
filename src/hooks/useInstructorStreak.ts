@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, isAfter, startOfDay } from "date-fns";
+import { useDemoMode } from "@/context/DemoModeContext";
+import { demoStreak } from "@/data/demoData";
 
 interface StreakData {
   currentStreak: number;
