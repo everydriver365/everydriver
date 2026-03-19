@@ -151,6 +151,18 @@ export function EndLessonWizard({
       // 1. Mark lesson complete
       await supabase.from("scheduled_lessons").update({ status: "completed" }).eq("id", lessonId);
 
+      // Upload voice note if recorded
+      let voiceNoteUrl: string | null = null;
+      if (voiceNoteBlob) {
+        const fileName = `${instructorId}/${lessonId}-${Date.now()}.webm`;
+        const { error: uploadErr } = await supabase.storage.from("voice-notes").upload(fileName, voiceNoteBlob, {
+          contentType: "audio/webm",
+        });
+        if (!uploadErr) {
+          voiceNoteUrl = fileName;
+        }
+      }
+
       // 2. Log to lesson_history
       const { data: historyData } = await supabase
         .from("lesson_history")
@@ -161,7 +173,8 @@ export function EndLessonWizard({
           start_time: startTime,
           duration_minutes: durationMinutes,
           notes: notes || null,
-        })
+          voice_note_url: voiceNoteUrl,
+        } as any)
         .select("id")
         .single();
 
