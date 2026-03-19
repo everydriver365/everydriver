@@ -381,6 +381,7 @@ export function EndLessonWizard({
                 lessonCost={lessonCost}
                 notes={notes}
                 onNotesChange={setNotes}
+                onVoiceNoteRecorded={setVoiceNoteBlob}
               />
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
