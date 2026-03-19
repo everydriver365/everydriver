@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useDemoMode } from "@/context/DemoModeContext";
 
 interface FeatureToggle {
   key: string;
