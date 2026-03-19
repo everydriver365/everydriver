@@ -64,7 +64,24 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           email_enabled: data.email_enabled ?? true,
           push_enabled: data.push_enabled ?? true,
           reminder_time: data.reminder_time ?? "18:00:00",
+          morning_briefing: false,
+          auto_reengagement: false,
         });
+      }
+
+      // Fetch instructor-level settings
+      const { data: instrData } = await supabase
+        .from("instructors")
+        .select("morning_briefing_enabled, auto_reengagement_enabled")
+        .eq("id", instructorId)
+        .single();
+
+      if (instrData) {
+        setPreferences(p => ({
+          ...p,
+          morning_briefing: instrData.morning_briefing_enabled ?? false,
+          auto_reengagement: instrData.auto_reengagement_enabled ?? false,
+        }));
       }
     } catch (error) {
       console.error('Error fetching reminder preferences:', error);
