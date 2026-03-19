@@ -243,6 +243,7 @@ export function InstructorMobileHome({
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
