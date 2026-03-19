@@ -119,6 +119,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
+import { useDemoMode } from "@/context/DemoModeContext";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
