@@ -531,9 +531,8 @@ Deno.serve(async (req) => {
         diagnosticsUpdate.last_fuel_percent = Math.round((rawFuel <= 1 ? rawFuel * 100 : rawFuel) * 100) / 100;
       }
       if (diags["DiagnosticStateOfChargeId"] != null) {
-        // State of Charge is a percentage (0-100)
+        // State of Charge is a percentage (0-100) — do NOT use this for voltage
         diagnosticsUpdate.last_battery_percent = Math.round(diags["DiagnosticStateOfChargeId"]);
-        diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100;
       }
       // Use true 12V battery voltage if available
       if (diags["DiagnosticBatteryVoltageId"] != null) {
