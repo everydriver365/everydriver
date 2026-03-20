@@ -531,9 +531,8 @@ Deno.serve(async (req) => {
         diagnosticsUpdate.last_fuel_percent = Math.round((rawFuel <= 1 ? rawFuel * 100 : rawFuel) * 100) / 100;
       }
       if (diags["DiagnosticStateOfChargeId"] != null) {
-        // State of Charge is a percentage (0-100)
+        // State of Charge is a percentage (0-100) — do NOT use this for voltage
         diagnosticsUpdate.last_battery_percent = Math.round(diags["DiagnosticStateOfChargeId"]);
-        diagnosticsUpdate.last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100;
       }
       // Use true 12V battery voltage if available
       if (diags["DiagnosticBatteryVoltageId"] != null) {
@@ -552,11 +551,12 @@ Deno.serve(async (req) => {
       }
 
       // Tire pressure (collect all available)
+      // Geotab returns tire pressure in Pascals — convert to kPa for storage
       const tirePressure: Record<string, number> = {};
-      if (diags["DiagnosticTirePressureFrontLeftId"] != null) tirePressure.frontLeft = diags["DiagnosticTirePressureFrontLeftId"];
-      if (diags["DiagnosticTirePressureFrontRightId"] != null) tirePressure.frontRight = diags["DiagnosticTirePressureFrontRightId"];
-      if (diags["DiagnosticTirePressureRearLeftId"] != null) tirePressure.rearLeft = diags["DiagnosticTirePressureRearLeftId"];
-      if (diags["DiagnosticTirePressureRearRightId"] != null) tirePressure.rearRight = diags["DiagnosticTirePressureRearRightId"];
+      if (diags["DiagnosticTirePressureFrontLeftId"] != null) tirePressure.frontLeft = Math.round(diags["DiagnosticTirePressureFrontLeftId"] / 1000);
+      if (diags["DiagnosticTirePressureFrontRightId"] != null) tirePressure.frontRight = Math.round(diags["DiagnosticTirePressureFrontRightId"] / 1000);
+      if (diags["DiagnosticTirePressureRearLeftId"] != null) tirePressure.rearLeft = Math.round(diags["DiagnosticTirePressureRearLeftId"] / 1000);
+      if (diags["DiagnosticTirePressureRearRightId"] != null) tirePressure.rearRight = Math.round(diags["DiagnosticTirePressureRearRightId"] / 1000);
       if (Object.keys(tirePressure).length > 0) {
         diagnosticsUpdate.last_tire_pressure_json = tirePressure;
       }
@@ -691,8 +691,7 @@ Deno.serve(async (req) => {
     const lastMediaRun = mediaConfig?.last_run_at ? new Date(mediaConfig.last_run_at).getTime() : 0;
     const shouldSyncMedia = Date.now() - lastMediaRun > MEDIA_SYNC_INTERVAL;
 
-    if (shouldSyncMedia) {
-      // timestamp updated via cron_sync_config upsert below
+    // ---- IMPACT DETECTION (runs every poll cycle) ----
     // ---- IMPACT DETECTION from ExceptionEvents ----
     let impactsInserted = 0;
     let pushSent = 0;
@@ -819,7 +818,7 @@ Deno.serve(async (req) => {
 
     console.log("[GeotabPoller] Impact detection:", exceptionResults.length, "events checked,", impactsInserted, "impacts inserted,", pushSent, "push notifications sent");
 
-
+    if (shouldSyncMedia) {
       // Fetch driver map only during media sync (not every poll)
       const driverMap = new Map<string, string>();
       try {

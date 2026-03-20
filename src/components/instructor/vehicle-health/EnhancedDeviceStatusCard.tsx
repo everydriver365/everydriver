@@ -284,19 +284,19 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {/* Tire Pressure */}
         {device.last_tire_pressure_json && Object.keys(device.last_tire_pressure_json).length > 0 && (
           <div className="p-2 rounded-lg bg-muted/50 text-xs">
-            <p className="font-medium text-muted-foreground mb-1">Tire Pressure (kPa)</p>
+            <p className="font-medium text-muted-foreground mb-1">Tire Pressure (PSI)</p>
             <div className="grid grid-cols-2 gap-1">
               {device.last_tire_pressure_json.frontLeft != null && (
-                <span>FL: <strong>{Math.round(device.last_tire_pressure_json.frontLeft)}</strong></span>
+                <span>FL: <strong>{Math.round(device.last_tire_pressure_json.frontLeft / 6.895)}</strong></span>
               )}
               {device.last_tire_pressure_json.frontRight != null && (
-                <span>FR: <strong>{Math.round(device.last_tire_pressure_json.frontRight)}</strong></span>
+                <span>FR: <strong>{Math.round(device.last_tire_pressure_json.frontRight / 6.895)}</strong></span>
               )}
               {device.last_tire_pressure_json.rearLeft != null && (
-                <span>RL: <strong>{Math.round(device.last_tire_pressure_json.rearLeft)}</strong></span>
+                <span>RL: <strong>{Math.round(device.last_tire_pressure_json.rearLeft / 6.895)}</strong></span>
               )}
               {device.last_tire_pressure_json.rearRight != null && (
-                <span>RR: <strong>{Math.round(device.last_tire_pressure_json.rearRight)}</strong></span>
+                <span>RR: <strong>{Math.round(device.last_tire_pressure_json.rearRight / 6.895)}</strong></span>
               )}
             </div>
           </div>
