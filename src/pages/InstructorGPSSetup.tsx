@@ -100,11 +100,18 @@ export default function InstructorGPSSetup() {
     if (!instructor?.id) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("gps_devices")
         .select("*")
         .eq("instructor_id", instructor.id)
         .order("created_at", { ascending: false });
+
+      // Filter by active provider if one exists
+      if (activeProvider) {
+        query = query.eq("tracking_provider", activeProvider);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setDevices(data || []);
