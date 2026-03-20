@@ -416,15 +416,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <div className="text-primary-foreground relative overflow-hidden">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
-                   {/* Left: Back button + Hamburger + Title */}
+                   {/* Left: Back button / Avatar + Hamburger + Title */}
                   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                    {showBackButton && (
+                    {showBackButton ? (
                       <button
                         onClick={() => navigate(-1)}
                         className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
+                    ) : (
+                      <Avatar className="h-8 w-8 border-2 border-primary-foreground/30 shrink-0">
+                        <AvatarImage src={instructor?.profile_image_url || undefined} />
+                        <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
+                          {instructor?.name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
                     <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                       <SheetTrigger asChild>
