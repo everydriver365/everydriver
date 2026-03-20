@@ -34,11 +34,15 @@ export interface ServiceReminder {
   custom_name: string | null;
   interval_km: number | null;
   interval_months: number | null;
+  interval_engine_hours: number | null;
   reminder_days_before: number;
   last_service_date: string | null;
   last_service_km: number | null;
+  last_service_engine_hours: number | null;
   next_due_date: string | null;
   next_due_km: number | null;
+  next_due_engine_hours: number | null;
+  auto_created: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
