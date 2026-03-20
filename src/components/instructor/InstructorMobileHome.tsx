@@ -434,16 +434,7 @@ export function InstructorMobileHome({
         firstName={firstName}
         heroImageUrl={personalHeroUrl || content?.hero_image_url}
         profileImageUrl={instructor?.profile_image_url}
-        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
-        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
-        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
-        todayCompleted={todayOverview?.completedCount || 0}
-        todayTotal={todayOverview?.lessonCount || 0}
-        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
-        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
-        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
-        monthEarnings={liveStats?.monthEarnings || 0}
-        hoursThisWeek={liveStats?.hoursThisWeek || 0}
+        periods={heroPeriods}
         drivingScore={driverScores?.overall || 100}
       />
 
