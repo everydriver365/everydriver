@@ -35,6 +35,7 @@ export default function InstructorVehicleHealth() {
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
+  useAutoMaintenanceSetup();
   const [activeTab, setActiveTab] = useState(() => {
     if (location.hash === "#faults") return "live";
     if (location.hash === "#compliance") return "compliance";
