@@ -42,7 +42,7 @@ export function useAutoMaintenanceSetup() {
 
       // Find the device for this vehicle to get current readings
       const device = devices.find((d) => d.vehicle?.id === vehicleId);
-      const currentKm = device?.last_ecu_odometer_km ?? null;
+      const currentKm = device?.last_ecu_odometer_km != null ? Math.round(device.last_ecu_odometer_km) : null;
       const currentEngineHours = device?.last_engine_hours ?? null;
 
       // Auto-create default reminders
@@ -55,7 +55,7 @@ export function useAutoMaintenanceSetup() {
         reminder_days_before: 14,
         last_service_km: currentKm,
         last_service_date: new Date().toISOString().split("T")[0],
-        next_due_km: currentKm != null ? currentKm + preset.interval_km : null,
+        next_due_km: currentKm != null ? Math.round(currentKm + preset.interval_km) : null,
         next_due_date: null, // Will be set by interval_months from last_service_date
         auto_created: true,
       }));

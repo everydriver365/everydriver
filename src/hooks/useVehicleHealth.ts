@@ -130,10 +130,15 @@ export function useVehicleHealth() {
 
       if (error) throw error;
 
+      // Filter out ghost devices that have never reported telemetry
+      const activeDevices = (devices || []).filter(
+        d => d.last_seen_at !== null || (d as any).last_heartbeat_at !== null
+      );
+
       // Fetch linked vehicles separately
-      const vehicleIds = devices
-        ?.map(d => d.vehicle_id)
-        .filter((id): id is string => id !== null) || [];
+      const vehicleIds = activeDevices
+        .map(d => d.vehicle_id)
+        .filter((id): id is string => id !== null);
 
       let vehiclesMap: Record<string, GPSDeviceHealth["vehicle"]> = {};
 
@@ -148,7 +153,7 @@ export function useVehicleHealth() {
         });
       }
 
-      return (devices || []).map(d => {
+      return activeDevices.map(d => {
         const lastSeen = d.last_seen_at ? new Date(d.last_seen_at) : null;
         const heartbeat = (d as any).last_heartbeat_at ? new Date((d as any).last_heartbeat_at) : null;
         const now = Date.now();
