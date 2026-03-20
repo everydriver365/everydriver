@@ -377,6 +377,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    const deviceFaults = new Map<string, any[]>();
+
     // Common OBD-II DTC descriptions
     const DTC_DESCRIPTIONS: Record<string, string> = {
       "P0100": "Mass air flow sensor circuit malfunction",
