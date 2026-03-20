@@ -226,6 +226,9 @@ export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDe
               { icon: Gauge, label: "Max Speed", value: `${maxMph} mph` },
               { icon: Timer, label: "Idle", value: `${trip.idleMinutes}m` },
               { icon: OctagonPause, label: "Stops", value: `${trip.stopMinutes}m` },
+              ...(fuelMpg != null ? [{ icon: Fuel, label: "MPG", value: `${fuelMpg}` }] : []),
+              ...(fuelLitres != null ? [{ icon: Fuel, label: "Fuel", value: `${fuelLitres.toFixed(1)} L` }] : []),
+              ...(fuelCost != null ? [{ icon: PoundSterling, label: "Fuel Cost", value: `£${fuelCost.toFixed(2)}` }] : []),
             ].map(({ icon: Icon, label, value }) => (
               <Card key={label}>
                 <CardContent className="p-2.5 text-center">
