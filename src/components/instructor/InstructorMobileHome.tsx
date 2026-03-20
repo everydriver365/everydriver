@@ -120,6 +120,8 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 import { useDemoMode } from "@/context/DemoModeContext";
+import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
