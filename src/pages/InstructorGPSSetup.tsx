@@ -283,8 +283,6 @@ export default function InstructorGPSSetup() {
           />
         )}
 
-        {/* Hardware Tracker Setup - Primary focus */}
-        <HardwareTrackerSetup />
 
         {/* Pre-Flight Checks */}
         {instructor?.id && (

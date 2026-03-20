@@ -132,13 +132,6 @@ const TrackingDebugPanel: React.FC<TrackingDebugPanelProps> = ({ debugInfo }) =>
                 {getStatusBadge(debugInfo.motionStatus, 'motion')}
               </div>
               
-              <div className="flex items-center justify-between text-xs p-1.5 bg-muted/30 rounded">
-                <div className="flex items-center gap-1.5">
-                  <Cloud className="h-3 w-3 text-muted-foreground" />
-                  <span>Damoov</span>
-                </div>
-                {getStatusBadge(debugInfo.damoovStatus, 'damoov')}
-              </div>
               
               <div className="flex items-center justify-between text-xs p-1.5 bg-muted/30 rounded">
                 <div className="flex items-center gap-1.5">

@@ -113,8 +113,6 @@ export function useVehicleHealth() {
           last_longitude,
           last_seen_at,
           last_heartbeat_at,
-          gpsgate_odometer_m,
-          gpsgate_engine_hours_s,
           daily_start_odometer_m,
           daily_start_date,
           daily_start_ecu_odometer_km,

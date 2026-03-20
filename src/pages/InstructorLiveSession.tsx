@@ -146,7 +146,7 @@ export default function InstructorLiveSession() {
       
       if (devices && devices.length > 0) {
         // Pick the best device by provider priority
-        const priorityOrder = ["geotab", "quartix", "radius", "gpsgate"];
+        const priorityOrder = ["geotab", "radius"];
         const sorted = [...devices].sort((a, b) => {
           const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
           const bIdx = priorityOrder.indexOf(b.tracking_provider || "");

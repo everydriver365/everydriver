@@ -24,7 +24,7 @@ import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
+
 
 export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
