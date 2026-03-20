@@ -20,23 +20,25 @@ import conceptAB from "@/assets/hero-compact-AB.png";
 import conceptAC from "@/assets/hero-compact-AC.png";
 import conceptAD from "@/assets/hero-compact-AD.png";
 import conceptAE from "@/assets/hero-compact-AE.png";
+import conceptAF from "@/assets/hero-compact-AF.png";
+import conceptAG from "@/assets/hero-compact-AG.png";
+import conceptAH from "@/assets/hero-compact-AH.png";
+import conceptAI from "@/assets/hero-compact-AI.png";
+import conceptAJ from "@/assets/hero-compact-AJ.png";
 
 const concepts = [
-  { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row.", image: conceptQ },
-  { id: "R", title: "Metric Boxes + Tabs", description: "Three colour-accented white metric boxes (earned, hours, done with gauge) plus a Today/Week/Month/Year segmented selector.", image: conceptR },
-  { id: "S", title: "Glass Card 3-Column", description: "Rounded dark header with glassmorphic card below. 3 columns: lessons count, progress ring, and stacked stats with coloured icons.", image: conceptS },
   { id: "T", title: "Widget Grid", description: "Four mini white tiles like Apple Watch complications — lessons with progress bar, £ earned, hours, and done ring.", image: conceptT },
-  { id: "U", title: "Ring + Legend", description: "Large progress ring on left showing 4/6, stacked stat legend on right with coloured dots.", image: conceptU },
-  { id: "V", title: "Pill Badges Row", description: "Avatar + greeting top row, lesson count card below, three coloured pill badges for earnings, hours, and completed.", image: conceptV },
-  { id: "W", title: "Data-Dense Columns", description: "Avatar with 4 metric columns — lessons with progress bar, earnings, hours, and completion ratio. Period tab at corner.", image: conceptW },
-  { id: "X", title: "Floating White Card", description: "Dark header with Today chip, white card floating below with 4-column grid of icons and numbers. Fintech-inspired.", image: conceptX },
-  { id: "Y", title: "Dashboard Ring + Stats", description: "Large donut ring on left showing completion, three horizontal stat rows on right with coloured icons and values.", image: conceptY },
-  { id: "Z", title: "Split Two-Column", description: "Left column: avatar + lessons + progress bar. Right column: three stacked metric boxes. Swipe dots for period switching.", image: conceptZ },
-  { id: "AA", title: "Coloured Card Row", description: "Avatar on left, then a horizontal row of bright coloured cards — green lessons, blue earnings, amber done. iOS widget feel.", image: conceptAA },
-  { id: "AB", title: "Bar Chart Visual", description: "Avatar + name with a compact coloured bar chart visualising earned, hours, completed, and remaining. Data-viz focused.", image: conceptAB },
-  { id: "AC", title: "Banking Card + Tabs", description: "Dark gradient header with avatar, white card below with large numbers in rounded boxes. Lessons/Hours/Done tabs at bottom.", image: conceptAC },
-  { id: "AD", title: "Centre Ring Focus", description: "Large progress ring centred with Today label above. Avatar tucked left, stat pills stacked right. Bold and symmetrical.", image: conceptAD },
+  { id: "AF", title: "2×2 Widget Grid", description: "Avatar + greeting top, then a 2×2 grid of white tiles — lessons with progress bar, £ earned, hours, and done ring.", image: conceptAF },
+  { id: "AG", title: "Row of Square Tiles", description: "Name + Today chip header, four white square tiles in a single row — lessons, earned with trend line, hours with clock, done ring.", image: conceptAG },
+  { id: "AH", title: "Accent-Edge Cards", description: "Greeting + avatar row, then four white cards with coloured left-edge accents. Progress bar, earned, hours, done.", image: conceptAH },
+  { id: "AI", title: "Pure Data Widgets", description: "No avatar — four white square tiles with coloured top accents and mini charts. Lessons, earned with bar, hours with bar, done ring.", image: conceptAI },
+  { id: "AJ", title: "Stacked Glass Widgets", description: "Greeting row at top, then a stacked vertical widget layout — lessons card, earned card, hours + done gauge side by side.", image: conceptAJ },
   { id: "AE", title: "Colour-Top Boxes", description: "Avatar + name header with Today badge. Four stat boxes below with coloured top borders — earned, hours, done, lessons ring.", image: conceptAE },
+  { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row.", image: conceptQ },
+  { id: "R", title: "Metric Boxes + Tabs", description: "Three colour-accented white metric boxes plus a Today/Week/Month/Year segmented selector.", image: conceptR },
+  { id: "S", title: "Glass Card 3-Column", description: "Rounded dark header with glassmorphic card below. 3 columns: lessons count, progress ring, and stacked stats.", image: conceptS },
+  { id: "U", title: "Ring + Legend", description: "Large progress ring on left showing 4/6, stacked stat legend on right with coloured dots.", image: conceptU },
+  { id: "AD", title: "Centre Ring Focus", description: "Large progress ring centred with Today label above. Avatar tucked left, stat pills stacked right.", image: conceptAD },
 ];
 
 export default function HeroCompactDemo() {
