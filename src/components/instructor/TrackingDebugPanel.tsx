@@ -29,7 +29,7 @@ interface DebugInfo {
   sessionId?: string | null;
   gpsPointsCount: number;
   eventsCount: number;
-  damoovStatus: 'idle' | 'processing' | 'complete' | 'error';
+  
 }
 
 interface TrackingDebugPanelProps {
