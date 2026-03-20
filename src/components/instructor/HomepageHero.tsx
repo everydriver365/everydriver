@@ -52,6 +52,7 @@ export function HomepageHero({
   firstName,
   heroImageUrl,
   profileImageUrl,
+  todayCompleted,
   todayTotal,
   monthEarnings = 0,
   hoursThisWeek = 0,
