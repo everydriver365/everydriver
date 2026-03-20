@@ -241,6 +241,28 @@ export default function InstructorGPSSetup() {
     <InstructorPortalLayout>
      <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
       <div className="space-y-6 max-w-2xl mx-auto">
+       {/* Active Provider Banner */}
+        {activeProvider && (
+          <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Satellite className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm">Connected Tracker</span>
+                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20 capitalize">
+                    {activeProvider}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your {activeProvider} tracker is the active tracking provider
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* GPS Tracker Connection */}
 
         {/* Live connection status when tracker is active */}
