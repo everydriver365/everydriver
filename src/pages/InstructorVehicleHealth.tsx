@@ -20,6 +20,7 @@ import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/Serv
 import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
 import { RunningCostsTab } from "@/components/instructor/vehicle-health/RunningCostsTab";
 import { MaintenanceAlertsBanner } from "@/components/instructor/vehicle-health/MaintenanceAlertsBanner";
+import { PersonalDrivingStatsCard } from "@/components/instructor/vehicle-health/PersonalDrivingStatsCard";
 import { useVehicleHealth, GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
@@ -76,6 +77,9 @@ export default function InstructorVehicleHealth() {
 
         {/* Maintenance alerts banner */}
         <MaintenanceAlertsBanner />
+
+        {/* Personal driving stats */}
+        <PersonalDrivingStatsCard />
 
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
