@@ -430,6 +430,9 @@ export function InstructorMobileHome({
         monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
         monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
         monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        monthEarnings={liveStats?.monthEarnings || 0}
+        hoursThisWeek={liveStats?.hoursThisWeek || 0}
+        drivingScore={driverScores?.overall || 100}
       />
 
       {/* Sticky next-up bar */}
