@@ -19,7 +19,7 @@ import {
   Satellite,
   Search
 } from "lucide-react";
-import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
+
 import PreFlightChecks from "@/components/instructor/PreFlightChecks";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
@@ -283,8 +283,6 @@ export default function InstructorGPSSetup() {
           />
         )}
 
-        {/* Hardware Tracker Setup - Primary focus */}
-        <HardwareTrackerSetup />
 
         {/* Pre-Flight Checks */}
         {instructor?.id && (

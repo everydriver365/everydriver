@@ -51,9 +51,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
-import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
-import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 import { DriverTimesheets } from "@/components/instructor/DriverTimesheets";
 import { PupilDrivingLeaderboard } from "@/components/instructor/PupilDrivingLeaderboard";
 
@@ -458,10 +455,6 @@ export default function InstructorRoutes() {
           </div>
         </div>
 
-        {/* Mobile GPS Tracking Banner */}
-        {instructor?.id && (
-          <MobileTrackingSettingsBanner instructorId={instructor.id} />
-        )}
 
         {/* Test Route Mode Card */}
         <Card className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/20">
@@ -518,14 +511,8 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className={`grid w-full ${activeProvider !== "gpsgate" && activeProvider !== null ? "grid-cols-6" : "grid-cols-7"} text-[10px]`}>
+            <TabsList className="grid w-full grid-cols-6 text-[10px]">
               <TabsTrigger value="all">All</TabsTrigger>
-              {(activeProvider === "gpsgate" || activeProvider === null) && (
-                <TabsTrigger value="gpsgate">
-                  <Satellite className="h-3 w-3 mr-0.5" />
-                  GPS
-                </TabsTrigger>
-              )}
               <TabsTrigger value="timesheets">
                 <Clock className="h-3 w-3 mr-0.5" />
                 Hours
@@ -546,13 +533,8 @@ export default function InstructorRoutes() {
             </TabsList>
 
             {/* GPS Trips Tab Content */}
-            {activeTab === "gpsgate" ? (
-              <div className="mt-4">
-                {instructor?.id && (
-                  <GPSgateTripsTabContent instructorId={instructor.id} />
-                )}
-              </div>
-            ) : activeTab === "timesheets" ? (
+            {activeTab === "timesheets" ? (
+            
               <div className="mt-4">
                 {instructor?.id && (
                   <DriverTimesheets instructorId={instructor.id} />

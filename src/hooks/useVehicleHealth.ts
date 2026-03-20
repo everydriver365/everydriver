@@ -18,8 +18,6 @@ export interface GPSDeviceHealth {
   last_longitude: number | null;
   last_seen_at: string | null;
   is_connected: boolean;
-  gpsgate_odometer_m: number | null;
-  gpsgate_engine_hours_s: number | null;
   daily_start_odometer_m: number | null;
   daily_start_date: string | null;
   daily_start_ecu_odometer_km: number | null;
@@ -115,8 +113,6 @@ export function useVehicleHealth() {
           last_longitude,
           last_seen_at,
           last_heartbeat_at,
-          gpsgate_odometer_m,
-          gpsgate_engine_hours_s,
           daily_start_odometer_m,
           daily_start_date,
           daily_start_ecu_odometer_km,

@@ -159,10 +159,10 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
     <Route path="/instructor/live" element={<InstructorLiveSession />} />
     <Route path="/instructor/tracking" element={<InstructorLiveSession />} />
-    <Route path="/instructor/traccar" element={<InstructorLiveSession />} />
+    
     <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
     <Route path="/instructor/settings/tracking" element={<InstructorGPSSetup />} />
-    <Route path="/instructor/settings/traccar" element={<InstructorGPSSetup />} />
+    
     <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
     <Route path="/instructor/dashcam" element={<DashcamGallery />} />
     <Route path="/instructor/find-nearby" element={<InstructorFindNearby />} />

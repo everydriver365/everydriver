@@ -25,7 +25,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
-import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
+
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
 
@@ -146,7 +146,7 @@ export default function InstructorLiveSession() {
       
       if (devices && devices.length > 0) {
         // Pick the best device by provider priority
-        const priorityOrder = ["geotab", "quartix", "radius", "gpsgate"];
+        const priorityOrder = ["geotab", "radius"];
         const sorted = [...devices].sort((a, b) => {
           const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
           const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
