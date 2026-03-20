@@ -41,11 +41,6 @@ export function LessonRouteRecorder({
   const startMarkerRef = useRef<google.maps.Marker | null>(null);
   const currentMarkerRef = useRef<google.maps.Marker | null>(null);
 
-  // Hide when a hardware tracker auto-captures routes
-  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
-    return null;
-  }
-
   // Load Google Maps SDK
   useEffect(() => {
     let cancelled = false;
