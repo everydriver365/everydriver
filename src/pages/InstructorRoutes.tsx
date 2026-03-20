@@ -115,6 +115,7 @@ const generateRoutePath = (points: Array<{ lat: number; lon: number }> | null): 
 export default function InstructorRoutes() {
   const { instructor } = useInstructorAuth();
   const navigate = useNavigate();
+  const { activeProvider } = useActiveTrackingProvider(instructor?.id);
   const [loading, setLoading] = useState(true);
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
