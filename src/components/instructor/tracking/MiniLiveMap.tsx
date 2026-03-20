@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 
 interface MiniLiveMapProps {
   latitude: number | null;
@@ -15,8 +14,9 @@ interface MiniLiveMapProps {
 
 export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.CircleMarker | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
+  const [ready, setReady] = useState(false);
 
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
@@ -25,73 +25,87 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
 
   const hasPosition = latitude !== null && longitude !== null;
 
-  // Init Leaflet map
+  // Load Google Maps SDK
   useEffect(() => {
-    if (!mapDivRef.current || mapRef.current) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const key = await fetchGoogleMapsKey();
+        if (!key || cancelled) return;
+        await loadGoogleMaps(key);
+        if (!cancelled) setReady(true);
+      } catch (e) {
+        console.error("Failed to load Google Maps for MiniLiveMap:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-    const center: L.LatLngExpression = hasPosition
-      ? [latitude!, longitude!]
-      : [54.5, -3.5];
+  // Init map once SDK is ready
+  useEffect(() => {
+    if (!ready || !mapDivRef.current || mapRef.current) return;
 
-    const map = L.map(mapDivRef.current, {
+    const center = hasPosition
+      ? { lat: latitude!, lng: longitude! }
+      : { lat: 54.5, lng: -3.5 };
+
+    const map = new google.maps.Map(mapDivRef.current, {
       center,
       zoom: 15,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-      boxZoom: false,
-      keyboard: false,
+      disableDefaultUI: true,
+      gestureHandling: "none",
+      mapTypeId: "roadmap",
+      clickableIcons: false,
     });
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-    }).addTo(map);
 
     mapRef.current = map;
 
     if (hasPosition) {
-      markerRef.current = L.circleMarker([latitude!, longitude!], {
-        radius: 10,
-        fillColor: isActive ? "#3b82f6" : "#9ca3af",
-        fillOpacity: 1,
-        color: "white",
-        weight: 3,
-      }).addTo(map);
+      markerRef.current = new google.maps.Marker({
+        position: center,
+        map,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: isActive ? "#3b82f6" : "#9ca3af",
+          fillOpacity: 1,
+          strokeColor: "white",
+          strokeWeight: 3,
+        },
+      });
     }
 
-    // Fix tile rendering after container is visible
-    setTimeout(() => map.invalidateSize(), 100);
-
     return () => {
-      map.remove();
-      mapRef.current = null;
+      markerRef.current?.setMap(null);
       markerRef.current = null;
+      mapRef.current = null;
     };
-  }, []);
+  }, [ready]);
 
   // Update marker position
   useEffect(() => {
     const map = mapRef.current;
     if (!map || latitude == null || longitude == null) return;
 
-    const pos: L.LatLngExpression = [latitude, longitude];
+    const pos = { lat: latitude, lng: longitude };
+    const iconOpts = {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillColor: isActive ? "#3b82f6" : "#9ca3af",
+      fillOpacity: 1,
+      strokeColor: "white",
+      strokeWeight: 3,
+    };
 
     if (markerRef.current) {
-      markerRef.current.setLatLng(pos);
-      markerRef.current.setStyle({
-        fillColor: isActive ? "#3b82f6" : "#9ca3af",
-      });
+      markerRef.current.setPosition(pos);
+      markerRef.current.setIcon(iconOpts);
     } else {
-      markerRef.current = L.circleMarker(pos, {
-        radius: 10,
-        fillColor: isActive ? "#3b82f6" : "#9ca3af",
-        fillOpacity: 1,
-        color: "white",
-        weight: 3,
-      }).addTo(map);
+      markerRef.current = new google.maps.Marker({
+        position: pos,
+        map,
+        icon: iconOpts,
+      });
     }
 
     map.panTo(pos);
