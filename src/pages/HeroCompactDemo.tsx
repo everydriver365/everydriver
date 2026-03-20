@@ -11,44 +11,34 @@ import conceptC from "@/assets/hero-compact-C.png";
 import conceptD from "@/assets/hero-compact-D.png";
 import conceptE from "@/assets/hero-compact-E.png";
 import conceptF from "@/assets/hero-compact-F.png";
+import conceptG from "@/assets/hero-compact-G.png";
+import conceptH from "@/assets/hero-compact-H.png";
+import conceptI from "@/assets/hero-compact-I.png";
+import conceptJ from "@/assets/hero-compact-J.png";
+import conceptK from "@/assets/hero-compact-K.png";
+import conceptL from "@/assets/hero-compact-L.png";
+import conceptM from "@/assets/hero-compact-M.png";
+import conceptN from "@/assets/hero-compact-N.png";
+import conceptO from "@/assets/hero-compact-O.png";
+import conceptP from "@/assets/hero-compact-P.png";
 
 const concepts = [
-  {
-    id: "A",
-    title: "Stats Strip",
-    description: "Greeting row + inline stat pills (£, hours, progress). No card — flat strip. ~110px.",
-    image: conceptA,
-  },
-  {
-    id: "B",
-    title: "Mini Card",
-    description: "Compact swipeable card with lesson count, progress ring, and inline stats. ~140px.",
-    image: conceptB,
-  },
-  {
-    id: "C",
-    title: "Dashboard Strip",
-    description: "Single dense bar — avatar, large lesson count with arc, stacked stats. ~100px.",
-    image: conceptC,
-  },
-  {
-    id: "D",
-    title: "Chip Row",
-    description: "Avatar + name row, then 4 horizontal stat chips (lessons, £, hours, done). Swipeable periods. ~90px.",
-    image: conceptD,
-  },
-  {
-    id: "E",
-    title: "Gauge Centre",
-    description: "Avatar left, speedometer-style gauge in centre showing progress, stats right. Period tabs at bottom. ~95px.",
-    image: conceptE,
-  },
-  {
-    id: "F",
-    title: "Metric Boxes",
-    description: "Floating card with avatar + greeting left, 3 colour-accented metric boxes right (earned, hours, done). ~105px.",
-    image: conceptF,
-  },
+  { id: "A", title: "Stats Strip", description: "Greeting row + inline stat pills. No card — flat strip. ~110px.", image: conceptA },
+  { id: "B", title: "Mini Card", description: "Compact swipeable card with progress ring and inline stats. ~140px.", image: conceptB },
+  { id: "C", title: "Dashboard Strip", description: "Dense bar — avatar, large lesson count with arc, stacked stats. ~100px.", image: conceptC },
+  { id: "D", title: "Chip Row", description: "Avatar + name, then 4 horizontal stat chips. Swipeable. ~90px.", image: conceptD },
+  { id: "E", title: "Gauge Centre", description: "Speedometer gauge in centre, stats right. Period tabs. ~95px.", image: conceptE },
+  { id: "F", title: "Metric Boxes", description: "Floating card with 3 colour-accented metric boxes. ~105px.", image: conceptF },
+  { id: "G", title: "Big Numbers Grid", description: "Large bold numbers in grid boxes — lessons, £, hours, done. ~100px.", image: conceptG },
+  { id: "H", title: "Ring Trio", description: "Three coloured progress rings side by side — earnings, hours, done. ~110px.", image: conceptH },
+  { id: "I", title: "Progress Bar", description: "Segmented progress bar + summary line. Period tabs below. ~120px.", image: conceptI },
+  { id: "J", title: "Light Card", description: "White/light floating card with coloured left-border badges. Apple Health style. ~100px.", image: conceptJ },
+  { id: "K", title: "Numbers First", description: "Giant lesson count left, stacked stats centre, avatar right. Pure data. ~95px.", image: conceptK },
+  { id: "L", title: "Instrument Cluster", description: "Car dashboard gauge with stats and period tabs. Automotive feel. ~115px.", image: conceptL },
+  { id: "M", title: "Split Grid", description: "Left: Today + lessons. Right: 2×2 stats grid with avatar. ~105px.", image: conceptM },
+  { id: "N", title: "Glass Mini Cards", description: "Avatar row + horizontal scroll of glassmorphic stat cards. ~110px.", image: conceptN },
+  { id: "O", title: "Ticker Tape", description: "Single line greeting + scrolling stats ticker. Period dropdown. ~80px.", image: conceptO },
+  { id: "P", title: "Segmented Bar", description: "Greeting row + full-width segmented rectangle with 4 stat columns. ~110px.", image: conceptP },
 ];
 
 export default function HeroCompactDemo() {
