@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
 import { Search, Filter, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -51,16 +52,17 @@ export function CourseSearchHeader({
               className="flex-1"
               inputClassName="h-11 border-0 bg-secondary"
             />
-            <select
-              value={radius}
-              onChange={(e) => setRadius(e.target.value)}
-              className="h-11 rounded-lg border-0 bg-secondary px-4 text-foreground"
-            >
-              <option value="5">5 miles</option>
-              <option value="10">10 miles</option>
-              <option value="15">15 miles</option>
-              <option value="25">25 miles</option>
-            </select>
+            <div className="flex items-center gap-3 sm:w-48">
+              <Slider
+                min={5}
+                max={50}
+                step={5}
+                value={[Number(radius)]}
+                onValueChange={([val]) => setRadius(String(val))}
+                className="flex-1"
+              />
+              <span className="whitespace-nowrap text-sm font-medium text-foreground">{radius} miles</span>
+            </div>
             <Button variant="accent" size="lg" className="h-11" onClick={onSearch} disabled={isSearching}>
               {isSearching ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
