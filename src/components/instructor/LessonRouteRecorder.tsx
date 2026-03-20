@@ -38,8 +38,11 @@ export function LessonRouteRecorder({
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const snappedPolylineRef = useRef<google.maps.Polyline | null>(null);
   const startMarkerRef = useRef<google.maps.Marker | null>(null);
   const currentMarkerRef = useRef<google.maps.Marker | null>(null);
+  const lastSnappedCountRef = useRef(0);
+  const snappedPathRef = useRef<Array<{ lat: number; lng: number }>>([]);
 
   // Load Google Maps SDK
   useEffect(() => {
