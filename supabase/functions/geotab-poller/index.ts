@@ -621,6 +621,21 @@ Deno.serve(async (req) => {
             })
             .eq("id", device.id);
         }
+
+        // Sync ECU odometer → linked vehicle's current_odometer_km
+        if (device.vehicle_id) {
+          await supabase
+            .from("instructor_vehicles")
+            .update({ current_odometer_km: currentEcuKm })
+            .eq("id", device.vehicle_id);
+        }
+      }
+
+      // Sync engine hours → linked vehicle for maintenance tracking
+      const currentEngineHours = diagnosticsUpdate.last_engine_hours as number | undefined;
+      if (currentEngineHours != null && device.vehicle_id) {
+        // Update next_service_due_km isn't needed here — the service reminders
+        // system reads current_odometer_km and engine hours from the device directly
       }
 
       if (deviceRow?.current_session_id && status.latitude && status.longitude) {
