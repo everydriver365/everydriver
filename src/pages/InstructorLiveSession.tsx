@@ -133,13 +133,14 @@ export default function InstructorLiveSession() {
     if (!instructor?.id) return;
     
     try {
-      // Fetch first active device
+      // Fetch active devices, ordered by provider priority (geotab first)
       const { data: devices, error: deviceError } = await supabase
         .from("gps_devices")
         .select("*")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true)
-        .limit(1);
+        .order("tracking_provider", { ascending: true })
+        .limit(10);
 
       if (deviceError) throw deviceError;
       
