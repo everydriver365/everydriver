@@ -1,44 +1,42 @@
 
 
-## Plan: Add Fuel/MPG Data to Trip History & Trip Detail Sheet
+# Plan: Add Real-Time Impact Detection with Push Notifications to Geotab Poller
 
-### What changes
+## Current State
 
-The `geotab_fuel_usage` table already stores per-trip fuel data (litres, distance, cost). Currently this data only appears on the dedicated Fuel tab. This plan surfaces it directly on the Trip History table and Trip Detail drawer.
+- **`geotab_impact_events` table** — exists, stores high G-force events
+- **`geotab-behaviour-sync` edge function** — inserts impact events when G-force > 1.5g, but only runs on manual sync (not real-time)
+- **`geotab-poller` edge function** — runs every ~10s for live tracking, fetches DeviceStatusInfo, speed limits, diagnostics, faults, and media — but does NOT check for ExceptionEvents or send push notifications
+- **`send-push-notification` edge function** — exists and works for both web push and Expo
+- **`GeotabImpactTab` UI** — exists with acknowledge flow
 
-### Approach
+## What's Missing
 
-**1. Fetch fuel data alongside trips in `GeotabTripHistory.tsx`**
-- Import `useGeotabFuelUsage` hook (already exists)
-- Call it with the same date range as the trips query
-- Build a lookup map keyed by `trip_start` timestamp to match fuel records to trips
-- Matching logic: find a fuel record whose `trip_start` is within 60 seconds of the Geotab trip's `startTime`
+The poller doesn't monitor for high G-force events in real-time and doesn't send push notifications when impacts are detected.
 
-**2. Add MPG and Cost columns to the trip table**
-- Add a "MPG" column header (with Fuel icon) after the Max Speed column
-- Add a "Cost" column header (with £ icon) after MPG
-- Both hidden on mobile (`hidden sm:table-cell`)
-- Each row looks up the matched fuel record and displays: MPG (calculated from distance_km and fuel_used_litres) and `£X.XX`
-- Show "—" when no fuel data is available for a trip
+## Changes
 
-**3. Add fuel section to `TripDetailSheet.tsx`**
-- Accept an optional `fuelRecord` prop (type from `useGeotabFuelUsage`)
-- Add a "Fuel" card row to the summary grid: Fuel (litres), MPG, Cost
-- Add a "Fuel Economy" analysis section below the speed analysis, showing litres/100km and MPG with a visual bar
-- Include fuel data in the PDF report and CSV export
+### 1. `supabase/functions/geotab-poller/index.ts` — Add ExceptionEvent batch call + push notification
 
-**4. Pass fuel data from TripHistory to TripDetailSheet**
-- When a trip is selected, find its matching fuel record and pass it as a prop
+Add to the existing batched `geotabMultiCall`:
+- One additional `Get` call for `ExceptionEvent` with `fromDate` set to 2 minutes ago, filtered to accelerometer-related built-in rules
+- After processing positions, loop through exception results and:
+  - Calculate G-force from the event data
+  - If G-force > 2.0g (critical) or > 1.5g (high), upsert into `geotab_impact_events`
+  - For critical events (> 2.0g), immediately call the `send-push-notification` edge function with:
+    - Title: "Impact Alert"
+    - Body: "{g_force}g impact detected at {speed} mph near {road_name}"
+    - Data: `{ url: "/instructor/geotab", type: "impact_alert", eventId }`
+    - `requireInteraction: true` so the notification stays visible
+  - Use `geotab_event_id` unique constraint to prevent duplicate inserts and duplicate notifications
 
-### Files changed
+### 2. No other files change
+
+The impact tab UI, hooks, and database table already exist and will automatically show new events inserted by the poller.
+
+## Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/geotab/GeotabTripHistory.tsx` | Import fuel hook, build lookup map, add 2 table columns, pass fuel prop to detail sheet |
-| `src/components/instructor/geotab/TripDetailSheet.tsx` | Accept `fuelRecord` prop, add fuel cards, fuel analysis section, update PDF/CSV |
-
-### Technical notes
-- Fuel matching uses timestamp proximity (±60s) since the edge function stores `trip_start` from Geotab's trip object, which should match closely
-- MPG calculation: `(distance_km * 0.621371) / (fuel_used_litres * 0.219969)`
-- No database or edge function changes needed — all data already exists
+| `supabase/functions/geotab-poller/index.ts` | Add ExceptionEvent to batch call, insert impacts, send push notifications |
 
