@@ -189,6 +189,16 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                   </span>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">Idle</TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <span className="flex items-center gap-1">
+                    <Fuel className="h-3 w-3" /> MPG
+                  </span>
+                </TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <span className="flex items-center gap-1">
+                    <PoundSterling className="h-3 w-3" /> Cost
+                  </span>
+                </TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
