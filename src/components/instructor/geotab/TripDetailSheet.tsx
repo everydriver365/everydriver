@@ -80,7 +80,7 @@ function fmtDuration(mins: number): string {
 
 // ── PDF generation ──
 
-function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult) {
+function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult, fuelMpg: number | null, fuelLitres: number | null, fuelCost: number | null) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   let y = 20;
