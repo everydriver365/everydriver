@@ -231,16 +231,19 @@ function ReminderCard({
     }`}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base">{serviceName}</CardTitle>
-              {status === "overdue" && (
-                <Badge variant="destructive">Overdue</Badge>
-              )}
-              {status === "due_soon" && (
-                <Badge variant="secondary" className="bg-warning text-warning-foreground">Due Soon</Badge>
-              )}
-            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base">{serviceName}</CardTitle>
+                {reminder.auto_created && (
+                  <Badge variant="outline" className="text-[10px]">Auto</Badge>
+                )}
+                {status === "overdue" && (
+                  <Badge variant="destructive">Overdue</Badge>
+                )}
+                {status === "due_soon" && (
+                  <Badge variant="secondary" className="bg-warning text-warning-foreground">Due Soon</Badge>
+                )}
+              </div>
             <p className="text-sm text-muted-foreground font-mono">
               {reminder.vehicle?.registration}
             </p>
