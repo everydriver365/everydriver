@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Add FaultData call for all devices (single call at end)
+    // Add FaultData call for all devices
     batchCalls.push({
       method: "Get",
       params: {
@@ -321,6 +321,19 @@ Deno.serve(async (req) => {
           toDate: now.toISOString(),
         },
         resultsLimit: 200,
+      },
+    });
+
+    // Add ExceptionEvent call for impact/harsh event detection (last 2 minutes)
+    batchCalls.push({
+      method: "Get",
+      params: {
+        typeName: "ExceptionEvent",
+        search: {
+          fromDate: twoMinAgo.toISOString(),
+          toDate: now.toISOString(),
+        },
+        resultsLimit: 50,
       },
     });
 
