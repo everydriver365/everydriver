@@ -551,11 +551,12 @@ Deno.serve(async (req) => {
       }
 
       // Tire pressure (collect all available)
+      // Geotab returns tire pressure in Pascals — convert to kPa for storage
       const tirePressure: Record<string, number> = {};
-      if (diags["DiagnosticTirePressureFrontLeftId"] != null) tirePressure.frontLeft = diags["DiagnosticTirePressureFrontLeftId"];
-      if (diags["DiagnosticTirePressureFrontRightId"] != null) tirePressure.frontRight = diags["DiagnosticTirePressureFrontRightId"];
-      if (diags["DiagnosticTirePressureRearLeftId"] != null) tirePressure.rearLeft = diags["DiagnosticTirePressureRearLeftId"];
-      if (diags["DiagnosticTirePressureRearRightId"] != null) tirePressure.rearRight = diags["DiagnosticTirePressureRearRightId"];
+      if (diags["DiagnosticTirePressureFrontLeftId"] != null) tirePressure.frontLeft = Math.round(diags["DiagnosticTirePressureFrontLeftId"] / 1000);
+      if (diags["DiagnosticTirePressureFrontRightId"] != null) tirePressure.frontRight = Math.round(diags["DiagnosticTirePressureFrontRightId"] / 1000);
+      if (diags["DiagnosticTirePressureRearLeftId"] != null) tirePressure.rearLeft = Math.round(diags["DiagnosticTirePressureRearLeftId"] / 1000);
+      if (diags["DiagnosticTirePressureRearRightId"] != null) tirePressure.rearRight = Math.round(diags["DiagnosticTirePressureRearRightId"] / 1000);
       if (Object.keys(tirePressure).length > 0) {
         diagnosticsUpdate.last_tire_pressure_json = tirePressure;
       }
