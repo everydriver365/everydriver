@@ -56,6 +56,7 @@ export default function InstructorGPSSetup() {
   const { instructor, loading } = useInstructorAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { activeProvider } = useActiveTrackingProvider(instructor?.id);
   
   const [devices, setDevices] = useState<GPSDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
