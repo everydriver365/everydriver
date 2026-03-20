@@ -240,6 +240,12 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
                       <span className="truncate">{lesson.pickup_postcode || "No postcode"}</span>
                       <span>•</span>
                       <span>{lesson.duration_minutes} mins</span>
+                      {lesson.geotab_trip_id && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 rounded-full px-1.5 py-0.5">
+                          <Satellite className="h-2.5 w-2.5" />
+                          GPS linked
+                        </span>
+                      )}
                     </div>
                   </div>
 
