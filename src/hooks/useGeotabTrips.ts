@@ -24,6 +24,7 @@ export interface GeotabTripsMeta {
   totalTrips: number;
   totalDistanceKm: number;
   totalDurationMinutes: number;
+  tripsLinked?: number;
 }
 
 interface GeotabTripsResponse {
