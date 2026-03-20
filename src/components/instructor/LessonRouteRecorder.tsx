@@ -90,13 +90,26 @@ export function LessonRouteRecorder({
     });
     mapRef.current = map;
 
+    // Raw GPS polyline (faint, shown while waiting for snap)
     polylineRef.current = new google.maps.Polyline({
       map,
       path: [],
+      strokeColor: "#93c5fd",
+      strokeOpacity: 0.4,
+      strokeWeight: 3,
+    });
+
+    // Snapped polyline (bold, road-hugging)
+    snappedPolylineRef.current = new google.maps.Polyline({
+      map,
+      path: [],
       strokeColor: "#3b82f6",
-      strokeOpacity: 0.8,
+      strokeOpacity: 0.9,
       strokeWeight: 4,
     });
+
+    lastSnappedCountRef.current = 0;
+    snappedPathRef.current = [];
 
     return () => {
       startMarkerRef.current?.setMap(null);
@@ -105,6 +118,8 @@ export function LessonRouteRecorder({
       currentMarkerRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
+      snappedPolylineRef.current?.setMap(null);
+      snappedPolylineRef.current = null;
       mapRef.current = null;
     };
   }, [isRecording, mapsReady]);
