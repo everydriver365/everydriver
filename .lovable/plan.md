@@ -1,17 +1,20 @@
 
 
-## Plan: Replace Radius Dropdown with Slider on Course Search
+## Fix: Lesson End Alert Blocking Wizard Completion
 
-### Change
-In `src/components/courses/CourseSearchHeader.tsx`, replace the `<select>` dropdown for radius with a `<Slider>` component showing the current value (e.g. "10 miles") and allowing selection from 5–50 miles.
+### Problem
+When the End Lesson Wizard is open, the `useLessonEndAlert` hook continues polling every 60 seconds. If there are multiple overdue lessons (or the current one hasn't been marked complete in the database yet), a new `LessonEndAlert` overlay appears **on top of** the open wizard, blocking all interaction.
 
-### Details
-- Remove the `<select>` element for radius
-- Add a `Slider` (from `@/components/ui/slider`) with `min={5}`, `max={50}`, `step={5}`
-- Display the current value as a label next to/above the slider (e.g. "15 miles")
-- Style to fit inline with the existing search bar row on desktop, and stack naturally on mobile
-- Convert `radius` from string to number for the slider, converting back via `setRadius(String(value))`
+### Solution
+Two changes in `InstructorPortalLayout.tsx`:
 
-### File Modified
-- `src/components/courses/CourseSearchHeader.tsx` — swap select for Slider + label
+1. **Suppress the alert while the wizard is open** — don't render `LessonEndAlert` when `endWizardLesson` is not null (i.e. the wizard is active).
+
+2. **After wizard completes, re-dismiss the just-completed lesson** — call `dismissLessonAlert` on completion so the same lesson doesn't immediately re-trigger before the DB status update propagates.
+
+### Files Changed
+- **`src/components/layout/InstructorPortalLayout.tsx`** — Conditionally render `LessonEndAlert` only when `endWizardLesson === null`. This is a ~1 line change in the JSX.
+
+### Why This Works
+The alert overlay uses `z-[100]` and covers the entire screen. By simply not rendering it while the wizard sheet is open, the instructor can complete each lesson uninterrupted. Once the wizard closes and sets `endWizardLesson` back to `null`, alerts resume normally for any remaining overdue lessons.
 
