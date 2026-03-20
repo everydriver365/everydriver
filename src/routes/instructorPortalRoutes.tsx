@@ -47,6 +47,7 @@ const InstructorFindMyCar = lazy(() => import("@/pages/InstructorFindMyCar"));
 const InstructorVehicleHealth = lazy(() => import("@/pages/InstructorVehicleHealth"));
 const VehicleHealthDesignDemo = lazy(() => import("@/pages/VehicleHealthDesignDemo"));
 const HomepageDesignDemo = lazy(() => import("@/pages/HomepageDesignDemo"));
+const NavDesignDemo = lazy(() => import("@/pages/NavDesignDemo"));
 const InstructorFuel = lazy(() => import("@/pages/InstructorFuel"));
 const InstructorMileageTracker = lazy(() => import("@/pages/InstructorMileageTracker"));
 const InstructorRoutes = lazy(() => import("@/pages/InstructorRoutes"));
@@ -114,6 +115,7 @@ export const instructorPortalRoutes = (
     {/* Core */}
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/homepage-demo" element={<HomepageDesignDemo />} />
+    <Route path="/instructor/nav-demo" element={<NavDesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
