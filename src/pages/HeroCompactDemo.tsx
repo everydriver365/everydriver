@@ -8,25 +8,46 @@ import { motion } from "framer-motion";
 import conceptA from "@/assets/hero-compact-A.png";
 import conceptB from "@/assets/hero-compact-B.png";
 import conceptC from "@/assets/hero-compact-C.png";
+import conceptD from "@/assets/hero-compact-D.png";
+import conceptE from "@/assets/hero-compact-E.png";
+import conceptF from "@/assets/hero-compact-F.png";
 
 const concepts = [
   {
     id: "A",
     title: "Stats Strip",
-    description: "Greeting row + inline stat pills (£, hours, progress). No card — just a flat strip. Ultra-compact ~110px. Swipe dots switch period.",
+    description: "Greeting row + inline stat pills (£, hours, progress). No card — flat strip. ~110px.",
     image: conceptA,
   },
   {
     id: "B",
     title: "Mini Card",
-    description: "Greeting header with action icons, then a compact swipeable card with lesson count, progress ring, and inline stats. ~140px total. Familiar layout, tighter.",
+    description: "Compact swipeable card with lesson count, progress ring, and inline stats. ~140px.",
     image: conceptB,
   },
   {
     id: "C",
     title: "Dashboard Strip",
-    description: "Single dense bar — avatar + name on left, large lesson count with progress arc in center, stacked micro-stats on right. ~100px. Most space-efficient.",
+    description: "Single dense bar — avatar, large lesson count with arc, stacked stats. ~100px.",
     image: conceptC,
+  },
+  {
+    id: "D",
+    title: "Chip Row",
+    description: "Avatar + name row, then 4 horizontal stat chips (lessons, £, hours, done). Swipeable periods. ~90px.",
+    image: conceptD,
+  },
+  {
+    id: "E",
+    title: "Gauge Centre",
+    description: "Avatar left, speedometer-style gauge in centre showing progress, stats right. Period tabs at bottom. ~95px.",
+    image: conceptE,
+  },
+  {
+    id: "F",
+    title: "Metric Boxes",
+    description: "Floating card with avatar + greeting left, 3 colour-accented metric boxes right (earned, hours, done). ~105px.",
+    image: conceptF,
   },
 ];
 
