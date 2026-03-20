@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
 import { Search, Filter, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
