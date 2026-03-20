@@ -260,6 +260,7 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
 
       <TripDetailSheet
         trip={selectedTrip}
+        fuelRecord={selectedTrip ? fuelLookup.get(selectedTrip.id) ?? null : null}
         open={!!selectedTrip}
         onOpenChange={(open) => { if (!open) setSelectedTrip(null); }}
       />
