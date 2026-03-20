@@ -1,20 +1,25 @@
 
 
-## Fix: Lesson End Alert Blocking Wizard Completion
+## Plan: Switch MiniLiveMap to Google Maps
 
-### Problem
-When the End Lesson Wizard is open, the `useLessonEndAlert` hook continues polling every 60 seconds. If there are multiple overdue lessons (or the current one hasn't been marked complete in the database yet), a new `LessonEndAlert` overlay appears **on top of** the open wizard, blocking all interaction.
+### Why Leaflet was used
+The previous fix swapped to Leaflet because the map wasn't rendering. The actual issue was likely the Google Maps SDK not being loaded/initialised in that component — the API key exists and works (used elsewhere via `get-google-maps-key` edge function).
 
-### Solution
-Two changes in `InstructorPortalLayout.tsx`:
+### What to change
 
-1. **Suppress the alert while the wizard is open** — don't render `LessonEndAlert` when `endWizardLesson` is not null (i.e. the wizard is active).
+**File: `src/components/instructor/tracking/MiniLiveMap.tsx`**
 
-2. **After wizard completes, re-dismiss the just-completed lesson** — call `dismissLessonAlert` on completion so the same lesson doesn't immediately re-trigger before the DB status update propagates.
+1. Remove Leaflet imports (`L`, leaflet CSS)
+2. Use the existing `fetchGoogleMapsKey` and `loadGoogleMaps` helpers from `@/lib/googleMapsLoader.ts` to load the SDK
+3. Initialise a `google.maps.Map` in the div ref with the same options (no zoom control, no interaction on the mini map)
+4. Use a `google.maps.Marker` (or `AdvancedMarkerElement`) with a coloured circle icon matching current behaviour (blue when active, grey when inactive)
+5. Keep the same overlay badges (Live / Last seen) positioned absolutely over the map
+6. Pan to new position when `latitude`/`longitude` props change
+7. Show "No position data yet" overlay when no coordinates available
 
-### Files Changed
-- **`src/components/layout/InstructorPortalLayout.tsx`** — Conditionally render `LessonEndAlert` only when `endWizardLesson === null`. This is a ~1 line change in the JSX.
-
-### Why This Works
-The alert overlay uses `z-[100]` and covers the entire screen. By simply not rendering it while the wizard sheet is open, the instructor can complete each lesson uninterrupted. Once the wizard closes and sets `endWizardLesson` back to `null`, alerts resume normally for any remaining overdue lessons.
+### Technical notes
+- `fetchGoogleMapsKey()` calls the `get-google-maps-key` edge function (requires auth) — handle the async load in a `useEffect`
+- `loadGoogleMaps(key)` is idempotent — safe to call multiple times
+- Map style: `roadmap` type, zoom 16, all controls disabled for the mini preview
+- No other files need changing
 
