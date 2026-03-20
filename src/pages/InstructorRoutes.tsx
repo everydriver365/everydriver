@@ -533,12 +533,7 @@ export default function InstructorRoutes() {
             </TabsList>
 
             {/* GPS Trips Tab Content */}
-            {activeTab === "gpsgate" ? (
-              <div className="mt-4">
-                {instructor?.id && (
-                  <GPSgateTripsTabContent instructorId={instructor.id} />
-                )}
-              </div>
+            {activeTab === "timesheets" ? (
             ) : activeTab === "timesheets" ? (
               <div className="mt-4">
                 {instructor?.id && (
