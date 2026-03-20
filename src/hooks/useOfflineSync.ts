@@ -233,7 +233,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         .from('scheduled_lessons')
         .select(`
           *,
-          pupil:pupils(id, first_name, last_name, phone, address, postcode)
+          pupil:pupils(id, name, phone, postcode)
         `)
         .eq('instructor_id', instructorId)
         .gte('lesson_date', weekAgo)
