@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { GeotabTrip } from "@/hooks/useGeotabTrips";
+import { FuelRecord } from "@/hooks/useGeotabFuelUsage";
 import { kmToMiles, kmhToMph } from "@/lib/utils";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose,
@@ -7,12 +8,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, FileText, Download, X, Gauge, Clock, Route, Timer, OctagonPause, Activity } from "lucide-react";
+import { Play, FileText, Download, X, Gauge, Clock, Route, Timer, OctagonPause, Activity, Fuel, PoundSterling } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 
 interface TripDetailSheetProps {
   trip: GeotabTrip | null;
+  fuelRecord?: FuelRecord | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
