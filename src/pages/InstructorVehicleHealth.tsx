@@ -19,9 +19,11 @@ import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/Securi
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
 import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
 import { RunningCostsTab } from "@/components/instructor/vehicle-health/RunningCostsTab";
+import { MaintenanceAlertsBanner } from "@/components/instructor/vehicle-health/MaintenanceAlertsBanner";
 import { useVehicleHealth, GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
+import { useAutoMaintenanceSetup } from "@/hooks/useAutoMaintenanceSetup";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
