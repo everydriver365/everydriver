@@ -171,6 +171,8 @@ function downloadCsv(trip: GeotabTrip, fuelMpg: number | null, fuelCost: number 
     Math.round(kmhToMph(trip.maxSpeedKmh)).toString(),
     trip.idleMinutes.toString(),
     trip.stopMinutes.toString(),
+    fuelMpg != null ? fuelMpg.toString() : "",
+    fuelCost != null ? fuelCost.toFixed(2) : "",
   ];
   const csv = [headers.join(","), values.join(",")].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
