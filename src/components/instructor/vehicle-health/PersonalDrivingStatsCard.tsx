@@ -93,7 +93,30 @@ export function PersonalDrivingStatsCard({ className = "" }: { className?: strin
     staleTime: 5 * 60 * 1000,
   });
 
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
+      >
+        <div className="px-4 pt-4 pb-2 flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Your Driving Stats</p>
+            <p className="text-[11px] text-muted-foreground">Last 30 days</p>
+          </div>
+        </div>
+        <div className="px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground">No driving data yet</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Stats will appear once your tracker records trips</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   const scoreColor =
     stats.drivingScore >= 80
