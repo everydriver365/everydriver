@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
@@ -12,17 +12,21 @@ interface MiniLiveMapProps {
   isActive: boolean;
 }
 
+const ARROW_SVG_PATH =
+  "M12 2 L6 20 L12 16 L18 20 Z";
+
 export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
+  const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
 
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
     : null;
-
   const hasPosition = latitude !== null && longitude !== null;
 
   // Load Google Maps SDK
@@ -41,6 +45,17 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
     return () => { cancelled = true; };
   }, []);
 
+  const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
+    path: "M 0,-8 L -5,8 L 0,4 L 5,8 Z",
+    fillColor: active ? "#3b82f6" : "#9ca3af",
+    fillOpacity: 1,
+    strokeColor: "white",
+    strokeWeight: 2,
+    scale: 2.2,
+    rotation: rotation,
+    anchor: new google.maps.Point(0, 0),
+  }), []);
+
   // Init map once SDK is ready
   useEffect(() => {
     if (!ready || !mapDivRef.current || mapRef.current) return;
@@ -51,7 +66,7 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
 
     const map = new google.maps.Map(mapDivRef.current, {
       center,
-      zoom: 15,
+      zoom: 16,
       disableDefaultUI: true,
       gestureHandling: "none",
       mapTypeId: "roadmap",
@@ -60,56 +75,72 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
 
     mapRef.current = map;
 
+    // Create route polyline
+    polylineRef.current = new google.maps.Polyline({
+      map,
+      path: [],
+      strokeColor: "#3b82f6",
+      strokeOpacity: 0.7,
+      strokeWeight: 4,
+    });
+
     if (hasPosition) {
+      const pos = new google.maps.LatLng(latitude!, longitude!);
+      pathRef.current = [pos];
+      polylineRef.current.setPath(pathRef.current);
+
       markerRef.current = new google.maps.Marker({
         position: center,
         map,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: isActive ? "#3b82f6" : "#9ca3af",
-          fillOpacity: 1,
-          strokeColor: "white",
-          strokeWeight: 3,
-        },
+        icon: getArrowIcon(heading ?? 0, isActive),
       });
     }
 
     return () => {
       markerRef.current?.setMap(null);
       markerRef.current = null;
+      polylineRef.current?.setMap(null);
+      polylineRef.current = null;
+      pathRef.current = [];
       mapRef.current = null;
     };
   }, [ready]);
 
-  // Update marker position
+  // Update marker, polyline, and auto-follow
   useEffect(() => {
     const map = mapRef.current;
     if (!map || latitude == null || longitude == null) return;
 
     const pos = { lat: latitude, lng: longitude };
-    const iconOpts = {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 10,
-      fillColor: isActive ? "#3b82f6" : "#9ca3af",
-      fillOpacity: 1,
-      strokeColor: "white",
-      strokeWeight: 3,
-    };
+    const latLng = new google.maps.LatLng(latitude, longitude);
+    const rotation = heading ?? 0;
 
+    // Update or create arrow marker
     if (markerRef.current) {
       markerRef.current.setPosition(pos);
-      markerRef.current.setIcon(iconOpts);
+      markerRef.current.setIcon(getArrowIcon(rotation, isActive));
     } else {
       markerRef.current = new google.maps.Marker({
         position: pos,
         map,
-        icon: iconOpts,
+        icon: getArrowIcon(rotation, isActive),
       });
     }
 
+    // Append to route polyline (deduplicate close points)
+    const lastPt = pathRef.current[pathRef.current.length - 1];
+    const shouldAdd = !lastPt ||
+      Math.abs(lastPt.lat() - latitude) > 0.00005 ||
+      Math.abs(lastPt.lng() - longitude) > 0.00005;
+
+    if (shouldAdd) {
+      pathRef.current.push(latLng);
+      polylineRef.current?.setPath(pathRef.current);
+    }
+
+    // Auto-follow: smooth pan to new position
     map.panTo(pos);
-  }, [latitude, longitude, heading, isActive]);
+  }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
