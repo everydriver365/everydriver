@@ -119,7 +119,7 @@ export default function InstructorGeotabHub() {
 
         <Tabs defaultValue="overview" onValueChange={setActiveTab}>
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-8 gap-1 text-[10px]">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-11 gap-1 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Gauge className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Overview</span>
