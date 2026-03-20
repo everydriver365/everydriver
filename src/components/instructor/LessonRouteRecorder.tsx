@@ -22,11 +22,6 @@ export function LessonRouteRecorder({
 }: LessonRouteRecorderProps) {
   const { activeProvider, isLoading: providerLoading } = useActiveTrackingProvider(instructorId);
 
-  // Hide when a hardware tracker auto-captures routes
-  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
-    return null;
-  }
-
   const {
     isRecording,
     coordinates,
@@ -45,6 +40,11 @@ export function LessonRouteRecorder({
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const startMarkerRef = useRef<google.maps.Marker | null>(null);
   const currentMarkerRef = useRef<google.maps.Marker | null>(null);
+
+  // Hide when a hardware tracker auto-captures routes
+  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
+    return null;
+  }
 
   // Load Google Maps SDK
   useEffect(() => {
