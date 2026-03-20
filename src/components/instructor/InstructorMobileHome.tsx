@@ -122,6 +122,7 @@ import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 import { useDemoMode } from "@/context/DemoModeContext";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
+import { useHeroStats } from "@/hooks/useHeroStats";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -253,6 +254,10 @@ export function InstructorMobileHome({
   const liveStats = useInstructorLiveStats(instructorId);
   const { data: driverData } = useGeotabDriverEvents(instructorId);
   const driverScores = driverData?.scores;
+  const { data: heroStats } = useHeroStats(instructorId);
+  const heroPeriods = heroStats
+    ? [heroStats.today, heroStats.week, heroStats.month, heroStats.year]
+    : [{ label: "Today", lessons: 0, completed: 0, hours: 0, earnings: 0 }];
 
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
@@ -429,16 +434,7 @@ export function InstructorMobileHome({
         firstName={firstName}
         heroImageUrl={personalHeroUrl || content?.hero_image_url}
         profileImageUrl={instructor?.profile_image_url}
-        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
-        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
-        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
-        todayCompleted={todayOverview?.completedCount || 0}
-        todayTotal={todayOverview?.lessonCount || 0}
-        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
-        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
-        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
-        monthEarnings={liveStats?.monthEarnings || 0}
-        hoursThisWeek={liveStats?.hoursThisWeek || 0}
+        periods={heroPeriods}
         drivingScore={driverScores?.overall || 100}
       />
 
