@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Navigation, Square, Clock, Route } from "lucide-react";
 import { useLessonRouteRecorder } from "@/hooks/useLessonRouteRecorder";
-import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface LessonRouteRecorderProps {
@@ -38,8 +38,11 @@ export function LessonRouteRecorder({
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const snappedPolylineRef = useRef<google.maps.Polyline | null>(null);
   const startMarkerRef = useRef<google.maps.Marker | null>(null);
   const currentMarkerRef = useRef<google.maps.Marker | null>(null);
+  const lastSnappedCountRef = useRef(0);
+  const snappedPathRef = useRef<Array<{ lat: number; lng: number }>>([]);
 
   // Load Google Maps SDK
   useEffect(() => {
@@ -87,13 +90,26 @@ export function LessonRouteRecorder({
     });
     mapRef.current = map;
 
+    // Raw GPS polyline (faint, shown while waiting for snap)
     polylineRef.current = new google.maps.Polyline({
       map,
       path: [],
+      strokeColor: "#93c5fd",
+      strokeOpacity: 0.4,
+      strokeWeight: 3,
+    });
+
+    // Snapped polyline (bold, road-hugging)
+    snappedPolylineRef.current = new google.maps.Polyline({
+      map,
+      path: [],
       strokeColor: "#3b82f6",
-      strokeOpacity: 0.8,
+      strokeOpacity: 0.9,
       strokeWeight: 4,
     });
+
+    lastSnappedCountRef.current = 0;
+    snappedPathRef.current = [];
 
     return () => {
       startMarkerRef.current?.setMap(null);
@@ -102,6 +118,8 @@ export function LessonRouteRecorder({
       currentMarkerRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
+      snappedPolylineRef.current?.setMap(null);
+      snappedPolylineRef.current = null;
       mapRef.current = null;
     };
   }, [isRecording, mapsReady]);
@@ -144,6 +162,20 @@ export function LessonRouteRecorder({
     }
 
     map.panTo(currentPos);
+
+    // Snap-to-road every 5 new GPS points
+    const newCount = coordinates.length;
+    if (newCount - lastSnappedCountRef.current >= 5) {
+      lastSnappedCountRef.current = newCount;
+      callSnapToRoad(path)
+        .then((snapped) => {
+          if (snapped.length > 0) {
+            snappedPathRef.current = snapped;
+            snappedPolylineRef.current?.setPath(snapped);
+          }
+        })
+        .catch((e) => console.warn("[RouteRecorder] Snap-to-road failed:", e));
+    }
   }, [coordinates, getArrowIcon]);
 
   // Hide when a hardware tracker auto-captures routes
