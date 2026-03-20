@@ -44,10 +44,8 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   // 3. Refresh with Velocity Fleet API
   const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN");
   const apiToken = Deno.env.get("RADIUS_API_TOKEN");
-  if (!refreshToken) {
-    throw new Error("RADIUS_REFRESH_TOKEN not configured");
-  }
-  if (!apiToken) {
+  if (!refreshToken || !apiToken) {
+    return null as unknown as RadiusSession; // Signal caller to skip gracefully
     throw new Error("RADIUS_API_TOKEN not configured");
   }
 
