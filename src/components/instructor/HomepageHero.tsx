@@ -157,22 +157,22 @@ export function HomepageHero({
                         icon={PoundSterling}
                         value={`£${period.earnings.toLocaleString()}`}
                         label="earned"
-                        bubble="hsl(154 70% 45% / 0.12)"
-                        iconColor="hsl(154 70% 40%)"
+                        bubble="hsl(154 70% 45% / 0.18)"
+                        iconColor="hsl(154 70% 35%)"
                       />
                       <StatItem
                         icon={Clock3}
                         value={`${period.hours}h`}
                         label="worked"
-                        bubble="hsl(204 94% 47% / 0.12)"
-                        iconColor="hsl(204 94% 43%)"
+                        bubble="hsl(204 94% 47% / 0.18)"
+                        iconColor="hsl(204 94% 38%)"
                       />
                       <StatItem
                         icon={CheckCircle2}
                         value={`${period.completed}`}
                         label="done"
-                        bubble="hsl(38 92% 50% / 0.14)"
-                        iconColor="hsl(38 92% 45%)"
+                        bubble="hsl(38 92% 50% / 0.20)"
+                        iconColor="hsl(38 92% 40%)"
                       />
                     </div>
                   </div>
