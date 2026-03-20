@@ -152,6 +152,18 @@ export default function InstructorGeotabHub() {
                 <Shield className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Geofences</span>
               </TabsTrigger>
+              <TabsTrigger value="behaviour" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <ShieldAlert className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Behaviour</span>
+              </TabsTrigger>
+              <TabsTrigger value="fuel" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Fuel className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Fuel</span>
+              </TabsTrigger>
+              <TabsTrigger value="impact" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Zap className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Impact</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -200,8 +212,21 @@ export default function InstructorGeotabHub() {
               <GeofenceAlertsList instructorId={instructor.id} />
             </div>
           </TabsContent>
+
+          <TabsContent value="behaviour" className="mt-4">
+            <GeotabDriverBehaviourTab />
+          </TabsContent>
+
+          <TabsContent value="fuel" className="mt-4">
+            <GeotabFuelTab />
+          </TabsContent>
+
+          <TabsContent value="impact" className="mt-4">
+            <GeotabImpactTab />
+          </TabsContent>
         </Tabs>
       </div>
     </InstructorPortalLayout>
   );
 }
+
