@@ -310,10 +310,10 @@ export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDe
                 <Play className="h-3.5 w-3.5 mr-1" /> Replay Trip
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => generatePdf(trip, behaviour)}>
+            <Button variant="outline" size="sm" onClick={() => generatePdf(trip, behaviour, fuelMpg, fuelLitres, fuelCost)}>
               <FileText className="h-3.5 w-3.5 mr-1" /> PDF Report
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => downloadCsv(trip)}>
+            <Button variant="ghost" size="sm" onClick={() => downloadCsv(trip, fuelMpg, fuelCost)}>
               <Download className="h-3.5 w-3.5 mr-1" /> CSV
             </Button>
           </div>
