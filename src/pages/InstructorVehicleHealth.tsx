@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel } from "lucide-react";
+import { Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel, Flame } from "lucide-react";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
