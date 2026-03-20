@@ -127,6 +127,10 @@ export default function InstructorVehicleHealth() {
                 <Radio className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Live</span>
               </TabsTrigger>
+              <TabsTrigger value="heatmap" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <Flame className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Speed</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
