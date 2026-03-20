@@ -3,6 +3,34 @@ import { motion } from "framer-motion";
 import { PoundSterling, Clock, Shield } from "lucide-react";
 import instructorHeroImg from "@/assets/hero-instructor.jpg";
 
+function ProgressRing({ completed, total }: { completed: number; total: number }) {
+  const radius = 24;
+  const stroke = 4;
+  const circumference = 2 * Math.PI * radius;
+  const t = total || 1;
+  const offset = circumference * (1 - Math.min(completed / t, 1));
+
+  return (
+    <div className="relative w-[58px] h-[58px] shrink-0">
+      <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
+        <circle cx="28" cy="28" r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} />
+        <motion.circle
+          cx="28" cy="28" r={radius} fill="none"
+          stroke="#34D399" strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[16px] font-bold text-white leading-none tabular-nums">{completed}</span>
+        <span className="text-[8px] font-medium text-white/50 leading-tight mt-0.5">of {t}</span>
+      </div>
+    </div>
+  );
+}
+
 interface HomepageHeroProps {
   firstName: string;
   heroImageUrl?: string | null;
