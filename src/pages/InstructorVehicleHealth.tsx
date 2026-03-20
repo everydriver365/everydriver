@@ -222,6 +222,11 @@ export default function InstructorVehicleHealth() {
           <TabsContent value="security" className="mt-4">
             <SecurityAlertsTab vehicles={vehicles} />
           </TabsContent>
+
+          {/* Speed Heatmap Tab */}
+          <TabsContent value="heatmap" className="mt-4">
+            <SpeedHeatmapTab />
+          </TabsContent>
         </Tabs>
       </div>
 
