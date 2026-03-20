@@ -254,6 +254,10 @@ export function InstructorMobileHome({
   const liveStats = useInstructorLiveStats(instructorId);
   const { data: driverData } = useGeotabDriverEvents(instructorId);
   const driverScores = driverData?.scores;
+  const { data: heroStats } = useHeroStats(instructorId);
+  const heroPeriods = heroStats
+    ? [heroStats.today, heroStats.week, heroStats.month, heroStats.year]
+    : [{ label: "Today", lessons: 0, completed: 0, hours: 0, earnings: 0 }];
 
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
