@@ -71,6 +71,8 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
           dropoff_postcode,
           lesson_miles,
           duration_minutes,
+          geotab_trip_id,
+          trip_auto_linked_at,
           pupils!inner(name)
         `)
         .eq("instructor_id", instructorId)
