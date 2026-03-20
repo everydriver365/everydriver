@@ -922,6 +922,8 @@ Deno.serve(async (req) => {
         positionsUpdated: statusResults?.length || 0,
         mediaInserted,
         mediaSynced: shouldSyncMedia,
+        impactsInserted,
+        pushNotificationsSent: pushSent,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
