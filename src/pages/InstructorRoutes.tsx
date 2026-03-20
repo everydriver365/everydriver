@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
