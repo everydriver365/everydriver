@@ -74,6 +74,8 @@ export default function InstructorVehicleHealth() {
           }
         />
 
+        {/* Maintenance alerts banner */}
+        <MaintenanceAlertsBanner />
 
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
