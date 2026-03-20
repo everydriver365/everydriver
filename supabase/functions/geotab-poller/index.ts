@@ -818,7 +818,7 @@ Deno.serve(async (req) => {
 
     console.log("[GeotabPoller] Impact detection:", exceptionResults.length, "events checked,", impactsInserted, "impacts inserted,", pushSent, "push notifications sent");
 
-
+    if (shouldSyncMedia) {
       // Fetch driver map only during media sync (not every poll)
       const driverMap = new Map<string, string>();
       try {
