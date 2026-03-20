@@ -15,6 +15,11 @@ import conceptW from "@/assets/hero-compact-W.png";
 import conceptX from "@/assets/hero-compact-X.png";
 import conceptY from "@/assets/hero-compact-Y.png";
 import conceptZ from "@/assets/hero-compact-Z.png";
+import conceptAA from "@/assets/hero-compact-AA.png";
+import conceptAB from "@/assets/hero-compact-AB.png";
+import conceptAC from "@/assets/hero-compact-AC.png";
+import conceptAD from "@/assets/hero-compact-AD.png";
+import conceptAE from "@/assets/hero-compact-AE.png";
 
 const concepts = [
   { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row.", image: conceptQ },
@@ -27,6 +32,11 @@ const concepts = [
   { id: "X", title: "Floating White Card", description: "Dark header with Today chip, white card floating below with 4-column grid of icons and numbers. Fintech-inspired.", image: conceptX },
   { id: "Y", title: "Dashboard Ring + Stats", description: "Large donut ring on left showing completion, three horizontal stat rows on right with coloured icons and values.", image: conceptY },
   { id: "Z", title: "Split Two-Column", description: "Left column: avatar + lessons + progress bar. Right column: three stacked metric boxes. Swipe dots for period switching.", image: conceptZ },
+  { id: "AA", title: "Coloured Card Row", description: "Avatar on left, then a horizontal row of bright coloured cards — green lessons, blue earnings, amber done. iOS widget feel.", image: conceptAA },
+  { id: "AB", title: "Bar Chart Visual", description: "Avatar + name with a compact coloured bar chart visualising earned, hours, completed, and remaining. Data-viz focused.", image: conceptAB },
+  { id: "AC", title: "Banking Card + Tabs", description: "Dark gradient header with avatar, white card below with large numbers in rounded boxes. Lessons/Hours/Done tabs at bottom.", image: conceptAC },
+  { id: "AD", title: "Centre Ring Focus", description: "Large progress ring centred with Today label above. Avatar tucked left, stat pills stacked right. Bold and symmetrical.", image: conceptAD },
+  { id: "AE", title: "Colour-Top Boxes", description: "Avatar + name header with Today badge. Four stat boxes below with coloured top borders — earned, hours, done, lessons ring.", image: conceptAE },
 ];
 
 export default function HeroCompactDemo() {
