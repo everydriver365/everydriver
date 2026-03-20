@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Radio, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +26,13 @@ export function LiveTelemetryTab({
     devices[0]?.id || null
   );
   const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition">("devices");
+
+  // Keep selectedDeviceId in sync when devices list changes
+  useEffect(() => {
+    if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
+      setSelectedDeviceId(devices[0].id);
+    }
+  }, [devices, selectedDeviceId]);
 
   // Fetch battery history for selected device
   const { data: batteryHistory, isLoading: batteryLoading } = useDeviceBatteryHistory(selectedDeviceId);
