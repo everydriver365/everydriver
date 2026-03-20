@@ -116,6 +116,9 @@ function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult, fuelMpg: numb
     ["Max Speed", `${Math.round(kmhToMph(trip.maxSpeedKmh))} mph`],
     ["Idle Time", `${trip.idleMinutes}m`],
     ["Stop Time", `${trip.stopMinutes}m`],
+    ...(fuelMpg != null ? [["Fuel Economy", `${fuelMpg} mpg`]] : []),
+    ...(fuelLitres != null ? [["Fuel Used", `${fuelLitres.toFixed(1)} litres`]] : []),
+    ...(fuelCost != null ? [["Fuel Cost", `£${fuelCost.toFixed(2)}`]] : []),
   ];
 
   rows.forEach(([label, value]) => {
