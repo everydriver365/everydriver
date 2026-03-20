@@ -153,7 +153,7 @@ export function useVehicleHealth() {
         });
       }
 
-      return (devices || []).map(d => {
+      return activeDevices.map(d => {
         const lastSeen = d.last_seen_at ? new Date(d.last_seen_at) : null;
         const heartbeat = (d as any).last_heartbeat_at ? new Date((d as any).last_heartbeat_at) : null;
         const now = Date.now();
