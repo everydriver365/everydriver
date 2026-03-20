@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { PoundSterling, Clock, CheckCircle2 } from "lucide-react";
+import { PoundSterling, Clock3, CheckCircle2 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { PeriodStats } from "@/hooks/useHeroStats";
 
@@ -12,32 +12,75 @@ interface HomepageHeroProps {
 }
 
 function ProgressRing({ completed, total }: { completed: number; total: number }) {
-  const size = 72;
+  const safeTotal = Math.max(total, 1);
+  const size = 74;
   const radius = 30;
   const stroke = 6;
   const circumference = 2 * Math.PI * radius;
-  const t = total || 1;
-  const progress = Math.min(completed / t, 1);
+  const progress = Math.min(completed / safeTotal, 1);
   const dashoffset = circumference * (1 - progress);
 
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
+    <div className="relative flex h-[74px] w-[74px] items-center justify-center rounded-full bg-muted/35 shadow-inner">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={stroke}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="hsl(var(--muted-foreground) / 0.16)"
+          strokeWidth={stroke}
         />
         <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#34D399" strokeWidth={stroke} strokeLinecap="round"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="hsl(154 70% 45%)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={dashoffset}
-          style={{ transition: "stroke-dashoffset 0.8s ease-out" }}
+          style={{ transition: "stroke-dashoffset 0.7s ease-out" }}
         />
       </svg>
+
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[18px] font-extrabold text-white leading-none tabular-nums">{completed}</span>
-        <span className="text-[9px] font-medium text-white/45 leading-tight mt-0.5">of {t}</span>
+        <span className="text-[18px] font-black leading-none tracking-[-0.04em] text-foreground tabular-nums">
+          {completed}/{safeTotal}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function StatItem({
+  icon: Icon,
+  value,
+  label,
+  bubble,
+  iconColor,
+}: {
+  icon: typeof PoundSterling;
+  value: string;
+  label: string;
+  bubble: string;
+  iconColor: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+        style={{ background: bubble }}
+      >
+        <Icon className="h-4 w-4" style={{ color: iconColor }} />
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-[15px] font-bold leading-none text-foreground tabular-nums">{value}</p>
+        <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          {label}
+        </p>
       </div>
     </div>
   );
@@ -62,75 +105,72 @@ export function HomepageHero({
     if (!emblaApi) return;
     onSelect();
     emblaApi.on("select", onSelect);
-    return () => { emblaApi.off("select", onSelect); };
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="bg-primary" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-      <div className="px-4 pt-1 pb-4">
-        <div ref={emblaRef} className="overflow-hidden -mx-1">
+    <div>
+      <div className="bg-primary pb-8" />
+
+      <div className="-mt-6 px-4">
+        <div ref={emblaRef} className="overflow-hidden">
           <div className="flex">
             {periods.map((period) => (
-              <div key={period.label} className="min-w-0 shrink-0 grow-0 basis-full px-1">
+              <div key={period.label} className="min-w-0 shrink-0 grow-0 basis-full">
                 <div
-                  className="rounded-2xl p-4 border border-white/[0.08]"
+                  className="rounded-[28px] border border-border/50 bg-card px-4 py-4"
                   style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)",
-                    backdropFilter: "blur(12px)",
+                    boxShadow:
+                      "0 18px 38px -22px rgba(15, 23, 42, 0.35), 0 10px 18px -16px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255,255,255,0.6)",
                   }}
                 >
-                  {/* Period label row */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-300">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                       {period.label}
                     </span>
-                    <span className="text-[10px] text-white/30 tabular-nums">
-                      {period.completed}/{period.lessons} complete
+                    <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
+                      {period.completed}/{Math.max(period.lessons, 1)} complete
                     </span>
                   </div>
 
-                  {/* Main content: 3 columns */}
-                  <div className="flex items-center gap-4">
-                    {/* Left: Big lesson number */}
-                    <div className="min-w-0">
-                      <p className="text-[42px] font-black text-white leading-none tabular-nums" style={{ letterSpacing: "-0.03em" }}>
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)] items-center gap-3">
+                    <div className="border-r border-border/70 pr-3">
+                      <p className="text-[42px] font-black leading-none tracking-[-0.06em] text-foreground tabular-nums">
                         {period.lessons}
                       </p>
-                      <p className="text-[11px] font-medium text-white/40 mt-1">
+                      <p className="mt-1 text-[12px] font-medium text-muted-foreground">
                         lesson{period.lessons !== 1 ? "s" : ""}
                       </p>
                     </div>
 
-                    {/* Centre: Ring */}
-                    <ProgressRing completed={period.completed} total={period.lessons} />
+                    <div className="border-r border-border/70 px-3">
+                      <ProgressRing completed={period.completed} total={period.lessons} />
+                    </div>
 
-                    {/* Right: Stats column */}
-                    <div className="flex flex-col gap-2 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 bg-white/[0.06] rounded-xl px-3 py-2">
-                        <div className="w-6 h-6 rounded-md bg-emerald-500/20 flex items-center justify-center shrink-0">
-                          <PoundSterling className="h-3 w-3 text-emerald-400" />
-                        </div>
-                        <span className="text-[14px] font-bold text-white tabular-nums">
-                          £{period.earnings.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-white/[0.06] rounded-xl px-3 py-2">
-                        <div className="w-6 h-6 rounded-md bg-sky-500/20 flex items-center justify-center shrink-0">
-                          <Clock className="h-3 w-3 text-sky-400" />
-                        </div>
-                        <span className="text-[14px] font-bold text-white tabular-nums">
-                          {period.hours}h
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-white/[0.06] rounded-xl px-3 py-2">
-                        <div className="w-6 h-6 rounded-md bg-amber-500/20 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="h-3 w-3 text-amber-400" />
-                        </div>
-                        <span className="text-[14px] font-bold text-white tabular-nums">
-                          {period.completed}
-                        </span>
-                        <span className="text-[9px] text-white/35">done</span>
-                      </div>
+                    <div className="space-y-3 pl-1">
+                      <StatItem
+                        icon={PoundSterling}
+                        value={`£${period.earnings.toLocaleString()}`}
+                        label="earned"
+                        bubble="hsl(154 70% 45% / 0.12)"
+                        iconColor="hsl(154 70% 40%)"
+                      />
+                      <StatItem
+                        icon={Clock3}
+                        value={`${period.hours}h`}
+                        label="worked"
+                        bubble="hsl(204 94% 47% / 0.12)"
+                        iconColor="hsl(204 94% 43%)"
+                      />
+                      <StatItem
+                        icon={CheckCircle2}
+                        value={`${period.completed}`}
+                        label="done"
+                        bubble="hsl(38 92% 50% / 0.14)"
+                        iconColor="hsl(38 92% 45%)"
+                      />
                     </div>
                   </div>
                 </div>
@@ -139,16 +179,13 @@ export function HomepageHero({
           </div>
         </div>
 
-        {/* Dots */}
-        <div className="flex justify-center gap-1.5 mt-3">
+        <div className="mt-3 flex justify-center gap-1.5 pb-1">
           {periods.map((_, i) => (
             <button
               key={i}
               onClick={() => emblaApi?.scrollTo(i)}
-              className={`h-[5px] rounded-full transition-all duration-300 ${
-                i === selectedIndex
-                  ? "w-5 bg-white"
-                  : "w-[5px] bg-white/25"
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === selectedIndex ? "w-5 bg-foreground" : "w-1.5 bg-muted-foreground/25"
               }`}
             />
           ))}
