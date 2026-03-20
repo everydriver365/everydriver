@@ -40,11 +40,7 @@ export function MobileTrackingSettingsBanner({
   const [status, setStatus] = useState<TrackingStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { activeProvider } = useActiveTrackingProvider(instructorId);
-
-  // Hide this GPSgate-specific banner when a higher-priority provider is active
-  if (activeProvider === "geotab" || activeProvider === "quartix") {
-    return null;
-  }
+  const isHiddenByProvider = activeProvider === "geotab" || activeProvider === "quartix";
 
   useEffect(() => {
     const fetchStatus = async () => {
