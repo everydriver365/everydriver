@@ -1,59 +1,71 @@
 
 
-## Plan: Remove Redundant Trackers & Show Active Provider in Setup
+## Plan: Remove Quartix, GPSgate, Traccar & Damoov — Keep Only Geotab + Radius
 
-### Problem
-Instructors can have multiple tracking providers registered (e.g. Geotab + Radius + GPSgate), but only one is actually in use. The mobile app shows components for all providers — the `MobileTrackingSettingsBanner` (GPSgate-specific), `TrackerSelectorTile` (shows all devices), and the GPS Setup page lists all devices without indicating which provider is active.
+### Scope
 
-### What changes
+Remove all code, edge functions, and references to **Quartix**, **GPSgate**, **Traccar**, and **Damoov**. Only **Geotab** and **Radius** remain as supported tracking providers.
 
-**1. Determine the "active provider" for each instructor**
+### Files to DELETE
 
-The `gps_devices` table has a `tracking_provider` column. We pick the active provider by priority: `geotab` > `quartix` > `radius` > `gpsgate` > `null` (manual). The device with the highest-priority provider that has `is_active = true` is the primary tracker.
-
-**2. `TrackerSelectorTile.tsx` — Only show devices from the active provider**
-- Filter the device query by `tracking_provider` matching the instructor's active provider
-- This prevents showing Radius devices when Geotab is connected
-
-**3. `MobileTrackingSettingsBanner.tsx` — Hide when GPSgate is not the active provider**
-- This component is GPSgate-specific (checks `gpsgate_user_id`)
-- Add a check: query the instructor's devices, if any device has `tracking_provider = 'geotab'` or `'quartix'`, don't render this banner
-- Currently shown on: Live Session, Routes, Vehicle Health pages
-
-**4. `InstructorLiveSession.tsx` — Fetch only the active provider's device**
-- Currently fetches the first active device with no provider filter
-- Add `.eq("tracking_provider", activeProvider)` or order by provider priority so the Geotab device is selected first
-
-**5. `InstructorGPSSetup.tsx` — Show active provider badge and filter device list**
-- Add a "Connected Tracker" card at the top showing which provider is active (e.g. "Geotab" with a green badge)
-- Only show devices for the active provider in the device list
-- Add a small note: "Other tracking providers have been disabled. Contact admin to change."
-- Replace the generic `HardwareTrackerSetup` accordion with provider-specific info
-
-**6. `InstructorRoutes.tsx` — Hide GPSgate trip tab when not using GPSgate**
-- The "GPS" tab (`gpsgate` tab) shows GPSgate-specific trip data
-- Hide it when the instructor's active provider is not GPSgate
-
-### Files changed
-
-| File | Change |
+| File | Reason |
 |------|--------|
-| `src/components/instructor/tracking/TrackerSelectorTile.tsx` | Filter devices by active provider |
-| `src/components/instructor/MobileTrackingSettingsBanner.tsx` | Hide when Geotab/Quartix is active |
-| `src/pages/InstructorLiveSession.tsx` | Prioritise active provider device |
-| `src/pages/InstructorGPSSetup.tsx` | Show active provider badge, filter devices |
-| `src/pages/InstructorRoutes.tsx` | Hide GPSgate tab when not relevant |
+| `supabase/functions/quartix-trips/index.ts` | Quartix edge function |
+| `supabase/functions/quartix-route/index.ts` | Quartix edge function |
+| `src/hooks/useGPSgateTrips.ts` | GPSgate trips hook |
+| `src/components/instructor/GPSgateTripsTabContent.tsx` | GPSgate trips UI |
+| `src/components/instructor/GPSgateTripHistory.tsx` | GPSgate trip history UI |
+| `src/components/instructor/MobileTrackingSettingsBanner.tsx` | GPSgate-specific banner (checks `gpsgate_user_id`) |
+| `src/components/instructor/HardwareTrackerSetup.tsx` | Generic setup referencing Quartix |
 
-### Logic for determining active provider
+### Files to EDIT
 
-```text
-1. Query gps_devices WHERE instructor_id = X AND is_active = true
-2. If any has tracking_provider = 'geotab' → active = 'geotab'
-3. Else if 'quartix' → active = 'quartix'  
-4. Else if 'radius' → active = 'radius'
-5. Else if gpsgate_user_id is set → active = 'gpsgate'
-6. Else → active = null (manual/phone tracking)
-```
+**`src/hooks/useActiveTrackingProvider.ts`**
+- Remove `"quartix"` and `"gpsgate"` from `TrackingProvider` type and `PROVIDER_PRIORITY`
+- Remove the `gpsgate_user_id` fallback check
+- Type becomes `"geotab" | "radius" | null`, priority: `["geotab", "radius"]`
 
-This is a utility function shared across components.
+**`src/pages/InstructorRoutes.tsx`**
+- Remove imports of `GPSgateTripHistory`, `GPSgateTripsTabContent`, `MobileTrackingSettingsBanner`
+- Remove the "gpsgate" tab from `TabsList` and its conditional rendering
+- Remove `activeProvider` checks for "gpsgate"
+- Simplify tab grid columns
+
+**`src/pages/InstructorLiveSession.tsx`**
+- Remove `"quartix"` and `"gpsgate"` from the `priorityOrder` array
+- Priority becomes `["geotab", "radius"]`
+
+**`src/pages/InstructorGPSSetup.tsx`**
+- Remove `HardwareTrackerSetup` import and component
+- Remove any Quartix/GPSgate-specific UI or provider badge references
+- Keep Geotab and Radius device management
+
+**`src/components/instructor/tracking/TrackerSelectorTile.tsx`**
+- No changes needed (already filters by `activeProvider`)
+
+**`src/components/instructor/TrackingDebugPanel.tsx`**
+- Remove `damoovStatus` from `DebugInfo` interface
+
+**`src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx`**
+- Remove `gpsgate_odometer_m` fallback in daily mileage calculation
+
+**`src/hooks/useVehicleHealth.ts`**
+- Remove `gpsgate_odometer_m`, `gpsgate_engine_hours_s` from select query and interface
+
+**`src/pages/InstructorDocumentTemplates.tsx`**
+- Update default template from Quartix-specific content to generic OBD tracker setup guide
+
+**`src/routes/instructorPortalRoutes.tsx`**
+- Remove `/instructor/traccar` route alias (keep `/instructor/live` and `/instructor/tracking`)
+- Remove `/instructor/settings/traccar` route alias
+
+### Edge functions to delete via tool
+- `quartix-trips`
+- `quartix-route`
+
+### No database migration needed
+The `gps_devices` table columns (`quartix_vehicle_id`, `quartix_driver_id`, `last_traccar_*`, etc.) and traccar/damoov tables can remain in the DB without harm — they're simply unused. Dropping columns/tables risks breaking things if any data references them.
+
+### Summary
+~7 files deleted, ~9 files edited, 2 edge functions removed. The app will only show Geotab and Radius as tracking options everywhere.
 
