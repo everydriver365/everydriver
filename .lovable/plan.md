@@ -1,91 +1,44 @@
 
 
-## Plan: Add Geotab Driver Behaviour, Fuel Consumption, Geofence Alerts & Impact Detection
+## Plan: Add Fuel/MPG Data to Trip History & Trip Detail Sheet
 
-### What's being added
+### What changes
 
-Four new Geotab data feeds with corresponding UI, plus wiring the existing geofence system to Geotab's Zone API.
+The `geotab_fuel_usage` table already stores per-trip fuel data (litres, distance, cost). Currently this data only appears on the dedicated Fuel tab. This plan surfaces it directly on the Trip History table and Trip Detail drawer.
 
----
+### Approach
 
-### 1. Database Tables (3 new tables via migration)
+**1. Fetch fuel data alongside trips in `GeotabTripHistory.tsx`**
+- Import `useGeotabFuelUsage` hook (already exists)
+- Call it with the same date range as the trips query
+- Build a lookup map keyed by `trip_start` timestamp to match fuel records to trips
+- Matching logic: find a fuel record whose `trip_start` is within 60 seconds of the Geotab trip's `startTime`
 
-**`geotab_driver_events`** — Stores harsh braking, acceleration, cornering, and speeding events from Geotab's `ExceptionEvent` API.
-- `id`, `instructor_id`, `device_id`, `event_type` (harsh_brake, harsh_accel, harsh_corner, speeding), `rule_name`, `severity`, `latitude`, `longitude`, `speed_kmh`, `duration_seconds`, `started_at`, `ended_at`, `geotab_event_id` (unique), `created_at`
+**2. Add MPG and Cost columns to the trip table**
+- Add a "MPG" column header (with Fuel icon) after the Max Speed column
+- Add a "Cost" column header (with £ icon) after MPG
+- Both hidden on mobile (`hidden sm:table-cell`)
+- Each row looks up the matched fuel record and displays: MPG (calculated from distance_km and fuel_used_litres) and `£X.XX`
+- Show "—" when no fuel data is available for a trip
 
-**`geotab_fuel_usage`** — Stores per-trip fuel consumption from Geotab's `FuelUsed` diagnostic.
-- `id`, `instructor_id`, `device_id`, `trip_start`, `trip_end`, `fuel_used_litres`, `distance_km`, `litres_per_100km`, `cost_gbp`, `created_at`
+**3. Add fuel section to `TripDetailSheet.tsx`**
+- Accept an optional `fuelRecord` prop (type from `useGeotabFuelUsage`)
+- Add a "Fuel" card row to the summary grid: Fuel (litres), MPG, Cost
+- Add a "Fuel Economy" analysis section below the speed analysis, showing litres/100km and MPG with a visual bar
+- Include fuel data in the PDF report and CSV export
 
-**`geotab_impact_events`** — Stores high G-force / collision events from Geotab's accelerometer exception rules.
-- `id`, `instructor_id`, `device_id`, `g_force`, `latitude`, `longitude`, `speed_kmh`, `event_time`, `severity` (low/medium/high/critical), `acknowledged`, `geotab_event_id` (unique), `created_at`
+**4. Pass fuel data from TripHistory to TripDetailSheet**
+- When a trip is selected, find its matching fuel record and pass it as a prop
 
-All tables get RLS policies scoped to `instructor_id` matching the authenticated user.
+### Files changed
 
-### 2. Edge Function: `geotab-behaviour-sync` (new)
-
-Single new edge function that fetches all four data types in one batched Geotab call:
-
-- **ExceptionEvent** — Queries Geotab for exception events (harsh braking, acceleration, cornering, speeding rules). Maps built-in rule names to event types. Inserts into `geotab_driver_events`. Events with G-force > 1.5g also insert into `geotab_impact_events` as potential collisions.
-- **FuelUsed StatusData** — Queries `DiagnosticFuelUsedId` and correlates with trip distance to calculate litres/100km and cost (using instructor's `fuel_cost_per_litre` from settings).
-- **Geofence checking** — Compares latest device position against all active geofences for the instructor. Inserts into existing `geofence_alerts` table on enter/exit (with cooldown to prevent duplicate alerts).
-
-Called from the frontend on the Geotab Hub page, or can be scheduled via cron.
-
-### 3. Frontend Hooks (3 new)
-
-- **`useGeotabDriverEvents`** — Fetches from `geotab_driver_events`, supports date range. Returns events + summary scores (acceleration/braking/cornering/speed out of 100).
-- **`useGeotabFuelUsage`** — Fetches from `geotab_fuel_usage`, returns trips with MPG/cost calculations.
-- **`useGeotabImpactEvents`** — Fetches from `geotab_impact_events`, returns events sorted by severity.
-
-### 4. UI Components (4 new, added as tabs to Geotab Hub)
-
-**a. `GeotabDriverBehaviourTab.tsx`**
-- Overall driving score (0–100) with Green/Amber/Red ring
-- Four sub-scores: Speed, Acceleration, Braking, Cornering — each as a progress bar
-- Event timeline: chronological list of harsh events with severity badges, location, speed
-- Date range picker to filter
-
-**b. `GeotabFuelTab.tsx`**
-- Summary cards: Total fuel used, average MPG, total fuel cost
-- Trip-by-trip fuel table: date, distance, litres, MPG, cost
-- Bar chart of daily fuel consumption (Recharts)
-
-**c. `GeotabImpactTab.tsx`**
-- Alert cards for unacknowledged impact events with severity colour coding
-- Each card shows: time, location, G-force, speed, severity, "Acknowledge" button
-- History list of past events
-
-**d. Enhanced `GeofenceAlertsList.tsx`**
-- Already exists — will add real-time geofence checking via the new edge function
-- Add push notification trigger on geofence entry/exit
-
-### 5. Geotab Hub Updates
-
-**`InstructorGeotabHub.tsx`** — Add 3 new tabs to the existing tab bar:
-- "Behaviour" (Shield icon) → `GeotabDriverBehaviourTab`
-- "Fuel" (Fuel icon) → `GeotabFuelTab`  
-- "Impact" (AlertTriangle icon) → `GeotabImpactTab`
-
-Tab bar goes from 8 to 11 tabs (scrollable, already supports overflow).
-
-### 6. Geotab Poller Enhancement
-
-Add to the existing `geotab-poller/index.ts` batched call:
-- One additional `ExceptionEvent` Get call (last 2 minutes) for real-time impact detection
-- If G-force > 2.0g detected, trigger push notification to instructor via existing `send-push-notification` function
-
-### Files Changed
-
-| File | Action |
+| File | Change |
 |------|--------|
-| Migration SQL | Create 3 tables + RLS |
-| `supabase/functions/geotab-behaviour-sync/index.ts` | New edge function |
-| `supabase/functions/geotab-poller/index.ts` | Add ExceptionEvent to batch |
-| `src/hooks/useGeotabDriverEvents.ts` | New hook |
-| `src/hooks/useGeotabFuelUsage.ts` | New hook |
-| `src/hooks/useGeotabImpactEvents.ts` | New hook |
-| `src/components/instructor/geotab/GeotabDriverBehaviourTab.tsx` | New component |
-| `src/components/instructor/geotab/GeotabFuelTab.tsx` | New component |
-| `src/components/instructor/geotab/GeotabImpactTab.tsx` | New component |
-| `src/pages/InstructorGeotabHub.tsx` | Add 3 tabs |
+| `src/components/instructor/geotab/GeotabTripHistory.tsx` | Import fuel hook, build lookup map, add 2 table columns, pass fuel prop to detail sheet |
+| `src/components/instructor/geotab/TripDetailSheet.tsx` | Accept `fuelRecord` prop, add fuel cards, fuel analysis section, update PDF/CSV |
+
+### Technical notes
+- Fuel matching uses timestamp proximity (±60s) since the edge function stores `trip_start` from Geotab's trip object, which should match closely
+- MPG calculation: `(distance_km * 0.621371) / (fuel_used_litres * 0.219969)`
+- No database or edge function changes needed — all data already exists
 
