@@ -455,10 +455,6 @@ export default function InstructorRoutes() {
           </div>
         </div>
 
-        {/* Mobile GPS Tracking Banner */}
-        {instructor?.id && (
-          <MobileTrackingSettingsBanner instructorId={instructor.id} />
-        )}
 
         {/* Test Route Mode Card */}
         <Card className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/20">
