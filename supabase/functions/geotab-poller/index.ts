@@ -469,9 +469,9 @@ Deno.serve(async (req) => {
       return prefix + hex.toString(16).toUpperCase().padStart(4, "0");
     }
 
-    // FaultData results: last call
-    const faultResults: any[] = batchResults[batchResults.length - 1] || [];
-    const deviceFaults = new Map<string, any[]>();
+    // FaultData results: second-to-last call (ExceptionEvent is last)
+    const faultResults: any[] = batchResults[batchResults.length - 2] || [];
+    const exceptionResults: any[] = batchResults[batchResults.length - 1] || [];
     for (const fault of faultResults) {
       const faultDeviceId = fault.device?.id;
       if (!faultDeviceId) continue;
