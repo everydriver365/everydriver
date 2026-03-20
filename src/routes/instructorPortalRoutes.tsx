@@ -115,6 +115,7 @@ export const instructorPortalRoutes = (
     {/* Core */}
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/homepage-demo" element={<HomepageDesignDemo />} />
+    <Route path="/instructor/nav-demo" element={<NavDesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
