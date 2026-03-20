@@ -23,6 +23,13 @@ function kmhToMph(kmh: number): number {
   return kmh * 0.621371;
 }
 
+function calcMpg(distKm: number, litres: number): number | null {
+  if (!litres || litres <= 0) return null;
+  const miles = distKm * 0.621371;
+  const gallons = litres * 0.219969;
+  return gallons > 0 ? Math.round((miles / gallons) * 10) / 10 : null;
+}
+
 function safeDate(val: string | number | null | undefined): Date | null {
   if (!val) return null;
   const d = new Date(val);
