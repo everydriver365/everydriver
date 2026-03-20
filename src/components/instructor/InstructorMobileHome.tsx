@@ -122,6 +122,7 @@ import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 import { useDemoMode } from "@/context/DemoModeContext";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
+import { useHeroStats } from "@/hooks/useHeroStats";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
