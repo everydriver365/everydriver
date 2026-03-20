@@ -15,6 +15,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface MobileTrackingSettingsBannerProps {
   instructorId: string;
