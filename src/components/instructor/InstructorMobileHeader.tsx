@@ -90,7 +90,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               </button>
             ) : (
               <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
-                <AvatarImage src={instructor?.profile_image_url || undefined} />
+                <AvatarImage src={undefined} />
                 <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
                   {getInitials()}
                 </AvatarFallback>

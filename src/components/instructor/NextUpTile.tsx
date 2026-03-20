@@ -273,25 +273,6 @@ export function NextUpTile({
               </span>
             )}
           </div>
-
-          {/* Start Lesson — visible in header when lesson is within 30 min */}
-          {minutesUntil <= 30 && (
-            <div
-              className="mt-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => {
-                  supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                  navigate(`/instructor/tracking?lesson=${lessonId}`);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-[11px] rounded-xl text-white font-bold text-[14px] active:scale-[0.97] transition-transform"
-                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
-              >
-                <Play className="h-4 w-4 fill-current" /> Start Lesson
-              </button>
-            </div>
-          )}
         </button>
 
         {/* === RUNNING LATE ALERT === */}

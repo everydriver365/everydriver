@@ -416,7 +416,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <div className="text-primary-foreground relative overflow-hidden">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
-                   {/* Left: Back button / Avatar + Hamburger + Title */}
+                   {/* Left: Back button + Hamburger + Title */}
                   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     {showBackButton && (
                       <button
@@ -533,11 +533,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">
-                        {showBackButton ? mobilePageTitle : (() => {
-                          const hour = new Date().getHours();
-                          const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-                          return `${greeting}, ${instructor?.name?.split(" ")[0] || "Instructor"}`;
-                        })()}
+                        {showBackButton ? mobilePageTitle : headerLabel}
                       </p>
                     </div>
                     <MobileNotificationBell instructorId={instructor?.id} />
