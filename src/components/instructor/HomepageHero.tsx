@@ -84,7 +84,7 @@ export function HomepageHero({
         alt="Driving scene"
         className="absolute inset-0 h-full w-full object-cover !rounded-none"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+      <div className="absolute inset-0 bg-primary/85" />
 
       {/* Content */}
       <div className="relative z-10 px-5 pt-5 pb-4 flex flex-col gap-4">
