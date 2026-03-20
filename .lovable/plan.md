@@ -1,44 +1,59 @@
 
 
-## Geotab Data Audit — Issues Found
+## Plan: Remove Redundant Trackers & Show Active Provider in Setup
 
-### Issue 1: CRITICAL — Poller crashes every poll cycle
-**Error**: `ReferenceError: impactsInserted is not defined` (line 799/928)
+### Problem
+Instructors can have multiple tracking providers registered (e.g. Geotab + Radius + GPSgate), but only one is actually in use. The mobile app shows components for all providers — the `MobileTrackingSettingsBanner` (GPSgate-specific), `TrackerSelectorTile` (shows all devices), and the GPS Setup page lists all devices without indicating which provider is active.
 
-The `impactsInserted` and `pushSent` variables are declared on lines 697-698 **inside** the `if (shouldSyncMedia)` block (line 694). But they're referenced on line 820 (log statement) and line 928 (response JSON) **outside** that block. When media sync is skipped (which is most polls — it only runs once per minute), these variables don't exist, causing the crash.
+### What changes
 
-**Fix**: Move the impact detection block (lines 696-820) **before** the `if (shouldSyncMedia)` block. Impact detection should run every poll cycle, not just during media sync.
+**1. Determine the "active provider" for each instructor**
 
-### Issue 2: Tire pressure values displayed raw (Pascals, not kPa)
-The Geotab poller logs show values like `224000`, `236000`, `232000` for tire pressures. Geotab returns tire pressure in **Pascals**. The UI label says "kPa" but displays the raw value without dividing by 1000 — so it shows `224000 kPa` instead of `224 kPa` (or ~32 PSI).
+The `gps_devices` table has a `tracking_provider` column. We pick the active provider by priority: `geotab` > `quartix` > `radius` > `gpsgate` > `null` (manual). The device with the highest-priority provider that has `is_active = true` is the primary tracker.
 
-**Fix in poller** (lines 556-559): Divide by 1000 when storing, or **fix in UI** (lines 287-301 of `EnhancedDeviceStatusCard.tsx`): Convert Pa → kPa or PSI for display. PSI is more familiar to UK users (divide by 6894.76).
+**2. `TrackerSelectorTile.tsx` — Only show devices from the active provider**
+- Filter the device query by `tracking_provider` matching the instructor's active provider
+- This prevents showing Radius devices when Geotab is connected
 
-### Issue 3: Fuel level percentage calculation may double-count
-Line 531: `diagnosticsUpdate.last_fuel_percent = Math.round((rawFuel <= 1 ? rawFuel * 100 : rawFuel) * 100) / 100`
+**3. `MobileTrackingSettingsBanner.tsx` — Hide when GPSgate is not the active provider**
+- This component is GPSgate-specific (checks `gpsgate_user_id`)
+- Add a check: query the instructor's devices, if any device has `tracking_provider = 'geotab'` or `'quartix'`, don't render this banner
+- Currently shown on: Live Session, Routes, Vehicle Health pages
 
-The logs show `DiagnosticFuelLevelId: 47.8362` — this is already a percentage (0-100 scale). The code checks if `rawFuel <= 1` to multiply by 100, but 47.8 is > 1 so it passes through correctly. This is fine for the current data, but edge cases at exactly 1.0 would be wrongly treated as a fraction.
+**4. `InstructorLiveSession.tsx` — Fetch only the active provider's device**
+- Currently fetches the first active device with no provider filter
+- Add `.eq("tracking_provider", activeProvider)` or order by provider priority so the Geotab device is selected first
 
-### Issue 4: Odometer stored wrong — Geotab returns meters, not what code assumes
-Line 550-551 comments say "Geotab returns odometer in meters" and divides by 1000. But the raw value logged is `25161236.136...`. If that's meters, the odometer would be 25,161 km (15,636 miles) — this looks plausible for a driving school car. This appears correct.
+**5. `InstructorGPSSetup.tsx` — Show active provider badge and filter device list**
+- Add a "Connected Tracker" card at the top showing which provider is active (e.g. "Geotab" with a green badge)
+- Only show devices for the active provider in the device list
+- Add a small note: "Other tracking providers have been disabled. Contact admin to change."
+- Replace the generic `HardwareTrackerSetup` accordion with provider-specific info
 
-### Issue 5: Engine hours calculation
-Line 547: Divides by 3600 (seconds → hours). Raw value is `2483768.276` = 689.9 hours. This seems reasonable. Correct.
+**6. `InstructorRoutes.tsx` — Hide GPSgate trip tab when not using GPSgate**
+- The "GPS" tab (`gpsgate` tab) shows GPSgate-specific trip data
+- Hide it when the instructor's active provider is not GPSgate
 
-### Issue 6: Battery voltage mapped from State of Charge
-Line 536: `last_battery_voltage = Math.round(diags["DiagnosticStateOfChargeId"] * 100) / 100` — this sets voltage to the State of Charge percentage (90), not actual voltage. Line 539-541 overrides this if `DiagnosticBatteryVoltageId` exists. Since the logs don't show `DiagnosticBatteryVoltageId`, the UI would show `90.0V` as the battery voltage, which is wrong.
+### Files changed
 
-**Fix**: Don't set `last_battery_voltage` from StateOfCharge. Only set it from `DiagnosticBatteryVoltageId`.
+| File | Change |
+|------|--------|
+| `src/components/instructor/tracking/TrackerSelectorTile.tsx` | Filter devices by active provider |
+| `src/components/instructor/MobileTrackingSettingsBanner.tsx` | Hide when Geotab/Quartix is active |
+| `src/pages/InstructorLiveSession.tsx` | Prioritise active provider device |
+| `src/pages/InstructorGPSSetup.tsx` | Show active provider badge, filter devices |
+| `src/pages/InstructorRoutes.tsx` | Hide GPSgate tab when not relevant |
 
-### Summary of fixes
+### Logic for determining active provider
 
-| # | Issue | File | Change |
-|---|-------|------|--------|
-| 1 | Poller crash — `impactsInserted` scoping | `geotab-poller/index.ts` | Move impact detection block outside `if (shouldSyncMedia)` |
-| 2 | Tire pressure displayed in Pa not kPa | `geotab-poller/index.ts` | Divide raw values by 1000 when storing |
-| 3 | Battery voltage = SoC percentage | `geotab-poller/index.ts` | Remove line 536, only set voltage from `DiagnosticBatteryVoltageId` |
-| 4 | UI tire pressure label | `EnhancedDeviceStatusCard.tsx` | Change label to "PSI" and convert, since UK drivers use PSI |
+```text
+1. Query gps_devices WHERE instructor_id = X AND is_active = true
+2. If any has tracking_provider = 'geotab' → active = 'geotab'
+3. Else if 'quartix' → active = 'quartix'  
+4. Else if 'radius' → active = 'radius'
+5. Else if gpsgate_user_id is set → active = 'gpsgate'
+6. Else → active = null (manual/phone tracking)
+```
 
-### Desktop vs Mobile
-Both mobile and desktop render the same components (`LiveTelemetryTab`, `EnhancedDeviceStatusCard`). The data issues above affect both equally — they're backend/data problems, not layout problems.
+This is a utility function shared across components.
 
