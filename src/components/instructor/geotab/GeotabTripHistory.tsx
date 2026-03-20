@@ -44,7 +44,23 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
   const [selectedTrip, setSelectedTrip] = useState<GeotabTrip | null>(null);
 
   const { data, isLoading, error } = useGeotabTrips(instructorId, fromDate, toDate);
+  const { data: fuelData } = useGeotabFuelUsage(instructorId, fromDate, toDate);
   const navigate = useNavigate();
+
+  // Build a lookup map matching fuel records to trips by timestamp proximity (±60s)
+  const fuelLookup = useMemo(() => {
+    const map = new Map<string, FuelRecord>();
+    if (!fuelData?.records || !data?.trips) return map;
+    for (const trip of data.trips) {
+      const tripTime = new Date(trip.startTime).getTime();
+      const match = fuelData.records.find((r) => {
+        if (!r.trip_start) return false;
+        return Math.abs(new Date(r.trip_start).getTime() - tripTime) < 60000;
+      });
+      if (match) map.set(trip.id, match);
+    }
+    return map;
+  }, [data?.trips, fuelData?.records]);
 
   const toggleSort = (field: keyof GeotabTrip) => {
     if (sortField === field) {
