@@ -80,34 +80,37 @@ export function CheckEngineBanner() {
       {/* Expanded fault list */}
       {expanded && (
         <div className="px-4 pb-3 space-y-1.5">
-          {allFaults.slice(0, 8).map((fault, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 text-xs p-2 rounded-lg bg-background/50"
-            >
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-[9px] px-1.5 py-0 shrink-0 mt-0.5",
-                  fault.severity?.toLowerCase().includes("red") ||
-                    fault.severity?.toLowerCase().includes("critical")
-                    ? "border-destructive text-destructive"
-                    : fault.severity?.toLowerCase().includes("amber") ||
-                      fault.severity?.toLowerCase().includes("warning")
-                    ? "border-orange-500 text-orange-500"
-                    : "border-muted-foreground text-muted-foreground"
-                )}
+          {allFaults.slice(0, 8).map((fault, i) => {
+            const enriched = enrichFaultCode(fault);
+            return (
+              <div
+                key={i}
+                className="flex items-start gap-2 text-xs p-2 rounded-lg bg-background/50"
               >
-                {fault.source}
-              </Badge>
-              <div className="flex-1 min-w-0">
-                <p className="text-foreground leading-tight">{fault.description}</p>
-                {fault.registration && (
-                  <p className="text-muted-foreground mt-0.5">{fault.registration}</p>
-                )}
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-[9px] px-1.5 py-0 shrink-0 mt-0.5",
+                    enriched.severity.toLowerCase().includes("red") ||
+                      enriched.severity.toLowerCase().includes("critical")
+                      ? "border-destructive text-destructive"
+                      : enriched.severity.toLowerCase().includes("amber") ||
+                        enriched.severity.toLowerCase().includes("warning")
+                      ? "border-orange-500 text-orange-500"
+                      : "border-muted-foreground text-muted-foreground"
+                  )}
+                >
+                  {enriched.code}
+                </Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="text-foreground leading-tight font-medium">{enriched.description}</p>
+                  {fault.registration && (
+                    <p className="text-muted-foreground mt-0.5">{fault.registration}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {allFaults.length > 8 && (
             <p className="text-[10px] text-muted-foreground text-center">
               +{allFaults.length - 8} more faults
