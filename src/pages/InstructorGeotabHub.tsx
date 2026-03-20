@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Satellite, Gauge, MapPin, Route, Camera, FileText, Activity, Shield,
-  Lock, Crown, AlertTriangle, Play,
+  Lock, Crown, AlertTriangle, Play, Fuel, Zap, ShieldAlert,
 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 
 // Tab components
@@ -20,6 +21,10 @@ import { GeofenceEditor } from "@/components/instructor/GeofenceEditor";
 import { GeofenceAlertsList } from "@/components/instructor/GeofenceAlertsList";
 import { GeotabDiagnosticsTab } from "@/components/instructor/geotab/GeotabDiagnosticsTab";
 import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
+import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
+import { GeotabFuelTab } from "@/components/instructor/geotab/GeotabFuelTab";
+import { GeotabImpactTab } from "@/components/instructor/geotab/GeotabImpactTab";
+
 
 export default function InstructorGeotabHub() {
   const { instructor, subscription } = useInstructorAuth();
@@ -114,7 +119,7 @@ export default function InstructorGeotabHub() {
 
         <Tabs defaultValue="overview" onValueChange={setActiveTab}>
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-8 gap-1 text-[10px]">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-11 gap-1 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Gauge className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Overview</span>
@@ -146,6 +151,18 @@ export default function InstructorGeotabHub() {
               <TabsTrigger value="geofences" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Shield className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Geofences</span>
+              </TabsTrigger>
+              <TabsTrigger value="behaviour" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <ShieldAlert className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Behaviour</span>
+              </TabsTrigger>
+              <TabsTrigger value="fuel" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Fuel className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Fuel</span>
+              </TabsTrigger>
+              <TabsTrigger value="impact" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Zap className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Impact</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -195,8 +212,21 @@ export default function InstructorGeotabHub() {
               <GeofenceAlertsList instructorId={instructor.id} />
             </div>
           </TabsContent>
+
+          <TabsContent value="behaviour" className="mt-4">
+            <GeotabDriverBehaviourTab />
+          </TabsContent>
+
+          <TabsContent value="fuel" className="mt-4">
+            <GeotabFuelTab />
+          </TabsContent>
+
+          <TabsContent value="impact" className="mt-4">
+            <GeotabImpactTab />
+          </TabsContent>
         </Tabs>
       </div>
     </InstructorPortalLayout>
   );
 }
+
