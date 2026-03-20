@@ -120,6 +120,8 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 import { useDemoMode } from "@/context/DemoModeContext";
+import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -247,6 +249,11 @@ export function InstructorMobileHome({
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   
+  // Live stats for hero metrics
+  const liveStats = useInstructorLiveStats(instructorId);
+  const { data: driverData } = useGeotabDriverEvents(instructorId);
+  const driverScores = driverData?.scores;
+
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
@@ -430,6 +437,9 @@ export function InstructorMobileHome({
         monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
         monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
         monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        monthEarnings={liveStats?.monthEarnings || 0}
+        hoursThisWeek={liveStats?.hoursThisWeek || 0}
+        drivingScore={driverScores?.overall || 100}
       />
 
       {/* Sticky next-up bar */}
