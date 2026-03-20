@@ -179,11 +179,21 @@ function downloadCsv(trip: GeotabTrip) {
 
 // ── Component ──
 
-export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetProps) {
+export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDetailSheetProps) {
   const navigate = useNavigate();
   if (!trip) return null;
 
   const behaviour = calcBehaviour(trip);
+  const avgMph = Math.round(kmhToMph(trip.avgSpeedKmh));
+  const maxMph = Math.round(kmhToMph(trip.maxSpeedKmh));
+  const speedBarWidth = maxMph > 0 ? Math.round((avgMph / maxMph) * 100) : 100;
+
+  // Fuel calculations
+  const fuelLitres = fuelRecord?.fuel_used_litres ?? null;
+  const fuelCost = fuelRecord?.cost_gbp ?? null;
+  const fuelMpg = fuelLitres && fuelLitres > 0
+    ? Math.round((kmToMiles(fuelRecord?.distance_km ?? trip.distanceKm) / (fuelLitres * 0.219969)) * 10) / 10
+    : null;
   const avgMph = Math.round(kmhToMph(trip.avgSpeedKmh));
   const maxMph = Math.round(kmhToMph(trip.maxSpeedKmh));
   const speedBarWidth = maxMph > 0 ? Math.round((avgMph / maxMph) * 100) : 100;
