@@ -83,7 +83,7 @@ export function HomepageHero({
 
       {/* Content */}
       <div className="relative z-10 px-5 pt-5 pb-4 flex flex-col gap-4">
-        {/* Top row — avatar + greeting */}
+        {/* Top row — avatar + greeting + progress ring */}
         <div className="flex items-center gap-3">
           {profileImageUrl ? (
             <img
@@ -112,6 +112,7 @@ export function HomepageHero({
               {format(new Date(), "EEEE d MMMM")}
             </p>
           </div>
+          <ProgressRing completed={todayCompleted} total={todayTotal} />
         </div>
 
         {/* Today's lessons count */}
