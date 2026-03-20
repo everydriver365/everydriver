@@ -82,7 +82,7 @@ export default function InstructorVehicleHealth() {
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-7 gap-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-8 gap-1">
               <TabsTrigger value="compliance" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
                 <Shield className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">DVSA</span>
