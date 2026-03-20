@@ -249,6 +249,11 @@ export function InstructorMobileHome({
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   
+  // Live stats for hero metrics
+  const liveStats = useInstructorLiveStats(instructorId);
+  const { data: driverData } = useGeotabDriverEvents(instructorId);
+  const driverScores = driverData?.scores;
+
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
