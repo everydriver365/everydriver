@@ -4,23 +4,27 @@ import { PoundSterling, Clock, Shield } from "lucide-react";
 import instructorHeroImg from "@/assets/hero-instructor.jpg";
 
 function ProgressRing({ completed, total }: { completed: number; total: number }) {
+  const size = 58;
   const radius = 24;
   const stroke = 4;
   const circumference = 2 * Math.PI * radius;
   const t = total || 1;
-  const offset = circumference * (1 - Math.min(completed / t, 1));
+  const progress = Math.min(completed / t, 1);
+  const dashoffset = circumference * (1 - progress);
 
   return (
-    <div className="relative w-[58px] h-[58px] shrink-0">
-      <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
-        <circle cx="28" cy="28" r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} />
-        <motion.circle
-          cx="28" cy="28" r={radius} fill="none"
-          stroke="#34D399" strokeWidth={stroke} strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          fill="none" stroke="#34D399" strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={dashoffset}
+          style={{ transition: "stroke-dashoffset 1.2s ease-out" }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
