@@ -158,8 +158,8 @@ function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult, fuelMpg: numb
 
 // ── CSV export ──
 
-function downloadCsv(trip: GeotabTrip) {
-  const headers = ["Date","Start","End","Device","Distance (mi)","Duration","Avg Speed (mph)","Max Speed (mph)","Idle (min)","Stop (min)"];
+function downloadCsv(trip: GeotabTrip, fuelMpg: number | null, fuelCost: number | null) {
+  const headers = ["Date","Start","End","Device","Distance (mi)","Duration","Avg Speed (mph)","Max Speed (mph)","Idle (min)","Stop (min)","MPG","Fuel Cost (£)"];
   const values = [
     safeFormat(trip.startTime, "yyyy-MM-dd"),
     safeFormat(trip.startTime, "HH:mm"),
