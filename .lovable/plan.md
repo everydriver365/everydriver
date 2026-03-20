@@ -1,23 +1,28 @@
 
 
-## Plan: Switch LessonRouteRecorder Map from Leaflet to Google Maps
+## Plan: Fix Offline Sync + Radius Token Errors
 
-### What changes
+### Issue 1: Offline sync queries wrong column names
 
-Replace the Leaflet `MapContainer` in `LessonRouteRecorder.tsx` with Google Maps, matching the pattern already used in `MiniLiveMap.tsx`.
+**File**: `src/hooks/useOfflineSync.ts`
 
-### File: `src/components/instructor/LessonRouteRecorder.tsx`
+The `pupils` table has a `name` column, not `first_name` / `last_name`. Two queries need fixing:
 
-1. Remove Leaflet imports (`MapContainer`, `TileLayer`, `Polyline`, `CircleMarker`, `leaflet.css`, `mapConfig`)
-2. Import `fetchGoogleMapsKey` and `loadGoogleMaps` from `@/lib/googleMapsLoader.ts`
-3. Add a `useEffect` to load the Google Maps SDK (same pattern as `MiniLiveMap.tsx`)
-4. Use a `div` ref for the map container
-5. Initialise `google.maps.Map` when recording starts and SDK is ready — zoom 15, no UI controls, roadmap type
-6. Draw route with `google.maps.Polyline` (blue, weight 4)
-7. Green `CircleMarker` at start point → green circle `google.maps.Marker` with SVG symbol
-8. Current position → blue arrow marker (same `getArrowIcon` pattern from MiniLiveMap)
-9. Auto-pan to latest position as coordinates update
-10. Clean up map instance when recording stops
+- **Line 236**: Change `pupil:pupils(id, first_name, last_name, phone, address, postcode)` to `pupil:pupils(id, name, phone, postcode)`
+- **Line 262**: Change `'id, first_name, last_name, phone, address, postcode, status, experience_level'` to `'id, name, phone, postcode, status, experience_level'`
 
-No other files changed.
+### Issue 2: Radius poller missing API token
+
+The `radius-poller` edge function requires a `RADIUS_API_TOKEN` secret. Either:
+- Add the secret if you have a Radius account
+- Or suppress the error by not calling the poller when no token is configured
+
+Since not all instructors use Radius, the poller should gracefully skip when the token is missing rather than returning a 500 error.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `src/hooks/useOfflineSync.ts` | Fix column names from `first_name`/`last_name` to `name` |
+| `supabase/functions/radius-poller/index.ts` | Return early with 200 + message instead of 500 when token missing |
 
