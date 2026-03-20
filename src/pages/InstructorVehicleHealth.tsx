@@ -19,9 +19,11 @@ import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/Securi
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
 import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
 import { RunningCostsTab } from "@/components/instructor/vehicle-health/RunningCostsTab";
+import { MaintenanceAlertsBanner } from "@/components/instructor/vehicle-health/MaintenanceAlertsBanner";
 import { useVehicleHealth, GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
+import { useAutoMaintenanceSetup } from "@/hooks/useAutoMaintenanceSetup";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -33,6 +35,7 @@ export default function InstructorVehicleHealth() {
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
+  useAutoMaintenanceSetup();
   const [activeTab, setActiveTab] = useState(() => {
     if (location.hash === "#faults") return "live";
     if (location.hash === "#compliance") return "compliance";
@@ -71,6 +74,8 @@ export default function InstructorVehicleHealth() {
           }
         />
 
+        {/* Maintenance alerts banner */}
+        <MaintenanceAlertsBanner />
 
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
