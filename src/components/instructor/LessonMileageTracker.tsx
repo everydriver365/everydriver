@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Car, MapPin, Navigation, Save, Loader2, Route } from "lucide-react";
+import { Car, MapPin, Navigation, Save, Loader2, Route, Satellite } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -22,6 +22,8 @@ interface RecentLesson {
   lesson_miles: number | null;
   pupil_name: string;
   duration_minutes: number;
+  geotab_trip_id: string | null;
+  trip_auto_linked_at: string | null;
 }
 
 export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps) {
@@ -69,6 +71,8 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
           dropoff_postcode,
           lesson_miles,
           duration_minutes,
+          geotab_trip_id,
+          trip_auto_linked_at,
           pupils!inner(name)
         `)
         .eq("instructor_id", instructorId)
@@ -88,6 +92,8 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
         lesson_miles: l.lesson_miles,
         pupil_name: l.pupils?.name || "Unknown",
         duration_minutes: l.duration_minutes,
+        geotab_trip_id: l.geotab_trip_id || null,
+        trip_auto_linked_at: l.trip_auto_linked_at || null,
       }));
 
       setLessons(formattedLessons);
@@ -234,6 +240,12 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
                       <span className="truncate">{lesson.pickup_postcode || "No postcode"}</span>
                       <span>•</span>
                       <span>{lesson.duration_minutes} mins</span>
+                      {lesson.geotab_trip_id && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 rounded-full px-1.5 py-0.5">
+                          <Satellite className="h-2.5 w-2.5" />
+                          GPS linked
+                        </span>
+                      )}
                     </div>
                   </div>
 

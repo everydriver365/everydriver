@@ -12389,6 +12389,7 @@ export type Database = {
           deleted_at: string | null
           dropoff_postcode: string | null
           duration_minutes: number
+          geotab_trip_id: string | null
           google_event_id: string | null
           id: string
           instructor_id: string
@@ -12413,6 +12414,7 @@ export type Database = {
           reminder_24h_sent_at: string | null
           start_time: string
           status: string
+          trip_auto_linked_at: string | null
           updated_at: string
           vehicle_id: string | null
         }
@@ -12428,6 +12430,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          geotab_trip_id?: string | null
           google_event_id?: string | null
           id?: string
           instructor_id: string
@@ -12452,6 +12455,7 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time: string
           status?: string
+          trip_auto_linked_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
@@ -12467,6 +12471,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          geotab_trip_id?: string | null
           google_event_id?: string | null
           id?: string
           instructor_id?: string
@@ -12491,6 +12496,7 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time?: string
           status?: string
+          trip_auto_linked_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
