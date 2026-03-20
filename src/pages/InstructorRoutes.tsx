@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,7 @@ const generateRoutePath = (points: Array<{ lat: number; lon: number }> | null): 
 export default function InstructorRoutes() {
   const { instructor } = useInstructorAuth();
   const navigate = useNavigate();
+  const { activeProvider } = useActiveTrackingProvider(instructor?.id);
   const [loading, setLoading] = useState(true);
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
@@ -516,12 +518,14 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-7 text-[10px]">
+            <TabsList className={`grid w-full ${activeProvider !== "gpsgate" && activeProvider !== null ? "grid-cols-6" : "grid-cols-7"} text-[10px]`}>
               <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="gpsgate">
-                <Satellite className="h-3 w-3 mr-0.5" />
-                GPS
-              </TabsTrigger>
+              {(activeProvider === "gpsgate" || activeProvider === null) && (
+                <TabsTrigger value="gpsgate">
+                  <Satellite className="h-3 w-3 mr-0.5" />
+                  GPS
+                </TabsTrigger>
+              )}
               <TabsTrigger value="timesheets">
                 <Clock className="h-3 w-3 mr-0.5" />
                 Hours

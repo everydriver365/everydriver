@@ -15,6 +15,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface MobileTrackingSettingsBannerProps {
   instructorId: string;
@@ -38,6 +39,8 @@ export function MobileTrackingSettingsBanner({
   const navigate = useNavigate();
   const [status, setStatus] = useState<TrackingStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { activeProvider } = useActiveTrackingProvider(instructorId);
+  const isHiddenByProvider = activeProvider === "geotab" || activeProvider === "quartix";
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -96,6 +99,8 @@ export function MobileTrackingSettingsBanner({
     const interval = setInterval(fetchStatus, 30000);
     return () => clearInterval(interval);
   }, [instructorId]);
+
+  if (isHiddenByProvider) return null;
 
   if (isLoading) {
     return (

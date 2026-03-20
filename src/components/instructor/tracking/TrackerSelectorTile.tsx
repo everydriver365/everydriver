@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface TrackerDevice {
   id: string;
@@ -33,22 +34,29 @@ export function TrackerSelectorTile({
 }: TrackerSelectorTileProps) {
   const [devices, setDevices] = useState<TrackerDevice[]>([]);
   const [open, setOpen] = useState(false);
+  const { activeProvider } = useActiveTrackingProvider(instructorId);
 
   useEffect(() => {
     if (!instructorId) return;
 
     const fetchDevices = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("gps_devices")
         .select("id, device_identifier, device_name, is_active, last_seen_at")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false, nullsFirst: false });
 
+      // Only show devices from the active provider
+      if (activeProvider) {
+        query = query.eq("tracking_provider", activeProvider);
+      }
+
+      const { data } = await query;
       if (data) setDevices(data);
     };
 
     fetchDevices();
-  }, [instructorId]);
+  }, [instructorId, activeProvider]);
 
   const handleSelect = (device: TrackerDevice) => {
     onDeviceChange(device);

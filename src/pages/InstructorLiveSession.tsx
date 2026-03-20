@@ -133,18 +133,26 @@ export default function InstructorLiveSession() {
     if (!instructor?.id) return;
     
     try {
-      // Fetch first active device
+      // Fetch active devices, ordered by provider priority (geotab first)
       const { data: devices, error: deviceError } = await supabase
         .from("gps_devices")
         .select("*")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true)
-        .limit(1);
+        .order("tracking_provider", { ascending: true })
+        .limit(10);
 
       if (deviceError) throw deviceError;
       
       if (devices && devices.length > 0) {
-        setDevice(devices[0] as GPSDevice);
+        // Pick the best device by provider priority
+        const priorityOrder = ["geotab", "quartix", "radius", "gpsgate"];
+        const sorted = [...devices].sort((a, b) => {
+          const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
+          const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
+          return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+        });
+        setDevice(sorted[0] as GPSDevice);
         
         // If session is active, restore timer and distance, and enter fullscreen
         if (devices[0].current_session_id) {
