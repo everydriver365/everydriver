@@ -20,6 +20,13 @@ export function LessonRouteRecorder({
   lessonId,
   onRouteRecorded,
 }: LessonRouteRecorderProps) {
+  const { activeProvider, isLoading: providerLoading } = useActiveTrackingProvider(instructorId);
+
+  // Hide when a hardware tracker auto-captures routes
+  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
+    return null;
+  }
+
   const {
     isRecording,
     coordinates,
