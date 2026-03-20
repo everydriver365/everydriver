@@ -1,4 +1,5 @@
 import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
+import { enrichFaultCode, isGenericDescription } from "@/lib/obdCodeLookup";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -311,24 +312,32 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
               </span>
             </div>
             <div className="space-y-1">
-              {faultCodes!.slice(0, 5).map((fault, i) => (
-                <div key={i} className="flex items-start gap-1.5 text-[11px]">
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-[9px] px-1 py-0 shrink-0 mt-0.5",
-                      fault.severity?.toLowerCase().includes("red") || fault.severity?.toLowerCase().includes("critical")
-                        ? "border-destructive text-destructive"
-                        : fault.severity?.toLowerCase().includes("amber") || fault.severity?.toLowerCase().includes("warning")
-                        ? "border-orange-500 text-orange-500"
-                        : "border-muted-foreground text-muted-foreground"
-                    )}
-                  >
-                    {fault.source}
-                  </Badge>
-                  <span className="text-muted-foreground leading-tight">{fault.description}</span>
-                </div>
-              ))}
+              {faultCodes!.slice(0, 5).map((fault, i) => {
+                const enriched = enrichFaultCode(fault);
+                return (
+                  <div key={i} className="flex items-start gap-1.5 text-[11px]">
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "text-[9px] px-1 py-0 shrink-0 mt-0.5",
+                        enriched.severity.toLowerCase().includes("red") || enriched.severity.toLowerCase().includes("critical")
+                          ? "border-destructive text-destructive"
+                          : enriched.severity.toLowerCase().includes("amber") || enriched.severity.toLowerCase().includes("warning")
+                          ? "border-orange-500 text-orange-500"
+                          : "border-muted-foreground text-muted-foreground"
+                      )}
+                    >
+                      {enriched.code}
+                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-foreground leading-tight font-medium">{enriched.description}</span>
+                      {enriched.enrichedDescription && isGenericDescription(fault.description) && (
+                        <span className="block text-muted-foreground text-[10px] mt-0.5">Source: {enriched.source}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
               {faultCodes!.length > 5 && (
                 <p className="text-[10px] text-muted-foreground">+{faultCodes!.length - 5} more</p>
               )}
