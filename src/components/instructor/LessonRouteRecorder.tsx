@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Navigation, Square, Clock, Route } from "lucide-react";
 import { useLessonRouteRecorder } from "@/hooks/useLessonRouteRecorder";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface LessonRouteRecorderProps {
   instructorId: string;
@@ -19,6 +20,8 @@ export function LessonRouteRecorder({
   lessonId,
   onRouteRecorded,
 }: LessonRouteRecorderProps) {
+  const { activeProvider, isLoading: providerLoading } = useActiveTrackingProvider(instructorId);
+
   const {
     isRecording,
     coordinates,
@@ -142,6 +145,11 @@ export function LessonRouteRecorder({
 
     map.panTo(currentPos);
   }, [coordinates, getArrowIcon]);
+
+  // Hide when a hardware tracker auto-captures routes
+  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
+    return null;
+  }
 
   const handleStop = async () => {
     setIsStopping(true);
