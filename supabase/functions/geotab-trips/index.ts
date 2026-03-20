@@ -230,6 +230,67 @@ Deno.serve(async (req) => {
         new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
     );
 
+    // ---- AUTO-LINK TRIPS TO SCHEDULED LESSONS ----
+    let tripsLinked = 0;
+    try {
+      // Get all lessons for this instructor in the date range that aren't already linked
+      const fromDateOnly = from.split("T")[0];
+      const toDateOnly = to.split("T")[0];
+
+      const { data: unlinkedLessons } = await adminClient
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, instructor_id")
+        .eq("instructor_id", targetInstructorId)
+        .gte("lesson_date", fromDateOnly)
+        .lte("lesson_date", toDateOnly)
+        .is("geotab_trip_id", null)
+        .in("status", ["completed", "in_progress"]);
+
+      if (unlinkedLessons && unlinkedLessons.length > 0) {
+        for (const lesson of unlinkedLessons) {
+          // Build lesson start/end timestamps
+          const lessonStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
+          const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
+
+          // Find best matching trip: trip start within ±15 min of lesson start
+          const TOLERANCE_MS = 15 * 60 * 1000;
+          let bestTrip: any = null;
+          let bestDiff = Infinity;
+
+          for (const trip of allTrips) {
+            if (!trip.startTime) continue;
+            const tripStart = new Date(trip.startTime);
+            const diff = Math.abs(tripStart.getTime() - lessonStart.getTime());
+
+            if (diff < TOLERANCE_MS && diff < bestDiff) {
+              bestDiff = diff;
+              bestTrip = trip;
+            }
+          }
+
+          if (bestTrip) {
+            const distanceMiles = Math.round(bestTrip.distanceKm * 0.621371 * 10) / 10;
+            const { error: linkErr } = await adminClient
+              .from("scheduled_lessons")
+              .update({
+                geotab_trip_id: bestTrip.id,
+                trip_auto_linked_at: new Date().toISOString(),
+                lesson_miles: distanceMiles,
+              })
+              .eq("id", lesson.id)
+              .is("geotab_trip_id", null); // Prevent race conditions
+
+            if (!linkErr) {
+              tripsLinked++;
+              console.log(`[geotab-trips] Linked trip ${bestTrip.id} (${distanceMiles} mi) to lesson ${lesson.id}`);
+            }
+          }
+        }
+      }
+    } catch (linkErr) {
+      console.error("[geotab-trips] Trip linking error (non-critical):", linkErr);
+    }
+
     const totalDistanceKm = allTrips.reduce((s, t) => s + t.distanceKm, 0);
     const totalDurationMin = allTrips.reduce(
       (s, t) => s + t.durationMinutes,
@@ -242,6 +303,7 @@ Deno.serve(async (req) => {
       totalTrips: allTrips.length,
       totalDistanceKm: Math.round(totalDistanceKm * 100) / 100,
       totalDurationMinutes: totalDurationMin,
+      tripsLinked,
     };
 
     return new Response(JSON.stringify({ trips: allTrips, meta }), {

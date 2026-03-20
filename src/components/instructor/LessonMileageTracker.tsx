@@ -22,6 +22,8 @@ interface RecentLesson {
   lesson_miles: number | null;
   pupil_name: string;
   duration_minutes: number;
+  geotab_trip_id: string | null;
+  trip_auto_linked_at: string | null;
 }
 
 export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps) {
