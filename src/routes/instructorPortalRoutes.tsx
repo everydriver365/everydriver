@@ -46,6 +46,7 @@ const InstructorSatNav = lazy(() => import("@/pages/InstructorSatNav"));
 const InstructorFindMyCar = lazy(() => import("@/pages/InstructorFindMyCar"));
 const InstructorVehicleHealth = lazy(() => import("@/pages/InstructorVehicleHealth"));
 const VehicleHealthDesignDemo = lazy(() => import("@/pages/VehicleHealthDesignDemo"));
+const HomepageDesignDemo = lazy(() => import("@/pages/HomepageDesignDemo"));
 const InstructorFuel = lazy(() => import("@/pages/InstructorFuel"));
 const InstructorMileageTracker = lazy(() => import("@/pages/InstructorMileageTracker"));
 const InstructorRoutes = lazy(() => import("@/pages/InstructorRoutes"));
