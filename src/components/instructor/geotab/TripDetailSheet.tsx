@@ -194,9 +194,6 @@ export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDe
   const fuelMpg = fuelLitres && fuelLitres > 0
     ? Math.round((kmToMiles(fuelRecord?.distance_km ?? trip.distanceKm) / (fuelLitres * 0.219969)) * 10) / 10
     : null;
-  const avgMph = Math.round(kmhToMph(trip.avgSpeedKmh));
-  const maxMph = Math.round(kmhToMph(trip.maxSpeedKmh));
-  const speedBarWidth = maxMph > 0 ? Math.round((avgMph / maxMph) * 100) : 100;
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
