@@ -120,14 +120,17 @@ export function HomepageHero({
             {periods.map((period) => (
               <div key={period.label} className="min-w-0 shrink-0 grow-0 basis-full">
                 <div
-                  className="rounded-[28px] border border-border/50 bg-card px-4 py-4"
+                  className="rounded-[28px] border border-border/50 bg-card px-4 py-4 overflow-hidden relative"
                   style={{
                     boxShadow:
                       "0 18px 38px -22px rgba(15, 23, 42, 0.35), 0 10px 18px -16px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255,255,255,0.6)",
                   }}
                 >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  {/* Coloured accent bar at top */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-sky-400 to-amber-400" />
+
+                  <div className="mb-3 flex items-center justify-between gap-3 mt-1">
+                    <span className="inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-emerald-500/30">
                       {period.label}
                     </span>
                     <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
@@ -137,7 +140,7 @@ export function HomepageHero({
 
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)] items-center gap-3">
                     <div className="border-r border-border/70 pr-3">
-                      <p className="text-[42px] font-black leading-none tracking-[-0.06em] text-foreground tabular-nums">
+                      <p className="text-[42px] font-black leading-none tracking-[-0.06em] text-primary tabular-nums">
                         {period.lessons}
                       </p>
                       <p className="mt-1 text-[12px] font-medium text-muted-foreground">
@@ -154,22 +157,22 @@ export function HomepageHero({
                         icon={PoundSterling}
                         value={`£${period.earnings.toLocaleString()}`}
                         label="earned"
-                        bubble="hsl(154 70% 45% / 0.12)"
-                        iconColor="hsl(154 70% 40%)"
+                        bubble="hsl(154 70% 45% / 0.18)"
+                        iconColor="hsl(154 70% 35%)"
                       />
                       <StatItem
                         icon={Clock3}
                         value={`${period.hours}h`}
                         label="worked"
-                        bubble="hsl(204 94% 47% / 0.12)"
-                        iconColor="hsl(204 94% 43%)"
+                        bubble="hsl(204 94% 47% / 0.18)"
+                        iconColor="hsl(204 94% 38%)"
                       />
                       <StatItem
                         icon={CheckCircle2}
                         value={`${period.completed}`}
                         label="done"
-                        bubble="hsl(38 92% 50% / 0.14)"
-                        iconColor="hsl(38 92% 45%)"
+                        bubble="hsl(38 92% 50% / 0.20)"
+                        iconColor="hsl(38 92% 40%)"
                       />
                     </div>
                   </div>
