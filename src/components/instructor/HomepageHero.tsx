@@ -67,35 +67,11 @@ export function HomepageHero({
 
   return (
     <div>
-      {/* Dark header with avatar + greeting */}
-      <div className="bg-primary text-primary-foreground px-5 pt-1 pb-8 rounded-b-3xl" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="flex items-center gap-3 pt-1">
-          {profileImageUrl ? (
-            <img
-              src={profileImageUrl}
-              alt={firstName}
-              className="w-10 h-10 rounded-full object-cover border-2 border-primary-foreground/30"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-primary-foreground/20 border-2 border-primary-foreground/20 flex items-center justify-center">
-              <span className="text-primary-foreground font-semibold text-sm">
-                {firstName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-semibold text-primary-foreground leading-tight">
-              Good {new Date().getHours() < 12 ? "Morning" : new Date().getHours() < 17 ? "Afternoon" : "Evening"}, {firstName}
-            </p>
-            <p className="text-[11px] text-primary-foreground/50 mt-0.5">
-              {format(new Date(), "EEEE d MMMM")}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Dark section that connects seamlessly with the header */}
+      <div className="bg-primary pb-8" />
 
-      {/* White glassmorphic card overlapping the dark header */}
-      <div className="px-4 -mt-5">
+      {/* White card overlapping the dark section */}
+      <div className="px-4 -mt-6">
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex">
             {periods.map((period) => (
@@ -108,7 +84,7 @@ export function HomepageHero({
                     </span>
                   </div>
 
-                  {/* 3-column layout */}
+                  {/* 3-column layout: Lessons | Ring | Stats */}
                   <div className="flex items-center">
                     {/* Column 1: Lesson count */}
                     <div className="flex-1 min-w-0">
@@ -125,7 +101,7 @@ export function HomepageHero({
                       <ProgressRing completed={period.completed} total={period.lessons} />
                     </div>
 
-                    {/* Column 3: Stacked stats with icons on right */}
+                    {/* Column 3: Stacked stats with icons */}
                     <div className="flex flex-col gap-2 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-[14px] font-bold text-foreground tabular-nums leading-none">
@@ -154,7 +130,7 @@ export function HomepageHero({
         </div>
 
         {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 mt-2.5">
+        <div className="flex justify-center gap-1.5 mt-2.5 pb-1">
           {periods.map((_, i) => (
             <div
               key={i}
