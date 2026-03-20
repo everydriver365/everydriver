@@ -44,10 +44,8 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   // 3. Refresh with Velocity Fleet API
   const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN");
   const apiToken = Deno.env.get("RADIUS_API_TOKEN");
-  if (!refreshToken) {
-    throw new Error("RADIUS_REFRESH_TOKEN not configured");
-  }
-  if (!apiToken) {
+  if (!refreshToken || !apiToken) {
+    return null as unknown as RadiusSession; // Signal caller to skip gracefully
     throw new Error("RADIUS_API_TOKEN not configured");
   }
 
@@ -118,6 +116,15 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Check if Radius credentials are configured before doing anything
+    if (!Deno.env.get("RADIUS_API_TOKEN") || !Deno.env.get("RADIUS_REFRESH_TOKEN")) {
+      console.log("[RadiusPoller] Skipping — RADIUS_API_TOKEN or RADIUS_REFRESH_TOKEN not configured");
+      return new Response(JSON.stringify({ skipped: true, reason: "Radius credentials not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -125,7 +132,11 @@ Deno.serve(async (req) => {
 
     const customerId = Deno.env.get("RADIUS_CUSTOMER_ID");
     if (!customerId) {
-      throw new Error("RADIUS_CUSTOMER_ID not configured");
+      console.log("[RadiusPoller] Skipping — RADIUS_CUSTOMER_ID not configured");
+      return new Response(JSON.stringify({ skipped: true, reason: "RADIUS_CUSTOMER_ID not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // Get all Radius devices from our DB
