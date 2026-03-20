@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { enrichFaultCode, isGenericDescription } from "@/lib/obdCodeLookup";
 import { AlertTriangle, ChevronDown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
