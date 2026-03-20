@@ -162,6 +162,20 @@ export function LessonRouteRecorder({
     }
 
     map.panTo(currentPos);
+
+    // Snap-to-road every 5 new GPS points
+    const newCount = coordinates.length;
+    if (newCount - lastSnappedCountRef.current >= 5) {
+      lastSnappedCountRef.current = newCount;
+      callSnapToRoad(path)
+        .then((snapped) => {
+          if (snapped.length > 0) {
+            snappedPathRef.current = snapped;
+            snappedPolylineRef.current?.setPath(snapped);
+          }
+        })
+        .catch((e) => console.warn("[RouteRecorder] Snap-to-road failed:", e));
+    }
   }, [coordinates, getArrowIcon]);
 
   // Hide when a hardware tracker auto-captures routes
