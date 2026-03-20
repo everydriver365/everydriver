@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { useGeotabTrips, GeotabTrip } from "@/hooks/useGeotabTrips";
+import { useGeotabFuelUsage, FuelRecord } from "@/hooks/useGeotabFuelUsage";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, Route, Gauge, ArrowUpDown, Play } from "lucide-react";
+import { Calendar, Clock, Route, Gauge, ArrowUpDown, Play, Fuel, PoundSterling } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TripDetailSheet } from "./TripDetailSheet";
 
