@@ -1,28 +1,30 @@
 
 
-## Plan: Fix Offline Sync + Radius Token Errors
+## Plan: Only Show Connected Devices
 
-### Issue 1: Offline sync queries wrong column names
+### Problem
+The device "Charlotte" appears in the device list despite having no telemetry data (null `last_seen_at`, no coordinates, no battery). Only devices that have actually reported in should be displayed.
 
-**File**: `src/hooks/useOfflineSync.ts`
+### Solution
+Filter devices in `useVehicleHealth.ts` after fetching — remove any device where `last_seen_at` is null AND `last_heartbeat_at` is null. This keeps the raw data available but prevents ghost devices from cluttering the UI.
 
-The `pupils` table has a `name` column, not `first_name` / `last_name`. Two queries need fixing:
+### File: `src/hooks/useVehicleHealth.ts`
 
-- **Line 236**: Change `pupil:pupils(id, first_name, last_name, phone, address, postcode)` to `pupil:pupils(id, name, phone, postcode)`
-- **Line 262**: Change `'id, first_name, last_name, phone, address, postcode, status, experience_level'` to `'id, name, phone, postcode, status, experience_level'`
+After the query returns devices (~line 131), add a filter:
 
-### Issue 2: Radius poller missing API token
+```typescript
+const activeDevices = (devices || []).filter(
+  d => d.last_seen_at !== null || d.last_heartbeat_at !== null
+);
+```
 
-The `radius-poller` edge function requires a `RADIUS_API_TOKEN` secret. Either:
-- Add the secret if you have a Radius account
-- Or suppress the error by not calling the poller when no token is configured
+Then use `activeDevices` instead of `devices` for the rest of the function (vehicle lookup, mapping, etc.).
 
-Since not all instructors use Radius, the poller should gracefully skip when the token is missing rather than returning a 500 error.
+This single change propagates everywhere — `LiveTelemetryTab`, `GeotabOverviewTab`, `EnhancedDeviceStatusCard`, and `MaintenanceAlertsBanner` all consume from the same hook.
 
-### Files changed
+### Also fix: Maintenance service reminders 400 error
 
-| File | Change |
-|------|--------|
-| `src/hooks/useOfflineSync.ts` | Fix column names from `first_name`/`last_name` to `name` |
-| `supabase/functions/radius-poller/index.ts` | Return early with 200 + message instead of 500 when token missing |
+The network requests show a repeated 400 error: `invalid input syntax for type integer: "25161.2"`. The `last_service_km` and `next_due_km` columns are integers but the code passes decimal values from `last_ecu_odometer_km`.
+
+**File**: `src/hooks/useAutoMaintenanceSetup.ts` — wrap odometer values with `Math.round()` before inserting into `vehicle_service_reminders`.
 
