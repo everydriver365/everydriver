@@ -77,15 +77,6 @@ const TrackingDebugPanel: React.FC<TrackingDebugPanelProps> = ({ debugInfo }) =>
       );
     }
     
-    if (type === 'damoov') {
-      const variants = {
-        idle: 'secondary' as const,
-        processing: 'default' as const,
-        complete: 'default' as const,
-        error: 'destructive' as const
-      };
-      return <Badge variant={variants[status as keyof typeof variants]}>{status}</Badge>;
-    }
     
     return null;
   };
