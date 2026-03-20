@@ -152,6 +152,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/satnav" element={<InstructorSatNav />} />
     <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
     <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
+    <Route path="/instructor/vehicle-health-demo" element={<VehicleHealthDesignDemo />} />
     <Route path="/instructor/fuel" element={<InstructorFuel />} />
     <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
     <Route path="/instructor/routes" element={<InstructorRoutes />} />
