@@ -3298,6 +3298,207 @@ export type Database = {
           },
         ]
       }
+      geotab_driver_events: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          event_type: string
+          geotab_event_id: string | null
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          rule_name: string | null
+          severity: string
+          speed_kmh: number | null
+          started_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          event_type: string
+          geotab_event_id?: string | null
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          rule_name?: string | null
+          severity?: string
+          speed_kmh?: number | null
+          started_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          event_type?: string
+          geotab_event_id?: string | null
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          rule_name?: string | null
+          severity?: string
+          speed_kmh?: number | null
+          started_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geotab_driver_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_driver_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_driver_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geotab_fuel_usage: {
+        Row: {
+          cost_gbp: number | null
+          created_at: string
+          device_id: string | null
+          distance_km: number | null
+          fuel_used_litres: number | null
+          id: string
+          instructor_id: string
+          litres_per_100km: number | null
+          trip_end: string | null
+          trip_start: string | null
+        }
+        Insert: {
+          cost_gbp?: number | null
+          created_at?: string
+          device_id?: string | null
+          distance_km?: number | null
+          fuel_used_litres?: number | null
+          id?: string
+          instructor_id: string
+          litres_per_100km?: number | null
+          trip_end?: string | null
+          trip_start?: string | null
+        }
+        Update: {
+          cost_gbp?: number | null
+          created_at?: string
+          device_id?: string | null
+          distance_km?: number | null
+          fuel_used_litres?: number | null
+          id?: string
+          instructor_id?: string
+          litres_per_100km?: number | null
+          trip_end?: string | null
+          trip_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geotab_fuel_usage_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_fuel_usage_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_fuel_usage_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geotab_impact_events: {
+        Row: {
+          acknowledged: boolean
+          created_at: string
+          device_id: string | null
+          event_time: string
+          g_force: number | null
+          geotab_event_id: string | null
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          severity: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          acknowledged?: boolean
+          created_at?: string
+          device_id?: string | null
+          event_time?: string
+          g_force?: number | null
+          geotab_event_id?: string | null
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          severity?: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          acknowledged?: boolean
+          created_at?: string
+          device_id?: string | null
+          event_time?: string
+          g_force?: number | null
+          geotab_event_id?: string | null
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          severity?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geotab_impact_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_impact_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_impact_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geotab_session_cache: {
         Row: {
           created_at: string | null
