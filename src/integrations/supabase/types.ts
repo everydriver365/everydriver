@@ -14207,16 +14207,20 @@ export type Database = {
       }
       vehicle_service_reminders: {
         Row: {
+          auto_created: boolean | null
           created_at: string | null
           custom_name: string | null
           id: string
           instructor_id: string
+          interval_engine_hours: number | null
           interval_km: number | null
           interval_months: number | null
           is_active: boolean | null
           last_service_date: string | null
+          last_service_engine_hours: number | null
           last_service_km: number | null
           next_due_date: string | null
+          next_due_engine_hours: number | null
           next_due_km: number | null
           reminder_days_before: number | null
           service_type: Database["public"]["Enums"]["service_type"]
@@ -14224,16 +14228,20 @@ export type Database = {
           vehicle_id: string
         }
         Insert: {
+          auto_created?: boolean | null
           created_at?: string | null
           custom_name?: string | null
           id?: string
           instructor_id: string
+          interval_engine_hours?: number | null
           interval_km?: number | null
           interval_months?: number | null
           is_active?: boolean | null
           last_service_date?: string | null
+          last_service_engine_hours?: number | null
           last_service_km?: number | null
           next_due_date?: string | null
+          next_due_engine_hours?: number | null
           next_due_km?: number | null
           reminder_days_before?: number | null
           service_type: Database["public"]["Enums"]["service_type"]
@@ -14241,16 +14249,20 @@ export type Database = {
           vehicle_id: string
         }
         Update: {
+          auto_created?: boolean | null
           created_at?: string | null
           custom_name?: string | null
           id?: string
           instructor_id?: string
+          interval_engine_hours?: number | null
           interval_km?: number | null
           interval_months?: number | null
           is_active?: boolean | null
           last_service_date?: string | null
+          last_service_engine_hours?: number | null
           last_service_km?: number | null
           next_due_date?: string | null
+          next_due_engine_hours?: number | null
           next_due_km?: number | null
           reminder_days_before?: number | null
           service_type?: Database["public"]["Enums"]["service_type"]
