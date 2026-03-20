@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Navigation, Square, Clock, Route } from "lucide-react";
 import { useLessonRouteRecorder } from "@/hooks/useLessonRouteRecorder";
-import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface LessonRouteRecorderProps {
