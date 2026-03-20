@@ -21,6 +21,10 @@ import { GeofenceEditor } from "@/components/instructor/GeofenceEditor";
 import { GeofenceAlertsList } from "@/components/instructor/GeofenceAlertsList";
 import { GeotabDiagnosticsTab } from "@/components/instructor/geotab/GeotabDiagnosticsTab";
 import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
+import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
+import { GeotabFuelTab } from "@/components/instructor/geotab/GeotabFuelTab";
+import { GeotabImpactTab } from "@/components/instructor/geotab/GeotabImpactTab";
+
 
 export default function InstructorGeotabHub() {
   const { instructor, subscription } = useInstructorAuth();
