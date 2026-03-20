@@ -267,6 +267,23 @@ export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDe
             </div>
           </div>
 
+          {/* Fuel Economy */}
+          {fuelMpg != null && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold mb-1">Fuel Economy</p>
+              <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${Math.min(100, (fuelMpg / 60) * 100)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+                <span>{fuelMpg} mpg</span>
+                <span>{fuelRecord?.litres_per_100km?.toFixed(1) ?? "—"} L/100km</span>
+              </div>
+            </div>
+          )}
+
           {/* Idle Analysis */}
           <div className="mb-5">
             <p className="text-xs font-semibold mb-1">Idle Analysis</p>
