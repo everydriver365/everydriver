@@ -691,8 +691,7 @@ Deno.serve(async (req) => {
     const lastMediaRun = mediaConfig?.last_run_at ? new Date(mediaConfig.last_run_at).getTime() : 0;
     const shouldSyncMedia = Date.now() - lastMediaRun > MEDIA_SYNC_INTERVAL;
 
-    if (shouldSyncMedia) {
-      // timestamp updated via cron_sync_config upsert below
+    // ---- IMPACT DETECTION (runs every poll cycle) ----
     // ---- IMPACT DETECTION from ExceptionEvents ----
     let impactsInserted = 0;
     let pushSent = 0;
