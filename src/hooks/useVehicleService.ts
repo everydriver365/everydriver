@@ -81,9 +81,11 @@ export interface CreateReminderInput {
   custom_name?: string;
   interval_km?: number;
   interval_months?: number;
+  interval_engine_hours?: number;
   reminder_days_before?: number;
   last_service_date?: string;
   last_service_km?: number;
+  last_service_engine_hours?: number;
 }
 
 export interface LogServiceInput {
