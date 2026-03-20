@@ -1,12 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Navigation, Square, MapPin, Clock, Route } from "lucide-react";
+import { Navigation, Square, Clock, Route } from "lucide-react";
 import { useLessonRouteRecorder } from "@/hooks/useLessonRouteRecorder";
-import { MapContainer, TileLayer, Polyline, CircleMarker } from "react-leaflet";
-import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
-import "leaflet/dist/leaflet.css";
+import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 
 interface LessonRouteRecorderProps {
   instructorId: string;
@@ -32,6 +30,118 @@ export function LessonRouteRecorder({
   } = useLessonRouteRecorder(instructorId, pupilId, lessonId);
 
   const [isStopping, setIsStopping] = useState(false);
+  const [mapsReady, setMapsReady] = useState(false);
+
+  const mapDivRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const startMarkerRef = useRef<google.maps.Marker | null>(null);
+  const currentMarkerRef = useRef<google.maps.Marker | null>(null);
+
+  // Load Google Maps SDK
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const key = await fetchGoogleMapsKey();
+        if (!key || cancelled) return;
+        await loadGoogleMaps(key);
+        if (!cancelled) setMapsReady(true);
+      } catch (e) {
+        console.error("[RouteRecorder] Failed to load Google Maps:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const getArrowIcon = useCallback((active: boolean): google.maps.Symbol => ({
+    path: "M 0,-8 L -5,8 L 0,4 L 5,8 Z",
+    fillColor: active ? "#3b82f6" : "#9ca3af",
+    fillOpacity: 1,
+    strokeColor: "white",
+    strokeWeight: 2,
+    scale: 2.2,
+    rotation: 0,
+    anchor: new google.maps.Point(0, 0),
+  }), []);
+
+  // Init/destroy map based on recording state + SDK readiness
+  useEffect(() => {
+    if (!isRecording || !mapsReady || !mapDivRef.current) return;
+    if (mapRef.current) return;
+
+    const center = coordinates.length > 0
+      ? { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+      : { lat: 51.5074, lng: -0.1278 };
+
+    const map = new google.maps.Map(mapDivRef.current, {
+      center,
+      zoom: 15,
+      disableDefaultUI: true,
+      gestureHandling: "none",
+      mapTypeId: "roadmap",
+      clickableIcons: false,
+    });
+    mapRef.current = map;
+
+    polylineRef.current = new google.maps.Polyline({
+      map,
+      path: [],
+      strokeColor: "#3b82f6",
+      strokeOpacity: 0.8,
+      strokeWeight: 4,
+    });
+
+    return () => {
+      startMarkerRef.current?.setMap(null);
+      startMarkerRef.current = null;
+      currentMarkerRef.current?.setMap(null);
+      currentMarkerRef.current = null;
+      polylineRef.current?.setMap(null);
+      polylineRef.current = null;
+      mapRef.current = null;
+    };
+  }, [isRecording, mapsReady]);
+
+  // Update polyline + markers as coordinates change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || coordinates.length === 0) return;
+
+    const path = coordinates.map(c => ({ lat: c.lat, lng: c.lng }));
+    polylineRef.current?.setPath(path);
+
+    // Start marker (green circle)
+    const startPos = path[0];
+    if (!startMarkerRef.current) {
+      startMarkerRef.current = new google.maps.Marker({
+        position: startPos,
+        map,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: "#16a34a",
+          fillOpacity: 1,
+          strokeColor: "white",
+          strokeWeight: 2,
+          scale: 6,
+        },
+      });
+    }
+
+    // Current position marker (blue arrow)
+    const currentPos = path[path.length - 1];
+    if (currentMarkerRef.current) {
+      currentMarkerRef.current.setPosition(currentPos);
+    } else {
+      currentMarkerRef.current = new google.maps.Marker({
+        position: currentPos,
+        map,
+        icon: getArrowIcon(true),
+      });
+    }
+
+    map.panTo(currentPos);
+  }, [coordinates, getArrowIcon]);
 
   const handleStop = async () => {
     setIsStopping(true);
@@ -47,12 +157,6 @@ export function LessonRouteRecorder({
   };
 
   const distanceMiles = (distanceKm * 0.621371).toFixed(1);
-
-  const routePath = coordinates.map((c) => [c.lat, c.lng] as [number, number]);
-  const center: [number, number] =
-    routePath.length > 0
-      ? routePath[routePath.length - 1]
-      : [51.5074, -0.1278];
 
   return (
     <Card className="overflow-hidden">
@@ -100,41 +204,10 @@ export function LessonRouteRecorder({
           )}
         </div>
 
-        {/* Live Map Preview (only when recording) */}
-        {isRecording && routePath.length > 0 && (
+        {/* Live Map Preview (only when recording with coordinates) */}
+        {isRecording && coordinates.length > 0 && (
           <div className="h-48 border-t">
-            <MapContainer
-              center={center}
-              zoom={15}
-              className="h-full w-full"
-              zoomControl={false}
-            >
-              <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />
-              <Polyline
-                positions={routePath}
-                color="hsl(var(--primary))"
-                weight={4}
-                opacity={0.8}
-              />
-              {routePath.length > 0 && (
-                <CircleMarker
-                  center={routePath[0]}
-                  radius={6}
-                  fillColor="hsl(142 76% 36%)"
-                  fillOpacity={1}
-                  color="white"
-                  weight={2}
-                />
-              )}
-              <CircleMarker
-                center={center}
-                radius={8}
-                fillColor="hsl(var(--primary))"
-                fillOpacity={1}
-                color="white"
-                weight={3}
-              />
-            </MapContainer>
+            <div ref={mapDivRef} className="h-full w-full" />
           </div>
         )}
 
