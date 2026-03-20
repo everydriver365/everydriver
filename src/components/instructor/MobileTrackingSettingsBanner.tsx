@@ -100,6 +100,8 @@ export function MobileTrackingSettingsBanner({
     return () => clearInterval(interval);
   }, [instructorId]);
 
+  if (isHiddenByProvider) return null;
+
   if (isLoading) {
     return (
       <Card className={cn("border-dashed", className)}>
