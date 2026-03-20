@@ -51,9 +51,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
-import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
-import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 import { DriverTimesheets } from "@/components/instructor/DriverTimesheets";
 import { PupilDrivingLeaderboard } from "@/components/instructor/PupilDrivingLeaderboard";
 
