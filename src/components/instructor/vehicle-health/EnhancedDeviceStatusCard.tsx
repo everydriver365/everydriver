@@ -1,4 +1,5 @@
 import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
+import { enrichFaultCode, isGenericDescription } from "@/lib/obdCodeLookup";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
