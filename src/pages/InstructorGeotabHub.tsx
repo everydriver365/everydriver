@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Satellite, Gauge, MapPin, Route, Camera, FileText, Activity, Shield,
-  Lock, Crown, AlertTriangle, Play,
+  Lock, Crown, AlertTriangle, Play, Fuel, Zap, ShieldAlert,
 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 
 // Tab components
