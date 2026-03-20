@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-// Card import removed - using styled divs matching availability page tiles
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +22,8 @@ import {
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import PreFlightChecks from "@/components/instructor/PreFlightChecks";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-// Geotab only
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { formatDistanceToNow } from "date-fns";
