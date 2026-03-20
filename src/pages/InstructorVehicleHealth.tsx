@@ -78,6 +78,9 @@ export default function InstructorVehicleHealth() {
         {/* Maintenance alerts banner */}
         <MaintenanceAlertsBanner />
 
+        {/* Personal driving stats */}
+        <PersonalDrivingStatsCard />
+
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
