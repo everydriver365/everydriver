@@ -203,7 +203,10 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedTrips.map((trip) => (
+              {sortedTrips.map((trip) => {
+                const fuel = fuelLookup.get(trip.id);
+                const mpg = fuel ? calcMpg(fuel.distance_km ?? trip.distanceKm, fuel.fuel_used_litres ?? 0) : null;
+                return (
                 <TableRow key={trip.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedTrip(trip)}>
                   <TableCell className="font-medium text-xs">
                     {formatSafe(trip.startTime, "dd MMM yyyy")}
@@ -226,6 +229,12 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                   <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
                     {trip.idleMinutes}m
                   </TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell">
+                    {mpg != null ? `${mpg}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell">
+                    {fuel?.cost_gbp != null ? `£${fuel.cost_gbp.toFixed(2)}` : "—"}
+                  </TableCell>
                   <TableCell>
                     {trip.startLat && trip.startLng && (
                       <Button
@@ -242,7 +251,8 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
