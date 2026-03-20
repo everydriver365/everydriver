@@ -511,14 +511,8 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className={`grid w-full ${activeProvider !== "gpsgate" && activeProvider !== null ? "grid-cols-6" : "grid-cols-7"} text-[10px]`}>
+            <TabsList className="grid w-full grid-cols-6 text-[10px]">
               <TabsTrigger value="all">All</TabsTrigger>
-              {(activeProvider === "gpsgate" || activeProvider === null) && (
-                <TabsTrigger value="gpsgate">
-                  <Satellite className="h-3 w-3 mr-0.5" />
-                  GPS
-                </TabsTrigger>
-              )}
               <TabsTrigger value="timesheets">
                 <Clock className="h-3 w-3 mr-0.5" />
                 Hours
