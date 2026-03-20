@@ -124,105 +124,87 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
   const contrast = wallpaperColor ? getContrastColor(wallpaperColor) : null;
 
   return (
-    <nav
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border/30",
-        wallpaperColor ? "" : "bg-background/80 backdrop-blur-xl backdrop-saturate-150"
-      )}
-      style={wallpaperColor ? { backgroundColor: `${wallpaperColor}e6` } : undefined}
-    >
-      <div className="flex items-center justify-around h-16 w-full px-1 relative">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const showNotification = item.showBadge && pendingJobsCount > 0;
-          const isTrack = item.isTrack;
-          const isSchedule = item.isSchedule;
-          const isMore = item.isMore;
-          
-          // Calculate badge count for this item
-          const getBadgeCount = () => {
-            if (isSchedule && todayLessonCount > 0) return todayLessonCount;
-            return 0;
-          };
-          const badgeCount = getBadgeCount();
-          
-          // Check if More menu needs a dot indicator
-          const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-[env(safe-area-inset-bottom)] px-4">
+      <div
+        className="mx-auto mb-2 rounded-2xl bg-primary shadow-xl shadow-black/25"
+        style={{ maxWidth: 400 }}
+      >
+        <div className="flex items-center justify-around h-[60px] w-full px-2 relative">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const showNotification = item.showBadge && pendingJobsCount > 0;
+            const isTrack = item.isTrack;
+            const isSchedule = item.isSchedule;
+            const isMore = item.isMore;
 
-          // Track icon color override when tracking is active
-          const trackIconColor = isTrack && isTrackingActive && !isActive
-            ? "#10b981" // emerald-500
-            : undefined;
-          
-          return (
-            <button
-              key={item.path}
-              onClick={() => handleNavClick(item.path)}
-              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full"
-            >
-              <div className="relative">
-                {/* Animated active pill */}
+            const getBadgeCount = () => {
+              if (isSchedule && todayLessonCount > 0) return todayLessonCount;
+              return 0;
+            };
+            const badgeCount = getBadgeCount();
+            const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
+            const trackIconColor = isTrack && isTrackingActive && !isActive
+              ? "#10b981"
+              : undefined;
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full"
+              >
+                <div className="relative">
+                  <div className="flex items-center justify-center w-8 h-8 relative z-10">
+                    <item.icon
+                      className="h-5 w-5 transition-all duration-200"
+                      strokeWidth={isActive ? 2.2 : 1.6}
+                      color={
+                        trackIconColor
+                          ? trackIconColor
+                          : isActive
+                          ? "#ffffff"
+                          : "rgba(255,255,255,0.45)"
+                      }
+                    />
+                  </div>
+                  {showNotification && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                      {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                    </span>
+                  )}
+                  {isTrack && isTrackingActive && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-primary animate-pulse" />
+                  )}
+                  {isSchedule && badgeCount > 0 && !isActive && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-white text-primary text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </span>
+                  )}
+                  {showMoreDot && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-white ring-2 ring-primary" />
+                  )}
+                </div>
+                <span
+                  className="text-[10px] font-medium transition-all duration-200"
+                  style={{
+                    color: isActive ? "#ffffff" : "rgba(255,255,255,0.45)",
+                  }}
+                >
+                  {item.label}
+                </span>
+                {/* Glow dot */}
                 {isActive && (
                   <motion.div
-                    layoutId="activeTab"
-                    className={cn(
-                      "absolute inset-0 rounded-lg",
-                      !contrast && "bg-primary"
-                    )}
-                    style={contrast ? { backgroundColor: contrast.active } : undefined}
+                    layoutId="activeTabDot"
+                    className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-white shadow-[0_0_6px_2px_rgba(255,255,255,0.5)]"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
-                <div
-                  className="flex items-center justify-center rounded-lg w-8 h-8 relative z-10"
-                >
-                  <item.icon
-                    className="h-5 w-5 transition-all duration-200"
-                    strokeWidth={isActive ? 2 : 1.8}
-                    color={
-                      trackIconColor
-                        ? trackIconColor
-                        : contrast
-                        ? (isActive ? (wallpaperColor || "#ffffff") : contrast.inactive)
-                        : (isActive ? "#ffffff" : "#8e8e93")
-                    }
-                  />
-                </div>
-                {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
-                    {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                  </span>
-                )}
-                {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
-                )}
-                {/* Schedule badge - today's lesson count */}
-                {isSchedule && badgeCount > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-background">
-                    {badgeCount > 9 ? "9+" : badgeCount}
-                  </span>
-                )}
-                {/* More menu dot indicator */}
-                {showMoreDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-background" />
-                )}
-              </div>
-              <span
-                className="text-[12px] font-medium transition-all duration-200"
-                style={{
-                  color: contrast
-                    ? (isActive ? contrast.active : contrast.inactive)
-                    : (isActive ? "hsl(var(--primary))" : "#8e8e93")
-                }}
-              >
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom" style={{ background: 'inherit' }} />
     </nav>
   );
 }
