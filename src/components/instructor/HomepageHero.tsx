@@ -140,7 +140,7 @@ export function HomepageHero({
 
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)] items-center gap-3">
                     <div className="border-r border-border/70 pr-3">
-                      <p className="text-[42px] font-black leading-none tracking-[-0.06em] text-foreground tabular-nums">
+                      <p className="text-[42px] font-black leading-none tracking-[-0.06em] text-primary tabular-nums">
                         {period.lessons}
                       </p>
                       <p className="mt-1 text-[12px] font-medium text-muted-foreground">
