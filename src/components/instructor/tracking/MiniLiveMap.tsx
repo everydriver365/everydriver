@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
-import { loadGoogleMaps, fetchGoogleMapsKey } from "@/lib/googleMapsLoader";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface MiniLiveMapProps {
   latitude: number | null;
@@ -14,96 +15,94 @@ interface MiniLiveMapProps {
 
 export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
-  const [ready, setReady] = useState(false);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.CircleMarker | null>(null);
 
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
     : null;
 
-  // Init Google Map
+  const hasPosition = latitude !== null && longitude !== null;
+
+  // Init Leaflet map
   useEffect(() => {
-    let cancelled = false;
+    if (!mapDivRef.current || mapRef.current) return;
 
-    async function init() {
-      if (!mapDivRef.current || mapRef.current) return;
-      try {
-        const apiKey = await fetchGoogleMapsKey();
-        if (!apiKey || cancelled) return;
-        await loadGoogleMaps(apiKey);
-        if (cancelled || !mapDivRef.current) return;
+    const center: L.LatLngExpression = hasPosition
+      ? [latitude!, longitude!]
+      : [54.5, -3.5];
 
-        const w = window as any;
-        const center = latitude != null && longitude != null
-          ? { lat: latitude, lng: longitude }
-          : { lat: 54.5, lng: -3.5 };
+    const map = L.map(mapDivRef.current, {
+      center,
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      boxZoom: false,
+      keyboard: false,
+    });
 
-        const map = new w.google.maps.Map(mapDivRef.current, {
-          center,
-          zoom: 15,
-          disableDefaultUI: true,
-          gestureHandling: "none",
-          clickableIcons: false,
-          keyboardShortcuts: false,
-        });
-        mapRef.current = map;
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }).addTo(map);
 
-        markerRef.current = new w.google.maps.Marker({
-          position: center,
-          map,
-          icon: {
-            path: w.google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillOpacity: 1,
-            fillColor: isActive ? "#3b82f6" : "#9ca3af",
-            strokeColor: "white",
-            strokeWeight: 3,
-            rotation: heading ?? 0,
-          },
-        });
+    mapRef.current = map;
 
-        setReady(true);
-      } catch {
-        // silently fail
-      }
+    if (hasPosition) {
+      markerRef.current = L.circleMarker([latitude!, longitude!], {
+        radius: 10,
+        fillColor: isActive ? "#3b82f6" : "#9ca3af",
+        fillOpacity: 1,
+        color: "white",
+        weight: 3,
+      }).addTo(map);
     }
 
-    init();
-    return () => { cancelled = true; };
+    // Fix tile rendering after container is visible
+    setTimeout(() => map.invalidateSize(), 100);
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
   }, []);
 
-  // Update marker position + icon
+  // Update marker position
   useEffect(() => {
     const map = mapRef.current;
-    const marker = markerRef.current;
-    if (!map || !marker || latitude == null || longitude == null) return;
+    if (!map || latitude == null || longitude == null) return;
 
-    const w = window as any;
-    const pos = { lat: latitude, lng: longitude };
-    marker.setPosition(pos);
-    marker.setIcon({
-      path: w.google.maps.SymbolPath.CIRCLE,
-      scale: 10,
-      fillOpacity: 1,
-      fillColor: isActive ? "#3b82f6" : "#9ca3af",
-      strokeColor: "white",
-      strokeWeight: 3,
-      rotation: heading ?? 0,
-    });
+    const pos: L.LatLngExpression = [latitude, longitude];
+
+    if (markerRef.current) {
+      markerRef.current.setLatLng(pos);
+      markerRef.current.setStyle({
+        fillColor: isActive ? "#3b82f6" : "#9ca3af",
+      });
+    } else {
+      markerRef.current = L.circleMarker(pos, {
+        radius: 10,
+        fillColor: isActive ? "#3b82f6" : "#9ca3af",
+        fillOpacity: 1,
+        color: "white",
+        weight: 3,
+      }).addTo(map);
+    }
+
     map.panTo(pos);
   }, [latitude, longitude, heading, isActive]);
-
-  const hasPosition = latitude !== null && longitude !== null;
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
       <div className="relative h-[200px]">
-        {hasPosition || ready ? (
+        {hasPosition ? (
           <>
-            <div ref={mapDivRef} className="absolute inset-0" />
-            {/* Status badge */}
+            <div ref={mapDivRef} className="absolute inset-0 z-0" />
             <div className="absolute top-3 left-3 z-10">
               {isLive ? (
                 <Badge className="bg-green-600 text-white border-0 gap-1.5">
@@ -121,9 +120,12 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
             </div>
           </>
         ) : (
-          <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
-            <p className="text-sm text-muted-foreground">No position data yet</p>
-          </div>
+          <>
+            <div ref={mapDivRef} className="absolute inset-0 z-0" />
+            <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center z-[5]">
+              <p className="text-sm text-muted-foreground">No position data yet</p>
+            </div>
+          </>
         )}
       </div>
     </div>
