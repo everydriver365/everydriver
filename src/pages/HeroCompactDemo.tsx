@@ -10,13 +10,23 @@ import conceptR from "@/assets/hero-compact-R.png";
 import conceptS from "@/assets/hero-compact-S.png";
 import conceptT from "@/assets/hero-compact-T.png";
 import conceptU from "@/assets/hero-compact-U.png";
+import conceptV from "@/assets/hero-compact-V.png";
+import conceptW from "@/assets/hero-compact-W.png";
+import conceptX from "@/assets/hero-compact-X.png";
+import conceptY from "@/assets/hero-compact-Y.png";
+import conceptZ from "@/assets/hero-compact-Z.png";
 
 const concepts = [
-  { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row. Clean contrast.", image: conceptQ },
-  { id: "R", title: "Metric Boxes + Tabs", description: "Three colour-accented white metric boxes (earned, hours, done with gauge) plus a Today/Week/Month/Year segmented selector. Action icons in header.", image: conceptR },
-  { id: "S", title: "Glass Card 3-Column", description: "Rounded dark header with glassmorphic card below. 3 columns: lessons count, progress ring, and stacked stats with coloured icons. Swipe dots.", image: conceptS },
-  { id: "T", title: "Widget Grid", description: "Four mini white tiles like Apple Watch complications — lessons with progress bar, £ earned, hours, and done ring. Compact and scannable.", image: conceptT },
-  { id: "U", title: "Ring + Legend", description: "Large progress ring on left showing 4/6, stacked stat legend on right with coloured dots (earned, worked, completed). Clean hierarchy.", image: conceptU },
+  { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row.", image: conceptQ },
+  { id: "R", title: "Metric Boxes + Tabs", description: "Three colour-accented white metric boxes (earned, hours, done with gauge) plus a Today/Week/Month/Year segmented selector.", image: conceptR },
+  { id: "S", title: "Glass Card 3-Column", description: "Rounded dark header with glassmorphic card below. 3 columns: lessons count, progress ring, and stacked stats with coloured icons.", image: conceptS },
+  { id: "T", title: "Widget Grid", description: "Four mini white tiles like Apple Watch complications — lessons with progress bar, £ earned, hours, and done ring.", image: conceptT },
+  { id: "U", title: "Ring + Legend", description: "Large progress ring on left showing 4/6, stacked stat legend on right with coloured dots.", image: conceptU },
+  { id: "V", title: "Pill Badges Row", description: "Avatar + greeting top row, lesson count card below, three coloured pill badges for earnings, hours, and completed.", image: conceptV },
+  { id: "W", title: "Data-Dense Columns", description: "Avatar with 4 metric columns — lessons with progress bar, earnings, hours, and completion ratio. Period tab at corner.", image: conceptW },
+  { id: "X", title: "Floating White Card", description: "Dark header with Today chip, white card floating below with 4-column grid of icons and numbers. Fintech-inspired.", image: conceptX },
+  { id: "Y", title: "Dashboard Ring + Stats", description: "Large donut ring on left showing completion, three horizontal stat rows on right with coloured icons and values.", image: conceptY },
+  { id: "Z", title: "Split Two-Column", description: "Left column: avatar + lessons + progress bar. Right column: three stacked metric boxes. Swipe dots for period switching.", image: conceptZ },
 ];
 
 export default function HeroCompactDemo() {
