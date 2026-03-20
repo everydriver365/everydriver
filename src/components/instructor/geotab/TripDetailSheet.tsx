@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { GeotabTrip } from "@/hooks/useGeotabTrips";
+import { FuelRecord } from "@/hooks/useGeotabFuelUsage";
 import { kmToMiles, kmhToMph } from "@/lib/utils";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose,
@@ -7,12 +8,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, FileText, Download, X, Gauge, Clock, Route, Timer, OctagonPause, Activity } from "lucide-react";
+import { Play, FileText, Download, X, Gauge, Clock, Route, Timer, OctagonPause, Activity, Fuel, PoundSterling } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 
 interface TripDetailSheetProps {
   trip: GeotabTrip | null;
+  fuelRecord?: FuelRecord | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -78,7 +80,7 @@ function fmtDuration(mins: number): string {
 
 // ── PDF generation ──
 
-function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult) {
+function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult, fuelMpg: number | null, fuelLitres: number | null, fuelCost: number | null) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   let y = 20;
@@ -114,6 +116,9 @@ function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult) {
     ["Max Speed", `${Math.round(kmhToMph(trip.maxSpeedKmh))} mph`],
     ["Idle Time", `${trip.idleMinutes}m`],
     ["Stop Time", `${trip.stopMinutes}m`],
+    ...(fuelMpg != null ? [["Fuel Economy", `${fuelMpg} mpg`]] : []),
+    ...(fuelLitres != null ? [["Fuel Used", `${fuelLitres.toFixed(1)} litres`]] : []),
+    ...(fuelCost != null ? [["Fuel Cost", `£${fuelCost.toFixed(2)}`]] : []),
   ];
 
   rows.forEach(([label, value]) => {
@@ -153,8 +158,8 @@ function generatePdf(trip: GeotabTrip, behaviour: BehaviourResult) {
 
 // ── CSV export ──
 
-function downloadCsv(trip: GeotabTrip) {
-  const headers = ["Date","Start","End","Device","Distance (mi)","Duration","Avg Speed (mph)","Max Speed (mph)","Idle (min)","Stop (min)"];
+function downloadCsv(trip: GeotabTrip, fuelMpg: number | null, fuelCost: number | null) {
+  const headers = ["Date","Start","End","Device","Distance (mi)","Duration","Avg Speed (mph)","Max Speed (mph)","Idle (min)","Stop (min)","MPG","Fuel Cost (£)"];
   const values = [
     safeFormat(trip.startTime, "yyyy-MM-dd"),
     safeFormat(trip.startTime, "HH:mm"),
@@ -166,6 +171,8 @@ function downloadCsv(trip: GeotabTrip) {
     Math.round(kmhToMph(trip.maxSpeedKmh)).toString(),
     trip.idleMinutes.toString(),
     trip.stopMinutes.toString(),
+    fuelMpg != null ? fuelMpg.toString() : "",
+    fuelCost != null ? fuelCost.toFixed(2) : "",
   ];
   const csv = [headers.join(","), values.join(",")].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -177,7 +184,7 @@ function downloadCsv(trip: GeotabTrip) {
 
 // ── Component ──
 
-export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetProps) {
+export function TripDetailSheet({ trip, fuelRecord, open, onOpenChange }: TripDetailSheetProps) {
   const navigate = useNavigate();
   if (!trip) return null;
 
@@ -185,6 +192,13 @@ export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetPro
   const avgMph = Math.round(kmhToMph(trip.avgSpeedKmh));
   const maxMph = Math.round(kmhToMph(trip.maxSpeedKmh));
   const speedBarWidth = maxMph > 0 ? Math.round((avgMph / maxMph) * 100) : 100;
+
+  // Fuel calculations
+  const fuelLitres = fuelRecord?.fuel_used_litres ?? null;
+  const fuelCost = fuelRecord?.cost_gbp ?? null;
+  const fuelMpg = fuelLitres && fuelLitres > 0
+    ? Math.round((kmToMiles(fuelRecord?.distance_km ?? trip.distanceKm) / (fuelLitres * 0.219969)) * 10) / 10
+    : null;
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -217,6 +231,9 @@ export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetPro
               { icon: Gauge, label: "Max Speed", value: `${maxMph} mph` },
               { icon: Timer, label: "Idle", value: `${trip.idleMinutes}m` },
               { icon: OctagonPause, label: "Stops", value: `${trip.stopMinutes}m` },
+              ...(fuelMpg != null ? [{ icon: Fuel, label: "MPG", value: `${fuelMpg}` }] : []),
+              ...(fuelLitres != null ? [{ icon: Fuel, label: "Fuel", value: `${fuelLitres.toFixed(1)} L` }] : []),
+              ...(fuelCost != null ? [{ icon: PoundSterling, label: "Fuel Cost", value: `£${fuelCost.toFixed(2)}` }] : []),
             ].map(({ icon: Icon, label, value }) => (
               <Card key={label}>
                 <CardContent className="p-2.5 text-center">
@@ -255,6 +272,23 @@ export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetPro
             </div>
           </div>
 
+          {/* Fuel Economy */}
+          {fuelMpg != null && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold mb-1">Fuel Economy</p>
+              <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${Math.min(100, (fuelMpg / 60) * 100)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+                <span>{fuelMpg} mpg</span>
+                <span>{fuelRecord?.litres_per_100km?.toFixed(1) ?? "—"} L/100km</span>
+              </div>
+            </div>
+          )}
+
           {/* Idle Analysis */}
           <div className="mb-5">
             <p className="text-xs font-semibold mb-1">Idle Analysis</p>
@@ -276,10 +310,10 @@ export function TripDetailSheet({ trip, open, onOpenChange }: TripDetailSheetPro
                 <Play className="h-3.5 w-3.5 mr-1" /> Replay Trip
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => generatePdf(trip, behaviour)}>
+            <Button variant="outline" size="sm" onClick={() => generatePdf(trip, behaviour, fuelMpg, fuelLitres, fuelCost)}>
               <FileText className="h-3.5 w-3.5 mr-1" /> PDF Report
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => downloadCsv(trip)}>
+            <Button variant="ghost" size="sm" onClick={() => downloadCsv(trip, fuelMpg, fuelCost)}>
               <Download className="h-3.5 w-3.5 mr-1" /> CSV
             </Button>
           </div>

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { useGeotabTrips, GeotabTrip } from "@/hooks/useGeotabTrips";
+import { useGeotabFuelUsage, FuelRecord } from "@/hooks/useGeotabFuelUsage";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, Route, Gauge, ArrowUpDown, Play } from "lucide-react";
+import { Calendar, Clock, Route, Gauge, ArrowUpDown, Play, Fuel, PoundSterling } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TripDetailSheet } from "./TripDetailSheet";
 
@@ -20,6 +21,13 @@ function kmToMiles(km: number): number {
 
 function kmhToMph(kmh: number): number {
   return kmh * 0.621371;
+}
+
+function calcMpg(distKm: number, litres: number): number | null {
+  if (!litres || litres <= 0) return null;
+  const miles = distKm * 0.621371;
+  const gallons = litres * 0.219969;
+  return gallons > 0 ? Math.round((miles / gallons) * 10) / 10 : null;
 }
 
 function safeDate(val: string | number | null | undefined): Date | null {
@@ -43,7 +51,23 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
   const [selectedTrip, setSelectedTrip] = useState<GeotabTrip | null>(null);
 
   const { data, isLoading, error } = useGeotabTrips(instructorId, fromDate, toDate);
+  const { data: fuelData } = useGeotabFuelUsage(instructorId, fromDate, toDate);
   const navigate = useNavigate();
+
+  // Build a lookup map matching fuel records to trips by timestamp proximity (±60s)
+  const fuelLookup = useMemo(() => {
+    const map = new Map<string, FuelRecord>();
+    if (!fuelData?.records || !data?.trips) return map;
+    for (const trip of data.trips) {
+      const tripTime = new Date(trip.startTime).getTime();
+      const match = fuelData.records.find((r) => {
+        if (!r.trip_start) return false;
+        return Math.abs(new Date(r.trip_start).getTime() - tripTime) < 60000;
+      });
+      if (match) map.set(trip.id, match);
+    }
+    return map;
+  }, [data?.trips, fuelData?.records]);
 
   const toggleSort = (field: keyof GeotabTrip) => {
     if (sortField === field) {
@@ -165,11 +189,24 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                   </span>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">Idle</TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <span className="flex items-center gap-1">
+                    <Fuel className="h-3 w-3" /> MPG
+                  </span>
+                </TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <span className="flex items-center gap-1">
+                    <PoundSterling className="h-3 w-3" /> Cost
+                  </span>
+                </TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedTrips.map((trip) => (
+              {sortedTrips.map((trip) => {
+                const fuel = fuelLookup.get(trip.id);
+                const mpg = fuel ? calcMpg(fuel.distance_km ?? trip.distanceKm, fuel.fuel_used_litres ?? 0) : null;
+                return (
                 <TableRow key={trip.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedTrip(trip)}>
                   <TableCell className="font-medium text-xs">
                     {formatSafe(trip.startTime, "dd MMM yyyy")}
@@ -192,6 +229,12 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                   <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
                     {trip.idleMinutes}m
                   </TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell">
+                    {mpg != null ? `${mpg}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell">
+                    {fuel?.cost_gbp != null ? `£${fuel.cost_gbp.toFixed(2)}` : "—"}
+                  </TableCell>
                   <TableCell>
                     {trip.startLat && trip.startLng && (
                       <Button
@@ -208,7 +251,8 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -216,6 +260,7 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
 
       <TripDetailSheet
         trip={selectedTrip}
+        fuelRecord={selectedTrip ? fuelLookup.get(selectedTrip.id) ?? null : null}
         open={!!selectedTrip}
         onOpenChange={(open) => { if (!open) setSelectedTrip(null); }}
       />
