@@ -5,40 +5,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-import conceptA from "@/assets/hero-compact-A.png";
-import conceptB from "@/assets/hero-compact-B.png";
-import conceptC from "@/assets/hero-compact-C.png";
-import conceptD from "@/assets/hero-compact-D.png";
-import conceptE from "@/assets/hero-compact-E.png";
-import conceptF from "@/assets/hero-compact-F.png";
-import conceptG from "@/assets/hero-compact-G.png";
-import conceptH from "@/assets/hero-compact-H.png";
-import conceptI from "@/assets/hero-compact-I.png";
-import conceptJ from "@/assets/hero-compact-J.png";
-import conceptK from "@/assets/hero-compact-K.png";
-import conceptL from "@/assets/hero-compact-L.png";
-import conceptM from "@/assets/hero-compact-M.png";
-import conceptN from "@/assets/hero-compact-N.png";
-import conceptO from "@/assets/hero-compact-O.png";
-import conceptP from "@/assets/hero-compact-P.png";
+import conceptQ from "@/assets/hero-compact-Q.png";
+import conceptR from "@/assets/hero-compact-R.png";
+import conceptS from "@/assets/hero-compact-S.png";
+import conceptT from "@/assets/hero-compact-T.png";
+import conceptU from "@/assets/hero-compact-U.png";
 
 const concepts = [
-  { id: "A", title: "Stats Strip", description: "Greeting row + inline stat pills. No card — flat strip. ~110px.", image: conceptA },
-  { id: "B", title: "Mini Card", description: "Compact swipeable card with progress ring and inline stats. ~140px.", image: conceptB },
-  { id: "C", title: "Dashboard Strip", description: "Dense bar — avatar, large lesson count with arc, stacked stats. ~100px.", image: conceptC },
-  { id: "D", title: "Chip Row", description: "Avatar + name, then 4 horizontal stat chips. Swipeable. ~90px.", image: conceptD },
-  { id: "E", title: "Gauge Centre", description: "Speedometer gauge in centre, stats right. Period tabs. ~95px.", image: conceptE },
-  { id: "F", title: "Metric Boxes", description: "Floating card with 3 colour-accented metric boxes. ~105px.", image: conceptF },
-  { id: "G", title: "Big Numbers Grid", description: "Large bold numbers in grid boxes — lessons, £, hours, done. ~100px.", image: conceptG },
-  { id: "H", title: "Ring Trio", description: "Three coloured progress rings side by side — earnings, hours, done. ~110px.", image: conceptH },
-  { id: "I", title: "Progress Bar", description: "Segmented progress bar + summary line. Period tabs below. ~120px.", image: conceptI },
-  { id: "J", title: "Light Card", description: "White/light floating card with coloured left-border badges. Apple Health style. ~100px.", image: conceptJ },
-  { id: "K", title: "Numbers First", description: "Giant lesson count left, stacked stats centre, avatar right. Pure data. ~95px.", image: conceptK },
-  { id: "L", title: "Instrument Cluster", description: "Car dashboard gauge with stats and period tabs. Automotive feel. ~115px.", image: conceptL },
-  { id: "M", title: "Split Grid", description: "Left: Today + lessons. Right: 2×2 stats grid with avatar. ~105px.", image: conceptM },
-  { id: "N", title: "Glass Mini Cards", description: "Avatar row + horizontal scroll of glassmorphic stat cards. ~110px.", image: conceptN },
-  { id: "O", title: "Ticker Tape", description: "Single line greeting + scrolling stats ticker. Period dropdown. ~80px.", image: conceptO },
-  { id: "P", title: "Segmented Bar", description: "Greeting row + full-width segmented rectangle with 4 stat columns. ~110px.", image: conceptP },
+  { id: "Q", title: "White Summary Card", description: "Dark header with greeting, then a white card overlay with Today label, lesson count, progress ring, and colour-dot stats row. Clean contrast.", image: conceptQ },
+  { id: "R", title: "Metric Boxes + Tabs", description: "Three colour-accented white metric boxes (earned, hours, done with gauge) plus a Today/Week/Month/Year segmented selector. Action icons in header.", image: conceptR },
+  { id: "S", title: "Glass Card 3-Column", description: "Rounded dark header with glassmorphic card below. 3 columns: lessons count, progress ring, and stacked stats with coloured icons. Swipe dots.", image: conceptS },
+  { id: "T", title: "Widget Grid", description: "Four mini white tiles like Apple Watch complications — lessons with progress bar, £ earned, hours, and done ring. Compact and scannable.", image: conceptT },
+  { id: "U", title: "Ring + Legend", description: "Large progress ring on left showing 4/6, stacked stat legend on right with coloured dots (earned, worked, completed). Clean hierarchy.", image: conceptU },
 ];
 
 export default function HeroCompactDemo() {
@@ -115,7 +93,7 @@ export default function HeroCompactDemo() {
           className="rounded-xl bg-muted/50 border border-border/30 p-4 text-center"
         >
           <p className="text-xs text-muted-foreground">
-            You can also mix elements — e.g. "the stats strip from A with the progress ring from B"
+            You can also mix elements — e.g. "the ring from U with the metric boxes from R"
           </p>
         </motion.div>
       </div>
