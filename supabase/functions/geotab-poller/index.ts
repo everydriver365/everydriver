@@ -691,7 +691,132 @@ Deno.serve(async (req) => {
 
     if (shouldSyncMedia) {
       // timestamp updated via cron_sync_config upsert below
-      console.log("[GeotabPoller] Running media sync");
+    // ---- IMPACT DETECTION from ExceptionEvents ----
+    let impactsInserted = 0;
+    let pushSent = 0;
+
+    if (exceptionResults.length > 0) {
+      console.log("[GeotabPoller] Processing", exceptionResults.length, "exception events for impacts");
+
+      // Accelerometer-related rule name patterns
+      const impactRulePatterns = [
+        "accelerometer", "harsh", "impact", "collision", "accident",
+        "hard brake", "hard accel", "hard corner", "aggressive",
+      ];
+
+      for (const evt of exceptionResults) {
+        const ruleName = (evt.rule?.name || "").toLowerCase();
+        const isImpactRule = impactRulePatterns.some((p) => ruleName.includes(p));
+        if (!isImpactRule) continue;
+
+        // Find which device this belongs to
+        const evtDeviceId = evt.device?.id;
+        if (!evtDeviceId) continue;
+
+        let matchedDevice = deviceMap.get(evtDeviceId);
+        if (!matchedDevice) {
+          const serial = internalToSerial.get(evtDeviceId);
+          if (serial) matchedDevice = deviceMap.get(serial);
+        }
+        if (!matchedDevice) continue;
+
+        // Estimate G-force from rule name or use a default based on severity keywords
+        let gForce = 0;
+        const nameUpper = ruleName;
+        if (nameUpper.includes("collision") || nameUpper.includes("accident") || nameUpper.includes("impact")) {
+          gForce = 3.0;
+        } else if (nameUpper.includes("harsh") || nameUpper.includes("hard") || nameUpper.includes("aggressive")) {
+          gForce = 1.8;
+        } else if (nameUpper.includes("accelerometer")) {
+          gForce = 2.0;
+        }
+
+        // Get position from the device's current status
+        const deviceStatus = statusResults.find((s: any) => {
+          if (s.device?.id === evtDeviceId) return true;
+          const serial = internalToSerial.get(s.device?.id);
+          return serial && deviceMap.get(serial)?.id === matchedDevice!.id;
+        });
+
+        const lat = deviceStatus?.latitude || null;
+        const lng = deviceStatus?.longitude || null;
+        const speedKmh = deviceStatus?.speed || null;
+
+        const severity = gForce >= 3.0 ? "critical"
+          : gForce >= 2.0 ? "high"
+          : gForce >= 1.5 ? "medium"
+          : "low";
+
+        // Only insert if >= 1.5g
+        if (gForce < 1.5) continue;
+
+        const geotabEventId = evt.id || `${evtDeviceId}_${evt.activeFrom || new Date().toISOString()}`;
+
+        const { error: impactErr, data: impactData } = await supabase
+          .from("geotab_impact_events")
+          .upsert(
+            {
+              instructor_id: matchedDevice.instructor_id,
+              device_id: matchedDevice.id,
+              g_force: gForce,
+              latitude: lat,
+              longitude: lng,
+              speed_kmh: speedKmh,
+              event_time: evt.activeFrom || new Date().toISOString(),
+              severity,
+              acknowledged: false,
+              geotab_event_id: geotabEventId,
+            },
+            { onConflict: "geotab_event_id", ignoreDuplicates: true }
+          )
+          .select("id")
+          .maybeSingle();
+
+        if (!impactErr && impactData) {
+          impactsInserted++;
+
+          // Send push notification for critical impacts (>= 2.0g)
+          if (gForce >= 2.0) {
+            const speedMph = speedKmh ? Math.round(speedKmh * 0.621371) : null;
+            let roadName = "unknown location";
+            if (lat && lng) {
+              const rn = await reverseGeocode(lat, lng);
+              if (rn) roadName = rn;
+            }
+
+            const body = speedMph
+              ? `${gForce.toFixed(1)}g impact detected at ${speedMph} mph near ${roadName}`
+              : `${gForce.toFixed(1)}g impact detected near ${roadName}`;
+
+            try {
+              await supabase.functions.invoke("send-push-notification", {
+                body: {
+                  instructorId: matchedDevice.instructor_id,
+                  notification: {
+                    title: "⚠️ Impact Alert",
+                    body,
+                    tag: "impact_alert",
+                    requireInteraction: true,
+                    data: {
+                      url: "/instructor/geotab",
+                      type: "impact_alert",
+                      eventId: impactData.id,
+                    },
+                  },
+                },
+              });
+              pushSent++;
+              console.log("[GeotabPoller] Push notification sent for", gForce.toFixed(1), "g impact");
+            } catch (pushErr) {
+              console.error("[GeotabPoller] Push notification failed:", pushErr);
+            }
+          }
+        }
+      }
+    }
+
+    console.log("[GeotabPoller] Impact detection:", exceptionResults.length, "events checked,", impactsInserted, "impacts inserted,", pushSent, "push notifications sent");
+
 
       // Fetch driver map only during media sync (not every poll)
       const driverMap = new Map<string, string>();
