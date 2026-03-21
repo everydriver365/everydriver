@@ -79,23 +79,6 @@ async function geotabCall(
   return data.result;
 }
 
-// Well-known Geotab diagnostic IDs for engine sensors
-const DIAGNOSTIC_MAP: Record<string, { id: string; label: string; unit: string }> = {
-  rpm: { id: "DiagnosticEngineSpeedId", label: "Engine RPM", unit: "rpm" },
-  throttle: { id: "DiagnosticThrottlePositionId", label: "Throttle Position", unit: "%" },
-  oilPressure: { id: "DiagnosticEngineOilPressureId", label: "Oil Pressure", unit: "kPa" },
-  coolantTemp: { id: "DiagnosticCoolantTemperatureId", label: "Coolant Temp", unit: "°C" },
-  fuelLevel: { id: "DiagnosticFuelLevelId", label: "Fuel Level", unit: "%" },
-  batteryVoltage: { id: "DiagnosticBatteryVoltageId", label: "Battery Voltage", unit: "V" },
-  brakePedal: { id: "DiagnosticBrakePedalPositionId", label: "Brake Pedal", unit: "%" },
-  seatbelt: { id: "DiagnosticSeatbeltId", label: "Seatbelt", unit: "on/off" },
-  tyrePressure: { id: "DiagnosticTirePressureId", label: "Tyre Pressure", unit: "kPa" },
-  ambientTemp: { id: "DiagnosticExternalTemperatureId", label: "Ambient Temp", unit: "°C" },
-  odometer: { id: "DiagnosticOdometerReadingId", label: "Odometer", unit: "km" },
-  engineHours: { id: "DiagnosticEngineHoursId", label: "Engine Hours", unit: "hrs" },
-  reverseGear: { id: "DiagnosticTransmissionCurrentGearId", label: "Current Gear", unit: "gear" },
-};
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -127,9 +110,8 @@ Deno.serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
-    const { instructorId, fromDate, toDate, diagnostics } = await req.json();
+    const { instructorId, fromDate, toDate } = await req.json();
 
-    // Resolve instructor
     let targetInstructorId = instructorId;
     if (!targetInstructorId) {
       const { data: inst } = await supabase
@@ -147,7 +129,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get Geotab devices
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -163,74 +144,69 @@ Deno.serve(async (req) => {
     if (devErr) throw devErr;
     if (!devices || devices.length === 0) {
       return new Response(
-        JSON.stringify({ series: [], message: "No Geotab devices" }),
+        JSON.stringify({ faults: [], message: "No Geotab devices" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const session = await authenticate();
 
-    // Resolve serial numbers to internal IDs
     const geotabDevices = await geotabCall(session, "Get", { typeName: "Device" });
     const serialToInternal = new Map<string, string>();
     for (const gd of geotabDevices || []) {
       if (gd.serialNumber) serialToInternal.set(gd.serialNumber, gd.id);
     }
 
-    const from = fromDate || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const from = fromDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const to = toDate || new Date().toISOString();
 
-    // Which diagnostics to fetch (default: rpm, throttle, oilPressure)
-    const requestedDiags: string[] = diagnostics && diagnostics.length > 0
-      ? diagnostics
-      : ["rpm", "throttle", "oilPressure"];
+    const faults: Array<{
+      code: string;
+      description: string;
+      severity: string;
+      dateTime: string;
+      deviceName: string;
+      source: string;
+    }> = [];
 
-    const series: Record<string, { label: string; unit: string; data: { time: string; value: number }[] }> = {};
+    for (const device of devices) {
+      const internalId =
+        serialToInternal.get(device.geotab_device_id) || device.geotab_device_id;
 
-    for (const diagKey of requestedDiags) {
-      const diagInfo = DIAGNOSTIC_MAP[diagKey];
-      if (!diagInfo) continue;
+      try {
+        const faultData = await geotabCall(session, "Get", {
+          typeName: "FaultData",
+          search: {
+            deviceSearch: { id: internalId },
+            fromDate: from,
+            toDate: to,
+          },
+          resultsLimit: 500,
+        });
 
-      series[diagKey] = { label: diagInfo.label, unit: diagInfo.unit, data: [] };
-
-      for (const device of devices) {
-        const internalId =
-          serialToInternal.get(device.geotab_device_id) || device.geotab_device_id;
-
-        try {
-          const statusData = await geotabCall(session, "Get", {
-            typeName: "StatusData",
-            search: {
-              deviceSearch: { id: internalId },
-              diagnosticSearch: { id: diagInfo.id },
-              fromDate: from,
-              toDate: to,
-            },
-            resultsLimit: 2000,
+        for (const fd of faultData || []) {
+          faults.push({
+            code: fd.diagnostic?.code || fd.id || "Unknown",
+            description: fd.diagnostic?.name || fd.name || "Unknown fault",
+            severity: fd.failureModeId?.name === "Critical" ? "high" :
+                      fd.failureModeId?.name === "Warning" ? "medium" : "low",
+            dateTime: fd.dateTime || fd.date || null,
+            deviceName: device.device_name || device.geotab_device_id,
+            source: fd.diagnostic?.source?.name || "Engine",
           });
-
-          for (const sd of statusData || []) {
-            series[diagKey].data.push({
-              time: sd.dateTime || sd.date || null,
-              value: sd.data ?? 0,
-            });
-          }
-        } catch (e) {
-          console.warn(`[geotab-status-data] Failed to fetch ${diagKey} for device ${internalId}:`, e.message);
         }
+      } catch (e) {
+        console.warn(`[geotab-fault-data] Failed for device ${internalId}:`, e.message);
       }
-
-      // Sort by time
-      series[diagKey].data.sort(
-        (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
-      );
     }
 
-    return new Response(JSON.stringify({ series }), {
+    faults.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+
+    return new Response(JSON.stringify({ faults }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("[geotab-status-data] Error:", err);
+    console.error("[geotab-fault-data] Error:", err);
     return new Response(
       JSON.stringify({ error: err.message || "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

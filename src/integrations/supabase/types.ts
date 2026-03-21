@@ -3371,6 +3371,70 @@ export type Database = {
           },
         ]
       }
+      geotab_fault_codes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          detected_at: string
+          device_id: string | null
+          fault_code: string
+          id: string
+          instructor_id: string | null
+          is_active: boolean | null
+          resolved_at: string | null
+          severity: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          detected_at: string
+          device_id?: string | null
+          fault_code: string
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          detected_at?: string
+          device_id?: string | null
+          fault_code?: string
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geotab_fault_codes_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_fault_codes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geotab_fault_codes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geotab_fuel_usage: {
         Row: {
           cost_gbp: number | null

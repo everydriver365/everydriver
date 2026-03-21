@@ -7,7 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { GeotabTripHistory } from "@/components/instructor/geotab/GeotabTripHistory";
 import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
-import { Satellite, Route, Camera } from "lucide-react";
+import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
+import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
+import { Satellite, Route, Camera, CircleDot, Wrench, ShieldAlert, Gauge } from "lucide-react";
 
 interface DeviceStats {
   total: number;
@@ -135,6 +139,18 @@ export function AdminGeotabFleet() {
           <TabsTrigger value="dashcam" className="gap-1">
             <Camera className="h-3 w-3" /> Dashcam
           </TabsTrigger>
+          <TabsTrigger value="diagnostics" className="gap-1">
+            <CircleDot className="h-3 w-3" /> Sensors
+          </TabsTrigger>
+          <TabsTrigger value="faults" className="gap-1">
+            <Wrench className="h-3 w-3" /> Faults
+          </TabsTrigger>
+          <TabsTrigger value="behaviour" className="gap-1">
+            <ShieldAlert className="h-3 w-3" /> Behaviour
+          </TabsTrigger>
+          <TabsTrigger value="speeding" className="gap-1">
+            <Gauge className="h-3 w-3" /> Speeding
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="devices" className="mt-4">
@@ -194,6 +210,125 @@ export function AdminGeotabFleet() {
                 instructorId={selectedInstructor !== "all" ? selectedInstructor : undefined}
                 showAllInstructors={selectedInstructor === "all"}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="diagnostics" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Fleet Diagnostics</CardTitle>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Instructors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Instructors</SelectItem>
+                    {instructors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedInstructor !== "all" ? (
+                <GeotabExtendedDiagnosticsTab instructorId={selectedInstructor} />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Select an instructor to view their sensor diagnostics.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="faults" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Fleet Fault Codes</CardTitle>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Instructors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Instructors</SelectItem>
+                    {instructors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedInstructor !== "all" ? (
+                <GeotabFaultCodesTab instructorId={selectedInstructor} />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Select an instructor to view their vehicle fault codes.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="behaviour" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Driver Behaviour</CardTitle>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Instructors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Instructors</SelectItem>
+                    {instructors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedInstructor !== "all" ? (
+                <GeotabDriverBehaviourTab />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Select an instructor to view their driving behaviour scores.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="speeding" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Contextual Speeding</CardTitle>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Instructors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Instructors</SelectItem>
+                    {instructors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedInstructor !== "all" ? (
+                <GeotabContextualSpeedTab instructorId={selectedInstructor} />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Select an instructor to view contextual speeding events.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
