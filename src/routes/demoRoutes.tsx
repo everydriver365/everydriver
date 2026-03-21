@@ -33,6 +33,7 @@ const DemoKenDHeroRedesigns = lazy(() => import("@/pages/demo/DemoKenDHeroRedesi
 const DemoMobileBookingUX = lazy(() => import("@/pages/demo/DemoMobileBookingUX"));
 const DemoKenDMobileHeroes = lazy(() => import("@/pages/demo/DemoKenDMobileHeroes"));
 const DemoTomorrowTileDesigns = lazy(() => import("@/pages/demo/DemoTomorrowTileDesigns"));
+const DemoTelematicsRedesign = lazy(() => import("@/pages/demo/DemoTelematicsRedesign"));
 
 // Instructor portal demo routes
 const NextUpTileDemo = lazy(() => import("@/pages/instructor/NextUpTileDemo"));
