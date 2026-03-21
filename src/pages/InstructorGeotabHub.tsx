@@ -24,6 +24,9 @@ import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalle
 import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
 import { GeotabFuelTab } from "@/components/instructor/geotab/GeotabFuelTab";
 import { GeotabImpactTab } from "@/components/instructor/geotab/GeotabImpactTab";
+import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
+import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
 
 
 export default function InstructorGeotabHub() {
