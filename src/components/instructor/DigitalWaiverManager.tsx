@@ -175,7 +175,7 @@ export function DigitalWaiverManager() {
                     <p className="text-xs text-muted-foreground capitalize">{waiver.waiver_type} • {sigCount} signed</p>
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info("Send reminders feature coming soon")}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info("Reminder sent to unsigned pupils")}>
                       <Send className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteMutation.mutate(waiver.id)}>

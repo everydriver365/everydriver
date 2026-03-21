@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { useDemoMode } from "@/context/DemoModeContext";
-import { demoMonthlyGoals } from "@/data/demoData";
 
 interface MonthlyGoalData {
   lessonsThisMonth: number;
@@ -11,12 +9,9 @@ interface MonthlyGoalData {
 }
 
 export function useMonthlyGoals(instructorId: string | undefined) {
-  const { isDemoMode } = useDemoMode();
-
   return useQuery({
-    queryKey: ["monthly-goals", instructorId, isDemoMode],
+    queryKey: ["monthly-goals", instructorId],
     queryFn: async (): Promise<MonthlyGoalData> => {
-      if (isDemoMode) return demoMonthlyGoals;
       if (!instructorId) {
         return { lessonsThisMonth: 0, lessonsCompleted: 0, lessonsScheduled: 0 };
       }

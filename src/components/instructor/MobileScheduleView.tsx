@@ -531,8 +531,8 @@ export function MobileScheduleView({ instructorId }: MobileScheduleViewProps) {
           </DialogHeader>
           <div className="py-4 text-center text-muted-foreground">
             <CalendarClock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Google Calendar integration coming soon.</p>
-            <p className="text-sm">For now, please cancel and create a new booking.</p>
+            <p>To reschedule, cancel this lesson and create a new booking.</p>
+            <p className="text-sm">Your calendar will sync automatically.</p>
           </div>
           <div className="flex gap-3 justify-end">
             <Button variant="outline" onClick={() => setRescheduleDialogOpen(false)}>

@@ -95,7 +95,7 @@ export default function InstructorDomainsManagement() {
   };
 
   const handleRenewDomain = (domain: DomainOrder) => {
-    toast.info(`Renewal for ${domain.domain_name}${domain.tld} coming soon`);
+    toast.info(`Contact support to renew ${domain.domain_name}${domain.tld}`);
   };
 
   const handleLinkDomain = (domain: DomainOrder) => {
@@ -103,11 +103,11 @@ export default function InstructorDomainsManagement() {
   };
 
   const handleManageHosting = (hosting: HostingOrder) => {
-    toast.info(`Hosting management for ${hosting.domain_name} coming soon`);
+    toast.info(`Contact support to manage hosting for ${hosting.domain_name}`);
   };
 
   const handleUpgradeHosting = (hosting: HostingOrder) => {
-    toast.info(`Upgrade options for ${hosting.domain_name} coming soon`);
+    toast.info(`Contact support to upgrade hosting for ${hosting.domain_name}`);
   };
 
   if (authLoading) {
@@ -314,7 +314,7 @@ export default function InstructorDomainsManagement() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex-col gap-2"
-                onClick={() => toast.info("DNS management coming soon")}
+                onClick={() => toast.info("Contact support for DNS management")}
               >
                 <Server className="h-5 w-5" />
                 <span>DNS Settings</span>

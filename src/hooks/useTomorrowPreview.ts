@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays } from "date-fns";
-import { useDemoMode } from "@/context/DemoModeContext";
-import { demoTomorrowPreview } from "@/data/demoData";
 
 interface TomorrowLesson {
   id: string;
@@ -26,37 +24,16 @@ interface TomorrowPreviewData {
 export function useTomorrowPreview(instructorId: string | undefined) {
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
-  const { isDemoMode } = useDemoMode();
-
   return useQuery({
-    queryKey: ["tomorrow-preview", instructorId, tomorrow, isDemoMode],
+    queryKey: ["tomorrow-preview", instructorId, tomorrow],
     queryFn: async (): Promise<TomorrowPreviewData> => {
-      if (isDemoMode) return demoTomorrowPreview;
       if (!instructorId) {
-        return {
-          lessonCount: 0,
-          totalHours: 0,
-          expectedEarnings: 0,
-          firstLessonTime: null,
-          lastLessonTime: null,
-          lessons: [],
-          hasGaps: false,
-        };
+        return { lessonCount: 0, totalHours: 0, expectedEarnings: 0, firstLessonTime: null, lastLessonTime: null, lessons: [], hasGaps: false };
       }
 
       const { data: lessons, error } = await supabase
         .from("scheduled_lessons")
-        .select(`
-          id,
-          start_time,
-          duration_minutes,
-          pickup_postcode,
-          pupils!inner (
-            name,
-            phone,
-            postcode
-          )
-        `)
+        .select(`id, start_time, duration_minutes, pickup_postcode, pupils!inner (name, phone, postcode)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", tomorrow)
         .neq("status", "cancelled")
@@ -64,27 +41,19 @@ export function useTomorrowPreview(instructorId: string | undefined) {
 
       if (error) throw error;
 
-      // Get hourly rate
       const { data: instructor } = await supabase
-        .from("instructors")
-        .select("hourly_rate")
-        .eq("id", instructorId)
-        .maybeSingle();
+        .from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle();
 
       const hourlyRate = instructor?.hourly_rate || 35;
       const totalMinutes = lessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const totalHours = totalMinutes / 60;
 
-      // Check for gaps > 1 hour between lessons
       let hasGaps = false;
       if (lessons && lessons.length > 1) {
         for (let i = 1; i < lessons.length; i++) {
           const prevEnd = addMinutesToTime(lessons[i - 1].start_time, lessons[i - 1].duration_minutes || 60);
           const currStart = lessons[i].start_time;
-          if (getMinutesDifference(prevEnd, currStart) > 60) {
-            hasGaps = true;
-            break;
-          }
+          if (getMinutesDifference(prevEnd, currStart) > 60) { hasGaps = true; break; }
         }
       }
 
@@ -106,7 +75,7 @@ export function useTomorrowPreview(instructorId: string | undefined) {
       };
     },
     enabled: !!instructorId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }
 

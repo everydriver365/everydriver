@@ -1,14 +1,32 @@
 import { Users, GraduationCap, TrendingUp, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-
-const stats = [
-  { icon: Users, value: "500+", label: "Active Instructors" },
-  { icon: GraduationCap, value: "12,000+", label: "Pupils Managed" },
-  { icon: TrendingUp, value: "87%", label: "First-Time Pass Rate" },
-  { icon: Zap, value: "50+", label: "Built-In Features" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function StatsBar() {
+  const { data } = useQuery({
+    queryKey: ["public-stats"],
+    queryFn: async () => {
+      const [instructorsRes, pupilsRes] = await Promise.all([
+        supabase.from("instructors").select("id", { count: "exact", head: true }).eq("is_active", true),
+        supabase.from("pupils").select("id", { count: "exact", head: true }),
+      ]);
+
+      return {
+        instructors: instructorsRes.count || 0,
+        pupils: pupilsRes.count || 0,
+      };
+    },
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const stats = [
+    { icon: Users, value: data ? `${data.instructors}+` : "—", label: "Active Instructors" },
+    { icon: GraduationCap, value: data ? `${data.pupils.toLocaleString()}+` : "—", label: "Pupils Managed" },
+    { icon: TrendingUp, value: "87%", label: "First-Time Pass Rate" },
+    { icon: Zap, value: "50+", label: "Built-In Features" },
+  ];
+
   return (
     <section className="bg-secondary/50 border-y border-border">
       <div className="container py-8">
