@@ -266,6 +266,7 @@ export default function InstructorMiniWebsiteSettings() {
               instructorSlug={authInstructor?.app_slug || null}
               logoUrl={authInstructor?.logo_url || null}
               brandColour={authInstructor?.brand_colour || null}
+              customDomain={authInstructor?.custom_domain || null}
             />
           </TabsContent>
 
