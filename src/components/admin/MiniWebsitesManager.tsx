@@ -211,7 +211,7 @@ export function MiniWebsitesManager() {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Instructor</TableHead>
-              <TableHead>Slug / URL</TableHead>
+              <TableHead>Drive365 Subdomain</TableHead>
               <TableHead>Custom Domain</TableHead>
               <TableHead className="text-center">Theme</TableHead>
               <TableHead className="text-center">Status</TableHead>
@@ -252,18 +252,19 @@ export function MiniWebsitesManager() {
                   </TableCell>
                   <TableCell>
                     {site.app_slug ? (
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          /i/{site.app_slug}
+                      <div className="flex flex-col gap-0.5">
+                        <code className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-mono">
+                          {getDrive365Subdomain(site.app_slug)}
                         </code>
                         <a
-                          href={getWebsiteUrl(site.app_slug, null) || "#"}
+                          href={`https://${getDrive365Subdomain(site.app_slug)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground"
+                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ExternalLink className="h-3 w-3" />
+                          Visit
                         </a>
                       </div>
                     ) : (
@@ -271,7 +272,7 @@ export function MiniWebsitesManager() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {site.custom_domain ? (
+                    {site.custom_domain && !site.custom_domain.endsWith('.drive365.co.uk') ? (
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{site.custom_domain}</span>
@@ -284,7 +285,7 @@ export function MiniWebsitesManager() {
                     ) : (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Link2 className="h-3 w-3" />
-                        No domain
+                        No custom domain
                       </span>
                     )}
                   </TableCell>
