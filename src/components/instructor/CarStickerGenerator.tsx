@@ -23,14 +23,17 @@ export function CarStickerGenerator({
   instructorSlug,
   logoUrl,
   brandColour,
+  customDomain,
 }: CarStickerGeneratorProps) {
   const [tagline, setTagline] = useState("Book your driving lessons today!");
   const [stickerSize, setStickerSize] = useState<"a5" | "a6">("a6");
   const [generating, setGenerating] = useState(false);
 
-  const bookingUrl = instructorSlug
-    ? `${window.location.origin}/i/${instructorSlug}`
-    : null;
+  const bookingUrl = customDomain
+    ? `https://${customDomain}`
+    : instructorSlug
+      ? `${window.location.origin}/i/${instructorSlug}`
+      : null;
 
   const generateSticker = async () => {
     setGenerating(true);
