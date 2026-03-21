@@ -314,7 +314,11 @@ export default function InstructorOnboarding() {
     
     setSaving(true);
     try {
-      // Final save with onboarding complete timestamp
+      // Generate the drive365 subdomain from the slug
+      const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const drive365Subdomain = `${slug}.drive365.co.uk`;
+
+      // Final save with onboarding complete timestamp + auto-generated subdomain
       const { error } = await supabase
         .from("instructors")
         .update({
@@ -328,6 +332,9 @@ export default function InstructorOnboarding() {
           car_make: data.car_make,
           car_model: data.car_model,
           hourly_rate: data.hourly_rate,
+          app_slug: slug,
+          custom_domain: drive365Subdomain,
+          custom_domain_verified: false,
         })
         .eq("id", instructorId);
 
@@ -356,7 +363,6 @@ export default function InstructorOnboarding() {
 
         if (domainError) {
           console.error("Failed to save domain order:", domainError);
-          // Don't block completion, just log the error
         }
       }
       

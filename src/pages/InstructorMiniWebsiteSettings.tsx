@@ -85,36 +85,59 @@ export default function InstructorMiniWebsiteSettings() {
         {/* Quick Stats / Info Card */}
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Globe className="h-5 w-5 text-primary" />
+            <div className="flex flex-col gap-4">
+              {/* Drive365 Subdomain */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Globe className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Your Drive365 Website</p>
+                    {authInstructor?.app_slug ? (
+                      <p className="text-sm text-primary font-mono">
+                        {authInstructor.app_slug}.drive365.co.uk
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Setting up...</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Your Website URL</p>
-                  {authInstructor?.app_slug ? (
-                    <p className="text-sm text-muted-foreground">
-                      {baseUrl}/i/{authInstructor.app_slug}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Setting up...</p>
-                  )}
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="website-visibility"
+                      checked={authInstructor?.is_active ?? false}
+                      onCheckedChange={handleVisibilityToggle}
+                      disabled={updatingVisibility}
+                    />
+                    <Label htmlFor="website-visibility" className="text-sm">
+                      {authInstructor?.is_active ? "Visible" : "Hidden"}
+                    </Label>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="website-visibility"
-                    checked={authInstructor?.is_active ?? false}
-                    onCheckedChange={handleVisibilityToggle}
-                    disabled={updatingVisibility}
-                  />
-                  <Label htmlFor="website-visibility" className="text-sm">
-                    {authInstructor?.is_active ? "Visible" : "Hidden"}
-                  </Label>
+
+              {/* Custom Domain (if set and not the drive365 subdomain) */}
+              {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.drive365.co.uk') && (
+                <div className="flex items-center gap-3 pt-3 border-t border-primary/10">
+                  <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Globe className="h-5 w-5 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Custom Domain</p>
+                    <p className="text-sm font-mono">{authInstructor.custom_domain}</p>
+                  </div>
+                  <div className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${
+                    authInstructor.custom_domain_verified 
+                      ? 'bg-green-500/10 text-green-600' 
+                      : 'bg-orange-500/10 text-orange-600'
+                  }`}>
+                    {authInstructor.custom_domain_verified ? '✓ Verified' : '⏳ Pending'}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -284,13 +307,13 @@ export default function InstructorMiniWebsiteSettings() {
                 </div>
 
                 <div className="rounded-lg border p-4 bg-muted/30">
-                  <h4 className="font-medium mb-2">Website URL</h4>
+                  <h4 className="font-medium mb-2">Drive365 Website URL</h4>
                   <p className="text-sm text-muted-foreground mb-3">
-                    This is your unique website address that you can share with students.
+                    This is your free Drive365 subdomain that you can share with students.
                   </p>
                   {authInstructor?.app_slug && (
-                    <code className="block bg-background p-2 rounded text-sm">
-                      {baseUrl}/i/{authInstructor.app_slug}
+                    <code className="block bg-background p-2 rounded text-sm font-mono text-primary">
+                      {authInstructor.app_slug}.drive365.co.uk
                     </code>
                   )}
                 </div>
@@ -299,13 +322,26 @@ export default function InstructorMiniWebsiteSettings() {
                   <h4 className="font-medium mb-2">
                     Custom Domain
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Want your own domain like <strong>www.yourname.co.uk</strong>? 
-                    Visit the Domains section to purchase and link a custom domain.
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="/instructor/domains">Manage Domains</a>
-                  </Button>
+                  {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.drive365.co.uk') ? (
+                    <div className="space-y-2">
+                      <code className="block bg-background p-2 rounded text-sm font-mono">
+                        {authInstructor.custom_domain}
+                      </code>
+                      <p className={`text-sm ${authInstructor.custom_domain_verified ? 'text-green-600' : 'text-orange-600'}`}>
+                        {authInstructor.custom_domain_verified ? '✓ Domain verified' : '⏳ Pending verification'}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Want your own domain like <strong>www.yourname.co.uk</strong>? 
+                        Visit the Domains section to purchase and link a custom domain.
+                      </p>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="/instructor/domains">Manage Domains</a>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

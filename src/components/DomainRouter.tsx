@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
+const DRIVE365_BASE_DOMAIN = "drive365.co.uk";
 const BOOKING_SUBDOMAIN = "bookings.drive365.co.uk";
 
 // Routes that belong to instructors (hosted on everydriver.co.uk)
@@ -75,6 +76,14 @@ export function getInstructorSubdomain(): string | null {
   // Check custom domain mappings first
   if (CUSTOM_DOMAIN_SLUGS[hostname]) {
     return CUSTOM_DOMAIN_SLUGS[hostname];
+  }
+  
+  // Check if it's a drive365 subdomain (e.g. jane-smith.drive365.co.uk)
+  if (hostname.endsWith(`.${DRIVE365_BASE_DOMAIN}`)) {
+    const subdomain = hostname.replace(`.${DRIVE365_BASE_DOMAIN}`, "");
+    if (subdomain && subdomain !== "www" && subdomain !== "bookings") {
+      return subdomain;
+    }
   }
   
   // Check if it's an everydriver subdomain
