@@ -42,8 +42,7 @@ export default function HomepageRedesignDemo() {
               </h1>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
-                Manage your lessons, track payments, and grow your business — all from one app. 
-                Free forever, no credit card required.
+                Manage your lessons, track payments, and grow your business — all from one app.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
