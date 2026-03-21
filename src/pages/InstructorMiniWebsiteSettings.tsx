@@ -72,9 +72,9 @@ export default function InstructorMiniWebsiteSettings() {
             </p>
           </div>
           
-          {authInstructor?.app_slug && (
+          {websiteUrl && (
             <a
-              href={`${baseUrl}/i/${authInstructor.app_slug}`}
+              href={websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
