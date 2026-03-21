@@ -4,17 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Car, Activity, ParkingCircle, Gauge, TrendingUp, Clock, Route, Zap,
-  ShieldAlert, Wrench, Fuel, ChevronRight, Play, Thermometer,
+  ShieldAlert, Wrench, Fuel, ChevronRight, Play, Thermometer, Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDriverTimesheets } from "@/hooks/useDriverTimesheets";
 import { TrackedLessons } from "./TrackedLessons";
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { format, subDays } from "date-fns";
+import { format, subDays, formatDistanceToNow } from "date-fns";
+import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
+import { useQuery } from "@tanstack/react-query";
 
 interface FleetDashboardProps {
   instructorId: string;
+  onTabChange?: (tab: string) => void;
 }
 
 interface DeviceStatus {
@@ -42,7 +45,14 @@ function getVehicleState(device: DeviceStatus): VehicleState {
 
 const kmToMiles = (km: number) => +(km * 0.621371).toFixed(1);
 
-export function FleetDashboard({ instructorId }: FleetDashboardProps) {
+function getScoreColor(score: number | null): string {
+  if (score === null) return "hsl(var(--muted-foreground))";
+  if (score >= 80) return "hsl(var(--success))";
+  if (score >= 60) return "hsl(var(--warning))";
+  return "hsl(var(--destructive))";
+}
+
+export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProps) {
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"day" | "week" | "month">("week");
@@ -53,6 +63,31 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
   const fromDate = useMemo(() => subDays(new Date(), rangeDays), [rangeDays]);
   const toDate = useMemo(() => new Date(), [rangeDays]);
   const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
+
+  // Live driver score from geotab events
+  const { data: driverData } = useGeotabDriverEvents(instructorId, fromDate, toDate);
+  const driverScore = driverData?.scores?.overall ?? null;
+
+  // Live speeding event count
+  const { data: speedingCount } = useQuery({
+    queryKey: ["speeding-count", instructorId, fromDate.toISOString()],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("telematics_alerts")
+        .select("*", { count: "exact", head: true })
+        .eq("alert_type", "speeding")
+        .gte("created_at", fromDate.toISOString())
+        .in("telematics_id", (await supabase
+          .from("lesson_telematics")
+          .select("id")
+          .eq("instructor_id", instructorId)
+        ).data?.map(t => t.id) || []);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!instructorId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     async function fetchMileage() {
@@ -114,24 +149,45 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
     );
   }
 
-  // Determine primary device for hero strip
+  // Empty state for instructors with no devices
+  if (devices.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <Radio className="h-12 w-12 text-muted-foreground/30 mb-3" />
+        <p className="text-foreground font-semibold">No GPS tracker connected</p>
+        <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+          Connect a GPS device in Settings → GPS Tracking to see live vehicle data, mileage, and driver scores.
+        </p>
+      </div>
+    );
+  }
+
   const primaryDevice = devices[0];
   const primaryState = primaryDevice ? getVehicleState(primaryDevice) : "parked";
 
-  // Simulated driver score (would come from real data)
-  const driverScore = 87;
+  const scoreColor = getScoreColor(driverScore);
+  const scoreValue = driverScore ?? 0;
+  const scoreDisplay = driverScore !== null ? `${driverScore}` : "—";
 
   const journeyItems = [
-    { icon: Route, label: "Total Miles", value: `${totalMiles.toFixed(0)} mi`, sub: `${avgDailyMiles} mi/day avg`, positive: true },
-    { icon: Clock, label: "Drive Time", value: `${(totalDrivingMins / 60).toFixed(1)} hrs`, sub: `${totalTrips} trips`, positive: true },
-    { icon: Play, label: "Fleet Vehicles", value: `${devices.length}`, sub: `${statusCounts.moving} active now`, positive: true },
+    { icon: Route, label: "Total Miles", value: `${totalMiles.toFixed(0)} mi`, sub: `${avgDailyMiles} mi/day avg`, positive: true, tab: null },
+    { icon: Clock, label: "Drive Time", value: `${(totalDrivingMins / 60).toFixed(1)} hrs`, sub: `${totalTrips} trips`, positive: true, tab: null },
+    { icon: Play, label: "Fleet Vehicles", value: `${devices.length}`, sub: `${statusCounts.moving} active now`, positive: true, tab: null },
   ];
 
+  const speedingValue = speedingCount != null ? `${speedingCount}` : "—";
+  const speedingPositive = speedingCount != null ? speedingCount === 0 : true;
+
   const safetyItems = [
-    { icon: ShieldAlert, label: "Driver Score", value: `${driverScore}/100`, sub: "", positive: true },
-    { icon: Gauge, label: "Speeding Events", value: "—", sub: "View speeding tab", positive: true },
-    { icon: Zap, label: "Utilisation", value: `${devices.length > 0 ? Math.round(((statusCounts.moving + statusCounts.idle) / devices.length) * 100) : 0}%`, sub: "vehicles in use", positive: true },
+    { icon: ShieldAlert, label: "Driver Score", value: driverScore !== null ? `${driverScore}/100` : "—", sub: driverScore !== null ? (driverScore >= 80 ? "Good" : driverScore >= 60 ? "Needs attention" : "Poor") : "No data", positive: driverScore !== null ? driverScore >= 60 : true, tab: "behaviour" },
+    { icon: Gauge, label: "Speeding Events", value: speedingValue, sub: speedingCount === 0 ? "No events" : "View details", positive: speedingPositive, tab: "speeding" },
+    { icon: Zap, label: "Utilisation", value: `${devices.length > 0 ? Math.round(((statusCounts.moving + statusCounts.idle) / devices.length) * 100) : 0}%`, sub: "vehicles in use", positive: true, tab: null },
   ];
+
+  // Last seen timestamp for primary device
+  const lastSeenText = primaryDevice?.last_seen_at
+    ? formatDistanceToNow(new Date(primaryDevice.last_seen_at), { addSuffix: true })
+    : null;
 
   return (
     <div className="space-y-5">
@@ -161,15 +217,17 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
             <circle
               cx="50" cy="50" r="42"
               fill="none"
-              stroke="hsl(var(--success))"
+              stroke={scoreColor}
               strokeWidth="8"
               strokeLinecap="round"
-              strokeDasharray={`${driverScore * 2.64} ${264}`}
-              className="transition-all duration-700"
+              strokeDasharray={`${scoreValue * 2.64} ${264}`}
+              style={{
+                transition: "stroke-dasharray 1s ease-out, stroke 0.5s ease",
+              }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-2xl font-bold text-foreground">{driverScore}</p>
+            <p className="text-2xl font-bold text-foreground">{scoreDisplay}</p>
             <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Score</p>
           </div>
         </div>
@@ -209,6 +267,7 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
                 : primaryState === "idle" ? "Engine on" : "Parked"
               }
               {primaryDevice.last_road_name ? ` · ${primaryDevice.last_road_name}` : ""}
+              {lastSeenText ? ` · ${lastSeenText}` : ""}
             </p>
           </div>
           <Badge
@@ -229,7 +288,9 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
       <CategorySection title="Journey" items={journeyItems} />
 
       {/* ── Category: Safety & Performance ── */}
-      <CategorySection title="Safety & Performance" items={safetyItems} />
+      <CategorySection title="Safety & Performance" items={safetyItems} onItemClick={(tab) => {
+        if (tab && onTabChange) onTabChange(tab);
+      }} />
 
       {/* ── Category: Vehicles ── */}
       {devices.length > 0 && (
@@ -323,9 +384,10 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
 }
 
 /* ── Reusable category section ── */
-function CategorySection({ title, items }: {
+function CategorySection({ title, items, onItemClick }: {
   title: string;
-  items: Array<{ icon: React.ElementType; label: string; value: string; sub: string; positive: boolean }>;
+  items: Array<{ icon: React.ElementType; label: string; value: string; sub: string; positive: boolean; tab?: string | null }>;
+  onItemClick?: (tab: string | null) => void;
 }) {
   return (
     <div>
@@ -334,7 +396,14 @@ function CategorySection({ title, items }: {
       </p>
       <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
         {items.map(item => (
-          <div key={item.label} className="flex items-center gap-3 px-4 py-3">
+          <div
+            key={item.label}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3",
+              item.tab && onItemClick ? "cursor-pointer active:bg-muted/30 transition-colors" : ""
+            )}
+            onClick={() => item.tab && onItemClick?.(item.tab)}
+          >
             <div className={cn(
               "h-9 w-9 rounded-xl flex items-center justify-center",
               item.positive ? "bg-success/10" : "bg-destructive/10"
@@ -346,7 +415,7 @@ function CategorySection({ title, items }: {
               {item.sub && <p className="text-[10px] text-muted-foreground">{item.sub}</p>}
             </div>
             <span className="text-sm font-semibold text-foreground">{item.value}</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
+            <ChevronRight className={cn("h-4 w-4", item.tab ? "text-muted-foreground" : "text-muted-foreground/40")} />
           </div>
         ))}
       </div>
