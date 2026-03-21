@@ -8,6 +8,10 @@ import { useDeviceBatteryHistory, useAllIgnitionEvents } from "@/hooks/useDevice
 import { EnhancedDeviceStatusCard } from "./EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "./BatteryHistoryChart";
 import { IgnitionEventsLog } from "./IgnitionEventsLog";
+import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
+import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
+import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface LiveTelemetryTabProps {
   devices: GPSDeviceHealth[];
@@ -25,20 +29,19 @@ export function LiveTelemetryTab({
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     devices[0]?.id || null
   );
-  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition">("devices");
+  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults">("devices");
 
-  // Keep selectedDeviceId in sync when devices list changes
   useEffect(() => {
     if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
       setSelectedDeviceId(devices[0].id);
     }
   }, [devices, selectedDeviceId]);
 
-  // Fetch battery history for selected device
   const { data: batteryHistory, isLoading: batteryLoading } = useDeviceBatteryHistory(selectedDeviceId);
-  
-  // Fetch all ignition events
   const { data: ignitionEvents, isLoading: ignitionLoading } = useAllIgnitionEvents();
+
+  const selectedDevice = devices.find(d => d.id === selectedDeviceId);
+  const hasGeotab = devices.some(d => d.tracking_provider === "geotab");
 
   if (isLoading) {
     return (
@@ -69,17 +72,36 @@ export function LiveTelemetryTab({
     );
   }
 
+  const DeviceSelector = () => (
+    devices.length > 1 ? (
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+        {devices.map(device => (
+          <Button
+            key={device.id}
+            variant={selectedDeviceId === device.id ? "default" : "outline"}
+            size="sm"
+            className="text-xs whitespace-nowrap shrink-0"
+            onClick={() => setSelectedDeviceId(device.id)}
+          >
+            {device.device_name || device.device_identifier}
+          </Button>
+        ))}
+      </div>
+    ) : null
+  );
+
   return (
     <div className="space-y-4">
-      {/* Sub-tabs for different views */}
       <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as typeof activeSubTab)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="devices" className="text-xs">Devices</TabsTrigger>
-          <TabsTrigger value="battery" className="text-xs">Battery</TabsTrigger>
-          <TabsTrigger value="ignition" className="text-xs">Ignition</TabsTrigger>
+        <TabsList className="w-full overflow-x-auto no-scrollbar flex">
+          <TabsTrigger value="devices" className="text-xs flex-1">Devices</TabsTrigger>
+          <TabsTrigger value="gps" className="text-xs flex-1">GPS</TabsTrigger>
+          <TabsTrigger value="battery" className="text-xs flex-1">Battery</TabsTrigger>
+          <TabsTrigger value="ignition" className="text-xs flex-1">Ignition</TabsTrigger>
+          {hasGeotab && <TabsTrigger value="sensors" className="text-xs flex-1">Sensors</TabsTrigger>}
+          {hasGeotab && <TabsTrigger value="faults" className="text-xs flex-1">Faults</TabsTrigger>}
         </TabsList>
 
-        {/* Devices View - Live status cards */}
         <TabsContent value="devices" className="mt-4 space-y-3">
           {devices.map(device => (
             <EnhancedDeviceStatusCard
@@ -90,31 +112,30 @@ export function LiveTelemetryTab({
           ))}
         </TabsContent>
 
-        {/* Battery History View */}
-        <TabsContent value="battery" className="mt-4 space-y-4">
-          {/* Device selector if multiple devices */}
-          {devices.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-              {devices.map(device => (
-                <Button
-                  key={device.id}
-                  variant={selectedDeviceId === device.id ? "default" : "outline"}
-                  size="sm"
-                  className="text-xs whitespace-nowrap shrink-0"
-                  onClick={() => setSelectedDeviceId(device.id)}
-                >
-                  {device.device_name || device.device_identifier}
-                </Button>
-              ))}
-            </div>
+        <TabsContent value="gps" className="mt-4 space-y-4">
+          <DeviceSelector />
+          {selectedDevice ? (
+            <MiniLiveMap
+              latitude={selectedDevice.last_latitude ?? null}
+              longitude={selectedDevice.last_longitude ?? null}
+              heading={selectedDevice.heading ?? null}
+              speedKmh={selectedDevice.speed_kmh ?? null}
+              lastSeenAt={selectedDevice.last_seen_at}
+              isActive={!!selectedDevice.last_seen_at && (Date.now() - new Date(selectedDevice.last_seen_at).getTime() < 30000)}
+            />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Select a device</CardContent></Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="battery" className="mt-4 space-y-4">
+          <DeviceSelector />
           <BatteryHistoryChart 
             data={batteryHistory || []} 
             isLoading={batteryLoading} 
           />
         </TabsContent>
 
-        {/* Ignition Events View */}
         <TabsContent value="ignition" className="mt-4">
           <IgnitionEventsLog 
             events={ignitionEvents || []} 
@@ -122,6 +143,18 @@ export function LiveTelemetryTab({
             showDeviceName={devices.length > 1}
           />
         </TabsContent>
+
+        {hasGeotab && (
+          <TabsContent value="sensors" className="mt-4">
+            <GeotabExtendedDiagnosticsTab />
+          </TabsContent>
+        )}
+
+        {hasGeotab && (
+          <TabsContent value="faults" className="mt-4">
+            <GeotabFaultCodesTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
