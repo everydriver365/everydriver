@@ -144,7 +144,11 @@ export function MiniWebsitesManager() {
   const getWebsiteUrl = (slug: string | null, customDomain: string | null) => {
     if (customDomain) return `https://${customDomain}`;
     if (!slug) return null;
-    return `https://everydriver.lovable.app/i/${slug}`;
+    return `https://${slug}.drive365.co.uk`;
+  };
+
+  const getDrive365Subdomain = (slug: string | null) => {
+    return slug ? `${slug}.drive365.co.uk` : null;
   };
 
   const handleEditWebsite = (website: MiniWebsite) => {

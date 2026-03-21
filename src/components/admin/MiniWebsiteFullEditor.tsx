@@ -226,8 +226,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
     return "wildcard";
   });
   
-  // Generate the wildcard subdomain URL
-  const wildcardSubdomain = editData.app_slug ? `${editData.app_slug}.everydriver.co.uk` : null;
+  // Generate the wildcard subdomain URL (drive365.co.uk for instructor mini-websites)
+  const wildcardSubdomain = editData.app_slug ? `${editData.app_slug}.drive365.co.uk` : null;
 
   const handleApplyPreset = (preset: typeof presetThemes[0]) => {
     setEditData({
