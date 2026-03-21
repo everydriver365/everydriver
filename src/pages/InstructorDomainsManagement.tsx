@@ -95,7 +95,7 @@ export default function InstructorDomainsManagement() {
   };
 
   const handleRenewDomain = (domain: DomainOrder) => {
-    toast.info(`Renewal for ${domain.domain_name}${domain.tld} coming soon`);
+    toast.info(`Contact support to renew ${domain.domain_name}${domain.tld}`);
   };
 
   const handleLinkDomain = (domain: DomainOrder) => {
