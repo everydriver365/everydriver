@@ -332,7 +332,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         phone: editData.phone,
         is_active: editData.is_active,
         custom_domain: finalCustomDomain,
-        custom_domain_verified: false,
+        custom_domain_verified: domainMode === "wildcard" ? true : false,
         mini_website_domain_id: finalDomainId,
       };
       
