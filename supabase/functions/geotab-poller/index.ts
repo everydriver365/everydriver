@@ -260,6 +260,8 @@ Deno.serve(async (req) => {
       "DiagnosticTirePressureFrontRightId",
       "DiagnosticTirePressureRearLeftId",
       "DiagnosticTirePressureRearRightId",
+      "DiagnosticBrakePedalPositionId",        // Brake pedal % for pupil analysis
+      "DiagnosticTransmissionCurrentGearId",   // Current gear for reverse detection
     ];
 
     const batchCalls: Array<{ method: string; params: Record<string, unknown> }> = [
