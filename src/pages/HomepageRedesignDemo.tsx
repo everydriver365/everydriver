@@ -41,8 +41,12 @@ export default function HomepageRedesignDemo() {
                 <span className="text-[#0075c9]">Built for ADIs</span>
               </h1>
 
-              <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
+              <p className="text-lg text-muted-foreground leading-relaxed mb-4 max-w-lg">
                 Manage your lessons, track payments, and grow your business — all from one app.
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-8 max-w-lg">
+                We'd love to make this free, but £4.99/month simply helps us keep improving it — it's your platform.
+                No tie-ins—come and go as you please, with apps for you, your pupils and their parents included.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
