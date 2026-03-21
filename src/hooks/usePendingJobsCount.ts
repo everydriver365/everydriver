@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useDemoMode } from "@/context/DemoModeContext";
-import { demoPendingJobsCount } from "@/data/demoData";
 
 export function usePendingJobsCount() {
-  const { isDemoMode } = useDemoMode();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -21,27 +18,13 @@ export function usePendingJobsCount() {
 
     fetchPendingJobs();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel("pending-jobs-count")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "course_enquiries",
-        },
-        () => {
-          fetchPendingJobs();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "course_enquiries" }, () => { fetchPendingJobs(); })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
-  if (isDemoMode) return demoPendingJobsCount;
   return count;
 }

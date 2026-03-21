@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { useDemoMode } from "@/context/DemoModeContext";
-import { demoTodayLessons } from "@/data/demoData";
 
 export interface TodayLesson {
   id: string;
@@ -22,12 +20,10 @@ export interface TodayLesson {
 
 export function useTodayRemainingLessons(instructorId: string | undefined) {
   const today = format(new Date(), "yyyy-MM-dd");
-  const { isDemoMode } = useDemoMode();
 
   return useQuery({
-    queryKey: ["today-remaining-lessons", instructorId, today, isDemoMode],
+    queryKey: ["today-remaining-lessons", instructorId, today],
     queryFn: async (): Promise<TodayLesson[]> => {
-      if (isDemoMode) return demoTodayLessons;
       if (!instructorId) return [];
 
       const { data, error } = await supabase
