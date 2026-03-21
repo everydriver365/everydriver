@@ -4,7 +4,7 @@ import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Satellite, Pin, ChevronDown,
+  LogOut, Car, Camera, Pin, ChevronDown,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
