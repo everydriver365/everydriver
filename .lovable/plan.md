@@ -1,156 +1,93 @@
 
 
-## Plan: Expand Geotab Telemetry + Video Replay Across All Views
+## Plan: Brake Pedal & Reverse Gear Pupil Driving Pattern Analysis
 
-This is a large feature set. I'll break it into manageable work streams.
+### Current State
+- Brake pedal position and gear data are already in the Geotab `DIAGNOSTIC_MAP` and fetchable via `geotab-status-data`
+- But they're only shown as **live sensor gauges** — not tied to individual pupil lessons or used for pattern analysis
+- The `PupilDrivingReport` and `generate-driving-insights` edge function only analyse speed, harsh braking (from G-force), and acceleration — not pedal/gear data
 
-### What's Being Added
+### What This Adds
 
-From the previous conversation, these new Geotab data points need to be surfaced:
-- **DTC Fault Codes** (via `FaultData` API)
-- **Tyre Pressure** (`DiagnosticTirePressureId`)
-- **Seatbelt Status** (`DiagnosticSeatbeltId`)
-- **Brake Pedal Position** (`DiagnosticBrakePedalPositionId`)
-- **Reverse Gear Detection** (`DiagnosticTransmissionCurrentGearId`)
-- **Ambient Temperature** (`DiagnosticExternalTemperatureId`)
-- **Posted Speed Limit vs Actual** (contextual speeding — e.g. "35 in a 30 zone")
-- **Live Odometer & Engine Hours** (`DiagnosticOdometerReadingId`, `DiagnosticEngineHoursId`)
-- **Video Replay** — playing back Geotab dashcam clips inline with trip data
-
-These need to appear in **4 locations**: Geotab Hub (instructor), Vehicle Health page (instructor), Admin Geotab Fleet, and the instructor mobile app.
+1. **Per-lesson brake & gear metrics** — during Geotab-tracked lessons, poll brake pedal % and gear position alongside existing GPS data
+2. **Pupil pattern cards** — show brake smoothness score, reverse manoeuvre count/duration, and gear change frequency per session
+3. **Integration into driving insights** — feed brake/gear patterns into the AI coaching engine
 
 ---
 
-### Stream 1: Expand Edge Function — New Diagnostics
+### Stream 1: Store Brake & Gear Data Per Lesson
 
-**File**: `supabase/functions/geotab-status-data/index.ts`
+**File**: `supabase/functions/geotab-poller/index.ts`
 
-Add new entries to `DIAGNOSTIC_MAP`:
-```
-brakePedal, seatbelt, tyrePressure, ambientTemp, 
-odometer, engineHours, reverseGear
-```
+During active lesson polling, add StatusData requests for `DiagnosticBrakePedalPositionId` and `DiagnosticTransmissionCurrentGearId` alongside existing GPS polling. Store results in a new lightweight table.
 
-**File**: `src/hooks/useGeotabStatusData.ts`
-
-Expand `DiagnosticKey` type to include all new keys.
-
-### Stream 2: DTC Fault Codes Edge Function
-
-**New file**: `supabase/functions/geotab-fault-data/index.ts`
-
-Calls Geotab `Get` with `typeName: "FaultData"` for a device + date range. Returns structured fault codes with descriptions, severity, and timestamps. This is a separate API from StatusData.
-
-**New hook**: `src/hooks/useGeotabFaultData.ts`
-
-### Stream 3: Video Replay Support
-
-The dashcam gallery already downloads media via `geotab-media-download`. To support **inline video playback**:
-
-**Update**: `src/components/instructor/dashcam/DashcamGalleryView.tsx`
-- When a video clip is selected, attempt to stream it via the download edge function instead of just showing a thumbnail + download button
-- Add an `<video>` element in the detail dialog that sources from the edge function URL
-- Add a "Link to Trip" button that navigates to trip-replay with the clip's timestamp
-
-**New component**: `src/components/instructor/dashcam/DashcamVideoPlayer.tsx`
-- Handles loading state, error fallback, and controls
-- Constructs the video source URL via `supabase.functions` invoke pattern
-
-### Stream 4: New UI Components for Extra Diagnostics
-
-**New file**: `src/components/instructor/geotab/GeotabExtendedDiagnosticsTab.tsx`
-- Shows live gauges/cards for: Tyre Pressure, Seatbelt (on/off indicator), Brake Pedal %, Reverse Gear (engaged/not), Ambient Temp, Odometer, Engine Hours
-- Uses `useGeotabStatusData` with the expanded diagnostic keys
-
-**New file**: `src/components/instructor/geotab/GeotabFaultCodesTab.tsx`
-- Lists active DTC codes with severity badges, descriptions, and timestamps
-- Uses `useGeotabFaultData`
-
-**New file**: `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx`
-- Shows speeding events with posted speed limit context (e.g. "52 km/h in a 48 km/h zone")
-- Pulls from `telematics_alerts` where `speed_limit_kmh` is populated
-
-### Stream 5: Integrate into Geotab Hub (Instructor)
-
-**File**: `src/pages/InstructorGeotabHub.tsx`
-
-Add 3 new tabs to the existing 11-tab layout:
-- **Sensors** → `GeotabExtendedDiagnosticsTab`
-- **Faults** → `GeotabFaultCodesTab` (with badge count for active faults)
-- **Speeding** → `GeotabContextualSpeedTab`
-
-Update the dashcam tab to use the new `DashcamVideoPlayer` for inline playback.
-
-### Stream 6: Integrate into Vehicle Health Page (Instructor)
-
-**File**: `src/pages/InstructorVehicleHealth.tsx`
-
-The Vehicle Health page already has 8 tabs. Rather than adding more tabs, embed the new data into existing tabs:
-- **Live tab**: Add tyre pressure, seatbelt, brake pedal, reverse gear indicators below the existing device cards
-- **Fleet tab**: Show odometer and engine hours on each vehicle card
-- **Service tab**: Show active DTC fault codes as alerts
-
-### Stream 7: Integrate into Admin Geotab Fleet
-
-**File**: `src/components/admin/AdminGeotabFleet.tsx`
-
-Add new tabs alongside existing Devices/Trips/Dashcam:
-- **Diagnostics** — fleet-wide sensor view (select instructor → show their extended diagnostics)
-- **Faults** — fleet-wide active DTC codes across all devices
-- **Behaviour** — reuse `GeotabDriverBehaviourTab` with instructor selector
-- **Video** — dashcam with inline video player
-
-### Stream 8: Database Migration
-
-Add a `geotab_fault_codes` table to store polled DTC data:
-
+**Migration**: Create `lesson_pedal_data` table:
 ```sql
-CREATE TABLE public.geotab_fault_codes (
+CREATE TABLE public.lesson_pedal_data (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id UUID REFERENCES public.gps_devices(id) ON DELETE CASCADE,
-  instructor_id UUID REFERENCES public.instructors(id),
-  fault_code TEXT NOT NULL,
-  description TEXT,
-  severity TEXT DEFAULT 'medium',
-  source TEXT DEFAULT 'geotab',
-  detected_at TIMESTAMPTZ NOT NULL,
-  resolved_at TIMESTAMPTZ,
-  is_active BOOLEAN DEFAULT true,
+  telematics_id UUID REFERENCES public.lesson_telematics(id) ON DELETE CASCADE NOT NULL,
+  recorded_at TIMESTAMPTZ NOT NULL,
+  brake_pedal_pct NUMERIC,
+  gear_position INTEGER,
   created_at TIMESTAMPTZ DEFAULT now()
 );
-
-ALTER TABLE public.geotab_fault_codes ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Instructors see own faults" ON public.geotab_fault_codes
-  FOR SELECT TO authenticated
-  USING (instructor_id IN (
-    SELECT id FROM public.instructors WHERE auth_user_id = auth.uid()
+-- Index for fast per-session queries
+CREATE INDEX idx_lesson_pedal_telematics ON public.lesson_pedal_data(telematics_id, recorded_at);
+-- RLS
+ALTER TABLE public.lesson_pedal_data ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Instructors see own" ON public.lesson_pedal_data FOR SELECT TO authenticated
+  USING (telematics_id IN (
+    SELECT id FROM public.lesson_telematics WHERE instructor_id IN (
+      SELECT id FROM public.instructors WHERE auth_user_id = auth.uid()
+    )
   ));
-
-CREATE POLICY "Admins see all faults" ON public.geotab_fault_codes
-  FOR SELECT TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'));
 ```
 
-### Summary of Files
+### Stream 2: New Hook for Pedal/Gear Analysis
+
+**New file**: `src/hooks/useLessonPedalData.ts`
+
+Fetches `lesson_pedal_data` for a telematics session and computes:
+- **Brake smoothness score** (0–100): penalises sudden jumps from 0→80%+, rewards gradual pedal application
+- **Reverse manoeuvre count**: consecutive readings where gear = -1
+- **Average reverse duration**: time spent in reverse per manoeuvre
+- **Gear change frequency**: changes per km driven
+
+### Stream 3: Pupil Driving Pattern Card
+
+**New file**: `src/components/instructor/PupilBrakeGearAnalysis.tsx`
+
+A card component showing per-session analysis:
+- Brake smoothness gauge (circular progress)
+- Brake pedal timeline chart (small sparkline of pedal % over time)
+- Reverse manoeuvres list with duration
+- Gear usage distribution (pie/bar: time in each gear)
+
+Integrated into `PupilDrivingReport.tsx` as a new tab alongside existing "Route Map" and "Events" tabs.
+
+### Stream 4: Feed into AI Coaching
+
+**File**: `supabase/functions/generate-driving-insights/index.ts`
+
+Add a query for `lesson_pedal_data` aggregates and include in the prompt context:
+- "Pupil applied brakes harshly (0→90%) 4 times in last 3 sessions"
+- "Pupil spent average 45 seconds per reverse manoeuvre (improving from 60s)"
+- This enriches the coaching tips with pedal/gear-specific advice
+
+### Stream 5: Poller Integration
+
+**File**: `supabase/functions/geotab-poller/index.ts`
+
+In the main polling loop (where GPS points are fetched), add a parallel `StatusData` call for brake pedal and gear. Insert results into `lesson_pedal_data` with the same `telematics_id`.
+
+### Files Summary
 
 | Action | File |
 |--------|------|
-| Edit | `supabase/functions/geotab-status-data/index.ts` — add 7 new diagnostic IDs |
-| Create | `supabase/functions/geotab-fault-data/index.ts` — DTC fault code fetcher |
-| Edit | `src/hooks/useGeotabStatusData.ts` — expand DiagnosticKey type |
-| Create | `src/hooks/useGeotabFaultData.ts` |
-| Create | `src/components/instructor/dashcam/DashcamVideoPlayer.tsx` |
-| Edit | `src/components/instructor/dashcam/DashcamGalleryView.tsx` — inline video |
-| Create | `src/components/instructor/geotab/GeotabExtendedDiagnosticsTab.tsx` |
-| Create | `src/components/instructor/geotab/GeotabFaultCodesTab.tsx` |
-| Create | `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx` |
-| Edit | `src/pages/InstructorGeotabHub.tsx` — add 3 tabs + video player |
-| Edit | `src/pages/InstructorVehicleHealth.tsx` — embed new sensors into existing tabs |
-| Edit | `src/components/admin/AdminGeotabFleet.tsx` — add Diagnostics, Faults, Behaviour, Video tabs |
-| Migration | Create `geotab_fault_codes` table with RLS |
-
-### Radius Note
-
-All new components will check `tracking_provider === "geotab"` before rendering Geotab-specific features. Radius instructors will see a placeholder explaining that these features will be available when Radius integration is complete.
+| Migration | `lesson_pedal_data` table with RLS |
+| Edit | `supabase/functions/geotab-poller/index.ts` — poll brake/gear during lessons |
+| Create | `src/hooks/useLessonPedalData.ts` — fetch + compute metrics |
+| Create | `src/components/instructor/PupilBrakeGearAnalysis.tsx` — analysis card |
+| Edit | `src/components/instructor/PupilDrivingReport.tsx` — add Brake & Gear tab |
+| Edit | `supabase/functions/generate-driving-insights/index.ts` — include pedal/gear in AI context |
 
