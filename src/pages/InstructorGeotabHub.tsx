@@ -122,7 +122,7 @@ export default function InstructorGeotabHub() {
 
         <Tabs defaultValue="overview" onValueChange={setActiveTab}>
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-11 gap-1 text-[10px]">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-14 gap-1 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Gauge className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Overview</span>
@@ -150,6 +150,18 @@ export default function InstructorGeotabHub() {
               <TabsTrigger value="diagnostics" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Activity className="h-3 w-3 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Diagnostics</span>
+              </TabsTrigger>
+              <TabsTrigger value="sensors" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <CircleDot className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Sensors</span>
+              </TabsTrigger>
+              <TabsTrigger value="faults" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Wrench className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Faults</span>
+              </TabsTrigger>
+              <TabsTrigger value="speeding" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                <Gauge className="h-3 w-3 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Speeding</span>
               </TabsTrigger>
               <TabsTrigger value="geofences" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                 <Shield className="h-3 w-3 shrink-0" />
