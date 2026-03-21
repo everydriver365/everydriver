@@ -157,6 +157,12 @@ export function LiveTelemetryTab({
             <GeotabFaultCodesTab />
           </TabsContent>
         )}
+
+        {hasGeotab && (
+          <TabsContent value="speeding" className="mt-4">
+            <GeotabContextualSpeedTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
