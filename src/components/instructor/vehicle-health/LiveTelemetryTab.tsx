@@ -11,6 +11,7 @@ import { IgnitionEventsLog } from "./IgnitionEventsLog";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
 import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface LiveTelemetryTabProps {
