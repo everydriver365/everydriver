@@ -19,12 +19,14 @@ import {
   Car,
   ChevronRight,
   Download,
-  Map
+  Map,
+  Settings2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import RouteMapView from './RouteMapView';
 import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
+import PupilBrakeGearAnalysis from './PupilBrakeGearAnalysis';
 
 interface TelematicsSession {
   id: string;
