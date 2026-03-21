@@ -35,9 +35,6 @@ export function FeatureCTA() {
               <Link to="/instructor-app/pricing">Compare Plans</Link>
             </Button>
           </div>
-          <p className="mt-6 text-sm text-primary-foreground/60">
-            No credit card required • Free plan available forever
-          </p>
         </motion.div>
       </div>
     </section>
