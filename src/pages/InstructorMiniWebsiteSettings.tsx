@@ -41,7 +41,11 @@ export default function InstructorMiniWebsiteSettings() {
     }
   };
 
-  const baseUrl = window.location.origin;
+  const websiteUrl = authInstructor?.custom_domain 
+    ? `https://${authInstructor.custom_domain}` 
+    : authInstructor?.app_slug 
+      ? `${window.location.origin}/i/${authInstructor.app_slug}` 
+      : null;
 
   if (!instructorId) {
     return (
