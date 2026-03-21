@@ -41,7 +41,7 @@ export function LiveTelemetryTab({
   const { data: ignitionEvents, isLoading: ignitionLoading } = useAllIgnitionEvents();
 
   const selectedDevice = devices.find(d => d.id === selectedDeviceId);
-  const hasGeotab = devices.some(d => d.tracking_provider === "geotab");
+  const hasGeotab = true;
 
   if (isLoading) {
     return (
