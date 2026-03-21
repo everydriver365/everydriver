@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Satellite, Gauge, MapPin, Route, Camera, FileText, Activity, Shield,
-  Lock, Crown, AlertTriangle, Play, Fuel, Zap, ShieldAlert, CircleDot, Wrench, Speedometer,
+  Lock, Crown, AlertTriangle, Play, Fuel, Zap, ShieldAlert, CircleDot, Wrench,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";

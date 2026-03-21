@@ -252,16 +252,23 @@ export function DashcamGalleryView({ instructorId, showAllInstructors = false }:
           </DialogHeader>
           {selectedMedia && (
             <div className="space-y-4">
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border">
-                {selectedMedia.thumbnail_url ? (
-                  <img src={selectedMedia.thumbnail_url} alt="Preview" className="w-full h-full object-contain rounded-lg" />
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    <Camera className="h-12 w-12 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">Click download to view the full clip</p>
-                  </div>
-                )}
-              </div>
+              {selectedMedia.media_type === "video" ? (
+                <DashcamVideoPlayer
+                  mediaId={selectedMedia.id}
+                  thumbnailUrl={selectedMedia.thumbnail_url}
+                />
+              ) : (
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border">
+                  {selectedMedia.thumbnail_url ? (
+                    <img src={selectedMedia.thumbnail_url} alt="Preview" className="w-full h-full object-contain rounded-lg" />
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      <Camera className="h-12 w-12 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Click download to view the full image</p>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-muted-foreground">Recorded</span>
