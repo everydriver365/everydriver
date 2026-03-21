@@ -510,9 +510,6 @@ export default function HomepageRedesignDemo() {
                 <Link to="/instructor-app/pricing">Compare Plans</Link>
               </Button>
             </div>
-            <p className="mt-6 text-sm text-primary-foreground/50">
-              No credit card required • Free plan available forever
-            </p>
           </div>
         </div>
       </section>
