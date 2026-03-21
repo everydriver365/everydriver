@@ -2,14 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-interface RouteRequest {
-  from_postcode: string;
-  to_postcode?: string;
-  instructor_home_postcode?: string;
-}
 
 interface GeocodeResult {
   lat: number;
@@ -18,75 +13,54 @@ interface GeocodeResult {
 
 async function geocodePostcode(postcode: string): Promise<GeocodeResult | null> {
   try {
-    // Use postcodes.io for UK postcodes (free API)
-    const cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
-    const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
-    
-    if (!response.ok) {
-      console.error(`Failed to geocode postcode: ${postcode}`);
-      return null;
-    }
-    
-    const data = await response.json();
+    const clean = postcode.replace(/\s+/g, "").toUpperCase();
+    const res = await fetch(`https://api.postcodes.io/postcodes/${clean}`);
+    if (!res.ok) return null;
+    const data = await res.json();
     if (data.status === 200 && data.result) {
-      return {
-        lat: data.result.latitude,
-        lng: data.result.longitude,
-      };
+      return { lat: data.result.latitude, lng: data.result.longitude };
     }
     return null;
-  } catch (error) {
-    console.error("Error geocoding postcode:", error);
+  } catch {
     return null;
   }
 }
 
-async function calculateDistance(
+async function calculateRoute(
   from: GeocodeResult,
-  to: GeocodeResult,
-  apiKey: string
-): Promise<{ distanceMeters: number; distanceMiles: number; durationMinutes: number } | null> {
+  to: GeocodeResult
+): Promise<{ distanceMiles: number; durationMinutes: number } | null> {
   try {
-    // Use TomTom Routing API
-    const url = `https://api.tomtom.com/routing/1/calculateRoute/${from.lat},${from.lng}:${to.lat},${to.lng}/json?key=${apiKey}&traffic=false`;
-    
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      console.error("TomTom API error:", await response.text());
+    // Use free OSRM routing API
+    const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("OSRM error:", res.status, await res.text());
       return null;
     }
-    
-    const data = await response.json();
-    
-    if (data.routes && data.routes.length > 0) {
+    const data = await res.json();
+    if (data.code === "Ok" && data.routes?.length > 0) {
       const route = data.routes[0];
-      const distanceMeters = route.summary.lengthInMeters;
-      const durationSeconds = route.summary.travelTimeInSeconds;
-      
       return {
-        distanceMeters,
-        distanceMiles: distanceMeters * 0.000621371,
-        durationMinutes: Math.round(durationSeconds / 60),
+        distanceMiles: (route.distance / 1609.344),
+        durationMinutes: Math.round(route.duration / 60),
       };
     }
-    
     return null;
-  } catch (error) {
-    console.error("Error calculating distance:", error);
+  } catch (e) {
+    console.error("Route calc error:", e);
     return null;
   }
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { from_postcode, to_postcode, instructor_home_postcode } = await req.json() as RouteRequest;
-    
+    const { from_postcode, to_postcode, instructor_home_postcode } = await req.json();
+
     if (!from_postcode) {
       return new Response(
         JSON.stringify({ error: "from_postcode is required" }),
@@ -94,24 +68,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate UK postcode format
-    const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
-    if (!postcodeRegex.test(from_postcode)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid from_postcode format", from_postcode }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const tomtomApiKey = Deno.env.get("TOMTOM_API_KEY");
-    if (!tomtomApiKey) {
-      return new Response(
-        JSON.stringify({ error: "TOMTOM_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Geocode the from postcode
     const fromCoords = await geocodePostcode(from_postcode);
     if (!fromCoords) {
       return new Response(
@@ -120,18 +76,13 @@ serve(async (req) => {
       );
     }
 
-    // Determine the destination
     const destinationPostcode = to_postcode || instructor_home_postcode;
-    
     if (!destinationPostcode) {
-      // If no destination, estimate based on typical lesson (round trip from pickup)
-      // Assume average lesson covers about 12 miles per hour
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           success: true,
           estimated: true,
-          message: "No destination provided, returning typical estimate",
-          distance_miles: 15, // Typical 1-hour lesson distance
+          distance_miles: 15,
           from_postcode,
           from_coords: fromCoords,
         }),
@@ -139,7 +90,6 @@ serve(async (req) => {
       );
     }
 
-    // Geocode the destination
     const toCoords = await geocodePostcode(destinationPostcode);
     if (!toCoords) {
       return new Response(
@@ -148,9 +98,7 @@ serve(async (req) => {
       );
     }
 
-    // Calculate the route distance
-    const routeResult = await calculateDistance(fromCoords, toCoords, tomtomApiKey);
-    
+    const routeResult = await calculateRoute(fromCoords, toCoords);
     if (!routeResult) {
       return new Response(
         JSON.stringify({ error: "Could not calculate route" }),
@@ -158,11 +106,10 @@ serve(async (req) => {
       );
     }
 
-    // For a driving lesson, we typically go from pickup -> lesson route -> back to pickup (or to instructor home)
-    // If returning to pickup, double the distance. If to instructor home, add that distance.
-    const returnDistance = instructor_home_postcode && to_postcode !== instructor_home_postcode
-      ? routeResult.distanceMiles // One way to student, one way back different
-      : routeResult.distanceMiles * 2; // Round trip
+    const returnDistance =
+      instructor_home_postcode && to_postcode !== instructor_home_postcode
+        ? routeResult.distanceMiles
+        : routeResult.distanceMiles * 2;
 
     return new Response(
       JSON.stringify({
@@ -179,9 +126,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
