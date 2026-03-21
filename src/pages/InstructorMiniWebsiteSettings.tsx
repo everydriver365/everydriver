@@ -191,7 +191,8 @@ export default function InstructorMiniWebsiteSettings() {
                 {authInstructor?.app_slug ? (
                   <MiniWebsiteCMS 
                     instructorId={instructorId} 
-                    instructorSlug={authInstructor.app_slug} 
+                    instructorSlug={authInstructor.app_slug}
+                    customDomain={authInstructor.custom_domain}
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
