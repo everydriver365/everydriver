@@ -136,7 +136,7 @@ export default function HomepageRedesignDemo() {
                 when you're ready — but the core app is yours to keep at absolutely no cost.
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 text-sm font-medium text-gray-400">
-                {["✓ Free forever", "✓ No credit card", "✓ No hidden fees", "✓ Cancel any time"].map((item) => (
+                {["✓ No hidden fees", "✓ Cancel any time"].map((item) => (
                   <span key={item}>{item}</span>
                 ))}
               </div>
