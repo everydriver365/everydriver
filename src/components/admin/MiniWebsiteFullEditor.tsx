@@ -294,7 +294,10 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
       let finalCustomDomain: string | null = null;
       let finalDomainId: string | null = null;
 
-      if (domainMode === "manual" && manualDomain.trim()) {
+      if (domainMode === "wildcard" && editData.app_slug) {
+        // Use the auto-generated drive365 subdomain
+        finalCustomDomain = `${editData.app_slug}.drive365.co.uk`;
+      } else if (domainMode === "manual" && manualDomain.trim()) {
         // Clean domain: remove protocol and trailing slashes
         finalCustomDomain = manualDomain
           .trim()
