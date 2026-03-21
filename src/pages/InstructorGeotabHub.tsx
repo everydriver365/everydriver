@@ -239,6 +239,18 @@ export default function InstructorGeotabHub() {
           <TabsContent value="impact" className="mt-4">
             <GeotabImpactTab />
           </TabsContent>
+
+          <TabsContent value="sensors" className="mt-4">
+            <GeotabExtendedDiagnosticsTab />
+          </TabsContent>
+
+          <TabsContent value="faults" className="mt-4">
+            <GeotabFaultCodesTab />
+          </TabsContent>
+
+          <TabsContent value="speeding" className="mt-4">
+            <GeotabContextualSpeedTab />
+          </TabsContent>
         </Tabs>
       </div>
     </InstructorPortalLayout>
