@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Printer, Car } from "lucide-react";
+import { Download, Printer, Car, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 
@@ -15,6 +15,25 @@ interface CarStickerGeneratorProps {
   logoUrl: string | null;
   brandColour: string | null;
   customDomain: string | null;
+}
+
+function hexToRgb(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return { r, g, b };
+}
+
+function lightenColor(r: number, g: number, b: number, factor: number) {
+  return {
+    r: Math.min(255, Math.round(r + (255 - r) * factor)),
+    g: Math.min(255, Math.round(g + (255 - g) * factor)),
+    b: Math.min(255, Math.round(b + (255 - b) * factor)),
+  };
+}
+
+function drawRoundedRect(pdf: jsPDF, x: number, y: number, w: number, h: number, radius: number) {
+  pdf.roundedRect(x, y, w, h, radius, radius, "F");
 }
 
 export function CarStickerGenerator({
@@ -32,15 +51,18 @@ export function CarStickerGenerator({
   const bookingUrl = customDomain
     ? `https://${customDomain}`
     : instructorSlug
-      ? `${window.location.origin}/i/${instructorSlug}`
+      ? `https://${instructorSlug}.drive365.co.uk`
       : null;
+
+  const displayDomain = customDomain
+    || (instructorSlug ? `${instructorSlug}.drive365.co.uk` : null);
 
   const generateSticker = async () => {
     setGenerating(true);
     try {
-      // A6 = 105x148mm, A5 = 148x210mm
-      const width = stickerSize === "a6" ? 105 : 148;
-      const height = stickerSize === "a6" ? 148 : 210;
+      const isA6 = stickerSize === "a6";
+      const width = isA6 ? 105 : 148;
+      const height = isA6 ? 148 : 210;
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -48,32 +70,30 @@ export function CarStickerGenerator({
         format: [width, height],
       });
 
-      const brandHex = brandColour || "#1877F2";
-      const r = parseInt(brandHex.slice(1, 3), 16);
-      const g = parseInt(brandHex.slice(3, 5), 16);
-      const b = parseInt(brandHex.slice(5, 7), 16);
+      const brand = hexToRgb(brandColour || "#1877F2");
+      const lightBrand = lightenColor(brand.r, brand.g, brand.b, 0.85);
 
-      // Background
-      pdf.setFillColor(255, 255, 255);
+      // === FULL BRAND BACKGROUND ===
+      pdf.setFillColor(brand.r, brand.g, brand.b);
       pdf.rect(0, 0, width, height, "F");
 
-      // Brand colour header bar
-      pdf.setFillColor(r, g, b);
-      pdf.rect(0, 0, width, height * 0.08, "F");
+      // === WHITE INNER CARD with rounded corners ===
+      const margin = isA6 ? 6 : 8;
+      const cardW = width - margin * 2;
+      const cardH = height - margin * 2;
+      pdf.setFillColor(255, 255, 255);
+      drawRoundedRect(pdf, margin, margin, cardW, cardH, isA6 ? 6 : 8);
 
-      // Brand colour footer bar
-      pdf.setFillColor(r, g, b);
-      pdf.rect(0, height * 0.92, width, height * 0.08, "F");
+      // === TOP ACCENT BAR ===
+      const barH = isA6 ? 5 : 7;
+      pdf.setFillColor(brand.r, brand.g, brand.b);
+      drawRoundedRect(pdf, margin, margin, cardW, barH + 4, isA6 ? 6 : 8);
+      // Square off the bottom of the bar
+      pdf.rect(margin, margin + 4, cardW, barH, "F");
 
-      // Side accent lines
-      pdf.setDrawColor(r, g, b);
-      pdf.setLineWidth(1.5);
-      pdf.line(4, height * 0.1, 4, height * 0.9);
-      pdf.line(width - 4, height * 0.1, width - 4, height * 0.9);
+      let yPos = margin + barH + (isA6 ? 10 : 14);
 
-      let yPos = height * 0.15;
-
-      // Logo
+      // === LOGO ===
       if (logoUrl) {
         try {
           const img = new Image();
@@ -83,49 +103,62 @@ export function CarStickerGenerator({
             img.onerror = reject;
             img.src = logoUrl;
           });
-          const logoSize = width * 0.25;
+          const logoSize = isA6 ? 22 : 30;
           pdf.addImage(img, "PNG", (width - logoSize) / 2, yPos, logoSize, logoSize);
-          yPos += logoSize + 6;
+          yPos += logoSize + (isA6 ? 5 : 7);
         } catch {
-          // Skip logo if load fails
+          yPos += 2;
         }
       }
 
-      // Instructor name
+      // === INSTRUCTOR NAME (large, bold) ===
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(stickerSize === "a6" ? 16 : 22);
-      pdf.setTextColor(r, g, b);
-      pdf.text(instructorName, width / 2, yPos, { align: "center" });
-      yPos += stickerSize === "a6" ? 8 : 10;
+      pdf.setFontSize(isA6 ? 18 : 24);
+      pdf.setTextColor(brand.r, brand.g, brand.b);
+      const nameLines = pdf.splitTextToSize(instructorName, cardW - 16);
+      pdf.text(nameLines, width / 2, yPos, { align: "center" });
+      yPos += nameLines.length * (isA6 ? 7 : 9) + (isA6 ? 3 : 4);
 
-      // Car icon placeholder text
+      // === DIVIDER LINE ===
+      pdf.setDrawColor(lightBrand.r, lightBrand.g, lightBrand.b);
+      pdf.setLineWidth(0.8);
+      const divPad = isA6 ? 20 : 28;
+      pdf.line(divPad, yPos, width - divPad, yPos);
+      yPos += isA6 ? 5 : 7;
+
+      // === SUBTITLE ===
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(isA6 ? 10 : 13);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text("DRIVING INSTRUCTOR", width / 2, yPos, { align: "center" });
+      yPos += isA6 ? 8 : 10;
+
+      // === TAGLINE in brand pill ===
+      const tagFontSize = isA6 ? 9 : 11;
+      pdf.setFontSize(tagFontSize);
+      const tagLines = pdf.splitTextToSize(tagline, cardW - 24);
+      const pillH = tagLines.length * (tagFontSize * 0.4) + (isA6 ? 6 : 8);
+      const pillW = cardW - (isA6 ? 16 : 20);
+      pdf.setFillColor(lightBrand.r, lightBrand.g, lightBrand.b);
+      drawRoundedRect(pdf, (width - pillW) / 2, yPos - (isA6 ? 3 : 4), pillW, pillH, 3);
       pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(stickerSize === "a6" ? 10 : 13);
-      pdf.setTextColor(80, 80, 80);
-      pdf.text("🚗 Driving Instructor", width / 2, yPos, { align: "center" });
-      yPos += stickerSize === "a6" ? 10 : 14;
+      pdf.setTextColor(brand.r, brand.g, brand.b);
+      pdf.text(tagLines, width / 2, yPos + 1, { align: "center" });
+      yPos += pillH + (isA6 ? 6 : 8);
 
-      // Tagline
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(stickerSize === "a6" ? 11 : 14);
-      pdf.setTextColor(40, 40, 40);
-      const taglineLines = pdf.splitTextToSize(tagline, width - 20);
-      pdf.text(taglineLines, width / 2, yPos, { align: "center" });
-      yPos += taglineLines.length * (stickerSize === "a6" ? 5 : 7) + 8;
-
-      // Phone
+      // === PHONE NUMBER (big & bold) ===
       if (instructorPhone) {
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(stickerSize === "a6" ? 14 : 18);
-        pdf.setTextColor(r, g, b);
-        pdf.text(`📞 ${instructorPhone}`, width / 2, yPos, { align: "center" });
-        yPos += stickerSize === "a6" ? 10 : 14;
+        pdf.setFontSize(isA6 ? 18 : 24);
+        pdf.setTextColor(brand.r, brand.g, brand.b);
+        pdf.text(instructorPhone, width / 2, yPos, { align: "center" });
+        yPos += isA6 ? 10 : 14;
       }
 
-      // QR Code (using Google Charts API)
+      // === QR CODE ===
       if (bookingUrl) {
-        const qrSize = stickerSize === "a6" ? 35 : 50;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bookingUrl)}`;
+        const qrSize = isA6 ? 30 : 42;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&color=${brand.r.toString(16).padStart(2, '0')}${brand.g.toString(16).padStart(2, '0')}${brand.b.toString(16).padStart(2, '0')}&data=${encodeURIComponent(bookingUrl)}`;
         try {
           const qrImg = new Image();
           qrImg.crossOrigin = "anonymous";
@@ -134,18 +167,37 @@ export function CarStickerGenerator({
             qrImg.onerror = reject;
             qrImg.src = qrUrl;
           });
+          // White background behind QR
+          pdf.setFillColor(255, 255, 255);
+          const qrPad = 2;
+          drawRoundedRect(pdf, (width - qrSize) / 2 - qrPad, yPos - qrPad, qrSize + qrPad * 2, qrSize + qrPad * 2, 3);
           pdf.addImage(qrImg, "PNG", (width - qrSize) / 2, yPos, qrSize, qrSize);
-          yPos += qrSize + 4;
+          yPos += qrSize + (isA6 ? 4 : 5);
         } catch {
           // Skip QR if load fails
         }
 
-        // URL text below QR
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(stickerSize === "a6" ? 7 : 9);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text("Scan to book online", width / 2, yPos, { align: "center" });
+        // === SCAN LABEL ===
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(isA6 ? 8 : 10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text("SCAN TO BOOK ONLINE", width / 2, yPos, { align: "center" });
+        yPos += isA6 ? 4 : 5;
+
+        // === DOMAIN URL ===
+        if (displayDomain) {
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(isA6 ? 7 : 9);
+          pdf.setTextColor(brand.r, brand.g, brand.b);
+          pdf.text(displayDomain, width / 2, yPos, { align: "center" });
+        }
       }
+
+      // === BOTTOM ACCENT BAR ===
+      pdf.setFillColor(brand.r, brand.g, brand.b);
+      const bottomBarY = margin + cardH - barH - 4;
+      drawRoundedRect(pdf, margin, bottomBarY, cardW, barH + 4, isA6 ? 6 : 8);
+      pdf.rect(margin, bottomBarY, cardW, barH, "F");
 
       pdf.save(`${instructorName.replace(/\s+/g, "-").toLowerCase()}-car-sticker.pdf`);
       toast.success("Sticker PDF downloaded!");
@@ -165,7 +217,7 @@ export function CarStickerGenerator({
           Car Window Sticker
         </CardTitle>
         <CardDescription>
-          Generate a branded sticker with QR code for your car window
+          Generate a bold, branded sticker with QR code for your car window
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -191,18 +243,71 @@ export function CarStickerGenerator({
           </Select>
         </div>
 
-        <div className="rounded-lg border p-4 bg-muted/30 space-y-2 text-sm">
-          <p><strong>Preview info:</strong></p>
-          <p>👤 {instructorName}</p>
-          {instructorPhone && <p>📞 {instructorPhone}</p>}
-          {bookingUrl && <p>🔗 {bookingUrl}</p>}
-          {logoUrl && <p>✅ Logo included</p>}
-          {brandColour && (
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded" style={{ backgroundColor: brandColour }} />
-              <span>Brand colour applied</span>
+        {/* Live Preview */}
+        <div
+          className="mx-auto rounded-xl border-2 overflow-hidden shadow-lg"
+          style={{
+            width: stickerSize === "a6" ? 210 : 250,
+            aspectRatio: stickerSize === "a6" ? "105/148" : "148/210",
+            backgroundColor: brandColour || "#1877F2",
+            padding: 8,
+          }}
+        >
+          <div className="bg-white rounded-lg h-full flex flex-col items-center justify-center text-center px-3 py-2 relative overflow-hidden">
+            {/* Top bar */}
+            <div
+              className="absolute top-0 left-0 right-0 h-2"
+              style={{ backgroundColor: brandColour || "#1877F2" }}
+            />
+            {/* Bottom bar */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-2"
+              style={{ backgroundColor: brandColour || "#1877F2" }}
+            />
+
+            <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
+              {logoUrl && (
+                <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain" />
+              )}
+              <p
+                className="font-bold text-sm leading-tight"
+                style={{ color: brandColour || "#1877F2" }}
+              >
+                {instructorName}
+              </p>
+              <p className="text-[8px] font-semibold text-muted-foreground tracking-widest uppercase">
+                Driving Instructor
+              </p>
+              <div
+                className="rounded-full px-3 py-0.5 text-[7px] mt-0.5"
+                style={{
+                  backgroundColor: `${brandColour || "#1877F2"}15`,
+                  color: brandColour || "#1877F2",
+                }}
+              >
+                {tagline}
+              </div>
+              {instructorPhone && (
+                <p
+                  className="font-bold text-base mt-1"
+                  style={{ color: brandColour || "#1877F2" }}
+                >
+                  {instructorPhone}
+                </p>
+              )}
+              <div className="w-10 h-10 border border-muted rounded mt-1 flex items-center justify-center">
+                <span className="text-[6px] text-muted-foreground">QR</span>
+              </div>
+              <p className="text-[6px] font-semibold text-muted-foreground uppercase tracking-wide">
+                Scan to book
+              </p>
+              {displayDomain && (
+                <p className="text-[6px]" style={{ color: brandColour || "#1877F2" }}>
+                  {displayDomain}
+                </p>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         <Button onClick={generateSticker} disabled={generating} className="w-full gap-2">
