@@ -382,8 +382,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   };
 
   const getWebsiteUrl = () => {
-    if (editData.custom_domain) return `https://${editData.custom_domain}`;
-    if (editData.app_slug) return `https://everydriver.lovable.app/i/${editData.app_slug}`;
+    if (editData.custom_domain && !editData.custom_domain.endsWith('.drive365.co.uk')) return `https://${editData.custom_domain}`;
+    if (editData.app_slug) return `https://${editData.app_slug}.drive365.co.uk`;
     return null;
   };
 

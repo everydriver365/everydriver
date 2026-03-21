@@ -78,6 +78,14 @@ export function getInstructorSubdomain(): string | null {
     return CUSTOM_DOMAIN_SLUGS[hostname];
   }
   
+  // Check if it's a drive365 subdomain (e.g. jane-smith.drive365.co.uk)
+  if (hostname.endsWith(`.${DRIVE365_BASE_DOMAIN}`)) {
+    const subdomain = hostname.replace(`.${DRIVE365_BASE_DOMAIN}`, "");
+    if (subdomain && subdomain !== "www" && subdomain !== "bookings") {
+      return subdomain;
+    }
+  }
+  
   // Check if it's an everydriver subdomain
   if (hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${EVERYDRIVER_BASE_DOMAIN}`, "");
