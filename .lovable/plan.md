@@ -1,36 +1,38 @@
 
 
-## Plan: Add Contextual Speeding Tab to Vehicle Health + Convert to MPH
+## Plan: Merge Fleet Dashboard & Geotab Hub into Unified Telematics Page
 
-### Current State
-- `GeotabContextualSpeedTab` already exists and works — shows speeding events with posted speed limit context
-- It's already integrated in the **Geotab Hub** and **Admin Fleet** pages
-- It's **missing** from the **Vehicle Health** `LiveTelemetryTab`
-- The component displays km/h but this is a UK driving school app — should show **mph**
+### Approach
 
-### Changes
+Replace the two separate pages with a single **unified telematics page** at `/instructor/fleet-dashboard`. The page will:
+- Show **general tabs** (Overview, Live Map, Lessons, Mileage, Heatmap, Geofences, Alerts, Dashcam, Reports) for all instructors
+- **Conditionally reveal Geotab-specific tabs** (Trips, Diagnostics, Sensors, Faults, Speeding, Behaviour, Fuel, Impact) when a Geotab device is detected
+- Redirect `/instructor/geotab` to `/instructor/fleet-dashboard` so existing links still work
 
-#### 1. Add "Speeding" sub-tab to LiveTelemetryTab
+### Tab Structure
 
-**File**: `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx`
+```text
+ALL INSTRUCTORS:
+  Overview | Live Map | Lessons | Mileage | Heatmap | Geofences | Alerts | Dashcam | Reports
 
-- Import `GeotabContextualSpeedTab`
-- Add `"speeding"` to the `activeSubTab` type union
-- Add a new `TabsTrigger` for "Speeding" (gated on `hasGeotab`)
-- Add corresponding `TabsContent` rendering `<GeotabContextualSpeedTab />`
+GEOTAB ONLY (appended):
+  Trips | Diagnostics | Sensors | Faults | Speeding | Behaviour | Fuel | Impact
+```
 
-#### 2. Convert GeotabContextualSpeedTab to show mph
+### Files Changed
 
-**File**: `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx`
+| Action | File | Detail |
+|--------|------|--------|
+| **Rewrite** | `src/pages/InstructorFleetDashboard.tsx` | Merge all Geotab Hub tabs into the existing Fleet Dashboard. Add `useActiveTrackingProvider` check to conditionally render Geotab tabs. Import all Geotab tab components. |
+| **Rewrite** | `src/pages/InstructorGeotabHub.tsx` | Replace with a redirect component: `Navigate to="/instructor/fleet-dashboard"` |
+| **Edit** | `src/components/instructor/InstructorDesktopSidebar.tsx` | Remove "Geotab Hub" sidebar entry, keep "Fleet Dashboard" renamed to "Telematics" |
+| **Edit** | `src/components/layout/InstructorPortalLayout.tsx` | Same sidebar change in mobile nav |
+| **Edit** | `src/pages/InstructorMenu.tsx` | Remove Geotab Hub menu item if present, or update label |
 
-- Convert `speed_kmh`, `speed_limit_kmh`, and `speed_delta` to mph (× 0.621371) for display
-- Change labels from "km/h" to "mph"
-- E.g. "35 mph in a 30 mph zone" instead of "56 km/h in a 48 km/h zone"
+### Key Implementation Details
 
-### Files
-
-| Action | File |
-|--------|------|
-| Edit | `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — add Speeding tab |
-| Edit | `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx` — convert to mph |
+- Use `useActiveTrackingProvider(instructor.id)` to detect if provider is `"geotab"`
+- Geotab-specific tabs render conditionally: `{isGeotab && <TabsTrigger ...>}`
+- The overview tab uses `FleetDashboard` for all users; Geotab users also see `GeotabOverviewTab` content merged or as a sub-section
+- No database changes needed — purely UI consolidation
 
