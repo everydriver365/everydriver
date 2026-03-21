@@ -314,7 +314,7 @@ export default function InstructorDomainsManagement() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex-col gap-2"
-                onClick={() => toast.info("DNS management coming soon")}
+                onClick={() => toast.info("Contact support for DNS management")}
               >
                 <Server className="h-5 w-5" />
                 <span>DNS Settings</span>
