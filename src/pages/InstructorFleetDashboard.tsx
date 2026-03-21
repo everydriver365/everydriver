@@ -188,7 +188,7 @@ export default function InstructorFleetDashboard() {
             {/* ── Tab content ── */}
             <div className="px-4 sm:px-5">
               <TabsContent value="overview" className="mt-0">
-                <FleetDashboard instructorId={instructor.id} />
+                <FleetDashboard instructorId={instructor.id} onTabChange={setActiveTab} />
               </TabsContent>
               <TabsContent value="livemap" className="mt-0 data-[state=inactive]:hidden" forceMount>
                 <FleetLiveMap instructorId={instructor.id} isVisible={activeTab === "livemap"} />
