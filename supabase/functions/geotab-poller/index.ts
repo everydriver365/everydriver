@@ -654,6 +654,20 @@ Deno.serve(async (req) => {
             recorded_at: new Date().toISOString(),
           });
 
+        // Record brake pedal and gear data for pupil driving pattern analysis
+        const brakePedalPct = diags["DiagnosticBrakePedalPositionId"];
+        const gearPosition = diags["DiagnosticTransmissionCurrentGearId"];
+        if (brakePedalPct != null || gearPosition != null) {
+          await supabase
+            .from("lesson_pedal_data")
+            .insert({
+              telematics_id: deviceRow.current_session_id,
+              recorded_at: new Date().toISOString(),
+              brake_pedal_pct: brakePedalPct != null ? Math.round(brakePedalPct * 100) / 100 : null,
+              gear_position: gearPosition != null ? Math.round(gearPosition) : null,
+            });
+        }
+
         // Use ECU odometer delta for accurate session distance (falls back to speed-based estimate)
         if (currentEcuKm != null && deviceRow.session_start_ecu_odometer_km != null) {
           const sessionDistKm = currentEcuKm - deviceRow.session_start_ecu_odometer_km;

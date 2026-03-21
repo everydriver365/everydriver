@@ -261,8 +261,12 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       {/* Tabs for Sessions, Heatmap, and Events */}
       <Tabs defaultValue="sessions" className="space-y-4">
-        <TabsList className="w-full overflow-x-auto grid grid-cols-3">
+        <TabsList className="w-full overflow-x-auto grid grid-cols-4">
           <TabsTrigger value="sessions" className="text-xs sm:text-sm">Sessions</TabsTrigger>
+          <TabsTrigger value="brake-gear" className="text-xs sm:text-sm">
+            <Settings2 className="h-4 w-4 mr-1" />
+            Brake & Gear
+          </TabsTrigger>
           <TabsTrigger value="heatmap" className="text-xs sm:text-sm">
             <Map className="h-4 w-4 mr-1" />
             Heatmap
