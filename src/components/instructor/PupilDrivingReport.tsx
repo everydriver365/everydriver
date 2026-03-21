@@ -19,12 +19,14 @@ import {
   Car,
   ChevronRight,
   Download,
-  Map
+  Map,
+  Settings2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import RouteMapView from './RouteMapView';
 import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
+import PupilBrakeGearAnalysis from './PupilBrakeGearAnalysis';
 
 interface TelematicsSession {
   id: string;
@@ -259,8 +261,12 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       {/* Tabs for Sessions, Heatmap, and Events */}
       <Tabs defaultValue="sessions" className="space-y-4">
-        <TabsList className="w-full overflow-x-auto grid grid-cols-3">
+        <TabsList className="w-full overflow-x-auto grid grid-cols-4">
           <TabsTrigger value="sessions" className="text-xs sm:text-sm">Sessions</TabsTrigger>
+          <TabsTrigger value="brake-gear" className="text-xs sm:text-sm">
+            <Settings2 className="h-4 w-4 mr-1" />
+            Brake & Gear
+          </TabsTrigger>
           <TabsTrigger value="heatmap" className="text-xs sm:text-sm">
             <Map className="h-4 w-4 mr-1" />
             Heatmap
@@ -384,6 +390,21 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="brake-gear">
+          {selectedSession ? (
+            <PupilBrakeGearAnalysis 
+              telematicsId={selectedSession.id}
+              sessionDate={selectedSession.started_at}
+            />
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Select a session from the Sessions tab to view brake & gear analysis
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="heatmap">

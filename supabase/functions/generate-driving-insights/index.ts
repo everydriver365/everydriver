@@ -45,7 +45,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch telematics sessions and syllabus progress in parallel
+    // Fetch telematics sessions, syllabus progress, and pedal data in parallel
     const [sessionsRes, progressRes] = await Promise.all([
       supabase
         .from("lesson_telematics")
@@ -110,8 +110,58 @@ serve(async (req) => {
     const syllabusProgress = progressRes.data || [];
     const syllabusContext = buildSyllabusContext(syllabusProgress, telematicsData);
 
+    // Fetch pedal/gear data for recent sessions
+    let pedalContext = "";
+    if (sessions && sessions.length > 0) {
+      const sessionIds = sessions.map((s: any) => s.id);
+      const { data: pedalData } = await supabase
+        .from("lesson_pedal_data")
+        .select("telematics_id, brake_pedal_pct, gear_position, recorded_at")
+        .in("telematics_id", sessionIds)
+        .order("recorded_at", { ascending: true });
+
+      if (pedalData && pedalData.length > 0) {
+        // Compute harsh brake count (0→80%+ jumps)
+        let harshBrakes = 0;
+        let reverseCount = 0;
+        let inReverse = false;
+        let totalReverseSec = 0;
+        let reverseStart: Date | null = null;
+
+        for (let i = 1; i < pedalData.length; i++) {
+          const prev = pedalData[i - 1];
+          const curr = pedalData[i];
+          // Harsh brake detection
+          if (prev.brake_pedal_pct != null && curr.brake_pedal_pct != null) {
+            if (Number(prev.brake_pedal_pct) < 20 && Number(curr.brake_pedal_pct) > 80) {
+              harshBrakes++;
+            }
+          }
+          // Reverse tracking
+          const isRev = curr.gear_position != null && (curr.gear_position === -1 || curr.gear_position === 0);
+          if (isRev && !inReverse) {
+            inReverse = true;
+            reverseCount++;
+            reverseStart = new Date(curr.recorded_at);
+          } else if (!isRev && inReverse) {
+            inReverse = false;
+            if (reverseStart) {
+              totalReverseSec += (new Date(curr.recorded_at).getTime() - reverseStart.getTime()) / 1000;
+            }
+          }
+        }
+
+        const avgReverseSec = reverseCount > 0 ? Math.round(totalReverseSec / reverseCount) : 0;
+        pedalContext = `\n\nBRAKE & GEAR PATTERNS (across ${sessions.length} sessions, ${pedalData.length} data points):
+- Harsh brake applications (0→80%+): ${harshBrakes} events
+- Reverse manoeuvres: ${reverseCount} total
+- Average reverse manoeuvre duration: ${avgReverseSec} seconds
+- Total time in reverse: ${Math.round(totalReverseSec)} seconds`;
+      }
+    }
+
     // Generate insights using Lovable AI
-    const aiPrompt = buildAIPrompt(telematicsData, pupil, sessions, syllabusContext);
+    const aiPrompt = buildAIPrompt(telematicsData, pupil, sessions, syllabusContext + pedalContext);
     
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
