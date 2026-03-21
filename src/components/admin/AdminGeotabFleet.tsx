@@ -7,7 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { GeotabTripHistory } from "@/components/instructor/geotab/GeotabTripHistory";
 import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
-import { Satellite, Route, Camera } from "lucide-react";
+import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
+import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
+import { Satellite, Route, Camera, CircleDot, Wrench, ShieldAlert, Gauge } from "lucide-react";
 
 interface DeviceStats {
   total: number;
