@@ -1095,7 +1095,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      URL: everydriver.lovable.app/i/{editData.app_slug || "slug"}
+                      URL: {editData.app_slug || "slug"}.drive365.co.uk
                     </p>
                   </div>
 
