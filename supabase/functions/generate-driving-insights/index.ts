@@ -45,7 +45,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch telematics sessions and syllabus progress in parallel
+    // Fetch telematics sessions, syllabus progress, and pedal data in parallel
     const [sessionsRes, progressRes] = await Promise.all([
       supabase
         .from("lesson_telematics")
