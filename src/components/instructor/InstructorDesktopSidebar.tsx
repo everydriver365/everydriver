@@ -69,8 +69,7 @@ const sidebarGroups = [
   {
     label: "VEHICLE INTELLIGENCE",
     items: [
-      { href: "/instructor/geotab", label: "Geotab Hub", icon: Satellite, highlight: true },
-      { href: "/instructor/fleet-dashboard", label: "Fleet Dashboard", icon: Car, highlight: true },
+      { href: "/instructor/fleet-dashboard", label: "Telematics", icon: Car, highlight: true },
       { href: "/instructor/dashcam", label: "Dashcam", icon: Camera, highlight: true },
     ],
   },
