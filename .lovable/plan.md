@@ -1,43 +1,36 @@
 
 
-## Plan: Add GPS Position, DTC Faults, Seatbelt & Tyre Pressure to Vehicle Health Page
+## Plan: Add Contextual Speeding Tab to Vehicle Health + Convert to MPH
 
 ### Current State
-- `GeotabExtendedDiagnosticsTab` (seatbelt, tyre pressure, etc.) and `GeotabFaultCodesTab` (DTC codes) already exist as components
-- They're used in the Geotab Hub and Admin pages but **not** on the `InstructorVehicleHealth` page
-- `MiniLiveMap` component exists for real-time GPS display
-- The Vehicle Health "Live" tab only shows device cards, battery history, and ignition events
+- `GeotabContextualSpeedTab` already exists and works — shows speeding events with posted speed limit context
+- It's already integrated in the **Geotab Hub** and **Admin Fleet** pages
+- It's **missing** from the **Vehicle Health** `LiveTelemetryTab`
+- The component displays km/h but this is a UK driving school app — should show **mph**
 
 ### Changes
 
-#### 1. Expand LiveTelemetryTab with new sub-tabs
+#### 1. Add "Speeding" sub-tab to LiveTelemetryTab
 
 **File**: `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx`
 
-Add 3 new sub-tabs alongside existing Devices/Battery/Ignition:
-- **GPS** — embed `MiniLiveMap` showing real-time position of selected device
-- **Sensors** — embed `GeotabExtendedDiagnosticsTab` (seatbelt, tyre pressure, ambient temp, etc.)
-- **Faults** — embed `GeotabFaultCodesTab` (active DTC codes)
+- Import `GeotabContextualSpeedTab`
+- Add `"speeding"` to the `activeSubTab` type union
+- Add a new `TabsTrigger` for "Speeding" (gated on `hasGeotab`)
+- Add corresponding `TabsContent` rendering `<GeotabContextualSpeedTab />`
 
-Change the grid from `grid-cols-3` to `grid-cols-6` (or use a scrollable tab list) and add:
+#### 2. Convert GeotabContextualSpeedTab to show mph
 
-```
-<TabsTrigger value="gps">GPS</TabsTrigger>
-<TabsTrigger value="sensors">Sensors</TabsTrigger>
-<TabsTrigger value="faults">Faults</TabsTrigger>
-```
+**File**: `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx`
 
-- **GPS tab**: Show `MiniLiveMap` for the selected device using its `last_latitude`/`last_longitude`/`heading` from the device data already available
-- **Sensors tab**: Render `<GeotabExtendedDiagnosticsTab />` (reuses existing component, already shows seatbelt + tyre pressure)
-- **Faults tab**: Render `<GeotabFaultCodesTab />` (reuses existing component)
-
-Both sensor/fault tabs are gated on `tracking_provider === "geotab"` — non-Geotab users see a placeholder message.
+- Convert `speed_kmh`, `speed_limit_kmh`, and `speed_delta` to mph (× 0.621371) for display
+- Change labels from "km/h" to "mph"
+- E.g. "35 mph in a 30 mph zone" instead of "56 km/h in a 48 km/h zone"
 
 ### Files
 
 | Action | File |
 |--------|------|
-| Edit | `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — add GPS, Sensors, Faults sub-tabs |
-
-This is a lightweight integration since all underlying components and data hooks already exist.
+| Edit | `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — add Speeding tab |
+| Edit | `src/components/instructor/geotab/GeotabContextualSpeedTab.tsx` — convert to mph |
 
