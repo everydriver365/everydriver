@@ -208,9 +208,20 @@ Deno.serve(async (req) => {
       const device = deviceByGeotab.get(devId);
       if (!device) continue;
 
-      const ruleName = ev.rule?.name || ev.ruleName || "";
+      // Resolve rule name — Geotab often returns rule as {id: "..."} without name
+      const ruleId = ev.rule?.id;
+      const ruleName = ev.rule?.name || ruleNameMap.get(ruleId) || ev.ruleName || "";
       const eventType = classifyRule(ruleName);
-      if (!eventType) continue;
+      if (!eventType) {
+        // If no name match, try to infer from the rule ID pattern
+        const idLower = (ruleId || "").toLowerCase();
+        const inferredType = idLower.includes("HarshBrake") ? "harsh_brake"
+          : idLower.includes("HarshAccel") ? "harsh_accel"
+          : idLower.includes("HarshCorner") ? "harsh_corner"
+          : idLower.includes("Speed") ? "speeding"
+          : null;
+        if (!inferredType) continue;
+      }
 
       const gForce = ev.gForce ?? ev.maximumSpeed ?? null;
 
