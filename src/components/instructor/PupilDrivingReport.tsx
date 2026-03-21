@@ -392,6 +392,21 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
           </div>
         </TabsContent>
 
+        <TabsContent value="brake-gear">
+          {selectedSession ? (
+            <PupilBrakeGearAnalysis 
+              telematicsId={selectedSession.id}
+              sessionDate={selectedSession.started_at}
+            />
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Select a session from the Sessions tab to view brake & gear analysis
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
         <TabsContent value="heatmap">
           <DrivingSkillsHeatmap 
             instructorId={instructorId} 
