@@ -103,11 +103,11 @@ export default function InstructorDomainsManagement() {
   };
 
   const handleManageHosting = (hosting: HostingOrder) => {
-    toast.info(`Hosting management for ${hosting.domain_name} coming soon`);
+    toast.info(`Contact support to manage hosting for ${hosting.domain_name}`);
   };
 
   const handleUpgradeHosting = (hosting: HostingOrder) => {
-    toast.info(`Upgrade options for ${hosting.domain_name} coming soon`);
+    toast.info(`Contact support to upgrade hosting for ${hosting.domain_name}`);
   };
 
   if (authLoading) {
