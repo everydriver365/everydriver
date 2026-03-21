@@ -127,13 +127,20 @@ Deno.serve(async (req) => {
 
     const session = await getSession(supabase);
 
-    // Get Geotab internal IDs
-    const geotabDevices = await geotabMultiCall(session, [
+    // Get Geotab internal IDs + Rules
+    const [allDevices, allRules] = await geotabMultiCall(session, [
       { method: "Get", params: { typeName: "Device" } },
+      { method: "Get", params: { typeName: "Rule" } },
     ]);
     const serialToInternal = new Map<string, string>();
-    for (const gd of geotabDevices[0] || []) {
+    for (const gd of allDevices || []) {
       if (gd.serialNumber) serialToInternal.set(gd.serialNumber, gd.id);
+    }
+
+    // Build rule ID → name map
+    const ruleNameMap = new Map<string, string>();
+    for (const r of allRules || []) {
+      if (r.id && r.name) ruleNameMap.set(r.id, r.name);
     }
 
     const now = new Date();
@@ -141,9 +148,8 @@ Deno.serve(async (req) => {
 
     const resolvedIds = devices.map((d) => serialToInternal.get(d.geotab_device_id) || d.geotab_device_id);
 
-    // Batch: ExceptionEvent + FuelUsed StatusData + Trip data
+    // Batch: ExceptionEvent + Trip data
     const calls: Array<{ method: string; params: Record<string, unknown> }> = [
-      // 0: ExceptionEvents
       {
         method: "Get",
         params: {
@@ -152,7 +158,6 @@ Deno.serve(async (req) => {
           resultsLimit: 500,
         },
       },
-      // 1: Trip data for fuel correlation
       {
         method: "Get",
         params: {
@@ -185,6 +190,7 @@ Deno.serve(async (req) => {
 
     const exceptionEvents: any[] = results[0] || [];
     const trips: any[] = results[1] || [];
+    console.log("[BehaviourSync] Got", exceptionEvents.length, "exception events,", trips.length, "trips,", (allRules || []).length, "rules");
 
     // Build device lookup
     const deviceByGeotab = new Map<string, typeof devices[0]>();
@@ -203,9 +209,20 @@ Deno.serve(async (req) => {
       const device = deviceByGeotab.get(devId);
       if (!device) continue;
 
-      const ruleName = ev.rule?.name || ev.ruleName || "";
-      const eventType = classifyRule(ruleName);
-      if (!eventType) continue;
+      // Resolve rule name — Geotab often returns rule as {id: "..."} without name
+      const ruleId = ev.rule?.id || "";
+      const ruleName = ev.rule?.name || ruleNameMap.get(ruleId) || ev.ruleName || "";
+      let eventType = classifyRule(ruleName);
+      if (!eventType) {
+        // Fallback: infer from rule ID pattern
+        const idLower = ruleId.toLowerCase();
+        eventType = idLower.includes("harshbrake") ? "harsh_brake"
+          : idLower.includes("harshaccel") ? "harsh_accel"
+          : idLower.includes("harshcorner") ? "harsh_corner"
+          : idLower.includes("speed") ? "speeding"
+          : null;
+        if (!eventType) continue;
+      }
 
       const gForce = ev.gForce ?? ev.maximumSpeed ?? null;
 
