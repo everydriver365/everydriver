@@ -11,6 +11,7 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CoordsMapPreview } from "@/components/instructor/CoordsMapPreview";
+import { DashcamVideoPlayer } from "./DashcamVideoPlayer";
 
 interface DashcamMedia {
   id: string;
