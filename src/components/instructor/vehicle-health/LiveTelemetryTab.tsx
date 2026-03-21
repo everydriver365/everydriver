@@ -11,6 +11,7 @@ import { IgnitionEventsLog } from "./IgnitionEventsLog";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
 import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface LiveTelemetryTabProps {
@@ -29,7 +30,7 @@ export function LiveTelemetryTab({
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     devices[0]?.id || null
   );
-  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults">("devices");
+  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults" | "speeding">("devices");
 
   useEffect(() => {
     if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
@@ -100,6 +101,7 @@ export function LiveTelemetryTab({
           <TabsTrigger value="ignition" className="text-xs flex-1">Ignition</TabsTrigger>
           {hasGeotab && <TabsTrigger value="sensors" className="text-xs flex-1">Sensors</TabsTrigger>}
           {hasGeotab && <TabsTrigger value="faults" className="text-xs flex-1">Faults</TabsTrigger>}
+          {hasGeotab && <TabsTrigger value="speeding" className="text-xs flex-1">Speeding</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="devices" className="mt-4 space-y-3">
@@ -153,6 +155,12 @@ export function LiveTelemetryTab({
         {hasGeotab && (
           <TabsContent value="faults" className="mt-4">
             <GeotabFaultCodesTab />
+          </TabsContent>
+        )}
+
+        {hasGeotab && (
+          <TabsContent value="speeding" className="mt-4">
+            <GeotabContextualSpeedTab />
           </TabsContent>
         )}
       </Tabs>

@@ -105,10 +105,10 @@ export function GeotabContextualSpeedTab({ instructorId }: GeotabContextualSpeed
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold text-sm">
-                  {Math.round(event.speed_kmh)} km/h in a {Math.round(event.speed_limit_kmh)} km/h zone
+                  {Math.round(event.speed_kmh * 0.621371)} mph in a {Math.round(event.speed_limit_kmh * 0.621371)} mph zone
                 </p>
                 <Badge variant="outline" className={`text-[10px] ${severityColor(event.severity)}`}>
-                  +{Math.round(event.speed_delta)} km/h
+                  +{Math.round(event.speed_delta * 0.621371)} mph
                 </Badge>
               </div>
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
