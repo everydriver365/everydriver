@@ -101,6 +101,7 @@ export function LiveTelemetryTab({
           <TabsTrigger value="ignition" className="text-xs flex-1">Ignition</TabsTrigger>
           {hasGeotab && <TabsTrigger value="sensors" className="text-xs flex-1">Sensors</TabsTrigger>}
           {hasGeotab && <TabsTrigger value="faults" className="text-xs flex-1">Faults</TabsTrigger>}
+          {hasGeotab && <TabsTrigger value="speeding" className="text-xs flex-1">Speeding</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="devices" className="mt-4 space-y-3">
