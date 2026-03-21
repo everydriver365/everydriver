@@ -280,7 +280,7 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        Xero sync coming soon. Export CSV/PDF to email to your accountant. HMRC rate: 45p/mi (first 10,000), 25p/mi thereafter.
+        Export CSV/PDF to email to your accountant. HMRC rate: 45p/mi (first 10,000), 25p/mi thereafter.
       </p>
     </div>
   );
