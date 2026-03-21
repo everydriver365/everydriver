@@ -1,38 +1,36 @@
 
 
-## Plan: Merge Fleet Dashboard & Geotab Hub into Unified Telematics Page
+## Plan: Backfill Drive365 Subdomains for All Instructors
 
-### Approach
+### Problem
+Ken D and 4 other instructors were onboarded before the auto-domain feature was added, so their `custom_domain` field is null. The website URL falls back to the Lovable preview domain instead of showing `ken-d.drive365.co.uk`.
 
-Replace the two separate pages with a single **unified telematics page** at `/instructor/fleet-dashboard`. The page will:
-- Show **general tabs** (Overview, Live Map, Lessons, Mileage, Heatmap, Geofences, Alerts, Dashcam, Reports) for all instructors
-- **Conditionally reveal Geotab-specific tabs** (Trips, Diagnostics, Sensors, Faults, Speeding, Behaviour, Fuel, Impact) when a Geotab device is detected
-- Redirect `/instructor/geotab` to `/instructor/fleet-dashboard` so existing links still work
+### Fix
 
-### Tab Structure
+#### 1. Backfill custom_domain for all 5 instructors
 
-```text
-ALL INSTRUCTORS:
-  Overview | Live Map | Lessons | Mileage | Heatmap | Geofences | Alerts | Dashcam | Reports
+Using the database insert tool, run UPDATE statements to set `custom_domain` and `custom_domain_verified` for each:
 
-GEOTAB ONLY (appended):
-  Trips | Diagnostics | Sensors | Faults | Speeding | Behaviour | Fuel | Impact
+| Instructor | Slug | Domain |
+|-----------|------|--------|
+| Ken D | ken-d | ken-d.drive365.co.uk |
+| John Smith (accounts) | accounts | accounts.drive365.co.uk |
+| John Smith (herts) | herts | herts.drive365.co.uk |
+| Martin B | test-instructor | test-instructor.drive365.co.uk |
+| Sarah Mitchell | sarah-mitchell | sarah-mitchell.drive365.co.uk |
+
+```sql
+UPDATE instructors SET custom_domain = app_slug || '.drive365.co.uk', custom_domain_verified = true
+WHERE custom_domain IS NULL AND app_slug IS NOT NULL;
 ```
 
-### Files Changed
+#### 2. No code changes needed
 
-| Action | File | Detail |
-|--------|------|--------|
-| **Rewrite** | `src/pages/InstructorFleetDashboard.tsx` | Merge all Geotab Hub tabs into the existing Fleet Dashboard. Add `useActiveTrackingProvider` check to conditionally render Geotab tabs. Import all Geotab tab components. |
-| **Rewrite** | `src/pages/InstructorGeotabHub.tsx` | Replace with a redirect component: `Navigate to="/instructor/fleet-dashboard"` |
-| **Edit** | `src/components/instructor/InstructorDesktopSidebar.tsx` | Remove "Geotab Hub" sidebar entry, keep "Fleet Dashboard" renamed to "Telematics" |
-| **Edit** | `src/components/layout/InstructorPortalLayout.tsx` | Same sidebar change in mobile nav |
-| **Edit** | `src/pages/InstructorMenu.tsx` | Remove Geotab Hub menu item if present, or update label |
+The existing `websiteUrl` logic in `InstructorMiniWebsiteSettings.tsx` already checks `custom_domain` first — once the data is populated, the correct URL will display automatically.
 
-### Key Implementation Details
-
-- Use `useActiveTrackingProvider(instructor.id)` to detect if provider is `"geotab"`
-- Geotab-specific tabs render conditionally: `{isGeotab && <TabsTrigger ...>}`
-- The overview tab uses `FleetDashboard` for all users; Geotab users also see `GeotabOverviewTab` content merged or as a sub-section
-- No database changes needed — purely UI consolidation
+### Result
+- Ken D's website settings page will show `https://ken-d.drive365.co.uk`
+- The "View Live Site" button will link to the correct domain
+- The Website Pages tile will show correct URLs
+- All other instructors also get their proper drive365 subdomain
 
