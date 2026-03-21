@@ -1030,7 +1030,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                               {getSeoValue(p.id, "meta_title", p.meta_title) || defaultTitle}
                             </p>
                             <p className="text-green-700 text-xs truncate">
-                              everydriver.lovable.app/i/{editData.app_slug || "slug"}/{p.page_type === "home" ? "" : p.page_type}
+                              {editData.app_slug || "slug"}.drive365.co.uk{p.page_type === "home" ? "" : `/${p.page_type}`}
                             </p>
                             <p className="text-muted-foreground text-xs line-clamp-2">
                               {getSeoValue(p.id, "meta_description", p.meta_description) || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
