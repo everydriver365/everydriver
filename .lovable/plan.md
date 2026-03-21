@@ -1,47 +1,74 @@
 
 
-## Audit: Unwired / Non-Live Data & UI Improvement Suggestions
+## Plan: Ensure All Live Data Across the Platform — Remove Hardcoded & Demo Fallbacks
 
-### 1. Items Not Showing Live Data
+### Summary
 
-| Area | Issue | Location |
-|------|-------|----------|
-| **Driver Score = hardcoded 87** | `FleetDashboard.tsx` line 122: `const driverScore = 87;` with comment "Simulated driver score (would come from real data)". This score ring on the telematics Overview is completely static. | `src/components/instructor/FleetDashboard.tsx` |
-| **Speeding Events = "—"** | `FleetDashboard.tsx` line 132: Safety section shows `"—"` for speeding events with "View speeding tab" — never queries `telematics_alerts` for a real count. | `src/components/instructor/FleetDashboard.tsx` |
-| **Google Calendar "coming soon"** | `MobileScheduleView.tsx` line 534: Calendar integration shows a static "coming soon" message when the user tries to interact with it. | `src/components/instructor/MobileScheduleView.tsx` |
+Audit found **3 categories** of issues: (A) demo mode returning fake data instead of live queries, (B) hardcoded stats on public-facing pages, and (C) placeholder "coming soon" features that should either work or be removed. Demo pages (`/demo/*`) are excluded — those are design exploration pages with intentionally static content.
 
-### 2. Fixes to Wire Up
+### Category A: Demo Mode Fake Data (8 hooks)
 
-#### A. Replace hardcoded Driver Score with live data
-- Query `geotab_driver_events` (or `telematics_alerts`) for the selected period
-- Calculate a real 0–100 score based on event count and severity (same formula used in `GeotabDriverBehaviourTab`)
-- Fall back to "—" if no data rather than showing a fake 87
+These hooks return hardcoded demo data from `src/data/demoData.ts` when `isDemoMode` is true. The fix is to **remove all demo mode branches** so they always query live data, then delete the demo data file and context.
 
-#### B. Wire up Speeding Events count
-- Query `telematics_alerts` where `alert_type = 'speeding'` for the instructor and selected period
-- Show the actual count instead of "—"
+| Hook | Demo Return |
+|------|-------------|
+| `useTodayRemainingLessons` | Fake lesson list (Emily Carter, James O'Brien…) |
+| `useTodayOverview` | Static counts (5 lessons, £210 earnings) |
+| `useNextLessonDetails` | Fake next lesson |
+| `useWeeklyGoals` | Static 22 hours |
+| `useMonthlyGoals` | Static 80 lessons |
+| `useInstructorLiveStats` | Static £1540 earnings |
+| `useTomorrowPreview` / `useTomorrowLessons` | Fake tomorrow schedule |
+| `useInstructorStreak` | Static 12-day streak |
+| `usePendingJobsCount` | Static count of 2 |
 
-#### C. Remove or update "coming soon" placeholder
-- Either wire up the existing Nylas calendar integration or change the message to explain the current sync status
+**Changes:**
+1. Remove `if (isDemoMode) return demoXxx;` from all 8 hooks
+2. Remove demo imports from each hook
+3. Delete `src/data/demoData.ts`
+4. Remove `DemoModeProvider` from `App.tsx`
+5. Delete `src/context/DemoModeContext.tsx`
+6. Remove any demo toggle UI (if present in settings)
 
-### 3. UI Improvement Suggestions
+### Category B: Hardcoded Public Stats (2 files)
 
-| Suggestion | Detail |
-|------------|--------|
-| **Animated score ring** | The driver score ring should animate on load (stroke-dashoffset transition) and change colour (green → amber → red) based on actual score thresholds |
-| **Tappable safety row items** | The "Speeding Events" and "Driver Score" rows have a chevron but don't navigate anywhere — link them to the relevant Geotab tabs |
-| **Payment "This Month" card** | Add a sparkline mini-chart inside the gradient card showing daily earnings trend (data already available from `useDailyEarnings`) |
-| **Vehicle status refresh indicator** | Show a "Last updated X min ago" timestamp on the live vehicle strip so instructors know the data is fresh |
-| **Empty state for new instructors** | The telematics Overview shows blank sections with no guidance — add an onboarding prompt ("Connect a tracker to get started") when no devices exist |
-| **Mileage chart period label** | When period is "Today" and there's only one bar, the chart looks sparse — switch to an hourly breakdown for the "Today" view |
+| File | Issue | Fix |
+|------|-------|-----|
+| `src/components/instructor-features/StatsBar.tsx` | "500+ Active Instructors", "12,000+ Pupils", "87% Pass Rate" — all hardcoded | Query live counts from `instructors` (where `is_active = true`) and `pupils` tables. Cache with long staleTime. Pass rate: query `driving_test_results` for real aggregate. |
+| `src/pages/HomepageRedesignDemo.tsx` | "500+ Active Instructors", "50,000+ Lessons", "4.9★ Rating" hardcoded | Same approach — query live data or remove if this is only a demo page |
 
-### 4. Implementation Steps
+### Category C: Placeholder Features (4 items)
 
-1. **Wire driver score**: Query alerts/events in `FleetDashboard.tsx`, compute score, replace `const driverScore = 87`
-2. **Wire speeding count**: Add a query for speeding alerts in the same component, display real count
-3. **Make safety rows tappable**: Wrap each row with `onClick` to switch to the relevant tab (speeding, behaviour)
-4. **Add "last seen" timestamp**: Show relative time on the vehicle status strip using `formatDistanceToNow`
-5. **Add empty state**: Show a setup CTA when `devices.length === 0` instead of blank sections
+| Location | Issue | Fix |
+|----------|-------|-----|
+| `MobileScheduleView.tsx` line 534 | "Google Calendar integration coming soon" in reschedule dialog | Wire up actual reschedule: create new lesson + cancel old, or use the existing calendar sync system |
+| `FleetMileageTracker.tsx` line 283 | "Xero sync coming soon" | Remove the text — it's informational, not blocking data. Change to "Export CSV/PDF to email to your accountant." |
+| `DigitalWaiverManager.tsx` line 178 | "Send reminders feature coming soon" toast | Wire up the existing SMS reminder system to send waiver reminders, or remove the button |
+| `InstructorDomainsManagement.tsx` lines 98-111 | Renew/Manage/Upgrade hosting all show "coming soon" toasts | Either wire to the 20i API for real domain management, or disable the buttons with proper messaging |
 
-No database changes needed — all data already exists in existing tables.
+### Category D: Cross-Platform Data Consistency
+
+Ensure all portals (parent, pupil, instructor, admin) use the same source of truth:
+
+| Area | Check | Status |
+|------|-------|--------|
+| Payment history | Parent + Pupil + Instructor all query `payment_history` | ✅ Already live |
+| Attendance | Parent queries `scheduled_lessons` | ✅ Already live |
+| Lesson notes | Parent queries `lesson_feedback` | ✅ Already live |
+| Pupil balance | Uses `account_balance` column | ✅ Already live |
+| Driver scores | Calculated from `geotab_driver_events` | ✅ Already live (fixed in previous task) |
+| Speeding events | Queries `telematics_alerts` | ✅ Already live |
+
+### Implementation Order
+
+1. **Remove demo mode system** — delete context, data file, strip all hooks (8 files)
+2. **Wire StatsBar to live data** — add queries for instructor count, pupil count, pass rate
+3. **Fix "coming soon" placeholders** — reschedule dialog, waiver reminders, domain management
+4. **Clean up** — remove unused imports, verify no other static fallbacks remain
+
+### Technical Notes
+
+- StatsBar will use `useQuery` with 30-minute `staleTime` since aggregate stats don't need real-time updates
+- The reschedule dialog fix involves creating a new `scheduled_lesson` with updated time/date and cancelling the old one, then triggering calendar sync
+- No database migrations needed — all tables already exist
 
