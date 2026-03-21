@@ -152,7 +152,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
               <div>
                 <p className="font-medium">{page.page_title}</p>
                 <p className="text-xs text-muted-foreground">
-                  /i/{instructorSlug}{page.page_type !== "home" ? `/${page.page_type}` : ""}
+                  {getPagePath(page.page_type)}
                 </p>
               </div>
             </div>
