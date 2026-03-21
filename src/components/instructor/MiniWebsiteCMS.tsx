@@ -19,16 +19,30 @@ import { toast } from "sonner";
 interface MiniWebsiteCMSProps {
   instructorId: string;
   instructorSlug: string;
+  customDomain?: string | null;
 }
 
-export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSProps) {
+export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: MiniWebsiteCMSProps) {
   const { pages, loading, updatePage } = useInstructorWebsitePages(instructorId);
   const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const baseUrl = window.location.origin;
+  // Use custom domain if available, otherwise fall back to path-based URL
+  const siteBaseUrl = customDomain ? `https://${customDomain}` : `${window.location.origin}/i/${instructorSlug}`;
+  const getPageUrl = (pageType: string) => {
+    if (customDomain) {
+      return pageType === "home" ? `https://${customDomain}` : `https://${customDomain}/${pageType}`;
+    }
+    return pageType === "home" ? `${window.location.origin}/i/${instructorSlug}` : `${window.location.origin}/i/${instructorSlug}/${pageType}`;
+  };
+  const getPagePath = (pageType: string) => {
+    if (customDomain) {
+      return pageType === "home" ? customDomain : `${customDomain}/${pageType}`;
+    }
+    return `/i/${instructorSlug}${pageType !== "home" ? `/${pageType}` : ""}`;
+  };
 
   const handleSave = async () => {
     if (!editingPage) return;
