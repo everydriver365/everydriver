@@ -2,7 +2,6 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { FleetDashboard } from "@/components/instructor/FleetDashboard";
-import { UsageAnalytics } from "@/components/instructor/UsageAnalytics";
 import { GeofenceEditor } from "@/components/instructor/GeofenceEditor";
 import { GeofenceAlertsList } from "@/components/instructor/GeofenceAlertsList";
 import { UnauthorisedMovementAlerts } from "@/components/instructor/UnauthorisedMovementAlerts";
@@ -12,13 +11,30 @@ import { TrackedLessons } from "@/components/instructor/TrackedLessons";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { FleetMileageTracker } from "@/components/instructor/FleetMileageTracker";
 import { FleetLiveMap } from "@/components/instructor/FleetLiveMap";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route, MapPin, Camera } from "lucide-react";
 import { DashcamGalleryView } from "@/components/instructor/dashcam/DashcamGalleryView";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
+
+// Icons
+import {
+  Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown,
+  Play, Route, MapPin, Camera, Activity, CircleDot, Wrench, ShieldAlert,
+  Fuel, Zap, FileText,
+} from "lucide-react";
+
+// Geotab-specific tab components
+import { GeotabTripHistory } from "@/components/instructor/geotab/GeotabTripHistory";
+import { GeotabDiagnosticsTab } from "@/components/instructor/geotab/GeotabDiagnosticsTab";
+import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
+import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
+import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
+import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
+import { GeotabFuelTab } from "@/components/instructor/geotab/GeotabFuelTab";
+import { GeotabImpactTab } from "@/components/instructor/geotab/GeotabImpactTab";
 
 export default function InstructorFleetDashboard() {
   const { instructor, subscription } = useInstructorAuth();
@@ -27,6 +43,9 @@ export default function InstructorFleetDashboard() {
   const isFreePlan = planSlug === "free";
   const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
   const [activeTab, setActiveTab] = useState("overview");
+
+  const { activeProvider } = useActiveTrackingProvider(instructor?.id);
+  const isGeotab = activeProvider === "geotab";
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -48,9 +67,11 @@ export default function InstructorFleetDashboard() {
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Gauge className="h-4 w-4 text-primary" />
             </div>
-            Fleet Dashboard
+            Telematics
           </h1>
-          <p className="text-muted-foreground text-xs sm:text-sm ml-10 hidden sm:block">Vehicle intelligence, alerts & analytics</p>
+          <p className="text-muted-foreground text-xs sm:text-sm ml-10 hidden sm:block">
+            Vehicle intelligence, alerts & analytics
+          </p>
         </div>
 
         {isFreePlan ? (
@@ -60,15 +81,12 @@ export default function InstructorFleetDashboard() {
                 <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-semibold text-foreground">Fleet Dashboard is a Pro Feature</h2>
+                <h2 className="text-xl font-semibold text-foreground">Telematics is a Pro Feature</h2>
                 <p className="text-muted-foreground max-w-md">
                   Upgrade your plan to access real-time fleet analytics, geofencing, route heatmaps, unauthorised movement alerts and scheduled reports.
                 </p>
               </div>
-              <Button
-                onClick={() => navigate("/instructor/plans")}
-                className="gap-2"
-              >
+              <Button onClick={() => navigate("/instructor/plans")} className="gap-2">
                 <Crown className="h-4 w-4" />
                 Upgrade Your Plan
               </Button>
@@ -77,7 +95,8 @@ export default function InstructorFleetDashboard() {
         ) : instructor?.id ? (
           <Tabs defaultValue="overview" onValueChange={setActiveTab}>
             <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-10 gap-1 text-[10px]">
+              <TabsList className="inline-flex w-auto min-w-full gap-1 text-[10px]">
+                {/* ── General tabs (all instructors) ── */}
                 <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <Gauge className="h-3 w-3 shrink-0" />
                   <span className="hidden xs:inline sm:inline">Overview</span>
@@ -93,10 +112,6 @@ export default function InstructorFleetDashboard() {
                 <TabsTrigger value="mileage" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <Route className="h-3 w-3 shrink-0" />
                   <span className="hidden xs:inline sm:inline">Mileage</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
-                  <BarChart3 className="h-3 w-3 shrink-0" />
-                  <span className="hidden xs:inline sm:inline">Analytics</span>
                 </TabsTrigger>
                 <TabsTrigger value="heatmap" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
                   <Flame className="h-3 w-3 shrink-0" />
@@ -118,9 +133,48 @@ export default function InstructorFleetDashboard() {
                   <Mail className="h-3 w-3 shrink-0" />
                   <span className="hidden xs:inline sm:inline">Reports</span>
                 </TabsTrigger>
+
+                {/* ── Geotab-specific tabs ── */}
+                {isGeotab && (
+                  <>
+                    <TabsTrigger value="trips" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Route className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Trips</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="diagnostics" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Activity className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Diagnostics</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="sensors" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <CircleDot className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Sensors</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="faults" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Wrench className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Faults</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="speeding" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Gauge className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Speeding</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="behaviour" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <ShieldAlert className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Behaviour</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="fuel" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Fuel className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Fuel</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="impact" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                      <Zap className="h-3 w-3 shrink-0" />
+                      <span className="hidden xs:inline sm:inline">Impact</span>
+                    </TabsTrigger>
+                  </>
+                )}
               </TabsList>
             </div>
 
+            {/* ── General tab content ── */}
             <TabsContent value="overview" className="mt-4">
               <FleetDashboard instructorId={instructor.id} />
             </TabsContent>
@@ -140,8 +194,6 @@ export default function InstructorFleetDashboard() {
             <TabsContent value="mileage" className="mt-4">
               <FleetMileageTracker instructorId={instructor.id} />
             </TabsContent>
-            <TabsContent value="analytics" className="mt-4">
-            </TabsContent>
             <TabsContent value="heatmap" className="mt-4">
               <RouteHeatmap instructorId={instructor.id} />
             </TabsContent>
@@ -160,6 +212,36 @@ export default function InstructorFleetDashboard() {
             <TabsContent value="reports" className="mt-4">
               <ScheduledReportsSettings instructorId={instructor.id} />
             </TabsContent>
+
+            {/* ── Geotab-specific tab content ── */}
+            {isGeotab && (
+              <>
+                <TabsContent value="trips" className="mt-4">
+                  <GeotabTripHistory instructorId={instructor.id} />
+                </TabsContent>
+                <TabsContent value="diagnostics" className="mt-4">
+                  <GeotabDiagnosticsTab />
+                </TabsContent>
+                <TabsContent value="sensors" className="mt-4">
+                  <GeotabExtendedDiagnosticsTab />
+                </TabsContent>
+                <TabsContent value="faults" className="mt-4">
+                  <GeotabFaultCodesTab />
+                </TabsContent>
+                <TabsContent value="speeding" className="mt-4">
+                  <GeotabContextualSpeedTab />
+                </TabsContent>
+                <TabsContent value="behaviour" className="mt-4">
+                  <GeotabDriverBehaviourTab />
+                </TabsContent>
+                <TabsContent value="fuel" className="mt-4">
+                  <GeotabFuelTab />
+                </TabsContent>
+                <TabsContent value="impact" className="mt-4">
+                  <GeotabImpactTab />
+                </TabsContent>
+              </>
+            )}
           </Tabs>
         ) : (
           <p className="text-muted-foreground">Loading...</p>

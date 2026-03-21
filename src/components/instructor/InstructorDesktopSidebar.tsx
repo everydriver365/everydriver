@@ -4,7 +4,7 @@ import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Satellite, Pin, ChevronDown,
+  LogOut, Car, Camera, Pin, ChevronDown,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -69,8 +69,7 @@ const sidebarGroups = [
   {
     label: "VEHICLE INTELLIGENCE",
     items: [
-      { href: "/instructor/geotab", label: "Geotab Hub", icon: Satellite, highlight: true },
-      { href: "/instructor/fleet-dashboard", label: "Fleet Dashboard", icon: Car, highlight: true },
+      { href: "/instructor/fleet-dashboard", label: "Telematics", icon: Car, highlight: true },
       { href: "/instructor/dashcam", label: "Dashcam", icon: Camera, highlight: true },
     ],
   },

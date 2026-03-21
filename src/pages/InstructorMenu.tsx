@@ -115,7 +115,7 @@ export default function InstructorMenu() {
     {
       title: "Tools",
       items: [
-        { icon: Gauge, label: "Fleet Dashboard", description: "Vehicle intelligence", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
+        { icon: Gauge, label: "Telematics", description: "Vehicle intelligence", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
         { icon: Camera, label: "Dashcam", description: "Recording & protection", iconColor: "text-white", iconBg: "bg-sky-500", gateKey: "dashcam", path: "/instructor/dashcam" },
         { icon: Star, label: "Reviews", description: "Moderate reviews", iconColor: "text-white", iconBg: "bg-amber-500", gateKey: "reviews", path: "/instructor/reviews" },
         { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-white", iconBg: "bg-cyan-500", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
