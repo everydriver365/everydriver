@@ -30,7 +30,7 @@ export function LiveTelemetryTab({
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     devices[0]?.id || null
   );
-  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults">("devices");
+  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults" | "speeding">("devices");
 
   useEffect(() => {
     if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
