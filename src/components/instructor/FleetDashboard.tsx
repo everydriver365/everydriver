@@ -1,22 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Car,
-  Activity,
-  ParkingCircle,
-  Gauge,
-  TrendingUp,
-  Clock,
-  Route,
-  Zap
+  Car, Activity, ParkingCircle, Gauge, TrendingUp, Clock, Route, Zap,
+  ShieldAlert, Wrench, Fuel, ChevronRight, Play, Thermometer,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDriverTimesheets } from "@/hooks/useDriverTimesheets";
 import { TrackedLessons } from "./TrackedLessons";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, subDays } from "date-fns";
 
 interface FleetDashboardProps {
@@ -36,12 +30,6 @@ interface DeviceStatus {
 
 type VehicleState = "moving" | "idle" | "parked";
 
-const PIE_COLORS = [
-  "hsl(142, 71%, 45%)",  // moving - success green
-  "hsl(38, 92%, 50%)",   // idle - warning amber
-  "hsl(215, 20%, 65%)",  // parked - muted
-];
-
 function getVehicleState(device: DeviceStatus): VehicleState {
   if (!device.last_seen_at) return "parked";
   const lastSeen = new Date(device.last_seen_at).getTime();
@@ -57,15 +45,14 @@ const kmToMiles = (km: number) => +(km * 0.621371).toFixed(1);
 export function FleetDashboard({ instructorId }: FleetDashboardProps) {
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState<"7" | "14" | "30">("7");
-
-  const fromDate = useMemo(() => subDays(new Date(), parseInt(range)), [range]);
-  const toDate = useMemo(() => new Date(), [range]);
-  const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
-
-  // Also fetch mileage_logs for daily mileage (more comprehensive than timesheets alone)
+  const [period, setPeriod] = useState<"day" | "week" | "month">("week");
   const [mileageLogs, setMileageLogs] = useState<{ log_date: string; distance_km: number }[]>([]);
   const [mileageLoading, setMileageLoading] = useState(true);
+
+  const rangeDays = period === "day" ? 1 : period === "week" ? 7 : 30;
+  const fromDate = useMemo(() => subDays(new Date(), rangeDays), [rangeDays]);
+  const toDate = useMemo(() => new Date(), [rangeDays]);
+  const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
 
   useEffect(() => {
     async function fetchMileage() {
@@ -81,7 +68,7 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
       setMileageLoading(false);
     }
     fetchMileage();
-  }, [instructorId, range]);
+  }, [instructorId, rangeDays]);
 
   useEffect(() => {
     async function fetchDevices() {
@@ -98,214 +85,167 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
     fetchDevices();
   }, [instructorId]);
 
-  // Compute statuses
   const statusCounts = { moving: 0, idle: 0, parked: 0 };
   devices.forEach(d => { statusCounts[getVehicleState(d)]++; });
-  const pieData = [
-    { name: "Moving", value: statusCounts.moving },
-    { name: "Idle", value: statusCounts.idle },
-    { name: "Parked", value: statusCounts.parked },
-  ].filter(d => d.value > 0);
 
-  // Daily mileage chart from mileage_logs (more comprehensive data source)
   const dailyMileage = mileageLogs
     .reduce((acc, log) => {
       const date = log.log_date;
       const existing = acc.find(a => a.date === date);
       const miles = kmToMiles(log.distance_km || 0);
-      if (existing) {
-        existing.miles += miles;
-      } else {
-        acc.push({ date, miles });
-      }
+      if (existing) existing.miles += miles;
+      else acc.push({ date, miles, label: format(new Date(date), "EEE") });
       return acc;
-    }, [] as { date: string; miles: number }[])
+    }, [] as { date: string; miles: number; label: string }[])
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  // Summary stats
   const totalMiles = dailyMileage.reduce((s, d) => s + d.miles, 0);
   const totalDrivingMins = timesheets.reduce((s, t) => s + (t.total_driving_minutes || 0), 0);
   const totalTrips = timesheets.reduce((s, t) => s + (t.trip_count || 0), 0);
   const avgDailyMiles = dailyMileage.length > 0 ? +(totalMiles / dailyMileage.length).toFixed(1) : 0;
 
-  const utilizationPercent = devices.length > 0
-    ? Math.round(((statusCounts.moving + statusCounts.idle) / devices.length) * 100)
-    : 0;
-
   if (loading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
-        </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-24 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
       </div>
     );
   }
 
+  // Determine primary device for hero strip
+  const primaryDevice = devices[0];
+  const primaryState = primaryDevice ? getVehicleState(primaryDevice) : "parked";
+
+  // Simulated driver score (would come from real data)
+  const driverScore = 87;
+
+  const journeyItems = [
+    { icon: Route, label: "Total Miles", value: `${totalMiles.toFixed(0)} mi`, sub: `${avgDailyMiles} mi/day avg`, positive: true },
+    { icon: Clock, label: "Drive Time", value: `${(totalDrivingMins / 60).toFixed(1)} hrs`, sub: `${totalTrips} trips`, positive: true },
+    { icon: Play, label: "Fleet Vehicles", value: `${devices.length}`, sub: `${statusCounts.moving} active now`, positive: true },
+  ];
+
+  const safetyItems = [
+    { icon: ShieldAlert, label: "Driver Score", value: `${driverScore}/100`, sub: "", positive: true },
+    { icon: Gauge, label: "Speeding Events", value: "—", sub: "View speeding tab", positive: true },
+    { icon: Zap, label: "Utilisation", value: `${devices.length > 0 ? Math.round(((statusCounts.moving + statusCounts.idle) / devices.length) * 100) : 0}%`, sub: "vehicles in use", positive: true },
+  ];
+
   return (
-    <div className="space-y-4">
-      {/* Period selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Gauge className="h-5 w-5 text-primary" />
-          Vehicle Intelligence
-        </h2>
-        <Select value={range} onValueChange={(v) => setRange(v as "7" | "14" | "30")}>
-          <SelectTrigger className="w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border z-50">
-            <SelectItem value="7">7 days</SelectItem>
-            <SelectItem value="14">14 days</SelectItem>
-            <SelectItem value="30">30 days</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* KPI strip */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <Route className="h-3.5 w-3.5" />
-              Total Miles
-            </div>
-            <p className="text-xl font-bold">{totalMiles.toFixed(0)}</p>
-            <p className="text-[10px] text-muted-foreground">{avgDailyMiles} mi/day avg</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <Clock className="h-3.5 w-3.5" />
-              Driving Hours
-            </div>
-            <p className="text-xl font-bold">{(totalDrivingMins / 60).toFixed(1)}</p>
-            <p className="text-[10px] text-muted-foreground">{totalTrips} trips</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <Car className="h-3.5 w-3.5" />
-              Fleet
-            </div>
-            <p className="text-xl font-bold">{devices.length}</p>
-            <p className="text-[10px] text-muted-foreground">{statusCounts.moving} active now</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <Zap className="h-3.5 w-3.5" />
-              Utilisation
-            </div>
-            <p className="text-xl font-bold">{utilizationPercent}%</p>
-            <p className="text-[10px] text-muted-foreground">vehicles in use</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts row */}
-      <div className="grid gap-3 md:grid-cols-2">
-        {/* Daily mileage bar chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Daily Mileage
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3">
-            {tsLoading || mileageLoading ? (
-              <Skeleton className="h-48" />
-            ) : dailyMileage.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-12">No trip data for this period</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={dailyMileage}>
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(d) => format(new Date(d), "dd MMM")}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis tick={{ fontSize: 10 }} width={35} />
-                  <Tooltip
-                    formatter={(v: number) => [`${v.toFixed(1)} mi`, "Miles"]}
-                    labelFormatter={(d) => format(new Date(d as string), "EEE dd MMM")}
-                  />
-                  <Bar dataKey="miles" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+    <div className="space-y-5">
+      {/* ── Period selector ── */}
+      <div className="bg-muted/40 rounded-xl p-1 flex max-w-xs">
+        {(["day", "week", "month"] as const).map(p => (
+          <button
+            key={p}
+            onClick={() => setPeriod(p)}
+            className={cn(
+              "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all capitalize",
+              period === p
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground"
             )}
-          </CardContent>
-        </Card>
-
-        {/* Real-time status pie */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Real-Time Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3">
-            {devices.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-12">No vehicles configured</p>
-            ) : (
-              <div className="flex items-center gap-4">
-                <ResponsiveContainer width={140} height={140}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      innerRadius={35}
-                      outerRadius={60}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[["Moving", "Idle", "Parked"].indexOf(pieData[i].name)]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ background: PIE_COLORS[0] }} />
-                    <span>Moving ({statusCounts.moving})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ background: PIE_COLORS[1] }} />
-                    <span>Idle ({statusCounts.idle})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ background: PIE_COLORS[2] }} />
-                    <span>Parked ({statusCounts.parked})</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          >
+            {p === "day" ? "Today" : p === "week" ? "Week" : "Month"}
+          </button>
+        ))}
       </div>
 
-      {/* Vehicle list */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Vehicle Status</CardTitle>
-        </CardHeader>
-        <CardContent className="pb-3">
-          <div className="space-y-2">
+      {/* ── Hero score ring + summary ── */}
+      <div className="flex items-center gap-5">
+        <div className="relative h-24 w-24 shrink-0">
+          <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
+            <circle
+              cx="50" cy="50" r="42"
+              fill="none"
+              stroke="hsl(var(--success))"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${driverScore * 2.64} ${264}`}
+              className="transition-all duration-700"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <p className="text-2xl font-bold text-foreground">{driverScore}</p>
+            <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Score</p>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-success" />
+            <span className="text-xs text-foreground">{totalMiles.toFixed(0)} miles this {period}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-chart-1" />
+            <span className="text-xs text-foreground">{totalTrips} trips completed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-warning" />
+            <span className="text-xs text-foreground">{statusCounts.moving} vehicle{statusCounts.moving !== 1 ? "s" : ""} active</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Live vehicle strip ── */}
+      {primaryDevice && (
+        <div className="bg-card rounded-2xl border border-border p-3 flex items-center gap-3 shadow-sm">
+          <div className={cn(
+            "h-10 w-10 rounded-xl flex items-center justify-center",
+            primaryState === "moving" ? "bg-success/10" : primaryState === "idle" ? "bg-warning/10" : "bg-muted/50"
+          )}>
+            <Car className={cn(
+              "h-5 w-5",
+              primaryState === "moving" ? "text-success" : primaryState === "idle" ? "text-warning" : "text-muted-foreground"
+            )} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">{primaryDevice.device_name || "Vehicle"}</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {primaryState === "moving" && primaryDevice.last_speed_kmh
+                ? `${Math.round(primaryDevice.last_speed_kmh * 0.621371)} mph`
+                : primaryState === "idle" ? "Engine on" : "Parked"
+              }
+              {primaryDevice.last_road_name ? ` · ${primaryDevice.last_road_name}` : ""}
+            </p>
+          </div>
+          <Badge
+            variant="secondary"
+            className={cn(
+              "border-0 text-[10px] capitalize",
+              primaryState === "moving" ? "bg-success/10 text-success" :
+              primaryState === "idle" ? "bg-warning/10 text-warning" :
+              "bg-muted text-muted-foreground"
+            )}
+          >
+            {primaryState}
+          </Badge>
+        </div>
+      )}
+
+      {/* ── Category: Journey ── */}
+      <CategorySection title="Journey" items={journeyItems} />
+
+      {/* ── Category: Safety & Performance ── */}
+      <CategorySection title="Safety & Performance" items={safetyItems} />
+
+      {/* ── Category: Vehicles ── */}
+      {devices.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
+            Vehicles
+          </p>
+          <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
             {devices.map(device => {
               const state = getVehicleState(device);
               return (
-                <div key={device.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                  <div className="flex items-center gap-3">
+                <div key={device.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className={cn(
+                    "h-9 w-9 rounded-xl flex items-center justify-center",
+                    state === "moving" ? "bg-success/10" : state === "idle" ? "bg-warning/10" : "bg-muted/50"
+                  )}>
                     {state === "moving" ? (
                       <Car className="h-4 w-4 text-success" />
                     ) : state === "idle" ? (
@@ -313,37 +253,103 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
                     ) : (
                       <ParkingCircle className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <div>
-                      <p className="text-sm font-medium">{device.device_name || "Vehicle"}</p>
-                      {device.last_road_name && (
-                        <p className="text-xs text-muted-foreground">{device.last_road_name}</p>
-                      )}
-                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground">{device.device_name || "Vehicle"}</p>
+                    {device.last_road_name && (
+                      <p className="text-[10px] text-muted-foreground truncate">{device.last_road_name}</p>
+                    )}
                   </div>
                   <Badge
                     variant="secondary"
-                    className={
-                      state === "moving"
-                        ? "bg-success/10 text-success"
-                        : state === "idle"
-                        ? "bg-warning/10 text-warning"
-                        : "bg-muted/50 text-muted-foreground"
-                    }
+                    className={cn(
+                      "border-0 text-[10px]",
+                      state === "moving" ? "bg-success/10 text-success" :
+                      state === "idle" ? "bg-warning/10 text-warning" :
+                      "bg-muted text-muted-foreground"
+                    )}
                   >
                     {state === "moving" ? `${Math.round((device.last_speed_kmh || 0) * 0.621371)} mph` : state}
                   </Badge>
                 </div>
               );
             })}
-            {devices.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No vehicles configured</p>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {/* Recent tracked lessons widget */}
-      <TrackedLessons instructorId={instructorId} compact limit={5} />
+      {/* ── Activity: Mileage Chart ── */}
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
+          Activity
+        </p>
+        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+          <p className="text-sm font-semibold text-foreground mb-3">
+            {period === "day" ? "Today's" : period === "week" ? "Weekly" : "Monthly"} Mileage
+          </p>
+          {tsLoading || mileageLoading ? (
+            <Skeleton className="h-[120px] rounded-xl" />
+          ) : dailyMileage.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-10">No trip data for this period</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={120}>
+              <BarChart data={dailyMileage}>
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v: number) => [`${v.toFixed(1)} mi`, "Miles"]}
+                  labelFormatter={(_, payload) => {
+                    if (payload?.[0]?.payload?.date) {
+                      return format(new Date(payload[0].payload.date), "EEE dd MMM");
+                    }
+                    return "";
+                  }}
+                />
+                <Bar dataKey="miles" fill="hsl(var(--success))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* ── Recent Lessons ── */}
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
+          Recent Lessons
+        </p>
+        <TrackedLessons instructorId={instructorId} compact limit={5} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Reusable category section ── */
+function CategorySection({ title, items }: {
+  title: string;
+  items: Array<{ icon: React.ElementType; label: string; value: string; sub: string; positive: boolean }>;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
+        {title}
+      </p>
+      <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
+        {items.map(item => (
+          <div key={item.label} className="flex items-center gap-3 px-4 py-3">
+            <div className={cn(
+              "h-9 w-9 rounded-xl flex items-center justify-center",
+              item.positive ? "bg-success/10" : "bg-destructive/10"
+            )}>
+              <item.icon className={cn("h-4 w-4", item.positive ? "text-success" : "text-destructive")} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-foreground">{item.label}</p>
+              {item.sub && <p className="text-[10px] text-muted-foreground">{item.sub}</p>}
+            </div>
+            <span className="text-sm font-semibold text-foreground">{item.value}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
