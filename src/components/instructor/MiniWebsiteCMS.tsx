@@ -127,12 +127,12 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
         <Globe className="h-4 w-4" />
         <span>Your website:</span>
         <a
-          href={`${baseUrl}/i/${instructorSlug}`}
+          href={siteBaseUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline flex items-center gap-1"
         >
-          {baseUrl}/i/{instructorSlug}
+          {customDomain || `${window.location.origin}/i/${instructorSlug}`}
           <ExternalLink className="h-3 w-3" />
         </a>
       </div>
