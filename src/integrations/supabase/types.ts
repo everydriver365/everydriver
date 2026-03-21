@@ -7789,6 +7789,41 @@ export type Database = {
           },
         ]
       }
+      lesson_pedal_data: {
+        Row: {
+          brake_pedal_pct: number | null
+          created_at: string | null
+          gear_position: number | null
+          id: string
+          recorded_at: string
+          telematics_id: string
+        }
+        Insert: {
+          brake_pedal_pct?: number | null
+          created_at?: string | null
+          gear_position?: number | null
+          id?: string
+          recorded_at: string
+          telematics_id: string
+        }
+        Update: {
+          brake_pedal_pct?: number | null
+          created_at?: string | null
+          gear_position?: number | null
+          id?: string
+          recorded_at?: string
+          telematics_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_pedal_data_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_ratings: {
         Row: {
           comment: string | null
