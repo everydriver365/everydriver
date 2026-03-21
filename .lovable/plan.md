@@ -1,93 +1,43 @@
 
 
-## Plan: Brake Pedal & Reverse Gear Pupil Driving Pattern Analysis
+## Plan: Add GPS Position, DTC Faults, Seatbelt & Tyre Pressure to Vehicle Health Page
 
 ### Current State
-- Brake pedal position and gear data are already in the Geotab `DIAGNOSTIC_MAP` and fetchable via `geotab-status-data`
-- But they're only shown as **live sensor gauges** — not tied to individual pupil lessons or used for pattern analysis
-- The `PupilDrivingReport` and `generate-driving-insights` edge function only analyse speed, harsh braking (from G-force), and acceleration — not pedal/gear data
+- `GeotabExtendedDiagnosticsTab` (seatbelt, tyre pressure, etc.) and `GeotabFaultCodesTab` (DTC codes) already exist as components
+- They're used in the Geotab Hub and Admin pages but **not** on the `InstructorVehicleHealth` page
+- `MiniLiveMap` component exists for real-time GPS display
+- The Vehicle Health "Live" tab only shows device cards, battery history, and ignition events
 
-### What This Adds
+### Changes
 
-1. **Per-lesson brake & gear metrics** — during Geotab-tracked lessons, poll brake pedal % and gear position alongside existing GPS data
-2. **Pupil pattern cards** — show brake smoothness score, reverse manoeuvre count/duration, and gear change frequency per session
-3. **Integration into driving insights** — feed brake/gear patterns into the AI coaching engine
+#### 1. Expand LiveTelemetryTab with new sub-tabs
 
----
+**File**: `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx`
 
-### Stream 1: Store Brake & Gear Data Per Lesson
+Add 3 new sub-tabs alongside existing Devices/Battery/Ignition:
+- **GPS** — embed `MiniLiveMap` showing real-time position of selected device
+- **Sensors** — embed `GeotabExtendedDiagnosticsTab` (seatbelt, tyre pressure, ambient temp, etc.)
+- **Faults** — embed `GeotabFaultCodesTab` (active DTC codes)
 
-**File**: `supabase/functions/geotab-poller/index.ts`
+Change the grid from `grid-cols-3` to `grid-cols-6` (or use a scrollable tab list) and add:
 
-During active lesson polling, add StatusData requests for `DiagnosticBrakePedalPositionId` and `DiagnosticTransmissionCurrentGearId` alongside existing GPS polling. Store results in a new lightweight table.
-
-**Migration**: Create `lesson_pedal_data` table:
-```sql
-CREATE TABLE public.lesson_pedal_data (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  telematics_id UUID REFERENCES public.lesson_telematics(id) ON DELETE CASCADE NOT NULL,
-  recorded_at TIMESTAMPTZ NOT NULL,
-  brake_pedal_pct NUMERIC,
-  gear_position INTEGER,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
--- Index for fast per-session queries
-CREATE INDEX idx_lesson_pedal_telematics ON public.lesson_pedal_data(telematics_id, recorded_at);
--- RLS
-ALTER TABLE public.lesson_pedal_data ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Instructors see own" ON public.lesson_pedal_data FOR SELECT TO authenticated
-  USING (telematics_id IN (
-    SELECT id FROM public.lesson_telematics WHERE instructor_id IN (
-      SELECT id FROM public.instructors WHERE auth_user_id = auth.uid()
-    )
-  ));
+```
+<TabsTrigger value="gps">GPS</TabsTrigger>
+<TabsTrigger value="sensors">Sensors</TabsTrigger>
+<TabsTrigger value="faults">Faults</TabsTrigger>
 ```
 
-### Stream 2: New Hook for Pedal/Gear Analysis
+- **GPS tab**: Show `MiniLiveMap` for the selected device using its `last_latitude`/`last_longitude`/`heading` from the device data already available
+- **Sensors tab**: Render `<GeotabExtendedDiagnosticsTab />` (reuses existing component, already shows seatbelt + tyre pressure)
+- **Faults tab**: Render `<GeotabFaultCodesTab />` (reuses existing component)
 
-**New file**: `src/hooks/useLessonPedalData.ts`
+Both sensor/fault tabs are gated on `tracking_provider === "geotab"` — non-Geotab users see a placeholder message.
 
-Fetches `lesson_pedal_data` for a telematics session and computes:
-- **Brake smoothness score** (0–100): penalises sudden jumps from 0→80%+, rewards gradual pedal application
-- **Reverse manoeuvre count**: consecutive readings where gear = -1
-- **Average reverse duration**: time spent in reverse per manoeuvre
-- **Gear change frequency**: changes per km driven
-
-### Stream 3: Pupil Driving Pattern Card
-
-**New file**: `src/components/instructor/PupilBrakeGearAnalysis.tsx`
-
-A card component showing per-session analysis:
-- Brake smoothness gauge (circular progress)
-- Brake pedal timeline chart (small sparkline of pedal % over time)
-- Reverse manoeuvres list with duration
-- Gear usage distribution (pie/bar: time in each gear)
-
-Integrated into `PupilDrivingReport.tsx` as a new tab alongside existing "Route Map" and "Events" tabs.
-
-### Stream 4: Feed into AI Coaching
-
-**File**: `supabase/functions/generate-driving-insights/index.ts`
-
-Add a query for `lesson_pedal_data` aggregates and include in the prompt context:
-- "Pupil applied brakes harshly (0→90%) 4 times in last 3 sessions"
-- "Pupil spent average 45 seconds per reverse manoeuvre (improving from 60s)"
-- This enriches the coaching tips with pedal/gear-specific advice
-
-### Stream 5: Poller Integration
-
-**File**: `supabase/functions/geotab-poller/index.ts`
-
-In the main polling loop (where GPS points are fetched), add a parallel `StatusData` call for brake pedal and gear. Insert results into `lesson_pedal_data` with the same `telematics_id`.
-
-### Files Summary
+### Files
 
 | Action | File |
 |--------|------|
-| Migration | `lesson_pedal_data` table with RLS |
-| Edit | `supabase/functions/geotab-poller/index.ts` — poll brake/gear during lessons |
-| Create | `src/hooks/useLessonPedalData.ts` — fetch + compute metrics |
-| Create | `src/components/instructor/PupilBrakeGearAnalysis.tsx` — analysis card |
-| Edit | `src/components/instructor/PupilDrivingReport.tsx` — add Brake & Gear tab |
-| Edit | `supabase/functions/generate-driving-insights/index.ts` — include pedal/gear in AI context |
+| Edit | `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — add GPS, Sensors, Faults sub-tabs |
+
+This is a lightweight integration since all underlying components and data hooks already exist.
 
