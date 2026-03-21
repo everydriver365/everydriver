@@ -90,7 +90,8 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
         .from("gps_devices")
         .select("id, device_name, last_speed_kmh, last_ignition_status, last_seen_at, last_road_name, last_latitude, last_longitude")
         .eq("instructor_id", instructorId)
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .not("last_seen_at", "is", null);
       setDevices((data as DeviceStatus[]) || []);
       setLoading(false);
     }
