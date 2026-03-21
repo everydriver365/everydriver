@@ -118,8 +118,8 @@ export function LiveTelemetryTab({
             <MiniLiveMap
               latitude={selectedDevice.last_latitude ?? null}
               longitude={selectedDevice.last_longitude ?? null}
-              heading={selectedDevice.heading ?? null}
-              speedKmh={selectedDevice.speed_kmh ?? null}
+              heading={selectedDevice.last_heading ?? null}
+              speedKmh={selectedDevice.last_speed_kmh ?? null}
               lastSeenAt={selectedDevice.last_seen_at}
               isActive={!!selectedDevice.last_seen_at && (Date.now() - new Date(selectedDevice.last_seen_at).getTime() < 30000)}
             />
