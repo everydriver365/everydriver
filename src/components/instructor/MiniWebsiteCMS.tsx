@@ -158,7 +158,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
             </div>
             <div className="flex items-center gap-2">
               <a
-                href={`${baseUrl}/i/${instructorSlug}${page.page_type !== "home" ? `/${page.page_type}` : ""}`}
+                href={getPageUrl(page.page_type)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
