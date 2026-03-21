@@ -14,6 +14,7 @@ interface CarStickerGeneratorProps {
   instructorSlug: string | null;
   logoUrl: string | null;
   brandColour: string | null;
+  customDomain: string | null;
 }
 
 export function CarStickerGenerator({
