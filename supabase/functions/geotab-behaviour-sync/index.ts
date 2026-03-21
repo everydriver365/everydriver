@@ -190,6 +190,7 @@ Deno.serve(async (req) => {
 
     const exceptionEvents: any[] = results[0] || [];
     const trips: any[] = results[1] || [];
+    console.log("[BehaviourSync] Got", exceptionEvents.length, "exception events,", trips.length, "trips,", (allRules || []).length, "rules");
 
     // Build device lookup
     const deviceByGeotab = new Map<string, typeof devices[0]>();
