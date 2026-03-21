@@ -4,9 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Printer, Car, Eye } from "lucide-react";
+import { Download, Printer, Car } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
+import stickerLPlate from "@/assets/sticker-l-plate.png";
+import stickerCar from "@/assets/sticker-car.png";
+import stickerStars from "@/assets/sticker-stars.png";
+import stickerBadge from "@/assets/sticker-badge.png";
 
 interface CarStickerGeneratorProps {
   instructorName: string;
@@ -34,6 +38,16 @@ function lightenColor(r: number, g: number, b: number, factor: number) {
 
 function drawRoundedRect(pdf: jsPDF, x: number, y: number, w: number, h: number, radius: number) {
   pdf.roundedRect(x, y, w, h, radius, radius, "F");
+}
+
+async function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
 }
 
 export function CarStickerGenerator({
@@ -77,117 +91,134 @@ export function CarStickerGenerator({
       pdf.setFillColor(brand.r, brand.g, brand.b);
       pdf.rect(0, 0, width, height, "F");
 
-      // === WHITE INNER CARD with rounded corners ===
-      const margin = isA6 ? 6 : 8;
+      // === WHITE INNER CARD ===
+      const margin = isA6 ? 5 : 7;
       const cardW = width - margin * 2;
       const cardH = height - margin * 2;
       pdf.setFillColor(255, 255, 255);
-      drawRoundedRect(pdf, margin, margin, cardW, cardH, isA6 ? 6 : 8);
+      drawRoundedRect(pdf, margin, margin, cardW, cardH, isA6 ? 5 : 7);
 
       // === TOP ACCENT BAR ===
-      const barH = isA6 ? 5 : 7;
+      const barH = isA6 ? 4 : 5;
       pdf.setFillColor(brand.r, brand.g, brand.b);
-      drawRoundedRect(pdf, margin, margin, cardW, barH + 4, isA6 ? 6 : 8);
-      // Square off the bottom of the bar
-      pdf.rect(margin, margin + 4, cardW, barH, "F");
+      drawRoundedRect(pdf, margin, margin, cardW, barH + 3, isA6 ? 5 : 7);
+      pdf.rect(margin, margin + 3, cardW, barH, "F");
 
-      let yPos = margin + barH + (isA6 ? 10 : 14);
+      // === L-PLATES in top corners ===
+      const lPlateSize = isA6 ? 8 : 11;
+      try {
+        const lPlateImg = await loadImage(stickerLPlate);
+        pdf.addImage(lPlateImg, "PNG", margin + 3, margin + barH + 2, lPlateSize, lPlateSize);
+        pdf.addImage(lPlateImg, "PNG", width - margin - lPlateSize - 3, margin + barH + 2, lPlateSize, lPlateSize);
+      } catch { /* skip */ }
+
+      let yPos = margin + barH + lPlateSize + (isA6 ? 5 : 7);
 
       // === LOGO ===
       if (logoUrl) {
         try {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => resolve();
-            img.onerror = reject;
-            img.src = logoUrl;
-          });
-          const logoSize = isA6 ? 22 : 30;
+          const img = await loadImage(logoUrl);
+          const logoSize = isA6 ? 18 : 25;
           pdf.addImage(img, "PNG", (width - logoSize) / 2, yPos, logoSize, logoSize);
-          yPos += logoSize + (isA6 ? 5 : 7);
+          yPos += logoSize + (isA6 ? 3 : 5);
         } catch {
           yPos += 2;
         }
       }
 
-      // === INSTRUCTOR NAME (large, bold) ===
+      // === INSTRUCTOR NAME ===
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(isA6 ? 18 : 24);
+      pdf.setFontSize(isA6 ? 16 : 22);
       pdf.setTextColor(brand.r, brand.g, brand.b);
       const nameLines = pdf.splitTextToSize(instructorName, cardW - 16);
       pdf.text(nameLines, width / 2, yPos, { align: "center" });
-      yPos += nameLines.length * (isA6 ? 7 : 9) + (isA6 ? 3 : 4);
+      yPos += nameLines.length * (isA6 ? 6 : 8) + (isA6 ? 1 : 2);
 
-      // === DIVIDER LINE ===
-      pdf.setDrawColor(lightBrand.r, lightBrand.g, lightBrand.b);
-      pdf.setLineWidth(0.8);
-      const divPad = isA6 ? 20 : 28;
-      pdf.line(divPad, yPos, width - divPad, yPos);
-      yPos += isA6 ? 5 : 7;
+      // === STARS ===
+      const starsW = isA6 ? 28 : 38;
+      const starsH = isA6 ? 6 : 8;
+      try {
+        const starsImg = await loadImage(stickerStars);
+        pdf.addImage(starsImg, "PNG", (width - starsW) / 2, yPos, starsW, starsH);
+        yPos += starsH + (isA6 ? 2 : 3);
+      } catch {
+        yPos += 2;
+      }
 
       // === SUBTITLE ===
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(isA6 ? 10 : 13);
-      pdf.setTextColor(60, 60, 60);
+      pdf.setFontSize(isA6 ? 8 : 10);
+      pdf.setTextColor(80, 80, 80);
       pdf.text("DRIVING INSTRUCTOR", width / 2, yPos, { align: "center" });
-      yPos += isA6 ? 8 : 10;
+      yPos += isA6 ? 5 : 7;
 
-      // === TAGLINE in brand pill ===
-      const tagFontSize = isA6 ? 9 : 11;
-      pdf.setFontSize(tagFontSize);
-      const tagLines = pdf.splitTextToSize(tagline, cardW - 24);
-      const pillH = tagLines.length * (tagFontSize * 0.4) + (isA6 ? 6 : 8);
-      const pillW = cardW - (isA6 ? 16 : 20);
-      pdf.setFillColor(lightBrand.r, lightBrand.g, lightBrand.b);
-      drawRoundedRect(pdf, (width - pillW) / 2, yPos - (isA6 ? 3 : 4), pillW, pillH, 3);
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(brand.r, brand.g, brand.b);
-      pdf.text(tagLines, width / 2, yPos + 1, { align: "center" });
-      yPos += pillH + (isA6 ? 6 : 8);
-
-      // === PHONE NUMBER (big & bold) ===
-      if (instructorPhone) {
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(isA6 ? 18 : 24);
-        pdf.setTextColor(brand.r, brand.g, brand.b);
-        pdf.text(instructorPhone, width / 2, yPos, { align: "center" });
-        yPos += isA6 ? 10 : 14;
+      // === CAR ILLUSTRATION ===
+      const carW = isA6 ? 40 : 55;
+      const carH = isA6 ? 16 : 22;
+      try {
+        const carImg = await loadImage(stickerCar);
+        pdf.addImage(carImg, "PNG", (width - carW) / 2, yPos, carW, carH);
+        yPos += carH + (isA6 ? 3 : 4);
+      } catch {
+        yPos += 4;
       }
 
-      // === QR CODE ===
+      // === TAGLINE PILL ===
+      const tagFontSize = isA6 ? 8 : 10;
+      pdf.setFontSize(tagFontSize);
+      const tagLines = pdf.splitTextToSize(tagline, cardW - 20);
+      const pillH = tagLines.length * (tagFontSize * 0.4) + (isA6 ? 5 : 7);
+      const pillW = cardW - (isA6 ? 14 : 18);
+      pdf.setFillColor(lightBrand.r, lightBrand.g, lightBrand.b);
+      drawRoundedRect(pdf, (width - pillW) / 2, yPos - 3, pillW, pillH, 2.5);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(brand.r, brand.g, brand.b);
+      pdf.text(tagLines, width / 2, yPos + 0.5, { align: "center" });
+      yPos += pillH + (isA6 ? 4 : 6);
+
+      // === PHONE NUMBER ===
+      if (instructorPhone) {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(isA6 ? 16 : 22);
+        pdf.setTextColor(brand.r, brand.g, brand.b);
+        pdf.text(instructorPhone, width / 2, yPos, { align: "center" });
+        yPos += isA6 ? 8 : 11;
+      }
+
+      // === QR CODE + BADGE side by side ===
       if (bookingUrl) {
-        const qrSize = isA6 ? 30 : 42;
+        const qrSize = isA6 ? 24 : 34;
+        const badgeSize = isA6 ? 16 : 22;
+        const totalW = qrSize + badgeSize + (isA6 ? 6 : 8);
+        const startX = (width - totalW) / 2;
+
+        // QR Code
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&color=${brand.r.toString(16).padStart(2, '0')}${brand.g.toString(16).padStart(2, '0')}${brand.b.toString(16).padStart(2, '0')}&data=${encodeURIComponent(bookingUrl)}`;
         try {
-          const qrImg = new Image();
-          qrImg.crossOrigin = "anonymous";
-          await new Promise<void>((resolve, reject) => {
-            qrImg.onload = () => resolve();
-            qrImg.onerror = reject;
-            qrImg.src = qrUrl;
-          });
-          // White background behind QR
-          pdf.setFillColor(255, 255, 255);
-          const qrPad = 2;
-          drawRoundedRect(pdf, (width - qrSize) / 2 - qrPad, yPos - qrPad, qrSize + qrPad * 2, qrSize + qrPad * 2, 3);
-          pdf.addImage(qrImg, "PNG", (width - qrSize) / 2, yPos, qrSize, qrSize);
-          yPos += qrSize + (isA6 ? 4 : 5);
-        } catch {
-          // Skip QR if load fails
-        }
+          const qrImg = await loadImage(qrUrl);
+          pdf.addImage(qrImg, "PNG", startX, yPos, qrSize, qrSize);
+        } catch { /* skip */ }
+
+        // Badge
+        try {
+          const badgeImg = await loadImage(stickerBadge);
+          const badgeY = yPos + (qrSize - badgeSize) / 2;
+          pdf.addImage(badgeImg, "PNG", startX + qrSize + (isA6 ? 6 : 8), badgeY, badgeSize, badgeSize);
+        } catch { /* skip */ }
+
+        yPos += qrSize + (isA6 ? 3 : 4);
 
         // === SCAN LABEL ===
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(isA6 ? 8 : 10);
+        pdf.setFontSize(isA6 ? 7 : 9);
         pdf.setTextColor(80, 80, 80);
         pdf.text("SCAN TO BOOK ONLINE", width / 2, yPos, { align: "center" });
-        yPos += isA6 ? 4 : 5;
+        yPos += isA6 ? 3 : 4;
 
-        // === DOMAIN URL ===
+        // === DOMAIN ===
         if (displayDomain) {
           pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(isA6 ? 7 : 9);
+          pdf.setFontSize(isA6 ? 6.5 : 8);
           pdf.setTextColor(brand.r, brand.g, brand.b);
           pdf.text(displayDomain, width / 2, yPos, { align: "center" });
         }
@@ -195,8 +226,8 @@ export function CarStickerGenerator({
 
       // === BOTTOM ACCENT BAR ===
       pdf.setFillColor(brand.r, brand.g, brand.b);
-      const bottomBarY = margin + cardH - barH - 4;
-      drawRoundedRect(pdf, margin, bottomBarY, cardW, barH + 4, isA6 ? 6 : 8);
+      const bottomBarY = margin + cardH - barH - 3;
+      drawRoundedRect(pdf, margin, bottomBarY, cardW, barH + 3, isA6 ? 5 : 7);
       pdf.rect(margin, bottomBarY, cardW, barH, "F");
 
       pdf.save(`${instructorName.replace(/\s+/g, "-").toLowerCase()}-car-sticker.pdf`);
@@ -250,36 +281,48 @@ export function CarStickerGenerator({
             width: stickerSize === "a6" ? 210 : 250,
             aspectRatio: stickerSize === "a6" ? "105/148" : "148/210",
             backgroundColor: brandColour || "#1877F2",
-            padding: 8,
+            padding: 6,
           }}
         >
-          <div className="bg-white rounded-lg h-full flex flex-col items-center justify-center text-center px-3 py-2 relative overflow-hidden">
+          <div className="bg-white rounded-lg h-full flex flex-col items-center justify-center text-center px-2 py-1 relative overflow-hidden">
             {/* Top bar */}
             <div
-              className="absolute top-0 left-0 right-0 h-2"
+              className="absolute top-0 left-0 right-0 h-1.5"
               style={{ backgroundColor: brandColour || "#1877F2" }}
             />
             {/* Bottom bar */}
             <div
-              className="absolute bottom-0 left-0 right-0 h-2"
+              className="absolute bottom-0 left-0 right-0 h-1.5"
               style={{ backgroundColor: brandColour || "#1877F2" }}
             />
 
-            <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
+            {/* L-plates in top corners */}
+            <img src={stickerLPlate} alt="L" className="absolute top-2.5 left-2 h-5 w-5 object-contain" />
+            <img src={stickerLPlate} alt="L" className="absolute top-2.5 right-2 h-5 w-5 object-contain" />
+
+            <div className="flex-1 flex flex-col items-center justify-center gap-0.5 py-4">
               {logoUrl && (
-                <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain" />
+                <img src={logoUrl} alt="Logo" className="h-6 w-6 object-contain" />
               )}
               <p
-                className="font-bold text-sm leading-tight"
+                className="font-bold text-xs leading-tight"
                 style={{ color: brandColour || "#1877F2" }}
               >
                 {instructorName}
               </p>
-              <p className="text-[8px] font-semibold text-muted-foreground tracking-widest uppercase">
+
+              {/* Stars */}
+              <img src={stickerStars} alt="5 stars" className="h-3 w-auto object-contain" />
+
+              <p className="text-[7px] font-semibold text-muted-foreground tracking-widest uppercase">
                 Driving Instructor
               </p>
+
+              {/* Car */}
+              <img src={stickerCar} alt="Car" className="h-6 w-auto object-contain my-0.5" />
+
               <div
-                className="rounded-full px-3 py-0.5 text-[7px] mt-0.5"
+                className="rounded-full px-2 py-0.5 text-[6px]"
                 style={{
                   backgroundColor: `${brandColour || "#1877F2"}15`,
                   color: brandColour || "#1877F2",
@@ -287,22 +330,29 @@ export function CarStickerGenerator({
               >
                 {tagline}
               </div>
+
               {instructorPhone && (
                 <p
-                  className="font-bold text-base mt-1"
+                  className="font-bold text-sm mt-0.5"
                   style={{ color: brandColour || "#1877F2" }}
                 >
                   {instructorPhone}
                 </p>
               )}
-              <div className="w-10 h-10 border border-muted rounded mt-1 flex items-center justify-center">
-                <span className="text-[6px] text-muted-foreground">QR</span>
+
+              {/* QR + Badge row */}
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="w-8 h-8 border border-muted rounded flex items-center justify-center">
+                  <span className="text-[5px] text-muted-foreground">QR</span>
+                </div>
+                <img src={stickerBadge} alt="Approved" className="h-6 w-6 object-contain" />
               </div>
-              <p className="text-[6px] font-semibold text-muted-foreground uppercase tracking-wide">
-                Scan to book
+
+              <p className="text-[5px] font-semibold text-muted-foreground uppercase tracking-wide">
+                Scan to book online
               </p>
               {displayDomain && (
-                <p className="text-[6px]" style={{ color: brandColour || "#1877F2" }}>
+                <p className="text-[5px]" style={{ color: brandColour || "#1877F2" }}>
                   {displayDomain}
                 </p>
               )}
