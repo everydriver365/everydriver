@@ -52,6 +52,8 @@ interface InstructorProfile {
   reflective_logs_enabled: boolean | null;
   pupil_self_booking_enabled: boolean | null;
   cancellation_analytics_enabled: boolean | null;
+  custom_domain: string | null;
+  custom_domain_verified: boolean | null;
 }
 
 interface Subscription {
