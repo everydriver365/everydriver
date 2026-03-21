@@ -139,6 +139,18 @@ export function AdminGeotabFleet() {
           <TabsTrigger value="dashcam" className="gap-1">
             <Camera className="h-3 w-3" /> Dashcam
           </TabsTrigger>
+          <TabsTrigger value="diagnostics" className="gap-1">
+            <CircleDot className="h-3 w-3" /> Sensors
+          </TabsTrigger>
+          <TabsTrigger value="faults" className="gap-1">
+            <Wrench className="h-3 w-3" /> Faults
+          </TabsTrigger>
+          <TabsTrigger value="behaviour" className="gap-1">
+            <ShieldAlert className="h-3 w-3" /> Behaviour
+          </TabsTrigger>
+          <TabsTrigger value="speeding" className="gap-1">
+            <Gauge className="h-3 w-3" /> Speeding
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="devices" className="mt-4">
