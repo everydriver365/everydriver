@@ -18,7 +18,7 @@ export interface StatusDataResponse {
   error?: string;
 }
 
-export type DiagnosticKey = "rpm" | "throttle" | "oilPressure" | "coolantTemp" | "fuelLevel" | "batteryVoltage";
+export type DiagnosticKey = "rpm" | "throttle" | "oilPressure" | "coolantTemp" | "fuelLevel" | "batteryVoltage" | "brakePedal" | "seatbelt" | "tyrePressure" | "ambientTemp" | "odometer" | "engineHours" | "reverseGear";
 
 export function useGeotabStatusData(
   instructorId: string | undefined,
