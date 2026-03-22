@@ -24,6 +24,7 @@ import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHo
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
+import { MileageTaxSavingsCard } from "@/components/instructor/dashboard/MileageTaxSavingsCard";
 import { ReferralCard } from "@/components/instructor/ReferralCard";
 import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
