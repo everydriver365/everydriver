@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,13 @@ export function AutoSchedulePreview({
     setLoading(true);
     setError(null);
     try {
+      // Fetch instructor's earliest slot preference
+      const { data: instrData } = await supabase
+        .from("instructors")
+        .select("prefer_earliest_slot")
+        .eq("id", instructorId)
+        .single();
+      
       const slots = await findOptimalSlots({
         instructorId,
         totalHours,
@@ -59,6 +67,7 @@ export function AutoSchedulePreview({
         preferredDays,
         courseType,
         startFromDate: new Date(),
+        preferEarliestSlot: (instrData as any)?.prefer_earliest_slot ?? false,
       });
 
       if (slots.length === 0) {

@@ -48,6 +48,7 @@ interface AutoScheduleParams {
   preferredDays?: string[]; // 'monday', 'tuesday', etc.
   courseType?: 'intensive' | 'semi-intensive' | 'weekly';
   startFromDate?: Date;
+  preferEarliestSlot?: boolean;
 }
 
 // Time ranges for preferences
@@ -107,6 +108,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
     preferredDays = [],
     courseType = 'weekly',
     startFromDate = new Date(),
+    preferEarliestSlot = false,
   } = params;
 
   const totalMinutesNeeded = totalHours * 60;
@@ -208,7 +210,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
             startTime: formatTime(currentTime),
             endTime: formatTime(currentTime + lessonLength),
             duration: lessonLength,
-            score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType),
+            score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType, preferEarliestSlot),
           });
           currentTime += 30; // 30-min increments
         }
@@ -223,7 +225,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
         startTime: formatTime(currentTime),
         endTime: formatTime(currentTime + lessonLength),
         duration: lessonLength,
-        score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType),
+        score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType, preferEarliestSlot),
       });
       currentTime += 30;
     }
@@ -280,7 +282,8 @@ function calculateScore(
   dayName: string,
   preferredTimes: string[],
   preferredDays: string[],
-  courseType: string
+  courseType: string,
+  preferEarliestSlot: boolean = false
 ): number {
   let score = 50; // Base score
 
@@ -311,6 +314,13 @@ function calculateScore(
   } else if (courseType === 'weekly') {
     // Prefer consistent timing
     if (timeHour >= 10 && timeHour <= 14) score += 3;
+  }
+
+  // Earliest slot priority: heavily boost earlier times
+  if (preferEarliestSlot) {
+    // Max bonus at 7am (+20), linearly decreasing to 0 at 8pm
+    const earliestBonus = Math.max(0, Math.round(20 - (timeHour - 7) * (20 / 13)));
+    score += earliestBonus;
   }
 
   return score;

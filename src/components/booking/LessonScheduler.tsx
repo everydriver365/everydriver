@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
-import { Calendar, Clock, X, Check, Bell } from "lucide-react";
+import { Calendar, Clock, X, Check, Bell, Sparkles } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,7 @@ export function LessonScheduler({
   const [loading, setLoading] = useState(true);
   const [viewMonth, setViewMonth] = useState(new Date());
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
+  const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
   
   // Base allowed lesson lengths from instructor settings
   const baseDurationOptions = useMemo(() => {
@@ -203,30 +204,35 @@ export function LessonScheduler({
   const fetchAvailability = async () => {
     setLoading(true);
     try {
-      const { data: hours } = await supabase
-        .from("instructor_working_hours")
-        .select("*")
-        .eq("instructor_id", instructorId);
+      const [hoursRes, overridesRes, calendarRes, instructorRes] = await Promise.all([
+        supabase
+          .from("instructor_working_hours")
+          .select("*")
+          .eq("instructor_id", instructorId),
+        supabase
+          .from("instructor_date_overrides")
+          .select("*")
+          .eq("instructor_id", instructorId)
+          .or(`override_end_date.gte.${format(new Date(), "yyyy-MM-dd")},override_end_date.is.null`)
+          .lte("override_date", format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd")),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time, end_time")
+          .eq("instructor_id", instructorId)
+          .eq("is_busy", true)
+          .gte("start_time", format(new Date(), "yyyy-MM-dd")),
+        supabase
+          .from("instructors")
+          .select("prefer_earliest_slot")
+          .eq("id", instructorId)
+          .single(),
+      ]);
 
-      const todayStr = format(new Date(), "yyyy-MM-dd");
-      const maxDateStr = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
-
-      const { data: overrides } = await supabase
-        .from("instructor_date_overrides")
-        .select("*")
-        .eq("instructor_id", instructorId)
-        // include overrides that still apply (either no end date, or end date not passed)
-        .or(`override_end_date.gte.${todayStr},override_end_date.is.null`)
-        // and only fetch overrides that could affect the currently bookable window
-        .lte("override_date", maxDateStr);
-
-      // Fetch external calendar events (Google Calendar busy times)
-      const { data: calendarEvents } = await supabase
-        .from("instructor_calendar_events")
-        .select("start_time, end_time")
-        .eq("instructor_id", instructorId)
-        .eq("is_busy", true)
-        .gte("start_time", todayStr);
+      const hours = hoursRes.data;
+      const overrides = overridesRes.data;
+      const calendarEvents = calendarRes.data;
+      
+      setPreferEarliestSlot((instructorRes.data as any)?.prefer_earliest_slot ?? false);
 
       setWorkingHours(
         (hours || []).map((h) => ({
@@ -661,7 +667,9 @@ export function LessonScheduler({
                   </Button>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {getAvailableTimeSlots(selectedDate).map((time) => (
+                  {(() => {
+                    const slots = getAvailableTimeSlots(selectedDate);
+                    return slots.map((time, idx) => (
                     <Button
                       key={time}
                       variant="outline"
@@ -676,12 +684,17 @@ export function LessonScheduler({
                         handleSelectSlot(selectedDate, time);
                       }}
                       disabled={remainingHours <= 0}
-                      className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
+                      className={cn(
+                        "text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation",
+                        preferEarliestSlot && idx === 0 && "border-primary bg-primary/10 ring-1 ring-primary"
+                      )}
                     >
-                      <Clock className="h-3 w-3 mr-1 pointer-events-none" />
+                      {preferEarliestSlot && idx === 0 && <Sparkles className="h-3 w-3 mr-1 text-primary pointer-events-none" />}
+                      {!(preferEarliestSlot && idx === 0) && <Clock className="h-3 w-3 mr-1 pointer-events-none" />}
                       {time}
                     </Button>
-                  ))}
+                    ));
+                  })()}
                   {getAvailableTimeSlots(selectedDate).length === 0 && (
                     <div className="col-span-3 text-center py-4 space-y-3">
                       <p className="text-xs text-muted-foreground">
@@ -766,7 +779,9 @@ export function LessonScheduler({
                   Times for {format(selectedDate, "EEE, d MMM")}
                 </h4>
                 <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
-                  {getAvailableTimeSlots(selectedDate).map((time) => (
+                  {(() => {
+                    const slots = getAvailableTimeSlots(selectedDate);
+                    return slots.map((time, idx) => (
                     <Button
                       key={time}
                       variant="outline"
@@ -781,12 +796,17 @@ export function LessonScheduler({
                         handleSelectSlot(selectedDate, time);
                       }}
                       disabled={remainingHours <= 0}
-                      className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
+                      className={cn(
+                        "text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation",
+                        preferEarliestSlot && idx === 0 && "border-primary bg-primary/10 ring-1 ring-primary"
+                      )}
                     >
-                      <Clock className="h-3 w-3 mr-1 pointer-events-none" />
+                      {preferEarliestSlot && idx === 0 && <Sparkles className="h-3 w-3 mr-1 text-primary pointer-events-none" />}
+                      {!(preferEarliestSlot && idx === 0) && <Clock className="h-3 w-3 mr-1 pointer-events-none" />}
                       {time}
                     </Button>
-                  ))}
+                    ));
+                  })()}
                   {getAvailableTimeSlots(selectedDate).length === 0 && (
                     <div className="col-span-2 text-center py-4 space-y-3">
                       <p className="text-xs text-muted-foreground">

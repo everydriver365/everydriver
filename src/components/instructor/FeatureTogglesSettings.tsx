@@ -26,6 +26,7 @@ const featureToggles: FeatureToggle[] = [
   { key: "cash_payments_enabled", label: "Cash Payments", description: "Allow pupils to select 'Pay by Cash' during booking checkout", defaultValue: false },
   { key: "instant_bank_pay_enabled", label: "Instant Bank Pay", description: "Offer one-off bank payments at checkout via GoCardless (lower fees than card)", defaultValue: false },
   { key: "direct_debit_enabled", label: "Direct Debit for Pupils", description: "Collect weekly lesson payments via Direct Debit from recurring pupils", defaultValue: false },
+  { key: "prefer_earliest_slot", label: "Earliest Slot Priority", description: "Offer pupils the earliest available slot first to keep your day compact and avoid gaps", defaultValue: false },
 ];
 
 interface FeatureTogglesSettingsProps {

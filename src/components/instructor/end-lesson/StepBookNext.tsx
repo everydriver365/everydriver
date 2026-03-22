@@ -38,13 +38,14 @@ export function StepBookNext({
 
   const findAvailableSlots = async () => {
     try {
-      // Fetch instructor buffer_minutes
+      // Fetch instructor buffer_minutes and earliest slot preference
       const { data: instructorData } = await supabase
         .from("instructors")
-        .select("buffer_minutes")
+        .select("buffer_minutes, prefer_earliest_slot")
         .eq("id", instructorId)
         .single();
       const bufferMins = instructorData?.buffer_minutes || 0;
+      const preferEarliest = (instructorData as any)?.prefer_earliest_slot ?? false;
 
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
@@ -82,7 +83,9 @@ export function StepBookNext({
           });
 
         // Simple: suggest slots at 9am, 11am, 1pm, 3pm that don't conflict
-        const candidateTimes = ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
+        const candidateTimes = preferEarliest 
+          ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
+          : ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
 
         for (const ct of candidateTimes) {
           if (found.length >= 3) break;
