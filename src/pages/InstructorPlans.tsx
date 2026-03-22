@@ -122,11 +122,12 @@ function FeatureSection({
 }
 
 export default function InstructorPlans() {
-  const { subscription, signOut } = useInstructorAuth();
+  const { subscription, signOut, refreshInstructor, instructor } = useInstructorAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [categoryFeatures, setCategoryFeatures] = useState<CategoryFeatures>({});
   const [loading, setLoading] = useState(true);
+  const [switching, setSwitching] = useState<string | null>(null);
 
   const currentPlanSlug = subscription?.plan_slug || "free";
 
