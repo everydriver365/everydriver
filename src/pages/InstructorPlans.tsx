@@ -371,7 +371,12 @@ export default function InstructorPlans() {
 
                       {/* Price */}
                       <div className="flex items-baseline gap-1">
-                        {plan.show_contact_us ? (
+                        {plan.is_per_seat ? (
+                          <>
+                            <span className="text-2xl font-extrabold text-white">£{plan.base_price_monthly}</span>
+                            <span className="text-sm text-white/70">/mo base</span>
+                          </>
+                        ) : plan.show_contact_us ? (
                           <span className="text-2xl font-extrabold text-white">Contact Us</span>
                         ) : plan.price_monthly === 0 ? (
                           <span className="text-3xl font-extrabold text-white">Free</span>
@@ -383,7 +388,18 @@ export default function InstructorPlans() {
                         )}
                       </div>
 
-                      {!plan.show_contact_us && plan.price_yearly && plan.price_monthly > 0 && (
+                      {plan.is_per_seat && (
+                        <div className="mt-1.5 space-y-0.5">
+                          <p className="text-xs text-white/80 font-medium">
+                            + £{plan.per_seat_price_monthly}/mo per instructor
+                          </p>
+                          <p className="text-[10px] text-white/50">
+                            Min {plan.min_seats} seats · From £{(plan.base_price_monthly + plan.min_seats * plan.per_seat_price_monthly).toFixed(2)}/mo
+                          </p>
+                        </div>
+                      )}
+
+                      {!plan.is_per_seat && !plan.show_contact_us && plan.price_yearly && plan.price_monthly > 0 && (
                         <p className="text-xs text-white/60 mt-1">
                           or £{plan.price_yearly}/year (save £{(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)})
                         </p>
