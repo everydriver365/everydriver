@@ -1,5 +1,6 @@
 import { Route } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+import { FeatureGate } from "@/components/instructor/FeatureGate";
 
 // Auth
 const InstructorPortalLogin = lazy(() => import("@/pages/InstructorPortalLogin"));
@@ -104,12 +105,21 @@ const WaitingRoomPage = lazy(() => import("@/pages/instructor-app/WaitingRoomPag
 // School
 const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
 
+// Helper to wrap a component with FeatureGate
+function Gated({ feature, label, children }: { feature: string; label: string; children: React.ReactNode }) {
+  return (
+    <FeatureGate requiredFeature={feature} featureLabel={label}>
+      {children}
+    </FeatureGate>
+  );
+}
+
 export const instructorPortalRoutes = (
   <>
     {/* Auth */}
     <Route path="/instructor/login" element={<InstructorPortalLogin />} />
 
-    {/* Core */}
+    {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
@@ -125,60 +135,60 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
     <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
     <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
-    <Route path="/instructor/gaps" element={<InstructorGaps />} />
+    <Route path="/instructor/gaps" element={<Gated feature="sms_notifications" label="Fill Gaps"><InstructorGaps /></Gated>} />
     <Route path="/instructor/waiting-list" element={<InstructorWaitingList />} />
 
-    {/* Finance & payments */}
-    <Route path="/instructor/pay" element={<InstructorPay />} />
-    <Route path="/instructor/take-payment" element={<InstructorTakePayment />} />
-    <Route path="/instructor/income" element={<InstructorIncome />} />
-    <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-    <Route path="/instructor/accounts" element={<InstructorAccounts />} />
-    <Route path="/instructor/tax" element={<InstructorTax />} />
+    {/* Finance & payments — gated */}
+    <Route path="/instructor/pay" element={<Gated feature="payment_tracking" label="Payments"><InstructorPay /></Gated>} />
+    <Route path="/instructor/take-payment" element={<Gated feature="payment_tracking" label="Take Payment"><InstructorTakePayment /></Gated>} />
+    <Route path="/instructor/income" element={<Gated feature="payment_tracking" label="Income"><InstructorIncome /></Gated>} />
+    <Route path="/instructor/expenses" element={<Gated feature="expense_tracking" label="Expenses"><InstructorExpenses /></Gated>} />
+    <Route path="/instructor/accounts" element={<Gated feature="payment_tracking" label="Accounts"><InstructorAccounts /></Gated>} />
+    <Route path="/instructor/tax" element={<Gated feature="expense_tracking" label="Tax"><InstructorTax /></Gated>} />
     <Route path="/instructor/subscriptions" element={<InstructorSubscriptions />} />
-    <Route path="/instructor/in-out" element={<InstructorInOut />} />
-    <Route path="/instructor/month-end" element={<MonthEndReview />} />
+    <Route path="/instructor/in-out" element={<Gated feature="expense_tracking" label="In & Out"><InstructorInOut /></Gated>} />
+    <Route path="/instructor/month-end" element={<Gated feature="payment_tracking" label="Month End"><MonthEndReview /></Gated>} />
     <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
 
-    {/* Communication */}
+    {/* Communication — always accessible */}
     <Route path="/instructor/messages" element={<InstructorMessages />} />
     <Route path="/instructor/visitor-chats" element={<InstructorVisitorChats />} />
     <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
     <Route path="/instructor/contact" element={<InstructorContact />} />
     <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
 
-    {/* Vehicle & GPS */}
-    <Route path="/instructor/satnav" element={<InstructorSatNav />} />
-    <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
-    <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
+    {/* Vehicle & GPS — gated */}
+    <Route path="/instructor/satnav" element={<Gated feature="telematics" label="SatNav"><InstructorSatNav /></Gated>} />
+    <Route path="/instructor/find-my-car" element={<Gated feature="telematics" label="Find My Car"><InstructorFindMyCar /></Gated>} />
+    <Route path="/instructor/vehicle-health" element={<Gated feature="telematics" label="Vehicle Health"><InstructorVehicleHealth /></Gated>} />
     <Route path="/instructor/fuel" element={<InstructorFuel />} />
     <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
-    <Route path="/instructor/routes" element={<InstructorRoutes />} />
-    <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
-    <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
-    <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
-    <Route path="/instructor/live" element={<InstructorLiveSession />} />
-    <Route path="/instructor/tracking" element={<InstructorLiveSession />} />
+    <Route path="/instructor/routes" element={<Gated feature="telematics" label="Saved Routes"><InstructorRoutes /></Gated>} />
+    <Route path="/instructor/trip-replay/:routeId" element={<Gated feature="telematics" label="Trip Replay"><InstructorTripReplay /></Gated>} />
+    <Route path="/instructor/trip-replay" element={<Gated feature="telematics" label="Trip Replay"><InstructorTripReplay /></Gated>} />
+    <Route path="/instructor/fleet-dashboard" element={<Gated feature="telematics" label="Telematics Dashboard"><InstructorFleetDashboard /></Gated>} />
+    <Route path="/instructor/live" element={<Gated feature="telematics" label="Live Session"><InstructorLiveSession /></Gated>} />
+    <Route path="/instructor/tracking" element={<Gated feature="telematics" label="GPS Tracking"><InstructorLiveSession /></Gated>} />
     
-    <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
-    <Route path="/instructor/settings/tracking" element={<InstructorGPSSetup />} />
+    <Route path="/instructor/settings/gps" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
+    <Route path="/instructor/settings/tracking" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
     
-    <Route path="/instructor/geotab" element={<InstructorGeotabHub />} />
-    <Route path="/instructor/dashcam" element={<DashcamGallery />} />
+    <Route path="/instructor/geotab" element={<Gated feature="telematics" label="Geotab Hub"><InstructorGeotabHub /></Gated>} />
+    <Route path="/instructor/dashcam" element={<Gated feature="dashcam" label="Dashcam"><DashcamGallery /></Gated>} />
     <Route path="/instructor/find-nearby" element={<InstructorFindNearby />} />
     <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
     <Route path="/instructor/locations" element={<InstructorLocations />} />
 
-    {/* Website & marketing */}
-    <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
-    <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
+    {/* Website & marketing — gated */}
+    <Route path="/instructor/website" element={<Gated feature="mini_website" label="Mini Website"><InstructorMiniWebsiteSettings /></Gated>} />
+    <Route path="/instructor/domains" element={<Gated feature="mini_website" label="Domains"><InstructorDomainsManagement /></Gated>} />
     <Route path="/instructor/reviews" element={<InstructorReviews />} />
     <Route path="/instructor/referrals" element={<InstructorReferrals />} />
     <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
     <Route path="/instructor/automations" element={<InstructorAutomations />} />
     <Route path="/instructor/abandoned-checkouts" element={<InstructorAbandonedCheckouts />} />
 
-    {/* Professional development & compliance */}
+    {/* Professional development & compliance — always accessible */}
     <Route path="/instructor/test-results" element={<InstructorTestResults />} />
     <Route path="/instructor/standards-check" element={<InstructorStandardsCheck />} />
     <Route path="/instructor/cpd" element={<InstructorCPD />} />
