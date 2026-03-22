@@ -170,6 +170,7 @@ serve(async (req) => {
           plan_id: plan_id,
           plan_name: plan.name,
           plan_amount: planAmount.toString(),
+          ...(plan.is_per_seat && { seat_count: seats.toString(), per_seat_price: Math.round((plan.per_seat_price_monthly || 0) * 100).toString() }),
           ...(isFirstMonthFree && { promo: "first-month-free", subscription_start_date: subscriptionStartDate }),
         },
       },
