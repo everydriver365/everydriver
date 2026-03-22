@@ -392,7 +392,7 @@ export default function ComparisonPage() {
             { feature: "Dashcam telematics", ed: "Included", others: "Not available" },
             { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available" },
             { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none" },
-            { feature: "Healthcare add-on", ed: "£19.99/mo", others: "Not available" },
+            { feature: "Healthcare benefits", ed: "Included (GPS+)", others: "Not available" },
           ].map((row) => (
             <div key={row.feature} className="rounded-xl border bg-card p-4">
               <div className="text-xs font-bold text-foreground mb-2">{row.feature}</div>
