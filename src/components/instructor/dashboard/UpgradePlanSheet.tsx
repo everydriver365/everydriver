@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { supabase } from "@/integrations/supabase/client";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 
 interface Plan {
@@ -30,6 +31,8 @@ interface UpgradePlanSheetProps {
 export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: UpgradePlanSheetProps) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [switching, setSwitching] = useState<string | null>(null);
+  const { subscription, refreshInstructor } = useInstructorAuth();
 
   useEffect(() => {
     if (!open) return;
@@ -52,11 +55,33 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
     fetchPlans();
   }, [open]);
 
-  const handleUpgrade = (plan: Plan) => {
-    toast.success(`To upgrade to ${plan.name}, please contact us`, {
-      description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
-      duration: 5000,
-    });
+  const handleChangePlan = async (plan: Plan) => {
+    if (!subscription?.id) return;
+
+    if (plan.price_monthly > 0 && currentPlanSlug === "free") {
+      toast.success(`To upgrade to ${plan.name}, please contact us`, {
+        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    setSwitching(plan.slug);
+    try {
+      const { error } = await supabase
+        .from("instructor_subscriptions")
+        .update({ plan_id: plan.id })
+        .eq("id", subscription.id);
+
+      if (error) throw error;
+      await refreshInstructor();
+      toast.success(`Switched to ${plan.name} plan!`);
+      onOpenChange(false);
+    } catch (err) {
+      toast.error("Failed to switch plan.");
+    } finally {
+      setSwitching(null);
+    }
   };
 
   return (
@@ -131,7 +156,8 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
                       variant="default"
                       size="sm"
                       className="w-full gap-1.5"
-                      onClick={() => handleUpgrade(plan)}
+                      onClick={() => handleChangePlan(plan)}
+                      disabled={switching === plan.slug}
                     >
                       <Mail className="h-3.5 w-3.5" />
                       {plan.cta_text || "Contact to Upgrade"}

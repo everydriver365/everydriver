@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Pin, ChevronDown,
+  LogOut, Car, Camera, Pin, ChevronDown, Lock,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -20,6 +20,7 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const PINNED_STORAGE_KEY = "instructor-pinned-nav";
 const DEFAULT_PINS = ["/instructor", "/instructor/schedule", "/instructor/pupils", "/instructor/messages"];
@@ -78,6 +79,22 @@ const sidebarGroups = [
 // Flatten all items for pinning lookup
 const allItems = sidebarGroups.flatMap(g => g.items);
 
+// Map routes to required features (matches menu_feature_gates table)
+const ROUTE_FEATURE_MAP: Record<string, string> = {
+  "/instructor/pay": "payment_tracking",
+  "/instructor/accounts": "payment_tracking",
+  "/instructor/expenses": "expense_tracking",
+  "/instructor/tracking": "telematics",
+  "/instructor/find-my-car": "telematics",
+  "/instructor/vehicle-health": "telematics",
+  "/instructor/routes": "telematics",
+  "/instructor/fleet-dashboard": "telematics",
+  "/instructor/dashcam": "dashcam",
+  "/instructor/website": "mini_website",
+  "/instructor/domains": "mini_website",
+  "/instructor/gaps": "sms_notifications",
+};
+
 interface InstructorDesktopSidebarProps {
   instructor: {
     id: string;
@@ -87,6 +104,7 @@ interface InstructorDesktopSidebarProps {
   } | null;
   subscription: {
     plan_slug?: string;
+    features?: string[];
   } | null;
   onSignOut: () => void;
 }
@@ -95,6 +113,14 @@ export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const navigate = useNavigate();
+
+  const features = subscription?.features || [];
+  const isFeatureLocked = (href: string): boolean => {
+    const requiredFeature = ROUTE_FEATURE_MAP[href];
+    if (!requiredFeature) return false;
+    return !features.includes(requiredFeature);
+  };
 
   // Pinned favourites
   const [pinnedHrefs, setPinnedHrefs] = useState<string[]>(() => {
@@ -143,49 +169,69 @@ export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }
     const isPending = link.href === "/instructor/pending-scheduling";
     const isHighlighted = 'highlight' in link && link.highlight;
     const isPinned = pinnedHrefs.includes(link.href);
+    const locked = isFeatureLocked(link.href);
+
+    const handleLockedClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      toast.info(`${link.label} requires a plan upgrade`, {
+        action: { label: "View Plans", onClick: () => navigate("/instructor/plans") },
+      });
+    };
 
     return (
       <SidebarMenuItem key={link.href}>
         <SidebarMenuButton
-          asChild
+          asChild={!locked}
           isActive={isActive}
-          tooltip={link.label}
+          tooltip={locked ? `${link.label} (Locked)` : link.label}
           className={cn(
             isActive && "bg-primary/10 text-primary font-medium border-l-2 border-primary",
-            isHighlighted && !isActive && "text-emerald-600 dark:text-emerald-400",
+            isHighlighted && !isActive && !locked && "text-emerald-600 dark:text-emerald-400",
+            locked && "opacity-50 cursor-not-allowed",
           )}
+          onClick={locked ? handleLockedClick : undefined}
         >
-          <Link to={link.href}>
-            <span className="relative shrink-0">
-              <link.icon className={cn(
-                "h-4 w-4",
-                isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-              )} />
-              {isAdminChat && !isActive && <AdminMessageBadge />}
-            </span>
-            <span className="flex-1 truncate text-[13px]">{link.label}</span>
-            {isVisitorChats && !isActive && (
-              <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {isMessages && !isActive && (
-              <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {isPending && !isActive && (
-              <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {showPinAction && !collapsed && (
-              <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(link.href); }}
-                className={cn(
-                  "ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0",
-                  isPinned && "opacity-100 text-primary"
-                )}
-                aria-label={isPinned ? `Unpin ${link.label}` : `Pin ${link.label}`}
-              >
-                <Pin className={cn("h-3 w-3", isPinned && "fill-current")} />
-              </button>
-            )}
-          </Link>
+          {locked ? (
+            <div className="flex items-center gap-2 w-full">
+              <span className="relative shrink-0">
+                <link.icon className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <span className="flex-1 truncate text-[13px]">{link.label}</span>
+              <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+            </div>
+          ) : (
+            <Link to={link.href}>
+              <span className="relative shrink-0">
+                <link.icon className={cn(
+                  "h-4 w-4",
+                  isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+                )} />
+                {isAdminChat && !isActive && <AdminMessageBadge />}
+              </span>
+              <span className="flex-1 truncate text-[13px]">{link.label}</span>
+              {isVisitorChats && !isActive && (
+                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {isMessages && !isActive && (
+                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {isPending && !isActive && (
+                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {showPinAction && !collapsed && (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(link.href); }}
+                  className={cn(
+                    "ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0",
+                    isPinned && "opacity-100 text-primary"
+                  )}
+                  aria-label={isPinned ? `Unpin ${link.label}` : `Pin ${link.label}`}
+                >
+                  <Pin className={cn("h-3 w-3", isPinned && "fill-current")} />
+                </button>
+              )}
+            </Link>
+          )}
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
