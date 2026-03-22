@@ -112,7 +112,6 @@ const settingsCategories: SettingsCategory[] = [
       { key: "instructor-faqs", title: "Instructor FAQs", description: "Help content for instructors." },
       { key: "page-builder", title: "Page Builder", description: "Build marketing pages with images & sections." },
       { key: "plan-features", title: "Plan Feature Matrix", description: "Tick which features are included in each plan." },
-      { key: "comparison-editor", title: "Pricing Comparison", description: "Edit the public-facing plan comparison table." },
     ],
   },
   {
