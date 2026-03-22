@@ -30,6 +30,7 @@ export default function Benefits() {
   const { features, loading } = useIncludedFeatures();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [postcode, setPostcode] = useState("");
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
