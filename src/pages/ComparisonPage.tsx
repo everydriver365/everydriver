@@ -461,7 +461,7 @@ export default function ComparisonPage() {
                 onClick={() => navigate("/instructor-app/signup")}
               >
                 <Heart className="h-4 w-4 mr-2" />
-                Get Started & Add Healthcare
+                Get a GPS Plan with Healthcare
               </Button>
               <p className="text-xs text-muted-foreground">No waiting period · Instant cover · Cancel anytime</p>
             </div>
