@@ -16,6 +16,7 @@ import * as LucideIcons from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent, InstructorAppFeature } from "@/hooks/useInstructorAppContent";
 import { cn } from "@/lib/utils";
+import { MTDCountdown } from "@/components/instructor-features/MTDCountdown";
 import heroBanner from "@/assets/instructor-hero-banner.jpg";
 
 const getIconComponent = (iconName: string): React.ComponentType<{ className?: string }> => {
@@ -335,6 +336,13 @@ export default function InstructorAppHome() {
           </div>
         </section>
       )}
+
+      {/* ═══════════════════ MTD COUNTDOWN BANNER ═══════════════════ */}
+      <section className="py-6 bg-background">
+        <div className="container max-w-5xl">
+          <MTDCountdown variant="banner" />
+        </div>
+      </section>
 
       {/* ═══════════════════ COMPETITOR COMPARISON ═══════════════════ */}
       <section className="py-20 bg-muted/30">
