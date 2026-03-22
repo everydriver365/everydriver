@@ -94,6 +94,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
       if (error) throw error;
       setDetails(data);
+      previousGradeRef.current = data?.instructor_grade || null;
     } catch (error) {
       console.error("Error fetching details:", error);
       toast.error("Failed to load details");
