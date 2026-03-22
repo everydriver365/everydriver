@@ -266,13 +266,19 @@ export default function InstructorOnboarding() {
   // Featured: 1-Personal, 2-ListingPref, 3-Location, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website, 9-Domain, 10-Complete
   // Diary only: 1-Personal, 2-ListingPref, 3-Vehicle, 4-Quals, 5-Services, 6-Plan, 7-Complete (skip Location, Website, Domain)
 
+  const isPDI = data.adi_grade === "Trainee";
+
   const getNextStep = (current: number): number => {
     if (data.wantsFeatured) {
-      // Full flow - all 10 steps
+      // PDI trainees skip plan (7) and payment (9)
+      if (isPDI && current === 6) return 8; // Skip Plan, go to Website
+      if (isPDI && current === 8) return 10; // Skip Payment, go to Complete
       return current + 1;
     } else {
       // Diary-only flow - skip location (3), website (8), domain (9)
       if (current === 2) return 4; // Skip Location, go to Vehicle
+      // PDI trainees also skip plan (7) and payment
+      if (isPDI && current === 6) return 10; // Skip Plan/Website/Domain/Payment
       if (current === 7) return 10; // Skip Website/Domain, go to Complete
       return current + 1;
     }
