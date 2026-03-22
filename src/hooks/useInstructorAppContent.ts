@@ -58,7 +58,7 @@ const defaultHero: InstructorAppHero = {
   primary_cta_text: 'Start Free Trial',
   primary_cta_link: '/instructor-app/signup',
   secondary_cta_text: 'View Pricing',
-  secondary_cta_link: '/instructor-app/pricing',
+  secondary_cta_link: '/compare',
   demo_cta_text: 'See Demo',
   demo_cta_link: '/i/sarah-mitchell',
   trust_badge1: 'No credit card required',

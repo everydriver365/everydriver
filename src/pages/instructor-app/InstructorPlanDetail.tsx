@@ -89,7 +89,7 @@ export default function InstructorPlanDetail() {
         <div className="container py-20 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Plan not found</h1>
           <Button asChild variant="outline">
-            <Link to="/instructor-app/pricing">Back to Pricing</Link>
+            <Link to="/compare">Back to Pricing</Link>
           </Button>
         </div>
       </InstructorSaaSLayout>
@@ -102,7 +102,7 @@ export default function InstructorPlanDetail() {
         <div className="container max-w-4xl">
           {/* Back link */}
           <Link
-            to="/instructor-app/pricing"
+            to="/compare"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
