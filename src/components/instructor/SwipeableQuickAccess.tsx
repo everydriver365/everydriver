@@ -146,20 +146,40 @@ export function SwipeableQuickAccess() {
               <div className="grid grid-cols-2 gap-4">
                 {page.map((tile) => {
                   const Icon = tile.icon;
+                  const requiredFeature = TILE_FEATURE_MAP[tile.title];
+                  const locked = requiredFeature ? !features.includes(requiredFeature) : false;
+
+                  const handleClick = () => {
+                    if (locked) {
+                      toast.info(`${tile.title} requires a plan upgrade`, {
+                        action: { label: "View Plans", onClick: () => navigate("/instructor/plans") },
+                      });
+                      return;
+                    }
+                    navigate(tile.route);
+                  };
+
                   return (
                     <motion.button
                       key={tile.title}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: locked ? 1 : 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      onClick={() => navigate(tile.route)}
+                      onClick={handleClick}
                       className="relative h-[110px] p-5 rounded-[20px] text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
                       style={{
                         backgroundColor: "#F2F3F5",
                         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+                        opacity: locked ? 0.5 : 1,
                       }}
                     >
+                      {/* Lock overlay */}
+                      {locked && (
+                        <div className="absolute top-2.5 right-2.5 z-10">
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      )}
                       {/* Green plus button */}
-                      {quickActionRoutes[tile.title] && (
+                      {!locked && quickActionRoutes[tile.title] && (
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
