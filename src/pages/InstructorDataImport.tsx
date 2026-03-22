@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import InstructorPortalLayout from "@/components/instructor/InstructorPortalLayout";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 const PUPIL_FIELDS = [
   { value: "name", label: "Full Name" },

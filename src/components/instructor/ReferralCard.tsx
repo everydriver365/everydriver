@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gift, Copy, Check, ExternalLink } from "lucide-react";
+import { Gift, Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export function ReferralCard() {
   const { instructor } = useInstructorAuth();
   const [copied, setCopied] = useState(false);
-  const referralCode = instructor?.referral_code || instructor?.slug || "—";
+  const referralCode = instructor?.app_slug || instructor?.id?.slice(0, 8) || "—";
   const referralLink = `${window.location.origin}/instructor/login?ref=${referralCode}`;
 
   const { data: stats } = useQuery({
@@ -20,15 +20,16 @@ export function ReferralCard() {
     queryFn: async () => {
       if (!instructor?.id) return { total: 0, qualified: 0, pending: 0, earned: 0 };
       const { data, error } = await supabase
-        .from("instructor_referrals")
+        .from("instructor_referrals" as any)
         .select("status, reward_amount")
         .eq("referrer_id", instructor.id);
       if (error) throw error;
+      const rows = (data || []) as any[];
       return {
-        total: data.length,
-        qualified: data.filter(r => r.status === "qualified" || r.status === "rewarded").length,
-        pending: data.filter(r => r.status === "pending" || r.status === "signed_up").length,
-        earned: data.filter(r => r.status === "rewarded").reduce((s, r) => s + Number(r.reward_amount || 0), 0),
+        total: rows.length,
+        qualified: rows.filter((r: any) => r.status === "qualified" || r.status === "rewarded").length,
+        pending: rows.filter((r: any) => r.status === "pending" || r.status === "signed_up").length,
+        earned: rows.filter((r: any) => r.status === "rewarded").reduce((s: number, r: any) => s + Number(r.reward_amount || 0), 0),
       };
     },
     enabled: !!instructor?.id,
@@ -45,7 +46,7 @@ export function ReferralCard() {
     <Card className="border-border">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Gift className="h-5 w-5 text-pink-500" />
+          <Gift className="h-5 w-5 text-primary" />
           Refer & Earn
         </CardTitle>
       </CardHeader>
@@ -68,7 +69,7 @@ export function ReferralCard() {
               <p className="text-[10px] text-muted-foreground uppercase">Referred</p>
             </div>
             <div>
-              <p className="text-lg font-semibold text-emerald-600">{stats.qualified}</p>
+              <p className="text-lg font-semibold text-primary">{stats.qualified}</p>
               <p className="text-[10px] text-muted-foreground uppercase">Qualified</p>
             </div>
             <div>
