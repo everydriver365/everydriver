@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,11 @@ export default function ComparisonEditor() {
   const [addingFeature, setAddingFeature] = useState(false);
   const [newFeature, setNewFeature] = useState({ category: "", feature_name: "" });
 
+  // Track local edits — only persisted on Save
+  const [dirtyValues, setDirtyValues] = useState<Record<string, Record<string, boolean | string>>>({});
+  const [saving, setSaving] = useState(false);
+
+  const hasDirtyChanges = Object.keys(dirtyValues).length > 0;
   const categories = [...new Set(features.map((f) => f.category))];
 
   const startEditPlan = (plan: ComparisonPlan) => {
@@ -49,24 +54,58 @@ export default function ComparisonEditor() {
     }
   };
 
-  const toggleFeatureValue = async (feat: ComparisonFeature, planSlug: string) => {
-    const currentVal = feat.plan_values[planSlug];
+  const toggleFeatureValue = useCallback((featId: string, planSlug: string, currentVal: boolean | string | undefined) => {
     const newVal = typeof currentVal === "string" ? false : !currentVal;
-    const newValues = { ...feat.plan_values, [planSlug]: newVal };
-    try {
-      await updateFeature.mutateAsync({ id: feat.id, plan_values: newValues });
-    } catch {
-      toast.error("Failed to update");
+    setDirtyValues((prev) => ({
+      ...prev,
+      [featId]: { ...(prev[featId] || {}), [planSlug]: newVal },
+    }));
+  }, []);
+
+  const setFeatureText = useCallback((featId: string, planSlug: string, text: string) => {
+    setDirtyValues((prev) => ({
+      ...prev,
+      [featId]: { ...(prev[featId] || {}), [planSlug]: text || false },
+    }));
+  }, []);
+
+  const getDisplayValue = (feat: ComparisonFeature, planSlug: string) => {
+    if (dirtyValues[feat.id] && planSlug in dirtyValues[feat.id]) {
+      return dirtyValues[feat.id][planSlug];
+    }
+    return feat.plan_values[planSlug] ?? false;
+  };
+
+  const saveAllChanges = async () => {
+    setSaving(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const [featId, slugUpdates] of Object.entries(dirtyValues)) {
+      const feat = features.find((f) => f.id === featId);
+      if (!feat) continue;
+      const mergedValues = { ...feat.plan_values, ...slugUpdates };
+      try {
+        await updateFeature.mutateAsync({ id: featId, plan_values: mergedValues });
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+
+    setSaving(false);
+    setDirtyValues({});
+
+    if (failCount === 0) {
+      toast.success(`${successCount} feature${successCount !== 1 ? "s" : ""} saved`);
+    } else {
+      toast.error(`${failCount} update${failCount !== 1 ? "s" : ""} failed`);
     }
   };
 
-  const setFeatureText = async (feat: ComparisonFeature, planSlug: string, text: string) => {
-    const newValues = { ...feat.plan_values, [planSlug]: text || false };
-    try {
-      await updateFeature.mutateAsync({ id: feat.id, plan_values: newValues });
-    } catch {
-      toast.error("Failed to update");
-    }
+  const discardChanges = () => {
+    setDirtyValues({});
+    toast("Changes discarded");
   };
 
   const addNewFeature = async () => {
@@ -96,6 +135,11 @@ export default function ComparisonEditor() {
     if (!confirm(`Delete "${name}"?`)) return;
     try {
       await deleteFeature.mutateAsync(id);
+      setDirtyValues((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
       toast.success("Feature removed");
     } catch {
       toast.error("Failed to delete");
@@ -158,9 +202,21 @@ export default function ComparisonEditor() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Feature Matrix</CardTitle>
-          <Button size="sm" variant="outline" onClick={() => setAddingFeature(!addingFeature)}>
-            <Plus className="h-3 w-3 mr-1" />{addingFeature ? "Cancel" : "Add Feature"}
-          </Button>
+          <div className="flex gap-2">
+            {hasDirtyChanges && (
+              <>
+                <Button size="sm" variant="ghost" onClick={discardChanges} disabled={saving}>
+                  <X className="h-3 w-3 mr-1" />Discard
+                </Button>
+                <Button size="sm" onClick={saveAllChanges} disabled={saving}>
+                  <Save className="h-3 w-3 mr-1" />{saving ? "Saving..." : `Save ${Object.keys(dirtyValues).length} change${Object.keys(dirtyValues).length !== 1 ? "s" : ""}`}
+                </Button>
+              </>
+            )}
+            <Button size="sm" variant="outline" onClick={() => setAddingFeature(!addingFeature)}>
+              <Plus className="h-3 w-3 mr-1" />{addingFeature ? "Cancel" : "Add Feature"}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {addingFeature && (
@@ -206,48 +262,69 @@ export default function ComparisonEditor() {
                     </tr>
                     {features
                       .filter((f) => f.category === cat)
-                      .map((feat) => (
-                        <tr key={feat.id} className="border-b border-border/20 hover:bg-muted/5">
-                          <td className="p-2 text-xs text-foreground font-medium">{feat.feature_name}</td>
-                          {plans.map((plan) => {
-                            const val = feat.plan_values[plan.slug];
-                            const isText = typeof val === "string";
-                            return (
-                              <td key={plan.id} className="p-1 text-center">
-                                {isText ? (
-                                  <Input
-                                    className="text-xs text-center h-7 w-20 mx-auto"
-                                    value={val}
-                                    onChange={(e) => setFeatureText(feat, plan.slug, e.target.value)}
-                                  />
-                                ) : (
-                                  <button
-                                    onClick={() => toggleFeatureValue(feat, plan.slug)}
-                                    className={cn(
-                                      "w-6 h-6 rounded-md border mx-auto flex items-center justify-center transition-colors",
-                                      val
-                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
-                                        : "bg-muted/20 border-border text-muted-foreground/20 hover:border-muted-foreground/40"
-                                    )}
-                                  >
-                                    {val ? <Check className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                                  </button>
-                                )}
-                              </td>
-                            );
-                          })}
-                          <td className="p-1">
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive/50 hover:text-destructive" onClick={() => removeFeature(feat.id, feat.feature_name)}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                      .map((feat) => {
+                        const isDirty = !!dirtyValues[feat.id];
+                        return (
+                          <tr key={feat.id} className={cn("border-b border-border/20 hover:bg-muted/5", isDirty && "bg-warning/5")}>
+                            <td className="p-2 text-xs text-foreground font-medium">
+                              {feat.feature_name}
+                              {isDirty && <span className="ml-1 text-warning text-[9px]">●</span>}
+                            </td>
+                            {plans.map((plan) => {
+                              const val = getDisplayValue(feat, plan.slug);
+                              const isText = typeof val === "string";
+                              return (
+                                <td key={plan.id} className="p-1 text-center">
+                                  {isText ? (
+                                    <Input
+                                      className="text-xs text-center h-7 w-20 mx-auto"
+                                      value={val}
+                                      onChange={(e) => setFeatureText(feat.id, plan.slug, e.target.value)}
+                                    />
+                                  ) : (
+                                    <button
+                                      onClick={() => toggleFeatureValue(feat.id, plan.slug, val)}
+                                      className={cn(
+                                        "w-6 h-6 rounded-md border mx-auto flex items-center justify-center transition-colors",
+                                        val
+                                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+                                          : "bg-muted/20 border-border text-muted-foreground/20 hover:border-muted-foreground/40"
+                                      )}
+                                    >
+                                      {val ? <Check className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                                    </button>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="p-1">
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive/50 hover:text-destructive" onClick={() => removeFeature(feat.id, feat.feature_name)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* Sticky save bar at bottom */}
+          {hasDirtyChanges && (
+            <div className="sticky bottom-0 mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
+              <span className="text-xs text-muted-foreground font-medium">
+                {Object.keys(dirtyValues).length} unsaved change{Object.keys(dirtyValues).length !== 1 ? "s" : ""}
+              </span>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" onClick={discardChanges} disabled={saving}>Discard</Button>
+                <Button size="sm" onClick={saveAllChanges} disabled={saving}>
+                  <Save className="h-3 w-3 mr-1" />{saving ? "Saving..." : "Save All"}
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
