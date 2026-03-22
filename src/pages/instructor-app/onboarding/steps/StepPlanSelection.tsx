@@ -132,8 +132,8 @@ export function StepPlanSelection({
     >
 
       {/* Plans Grid */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {plans.slice(0, 3).map((plan, index) => {
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {plans.map((plan, index) => {
           const isSelected = selectedPlanId === plan.id;
           const savings = getSavings(plan);
 

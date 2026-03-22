@@ -340,6 +340,38 @@ export default function InstructorOnboarding() {
 
       if (error) throw error;
 
+      // Ensure an instructor_subscriptions row exists (especially for free plans)
+      if (data.selectedPlanId) {
+        const { data: existingSub } = await supabase
+          .from("instructor_subscriptions")
+          .select("id")
+          .eq("instructor_id", instructorId)
+          .maybeSingle();
+
+        if (!existingSub) {
+          // Create subscription record — free plans are immediately active
+          const { data: planData } = await supabase
+            .from("subscription_plans")
+            .select("price_monthly")
+            .eq("id", data.selectedPlanId)
+            .single();
+
+          const isFree = !planData || planData.price_monthly === 0;
+
+          await supabase
+            .from("instructor_subscriptions")
+            .insert({
+              instructor_id: instructorId,
+              plan_id: data.selectedPlanId,
+              status: isFree ? "active" : "pending",
+              current_period_start: new Date().toISOString(),
+              current_period_end: isFree
+                ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                : null,
+            });
+        }
+      }
+
       // Save domain order if a domain was selected during onboarding
       if (data.selectedDomain) {
         // Parse domain into name and TLD
@@ -355,7 +387,7 @@ export default function InstructorOnboarding() {
             tld: tld,
             order_type: "registration",
             status: "pending",
-            price_amount: 12.99, // Default price, will be updated after payment
+            price_amount: 12.99,
             currency: "GBP",
             period_years: 1,
             auto_renew: true,
