@@ -4400,6 +4400,60 @@ export type Database = {
           },
         ]
       }
+      instructor_addons: {
+        Row: {
+          addon_type: string
+          cancelled_at: string | null
+          created_at: string | null
+          gocardless_subscription_id: string | null
+          id: string
+          instructor_id: string
+          price_monthly: number | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          addon_type: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          gocardless_subscription_id?: string | null
+          id?: string
+          instructor_id: string
+          price_monthly?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          addon_type?: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          gocardless_subscription_id?: string | null
+          id?: string
+          instructor_id?: string
+          price_monthly?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_addons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_addons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_app_features: {
         Row: {
           created_at: string
