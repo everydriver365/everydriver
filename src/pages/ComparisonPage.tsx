@@ -1,4 +1,4 @@
-import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -313,6 +313,64 @@ export default function ComparisonPage() {
           popularIdx={popularIdx}
           onCtaClick={handleCtaClick}
         />
+      </div>
+
+      {/* Healthcare Benefits Showcase */}
+      <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
+        <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-background dark:from-rose-950/20 dark:to-background overflow-hidden">
+          <div className="p-6 md:p-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+              <div>
+                <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
+                  <Heart className="h-3 w-3 mr-1" /> Optional Add-On
+                </Badge>
+                <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
+                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+                  Look after yourself while you look after your pupils. Add comprehensive health cover to any paid plan.
+                </p>
+              </div>
+              <div className="text-left md:text-right">
+                <div className="text-3xl font-black text-foreground">£19.99<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <p className="text-xs text-muted-foreground">Available on any paid plan</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { icon: <SmilePlus className="h-5 w-5" />, title: "Dental Cashback", desc: "Up to £150/yr back on dental treatments", highlight: "£150/yr" },
+                { icon: <Eye className="h-5 w-5" />, title: "Optical Cashback", desc: "Up to £100/yr back on eye tests & glasses", highlight: "£100/yr" },
+                { icon: <Stethoscope className="h-5 w-5" />, title: "24/7 GP Access", desc: "Phone & video consultations anytime, day or night", highlight: "Unlimited" },
+                { icon: <ShieldCheck className="h-5 w-5" />, title: "Physio Sessions", desc: "Get treated faster — no NHS waiting lists", highlight: "Included" },
+                { icon: <Brain className="h-5 w-5" />, title: "Mental Health Support", desc: "Counselling sessions & wellbeing resources", highlight: "Included" },
+                { icon: <Heart className="h-5 w-5" />, title: "Employee Assistance", desc: "24/7 confidential helpline for life's challenges", highlight: "24/7" },
+              ].map((benefit) => (
+                <div key={benefit.title} className="flex gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-rose-200 dark:hover:border-rose-800 transition-colors">
+                  <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                    {benefit.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{benefit.title}</span>
+                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{benefit.highlight}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{benefit.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+              <Button
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white"
+                onClick={() => navigate("/instructor-app/signup")}
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Get Started & Add Healthcare
+              </Button>
+              <p className="text-xs text-muted-foreground">No waiting period · Instant cover · Cancel anytime</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
