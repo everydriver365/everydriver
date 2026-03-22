@@ -235,6 +235,7 @@ export function RecordPaymentModal({
               Record
             </Button>
           </div>
+          </>)}
         </div>
       </DialogContent>
     </Dialog>
