@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
-  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone,
+  MapPin, Video, Building2
 } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
@@ -362,10 +363,12 @@ export default function HomepageRedesignDemo() {
 
           <div className="space-y-5">
             {[
-              { icon: Calendar, name: "Smart Diary", desc: "Your complete lesson management hub — scheduling, payments, and gap-filling in one place.", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", img: lifestyleDiaryImg },
-              { icon: Globe, name: "Website & Domain", desc: "Get found online with your own professional website, custom domain, and direct pupil bookings.", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", img: websiteShowcaseImg },
-              { icon: Gauge, name: "Telematics", desc: "Teach with real data — live speed monitoring, driver scoring, and visual progress reports.", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics", img: telematicsShowcaseImg },
-              { icon: Camera, name: "Dashcam", desc: "Record every lesson, share clips with pupils, and protect yourself with cloud-stored footage.", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam", img: dashcamImg },
+              { icon: Calendar, name: "Free", desc: "Your complete lesson management hub — scheduling, payments, and gap-filling in one place.", price: "£0", suffix: "/mo", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", img: lifestyleDiaryImg },
+              { icon: Globe, name: "Pro", desc: "Everything you need to run your business — website, custom domain, online booking and marketing tools.", price: "£4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", img: websiteShowcaseImg },
+              { icon: MapPin, name: "GPS Pro", desc: "Teach with real data — live tracking, mileage logging, and route replay for every lesson.", price: "£17", suffix: "/mo", free: false, benefits: ["Live GPS tracking", "Mileage logging", "Route replay", "All Pro features"], link: "/instructor-app/telematics", img: telematicsShowcaseImg },
+              { icon: Camera, name: "Single Dashcam", desc: "Forward-facing dashcam protection with cloud storage, incident recording and clip sharing.", price: "£25", suffix: "/mo", free: false, benefits: ["Forward-facing camera", "Cloud storage", "Incident recording", "All GPS Pro features"], link: "/instructor-app/dashcam", img: dashcamImg },
+              { icon: Video, name: "Duo Dashcam", desc: "Full dual-camera coverage — road and cabin view — for maximum protection and pupil coaching.", price: "£29", suffix: "/mo", free: false, benefits: ["Dual camera coverage", "Cabin & road view", "Pupil coaching clips", "All Single Dashcam features"], link: "/instructor-app/dashcam", img: dashcamImg },
+              { icon: Building2, name: "Multi-School", desc: "For driving schools with multiple instructors — fleet management, team dashboards and central billing.", price: "Custom", suffix: "", free: false, benefits: ["Multi-instructor management", "Fleet dashboard", "Central billing", "All Duo features"], link: "/instructor-app/contact", img: lifestyleDiaryImg },
             ].map((product) => (
               <Link
                 key={product.name}
@@ -416,11 +419,11 @@ export default function HomepageRedesignDemo() {
             ))}
           </div>
 
-          {/* CTA to all features */}
+          {/* CTA to compare */}
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
-              <Link to="/instructor-app/all-features">
-                See All 50+ Features by Plan
+              <Link to="/compare">
+                Compare All Plans & Features
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
