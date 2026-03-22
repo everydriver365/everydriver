@@ -85,6 +85,7 @@ interface InstructorBranding {
   payment_qr_url_instructor_pays: string | null;
   payment_link_base_url: string | null;
   commission_payer: string | null;
+  commission_split_percent: number | null;
 }
 
 interface Pupil {
