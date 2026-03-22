@@ -44,7 +44,7 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
       setLoading(true);
       const { data, error } = await supabase
         .from("subscription_plans")
-        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text")
+        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, is_per_seat, base_price_monthly, per_seat_price_monthly, min_seats")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
