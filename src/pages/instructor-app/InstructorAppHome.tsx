@@ -16,6 +16,7 @@ import * as LucideIcons from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent, InstructorAppFeature } from "@/hooks/useInstructorAppContent";
 import { cn } from "@/lib/utils";
+import { MTDCountdown } from "@/components/instructor-features/MTDCountdown";
 import heroBanner from "@/assets/instructor-hero-banner.jpg";
 
 const getIconComponent = (iconName: string): React.ComponentType<{ className?: string }> => {
