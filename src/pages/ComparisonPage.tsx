@@ -15,6 +15,15 @@ function CellValue({ value, popular }: { value: boolean | string; popular: boole
     : <Minus className="h-4 w-4 mx-auto text-muted-foreground/20" />;
 }
 
+function CompetitorCell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
+  if (typeof value === "string") {
+    return <span className={cn("text-xs font-semibold", highlight ? "text-primary" : "text-foreground")}>{value}</span>;
+  }
+  return value
+    ? <Check className={cn("h-4 w-4", highlight ? "text-primary" : "text-emerald-500")} />
+    : <Minus className="h-4 w-4 text-muted-foreground/30" />;
+}
+
 function groupFeatures(features: ComparisonFeature[]) {
   const groups: { category: string; features: ComparisonFeature[] }[] = [];
   for (const f of features) {
@@ -315,6 +324,90 @@ export default function ComparisonPage() {
         />
       </div>
 
+      {/* Competitor Comparison */}
+      <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
+        <div className="text-center mb-8">
+          <Badge className="mb-3 bg-primary/10 text-primary border-primary/20 text-xs">
+            <Zap className="h-3 w-3 mr-1" /> Why Switch?
+          </Badge>
+          <h2 className="text-2xl md:text-3xl font-black text-foreground">How We Compare to Other Diary Apps</h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">
+            Same diary features, plus GPS, dashcams, healthcare & more — starting from FREE.
+          </p>
+        </div>
+
+        {/* Desktop: comparison grid */}
+        <div className="hidden md:block">
+          <div className="rounded-2xl border overflow-hidden shadow-sm">
+            <div className="grid grid-cols-5 bg-primary text-primary-foreground">
+              <div className="p-4 flex items-end">
+                <span className="text-xs font-semibold uppercase tracking-wider opacity-70">Feature</span>
+              </div>
+              <div className="p-4 text-center bg-primary-foreground/10 border-x border-primary-foreground/10">
+                <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ EveryDriver</div>
+                <div className="text-xl font-black">From FREE</div>
+                <div className="text-[10px] opacity-70">to £49/mo</div>
+              </div>
+              {[
+                { name: "Total Drive", price: "~£24/mo" },
+                { name: "MyDriveTime", price: "~£19/mo" },
+                { name: "ADI Book", price: "~£16/mo" },
+              ].map((c) => (
+                <div key={c.name} className="p-4 text-center">
+                  <div className="text-xs font-semibold opacity-90">{c.name}</div>
+                  <div className="text-lg font-bold mt-0.5">{c.price}</div>
+                </div>
+              ))}
+            </div>
+
+            {[
+              { feature: "Starting price", ed: "FREE", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
+              { feature: "Diary & scheduling", ed: true, td: true, mdt: true, adi: true },
+              { feature: "Professional website", ed: true, td: true, mdt: true, adi: true },
+              { feature: "Pupil & parent apps", ed: "Both included", td: "Pupil only", mdt: "Limited", adi: "None" },
+              { feature: "GPS route tracking", ed: true, td: false, mdt: false, adi: false },
+              { feature: "Dashcam telematics", ed: true, td: false, mdt: false, adi: false },
+              { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false },
+              { feature: "Healthcare add-on", ed: "£19.99/mo", td: false, mdt: false, adi: false },
+              { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true },
+            ].map((row, ri) => (
+              <div key={row.feature} className={cn("grid grid-cols-5 border-t border-border/10", ri % 2 !== 0 && "bg-muted/5")}>
+                <div className="p-3 pl-4 text-xs font-medium text-foreground flex items-center">{row.feature}</div>
+                <div className="p-3 flex items-center justify-center bg-primary/5 border-x border-border/10">
+                  <CompetitorCell value={row.ed} highlight />
+                </div>
+                <div className="p-3 flex items-center justify-center"><CompetitorCell value={row.td} /></div>
+                <div className="p-3 flex items-center justify-center"><CompetitorCell value={row.mdt} /></div>
+                <div className="p-3 flex items-center justify-center"><CompetitorCell value={row.adi} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile: stacked cards */}
+        <div className="md:hidden space-y-3">
+          {[
+            { feature: "Starting price", ed: "FREE", others: "From £16–£24/mo" },
+            { feature: "GPS route tracking", ed: "Included", others: "Not available" },
+            { feature: "Dashcam telematics", ed: "Included", others: "Not available" },
+            { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available" },
+            { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none" },
+            { feature: "Healthcare add-on", ed: "£19.99/mo", others: "Not available" },
+          ].map((row) => (
+            <div key={row.feature} className="rounded-xl border bg-card p-4">
+              <div className="text-xs font-bold text-foreground mb-2">{row.feature}</div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span className="text-xs font-semibold text-primary">{row.ed}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">{row.others}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Healthcare Benefits Showcase */}
       <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
         <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-background dark:from-rose-950/20 dark:to-background overflow-hidden">
@@ -325,6 +418,9 @@ export default function ComparisonPage() {
                   <Heart className="h-3 w-3 mr-1" /> Optional Add-On
                 </Badge>
                 <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
+                <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mt-1">
+                  The only driving instructor app that offers healthcare benefits.
+                </p>
                 <p className="text-sm text-muted-foreground mt-1 max-w-lg">
                   Look after yourself while you look after your pupils. Add comprehensive health cover to any paid plan.
                 </p>
