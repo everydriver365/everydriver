@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { supabase } from "@/integrations/supabase/client";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 
 interface Plan {
