@@ -1,7 +1,7 @@
 import {
   BarChart3, BookOpen, CreditCard, Gift, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users, LucideIcon,
-  LogOut, Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite,
+  LogOut, Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
