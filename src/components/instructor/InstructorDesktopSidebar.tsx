@@ -111,8 +111,14 @@ interface InstructorDesktopSidebarProps {
 
 export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }: InstructorDesktopSidebarProps) {
   const location = useLocation();
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const navigate = useNavigate();
+
+  const features = subscription?.features || [];
+  const isFeatureLocked = (href: string): boolean => {
+    const requiredFeature = ROUTE_FEATURE_MAP[href];
+    if (!requiredFeature) return false;
+    return !features.includes(requiredFeature);
+  };
 
   // Pinned favourites
   const [pinnedHrefs, setPinnedHrefs] = useState<string[]>(() => {
