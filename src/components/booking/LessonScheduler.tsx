@@ -93,6 +93,7 @@ export function LessonScheduler({
   const [loading, setLoading] = useState(true);
   const [viewMonth, setViewMonth] = useState(new Date());
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
+  const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
   
   // Base allowed lesson lengths from instructor settings
   const baseDurationOptions = useMemo(() => {
