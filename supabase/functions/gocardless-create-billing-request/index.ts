@@ -240,11 +240,12 @@ serve(async (req) => {
 
     const flowData = await flowResponse.json();
 
-    // Update subscription record with billing request ID
+    // Update subscription record with billing request ID and seat count
     await supabase
       .from("instructor_subscriptions")
       .update({
         gocardless_billing_request_id: billingRequestId,
+        ...(plan.is_per_seat && { seat_count: seats, total_monthly_amount: planAmount / 100 }),
         updated_at: new Date().toISOString(),
       })
       .eq("instructor_id", instructor_id);
