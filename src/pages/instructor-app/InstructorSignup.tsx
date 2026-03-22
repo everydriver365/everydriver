@@ -70,7 +70,7 @@ export default function InstructorSignup() {
         }
       } else {
         toast.success("Account created! Let's set up your profile.");
-        navigate("/instructor-app/onboarding?step=1");
+        navigate(`/instructor-app/onboarding?step=1&plan=${selectedPlan}${promo ? `&promo=${promo}` : ""}`);
       }
     } catch (err) {
       setError("An unexpected error occurred");
