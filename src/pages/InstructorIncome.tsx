@@ -50,8 +50,13 @@ function getFinancialYearLabel(date: Date): string {
 }
 
 export default function InstructorIncome() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, hasFeature } = useInstructorAuth();
   const instructorId = instructor?.id;
+
+  // Free plan users see the limited summary
+  if (!hasFeature("payment_tracking")) {
+    return <InstructorIncomeFreeSummaryPage />;
+  }
   
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [incomeRecords, setIncomeRecords] = useState<IncomeRecord[]>([]);
