@@ -337,6 +337,13 @@ export default function InstructorAppHome() {
         </section>
       )}
 
+      {/* ═══════════════════ MTD COUNTDOWN BANNER ═══════════════════ */}
+      <section className="py-6 bg-background">
+        <div className="container max-w-5xl">
+          <MTDCountdown variant="banner" />
+        </div>
+      </section>
+
       {/* ═══════════════════ COMPETITOR COMPARISON ═══════════════════ */}
       <section className="py-20 bg-muted/30">
         <div className="container max-w-5xl">
