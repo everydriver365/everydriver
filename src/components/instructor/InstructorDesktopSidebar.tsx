@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Pin, ChevronDown,
+  LogOut, Car, Camera, Pin, ChevronDown, Lock,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -20,6 +20,7 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const PINNED_STORAGE_KEY = "instructor-pinned-nav";
 const DEFAULT_PINS = ["/instructor", "/instructor/schedule", "/instructor/pupils", "/instructor/messages"];
