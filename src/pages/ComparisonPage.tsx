@@ -37,9 +37,22 @@ function groupFeatures(features: ComparisonFeature[]) {
 export default function ComparisonPage() {
   const { data: plans = [], isLoading: plansLoading } = useComparisonPlans();
   const { data: features = [], isLoading: featuresLoading } = useComparisonFeatures();
+  const navigate = useNavigate();
 
   const featureGroups = useMemo(() => groupFeatures(features), [features]);
   const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
+
+  const handleCtaClick = (slug: string) => {
+    if (slug === "multi_school") {
+      navigate("/instructor-app/contact");
+    } else if (slug === "all_in") {
+      navigate("/instructor-app/signup?plan=all_in&promo=first-month-free");
+    } else if (slug === "free") {
+      navigate("/instructor-app/signup");
+    } else {
+      navigate(`/instructor-app/signup?plan=${slug}`);
+    }
+  };
 
   if (plansLoading || featuresLoading) {
     return (
