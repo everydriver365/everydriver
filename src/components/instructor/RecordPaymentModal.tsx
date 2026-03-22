@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { usePaymentLimit } from "@/hooks/usePaymentLimit";
 import { PoundSterling, Loader2, CreditCard, Banknote, Smartphone } from "lucide-react";
+import { PaymentLimitBanner } from "@/components/instructor/PaymentLimitBanner";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +48,7 @@ export function RecordPaymentModal({
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+  const paymentLimit = usePaymentLimit();
 
   const handleSubmit = async () => {
     const parsedAmount = parseFloat(amount);
@@ -109,6 +112,15 @@ export function RecordPaymentModal({
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
+          {paymentLimit.isLimited && (
+            <PaymentLimitBanner
+              remaining={paymentLimit.remaining}
+              limit={paymentLimit.limit}
+              isAtLimit={paymentLimit.isAtLimit}
+            />
+          )}
+
+          {paymentLimit.isAtLimit ? null : (<>
           {/* Current Balance Info */}
           {currentBalance < 0 && (
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm">
@@ -223,6 +235,7 @@ export function RecordPaymentModal({
               Record
             </Button>
           </div>
+          </>)}
         </div>
       </DialogContent>
     </Dialog>

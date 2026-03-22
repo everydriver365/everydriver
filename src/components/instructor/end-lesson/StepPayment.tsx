@@ -7,6 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { usePaymentLimit } from "@/hooks/usePaymentLimit";
+import { PaymentLimitBanner } from "@/components/instructor/PaymentLimitBanner";
 
 interface StepPaymentProps {
   pupilId: string;
@@ -42,6 +44,7 @@ export function StepPayment({
   const [saving, setSaving] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+  const paymentLimit = usePaymentLimit();
 
   const handleRecord = async () => {
     const parsed = parseFloat(amount);
@@ -93,6 +96,16 @@ export function StepPayment({
 
   return (
     <div className="space-y-4">
+      {paymentLimit.isLimited && (
+        <PaymentLimitBanner
+          remaining={paymentLimit.remaining}
+          limit={paymentLimit.limit}
+          isAtLimit={paymentLimit.isAtLimit}
+          onSkip={onSkip}
+        />
+      )}
+
+      {paymentLimit.isAtLimit ? null : (<>
       {balanceAfterLesson < 0 && (
         <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 text-sm">
           <span className="text-warning">
@@ -163,6 +176,7 @@ export function StepPayment({
           Skip
         </Button>
       </div>
+      </>)}
     </div>
   );
 }

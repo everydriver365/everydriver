@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import InstructorIncomeFreeSummaryPage from "@/pages/InstructorIncomeFreeSummary";
 
 interface IncomeRecord {
   id: string;
@@ -50,6 +51,16 @@ function getFinancialYearLabel(date: Date): string {
 }
 
 export default function InstructorIncome() {
+  const { hasFeature } = useInstructorAuth();
+
+  if (!hasFeature("payment_tracking")) {
+    return <InstructorIncomeFreeSummaryPage />;
+  }
+
+  return <InstructorIncomeFullDashboard />;
+}
+
+function InstructorIncomeFullDashboard() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
   
