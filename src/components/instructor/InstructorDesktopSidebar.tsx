@@ -169,49 +169,69 @@ export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }
     const isPending = link.href === "/instructor/pending-scheduling";
     const isHighlighted = 'highlight' in link && link.highlight;
     const isPinned = pinnedHrefs.includes(link.href);
+    const locked = isFeatureLocked(link.href);
+
+    const handleLockedClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      toast.info(`${link.label} requires a plan upgrade`, {
+        action: { label: "View Plans", onClick: () => navigate("/instructor/plans") },
+      });
+    };
 
     return (
       <SidebarMenuItem key={link.href}>
         <SidebarMenuButton
-          asChild
+          asChild={!locked}
           isActive={isActive}
-          tooltip={link.label}
+          tooltip={locked ? `${link.label} (Locked)` : link.label}
           className={cn(
             isActive && "bg-primary/10 text-primary font-medium border-l-2 border-primary",
-            isHighlighted && !isActive && "text-emerald-600 dark:text-emerald-400",
+            isHighlighted && !isActive && !locked && "text-emerald-600 dark:text-emerald-400",
+            locked && "opacity-50 cursor-not-allowed",
           )}
+          onClick={locked ? handleLockedClick : undefined}
         >
-          <Link to={link.href}>
-            <span className="relative shrink-0">
-              <link.icon className={cn(
-                "h-4 w-4",
-                isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-              )} />
-              {isAdminChat && !isActive && <AdminMessageBadge />}
-            </span>
-            <span className="flex-1 truncate text-[13px]">{link.label}</span>
-            {isVisitorChats && !isActive && (
-              <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {isMessages && !isActive && (
-              <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {isPending && !isActive && (
-              <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-            )}
-            {showPinAction && !collapsed && (
-              <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(link.href); }}
-                className={cn(
-                  "ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0",
-                  isPinned && "opacity-100 text-primary"
-                )}
-                aria-label={isPinned ? `Unpin ${link.label}` : `Pin ${link.label}`}
-              >
-                <Pin className={cn("h-3 w-3", isPinned && "fill-current")} />
-              </button>
-            )}
-          </Link>
+          {locked ? (
+            <div className="flex items-center gap-2 w-full">
+              <span className="relative shrink-0">
+                <link.icon className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <span className="flex-1 truncate text-[13px]">{link.label}</span>
+              <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+            </div>
+          ) : (
+            <Link to={link.href}>
+              <span className="relative shrink-0">
+                <link.icon className={cn(
+                  "h-4 w-4",
+                  isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+                )} />
+                {isAdminChat && !isActive && <AdminMessageBadge />}
+              </span>
+              <span className="flex-1 truncate text-[13px]">{link.label}</span>
+              {isVisitorChats && !isActive && (
+                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {isMessages && !isActive && (
+                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {isPending && !isActive && (
+                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+              )}
+              {showPinAction && !collapsed && (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePin(link.href); }}
+                  className={cn(
+                    "ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0",
+                    isPinned && "opacity-100 text-primary"
+                  )}
+                  aria-label={isPinned ? `Unpin ${link.label}` : `Pin ${link.label}`}
+                >
+                  <Pin className={cn("h-3 w-3", isPinned && "fill-current")} />
+                </button>
+              )}
+            </Link>
+          )}
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
