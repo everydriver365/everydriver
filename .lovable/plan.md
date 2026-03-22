@@ -1,54 +1,50 @@
 
 
-## Plan: Healthcare Benefits — GPS Tier and Above (Option A)
+## Plan: Revert Prices + Healthcare as Optional Add-On
 
-### Strategy
-- **Free & All-In**: No healthcare. All-In stays at £4.99/mo — the affordable entry point.
-- **GPS (£16/mo → £31/mo)**: Basic healthcare (Dental £150/yr + Optical £100/yr cashback).
-- **Single Dashcam (£25/mo → £37/mo)**: Full healthcare (adds GP access, Physio, Mental Health).
-- **Duo Dashcam (£29/mo → £42/mo)**: Full healthcare (same as Single).
-- **Multi-School (£49/mo → £59/mo)**: Premium healthcare (full + family cover options).
+### What's Changing
+1. **Revert subscription plan prices** back to originals (GPS £16, Single £25, Duo £29, Multi-School £49)
+2. **Remove healthcare feature flags** from subscription plans
+3. **Add "Healthcare" as a new add-on** in the Website Add-Ons marketplace at **£19.99/mo**
+4. **Update comparison features** — move healthcare rows to show as "Optional add-on" rather than included
 
-All tiers achieve the £10/mo profit target after £15 healthcare cost.
+### Database Changes (via insert/update tool)
 
-### Database Changes
-
-**1. Update `subscription_plans` prices**
+**1. Revert prices on `subscription_plans`**
 ```sql
-UPDATE subscription_plans SET price_monthly = 31 WHERE slug = 'gps';
-UPDATE subscription_plans SET price_monthly = 37 WHERE slug = 'single_dashcam';
-UPDATE subscription_plans SET price_monthly = 42 WHERE slug = 'duo_dashcam';
-UPDATE subscription_plans SET price_monthly = 59 WHERE slug = 'multi_school';
+UPDATE subscription_plans SET price_monthly = 16 WHERE slug = 'gps';
+UPDATE subscription_plans SET price_monthly = 25 WHERE slug = 'single_dashcam';
+UPDATE subscription_plans SET price_monthly = 29 WHERE slug = 'duo_dashcam';
+UPDATE subscription_plans SET price_monthly = 49 WHERE slug = 'multi_school';
 ```
 
-**2. Add `healthcare` feature flag to GPS+ plan features**
+**2. Remove healthcare feature flags from `subscription_plans`**
 ```sql
-UPDATE subscription_plans SET features = features || '["healthcare_basic"]' WHERE slug = 'gps';
-UPDATE subscription_plans SET features = features || '["healthcare_full"]' WHERE slug IN ('single_dashcam', 'duo_dashcam');
-UPDATE subscription_plans SET features = features || '["healthcare_premium"]' WHERE slug = 'multi_school';
+UPDATE subscription_plans SET features = features - 'healthcare_basic' WHERE slug = 'gps';
+UPDATE subscription_plans SET features = features - 'healthcare_full' WHERE slug IN ('single_dashcam', 'duo_dashcam');
+UPDATE subscription_plans SET features = features - 'healthcare_premium' WHERE slug = 'multi_school';
 ```
 
-**3. Add healthcare rows to `comparison_features`**
-Insert new rows in a "Healthcare & Wellbeing" category:
-- "Dental cashback (£150/yr)" — ✗ Free, ✗ All-In, ✓ GPS+
-- "Optical cashback (£100/yr)" — ✗ Free, ✗ All-In, ✓ GPS+
-- "24/7 GP access" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
-- "Physio sessions" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
-- "Mental health & EAP" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
-- "Family cover option" — ✗ all except ✓ Multi-School
+**3. Revert prices on `comparison_plans`**
+```sql
+UPDATE comparison_plans SET price = '£16' WHERE slug = 'gps';
+UPDATE comparison_plans SET price = '£25' WHERE slug = 'single_dashcam';
+UPDATE comparison_plans SET price = '£29' WHERE slug = 'duo_dashcam';
+UPDATE comparison_plans SET price = '£49' WHERE slug = 'multi_school';
+```
 
-**4. Update `comparison_plans` prices** to reflect new pricing in the comparison table.
+**4. Update healthcare comparison feature rows** — change plan_values so all plans show "Add-on £19.99/mo" instead of ✓/✗
 
-### Files Changed
+### Code Changes
 
 | File | Change |
 |------|--------|
-| Database migration | Update prices, features arrays, add comparison rows |
-| `src/pages/ComparisonPage.tsx` | No code changes needed — dynamically renders from DB |
-| `src/components/instructor/dashboard/UpgradePlanSheet.tsx` | No code changes — reads from DB |
+| `src/hooks/useInstructorAddons.ts` | Add `"healthcare"` to `AddonType` union |
+| `src/pages/InstructorWebsiteAddons.tsx` | Add Healthcare add-on card (£19.99/mo) with benefits list: Dental £150/yr, Optical £100/yr, 24/7 GP, Physio, Mental Health, EAP. Update bundle to include healthcare option or keep separate |
 
-### What Users See
-- The `/compare` page automatically shows the new prices and healthcare feature rows
-- GPS+ plans prominently display healthcare as a key differentiator
-- Free and All-In users see healthcare benefits locked, encouraging upgrade to GPS tier
+### Result
+- Base plans stay competitive and affordable
+- Healthcare is a clear, optional upsell at £19.99/mo (£4.99 profit per instructor)
+- Any instructor on any paid plan can add it
+- Comparison page shows healthcare as available add-on across all tiers
 
