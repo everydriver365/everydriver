@@ -141,9 +141,9 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/test-slot-finder" element={<Gated feature="test_slot_finder" label="Test Slot Finder"><InstructorTestSlotFinder /></Gated>} />
 
     {/* Finance & payments — gated */}
-    <Route path="/instructor/pay" element={<Gated feature="payment_tracking" label="Payments"><InstructorPay /></Gated>} />
-    <Route path="/instructor/take-payment" element={<Gated feature="payment_tracking" label="Take Payment"><InstructorTakePayment /></Gated>} />
-    <Route path="/instructor/income" element={<Gated feature="payment_tracking" label="Income"><InstructorIncome /></Gated>} />
+    <Route path="/instructor/pay" element={<InstructorPay />} />
+    <Route path="/instructor/take-payment" element={<InstructorTakePayment />} />
+    <Route path="/instructor/income" element={<InstructorIncome />} />
     <Route path="/instructor/expenses" element={<Gated feature="expense_tracking" label="Expenses"><InstructorExpenses /></Gated>} />
     <Route path="/instructor/accounts" element={<Gated feature="payment_tracking" label="Accounts"><InstructorAccounts /></Gated>} />
     <Route path="/instructor/tax" element={<Gated feature="expense_tracking" label="Tax"><InstructorTax /></Gated>} />
