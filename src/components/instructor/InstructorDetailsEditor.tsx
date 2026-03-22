@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface InstructorDetails {
   home_postcode: string | null;
@@ -42,10 +51,13 @@ interface InstructorDetailsEditorProps {
 }
 
 export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }: InstructorDetailsEditorProps) {
+  const navigate = useNavigate();
   const [details, setDetails] = useState<InstructorDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
+  const [showQualifiedModal, setShowQualifiedModal] = useState(false);
+  const previousGradeRef = useRef<string | null>(null);
   const [gpsStatus, setGpsStatus] = useState<{
     isConnected: boolean;
     lastSeenAt: string | null;
@@ -82,6 +94,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
       if (error) throw error;
       setDetails(data);
+      previousGradeRef.current = data?.instructor_grade || null;
     } catch (error) {
       console.error("Error fetching details:", error);
       toast.error("Failed to load details");
@@ -159,6 +172,33 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // Check if grade changed from trainee to A/B (PDI qualification)
+      const prevGrade = previousGradeRef.current?.toLowerCase();
+      const newGrade = details.instructor_grade?.toLowerCase();
+      if (prevGrade === "trainee" && (newGrade === "a" || newGrade === "b")) {
+        // Check if they're on PDI programme
+        const { data: sub } = await supabase
+          .from("instructor_subscriptions")
+          .select("id, is_pdi_programme")
+          .eq("instructor_id", instructorId)
+          .maybeSingle();
+
+        if ((sub as any)?.is_pdi_programme) {
+          // Update subscription
+          await supabase
+            .from("instructor_subscriptions")
+            .update({
+              is_pdi_programme: false,
+              qualification_converted_at: new Date().toISOString(),
+            } as any)
+            .eq("id", sub!.id);
+
+          setShowQualifiedModal(true);
+        }
+      }
+
+      previousGradeRef.current = details.instructor_grade;
       toast.success("Details saved");
     } catch (error) {
       console.error("Error saving details:", error);
@@ -219,6 +259,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   }
 
   return (
+    <>
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
@@ -474,5 +515,27 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         </p>
       </TabsContent>
     </Tabs>
+
+      {/* PDI Qualification Modal */}
+      <Dialog open={showQualifiedModal} onOpenChange={setShowQualifiedModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>🎉 Congratulations — You've Qualified!</DialogTitle>
+            <DialogDescription>
+              You're now a fully qualified ADI. Choose a plan to unlock premium features 
+              like GPS tracking, dashcam integration, and your own website.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowQualifiedModal(false)}>
+              Later
+            </Button>
+            <Button onClick={() => { setShowQualifiedModal(false); navigate("/instructor/plans"); }}>
+              Choose a Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

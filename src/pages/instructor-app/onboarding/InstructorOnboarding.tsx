@@ -266,13 +266,19 @@ export default function InstructorOnboarding() {
   // Featured: 1-Personal, 2-ListingPref, 3-Location, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website, 9-Domain, 10-Complete
   // Diary only: 1-Personal, 2-ListingPref, 3-Vehicle, 4-Quals, 5-Services, 6-Plan, 7-Complete (skip Location, Website, Domain)
 
+  const isPDI = data.adi_grade === "Trainee";
+
   const getNextStep = (current: number): number => {
     if (data.wantsFeatured) {
-      // Full flow - all 10 steps
+      // PDI trainees skip plan (7) and payment (9)
+      if (isPDI && current === 6) return 8; // Skip Plan, go to Website
+      if (isPDI && current === 8) return 10; // Skip Payment, go to Complete
       return current + 1;
     } else {
       // Diary-only flow - skip location (3), website (8), domain (9)
       if (current === 2) return 4; // Skip Location, go to Vehicle
+      // PDI trainees also skip plan (7) and payment
+      if (isPDI && current === 6) return 10; // Skip Plan/Website/Domain/Payment
       if (current === 7) return 10; // Skip Website/Domain, go to Complete
       return current + 1;
     }
@@ -280,11 +286,13 @@ export default function InstructorOnboarding() {
 
   const getPrevStep = (current: number): number => {
     if (data.wantsFeatured) {
+      if (isPDI && current === 8) return 6; // Skip Plan going back
+      if (isPDI && current === 10) return 8; // Skip Payment going back
       return current - 1;
     } else {
-      // Diary-only flow
-      if (current === 4) return 2; // From Vehicle back to ListingPref
-      if (current === 10) return 7; // From Complete back to Plan
+      if (current === 4) return 2;
+      if (isPDI && current === 10) return 6; // Skip Plan/Website/Domain/Payment
+      if (current === 10) return 7;
       return current - 1;
     }
   };
@@ -341,7 +349,10 @@ export default function InstructorOnboarding() {
       if (error) throw error;
 
       // Ensure an instructor_subscriptions row exists (especially for free plans)
-      if (data.selectedPlanId) {
+      // For PDI trainees, auto-assign the free plan with pdi_programme flag
+      const planIdToUse = isPDI ? null : data.selectedPlanId;
+
+      if (isPDI || planIdToUse) {
         const { data: existingSub } = await supabase
           .from("instructor_subscriptions")
           .select("id")
@@ -349,26 +360,40 @@ export default function InstructorOnboarding() {
           .maybeSingle();
 
         if (!existingSub) {
-          // Create subscription record — free plans are immediately active
-          const { data: planData } = await supabase
-            .from("subscription_plans")
-            .select("price_monthly")
-            .eq("id", data.selectedPlanId)
-            .single();
+          // Find the free plan if PDI
+          let finalPlanId = planIdToUse;
+          if (isPDI && !finalPlanId) {
+            const { data: freePlan } = await supabase
+              .from("subscription_plans")
+              .select("id")
+              .eq("price_monthly", 0)
+              .limit(1)
+              .maybeSingle();
+            finalPlanId = freePlan?.id || null;
+          }
 
-          const isFree = !planData || planData.price_monthly === 0;
+          if (finalPlanId) {
+            const { data: planData } = await supabase
+              .from("subscription_plans")
+              .select("price_monthly")
+              .eq("id", finalPlanId)
+              .single();
 
-          await supabase
-            .from("instructor_subscriptions")
-            .insert({
-              instructor_id: instructorId,
-              plan_id: data.selectedPlanId,
-              status: isFree ? "active" : "pending",
-              current_period_start: new Date().toISOString(),
-              current_period_end: isFree
-                ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-                : null,
-            });
+            const isFree = !planData || planData.price_monthly === 0;
+
+            await supabase
+              .from("instructor_subscriptions")
+              .insert({
+                instructor_id: instructorId,
+                plan_id: finalPlanId,
+                status: isFree ? "active" : "pending",
+                current_period_start: new Date().toISOString(),
+                current_period_end: isFree
+                  ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                  : null,
+                is_pdi_programme: isPDI,
+              } as any);
+          }
         }
       }
 

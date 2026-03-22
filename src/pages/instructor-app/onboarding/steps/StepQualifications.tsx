@@ -77,6 +77,16 @@ export function StepQualifications({
               </label>
             ))}
           </RadioGroup>
+
+          {data.adi_grade === "Trainee" && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-3">
+              <p className="text-sm font-medium text-foreground">🎓 PDI Free Programme</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                As a PDI, you get full access to our diary and management tools for free. 
+                When you qualify as an ADI, you'll be invited to choose a plan with premium features.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Certifications */}

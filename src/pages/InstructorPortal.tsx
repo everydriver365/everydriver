@@ -36,6 +36,7 @@ import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
 import { TodayAtAGlance } from "@/components/instructor/TodayAtAGlance";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { PDIBanner } from "@/components/instructor/PDIBanner";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -245,6 +246,11 @@ export default function InstructorPortal() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-5">
+
+        {/* PDI Banner */}
+        {(subscription as any)?.is_pdi_programme && (
+          <PDIBanner instructorName={instructorData?.name?.split(' ')[0]} />
+        )}
 
         {/* Contextual Status Bar — replaces heavy hero */}
         <div className="flex items-center justify-between bg-card border border-border rounded-xl px-5 py-3">

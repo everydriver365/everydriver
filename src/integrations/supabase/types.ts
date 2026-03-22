@@ -6233,7 +6233,9 @@ export type Database = {
           gocardless_subscription_id: string | null
           id: string
           instructor_id: string
+          is_pdi_programme: boolean | null
           plan_id: string
+          qualification_converted_at: string | null
           square_card_id: string | null
           square_customer_id: string | null
           square_subscription_id: string | null
@@ -6253,7 +6255,9 @@ export type Database = {
           gocardless_subscription_id?: string | null
           id?: string
           instructor_id: string
+          is_pdi_programme?: boolean | null
           plan_id: string
+          qualification_converted_at?: string | null
           square_card_id?: string | null
           square_customer_id?: string | null
           square_subscription_id?: string | null
@@ -6273,7 +6277,9 @@ export type Database = {
           gocardless_subscription_id?: string | null
           id?: string
           instructor_id?: string
+          is_pdi_programme?: boolean | null
           plan_id?: string
+          qualification_converted_at?: string | null
           square_card_id?: string | null
           square_customer_id?: string | null
           square_subscription_id?: string | null
