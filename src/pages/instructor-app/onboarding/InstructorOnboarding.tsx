@@ -286,11 +286,13 @@ export default function InstructorOnboarding() {
 
   const getPrevStep = (current: number): number => {
     if (data.wantsFeatured) {
+      if (isPDI && current === 8) return 6; // Skip Plan going back
+      if (isPDI && current === 10) return 8; // Skip Payment going back
       return current - 1;
     } else {
-      // Diary-only flow
-      if (current === 4) return 2; // From Vehicle back to ListingPref
-      if (current === 10) return 7; // From Complete back to Plan
+      if (current === 4) return 2;
+      if (isPDI && current === 10) return 6; // Skip Plan/Website/Domain/Payment
+      if (current === 10) return 7;
       return current - 1;
     }
   };
