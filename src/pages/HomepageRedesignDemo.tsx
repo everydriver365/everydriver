@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
-  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone, MapPin, Video, Building2
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
 } from "lucide-react";
-import { useComparisonPlans } from "@/hooks/useComparisonData";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
@@ -22,77 +21,6 @@ import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
 import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
-
-const planIconMap: Record<string, React.ReactNode> = {
-  Star: <Star className="h-5 w-5" />,
-  Zap: <Zap className="h-5 w-5" />,
-  MapPin: <MapPin className="h-5 w-5" />,
-  Camera: <Camera className="h-5 w-5" />,
-  Video: <Video className="h-5 w-5" />,
-  Building2: <Building2 className="h-5 w-5" />,
-};
-
-function PricingPlansSection() {
-  const { data: plans = [] } = useComparisonPlans();
-  const popularIdx = plans.findIndex((p) => p.is_popular);
-
-  return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
-      <div className="container max-w-6xl">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
-            Start Free. Grow When Ready.
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            The diary is free forever. Add premium tools as your business grows. No contracts, cancel anytime.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {plans.map((plan, i) => (
-            <div
-              key={plan.id}
-              className={`relative rounded-2xl border p-5 text-center transition-all hover:shadow-lg ${
-                i === popularIdx
-                  ? "border-primary bg-primary/5 shadow-md ring-2 ring-primary/20"
-                  : "border-border bg-card"
-              }`}
-            >
-              {plan.is_popular && (
-                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-2.5">
-                  Popular
-                </Badge>
-              )}
-              <div className={`h-10 w-10 mx-auto rounded-lg flex items-center justify-center mb-3 ${
-                i === popularIdx ? "bg-primary text-primary-foreground" : "bg-muted"
-              }`}>
-                {planIconMap[plan.icon_name || "Star"] || <Star className="h-5 w-5" />}
-              </div>
-              <h3 className="font-bold text-foreground text-sm mb-1">{plan.name}</h3>
-              <div className="text-2xl font-black text-foreground">
-                {plan.price}
-                <span className="text-xs font-normal text-muted-foreground">{plan.period}</span>
-              </div>
-              {plan.description && (
-                <p className="text-[11px] text-muted-foreground mt-2 leading-snug">{plan.description}</p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center mt-10">
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-13 px-8 text-base rounded-xl" asChild>
-            <Link to="/compare">
-              Compare Plans & Features
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">No credit card required • Free plan available forever</p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export default function HomepageRedesignDemo() {
   return (
@@ -420,8 +348,85 @@ export default function HomepageRedesignDemo() {
         </div>
       </section>
 
-      {/* ─── PRICING PLANS ─── */}
-      <PricingPlansSection />
+      {/* ─── PRODUCT GRID ─── */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+              Start Free. Grow When Ready.
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              The diary is free forever. Add premium tools as your business grows.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            {[
+              { icon: Calendar, name: "Smart Diary", desc: "Your complete lesson management hub — scheduling, payments, and gap-filling in one place.", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", img: lifestyleDiaryImg },
+              { icon: Globe, name: "Website & Domain", desc: "Get found online with your own professional website, custom domain, and direct pupil bookings.", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", img: websiteShowcaseImg },
+              { icon: Gauge, name: "Telematics", desc: "Teach with real data — live speed monitoring, driver scoring, and visual progress reports.", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics", img: telematicsShowcaseImg },
+              { icon: Camera, name: "Dashcam", desc: "Record every lesson, share clips with pupils, and protect yourself with cloud-stored footage.", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam", img: dashcamImg },
+            ].map((product) => (
+              <Link
+                key={product.name}
+                to={product.link}
+                className={`group relative flex flex-col md:flex-row items-stretch rounded-2xl border overflow-hidden transition-all hover:shadow-xl ${
+                  product.free
+                    ? "border-[#0075c9]/20 bg-card"
+                    : "border-border bg-card hover:border-[#0075c9]/20"
+                }`}
+              >
+                {/* Image side */}
+                <div className="md:w-2/5 h-48 md:h-auto relative shrink-0">
+                  <img src={product.img} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card hidden md:block" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent md:hidden" />
+                </div>
+                {/* Content side */}
+                <div className="flex-1 p-7 md:p-9">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${
+                      product.free ? "bg-[#0075c9] text-white" : "bg-[#0075c9]/10"
+                    }`}>
+                      <product.icon className={`h-5 w-5 ${product.free ? "text-white" : "text-[#0075c9]"}`} />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground">{product.name}</h3>
+                    {product.free ? (
+                      <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase ml-auto">Free Forever</Badge>
+                    ) : (
+                      <span className="text-sm font-bold text-foreground ml-auto">
+                        {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground mb-5 text-sm md:text-base">{product.desc}</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-6">
+                    {product.benefits.map((b) => (
+                      <div key={b} className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className={`h-4 w-4 shrink-0 ${product.free ? "text-emerald-500" : "text-[#0075c9]"}`} />
+                        {b}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-[#0075c9] group-hover:gap-2.5 transition-all">
+                    {product.free ? "Get started free" : "Learn more"} <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* CTA to all features */}
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
+              <Link to="/instructor-app/all-features">
+                See All 50+ Features by Plan
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* ─── TESTIMONIALS ─── */}
       <section className="py-20 md:py-28 bg-muted/20">
