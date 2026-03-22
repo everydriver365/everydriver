@@ -1,74 +1,48 @@
 
 
-## Plan: Ensure All Live Data Across the Platform — Remove Hardcoded & Demo Fallbacks
+## Plan: "Prefer Earliest Slot" Instructor Setting
 
-### Summary
+### What It Does
+When enabled, the booking system presents available time slots to pupils in earliest-first order and highlights the earliest slot as "Recommended". This keeps the instructor's day compact by filling morning gaps first rather than letting pupils pick late-afternoon slots that create a disjointed schedule.
 
-Audit found **3 categories** of issues: (A) demo mode returning fake data instead of live queries, (B) hardcoded stats on public-facing pages, and (C) placeholder "coming soon" features that should either work or be removed. Demo pages (`/demo/*`) are excluded — those are design exploration pages with intentionally static content.
+### Changes
 
-### Category A: Demo Mode Fake Data (8 hooks)
+#### 1. Database Migration
+Add a boolean column to `instructors`:
+```sql
+ALTER TABLE public.instructors 
+ADD COLUMN prefer_earliest_slot boolean NOT NULL DEFAULT false;
+```
 
-These hooks return hardcoded demo data from `src/data/demoData.ts` when `isDemoMode` is true. The fix is to **remove all demo mode branches** so they always query live data, then delete the demo data file and context.
+#### 2. Feature Toggle (FeatureTogglesSettings.tsx)
+Add a new entry to the `featureToggles` array:
+```
+key: "prefer_earliest_slot"
+label: "Earliest Slot Priority"
+description: "Offer pupils the earliest available slot first to keep your day compact and avoid gaps"
+defaultValue: false
+```
 
-| Hook | Demo Return |
-|------|-------------|
-| `useTodayRemainingLessons` | Fake lesson list (Emily Carter, James O'Brien…) |
-| `useTodayOverview` | Static counts (5 lessons, £210 earnings) |
-| `useNextLessonDetails` | Fake next lesson |
-| `useWeeklyGoals` | Static 22 hours |
-| `useMonthlyGoals` | Static 80 lessons |
-| `useInstructorLiveStats` | Static £1540 earnings |
-| `useTomorrowPreview` / `useTomorrowLessons` | Fake tomorrow schedule |
-| `useInstructorStreak` | Static 12-day streak |
-| `usePendingJobsCount` | Static count of 2 |
+#### 3. LessonScheduler.tsx — Slot Ordering & Recommendation
+- Fetch `prefer_earliest_slot` from the instructor record alongside availability data
+- When enabled:
+  - Sort `getAvailableTimeSlots()` results earliest-first (already natural order, but add a visual "Recommended" badge on the first slot)
+  - Auto-scroll to / highlight the earliest available slot when a date is selected
+  - Show a small banner: "Your instructor prefers earlier lesson times"
 
-**Changes:**
-1. Remove `if (isDemoMode) return demoXxx;` from all 8 hooks
-2. Remove demo imports from each hook
-3. Delete `src/data/demoData.ts`
-4. Remove `DemoModeProvider` from `App.tsx`
-5. Delete `src/context/DemoModeContext.tsx`
-6. Remove any demo toggle UI (if present in settings)
+#### 4. AutoSchedulePreview / autoScheduler.ts — Scoring Boost
+- Pass `prefer_earliest_slot` into `findOptimalSlots`
+- When enabled, add a score bonus to earlier time slots (e.g., +10 for morning, +5 for early afternoon) so the auto-scheduler naturally selects earlier times
 
-### Category B: Hardcoded Public Stats (2 files)
+#### 5. StepBookNext.tsx — End-of-Lesson Quick Book
+- When `prefer_earliest_slot` is true, sort the candidate times so earliest available slots appear first (already the default order, but skip later slots if earlier ones exist on the same day)
 
-| File | Issue | Fix |
-|------|-------|-----|
-| `src/components/instructor-features/StatsBar.tsx` | "500+ Active Instructors", "12,000+ Pupils", "87% Pass Rate" — all hardcoded | Query live counts from `instructors` (where `is_active = true`) and `pupils` tables. Cache with long staleTime. Pass rate: query `driving_test_results` for real aggregate. |
-| `src/pages/HomepageRedesignDemo.tsx` | "500+ Active Instructors", "50,000+ Lessons", "4.9★ Rating" hardcoded | Same approach — query live data or remove if this is only a demo page |
-
-### Category C: Placeholder Features (4 items)
-
-| Location | Issue | Fix |
-|----------|-------|-----|
-| `MobileScheduleView.tsx` line 534 | "Google Calendar integration coming soon" in reschedule dialog | Wire up actual reschedule: create new lesson + cancel old, or use the existing calendar sync system |
-| `FleetMileageTracker.tsx` line 283 | "Xero sync coming soon" | Remove the text — it's informational, not blocking data. Change to "Export CSV/PDF to email to your accountant." |
-| `DigitalWaiverManager.tsx` line 178 | "Send reminders feature coming soon" toast | Wire up the existing SMS reminder system to send waiver reminders, or remove the button |
-| `InstructorDomainsManagement.tsx` lines 98-111 | Renew/Manage/Upgrade hosting all show "coming soon" toasts | Either wire to the 20i API for real domain management, or disable the buttons with proper messaging |
-
-### Category D: Cross-Platform Data Consistency
-
-Ensure all portals (parent, pupil, instructor, admin) use the same source of truth:
-
-| Area | Check | Status |
-|------|-------|--------|
-| Payment history | Parent + Pupil + Instructor all query `payment_history` | ✅ Already live |
-| Attendance | Parent queries `scheduled_lessons` | ✅ Already live |
-| Lesson notes | Parent queries `lesson_feedback` | ✅ Already live |
-| Pupil balance | Uses `account_balance` column | ✅ Already live |
-| Driver scores | Calculated from `geotab_driver_events` | ✅ Already live (fixed in previous task) |
-| Speeding events | Queries `telematics_alerts` | ✅ Already live |
-
-### Implementation Order
-
-1. **Remove demo mode system** — delete context, data file, strip all hooks (8 files)
-2. **Wire StatsBar to live data** — add queries for instructor count, pupil count, pass rate
-3. **Fix "coming soon" placeholders** — reschedule dialog, waiver reminders, domain management
-4. **Clean up** — remove unused imports, verify no other static fallbacks remain
-
-### Technical Notes
-
-- StatsBar will use `useQuery` with 30-minute `staleTime` since aggregate stats don't need real-time updates
-- The reschedule dialog fix involves creating a new `scheduled_lesson` with updated time/date and cancelling the old one, then triggering calendar sync
-- No database migrations needed — all tables already exist
+### Files Modified
+| File | Change |
+|------|--------|
+| Migration | Add `prefer_earliest_slot` column |
+| `FeatureTogglesSettings.tsx` | Add toggle entry |
+| `LessonScheduler.tsx` | Fetch setting, add "Recommended" badge on earliest slot, show preference banner |
+| `src/utils/autoScheduler.ts` | Boost score for earlier slots when setting enabled |
+| `StepBookNext.tsx` | Respect setting in candidate ordering |
 
