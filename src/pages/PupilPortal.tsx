@@ -258,9 +258,20 @@ export default function PupilPortal() {
                           </div>
                         )}
                       </div>
-                      <Badge variant={lesson.payment_status === "paid" ? "default" : "outline"} className="shrink-0">
-                        {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
-                      </Badge>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {pupil.instructor && (
+                          <RescheduleRequestForm
+                            lessonId={lesson.id}
+                            pupilId={pupil.id}
+                            instructorId={pupil.instructor.id}
+                            originalDate={lesson.lesson_date}
+                            originalTime={lesson.start_time}
+                          />
+                        )}
+                        <Badge variant={lesson.payment_status === "paid" ? "default" : "outline"}>
+                          {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
+                        </Badge>
+                      </div>
                     </div>
                   );
                 })}

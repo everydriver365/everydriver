@@ -168,9 +168,26 @@ export function StepPayment({
           Record
         </Button>
         {paymentQrUrl && (
-          <Button variant="outline" onClick={() => setShowQR(true)}>
-            <QrCode className="h-4 w-4" />
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => setShowQR(true)}>
+              <QrCode className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const url = paymentQrUrl;
+                const text = `Hi ${pupilName}, here's your payment link: ${url}`;
+                if (navigator.share) {
+                  navigator.share({ title: "Payment Link", text, url }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(url);
+                  toast.success("Payment link copied!");
+                }
+              }}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </>
         )}
         <Button variant="ghost" onClick={onSkip}>
           Skip

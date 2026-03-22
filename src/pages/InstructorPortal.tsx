@@ -429,6 +429,7 @@ export default function InstructorPortal() {
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
+            <MileageTaxSavingsCard instructorId={instructorId} />
             <RetentionAlertsTile instructorId={instructorId} />
             <UnifiedAgendaTile instructorId={instructorId} />
             <NotesWidget instructorId={instructorId} />
