@@ -33,7 +33,6 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState<string | null>(null);
   const { subscription, refreshInstructor } = useInstructorAuth();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!open) return;
