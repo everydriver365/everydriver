@@ -121,7 +121,7 @@ export function MobileHomepage() {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
+          <img src={routeLogo.logo} alt={routeLogo.logoAlt} className="h-8 -mx-1" />
         </div>
         <Button 
           variant="outline" 

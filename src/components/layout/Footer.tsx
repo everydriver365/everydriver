@@ -35,9 +35,7 @@ function TyreTrackPattern() {
 }
 
 export function Footer() {
-  const logo = drive365Logo;
-  const logoAlt = "Drive365";
-  const homeLink = "/";
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
