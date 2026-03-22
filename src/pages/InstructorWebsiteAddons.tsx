@@ -79,6 +79,23 @@ const ADDONS: AddonCard[] = [
   },
 ];
 
+const HEALTHCARE_ADDON: AddonCard = {
+  type: "healthcare",
+  name: "Healthcare & Wellbeing",
+  price: "£19.99",
+  description: "Comprehensive health cashback plan — dental, optical, GP access, physio and mental health support",
+  features: [
+    "Dental cashback up to £150/yr",
+    "Optical cashback up to £100/yr",
+    "24/7 GP access (phone & video)",
+    "Physio & mental health sessions",
+    "Employee Assistance Programme (EAP)",
+    "No waiting period — instant cover",
+  ],
+  icon: <Heart className="h-6 w-6" />,
+  freeEquivalent: "Not included",
+};
+
 const BUNDLE_PRICE = "£9.99";
 const BUNDLE_SAVING = "£3.96";
 
