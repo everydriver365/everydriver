@@ -38,6 +38,7 @@ const LEARNER_ALLOWED_ROUTES = [
   "/instructor-app/login", // Instructor login page
   "/instructor",         // Instructor portal (used after login)
   "/admin/login",        // Admin login page
+  "/franchise",          // Franchise recruitment page
 ];
 
 // Routes that should stay on their current domain (shared routes)

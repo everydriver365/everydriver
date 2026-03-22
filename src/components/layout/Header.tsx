@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/drive365", label: "Home" },
   { href: "/courses", label: "Courses" },
   { href: "/about", label: "About" },
+  { href: "/franchise", label: "Franchise" },
   { href: "/faqs", label: "FAQs" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },

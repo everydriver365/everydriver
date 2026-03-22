@@ -102,6 +102,7 @@ export const publicRoutes = (
 
     {/* Public utility routes */}
     <Route path="/switch" element={<SwitchToEveryDriver />} />
+    <Route path="/franchise" element={<FranchisePage />} />
     <Route path="/availability/:shareToken" element={<PublicAvailability />} />
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />

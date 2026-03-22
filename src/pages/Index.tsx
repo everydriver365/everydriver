@@ -1055,6 +1055,25 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Franchise Promotion Banner */}
+      <section className="bg-primary text-primary-foreground py-12 md:py-16">
+        <div className="container max-w-4xl text-center space-y-5">
+          <Badge className="bg-accent text-accent-foreground text-sm">Now Recruiting</Badge>
+          <h2 className="text-2xl md:text-3xl font-bold">
+            Are You a Driving Instructor?
+          </h2>
+          <p className="text-primary-foreground/80 max-w-2xl mx-auto">
+            Join the Drive365 franchise — free private healthcare, £50 bonus every time a pupil passes, 
+            and the best tech platform in the business. From just £99/week.
+          </p>
+          <Button size="lg" variant="secondary" className="text-base px-8" asChild>
+            <Link to="/franchise">
+              Learn More <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
       {/* Desktop Trust Badges - V9 Stacked Compact Design */}
       <section className="hidden md:block bg-card border-y border-border py-6">
         <div className="container max-w-3xl space-y-4">
