@@ -156,7 +156,8 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
                       variant="default"
                       size="sm"
                       className="w-full gap-1.5"
-                      onClick={() => handleUpgrade(plan)}
+                      onClick={() => handleChangePlan(plan)}
+                      disabled={switching === plan.slug}
                     >
                       <Mail className="h-3.5 w-3.5" />
                       {plan.cta_text || "Contact to Upgrade"}
