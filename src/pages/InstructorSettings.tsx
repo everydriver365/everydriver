@@ -119,7 +119,7 @@ export default function InstructorSettings() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, welcome_video_url, hero_image_url, adi_certificate_url, is_active")
+        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, commission_split_percent, welcome_video_url, hero_image_url, adi_certificate_url, is_active")
         .eq("id", instructorId)
         .single();
 
