@@ -63,6 +63,7 @@ const InstructorLocations = lazy(() => import("@/pages/InstructorLocations"));
 // Website & marketing
 const InstructorMiniWebsiteSettings = lazy(() => import("@/pages/InstructorMiniWebsiteSettings"));
 const InstructorDomainsManagement = lazy(() => import("@/pages/InstructorDomainsManagement"));
+const InstructorWebsiteAddons = lazy(() => import("@/pages/InstructorWebsiteAddons"));
 const InstructorReviews = lazy(() => import("@/pages/InstructorReviews"));
 const InstructorReferrals = lazy(() => import("@/pages/InstructorReferrals"));
 const InstructorPipeline = lazy(() => import("@/pages/InstructorPipeline"));
@@ -184,6 +185,7 @@ export const instructorPortalRoutes = (
     {/* Website & marketing — gated */}
     <Route path="/instructor/website" element={<Gated feature="mini_website" label="Mini Website"><InstructorMiniWebsiteSettings /></Gated>} />
     <Route path="/instructor/domains" element={<Gated feature="mini_website" label="Domains"><InstructorDomainsManagement /></Gated>} />
+    <Route path="/instructor/website-addons" element={<InstructorWebsiteAddons />} />
     <Route path="/instructor/reviews" element={<InstructorReviews />} />
     <Route path="/instructor/referrals" element={<InstructorReferrals />} />
     <Route path="/instructor/pipeline" element={<InstructorPipeline />} />
