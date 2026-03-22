@@ -30,6 +30,7 @@ const sidebarGroups: SidebarGroup[] = [
     icon: LayoutDashboard,
     items: [
       { key: "overview", label: "Overview", icon: LayoutDashboard },
+      { key: "alerts", label: "Alerts", icon: AlertTriangle, badgeKey: "alerts" },
       { key: "live-map", label: "Live Map", icon: MapPin },
       { key: "analytics", label: "Analytics", icon: BarChart3 },
       { key: "commission", label: "Commission", icon: PoundSterling },

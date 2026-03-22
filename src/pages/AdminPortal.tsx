@@ -402,6 +402,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "alerts":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminAlerts />
+          </motion.div>
+        );
+
       case "mini-websites":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
