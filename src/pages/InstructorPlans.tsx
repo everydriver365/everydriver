@@ -30,6 +30,10 @@ interface Plan {
   commission_rate_percent: number | null;
   commission_fixed_pence: number | null;
   payout_speed: string | null;
+  is_per_seat: boolean;
+  base_price_monthly: number;
+  per_seat_price_monthly: number;
+  min_seats: number;
 }
 
 interface CategoryFeatures {
