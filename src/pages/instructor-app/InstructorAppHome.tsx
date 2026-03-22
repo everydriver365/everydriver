@@ -209,12 +209,12 @@ export default function InstructorAppHome() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <Badge className="bg-[#0075c9]/10 text-[#0075c9] mb-4">Why EveryDriver</Badge>
+            <Badge className="bg-primary/10 text-primary mb-4">Why ADIs Are Switching</Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              More Than Just a Diary App
+              Features Your Current App Doesn't Have
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Professional-grade tools that set you apart — telematics, dashcam, pupil apps, and enterprise options for growing schools.
+              GPS tracking, dashcam, telematics, HMRC MTD filing, pupil &amp; parent apps — all from £4.99/mo. No other platform comes close.
             </p>
           </motion.div>
 
