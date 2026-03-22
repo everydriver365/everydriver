@@ -27,37 +27,37 @@ interface FeatureWithIcon extends InstructorAppFeature {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-// Highlight features for the "Why EveryDriver" section
+// Highlight features for the "Why EveryDriver" section — USPs competitors don't have
 const highlights = [
   {
     icon: Gauge,
-    title: "Live Telematics",
-    description: "Real-time speed, G-force, and route tracking during every lesson.",
+    title: "Live GPS & Telematics",
+    description: "Real-time speed, G-force, and route tracking during every lesson. No rival offers this.",
   },
   {
     icon: Camera,
     title: "Integrated Dashcam",
-    description: "Record lessons, clip key moments, and auto-save incident footage.",
+    description: "Record lessons, clip key moments, and auto-save incident footage. Exclusive to EveryDriver.",
   },
   {
     icon: GraduationCap,
     title: "Pupil & Parent Apps",
-    description: "Dedicated apps for pupils to track progress and parents to stay informed.",
+    description: "Dedicated apps for pupils to track progress and parents to stay informed — included free.",
   },
   {
     icon: Building2,
-    title: "White Label & Multi-School",
-    description: "Your brand, your domain. Manage multiple branches from one dashboard.",
+    title: "Multi-School Management",
+    description: "Manage multiple branches, instructors, and fleets from one dashboard. Total Drive charges extra.",
   },
   {
-    icon: MapPin,
-    title: "GPS Trip Replay",
-    description: "Animated route playback with speed compliance and detailed PDF reports.",
+    icon: PoundSterling,
+    title: "HMRC MTD Ready",
+    description: "Quarterly tax filing built in. Be compliant before the April 2026 deadline — no add-on needed.",
   },
   {
     icon: Shield,
-    title: "Incident Reporting",
-    description: "Log incidents with photos, GPS, and dashcam links — insurance-ready.",
+    title: "From Just £4.99/mo",
+    description: "Half the price of Total Drive or ADI Book. No tie-in. Cancel anytime. It's your platform.",
   },
 ];
 
@@ -209,12 +209,12 @@ export default function InstructorAppHome() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <Badge className="bg-[#0075c9]/10 text-[#0075c9] mb-4">Why EveryDriver</Badge>
+            <Badge className="bg-primary/10 text-primary mb-4">Why ADIs Are Switching</Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              More Than Just a Diary App
+              Features Your Current App Doesn't Have
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Professional-grade tools that set you apart — telematics, dashcam, pupil apps, and enterprise options for growing schools.
+              GPS tracking, dashcam, telematics, HMRC MTD filing, pupil &amp; parent apps — all from £4.99/mo. No other platform comes close.
             </p>
           </motion.div>
 
@@ -336,22 +336,100 @@ export default function InstructorAppHome() {
         </section>
       )}
 
-      {/* ═══════════════════ FREE FOREVER BANNER ═══════════════════ */}
-      <section className="py-16 bg-gradient-to-r from-[#0075c9] to-[#005a9e]">
+      {/* ═══════════════════ COMPETITOR COMPARISON ═══════════════════ */}
+      <section className="py-20 bg-muted/30">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge className="bg-accent/10 text-accent mb-4">Switching?</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              See How We Compare
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              EveryDriver gives you more features at a lower price than Total Drive, ADI Book, or MyDriveTime.
+            </p>
+          </motion.div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left p-3 font-medium text-muted-foreground">Feature</th>
+                  <th className="p-3 text-center font-bold text-primary">EveryDriver</th>
+                  <th className="p-3 text-center font-medium text-muted-foreground">Total Drive</th>
+                  <th className="p-3 text-center font-medium text-muted-foreground">ADI Book</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { feature: "Monthly price", ed: "From £4.99", td: "From £12.50", ab: "From £11.99" },
+                  { feature: "Free tier available", ed: true, td: false, ab: false },
+                  { feature: "GPS route tracking", ed: true, td: false, ab: false },
+                  { feature: "Dashcam integration", ed: true, td: false, ab: false },
+                  { feature: "Live telematics", ed: true, td: false, ab: false },
+                  { feature: "Pupil & parent apps", ed: true, td: "Pupil only", ab: false },
+                  { feature: "Professional website", ed: true, td: true, ab: true },
+                  { feature: "HMRC MTD filing", ed: true, td: false, ab: false },
+                  { feature: "Multi-school management", ed: true, td: "Extra cost", ab: false },
+                  { feature: "PDI free programme", ed: true, td: false, ab: false },
+                  { feature: "DVSA test slot finder", ed: true, td: false, ab: false },
+                  { feature: "No tie-in contract", ed: true, td: true, ab: true },
+                ].map((row, i) => (
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                    <td className="p-3 text-foreground font-medium">{row.feature}</td>
+                    {[row.ed, row.td, row.ab].map((val, j) => (
+                      <td key={j} className="p-3 text-center">
+                        {val === true ? (
+                          <CheckCircle className={cn("h-5 w-5 mx-auto", j === 0 ? "text-primary" : "text-muted-foreground")} />
+                        ) : val === false ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <span className={cn("text-xs font-medium", j === 0 ? "text-primary" : "text-muted-foreground")}>{val}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-8"
+          >
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Link to="/compare">
+                Full Feature Comparison (130+ features)
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ PRICING BANNER ═══════════════════ */}
+      <section className="py-16 bg-gradient-to-r from-primary to-primary/80">
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-white/20 flex items-center justify-center">
-                <Zap className="h-8 w-8 text-white" />
+              <div className="h-16 w-16 rounded-2xl bg-primary-foreground/20 flex items-center justify-center">
+                <Zap className="h-8 w-8 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white">FREE Forever Plan Available</h3>
-                <p className="text-white/80 text-lg">No credit card required. Upgrade when you're ready.</p>
+                <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground">The Virtually Free Diary App — Built for ADIs</h3>
+                <p className="text-primary-foreground/80 text-lg">From just £4.99/mo. No tie-in. Cancel anytime. It's your platform.</p>
               </div>
             </div>
-            <Button size="lg" className="bg-white text-[#0075c9] hover:bg-gray-100 h-14 px-10 text-lg shadow-lg" asChild>
-              <Link to="/instructor-app/signup">
-                Get Started Free
+            <Button size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-10 text-lg shadow-lg" asChild>
+              <Link to="/compare">
+                Compare Plans
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -437,7 +515,7 @@ export default function InstructorAppHome() {
                 </Button>
               </div>
               <p className="mt-8 text-sm text-muted-foreground">
-                No credit card required • Free plan available forever
+                No tie-in contract • Cancel anytime • Free plan available
               </p>
             </motion.div>
           </div>
