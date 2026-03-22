@@ -38,6 +38,7 @@ export const instructorAppRoutes = (
     <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
     <Route path="/instructor-app/payments" element={<InstructorPayments />} />
     <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
+    <Route path="/instructor-app/mtd" element={<InstructorMTD />} />
     <Route path="/driving-schools" element={<DrivingSchools />} />
   </>
 );
