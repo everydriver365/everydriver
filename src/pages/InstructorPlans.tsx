@@ -437,9 +437,14 @@ export default function InstructorPlans() {
                           <Button
                             size="sm"
                             className="w-full gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0"
-                            onClick={() => handleUpgrade(plan)}
+                            onClick={() => handleChangePlan(plan)}
+                            disabled={switching === plan.slug}
                           >
-                            <Mail className="h-3.5 w-3.5" />
+                            {switching === plan.slug ? (
+                              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            ) : (
+                              <Mail className="h-3.5 w-3.5" />
+                            )}
                             {plan.cta_text || "Contact to Upgrade"}
                           </Button>
                         )}
