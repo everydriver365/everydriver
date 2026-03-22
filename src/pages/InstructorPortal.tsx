@@ -247,6 +247,11 @@ export default function InstructorPortal() {
     <InstructorPortalLayout>
       <div className="space-y-5">
 
+        {/* PDI Banner */}
+        {(subscription as any)?.is_pdi_programme && (
+          <PDIBanner instructorName={instructorData?.name?.split(' ')[0]} />
+        )}
+
         {/* Contextual Status Bar — replaces heavy hero */}
         <div className="flex items-center justify-between bg-card border border-border rounded-xl px-5 py-3">
           <div className="flex items-center gap-3">
