@@ -79,6 +79,22 @@ const sidebarGroups = [
 // Flatten all items for pinning lookup
 const allItems = sidebarGroups.flatMap(g => g.items);
 
+// Map routes to required features (matches menu_feature_gates table)
+const ROUTE_FEATURE_MAP: Record<string, string> = {
+  "/instructor/pay": "payment_tracking",
+  "/instructor/accounts": "payment_tracking",
+  "/instructor/expenses": "expense_tracking",
+  "/instructor/tracking": "telematics",
+  "/instructor/find-my-car": "telematics",
+  "/instructor/vehicle-health": "telematics",
+  "/instructor/routes": "telematics",
+  "/instructor/fleet-dashboard": "telematics",
+  "/instructor/dashcam": "dashcam",
+  "/instructor/website": "mini_website",
+  "/instructor/domains": "mini_website",
+  "/instructor/gaps": "sms_notifications",
+};
+
 interface InstructorDesktopSidebarProps {
   instructor: {
     id: string;
@@ -88,6 +104,7 @@ interface InstructorDesktopSidebarProps {
   } | null;
   subscription: {
     plan_slug?: string;
+    features?: string[];
   } | null;
   onSignOut: () => void;
 }
