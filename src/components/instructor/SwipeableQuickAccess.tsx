@@ -10,7 +10,7 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3, Moon, Megaphone,
+  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3, Moon, Megaphone, Lock,
 } from "lucide-react";
 import expensesIcon from "@/assets/expenses-icon.png";
 import trackLessonIcon from "@/assets/track-lesson-icon.png";
