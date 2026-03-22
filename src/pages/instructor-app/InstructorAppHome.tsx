@@ -436,6 +436,9 @@ export default function InstructorAppHome() {
                   </Link>
                 </Button>
               </div>
+              <p className="mt-8 text-sm text-muted-foreground">
+                No credit card required • Free plan available forever
+              </p>
             </motion.div>
           </div>
         </section>
