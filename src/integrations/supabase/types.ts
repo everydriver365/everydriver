@@ -6960,6 +6960,7 @@ export type Database = {
           payment_qr_url_pupil_pays: string | null
           personal_website_url: string | null
           phone: string | null
+          prefer_earliest_slot: boolean
           preferred_language: string | null
           preferred_lesson_length: number
           pricing_rules_enabled: boolean | null
@@ -7091,6 +7092,7 @@ export type Database = {
           payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
           pricing_rules_enabled?: boolean | null
@@ -7222,6 +7224,7 @@ export type Database = {
           payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
           pricing_rules_enabled?: boolean | null

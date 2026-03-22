@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN prefer_earliest_slot boolean NOT NULL DEFAULT false;
