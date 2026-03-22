@@ -1,7 +1,7 @@
 import {
   BarChart3, BookOpen, CreditCard, Gift, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users, LucideIcon,
-  LogOut, Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite,
+  LogOut, Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -30,6 +30,7 @@ const sidebarGroups: SidebarGroup[] = [
     icon: LayoutDashboard,
     items: [
       { key: "overview", label: "Overview", icon: LayoutDashboard },
+      { key: "alerts", label: "Alerts", icon: AlertTriangle, badgeKey: "alerts" },
       { key: "live-map", label: "Live Map", icon: MapPin },
       { key: "analytics", label: "Analytics", icon: BarChart3 },
       { key: "commission", label: "Commission", icon: PoundSterling },

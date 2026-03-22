@@ -152,6 +152,54 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          instructor_id: string | null
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          subscription_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          subscription_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_campaigns: {
         Row: {
           audience_filter: Json | null
@@ -13101,6 +13149,69 @@ export type Database = {
           speed_limit_kmh?: number
         }
         Relationships: []
+      }
+      subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          gocardless_payment_id: string | null
+          id: string
+          instructor_id: string
+          payment_date: string | null
+          period_end: string | null
+          period_start: string | null
+          receipt_sent: boolean
+          status: string
+          subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          gocardless_payment_id?: string | null
+          id?: string
+          instructor_id: string
+          payment_date?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          receipt_sent?: boolean
+          status?: string
+          subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          gocardless_payment_id?: string | null
+          id?: string
+          instructor_id?: string
+          payment_date?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          receipt_sent?: boolean
+          status?: string
+          subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_payments_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_plans: {
         Row: {

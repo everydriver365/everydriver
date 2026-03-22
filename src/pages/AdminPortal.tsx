@@ -74,6 +74,7 @@ import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog"
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 
 import ComparisonEditor from "@/components/admin/ComparisonEditor";
+import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
@@ -398,6 +399,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <FeatureGatingManager />
+          </motion.div>
+        );
+
+      case "alerts":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminAlerts />
           </motion.div>
         );
 

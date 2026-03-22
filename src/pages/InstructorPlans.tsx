@@ -131,6 +131,17 @@ export default function InstructorPlans() {
 
   const currentPlanSlug = subscription?.plan_slug || "free";
 
+  // Handle return from GoCardless DD setup
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("dd_complete") === "true") {
+      toast.success("Direct Debit set up successfully! Your plan will activate shortly.");
+      refreshInstructor();
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [refreshInstructor]);
+
   useEffect(() => {
     const fetchData = async () => {
       const [plansRes, assignmentsRes] = await Promise.all([
@@ -181,8 +192,30 @@ export default function InstructorPlans() {
   const handleChangePlan = async (plan: Plan) => {
     if (!instructor?.id || !subscription?.id) return;
 
-    // For paid plans or "contact us" plans, show contact toast
-    if (plan.show_contact_us || (plan.price_monthly > 0 && currentPlanSlug === "free")) {
+    // Downgrade to free: instant switch
+    if (plan.price_monthly === 0) {
+      setSwitching(plan.slug);
+      try {
+        const { error } = await supabase
+          .from("instructor_subscriptions")
+          .update({ plan_id: plan.id, status: "active" })
+          .eq("id", subscription.id);
+
+        if (error) throw error;
+
+        await refreshInstructor();
+        toast.success(`Switched to ${plan.name} plan!`);
+      } catch (err) {
+        console.error("Error switching plan:", err);
+        toast.error("Failed to switch plan. Please try again.");
+      } finally {
+        setSwitching(null);
+      }
+      return;
+    }
+
+    // Contact us plans
+    if (plan.show_contact_us) {
       toast.success(`To upgrade to ${plan.name}, please contact us`, {
         description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
         duration: 5000,
@@ -190,22 +223,40 @@ export default function InstructorPlans() {
       return;
     }
 
-    // Allow instant switching for free plan or between same-tier plans
+    // Paid plan upgrade: redirect to GoCardless DD setup
     setSwitching(plan.slug);
     try {
-      const { error } = await supabase
+      // First update the plan_id so the billing request uses the correct plan
+      await supabase
         .from("instructor_subscriptions")
         .update({ plan_id: plan.id })
         .eq("id", subscription.id);
 
-      if (error) throw error;
+      const redirectUrl = `${window.location.origin}/instructor/plans?dd_complete=true`;
 
-      await refreshInstructor();
-      toast.success(`Switched to ${plan.name} plan!`);
+      const { data: result, error: fnError } = await supabase.functions.invoke(
+        "gocardless-create-billing-request",
+        {
+          body: {
+            instructor_id: instructor.id,
+            plan_id: plan.id,
+            redirect_url: redirectUrl,
+          },
+        }
+      );
+
+      if (fnError || !result?.success) {
+        throw new Error(result?.error || fnError?.message || "Failed to set up Direct Debit");
+      }
+
+      if (result.authorisation_url) {
+        window.location.href = result.authorisation_url;
+      } else {
+        throw new Error("No authorisation URL returned");
+      }
     } catch (err) {
-      console.error("Error switching plan:", err);
-      toast.error("Failed to switch plan. Please try again.");
-    } finally {
+      console.error("Error upgrading plan:", err);
+      toast.error("Failed to set up Direct Debit. Please try again.");
       setSwitching(null);
     }
   };
