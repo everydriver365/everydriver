@@ -73,6 +73,7 @@ import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 import { PlanFeatureMatrixManager } from "@/components/admin/PlanFeatureMatrixManager";
+import ComparisonEditor from "@/components/admin/ComparisonEditor";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
@@ -170,6 +171,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "commission-settings": { title: "Commission & Fees", group: "Finance & Payments", icon: PoundSterling },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
+  "comparison-editor": { title: "Pricing Comparison", group: "Learner Website", icon: Layers },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
@@ -387,6 +389,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <PlanFeatureMatrixManager />
+          </motion.div>
+        );
+
+      case "comparison-editor":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <ComparisonEditor />
           </motion.div>
         );
 
