@@ -35,6 +35,7 @@ const DemoKenDMobileHeroes = lazy(() => import("@/pages/demo/DemoKenDMobileHeroe
 const DemoTomorrowTileDesigns = lazy(() => import("@/pages/demo/DemoTomorrowTileDesigns"));
 const DemoTelematicsRedesign = lazy(() => import("@/pages/demo/DemoTelematicsRedesign"));
 const DemoPricingPage = lazy(() => import("@/pages/DemoPricingPage"));
+const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 
 // Instructor portal demo routes
 const NextUpTileDemo = lazy(() => import("@/pages/instructor/NextUpTileDemo"));
@@ -87,5 +88,6 @@ export const demoRoutes = (
     <Route path="/demo/tomorrow-tile-designs" element={<DemoTomorrowTileDesigns />} />
     <Route path="/demo/telematics-redesign" element={<DemoTelematicsRedesign />} />
     <Route path="/demo/pricing" element={<DemoPricingPage />} />
+    <Route path="/compare" element={<ComparisonPage />} />
   </>
 );
