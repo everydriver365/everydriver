@@ -34,6 +34,8 @@ const benefits = [
 export default function InstructorSignup() {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get("plan") || "free";
+  const promo = searchParams.get("promo");
+  const isFirstMonthFree = promo === "first-month-free" && selectedPlan === "all_in";
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
