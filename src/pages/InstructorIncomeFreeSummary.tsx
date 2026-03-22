@@ -44,7 +44,7 @@ export default function InstructorIncomeFreeSummary() {
   }, [instructor?.id]);
 
   return (
-    <InstructorPortalLayout title="Income">
+    <InstructorPortalLayout>
       <div className="space-y-4 p-4">
         <h1 className="text-xl font-bold">Income Summary</h1>
         <p className="text-sm text-muted-foreground">Last 30 days overview</p>
