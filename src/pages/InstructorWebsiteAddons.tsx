@@ -125,7 +125,8 @@ export default function InstructorWebsiteAddons() {
   const hasBundleOrAll = hasAddon("website_pro_pack");
 
   return (
-    <InstructorShell title="Website Add-Ons" subtitle="Enhance your online presence with monthly add-ons">
+    <InstructorPortalLayout>
+      <InstructorPageHeader icon={Package} title="Website Add-Ons" subtitle="Enhance your online presence with monthly add-ons" />
       {/* Bundle card */}
       <Card className="border-2 border-primary bg-primary/5 mb-6">
         <CardHeader>
