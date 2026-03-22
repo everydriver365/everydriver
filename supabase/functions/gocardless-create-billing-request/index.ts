@@ -46,6 +46,7 @@ serve(async (req) => {
       domain_tld,
       domain_price,
       promo,
+      seat_count,
     }: BillingRequestBody = await req.json();
 
     if (!instructor_id || !plan_id || !redirect_url) {
