@@ -1,38 +1,22 @@
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { DVSA_SYLLABUS } from "@/constants/dvsaSyllabus";
 
 interface TestReadinessScoreProps {
   pupilId: string;
+  lessonsCompleted?: number;
+  progress?: { competency_id: string; level: number }[];
 }
 
-export function TestReadinessScore({ pupilId }: TestReadinessScoreProps) {
-  const [lessonsCompleted, setLessonsCompleted] = useState(0);
-  const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      supabase.from("pupils").select("lessons_completed").eq("id", pupilId).single(),
-      supabase.from("pupil_competency_progress").select("competency_id, level").eq("pupil_id", pupilId),
-    ]).then(([pupilRes, progressRes]) => {
-      setLessonsCompleted(pupilRes.data?.lessons_completed || 0);
-      setProgress((progressRes.data || []) as { competency_id: string; level: number }[]);
-      setLoading(false);
-    });
-  }, [pupilId]);
-
+export function TestReadinessScore({ pupilId, lessonsCompleted = 0, progress = [] }: TestReadinessScoreProps) {
   const { score, label, color } = useMemo(() => {
     const totalCompetencies = DVSA_SYLLABUS.length;
     const masteredCount = progress.filter(p => p.level >= 5).length;
     const syllabusPercent = totalCompetencies > 0 ? (masteredCount / totalCompetencies) * 100 : 0;
 
-    // Hours weight (target ~45 hours typical)
     const hoursPercent = Math.min(100, (lessonsCompleted / 45) * 100);
 
-    // Average level
     const avgLevel = progress.length > 0
       ? progress.reduce((s, p) => s + p.level, 0) / progress.length
       : 0;
@@ -52,8 +36,6 @@ export function TestReadinessScore({ pupilId }: TestReadinessScoreProps) {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
-
-  if (loading) return null;
 
   return (
     <Card className="border-border">
