@@ -42,6 +42,7 @@ const SubmitReview = lazy(() => import("@/pages/mini-website/SubmitReview"));
 const PublicAvailability = lazy(() => import("@/pages/PublicAvailability"));
 const RemoteSigning = lazy(() => import("@/pages/RemoteSigning"));
 const SwitchToEveryDriver = lazy(() => import("@/pages/SwitchToEveryDriver"));
+const FranchisePage = lazy(() => import("@/pages/FranchisePage"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 
