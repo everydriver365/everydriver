@@ -99,6 +99,7 @@ const InstructorBulkOperations = lazy(() => import("@/pages/InstructorBulkOperat
 const InstructorReportsHub = lazy(() => import("@/pages/InstructorReportsHub"));
 const InstructorHealth = lazy(() => import("@/pages/InstructorHealth"));
 const InstructorPlatformUpdates = lazy(() => import("@/pages/InstructorPlatformUpdates"));
+const InstructorDataImport = lazy(() => import("@/pages/InstructorDataImport"));
 const WeeklyReportPage = lazy(() => import("@/pages/instructor/WeeklyReportPage"));
 const OutstandingTasksPage = lazy(() => import("@/pages/instructor/OutstandingTasksPage"));
 const EndOfDayPage = lazy(() => import("@/pages/instructor/EndOfDayPage"));
