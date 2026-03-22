@@ -25,6 +25,8 @@ import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { InstructorEnRouteTracker } from "@/components/pupil-portal/InstructorEnRouteTracker";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
+import { PupilInstallPrompt } from "@/components/pupil-portal/PupilInstallPrompt";
+import { RescheduleRequestForm } from "@/components/pupil-portal/RescheduleRequestForm";
 
 interface PupilData {
   id: string;
