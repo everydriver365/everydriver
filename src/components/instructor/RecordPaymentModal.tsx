@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { usePaymentLimit } from "@/hooks/usePaymentLimit";
 import { PoundSterling, Loader2, CreditCard, Banknote, Smartphone } from "lucide-react";
 import {
   Dialog,
