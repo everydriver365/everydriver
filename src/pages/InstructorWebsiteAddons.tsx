@@ -4,7 +4,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Globe, Lock, Search, Shield, Sparkles, Package } from "lucide-react";
+import { Check, Globe, Lock, Search, Shield, Sparkles, Package, Heart } from "lucide-react";
 import { useInstructorAddons, type AddonType } from "@/hooks/useInstructorAddons";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
