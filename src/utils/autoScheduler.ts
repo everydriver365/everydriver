@@ -316,6 +316,13 @@ function calculateScore(
     if (timeHour >= 10 && timeHour <= 14) score += 3;
   }
 
+  // Earliest slot priority: heavily boost earlier times
+  if (preferEarliestSlot) {
+    // Max bonus at 7am (+20), linearly decreasing to 0 at 8pm
+    const earliestBonus = Math.max(0, Math.round(20 - (timeHour - 7) * (20 / 13)));
+    score += earliestBonus;
+  }
+
   return score;
 }
 
