@@ -4,7 +4,7 @@ import { InstructorPageHeader } from "@/components/instructor/InstructorPageHead
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Globe, Lock, Search, Shield, Sparkles, Package } from "lucide-react";
+import { Check, Globe, Lock, Search, Shield, Sparkles, Package, Heart } from "lucide-react";
 import { useInstructorAddons, type AddonType } from "@/hooks/useInstructorAddons";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +78,23 @@ const ADDONS: AddonCard[] = [
     freeEquivalent: "Basic meta tags only",
   },
 ];
+
+const HEALTHCARE_ADDON: AddonCard = {
+  type: "healthcare",
+  name: "Healthcare & Wellbeing",
+  price: "£19.99",
+  description: "Comprehensive health cashback plan — dental, optical, GP access, physio and mental health support",
+  features: [
+    "Dental cashback up to £150/yr",
+    "Optical cashback up to £100/yr",
+    "24/7 GP access (phone & video)",
+    "Physio & mental health sessions",
+    "Employee Assistance Programme (EAP)",
+    "No waiting period — instant cover",
+  ],
+  icon: <Heart className="h-6 w-6" />,
+  freeEquivalent: "Not included",
+};
 
 const BUNDLE_PRICE = "£9.99";
 const BUNDLE_SAVING = "£3.96";
@@ -232,6 +249,55 @@ export default function InstructorWebsiteAddons() {
           );
         })}
       </div>
+
+      {/* Healthcare add-on card */}
+      <Card className="border-2 border-rose-200 bg-rose-50/30 dark:border-rose-800 dark:bg-rose-950/20 mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div>
+                <CardTitle className="text-base">{HEALTHCARE_ADDON.name}</CardTitle>
+                <CardDescription className="text-xs">{HEALTHCARE_ADDON.freeEquivalent} on Free</CardDescription>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-lg font-bold text-foreground">{HEALTHCARE_ADDON.price}</span>
+              <span className="text-xs text-muted-foreground">/mo</span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground mb-3">{HEALTHCARE_ADDON.description}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {HEALTHCARE_ADDON.features.map((f, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+        <CardFooter>
+          {hasAddon("healthcare") ? (
+            <Button variant="outline" size="sm" className="w-full" disabled>
+              <Check className="h-4 w-4 mr-2" /> Active
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-rose-300 hover:bg-rose-50 dark:border-rose-700 dark:hover:bg-rose-950/30"
+              onClick={() => handleActivate("healthcare", 19.99)}
+              disabled={!!activating}
+            >
+              {activating === "healthcare" ? "Activating..." : `Add Healthcare for ${HEALTHCARE_ADDON.price}/mo`}
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
     </InstructorPortalLayout>
   );
 }

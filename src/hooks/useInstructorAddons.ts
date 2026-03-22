@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
-export type AddonType = "pro_website" | "custom_domain" | "ssl_hosting" | "seo_boost" | "website_pro_pack";
+export type AddonType = "pro_website" | "custom_domain" | "ssl_hosting" | "seo_boost" | "website_pro_pack" | "healthcare";
 
 export interface InstructorAddon {
   id: string;
