@@ -13,6 +13,7 @@ interface BillingRequestBody {
   domain_name?: string;
   domain_tld?: string;
   domain_price?: number;
+  promo?: string;
 }
 
 serve(async (req) => {
