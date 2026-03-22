@@ -132,8 +132,8 @@ export function StepPlanSelection({
     >
 
       {/* Plans Grid */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {plans.slice(0, 3).map((plan, index) => {
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {plans.map((plan, index) => {
           const isSelected = selectedPlanId === plan.id;
           const savings = getSavings(plan);
 
@@ -252,16 +252,12 @@ export function StepPlanSelection({
         })}
       </div>
 
-      {/* Additional plans hint */}
-      {plans.length > 3 && (
-        <p className="text-center text-sm text-muted-foreground mb-4">
-          <Zap className="h-4 w-4 inline mr-1" />
-          Looking for more? Enterprise and multi-instructor plans available.{" "}
-          <a href="/contact" className="text-primary hover:underline">
-            Contact us
-          </a>
-        </p>
-      )}
+      {/* Compare all features link */}
+      <p className="text-center text-sm text-muted-foreground mb-4">
+        <a href="/compare" target="_blank" className="text-primary hover:underline">
+          Compare all plans & features →
+        </a>
+      </p>
 
       <StepNavigation
         onBack={onBack}
