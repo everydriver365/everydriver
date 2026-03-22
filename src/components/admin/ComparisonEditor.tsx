@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Save, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Save, Plus, Trash2, X, Check, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
