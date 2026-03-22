@@ -1,57 +1,68 @@
 
 
-## Plan: Limited Free Payments + Read-Only Income Summary
+## Plan: Website Add-On Monetisation — Monthly Upsells
 
-### What We're Building
-1. **5 payments/month limit on the Free plan** — free users can record up to 5 payments per month. After that, they see an upgrade prompt.
-2. **Read-only 30-day income summary for Free plan** — free users see a simplified last-30-days income view instead of the full gated page.
+### Philosophy
+Position EveryDriver as the **one-stop shop** — every instructor need (diary, payments, website, domain, hosting, SEO, compliance) handled in one place. Monetise via monthly add-on tiers on top of the core subscription plans, not one-off charges.
 
-### Current State
-- Payment routes (`/instructor/pay`, `/instructor/take-payment`, `/instructor/income`) are fully gated behind `payment_tracking` feature
-- Free plan does NOT include `payment_tracking`
-- The `FeatureGate` component shows an `UpgradePrompt` when the feature is missing
+### New Monthly Add-Ons
 
-### Changes
+| Add-On | Price | What They Get | Free Tier Equivalent |
+|--------|-------|---------------|---------------------|
+| **Pro Website** | £4.99/mo | Multi-page CMS (5 pages: Home, About, Services, Reviews, Contact), custom SEO meta tags, Google Analytics integration, schema markup | 1-page mini-site (already exists) |
+| **Custom Domain** | £1.99/mo | Custom domain (e.g. johnsdriving.co.uk) linked to their mini-website, automatic DNS management | Free subdomain (slug.drive365.co.uk) |
+| **SSL + Hosting** | £2.99/mo | Dedicated SSL certificate, priority CDN hosting, uptime monitoring badge, faster page loads | Shared hosting on platform subdomain |
+| **SEO Boost** | £3.99/mo | Auto-generated sitemap, Google Search Console integration, local SEO optimisation (Google Business Profile sync), monthly SEO health report | Basic meta tags only |
 
-#### 1. Remove hard gate on payment routes, add soft limit
-**`src/routes/instructorPortalRoutes.tsx`**
-- Remove `FeatureGate` wrapper from `/instructor/pay`, `/instructor/take-payment`, and `/instructor/income`
-- These pages will handle their own gating internally
+**Bundle: "Website Pro Pack"** — All 4 add-ons for **£9.99/mo** (save £3.96/mo). This becomes the recommended upsell.
 
-#### 2. New hook: `usePaymentLimit`
-**`src/hooks/usePaymentLimit.ts`** (new)
-- Queries `payment_history` count for the current month for the instructor
-- Returns `{ count, limit: 5, isAtLimit, remaining }`
-- Only applies when instructor's subscription lacks `payment_tracking` feature
+### How It Fits the Current System
 
-#### 3. Update `TakePaymentModal` and `RecordPaymentModal`
-- Import `usePaymentLimit`
-- If `isAtLimit` is true, show an upgrade prompt instead of the payment form
-- Show remaining count badge: "3 of 5 free payments used this month"
+The existing `subscription_plans` + `instructor_subscriptions` model handles the base plan. Add-ons would be tracked in a new `instructor_addons` table, each with its own GoCardless subscription line.
 
-#### 4. Update `StepPayment` (end-of-lesson flow)
-- Same limit check — if at limit, show upgrade prompt with skip option
+### Database Changes
 
-#### 5. New page: `InstructorIncomeFreeSummary.tsx`
-**`src/pages/InstructorIncomeFreeSummary.tsx`** (new)
-- Read-only card showing last 30 days: total income, payment count, top payment method
-- Blurred/teaser section showing "Full history, financial year totals, and export available on All-In"
-- CTA button to upgrade
+**New table: `instructor_addons`**
+```sql
+CREATE TABLE instructor_addons (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instructor_id uuid REFERENCES instructors(id) ON DELETE CASCADE NOT NULL,
+  addon_type text NOT NULL, -- 'pro_website', 'custom_domain', 'ssl_hosting', 'seo_boost', 'website_pro_pack'
+  status text DEFAULT 'active',
+  price_monthly numeric DEFAULT 0,
+  gocardless_subscription_id text,
+  started_at timestamptz DEFAULT now(),
+  cancelled_at timestamptz,
+  UNIQUE(instructor_id, addon_type)
+);
+ALTER TABLE instructor_addons ENABLE ROW LEVEL SECURITY;
+```
 
-#### 6. Update `InstructorIncome` routing
-**`src/pages/InstructorIncome.tsx`**
-- At top of component, check if user has `payment_tracking` feature
-- If not, render `InstructorIncomeFreeSummary` instead
+**New rows in `comparison_features`** — Add each add-on as a feature row showing ✗ on Free, optional add-on on paid plans.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/hooks/usePaymentLimit.ts` | **New** — count monthly payments, enforce 5/mo limit |
-| `src/pages/InstructorIncomeFreeSummary.tsx` | **New** — read-only 30-day income teaser |
-| `src/routes/instructorPortalRoutes.tsx` | Remove FeatureGate from pay, take-payment, income routes |
-| `src/components/instructor/TakePaymentModal.tsx` | Add limit check + remaining count |
-| `src/components/instructor/RecordPaymentModal.tsx` | Add limit check + remaining count |
-| `src/components/instructor/end-lesson/StepPayment.tsx` | Add limit check |
-| `src/pages/InstructorIncome.tsx` | Render free summary when feature not available |
+| Database migration | Create `instructor_addons` table + RLS + insert comparison features |
+| `src/pages/InstructorWebsiteAddons.tsx` | **New** — Add-ons marketplace page showing 4 cards + bundle, purchase via GoCardless |
+| `src/hooks/useInstructorAddons.ts` | **New** — Hook to fetch active add-ons for the current instructor |
+| `src/components/instructor/WebsitePageEditor.tsx` | Gate multi-page editing behind `pro_website` add-on |
+| `src/pages/InstructorDomainsManagement.tsx` | Gate custom domain linking behind `custom_domain` add-on |
+| `src/components/instructor/InstructorDesktopSidebar.tsx` | Add "Website Add-ons" nav item |
+| `src/routes/instructorPortalRoutes.tsx` | Add route for `/instructor/website-addons` |
+| `src/components/instructor/dashboard/UpgradePlanSheet.tsx` | Show add-ons section below plan comparison |
+
+### Gating Logic
+- `useInstructorAddons()` returns active add-on types
+- Components check `hasAddon('pro_website')` before enabling multi-page editing
+- Free users see a teaser of what they'd get with an upgrade prompt
+- Bundle purchase automatically activates all 4 individual add-ons
+
+### What This Means for Revenue
+With 1,000 instructors:
+- 20% buy Pro Website (£4.99) = £998/mo
+- 30% buy Custom Domain (£1.99) = £597/mo  
+- 15% buy the Bundle (£9.99) = £1,499/mo
+- **Potential: £3,000+/mo in add-on revenue alone**, on top of subscription fees
 
