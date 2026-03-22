@@ -108,6 +108,8 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
           adminFee={adminFee}
           totalCharge={totalCharge}
           hasFee={hasFee}
+          instructorAbsorbs={instructorAbsorbs}
+          fullFee={fullFee}
         />
 
         <Button
