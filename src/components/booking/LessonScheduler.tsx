@@ -204,30 +204,35 @@ export function LessonScheduler({
   const fetchAvailability = async () => {
     setLoading(true);
     try {
-      const { data: hours } = await supabase
-        .from("instructor_working_hours")
-        .select("*")
-        .eq("instructor_id", instructorId);
+      const [hoursRes, overridesRes, calendarRes, instructorRes] = await Promise.all([
+        supabase
+          .from("instructor_working_hours")
+          .select("*")
+          .eq("instructor_id", instructorId),
+        supabase
+          .from("instructor_date_overrides")
+          .select("*")
+          .eq("instructor_id", instructorId)
+          .or(`override_end_date.gte.${format(new Date(), "yyyy-MM-dd")},override_end_date.is.null`)
+          .lte("override_date", format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd")),
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time, end_time")
+          .eq("instructor_id", instructorId)
+          .eq("is_busy", true)
+          .gte("start_time", format(new Date(), "yyyy-MM-dd")),
+        supabase
+          .from("instructors")
+          .select("prefer_earliest_slot")
+          .eq("id", instructorId)
+          .single(),
+      ]);
 
-      const todayStr = format(new Date(), "yyyy-MM-dd");
-      const maxDateStr = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
-
-      const { data: overrides } = await supabase
-        .from("instructor_date_overrides")
-        .select("*")
-        .eq("instructor_id", instructorId)
-        // include overrides that still apply (either no end date, or end date not passed)
-        .or(`override_end_date.gte.${todayStr},override_end_date.is.null`)
-        // and only fetch overrides that could affect the currently bookable window
-        .lte("override_date", maxDateStr);
-
-      // Fetch external calendar events (Google Calendar busy times)
-      const { data: calendarEvents } = await supabase
-        .from("instructor_calendar_events")
-        .select("start_time, end_time")
-        .eq("instructor_id", instructorId)
-        .eq("is_busy", true)
-        .gte("start_time", todayStr);
+      const hours = hoursRes.data;
+      const overrides = overridesRes.data;
+      const calendarEvents = calendarRes.data;
+      
+      setPreferEarliestSlot((instructorRes.data as any)?.prefer_earliest_slot ?? false);
 
       setWorkingHours(
         (hours || []).map((h) => ({
