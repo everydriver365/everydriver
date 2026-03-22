@@ -760,6 +760,7 @@ export default function InstructorSettings() {
                   <CommissionPayerSettings 
                     instructorId={instructorId} 
                     initialPayer={profile?.commission_payer}
+                    initialSplitPercent={(profile as any)?.commission_split_percent}
                   />
                   <div className="border-t pt-4 space-y-3">
                     <div className="flex items-center gap-2">
