@@ -34,6 +34,8 @@ const benefits = [
 export default function InstructorSignup() {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get("plan") || "free";
+  const promo = searchParams.get("promo");
+  const isFirstMonthFree = promo === "first-month-free" && selectedPlan === "all_in";
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,7 +70,7 @@ export default function InstructorSignup() {
         }
       } else {
         toast.success("Account created! Let's set up your profile.");
-        navigate("/instructor-app/onboarding?step=1");
+        navigate(`/instructor-app/onboarding?step=1&plan=${selectedPlan}${promo ? `&promo=${promo}` : ""}`);
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -159,9 +161,21 @@ export default function InstructorSignup() {
           >
             <Card className="border-border">
               <CardHeader className="text-center pb-2">
+                {isFirstMonthFree && (
+                  <div className="mb-3 rounded-lg bg-success/10 border border-success/20 p-3">
+                    <p className="text-sm font-semibold text-success">
+                      🎉 First month free on the All-In plan!
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      £4.99/mo after your free trial — cancel anytime
+                    </p>
+                  </div>
+                )}
                 <CardTitle className="text-2xl">Create Your Account</CardTitle>
                 <CardDescription>
-                  Start your free trial today — no credit card required
+                  {isFirstMonthFree
+                    ? "Sign up now to claim your free month"
+                    : "Start your free trial today — no credit card required"}
                 </CardDescription>
               </CardHeader>
               <CardContent>

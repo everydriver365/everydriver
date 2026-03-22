@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 const iconMap: Record<string, React.ReactNode> = {
   Star: <Star className="h-4 w-4" />,
@@ -36,9 +37,22 @@ function groupFeatures(features: ComparisonFeature[]) {
 export default function ComparisonPage() {
   const { data: plans = [], isLoading: plansLoading } = useComparisonPlans();
   const { data: features = [], isLoading: featuresLoading } = useComparisonFeatures();
+  const navigate = useNavigate();
 
   const featureGroups = useMemo(() => groupFeatures(features), [features]);
   const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
+
+  const handleCtaClick = (slug: string) => {
+    if (slug === "multi_school") {
+      navigate("/instructor-app/contact");
+    } else if (slug === "all_in") {
+      navigate("/instructor-app/signup?plan=all_in&promo=first-month-free");
+    } else if (slug === "free") {
+      navigate("/instructor-app/signup");
+    } else {
+      navigate(`/instructor-app/signup?plan=${slug}`);
+    }
+  };
 
   if (plansLoading || featuresLoading) {
     return (
@@ -136,6 +150,7 @@ export default function ComparisonPage() {
                     variant={i === popularIdx ? "default" : "outline"}
                     size="sm"
                     className="text-xs font-semibold w-full"
+                    onClick={() => handleCtaClick(plan.slug)}
                   >
                     {plan.slug === "multi_school" && <Phone className="h-3 w-3 mr-1" />}
                     {plan.cta_text}
