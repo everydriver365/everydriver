@@ -75,7 +75,7 @@ serve(async (req) => {
     // Get plan details
     const { data: plan, error: planError } = await supabase
       .from("subscription_plans")
-      .select("id, name, price_monthly, gocardless_plan_id")
+      .select("id, name, price_monthly, gocardless_plan_id, is_per_seat, base_price_monthly, per_seat_price_monthly, min_seats")
       .eq("id", plan_id)
       .single();
 
