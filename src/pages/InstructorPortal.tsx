@@ -433,6 +433,7 @@ export default function InstructorPortal() {
             <NotesWidget instructorId={instructorId} />
             <PlanWidget />
             <ReferralStatsWidget />
+            <ReferralCard />
           </div>
         </div>
 
