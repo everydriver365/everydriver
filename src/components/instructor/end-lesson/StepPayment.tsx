@@ -7,6 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { usePaymentLimit } from "@/hooks/usePaymentLimit";
+import { PaymentLimitBanner } from "@/components/instructor/PaymentLimitBanner";
 
 interface StepPaymentProps {
   pupilId: string;

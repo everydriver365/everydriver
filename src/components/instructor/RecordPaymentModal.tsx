@@ -47,6 +47,7 @@ export function RecordPaymentModal({
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+  const paymentLimit = usePaymentLimit();
 
   const handleSubmit = async () => {
     const parsedAmount = parseFloat(amount);
