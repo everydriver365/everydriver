@@ -43,7 +43,8 @@ serve(async (req) => {
       redirect_url,
       domain_name,
       domain_tld,
-      domain_price 
+      domain_price,
+      promo,
     }: BillingRequestBody = await req.json();
 
     if (!instructor_id || !plan_id || !redirect_url) {
