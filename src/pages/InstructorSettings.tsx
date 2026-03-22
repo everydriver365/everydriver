@@ -65,6 +65,7 @@ interface InstructorProfile {
   payment_qr_url_pupil_pays: string | null;
   payment_qr_url_instructor_pays: string | null;
   commission_payer: string | null;
+  commission_split_percent: number | null;
   welcome_video_url: string | null;
   hero_image_url: string | null;
   adi_certificate_url: string | null;
