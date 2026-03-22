@@ -185,6 +185,7 @@ export const instructorPortalRoutes = (
     {/* Website & marketing — gated */}
     <Route path="/instructor/website" element={<Gated feature="mini_website" label="Mini Website"><InstructorMiniWebsiteSettings /></Gated>} />
     <Route path="/instructor/domains" element={<Gated feature="mini_website" label="Domains"><InstructorDomainsManagement /></Gated>} />
+    <Route path="/instructor/website-addons" element={<InstructorWebsiteAddons />} />
     <Route path="/instructor/reviews" element={<InstructorReviews />} />
     <Route path="/instructor/referrals" element={<InstructorReferrals />} />
     <Route path="/instructor/pipeline" element={<InstructorPipeline />} />

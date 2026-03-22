@@ -63,6 +63,7 @@ const sidebarGroups = [
       { href: "/instructor/routes", label: "Saved Routes", icon: Navigation },
       { href: "/instructor/resources", label: "Resources", icon: FileText },
       { href: "/instructor/website", label: "Mini Website", icon: Globe },
+      { href: "/instructor/website-addons", label: "Website Add-Ons", icon: Globe2, highlight: true },
       { href: "/instructor/domains", label: "Domains", icon: Globe2 },
       { href: "/instructor/tracking", label: "GPS Tracking", icon: Radio },
       { href: "/instructor/settings", label: "Settings", icon: Settings },
