@@ -368,7 +368,7 @@ export default function ComparisonPage() {
               { feature: "GPS route tracking", ed: true, td: false, mdt: false, adi: false },
               { feature: "Dashcam telematics", ed: true, td: false, mdt: false, adi: false },
               { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false },
-              { feature: "Healthcare add-on", ed: "£19.99/mo", td: false, mdt: false, adi: false },
+              { feature: "Healthcare benefits", ed: "Included (GPS+)", td: false, mdt: false, adi: false },
               { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true },
             ].map((row, ri) => (
               <div key={row.feature} className={cn("grid grid-cols-5 border-t border-border/10", ri % 2 !== 0 && "bg-muted/5")}>
