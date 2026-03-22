@@ -428,7 +428,7 @@ export default function InstructorTelematics() {
                   Stand out from instructors who rely on memory alone. Telematics data gives you the evidence to back every assessment — from lesson feedback to ADI standards checks.
                 </p>
                 <Button asChild size="lg" className="bg-emerald-500 hover:bg-emerald-600">
-                  <Link to="/instructor-app/pricing">
+                  <Link to="/compare">
                     Start Tracking Today
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

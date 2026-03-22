@@ -32,7 +32,7 @@ export function FeatureCTA() {
               className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
               asChild
             >
-              <Link to="/instructor-app/pricing">Compare Plans</Link>
+              <Link to="/compare">Compare Plans</Link>
             </Button>
           </div>
           <p className="mt-6 text-sm text-primary-foreground/60">

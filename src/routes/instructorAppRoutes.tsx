@@ -3,7 +3,6 @@ import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 
 // Instructor SaaS marketing & onboarding pages
 const InstructorFeatures = lazy(() => import("@/pages/instructor-app/InstructorFeatures"));
-const InstructorPricing = lazy(() => import("@/pages/instructor-app/InstructorPricing"));
 const InstructorPlanDetail = lazy(() => import("@/pages/instructor-app/InstructorPlanDetail"));
 const InstructorLogin = lazy(() => import("@/pages/instructor-app/InstructorLogin"));
 const InstructorSignup = lazy(() => import("@/pages/instructor-app/InstructorSignup"));
@@ -15,7 +14,6 @@ const InstructorDashcam = lazy(() => import("@/pages/instructor-app/InstructorDa
 const InstructorAllFeatures = lazy(() => import("@/pages/instructor-app/InstructorAllFeatures"));
 const InstructorPayments = lazy(() => import("@/pages/instructor-app/InstructorPayments"));
 const InstructorMarketing = lazy(() => import("@/pages/instructor-app/InstructorMarketing"));
-const InstructorCompare = lazy(() => import("@/pages/instructor-app/InstructorCompare"));
 const InstructorOnboarding = lazy(() => import("@/pages/instructor-app/onboarding/InstructorOnboarding"));
 const OnboardingPreview = lazy(() => import("@/pages/instructor-app/onboarding/OnboardingPreview"));
 const DrivingSchools = lazy(() => import("@/pages/instructor-app/DrivingSchools"));
@@ -27,8 +25,8 @@ export const instructorAppRoutes = (
     <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
     <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
     <Route path="/instructor-app/all-features" element={<InstructorAllFeatures />} />
-    <Route path="/instructor-app/compare" element={<InstructorCompare />} />
-    <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
+    <Route path="/instructor-app/compare" element={<Navigate to="/compare" replace />} />
+    <Route path="/instructor-app/pricing" element={<Navigate to="/compare" replace />} />
     <Route path="/instructor-app/plan/:slug" element={<InstructorPlanDetail />} />
     <Route path="/instructor-app/about" element={<InstructorAbout />} />
     <Route path="/instructor-app/contact" element={<InstructorContactPage />} />

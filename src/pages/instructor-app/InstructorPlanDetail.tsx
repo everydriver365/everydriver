@@ -102,7 +102,7 @@ export default function InstructorPlanDetail() {
         <div className="container max-w-4xl">
           {/* Back link */}
           <Link
-            to="/instructor-app/pricing"
+            to="/compare"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -15,7 +15,7 @@ const navLinks = [
   { href: "/instructor-app/domains", label: "Websites & Domains" },
   { href: "/instructor-app/telematics", label: "Telematics" },
   { href: "/instructor-app/dashcam", label: "Dashcam" },
-  { href: "/instructor-app/pricing", label: "Pricing" },
+  { href: "/compare", label: "Pricing" },
   { href: "/instructor-app/about", label: "About" },
   { href: "/instructor-app/contact", label: "Contact" },
 ];

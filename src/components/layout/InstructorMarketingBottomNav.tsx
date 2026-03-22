@@ -5,7 +5,7 @@ const navItems = [
   { label: "Home", icon: Home, path: "/" },
   { label: "Features", icon: Sparkles, path: "/instructor-app/features" },
   { label: "Websites", icon: Globe, path: "/instructor-app/domains" },
-  { label: "Pricing", icon: PoundSterling, path: "/instructor-app/pricing" },
+  { label: "Pricing", icon: PoundSterling, path: "/compare" },
   { label: "Log In", icon: LogIn, path: "/instructor-app/login" },
 ];
 

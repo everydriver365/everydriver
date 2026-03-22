@@ -216,7 +216,7 @@ export default function EveryDriverInstructorHome() {
               <Link to="/instructor-app/features" className="hover:text-foreground transition-colors">
                 Features
               </Link>
-              <Link to="/instructor-app/pricing" className="hover:text-foreground transition-colors">
+              <Link to="/compare" className="hover:text-foreground transition-colors">
                 Pricing
               </Link>
               <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
