@@ -1,94 +1,18 @@
-import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, Crown } from "lucide-react";
+import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
+import { useMemo } from "react";
 
-const planNames = ["Free", "All-In", "GPS", "Single Dashcam", "Duo Dashcam", "Multi-School"];
-const planPrices = ["£0", "£4.99", "£16", "£25", "£29", "Custom"];
-const planPeriods = ["/mo", "/mo", "/mo", "/mo", "/mo", ""];
-const planCtas = ["Start Free", "Get All-In", "Add GPS", "Add Dashcam", "Go Duo", "Contact Us"];
-const planIcons = [
-  <Star className="h-4 w-4" />, <Zap className="h-4 w-4" />, <MapPin className="h-4 w-4" />,
-  <Camera className="h-4 w-4" />, <Video className="h-4 w-4" />, <Building2 className="h-4 w-4" />,
-];
-const popularIdx = 1;
-const planDescs = [
-  "Get started for free",
-  "Everything you need to run your business",
-  "Live tracking & mileage logging",
-  "Forward-facing dashcam protection",
-  "Full dual-camera coverage",
-  "For driving schools with multiple instructors",
-];
-
-interface FeatureRow {
-  category: string;
-  features: { name: string; values: (boolean | string)[] }[];
-}
-
-const featureData: FeatureRow[] = [
-  {
-    category: "Core",
-    features: [
-      { name: "Lesson diary & scheduling", values: [true, true, true, true, true, true] },
-      { name: "Active pupils", values: ["10", "Unlimited", "Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
-      { name: "Pupil progress tracking", values: [true, true, true, true, true, true] },
-      { name: "Basic messaging", values: [true, true, true, true, true, true] },
-      { name: "Pupil portal", values: [true, true, true, true, true, true] },
-    ],
-  },
-  {
-    category: "Business Tools",
-    features: [
-      { name: "Online booking page", values: [false, true, true, true, true, true] },
-      { name: "Card payments (Square)", values: [false, true, true, true, true, true] },
-      { name: "Bank payments (GoCardless)", values: [false, true, true, true, true, true] },
-      { name: "Cash payment tracking", values: [false, true, true, true, true, true] },
-      { name: "Parent portal", values: [false, true, true, true, true, true] },
-      { name: "Pupil app access", values: [false, true, true, true, true, true] },
-      { name: "Broadcast messaging", values: [false, true, true, true, true, true] },
-      { name: "Performance analytics", values: [false, true, true, true, true, true] },
-      { name: "Mini website builder", values: [false, true, true, true, true, true] },
-    ],
-  },
-  {
-    category: "GPS & Tracking",
-    features: [
-      { name: "Live vehicle tracking", values: [false, false, true, true, true, true] },
-      { name: "Route recording", values: [false, false, true, true, true, true] },
-      { name: "Automatic mileage logging", values: [false, false, true, true, true, true] },
-      { name: "Driver behaviour scores", values: [false, false, true, true, true, true] },
-      { name: "Speed & harsh event alerts", values: [false, false, true, true, true, true] },
-      { name: "Geofence zones", values: [false, false, true, true, true, true] },
-      { name: "Fleet overview map", values: [false, false, true, true, true, true] },
-    ],
-  },
-  {
-    category: "Dashcam",
-    features: [
-      { name: "Forward-facing camera", values: [false, false, false, true, true, true] },
-      { name: "Incident recording", values: [false, false, false, true, true, true] },
-      { name: "Cloud video storage", values: [false, false, false, true, true, true] },
-      { name: "Event-triggered clips", values: [false, false, false, true, true, true] },
-      { name: "Insurance evidence export", values: [false, false, false, true, true, true] },
-      { name: "Cabin-facing camera", values: [false, false, false, false, true, true] },
-      { name: "Dual-view playback", values: [false, false, false, false, true, true] },
-      { name: "Pupil coaching clips", values: [false, false, false, false, true, true] },
-      { name: "Priority cloud storage", values: [false, false, false, false, true, true] },
-    ],
-  },
-  {
-    category: "Multi-School",
-    features: [
-      { name: "Multi-instructor management", values: [false, false, false, false, false, true] },
-      { name: "Centralised billing", values: [false, false, false, false, false, true] },
-      { name: "Staff performance reports", values: [false, false, false, false, false, true] },
-      { name: "Custom branding", values: [false, false, false, false, false, true] },
-      { name: "API access", values: [false, false, false, false, false, true] },
-      { name: "Dedicated account manager", values: [false, false, false, false, false, true] },
-    ],
-  },
-];
+const iconMap: Record<string, React.ReactNode> = {
+  Star: <Star className="h-4 w-4" />,
+  Zap: <Zap className="h-4 w-4" />,
+  MapPin: <MapPin className="h-4 w-4" />,
+  Camera: <Camera className="h-4 w-4" />,
+  Video: <Video className="h-4 w-4" />,
+  Building2: <Building2 className="h-4 w-4" />,
+};
 
 function CellValue({ value, popular }: { value: boolean | string; popular: boolean }) {
   if (typeof value === "string") {
@@ -99,7 +23,31 @@ function CellValue({ value, popular }: { value: boolean | string; popular: boole
     : <Minus className="h-4 w-4 mx-auto text-muted-foreground/20" />;
 }
 
+function groupFeatures(features: ComparisonFeature[]) {
+  const groups: { category: string; features: ComparisonFeature[] }[] = [];
+  for (const f of features) {
+    const existing = groups.find((g) => g.category === f.category);
+    if (existing) existing.features.push(f);
+    else groups.push({ category: f.category, features: [f] });
+  }
+  return groups;
+}
+
 export default function ComparisonPage() {
+  const { data: plans = [], isLoading: plansLoading } = useComparisonPlans();
+  const { data: features = [], isLoading: featuresLoading } = useComparisonFeatures();
+
+  const featureGroups = useMemo(() => groupFeatures(features), [features]);
+  const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
+
+  if (plansLoading || featuresLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading plans...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
@@ -128,47 +76,50 @@ export default function ComparisonPage() {
             <div className="w-48 shrink-0 p-5 flex items-end">
               <span className="text-primary-foreground/70 text-xs font-semibold uppercase tracking-wider">Compare Plans</span>
             </div>
-            {planNames.map((name, i) => (
+            {plans.map((plan, i) => (
               <div
-                key={name}
+                key={plan.id}
                 className={cn(
                   "flex-1 min-w-[100px] p-4 text-center text-primary-foreground",
                   i === popularIdx && "bg-primary-foreground/10"
                 )}
               >
-                {i === popularIdx && (
+                {plan.is_popular && (
                   <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ Popular</div>
                 )}
                 <div className="text-2xl font-black">
-                  {planPrices[i]}
-                  <span className="text-xs font-normal opacity-60">{planPeriods[i]}</span>
+                  {plan.price}
+                  <span className="text-xs font-normal opacity-60">{plan.period}</span>
                 </div>
-                <div className="text-xs font-semibold mt-0.5 opacity-90">{name}</div>
+                <div className="text-xs font-semibold mt-0.5 opacity-90">{plan.name}</div>
               </div>
             ))}
           </div>
 
           {/* Body */}
           <div className="bg-card">
-            {featureData.map((group) => (
+            {featureGroups.map((group) => (
               <div key={group.category}>
                 <div className="px-4 py-2 bg-muted/15 border-y border-border/20">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{group.category}</span>
                 </div>
                 {group.features.map((feat, fi) => (
-                  <div key={feat.name} className={cn("flex border-b border-border/10", fi % 2 !== 0 && "bg-muted/5")}>
+                  <div key={feat.id} className={cn("flex border-b border-border/10", fi % 2 !== 0 && "bg-muted/5")}>
                     <div className="w-48 shrink-0 p-2.5 pl-4 text-xs text-foreground font-medium flex items-center">
-                      {feat.name}
+                      {feat.feature_name}
                     </div>
-                    {feat.values.map((val, vi) => (
+                    {plans.map((plan, vi) => (
                       <div
-                        key={vi}
+                        key={plan.id}
                         className={cn(
                           "flex-1 min-w-[100px] p-2.5 flex items-center justify-center",
                           vi === popularIdx && "bg-primary/5"
                         )}
                       >
-                        <CellValue value={val} popular={vi === popularIdx} />
+                        <CellValue
+                          value={feat.plan_values[plan.slug] ?? false}
+                          popular={vi === popularIdx}
+                        />
                       </div>
                     ))}
                   </div>
@@ -179,14 +130,15 @@ export default function ComparisonPage() {
             {/* CTA row */}
             <div className="flex border-t-2 border-primary/20 bg-muted/5">
               <div className="w-48 shrink-0 p-4" />
-              {planNames.map((_, i) => (
-                <div key={i} className="flex-1 min-w-[100px] p-3 flex items-center justify-center">
+              {plans.map((plan, i) => (
+                <div key={plan.id} className="flex-1 min-w-[100px] p-3 flex items-center justify-center">
                   <Button
                     variant={i === popularIdx ? "default" : "outline"}
                     size="sm"
                     className="text-xs font-semibold w-full"
                   >
-                    {planCtas[i]}
+                    {plan.slug === "multi_school" && <Phone className="h-3 w-3 mr-1" />}
+                    {plan.cta_text}
                   </Button>
                 </div>
               ))}
