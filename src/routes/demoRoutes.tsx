@@ -86,5 +86,6 @@ export const demoRoutes = (
     <Route path="/demo/ken-d-mobile-heroes" element={<DemoKenDMobileHeroes />} />
     <Route path="/demo/tomorrow-tile-designs" element={<DemoTomorrowTileDesigns />} />
     <Route path="/demo/telematics-redesign" element={<DemoTelematicsRedesign />} />
+    <Route path="/demo/pricing" element={<DemoPricingPage />} />
   </>
 );
