@@ -232,6 +232,6 @@ export default function InstructorWebsiteAddons() {
           );
         })}
       </div>
-    </InstructorShell>
+    </InstructorPortalLayout>
   );
 }
