@@ -131,6 +131,17 @@ export default function InstructorPlans() {
 
   const currentPlanSlug = subscription?.plan_slug || "free";
 
+  // Handle return from GoCardless DD setup
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("dd_complete") === "true") {
+      toast.success("Direct Debit set up successfully! Your plan will activate shortly.");
+      refreshInstructor();
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [refreshInstructor]);
+
   useEffect(() => {
     const fetchData = async () => {
       const [plansRes, assignmentsRes] = await Promise.all([
