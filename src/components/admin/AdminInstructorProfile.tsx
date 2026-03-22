@@ -652,7 +652,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
                 value={[(instructor as any).commission_split_percent ?? 100]}
                 onValueCommit={([v]: number[]) => {
                   const payer = v === 0 ? "instructor" : v === 100 ? "pupil" : "split";
-                  updateField("commission_split_percent", v);
+                  updateField("commission_split_percent", v.toString());
                   updateField("commission_payer", payer);
                 }}
                 min={0}
