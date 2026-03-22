@@ -221,6 +221,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
     <Route path="/instructor/reports" element={<InstructorReportsHub />} />
     <Route path="/instructor/health" element={<InstructorHealth />} />
+    <Route path="/instructor/import-data" element={<InstructorDataImport />} />
     <Route path="/instructor/platform-updates" element={<InstructorPlatformUpdates />} />
     <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
     <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />

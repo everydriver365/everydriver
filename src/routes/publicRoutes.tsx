@@ -100,6 +100,7 @@ export const publicRoutes = (
     <Route path="/review/:slug" element={<SubmitReview />} />
 
     {/* Public utility routes */}
+    <Route path="/switch" element={<SwitchToEveryDriver />} />
     <Route path="/availability/:shareToken" element={<PublicAvailability />} />
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
