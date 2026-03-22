@@ -36,6 +36,7 @@ import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
 import { TodayAtAGlance } from "@/components/instructor/TodayAtAGlance";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { PDIBanner } from "@/components/instructor/PDIBanner";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
