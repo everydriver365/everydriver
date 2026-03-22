@@ -392,6 +392,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "comparison-editor":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <ComparisonEditor />
+          </motion.div>
+        );
+
       case "feature-gating":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
