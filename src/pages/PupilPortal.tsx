@@ -25,6 +25,8 @@ import { LessonSummaryCard } from "@/components/pupil-portal/LessonSummaryCard";
 import { ReflectiveLog } from "@/components/pupil-portal/ReflectiveLog";
 import { InstructorEnRouteTracker } from "@/components/pupil-portal/InstructorEnRouteTracker";
 import { PupilCheckInCard } from "@/components/pupil-portal/PupilCheckInCard";
+import { PupilInstallPrompt } from "@/components/pupil-portal/PupilInstallPrompt";
+import { RescheduleRequestForm } from "@/components/pupil-portal/RescheduleRequestForm";
 
 interface PupilData {
   id: string;
@@ -256,9 +258,20 @@ export default function PupilPortal() {
                           </div>
                         )}
                       </div>
-                      <Badge variant={lesson.payment_status === "paid" ? "default" : "outline"} className="shrink-0">
-                        {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
-                      </Badge>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {pupil.instructor && (
+                          <RescheduleRequestForm
+                            lessonId={lesson.id}
+                            pupilId={pupil.id}
+                            instructorId={pupil.instructor.id}
+                            originalDate={lesson.lesson_date}
+                            originalTime={lesson.start_time}
+                          />
+                        )}
+                        <Badge variant={lesson.payment_status === "paid" ? "default" : "outline"}>
+                          {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
+                        </Badge>
+                      </div>
                     </div>
                   );
                 })}

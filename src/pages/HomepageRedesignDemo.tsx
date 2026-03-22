@@ -473,6 +473,54 @@ export default function HomepageRedesignDemo() {
         </div>
       </section>
 
+      {/* ─── NO-BRAINER FORMULA ─── */}
+      <section className="py-16 md:py-20 bg-muted/30">
+        <div className="container max-w-3xl">
+          <div className="text-center mb-10">
+            <Badge className="mb-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+              The Math Speaks for Itself
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              The No-Brainer Formula
+            </h2>
+          </div>
+
+          <div className="bg-card border border-border rounded-2xl p-8 md:p-10 shadow-sm">
+            <div className="space-y-4">
+              {[
+                { text: "Free diary & scheduling", value: "£0" },
+                { text: "Auto mileage tracking = tax savings", value: "£2,250/yr" },
+                { text: "HMRC MTD filing included", value: "Others: £144/yr" },
+                { text: "Pupil app with self-service booking", value: "Included" },
+                { text: "GPS tracking & dashcam", value: "From £17/mo" },
+                { text: "No lock-in, cancel anytime", value: "Always" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <span className="text-foreground font-medium">{item.text}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground font-semibold shrink-0">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-border text-center">
+              <p className="text-lg text-foreground/80 italic mb-6">
+                "Save more in tax deductions than the app costs.<br />
+                <strong className="text-foreground">It literally pays for itself.</strong>"
+              </p>
+              <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg" asChild>
+                <Link to="/instructor-app/signup">
+                  Start Free Today
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── PLATFORM STRIP ─── */}
       <section className="py-12 bg-background border-y border-border">
         <div className="container max-w-4xl">
