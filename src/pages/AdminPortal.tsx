@@ -73,6 +73,7 @@ import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 import { PlanFeatureMatrixManager } from "@/components/admin/PlanFeatureMatrixManager";
+import ComparisonEditor from "@/components/admin/ComparisonEditor";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
