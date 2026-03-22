@@ -779,7 +779,9 @@ export function LessonScheduler({
                   Times for {format(selectedDate, "EEE, d MMM")}
                 </h4>
                 <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
-                  {getAvailableTimeSlots(selectedDate).map((time) => (
+                  {(() => {
+                    const slots = getAvailableTimeSlots(selectedDate);
+                    return slots.map((time, idx) => (
                     <Button
                       key={time}
                       variant="outline"
@@ -794,12 +796,17 @@ export function LessonScheduler({
                         handleSelectSlot(selectedDate, time);
                       }}
                       disabled={remainingHours <= 0}
-                      className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
+                      className={cn(
+                        "text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation",
+                        preferEarliestSlot && idx === 0 && "border-primary bg-primary/10 ring-1 ring-primary"
+                      )}
                     >
-                      <Clock className="h-3 w-3 mr-1 pointer-events-none" />
+                      {preferEarliestSlot && idx === 0 && <Sparkles className="h-3 w-3 mr-1 text-primary pointer-events-none" />}
+                      {!(preferEarliestSlot && idx === 0) && <Clock className="h-3 w-3 mr-1 pointer-events-none" />}
                       {time}
                     </Button>
-                  ))}
+                    ));
+                  })()}
                   {getAvailableTimeSlots(selectedDate).length === 0 && (
                     <div className="col-span-2 text-center py-4 space-y-3">
                       <p className="text-xs text-muted-foreground">
