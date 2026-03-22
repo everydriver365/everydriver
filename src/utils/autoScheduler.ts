@@ -108,6 +108,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
     preferredDays = [],
     courseType = 'weekly',
     startFromDate = new Date(),
+    preferEarliestSlot = false,
   } = params;
 
   const totalMinutesNeeded = totalHours * 60;
