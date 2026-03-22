@@ -7,11 +7,15 @@ interface AdminFeeConfig {
 }
 
 interface AdminFeeResult {
-  /** The admin fee in pounds (0 if instructor pays) */
+  /** The full admin fee before split */
+  fullFee: number;
+  /** The portion the pupil pays */
   adminFee: number;
-  /** The total to charge (base + fee, or just base if instructor pays) */
+  /** The portion the instructor absorbs */
+  instructorAbsorbs: number;
+  /** The total to charge the pupil (base + pupil fee portion) */
   totalCharge: number;
-  /** Whether a fee is being applied */
+  /** Whether a fee is being applied to the pupil */
   hasFee: boolean;
   /** Loading state */
   isLoading: boolean;
@@ -19,11 +23,11 @@ interface AdminFeeResult {
 
 /**
  * Fetches the active platform commission config and calculates the admin fee
- * for a given base amount, taking into account who pays the commission.
+ * using the commission_split_percent (0–100) to determine pupil vs instructor share.
  */
 export function useAdminFee(
   baseAmount: number,
-  commissionPayer: string | null | undefined
+  commissionSplitPercent: number | null | undefined
 ): AdminFeeResult {
   const { data: config, isLoading } = useQuery<AdminFeeConfig | null>({
     queryKey: ["platform-commission-config"],
@@ -41,20 +45,25 @@ export function useAdminFee(
         fixedFeePence: data.fixed_fee_pence,
       };
     },
-    staleTime: 5 * 60 * 1000, // cache 5 min
+    staleTime: 5 * 60 * 1000,
   });
 
-  const pupilPays = commissionPayer !== "instructor";
+  const splitPct = commissionSplitPercent ?? 100; // default: pupil pays all
 
-  if (!config || !pupilPays || baseAmount <= 0) {
-    return { adminFee: 0, totalCharge: baseAmount, hasFee: false, isLoading };
+  if (!config || baseAmount <= 0) {
+    return { fullFee: 0, adminFee: 0, instructorAbsorbs: 0, totalCharge: baseAmount, hasFee: false, isLoading };
   }
 
-  const fee = roundPence(baseAmount * (config.ratePercent / 100) + config.fixedFeePence / 100);
+  const fullFee = roundPence(baseAmount * (config.ratePercent / 100) + config.fixedFeePence / 100);
+  const pupilFee = roundPence(fullFee * (splitPct / 100));
+  const instructorAbsorbs = roundPence(fullFee - pupilFee);
+
   return {
-    adminFee: fee,
-    totalCharge: roundPence(baseAmount + fee),
-    hasFee: true,
+    fullFee,
+    adminFee: pupilFee,
+    instructorAbsorbs,
+    totalCharge: roundPence(baseAmount + pupilFee),
+    hasFee: pupilFee > 0,
     isLoading,
   };
 }
