@@ -63,6 +63,7 @@ const InstructorLocations = lazy(() => import("@/pages/InstructorLocations"));
 // Website & marketing
 const InstructorMiniWebsiteSettings = lazy(() => import("@/pages/InstructorMiniWebsiteSettings"));
 const InstructorDomainsManagement = lazy(() => import("@/pages/InstructorDomainsManagement"));
+const InstructorWebsiteAddons = lazy(() => import("@/pages/InstructorWebsiteAddons"));
 const InstructorReviews = lazy(() => import("@/pages/InstructorReviews"));
 const InstructorReferrals = lazy(() => import("@/pages/InstructorReferrals"));
 const InstructorPipeline = lazy(() => import("@/pages/InstructorPipeline"));
