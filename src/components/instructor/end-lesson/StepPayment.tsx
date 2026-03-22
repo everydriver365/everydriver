@@ -44,6 +44,7 @@ export function StepPayment({
   const [saving, setSaving] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
+  const paymentLimit = usePaymentLimit();
 
   const handleRecord = async () => {
     const parsed = parseFloat(amount);
