@@ -1,98 +1,104 @@
 
 
-## Plan: Switching Toolkit + Killer Features
+## Plan: No-Brainer Features + Marketing Formula
 
-### Phase 1: Remove Switching Barriers
+### What the user asked for
+Items 1, 2, 3, 5, 6 from the previous feature list, payments via payment link/QR code only (no Stripe), and a "no-brainer formula" section on the marketing page.
 
-**1. CSV Data Import Wizard** (`/instructor/import-data`)
-- New page with file upload (CSV/XLSX)
-- Column mapping UI (map their columns to: name, phone, email, lesson count, notes)
-- Preview table before import
-- Bulk insert into `pupils` table with the instructor's ID
-- Auto-send SMS invite to imported pupils (optional)
+### Feature Breakdown
 
-**Database**: No schema changes — uses existing `pupils` table
+**1. Auto Mileage Tax Calculator Dashboard**
+The mileage tracker already exists (`InstructorMileageTracker.tsx`) with HMRC 45p/25p rates. What's missing is a prominent, always-visible "Tax Savings" summary card on the instructor dashboard showing real-time HMRC deduction amounts.
 
-**Files**:
-| File | Change |
-|------|--------|
-| `src/pages/InstructorDataImport.tsx` | **New** — CSV upload + column mapper + preview + import |
-| `src/components/instructor/ImportColumnMapper.tsx` | **New** — drag-and-drop column mapping UI |
-| `src/routes/instructorPortalRoutes.tsx` | Add route |
-| `src/components/instructor/InstructorDesktopSidebar.tsx` | Add nav item under TOOLS |
+- New component: `src/components/instructor/dashboard/MileageTaxSavingsCard.tsx`
+- Queries `mileage_logs` for current tax year, calculates HMRC allowance (45p first 10k miles, 25p thereafter)
+- Shows: total business miles, tax deduction value, projected annual savings
+- Add to `InstructorPortal.tsx` dashboard layout
 
-**2. "Switch to EveryDriver" Landing Page** (`/switch`)
-- Public marketing page targeting competitor users
-- Savings calculator (enter current monthly cost → see EveryDriver equivalent)
-- Side-by-side feature comparison pulling from existing `comparison_features` table
-- CTA → signup with import wizard
-- Testimonial slots (placeholder initially)
+**2. Branded Pupil Portal (PWA-ready)**
+`PupilPortal.tsx` already exists with lesson info, progress, and coaching. Enhancement:
 
-**Files**:
-| File | Change |
-|------|--------|
-| `src/pages/SwitchToEveryDriver.tsx` | **New** — landing page with calculator + comparison |
-| `src/components/switch/SavingsCalculator.tsx` | **New** — interactive cost comparison widget |
-| `src/routes/publicRoutes.tsx` (or equivalent) | Add `/switch` route |
+- New component: `src/components/pupil-portal/PupilInstallPrompt.tsx` — PWA install banner ("Add to Home Screen")
+- Update `PupilPortal.tsx` to show instructor branding (logo, colours, name) more prominently
+- Add self-service rescheduling button (ties into item 3)
 
-### Phase 2: Killer Differentiators
+**3. Self-Service Rescheduling**
+Allow pupils to request a reschedule from the Pupil Portal within instructor-defined rules.
 
-**3. Instructor Referral Programme**
+- New DB table: `reschedule_requests` (pupil_id, lesson_id, instructor_id, requested_date, requested_time, status, reason)
+- New component: `src/components/pupil-portal/RescheduleRequestForm.tsx` — pupil selects available slot, provides reason
+- Instructor gets notification and can approve/reject from their diary
+- Rule: only allowed 48h+ before lesson (configurable)
 
-**Database migration**:
-```sql
-CREATE TABLE instructor_referrals (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  referrer_id uuid REFERENCES instructors(id) ON DELETE CASCADE,
-  referred_email text NOT NULL,
-  referred_instructor_id uuid REFERENCES instructors(id),
-  status text DEFAULT 'pending', -- pending, signed_up, qualified (3mo), rewarded
-  reward_amount numeric DEFAULT 10.00,
-  created_at timestamptz DEFAULT now(),
-  qualified_at timestamptz
-);
-ALTER TABLE instructor_referrals ENABLE ROW LEVEL SECURITY;
+**5. Test Readiness Score**
+A data-driven score based on lessons completed, topics covered, and mock test results.
+
+- New component: `src/components/instructor/TestReadinessScore.tsx`
+- Calculates score from: lessons completed vs recommended (typically 40-50), topic coverage from lesson notes, test results
+- Visual gauge/progress ring with "Not Ready / Getting There / Test Ready" labels
+- Show on pupil detail page and pupil portal
+
+**6. Instant Pay Collection (Already Exists — Confirm + Enhance)**
+`PaymentLinkShare.tsx` already generates payment links with QR codes. `TakePaymentModal.tsx` already uses it. The end-of-lesson flow (`StepPayment.tsx`) already has QR display. This is confirmed working — no Stripe involved, uses GoCardless/direct recording.
+
+Enhancement: Add a "Send Payment Link" button to the end-of-lesson `StepPayment` that shares the link via SMS/WhatsApp to the pupil.
+
+**Marketing: No-Brainer Formula Section**
+Add a new section to `HomepageRedesignDemo.tsx` between the testimonials and final CTA:
+
+```text
+┌─────────────────────────────────────────────┐
+│  THE NO-BRAINER FORMULA                     │
+│                                             │
+│  ✓ Free diary & scheduling (£0)             │
+│  ✓ Auto mileage = £2,250 tax savings/yr     │
+│  ✓ HMRC MTD filing included (others: £144)  │
+│  ✓ Pupil app with self-service booking      │
+│  ✓ GPS tracking from £17/mo                 │
+│  ✓ No lock-in, cancel anytime               │
+│                                             │
+│  "Save more in tax deductions than the      │
+│   app costs. It literally pays for itself."  │
+│                                             │
+│  [Start Free Today]                         │
+└─────────────────────────────────────────────┘
 ```
 
-- Each instructor gets a unique referral code (their slug or generated)
-- Dashboard card showing referral stats + shareable link
-- Referral tracked at signup, qualified after 3 months active
+Also add to `SwitchToEveryDriver.tsx` as a new section.
 
-**Files**:
+### Database Changes
+
+One migration:
+```sql
+CREATE TABLE public.reschedule_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  pupil_id uuid REFERENCES public.pupils(id) ON DELETE CASCADE NOT NULL,
+  lesson_id uuid NOT NULL,
+  instructor_id uuid REFERENCES public.instructors(id) ON DELETE CASCADE NOT NULL,
+  requested_date date NOT NULL,
+  requested_time time,
+  original_date date,
+  original_time time,
+  reason text,
+  status text DEFAULT 'pending', -- pending, approved, rejected
+  created_at timestamptz DEFAULT now(),
+  responded_at timestamptz
+);
+ALTER TABLE reschedule_requests ENABLE ROW LEVEL SECURITY;
+```
+
+### Files Changed
+
 | File | Change |
 |------|--------|
-| Database migration | Create `instructor_referrals` table |
-| `src/components/instructor/ReferralCard.tsx` | **New** — dashboard card with referral link + stats |
-| `src/components/instructor/InstructorDashboard.tsx` | Add referral card |
-| Signup flow | Accept `?ref=CODE` param, store in referral table |
-
-**4. WhatsApp Lesson Confirmations** (edge function)
-- New edge function `send-whatsapp` using WhatsApp Business API (Cloud API, free tier: 1,000 conversations/mo)
-- Toggle in instructor settings: "Send confirmations via WhatsApp instead of SMS"
-- Falls back to SMS if WhatsApp delivery fails
-
-**Files**:
-| File | Change |
-|------|--------|
-| `supabase/functions/send-whatsapp/index.ts` | **New** — WhatsApp Cloud API sender |
-| `src/components/instructor/InstructorSettingsForm.tsx` | Add WhatsApp toggle |
-| Database migration | Add `whatsapp_enabled` boolean to `instructors` table |
-
-### Phase 3: Marketing Weapons
-
-**5. MTD Deadline Countdown Banner**
-- Already planned/may exist — ensure it's prominent on homepage and instructor dashboard
-- "X days until MTD deadline. We file for free. Others charge £12/mo."
-
-**6. Comparison matrix updates**
-- Add "Data Import Wizard", "Instructor Referrals", "WhatsApp Notifications" to `comparison_features`
-- Mark as ✓ Free on EveryDriver, ✗ or "Extra cost" on competitors
-
-### Implementation Order
-1. CSV Import Wizard (biggest switching barrier remover)
-2. Switch landing page (acquisition funnel)
-3. Referral programme (viral growth)
-4. WhatsApp integration (retention + differentiation)
-
-### Total New Files: ~8 | Modified: ~5 | Migrations: 2
+| Database migration | Create `reschedule_requests` table + RLS |
+| `src/components/instructor/dashboard/MileageTaxSavingsCard.tsx` | **New** — tax savings summary card |
+| `src/pages/InstructorPortal.tsx` | Add MileageTaxSavingsCard to dashboard |
+| `src/components/pupil-portal/PupilInstallPrompt.tsx` | **New** — PWA install banner |
+| `src/components/pupil-portal/RescheduleRequestForm.tsx` | **New** — pupil reschedule request UI |
+| `src/pages/PupilPortal.tsx` | Add install prompt + reschedule button + enhanced branding |
+| `src/components/instructor/TestReadinessScore.tsx` | **New** — readiness gauge component |
+| `src/components/instructor/end-lesson/StepPayment.tsx` | Add "Send Payment Link" SMS/WhatsApp button |
+| `src/pages/HomepageRedesignDemo.tsx` | Add "No-Brainer Formula" marketing section |
+| `src/pages/SwitchToEveryDriver.tsx` | Add "No-Brainer Formula" section + update feature comparison |
 
