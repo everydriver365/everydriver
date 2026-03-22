@@ -368,7 +368,7 @@ export default function ComparisonPage() {
               { feature: "GPS route tracking", ed: true, td: false, mdt: false, adi: false },
               { feature: "Dashcam telematics", ed: true, td: false, mdt: false, adi: false },
               { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false },
-              { feature: "Healthcare add-on", ed: "£19.99/mo", td: false, mdt: false, adi: false },
+              { feature: "Healthcare benefits", ed: "Included (GPS+)", td: false, mdt: false, adi: false },
               { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true },
             ].map((row, ri) => (
               <div key={row.feature} className={cn("grid grid-cols-5 border-t border-border/10", ri % 2 !== 0 && "bg-muted/5")}>
@@ -392,7 +392,7 @@ export default function ComparisonPage() {
             { feature: "Dashcam telematics", ed: "Included", others: "Not available" },
             { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available" },
             { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none" },
-            { feature: "Healthcare add-on", ed: "£19.99/mo", others: "Not available" },
+            { feature: "Healthcare benefits", ed: "Included (GPS+)", others: "Not available" },
           ].map((row) => (
             <div key={row.feature} className="rounded-xl border bg-card p-4">
               <div className="text-xs font-bold text-foreground mb-2">{row.feature}</div>
@@ -415,19 +415,19 @@ export default function ComparisonPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
               <div>
                 <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
-                  <Heart className="h-3 w-3 mr-1" /> Optional Add-On
+                  <Heart className="h-3 w-3 mr-1" /> Included Free on GPS+
                 </Badge>
                 <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
                 <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mt-1">
-                  The only driving instructor app that offers healthcare benefits.
+                  The only driving instructor app that includes healthcare benefits.
                 </p>
                 <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  Look after yourself while you look after your pupils. Add comprehensive health cover to any paid plan.
+                  Every GPS plan and above comes with comprehensive health cover — dental, optical, GP access and more. No extra cost.
                 </p>
               </div>
               <div className="text-left md:text-right">
-                <div className="text-3xl font-black text-foreground">£19.99<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                <p className="text-xs text-muted-foreground">Available on any paid plan</p>
+                <div className="text-3xl font-black text-foreground">FREE<span className="text-sm font-normal text-muted-foreground"> with GPS+</span></div>
+                <p className="text-xs text-muted-foreground">Included on GPS, Single, Duo & Multi plans</p>
               </div>
             </div>
 
@@ -461,7 +461,7 @@ export default function ComparisonPage() {
                 onClick={() => navigate("/instructor-app/signup")}
               >
                 <Heart className="h-4 w-4 mr-2" />
-                Get Started & Add Healthcare
+                Get a GPS Plan with Healthcare
               </Button>
               <p className="text-xs text-muted-foreground">No waiting period · Instant cover · Cancel anytime</p>
             </div>
