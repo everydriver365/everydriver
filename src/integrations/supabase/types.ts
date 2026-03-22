@@ -7185,6 +7185,7 @@ export type Database = {
           cash_payments_enabled: boolean | null
           clearpay_enabled: boolean | null
           commission_payer: string | null
+          commission_split_percent: number
           cpd_certified: boolean | null
           cpd_hours_logged: number | null
           cpd_year_target: number | null
@@ -7318,6 +7319,7 @@ export type Database = {
           cash_payments_enabled?: boolean | null
           clearpay_enabled?: boolean | null
           commission_payer?: string | null
+          commission_split_percent?: number
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null
@@ -7451,6 +7453,7 @@ export type Database = {
           cash_payments_enabled?: boolean | null
           clearpay_enabled?: boolean | null
           commission_payer?: string | null
+          commission_split_percent?: number
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null

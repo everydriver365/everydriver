@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN commission_split_percent INTEGER NOT NULL DEFAULT 100;
