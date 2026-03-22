@@ -178,11 +178,36 @@ export default function InstructorPlans() {
     fetchData();
   }, []);
 
-  const handleUpgrade = (plan: Plan) => {
-    toast.success(`To upgrade to ${plan.name}, please contact us`, {
-      description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
-      duration: 5000,
-    });
+  const handleChangePlan = async (plan: Plan) => {
+    if (!instructor?.id || !subscription?.id) return;
+
+    // For paid plans or "contact us" plans, show contact toast
+    if (plan.show_contact_us || (plan.price_monthly > 0 && currentPlanSlug === "free")) {
+      toast.success(`To upgrade to ${plan.name}, please contact us`, {
+        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    // Allow instant switching for free plan or between same-tier plans
+    setSwitching(plan.slug);
+    try {
+      const { error } = await supabase
+        .from("instructor_subscriptions")
+        .update({ plan_id: plan.id })
+        .eq("id", subscription.id);
+
+      if (error) throw error;
+
+      await refreshInstructor();
+      toast.success(`Switched to ${plan.name} plan!`);
+    } catch (err) {
+      console.error("Error switching plan:", err);
+      toast.error("Failed to switch plan. Please try again.");
+    } finally {
+      setSwitching(null);
+    }
   };
 
   const handleSignOut = async () => {
