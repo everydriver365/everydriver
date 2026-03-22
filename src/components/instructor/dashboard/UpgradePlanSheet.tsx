@@ -52,6 +52,10 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
         setPlans(data.map(p => ({
           ...p,
           features: Array.isArray(p.features) ? (p.features as string[]) : [],
+          is_per_seat: (p as any).is_per_seat || false,
+          base_price_monthly: (p as any).base_price_monthly ?? 0,
+          per_seat_price_monthly: (p as any).per_seat_price_monthly ?? 0,
+          min_seats: (p as any).min_seats ?? 1,
         })));
       }
       setLoading(false);
