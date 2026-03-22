@@ -14,6 +14,7 @@ interface BillingRequestBody {
   domain_tld?: string;
   domain_price?: number;
   promo?: string;
+  seat_count?: number;
 }
 
 serve(async (req) => {
