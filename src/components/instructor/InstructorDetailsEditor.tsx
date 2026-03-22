@@ -172,6 +172,33 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // Check if grade changed from trainee to A/B (PDI qualification)
+      const prevGrade = previousGradeRef.current?.toLowerCase();
+      const newGrade = details.instructor_grade?.toLowerCase();
+      if (prevGrade === "trainee" && (newGrade === "a" || newGrade === "b")) {
+        // Check if they're on PDI programme
+        const { data: sub } = await supabase
+          .from("instructor_subscriptions")
+          .select("id, is_pdi_programme")
+          .eq("instructor_id", instructorId)
+          .maybeSingle();
+
+        if ((sub as any)?.is_pdi_programme) {
+          // Update subscription
+          await supabase
+            .from("instructor_subscriptions")
+            .update({
+              is_pdi_programme: false,
+              qualification_converted_at: new Date().toISOString(),
+            } as any)
+            .eq("id", sub!.id);
+
+          setShowQualifiedModal(true);
+        }
+      }
+
+      previousGradeRef.current = details.instructor_grade;
       toast.success("Details saved");
     } catch (error) {
       console.error("Error saving details:", error);
