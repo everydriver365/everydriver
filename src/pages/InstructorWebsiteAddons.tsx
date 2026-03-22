@@ -126,7 +126,7 @@ export default function InstructorWebsiteAddons() {
 
   return (
     <InstructorPortalLayout>
-      <InstructorPageHeader icon={Package} title="Website Add-Ons" subtitle="Enhance your online presence with monthly add-ons" />
+      <InstructorPageHeader lucideIcon={Package} title="Website Add-Ons" subtitle="Enhance your online presence with monthly add-ons" />
       {/* Bundle card */}
       <Card className="border-2 border-primary bg-primary/5 mb-6">
         <CardHeader>
