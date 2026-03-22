@@ -10,7 +10,7 @@ import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/drive365-hero-learner.png";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
@@ -38,6 +38,7 @@ export function MobileHomepage() {
   const { hero } = useHomepageHero();
   const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
   const navigate = useNavigate();
+  const routeLogo = useRouteLogo();
   const location = useLocation();
   const { toast } = useToast();
   const branding = useDomainBranding();
@@ -121,7 +122,7 @@ export function MobileHomepage() {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
+          <img src={routeLogo.logo} alt={routeLogo.logoAlt} className="h-8 -mx-1" />
         </div>
         <Button 
           variant="outline" 

@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Home, BookOpen, HelpCircle, Phone, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [postcode, setPostcode] = useState("");
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -34,8 +35,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-md text-center">
-        <Link to="/drive365" className="inline-block mb-8">
-          <img src={drive365Logo} alt="Drive365" className="h-10 mx-auto" />
+        <Link to={homeLink} className="inline-block mb-8">
+          <img src={logo} alt={logoAlt} className="h-10 mx-auto" />
         </Link>
 
         <h1 className="text-7xl font-black text-primary mb-2">404</h1>

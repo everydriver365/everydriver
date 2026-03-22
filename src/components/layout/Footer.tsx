@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 // Decorative tyre track SVG pattern
 function TyreTrackPattern() {
@@ -35,9 +35,7 @@ function TyreTrackPattern() {
 }
 
 export function Footer() {
-  const logo = drive365Logo;
-  const logoAlt = "Drive365";
-  const homeLink = "/";
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">

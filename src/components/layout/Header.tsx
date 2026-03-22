@@ -10,7 +10,7 @@ import { SecondaryNav } from "./SecondaryNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 const navLinks = [
   { href: "/drive365", label: "Home" },
@@ -28,7 +28,7 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
-  
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -45,8 +45,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="bg-primary overflow-x-hidden">
       <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative" role="navigation" aria-label="Main navigation">
-        <Link to="/drive365" className="hidden md:flex items-center">
-          <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
+        <Link to={homeLink} className="hidden md:flex items-center">
+          <img src={logo} alt={logoAlt} className="h-9 -mx-1" />
         </Link>
 
         {/* Desktop Navigation - Centered */}
@@ -103,8 +103,8 @@ export function Header() {
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Link to="/drive365" className="flex items-center">
-            <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
+          <Link to={homeLink} className="flex items-center">
+            <img src={logo} alt={logoAlt} className="h-8 -mx-1" />
           </Link>
         </div>
         {/* Mobile right-side controls */}

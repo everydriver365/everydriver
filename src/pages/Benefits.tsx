@@ -21,7 +21,7 @@ import {
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { EarlierTestRequestTile } from "@/components/benefits/EarlierTestRequestTile";
 
 export default function Benefits() {
@@ -30,6 +30,7 @@ export default function Benefits() {
   const { features, loading } = useIncludedFeatures();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [postcode, setPostcode] = useState("");
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +62,8 @@ export default function Benefits() {
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <Link to="/drive365">
-              <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
+            <Link to={homeLink}>
+              <img src={logo} alt={logoAlt} className="h-8 -mx-1" />
             </Link>
           </div>
         </div>
