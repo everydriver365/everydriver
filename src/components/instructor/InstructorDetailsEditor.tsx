@@ -259,6 +259,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   }
 
   return (
+    <>
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
