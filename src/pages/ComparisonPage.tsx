@@ -150,6 +150,7 @@ export default function ComparisonPage() {
                     variant={i === popularIdx ? "default" : "outline"}
                     size="sm"
                     className="text-xs font-semibold w-full"
+                    onClick={() => handleCtaClick(plan.slug)}
                   >
                     {plan.slug === "multi_school" && <Phone className="h-3 w-3 mr-1" />}
                     {plan.cta_text}
