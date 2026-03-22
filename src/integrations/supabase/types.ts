@@ -12564,6 +12564,73 @@ export type Database = {
           },
         ]
       }
+      reschedule_requests: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          lesson_id: string
+          original_date: string | null
+          original_time: string | null
+          pupil_id: string
+          reason: string | null
+          requested_date: string
+          requested_time: string | null
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          original_date?: string | null
+          original_time?: string | null
+          pupil_id: string
+          reason?: string | null
+          requested_date: string
+          requested_time?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          original_date?: string | null
+          original_time?: string | null
+          pupil_id?: string
+          reason?: string | null
+          requested_date?: string
+          requested_time?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reschedule_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reschedule_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reschedule_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_redemptions: {
         Row: {
           created_at: string
