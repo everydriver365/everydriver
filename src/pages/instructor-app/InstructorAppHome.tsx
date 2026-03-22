@@ -336,22 +336,100 @@ export default function InstructorAppHome() {
         </section>
       )}
 
-      {/* ═══════════════════ FREE FOREVER BANNER ═══════════════════ */}
-      <section className="py-16 bg-gradient-to-r from-[#0075c9] to-[#005a9e]">
+      {/* ═══════════════════ COMPETITOR COMPARISON ═══════════════════ */}
+      <section className="py-20 bg-muted/30">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge className="bg-accent/10 text-accent mb-4">Switching?</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              See How We Compare
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              EveryDriver gives you more features at a lower price than Total Drive, ADI Book, or MyDriveTime.
+            </p>
+          </motion.div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left p-3 font-medium text-muted-foreground">Feature</th>
+                  <th className="p-3 text-center font-bold text-primary">EveryDriver</th>
+                  <th className="p-3 text-center font-medium text-muted-foreground">Total Drive</th>
+                  <th className="p-3 text-center font-medium text-muted-foreground">ADI Book</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { feature: "Monthly price", ed: "From £4.99", td: "From £12.50", ab: "From £11.99" },
+                  { feature: "Free tier available", ed: true, td: false, ab: false },
+                  { feature: "GPS route tracking", ed: true, td: false, ab: false },
+                  { feature: "Dashcam integration", ed: true, td: false, ab: false },
+                  { feature: "Live telematics", ed: true, td: false, ab: false },
+                  { feature: "Pupil & parent apps", ed: true, td: "Pupil only", ab: false },
+                  { feature: "Professional website", ed: true, td: true, ab: true },
+                  { feature: "HMRC MTD filing", ed: true, td: false, ab: false },
+                  { feature: "Multi-school management", ed: true, td: "Extra cost", ab: false },
+                  { feature: "PDI free programme", ed: true, td: false, ab: false },
+                  { feature: "DVSA test slot finder", ed: true, td: false, ab: false },
+                  { feature: "No tie-in contract", ed: true, td: true, ab: true },
+                ].map((row, i) => (
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                    <td className="p-3 text-foreground font-medium">{row.feature}</td>
+                    {[row.ed, row.td, row.ab].map((val, j) => (
+                      <td key={j} className="p-3 text-center">
+                        {val === true ? (
+                          <CheckCircle className={cn("h-5 w-5 mx-auto", j === 0 ? "text-primary" : "text-muted-foreground")} />
+                        ) : val === false ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <span className={cn("text-xs font-medium", j === 0 ? "text-primary" : "text-muted-foreground")}>{val}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-8"
+          >
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Link to="/compare">
+                Full Feature Comparison (130+ features)
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ PRICING BANNER ═══════════════════ */}
+      <section className="py-16 bg-gradient-to-r from-primary to-primary/80">
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-white/20 flex items-center justify-center">
-                <Zap className="h-8 w-8 text-white" />
+              <div className="h-16 w-16 rounded-2xl bg-primary-foreground/20 flex items-center justify-center">
+                <Zap className="h-8 w-8 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white">FREE Forever Plan Available</h3>
-                <p className="text-white/80 text-lg">No credit card required. Upgrade when you're ready.</p>
+                <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground">The Virtually Free Diary App — Built for ADIs</h3>
+                <p className="text-primary-foreground/80 text-lg">From just £4.99/mo. No tie-in. Cancel anytime. It's your platform.</p>
               </div>
             </div>
-            <Button size="lg" className="bg-white text-[#0075c9] hover:bg-gray-100 h-14 px-10 text-lg shadow-lg" asChild>
-              <Link to="/instructor-app/signup">
-                Get Started Free
+            <Button size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-10 text-lg shadow-lg" asChild>
+              <Link to="/compare">
+                Compare Plans
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
