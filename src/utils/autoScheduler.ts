@@ -48,6 +48,7 @@ interface AutoScheduleParams {
   preferredDays?: string[]; // 'monday', 'tuesday', etc.
   courseType?: 'intensive' | 'semi-intensive' | 'weekly';
   startFromDate?: Date;
+  preferEarliestSlot?: boolean;
 }
 
 // Time ranges for preferences
