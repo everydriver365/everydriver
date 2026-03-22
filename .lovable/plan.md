@@ -1,54 +1,49 @@
 
 
-## Plan: Add Remaining Missing Features to Comparison Table
+## Plan: Add Final Missing Features to Comparison Table
 
-### Audit Summary
-Cross-referencing the Discover Features list (44 features), Feature Toggles (13 toggles), and all app pages against the current comparison_features table reveals **~14 features** still missing.
+### The Problem
+You're right to be frustrated — I've been doing partial scans. This time I cross-referenced every single entry in the Discover Features list (44 features) against every row in the `comparison_features` table to find the gaps.
 
-### Missing Features by Category
+### Features Still Missing (~10)
 
-**Business Tools** (add to existing):
+**Scheduling**:
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Lesson packages & bundles | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| No-show & cancellation policy | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Workflow automations | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Payment reminders | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Fill Gaps (broadcast open slots) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Plan Ahead (tomorrow's route) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**Lesson Tracking** (add to existing or new category):
+**Business Tools**:
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Standards Check prep | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| CPD logging | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Lesson notes & templates | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Month End financial reports | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**Tools & Navigation** (new category):
+**Tools & Navigation**:
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Built-in SatNav | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Find nearby (toilets, cafés) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Find cheapest fuel | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Weather alerts | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Community road alerts | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Digital checklists (vehicle/incident) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Document vault | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Saved locations & meeting points | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Wellbeing & burnout tracker | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| To Do list | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tasks Due (outstanding follow-ups) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**Growth & Community** (add to existing or new):
+**Reports & Insights** (new category):
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Test swap marketplace | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Nearby ADIs map | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| GPS Clock in/out | ✗ | ✗ | ✓ | ✓ | ✓ | ✓ |
+| AI Weekly Report | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| End of Day report | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-### Already Covered (no action needed)
-Features like SatNav, Find Fuel, Weather, Checklists, Document Vault, Clock In/Out, Test Swap, and Nearby ADIs exist as pages/components but were never added to the comparison table.
+**Growth & Community**:
+| Feature | Free | All-In | GPS | Single | Duo | Multi |
+|---------|------|--------|-----|--------|-----|-------|
+| Team Channels (group messaging) | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Waiting Room (weekly Zoom) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ### Implementation
-Single database INSERT of ~17 rows into `comparison_features` with correct categories, plan_values JSONB, and display_orders. No code changes — the UI renders dynamically.
+Single INSERT of ~11 rows into `comparison_features`. No code changes needed.
 
 ### Files Changed
 | File | Change |
 |------|--------|
-| Database (comparison_features) | INSERT ~17 rows |
+| Database (comparison_features) | INSERT ~11 rows |
 | No code changes | UI reads dynamically |
 
