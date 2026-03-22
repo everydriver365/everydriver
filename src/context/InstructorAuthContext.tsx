@@ -22,6 +22,7 @@ interface InstructorProfile {
   payment_qr_url_pupil_pays: string | null;
   payment_qr_url_instructor_pays: string | null;
   commission_payer: string | null;
+  commission_split_percent: number | null;
   booking_mode: string | null;
   adi_badge_expiry: string | null;
   dbs_certificate_expiry: string | null;
