@@ -20,6 +20,10 @@ interface Plan {
   max_pupils: number | null;
   sms_credits_monthly: number | null;
   cta_text: string | null;
+  is_per_seat: boolean;
+  base_price_monthly: number;
+  per_seat_price_monthly: number;
+  min_seats: number;
 }
 
 interface UpgradePlanSheetProps {
