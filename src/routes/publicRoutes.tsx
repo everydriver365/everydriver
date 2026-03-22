@@ -42,6 +42,7 @@ const SubmitReview = lazy(() => import("@/pages/mini-website/SubmitReview"));
 const PublicAvailability = lazy(() => import("@/pages/PublicAvailability"));
 const RemoteSigning = lazy(() => import("@/pages/RemoteSigning"));
 const SwitchToEveryDriver = lazy(() => import("@/pages/SwitchToEveryDriver"));
+const FranchisePage = lazy(() => import("@/pages/FranchisePage"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 
@@ -101,6 +102,7 @@ export const publicRoutes = (
 
     {/* Public utility routes */}
     <Route path="/switch" element={<SwitchToEveryDriver />} />
+    <Route path="/franchise" element={<FranchisePage />} />
     <Route path="/availability/:shareToken" element={<PublicAvailability />} />
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />

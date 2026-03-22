@@ -3132,6 +3132,42 @@ export type Database = {
           },
         ]
       }
+      franchise_enquiries: {
+        Row: {
+          created_at: string | null
+          current_situation: string | null
+          email: string
+          id: string
+          message: string | null
+          name: string
+          phone: string | null
+          preferred_tier: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_situation?: string | null
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          phone?: string | null
+          preferred_tier?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_situation?: string | null
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+          preferred_tier?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       fuel_log: {
         Row: {
           calculated_mpg: number | null
