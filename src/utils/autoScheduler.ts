@@ -225,7 +225,7 @@ export async function findOptimalSlots(params: AutoScheduleParams): Promise<Slot
         startTime: formatTime(currentTime),
         endTime: formatTime(currentTime + lessonLength),
         duration: lessonLength,
-        score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType),
+        score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType, preferEarliestSlot),
       });
       currentTime += 30;
     }
