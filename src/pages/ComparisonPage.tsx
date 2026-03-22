@@ -15,6 +15,15 @@ function CellValue({ value, popular }: { value: boolean | string; popular: boole
     : <Minus className="h-4 w-4 mx-auto text-muted-foreground/20" />;
 }
 
+function CompetitorCell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
+  if (typeof value === "string") {
+    return <span className={cn("text-xs font-semibold", highlight ? "text-primary" : "text-foreground")}>{value}</span>;
+  }
+  return value
+    ? <Check className={cn("h-4 w-4", highlight ? "text-primary" : "text-emerald-500")} />
+    : <Minus className="h-4 w-4 text-muted-foreground/30" />;
+}
+
 function groupFeatures(features: ComparisonFeature[]) {
   const groups: { category: string; features: ComparisonFeature[] }[] = [];
   for (const f of features) {
