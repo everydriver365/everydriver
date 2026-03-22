@@ -26,7 +26,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { formatDistanceToNow } from "date-fns";
 
 interface InstructorDetails {
   home_postcode: string | null;
