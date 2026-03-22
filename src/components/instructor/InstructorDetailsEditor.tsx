@@ -52,10 +52,13 @@ interface InstructorDetailsEditorProps {
 }
 
 export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }: InstructorDetailsEditorProps) {
+  const navigate = useNavigate();
   const [details, setDetails] = useState<InstructorDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
+  const [showQualifiedModal, setShowQualifiedModal] = useState(false);
+  const previousGradeRef = useRef<string | null>(null);
   const [gpsStatus, setGpsStatus] = useState<{
     isConnected: boolean;
     lastSeenAt: string | null;
