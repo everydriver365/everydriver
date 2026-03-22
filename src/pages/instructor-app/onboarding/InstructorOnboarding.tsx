@@ -349,7 +349,10 @@ export default function InstructorOnboarding() {
       if (error) throw error;
 
       // Ensure an instructor_subscriptions row exists (especially for free plans)
-      if (data.selectedPlanId) {
+      // For PDI trainees, auto-assign the free plan with pdi_programme flag
+      const planIdToUse = isPDI ? null : data.selectedPlanId;
+
+      if (isPDI || planIdToUse) {
         const { data: existingSub } = await supabase
           .from("instructor_subscriptions")
           .select("id")
@@ -357,26 +360,40 @@ export default function InstructorOnboarding() {
           .maybeSingle();
 
         if (!existingSub) {
-          // Create subscription record — free plans are immediately active
-          const { data: planData } = await supabase
-            .from("subscription_plans")
-            .select("price_monthly")
-            .eq("id", data.selectedPlanId)
-            .single();
+          // Find the free plan if PDI
+          let finalPlanId = planIdToUse;
+          if (isPDI && !finalPlanId) {
+            const { data: freePlan } = await supabase
+              .from("subscription_plans")
+              .select("id")
+              .eq("price_monthly", 0)
+              .limit(1)
+              .maybeSingle();
+            finalPlanId = freePlan?.id || null;
+          }
 
-          const isFree = !planData || planData.price_monthly === 0;
+          if (finalPlanId) {
+            const { data: planData } = await supabase
+              .from("subscription_plans")
+              .select("price_monthly")
+              .eq("id", finalPlanId)
+              .single();
 
-          await supabase
-            .from("instructor_subscriptions")
-            .insert({
-              instructor_id: instructorId,
-              plan_id: data.selectedPlanId,
-              status: isFree ? "active" : "pending",
-              current_period_start: new Date().toISOString(),
-              current_period_end: isFree
-                ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-                : null,
-            });
+            const isFree = !planData || planData.price_monthly === 0;
+
+            await supabase
+              .from("instructor_subscriptions")
+              .insert({
+                instructor_id: instructorId,
+                plan_id: finalPlanId,
+                status: isFree ? "active" : "pending",
+                current_period_start: new Date().toISOString(),
+                current_period_end: isFree
+                  ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                  : null,
+                is_pdi_programme: isPDI,
+              } as any);
+          }
         }
       }
 
