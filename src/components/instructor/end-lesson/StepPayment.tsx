@@ -176,6 +176,7 @@ export function StepPayment({
           Skip
         </Button>
       </div>
+      </>)}
     </div>
   );
 }
