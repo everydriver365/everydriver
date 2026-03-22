@@ -6065,6 +6065,68 @@ export type Database = {
           },
         ]
       }
+      instructor_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          qualified_at: string | null
+          referred_email: string
+          referred_instructor_id: string | null
+          referrer_id: string
+          reward_amount: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referred_email: string
+          referred_instructor_id?: string | null
+          referrer_id: string
+          reward_amount?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referred_email?: string
+          referred_instructor_id?: string | null
+          referrer_id?: string
+          reward_amount?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_referrals_referred_instructor_id_fkey"
+            columns: ["referred_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_referrals_referred_instructor_id_fkey"
+            columns: ["referred_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_reminder_preferences: {
         Row: {
           auto_charge_no_show: boolean | null
@@ -7181,6 +7243,7 @@ export type Database = {
           website_text_color: string | null
           website_theme: string | null
           welcome_video_url: string | null
+          whatsapp_enabled: boolean | null
           xero_connected: boolean | null
           xero_tenant_id: string | null
         }
@@ -7313,6 +7376,7 @@ export type Database = {
           website_text_color?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
+          whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null
           xero_tenant_id?: string | null
         }
@@ -7445,6 +7509,7 @@ export type Database = {
           website_text_color?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
+          whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null
           xero_tenant_id?: string | null
         }

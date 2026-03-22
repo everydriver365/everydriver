@@ -41,6 +41,7 @@ const SubmitReview = lazy(() => import("@/pages/mini-website/SubmitReview"));
 // Public utility routes
 const PublicAvailability = lazy(() => import("@/pages/PublicAvailability"));
 const RemoteSigning = lazy(() => import("@/pages/RemoteSigning"));
+const SwitchToEveryDriver = lazy(() => import("@/pages/SwitchToEveryDriver"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 
@@ -99,6 +100,7 @@ export const publicRoutes = (
     <Route path="/review/:slug" element={<SubmitReview />} />
 
     {/* Public utility routes */}
+    <Route path="/switch" element={<SwitchToEveryDriver />} />
     <Route path="/availability/:shareToken" element={<PublicAvailability />} />
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />

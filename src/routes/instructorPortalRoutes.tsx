@@ -99,6 +99,7 @@ const InstructorBulkOperations = lazy(() => import("@/pages/InstructorBulkOperat
 const InstructorReportsHub = lazy(() => import("@/pages/InstructorReportsHub"));
 const InstructorHealth = lazy(() => import("@/pages/InstructorHealth"));
 const InstructorPlatformUpdates = lazy(() => import("@/pages/InstructorPlatformUpdates"));
+const InstructorDataImport = lazy(() => import("@/pages/InstructorDataImport"));
 const WeeklyReportPage = lazy(() => import("@/pages/instructor/WeeklyReportPage"));
 const OutstandingTasksPage = lazy(() => import("@/pages/instructor/OutstandingTasksPage"));
 const EndOfDayPage = lazy(() => import("@/pages/instructor/EndOfDayPage"));
@@ -220,6 +221,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
     <Route path="/instructor/reports" element={<InstructorReportsHub />} />
     <Route path="/instructor/health" element={<InstructorHealth />} />
+    <Route path="/instructor/import-data" element={<InstructorDataImport />} />
     <Route path="/instructor/platform-updates" element={<InstructorPlatformUpdates />} />
     <Route path="/instructor/weekly-report" element={<WeeklyReportPage />} />
     <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
