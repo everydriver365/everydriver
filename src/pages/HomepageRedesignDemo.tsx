@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
-  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone,
+  MapPin, Video, Building2
 } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
