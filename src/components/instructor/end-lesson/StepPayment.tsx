@@ -96,6 +96,16 @@ export function StepPayment({
 
   return (
     <div className="space-y-4">
+      {paymentLimit.isLimited && (
+        <PaymentLimitBanner
+          remaining={paymentLimit.remaining}
+          limit={paymentLimit.limit}
+          isAtLimit={paymentLimit.isAtLimit}
+          onSkip={onSkip}
+        />
+      )}
+
+      {paymentLimit.isAtLimit ? null : (<>
       {balanceAfterLesson < 0 && (
         <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 text-sm">
           <span className="text-warning">
