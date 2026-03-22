@@ -115,47 +115,6 @@ export default function ComparisonPage() {
         </div>
       </div>
 
-      {/* Plan summary cards */}
-      <div className="max-w-[1200px] mx-auto px-4 -mt-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {planNames.map((name, i) => (
-            <div
-              key={name}
-              className={cn(
-                "rounded-2xl border bg-card p-4 text-center shadow-sm transition-all hover:shadow-lg hover:-translate-y-1",
-                i === popularIdx && "border-primary ring-2 ring-primary/20 relative"
-              )}
-            >
-              {i === popularIdx && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground text-[9px] shadow-md">Most Popular</Badge>
-                </div>
-              )}
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2",
-                i === popularIdx ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              )}>
-                {planIcons[i]}
-              </div>
-              <h3 className="font-bold text-foreground text-sm">{name}</h3>
-              <div className="text-2xl font-black text-foreground mt-1">
-                {planPrices[i]}
-                {planPeriods[i] && <span className="text-xs font-normal text-muted-foreground">{planPeriods[i]}</span>}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1 leading-tight">{planDescs[i]}</p>
-              <Button
-                variant={i === popularIdx ? "default" : "outline"}
-                size="sm"
-                className="w-full mt-3 text-xs font-semibold"
-              >
-                {planNames[i] === "Multi-School" && <Phone className="h-3 w-3 mr-1" />}
-                {planCtas[i]}
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Comparison table */}
       <div className="max-w-[1200px] mx-auto px-4 py-12">
         <div className="text-center mb-8">
