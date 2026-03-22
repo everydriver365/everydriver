@@ -22,6 +22,7 @@ interface InstructorProfile {
   payment_qr_url_pupil_pays: string | null;
   payment_qr_url_instructor_pays: string | null;
   commission_payer: string | null;
+  commission_split_percent: number | null;
   booking_mode: string | null;
   adi_badge_expiry: string | null;
   dbs_certificate_expiry: string | null;
@@ -126,7 +127,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
-        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified, vehicle_mpg, fuel_cost_per_litre, klarna_enabled, clearpay_enabled, availability_paused, pupil_app_enabled, pupil_app_dark_mode, deposit_enabled, truelayer_enabled, custom_branding_enabled, hero_show_logo, is_online, drive_time_alerts_enabled, quotes_enabled, intake_questions_enabled, pricing_rules_enabled, broadcast_messaging_enabled, lesson_feedback_enabled, reflective_logs_enabled, pupil_self_booking_enabled, cancellation_analytics_enabled, custom_domain, custom_domain_verified')
+        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, commission_split_percent, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified, vehicle_mpg, fuel_cost_per_litre, klarna_enabled, clearpay_enabled, availability_paused, pupil_app_enabled, pupil_app_dark_mode, deposit_enabled, truelayer_enabled, custom_branding_enabled, hero_show_logo, is_online, drive_time_alerts_enabled, quotes_enabled, intake_questions_enabled, pricing_rules_enabled, broadcast_messaging_enabled, lesson_feedback_enabled, reflective_logs_enabled, pupil_self_booking_enabled, cancellation_analytics_enabled, custom_domain, custom_domain_verified')
         .eq('auth_user_id', userId)
         .maybeSingle();
 

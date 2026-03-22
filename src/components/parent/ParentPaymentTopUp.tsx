@@ -21,22 +21,22 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch commission_payer setting for this instructor
-  const { data: commissionPayer } = useQuery({
-    queryKey: ["instructor-commission-payer", instructorId],
+  // Fetch commission split setting for this instructor
+  const { data: splitPercent } = useQuery({
+    queryKey: ["instructor-commission-split", instructorId],
     queryFn: async () => {
       const { data } = await supabase
         .from("instructors")
-        .select("commission_payer")
+        .select("commission_split_percent")
         .eq("id", instructorId)
         .single();
-      return data?.commission_payer ?? "pupil";
+      return (data as any)?.commission_split_percent ?? 100;
     },
     staleTime: 5 * 60 * 1000,
   });
 
   const baseAmount = selectedAmount || 0;
-  const { adminFee, totalCharge, hasFee } = useAdminFee(baseAmount, commissionPayer);
+  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(baseAmount, splitPercent);
 
   const handlePayment = async () => {
     if (!selectedAmount) return;
@@ -108,6 +108,8 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
           adminFee={adminFee}
           totalCharge={totalCharge}
           hasFee={hasFee}
+          instructorAbsorbs={instructorAbsorbs}
+          fullFee={fullFee}
         />
 
         <Button
