@@ -234,10 +234,12 @@ export default function InstructorPlans() {
     // Paid plan upgrade: redirect to GoCardless DD setup
     setSwitching(plan.slug);
     try {
+      const seatCount = plan.is_per_seat ? plan.min_seats : 1;
+
       // First update the plan_id so the billing request uses the correct plan
       await supabase
         .from("instructor_subscriptions")
-        .update({ plan_id: plan.id })
+        .update({ plan_id: plan.id, seat_count: seatCount })
         .eq("id", subscription.id);
 
       const redirectUrl = `${window.location.origin}/instructor/plans?dd_complete=true`;
@@ -249,6 +251,7 @@ export default function InstructorPlans() {
             instructor_id: instructor.id,
             plan_id: plan.id,
             redirect_url: redirectUrl,
+            seat_count: seatCount,
           },
         }
       );

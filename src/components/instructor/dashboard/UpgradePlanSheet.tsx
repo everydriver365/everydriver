@@ -125,7 +125,13 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
                       <span className="font-medium text-foreground">{plan.name}</span>
                     </div>
                     <div className="text-right">
-                      {plan.price_monthly === 0 ? (
+                      {plan.is_per_seat ? (
+                        <div>
+                          <span className="text-lg font-semibold text-foreground">£{plan.base_price_monthly}</span>
+                          <span className="text-xs text-muted-foreground">/mo</span>
+                          <p className="text-[10px] text-muted-foreground">+ £{plan.per_seat_price_monthly}/seat</p>
+                        </div>
+                      ) : plan.price_monthly === 0 ? (
                         <span className="text-lg font-semibold text-foreground">Free</span>
                       ) : (
                         <div>
