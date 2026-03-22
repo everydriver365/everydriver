@@ -282,7 +282,8 @@ function calculateScore(
   dayName: string,
   preferredTimes: string[],
   preferredDays: string[],
-  courseType: string
+  courseType: string,
+  preferEarliestSlot: boolean = false
 ): number {
   let score = 50; // Base score
 
