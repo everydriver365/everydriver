@@ -27,37 +27,37 @@ interface FeatureWithIcon extends InstructorAppFeature {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-// Highlight features for the "Why EveryDriver" section
+// Highlight features for the "Why EveryDriver" section — USPs competitors don't have
 const highlights = [
   {
     icon: Gauge,
-    title: "Live Telematics",
-    description: "Real-time speed, G-force, and route tracking during every lesson.",
+    title: "Live GPS & Telematics",
+    description: "Real-time speed, G-force, and route tracking during every lesson. No rival offers this.",
   },
   {
     icon: Camera,
     title: "Integrated Dashcam",
-    description: "Record lessons, clip key moments, and auto-save incident footage.",
+    description: "Record lessons, clip key moments, and auto-save incident footage. Exclusive to EveryDriver.",
   },
   {
     icon: GraduationCap,
     title: "Pupil & Parent Apps",
-    description: "Dedicated apps for pupils to track progress and parents to stay informed.",
+    description: "Dedicated apps for pupils to track progress and parents to stay informed — included free.",
   },
   {
     icon: Building2,
-    title: "White Label & Multi-School",
-    description: "Your brand, your domain. Manage multiple branches from one dashboard.",
+    title: "Multi-School Management",
+    description: "Manage multiple branches, instructors, and fleets from one dashboard. Total Drive charges extra.",
   },
   {
-    icon: MapPin,
-    title: "GPS Trip Replay",
-    description: "Animated route playback with speed compliance and detailed PDF reports.",
+    icon: PoundSterling,
+    title: "HMRC MTD Ready",
+    description: "Quarterly tax filing built in. Be compliant before the April 2026 deadline — no add-on needed.",
   },
   {
     icon: Shield,
-    title: "Incident Reporting",
-    description: "Log incidents with photos, GPS, and dashcam links — insurance-ready.",
+    title: "From Just £4.99/mo",
+    description: "Half the price of Total Drive or ADI Book. No tie-in. Cancel anytime. It's your platform.",
   },
 ];
 
