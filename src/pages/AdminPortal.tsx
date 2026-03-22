@@ -171,6 +171,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "commission-settings": { title: "Commission & Fees", group: "Finance & Payments", icon: PoundSterling },
   "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
   "plan-features": { title: "Plan Feature Matrix", group: "Instructor Platform", icon: CheckSquare },
+  "comparison-editor": { title: "Pricing Comparison", group: "Learner Website", icon: Layers },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
