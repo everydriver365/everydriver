@@ -3,6 +3,8 @@ import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPop
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { toast } from "sonner";
 import {
   CalendarDays, Users, MapPin, PoundSterling, Navigation,
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
