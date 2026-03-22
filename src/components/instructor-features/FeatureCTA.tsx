@@ -14,15 +14,15 @@ export function FeatureCTA() {
           className="max-w-3xl mx-auto text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-            Ready to Transform Your Business?
+            More Features. Lower Price. No Tie-In.
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-8">
-            Join hundreds of driving instructors who've streamlined their business with EveryDriver.
+            Join hundreds of ADIs who switched from Total Drive and ADI Book. From just £4.99/mo — it's your platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 h-12 px-8" asChild>
+            <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-8" asChild>
               <Link to="/instructor-app/signup">
-                Start Free Trial
+                Start Free Today
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -32,11 +32,11 @@ export function FeatureCTA() {
               className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
               asChild
             >
-              <Link to="/compare">Compare Plans</Link>
+              <Link to="/compare">Compare Plans & Features</Link>
             </Button>
           </div>
           <p className="mt-6 text-sm text-primary-foreground/60">
-            No credit card required • Free plan available forever
+            No tie-in • Cancel anytime • Free plan available
           </p>
         </motion.div>
       </div>
