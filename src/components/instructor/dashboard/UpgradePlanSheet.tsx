@@ -20,6 +20,10 @@ interface Plan {
   max_pupils: number | null;
   sms_credits_monthly: number | null;
   cta_text: string | null;
+  is_per_seat: boolean;
+  base_price_monthly: number;
+  per_seat_price_monthly: number;
+  min_seats: number;
 }
 
 interface UpgradePlanSheetProps {
@@ -40,7 +44,7 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
       setLoading(true);
       const { data, error } = await supabase
         .from("subscription_plans")
-        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text")
+        .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, is_per_seat, base_price_monthly, per_seat_price_monthly, min_seats")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
@@ -48,6 +52,10 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
         setPlans(data.map(p => ({
           ...p,
           features: Array.isArray(p.features) ? (p.features as string[]) : [],
+          is_per_seat: (p as any).is_per_seat || false,
+          base_price_monthly: (p as any).base_price_monthly ?? 0,
+          per_seat_price_monthly: (p as any).per_seat_price_monthly ?? 0,
+          min_seats: (p as any).min_seats ?? 1,
         })));
       }
       setLoading(false);
@@ -117,7 +125,13 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
                       <span className="font-medium text-foreground">{plan.name}</span>
                     </div>
                     <div className="text-right">
-                      {plan.price_monthly === 0 ? (
+                      {plan.is_per_seat ? (
+                        <div>
+                          <span className="text-lg font-semibold text-foreground">£{plan.base_price_monthly}</span>
+                          <span className="text-xs text-muted-foreground">/mo</span>
+                          <p className="text-[10px] text-muted-foreground">+ £{plan.per_seat_price_monthly}/seat</p>
+                        </div>
+                      ) : plan.price_monthly === 0 ? (
                         <span className="text-lg font-semibold text-foreground">Free</span>
                       ) : (
                         <div>

@@ -6236,12 +6236,14 @@ export type Database = {
           is_pdi_programme: boolean | null
           plan_id: string
           qualification_converted_at: string | null
+          seat_count: number | null
           square_card_id: string | null
           square_customer_id: string | null
           square_subscription_id: string | null
           status: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          total_monthly_amount: number | null
           updated_at: string | null
         }
         Insert: {
@@ -6258,12 +6260,14 @@ export type Database = {
           is_pdi_programme?: boolean | null
           plan_id: string
           qualification_converted_at?: string | null
+          seat_count?: number | null
           square_card_id?: string | null
           square_customer_id?: string | null
           square_subscription_id?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          total_monthly_amount?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -6280,12 +6284,14 @@ export type Database = {
           is_pdi_programme?: boolean | null
           plan_id?: string
           qualification_converted_at?: string | null
+          seat_count?: number | null
           square_card_id?: string | null
           square_customer_id?: string | null
           square_subscription_id?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          total_monthly_amount?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -9435,6 +9441,84 @@ export type Database = {
             columns: ["period_id"]
             isOneToOne: false
             referencedRelation: "mtd_quarterly_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      multi_school_seats: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          franchise_instructor_id: string
+          id: string
+          invited_at: string | null
+          seat_email: string | null
+          seat_instructor_id: string | null
+          seat_name: string | null
+          status: string
+          subscription_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          franchise_instructor_id: string
+          id?: string
+          invited_at?: string | null
+          seat_email?: string | null
+          seat_instructor_id?: string | null
+          seat_name?: string | null
+          status?: string
+          subscription_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          franchise_instructor_id?: string
+          id?: string
+          invited_at?: string | null
+          seat_email?: string | null
+          seat_instructor_id?: string | null
+          seat_name?: string | null
+          status?: string
+          subscription_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "multi_school_seats_franchise_instructor_id_fkey"
+            columns: ["franchise_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "multi_school_seats_franchise_instructor_id_fkey"
+            columns: ["franchise_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "multi_school_seats_seat_instructor_id_fkey"
+            columns: ["seat_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "multi_school_seats_seat_instructor_id_fkey"
+            columns: ["seat_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "multi_school_seats_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -13221,6 +13305,7 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          base_price_monthly: number | null
           commission_fixed_pence: number | null
           commission_rate_percent: number | null
           created_at: string | null
@@ -13231,10 +13316,13 @@ export type Database = {
           gocardless_plan_id: string | null
           id: string
           is_active: boolean | null
+          is_per_seat: boolean | null
           is_popular: boolean | null
           max_pupils: number | null
+          min_seats: number | null
           name: string
           payout_speed: string | null
+          per_seat_price_monthly: number | null
           price_monthly: number
           price_yearly: number | null
           show_contact_us: boolean
@@ -13244,6 +13332,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          base_price_monthly?: number | null
           commission_fixed_pence?: number | null
           commission_rate_percent?: number | null
           created_at?: string | null
@@ -13254,10 +13343,13 @@ export type Database = {
           gocardless_plan_id?: string | null
           id?: string
           is_active?: boolean | null
+          is_per_seat?: boolean | null
           is_popular?: boolean | null
           max_pupils?: number | null
+          min_seats?: number | null
           name: string
           payout_speed?: string | null
+          per_seat_price_monthly?: number | null
           price_monthly?: number
           price_yearly?: number | null
           show_contact_us?: boolean
@@ -13267,6 +13359,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          base_price_monthly?: number | null
           commission_fixed_pence?: number | null
           commission_rate_percent?: number | null
           created_at?: string | null
@@ -13277,10 +13370,13 @@ export type Database = {
           gocardless_plan_id?: string | null
           id?: string
           is_active?: boolean | null
+          is_per_seat?: boolean | null
           is_popular?: boolean | null
           max_pupils?: number | null
+          min_seats?: number | null
           name?: string
           payout_speed?: string | null
+          per_seat_price_monthly?: number | null
           price_monthly?: number
           price_yearly?: number | null
           show_contact_us?: boolean

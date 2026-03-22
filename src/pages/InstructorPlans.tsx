@@ -30,6 +30,10 @@ interface Plan {
   commission_rate_percent: number | null;
   commission_fixed_pence: number | null;
   payout_speed: string | null;
+  is_per_seat: boolean;
+  base_price_monthly: number;
+  per_seat_price_monthly: number;
+  min_seats: number;
 }
 
 interface CategoryFeatures {
@@ -147,7 +151,7 @@ export default function InstructorPlans() {
       const [plansRes, assignmentsRes] = await Promise.all([
         supabase
           .from("subscription_plans")
-          .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us, commission_rate_percent, commission_fixed_pence, payout_speed")
+          .select("id, name, slug, price_monthly, price_yearly, description, features, is_popular, max_pupils, sms_credits_monthly, cta_text, show_contact_us, commission_rate_percent, commission_fixed_pence, payout_speed, is_per_seat, base_price_monthly, per_seat_price_monthly, min_seats")
           .eq("is_active", true)
           .order("display_order", { ascending: true }),
         supabase
@@ -164,6 +168,10 @@ export default function InstructorPlans() {
           commission_rate_percent: (p as any).commission_rate_percent ?? null,
           commission_fixed_pence: (p as any).commission_fixed_pence ?? null,
           payout_speed: (p as any).payout_speed ?? null,
+          is_per_seat: (p as any).is_per_seat || false,
+          base_price_monthly: (p as any).base_price_monthly ?? 0,
+          per_seat_price_monthly: (p as any).per_seat_price_monthly ?? 0,
+          min_seats: (p as any).min_seats ?? 1,
         })));
       }
 
@@ -226,10 +234,12 @@ export default function InstructorPlans() {
     // Paid plan upgrade: redirect to GoCardless DD setup
     setSwitching(plan.slug);
     try {
+      const seatCount = plan.is_per_seat ? plan.min_seats : 1;
+
       // First update the plan_id so the billing request uses the correct plan
       await supabase
         .from("instructor_subscriptions")
-        .update({ plan_id: plan.id })
+        .update({ plan_id: plan.id, seat_count: seatCount })
         .eq("id", subscription.id);
 
       const redirectUrl = `${window.location.origin}/instructor/plans?dd_complete=true`;
@@ -241,6 +251,7 @@ export default function InstructorPlans() {
             instructor_id: instructor.id,
             plan_id: plan.id,
             redirect_url: redirectUrl,
+            seat_count: seatCount,
           },
         }
       );
@@ -363,7 +374,12 @@ export default function InstructorPlans() {
 
                       {/* Price */}
                       <div className="flex items-baseline gap-1">
-                        {plan.show_contact_us ? (
+                        {plan.is_per_seat ? (
+                          <>
+                            <span className="text-2xl font-extrabold text-white">£{plan.base_price_monthly}</span>
+                            <span className="text-sm text-white/70">/mo base</span>
+                          </>
+                        ) : plan.show_contact_us ? (
                           <span className="text-2xl font-extrabold text-white">Contact Us</span>
                         ) : plan.price_monthly === 0 ? (
                           <span className="text-3xl font-extrabold text-white">Free</span>
@@ -375,7 +391,18 @@ export default function InstructorPlans() {
                         )}
                       </div>
 
-                      {!plan.show_contact_us && plan.price_yearly && plan.price_monthly > 0 && (
+                      {plan.is_per_seat && (
+                        <div className="mt-1.5 space-y-0.5">
+                          <p className="text-xs text-white/80 font-medium">
+                            + £{plan.per_seat_price_monthly}/mo per instructor
+                          </p>
+                          <p className="text-[10px] text-white/50">
+                            Min {plan.min_seats} seats · From £{(plan.base_price_monthly + plan.min_seats * plan.per_seat_price_monthly).toFixed(2)}/mo
+                          </p>
+                        </div>
+                      )}
+
+                      {!plan.is_per_seat && !plan.show_contact_us && plan.price_yearly && plan.price_monthly > 0 && (
                         <p className="text-xs text-white/60 mt-1">
                           or £{plan.price_yearly}/year (save £{(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)})
                         </p>

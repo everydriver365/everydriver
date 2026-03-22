@@ -14,6 +14,7 @@ interface BillingRequestBody {
   domain_tld?: string;
   domain_price?: number;
   promo?: string;
+  seat_count?: number;
 }
 
 serve(async (req) => {
@@ -45,6 +46,7 @@ serve(async (req) => {
       domain_tld,
       domain_price,
       promo,
+      seat_count,
     }: BillingRequestBody = await req.json();
 
     if (!instructor_id || !plan_id || !redirect_url) {
@@ -73,7 +75,7 @@ serve(async (req) => {
     // Get plan details
     const { data: plan, error: planError } = await supabase
       .from("subscription_plans")
-      .select("id, name, price_monthly, gocardless_plan_id")
+      .select("id, name, price_monthly, gocardless_plan_id, is_per_seat, base_price_monthly, per_seat_price_monthly, min_seats")
       .eq("id", plan_id)
       .single();
 
@@ -131,8 +133,19 @@ serve(async (req) => {
         }, { onConflict: "instructor_id" });
     }
 
-    // Calculate total amount (plan + optional domain)
-    const planAmount = Math.round(plan.price_monthly * 100); // Convert to pence
+    // Calculate plan amount (handle per-seat pricing)
+    let planAmount: number;
+    const seats = seat_count || plan.min_seats || 1;
+    
+    if (plan.is_per_seat) {
+      const baseAmount = Math.round((plan.base_price_monthly || 0) * 100);
+      const seatAmount = Math.round((plan.per_seat_price_monthly || 0) * seats * 100);
+      planAmount = baseAmount + seatAmount;
+      console.log(`[GoCardless Billing] Per-seat pricing: base=${baseAmount}p + ${seats} seats × ${Math.round((plan.per_seat_price_monthly || 0) * 100)}p = ${planAmount}p total`);
+    } else {
+      planAmount = Math.round(plan.price_monthly * 100);
+    }
+    
     const domainAmount = domain_price ? Math.round(domain_price * 100) : 0;
 
     // Calculate start date for promo
@@ -157,6 +170,7 @@ serve(async (req) => {
           plan_id: plan_id,
           plan_name: plan.name,
           plan_amount: planAmount.toString(),
+          ...(plan.is_per_seat && { seat_count: seats.toString(), per_seat_price: Math.round((plan.per_seat_price_monthly || 0) * 100).toString() }),
           ...(isFirstMonthFree && { promo: "first-month-free", subscription_start_date: subscriptionStartDate }),
         },
       },
@@ -226,11 +240,12 @@ serve(async (req) => {
 
     const flowData = await flowResponse.json();
 
-    // Update subscription record with billing request ID
+    // Update subscription record with billing request ID and seat count
     await supabase
       .from("instructor_subscriptions")
       .update({
         gocardless_billing_request_id: billingRequestId,
+        ...(plan.is_per_seat && { seat_count: seats, total_monthly_amount: planAmount / 100 }),
         updated_at: new Date().toISOString(),
       })
       .eq("instructor_id", instructor_id);
