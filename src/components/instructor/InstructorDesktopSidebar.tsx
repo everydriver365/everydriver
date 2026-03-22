@@ -111,6 +111,8 @@ interface InstructorDesktopSidebarProps {
 
 export function InstructorDesktopSidebar({ instructor, subscription, onSignOut }: InstructorDesktopSidebarProps) {
   const location = useLocation();
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
   const navigate = useNavigate();
 
   const features = subscription?.features || [];
