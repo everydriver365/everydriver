@@ -56,11 +56,33 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
     fetchPlans();
   }, [open]);
 
-  const handleUpgrade = (plan: Plan) => {
-    toast.success(`To upgrade to ${plan.name}, please contact us`, {
-      description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
-      duration: 5000,
-    });
+  const handleChangePlan = async (plan: Plan) => {
+    if (!subscription?.id) return;
+
+    if (plan.price_monthly > 0 && currentPlanSlug === "free") {
+      toast.success(`To upgrade to ${plan.name}, please contact us`, {
+        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    setSwitching(plan.slug);
+    try {
+      const { error } = await supabase
+        .from("instructor_subscriptions")
+        .update({ plan_id: plan.id })
+        .eq("id", subscription.id);
+
+      if (error) throw error;
+      await refreshInstructor();
+      toast.success(`Switched to ${plan.name} plan!`);
+      onOpenChange(false);
+    } catch (err) {
+      toast.error("Failed to switch plan.");
+    } finally {
+      setSwitching(null);
+    }
   };
 
   return (
