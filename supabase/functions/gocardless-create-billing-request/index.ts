@@ -133,8 +133,19 @@ serve(async (req) => {
         }, { onConflict: "instructor_id" });
     }
 
-    // Calculate total amount (plan + optional domain)
-    const planAmount = Math.round(plan.price_monthly * 100); // Convert to pence
+    // Calculate plan amount (handle per-seat pricing)
+    let planAmount: number;
+    const seats = seat_count || plan.min_seats || 1;
+    
+    if (plan.is_per_seat) {
+      const baseAmount = Math.round((plan.base_price_monthly || 0) * 100);
+      const seatAmount = Math.round((plan.per_seat_price_monthly || 0) * seats * 100);
+      planAmount = baseAmount + seatAmount;
+      console.log(`[GoCardless Billing] Per-seat pricing: base=${baseAmount}p + ${seats} seats × ${Math.round((plan.per_seat_price_monthly || 0) * 100)}p = ${planAmount}p total`);
+    } else {
+      planAmount = Math.round(plan.price_monthly * 100);
+    }
+    
     const domainAmount = domain_price ? Math.round(domain_price * 100) : 0;
 
     // Calculate start date for promo
