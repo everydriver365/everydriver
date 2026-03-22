@@ -168,6 +168,10 @@ export default function InstructorPlans() {
           commission_rate_percent: (p as any).commission_rate_percent ?? null,
           commission_fixed_pence: (p as any).commission_fixed_pence ?? null,
           payout_speed: (p as any).payout_speed ?? null,
+          is_per_seat: (p as any).is_per_seat || false,
+          base_price_monthly: (p as any).base_price_monthly ?? 0,
+          per_seat_price_monthly: (p as any).per_seat_price_monthly ?? 0,
+          min_seats: (p as any).min_seats ?? 1,
         })));
       }
 
