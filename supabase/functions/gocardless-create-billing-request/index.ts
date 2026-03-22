@@ -135,6 +135,16 @@ serve(async (req) => {
     const planAmount = Math.round(plan.price_monthly * 100); // Convert to pence
     const domainAmount = domain_price ? Math.round(domain_price * 100) : 0;
 
+    // Calculate start date for promo
+    const isFirstMonthFree = promo === "first-month-free";
+    let subscriptionStartDate: string | undefined;
+    if (isFirstMonthFree) {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() + 30);
+      subscriptionStartDate = startDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      console.log(`[GoCardless Billing] First month free promo applied, start date: ${subscriptionStartDate}`);
+    }
+
     // Create a billing request for mandate setup
     const billingRequestPayload: any = {
       billing_requests: {
@@ -147,6 +157,7 @@ serve(async (req) => {
           plan_id: plan_id,
           plan_name: plan.name,
           plan_amount: planAmount.toString(),
+          ...(isFirstMonthFree && { promo: "first-month-free", subscription_start_date: subscriptionStartDate }),
         },
       },
     };
