@@ -74,6 +74,7 @@ import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog"
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 
 import ComparisonEditor from "@/components/admin/ComparisonEditor";
+import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
