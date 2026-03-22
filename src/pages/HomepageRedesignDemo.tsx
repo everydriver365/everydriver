@@ -23,6 +23,77 @@ import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
 import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
+const planIconMap: Record<string, React.ReactNode> = {
+  Star: <Star className="h-5 w-5" />,
+  Zap: <Zap className="h-5 w-5" />,
+  MapPin: <MapPin className="h-5 w-5" />,
+  Camera: <Camera className="h-5 w-5" />,
+  Video: <Video className="h-5 w-5" />,
+  Building2: <Building2 className="h-5 w-5" />,
+};
+
+function PricingPlansSection() {
+  const { data: plans = [] } = useComparisonPlans();
+  const popularIdx = plans.findIndex((p) => p.is_popular);
+
+  return (
+    <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
+      <div className="container max-w-6xl">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+            Start Free. Grow When Ready.
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            The diary is free forever. Add premium tools as your business grows. No contracts, cancel anytime.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {plans.map((plan, i) => (
+            <div
+              key={plan.id}
+              className={`relative rounded-2xl border p-5 text-center transition-all hover:shadow-lg ${
+                i === popularIdx
+                  ? "border-primary bg-primary/5 shadow-md ring-2 ring-primary/20"
+                  : "border-border bg-card"
+              }`}
+            >
+              {plan.is_popular && (
+                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-2.5">
+                  Popular
+                </Badge>
+              )}
+              <div className={`h-10 w-10 mx-auto rounded-lg flex items-center justify-center mb-3 ${
+                i === popularIdx ? "bg-primary text-primary-foreground" : "bg-muted"
+              }`}>
+                {planIconMap[plan.icon_name || "Star"] || <Star className="h-5 w-5" />}
+              </div>
+              <h3 className="font-bold text-foreground text-sm mb-1">{plan.name}</h3>
+              <div className="text-2xl font-black text-foreground">
+                {plan.price}
+                <span className="text-xs font-normal text-muted-foreground">{plan.period}</span>
+              </div>
+              {plan.description && (
+                <p className="text-[11px] text-muted-foreground mt-2 leading-snug">{plan.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-13 px-8 text-base rounded-xl" asChild>
+            <Link to="/compare">
+              Compare Plans & Features
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+          <p className="text-xs text-muted-foreground mt-3">No credit card required • Free plan available forever</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomepageRedesignDemo() {
   return (
     <InstructorSaaSLayout>
