@@ -640,18 +640,27 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
               <InlineEditField value={instructor.payment_qr_url_instructor_pays || ""} onSave={(v) => updateField("payment_qr_url_instructor_pays", v)} label="QR URL (Instructor Pays)" emptyText="Add QR URL" />
             </div>
 
-            {/* Commission payer selector */}
-            <div className="flex items-center gap-3 px-1 py-2">
-              <Label className="text-sm font-medium whitespace-nowrap">Commission Payer:</Label>
-              <Select value={instructor.commission_payer || "pupil"} onValueChange={(v) => updateField("commission_payer", v)}>
-                <SelectTrigger className="h-8 w-[160px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pupil">Pupil Pays</SelectItem>
-                  <SelectItem value="instructor">Instructor Pays</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Commission split slider */}
+            <div className="space-y-2 px-1 py-2">
+              <Label className="text-sm font-medium">Commission Split</Label>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Instructor pays 100%</span>
+                <span>Pupil pays 100%</span>
+              </div>
+              <Slider
+                value={[(instructor as any).commission_split_percent ?? 100]}
+                onValueCommit={([v]: number[]) => {
+                  const payer = v === 0 ? "instructor" : v === 100 ? "pupil" : "split";
+                  updateField("commission_split_percent", v);
+                  updateField("commission_payer", payer);
+                }}
+                min={0}
+                max={100}
+                step={5}
+              />
+              <div className="text-center text-xs font-medium text-foreground">
+                Pupil {(instructor as any).commission_split_percent ?? 100}% · Instructor {100 - ((instructor as any).commission_split_percent ?? 100)}%
+              </div>
             </div>
 
             {/* QR previews */}
