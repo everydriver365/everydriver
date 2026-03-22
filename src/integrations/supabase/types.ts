@@ -13867,6 +13867,67 @@ export type Database = {
           },
         ]
       }
+      test_slot_watches: {
+        Row: {
+          created_at: string
+          current_test_date: string | null
+          id: string
+          instructor_id: string
+          notified_at: string | null
+          preferred_dates: Json | null
+          pupil_id: string | null
+          status: string
+          test_centre: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_test_date?: string | null
+          id?: string
+          instructor_id: string
+          notified_at?: string | null
+          preferred_dates?: Json | null
+          pupil_id?: string | null
+          status?: string
+          test_centre: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_test_date?: string | null
+          id?: string
+          instructor_id?: string
+          notified_at?: string | null
+          preferred_dates?: Json | null
+          pupil_id?: string | null
+          status?: string
+          test_centre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_slot_watches_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_slot_watches_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_slot_watches_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_swap_offers: {
         Row: {
           created_at: string

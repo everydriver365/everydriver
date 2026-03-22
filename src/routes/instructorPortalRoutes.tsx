@@ -22,6 +22,7 @@ const InstructorQuickAvailability = lazy(() => import("@/pages/InstructorQuickAv
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
 const InstructorGaps = lazy(() => import("@/pages/InstructorGaps"));
 const InstructorWaitingList = lazy(() => import("@/pages/InstructorWaitingList"));
+const InstructorTestSlotFinder = lazy(() => import("@/pages/InstructorTestSlotFinder"));
 
 // Finance & payments
 const InstructorPay = lazy(() => import("@/pages/InstructorPay"));
@@ -137,6 +138,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
     <Route path="/instructor/gaps" element={<Gated feature="sms_notifications" label="Fill Gaps"><InstructorGaps /></Gated>} />
     <Route path="/instructor/waiting-list" element={<InstructorWaitingList />} />
+    <Route path="/instructor/test-slot-finder" element={<Gated feature="test_slot_finder" label="Test Slot Finder"><InstructorTestSlotFinder /></Gated>} />
 
     {/* Finance & payments — gated */}
     <Route path="/instructor/pay" element={<Gated feature="payment_tracking" label="Payments"><InstructorPay /></Gated>} />
