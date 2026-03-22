@@ -113,7 +113,7 @@ async function handleBillingRequest(supabase: any, event: any) {
       return;
     }
 
-    // Check if this is an Instant Bank Pay payment
+    // Handle standalone payments (Instant Bank Pay)
     if (paymentId) {
       const { data: paymentIntent } = await supabase
         .from("payment_intents")
@@ -131,7 +131,6 @@ async function handleBillingRequest(supabase: any, event: any) {
           })
           .eq("id", paymentIntent.id);
 
-        // Increment pupil balance
         if (paymentIntent.pupil_id && paymentIntent.amount) {
           await supabase.rpc("increment_pupil_balance", {
             p_pupil_id: paymentIntent.pupil_id,
@@ -139,7 +138,6 @@ async function handleBillingRequest(supabase: any, event: any) {
           });
         }
 
-        // Record in payment_history
         await supabase.from("payment_history").insert({
           pupil_id: paymentIntent.pupil_id,
           amount: paymentIntent.amount,
@@ -147,9 +145,8 @@ async function handleBillingRequest(supabase: any, event: any) {
           notes: `Instant Bank Pay - ${paymentId}`,
         });
 
-        console.log("Instant Bank Pay completed:", paymentId, "for pupil:", paymentIntent.pupil_id);
+        console.log("Instant Bank Pay completed:", paymentId);
 
-        // Trigger confirm-booking
         const metadata = paymentIntent.metadata as any;
         if (metadata?.booking_ref && paymentIntent.pupil_id) {
           try {
@@ -193,7 +190,33 @@ async function createGoCardlessSubscription(supabase: any, subscription: any) {
 
   const amount = Math.round(plan.price_monthly * 100);
 
+  // Check for first-month-free promo in metadata
+  let startDate: string | undefined;
+  if (subscription.metadata?.promo === "first-month-free" && subscription.metadata?.subscription_start_date) {
+    startDate = subscription.metadata.subscription_start_date;
+  }
+
   try {
+    const subscriptionPayload: any = {
+      subscriptions: {
+        amount,
+        currency: "GBP",
+        name: `${plan.name} Plan - Monthly`,
+        interval_unit: "monthly",
+        interval: 1,
+        day_of_month: new Date().getDate(),
+        links: { mandate: subscription.gocardless_mandate_id },
+        metadata: {
+          instructor_id: subscription.instructor_id,
+          plan_id: subscription.plan_id,
+        },
+      },
+    };
+
+    if (startDate) {
+      subscriptionPayload.subscriptions.start_date = startDate;
+    }
+
     const response = await fetch(`${baseUrl}/subscriptions`, {
       method: "POST",
       headers: {
@@ -201,21 +224,7 @@ async function createGoCardlessSubscription(supabase: any, subscription: any) {
         "GoCardless-Version": "2015-07-06",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        subscriptions: {
-          amount,
-          currency: "GBP",
-          name: `${plan.name} Plan - Monthly`,
-          interval_unit: "monthly",
-          interval: 1,
-          day_of_month: new Date().getDate(),
-          links: { mandate: subscription.gocardless_mandate_id },
-          metadata: {
-            instructor_id: subscription.instructor_id,
-            plan_id: subscription.plan_id,
-          },
-        },
-      }),
+      body: JSON.stringify(subscriptionPayload),
     });
 
     if (response.ok) {
@@ -246,7 +255,6 @@ async function handleMandate(supabase: any, event: any) {
   const action = event.action;
 
   if (action === "cancelled" || action === "failed" || action === "expired") {
-    // Update instructor subscriptions
     await supabase
       .from("instructor_subscriptions")
       .update({
@@ -255,7 +263,6 @@ async function handleMandate(supabase: any, event: any) {
       })
       .eq("gocardless_mandate_id", mandateId);
 
-    // Also clear pupil subscription mandates
     await supabase
       .from("pupil_subscriptions")
       .update({ gocardless_mandate_id: null } as any)
@@ -295,19 +302,91 @@ async function handlePayment(supabase: any, event: any) {
   const action = event.action;
 
   if (action === "confirmed" && subscriptionId) {
-    const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    
+    // Find the subscription
+    const { data: sub } = await supabase
+      .from("instructor_subscriptions")
+      .select("id, instructor_id, plan_id")
+      .eq("gocardless_subscription_id", subscriptionId)
+      .maybeSingle();
+
+    const newPeriodStart = new Date();
+    const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // Update subscription period
     await supabase
       .from("instructor_subscriptions")
       .update({
-        current_period_end: newPeriodEnd,
+        current_period_end: newPeriodEnd.toISOString(),
+        current_period_start: newPeriodStart.toISOString(),
         status: "active",
         updated_at: new Date().toISOString(),
       })
       .eq("gocardless_subscription_id", subscriptionId);
 
-    console.log(`Payment ${paymentId} confirmed, period extended`);
+    // Record the payment
+    if (sub) {
+      // Get payment amount from GoCardless
+      let paymentAmount = 0;
+      let planName = "Unknown";
+      try {
+        const { data: plan } = await supabase
+          .from("subscription_plans")
+          .select("price_monthly, name")
+          .eq("id", sub.plan_id)
+          .single();
+        if (plan) {
+          paymentAmount = Math.round(plan.price_monthly * 100);
+          planName = plan.name;
+        }
+      } catch (e) {
+        console.error("Error fetching plan:", e);
+      }
+
+      await supabase.from("subscription_payments").insert({
+        instructor_id: sub.instructor_id,
+        subscription_id: sub.id,
+        amount: paymentAmount / 100,
+        currency: "GBP",
+        status: "confirmed",
+        gocardless_payment_id: paymentId,
+        payment_date: newPeriodStart.toISOString().split("T")[0],
+        period_start: newPeriodStart.toISOString().split("T")[0],
+        period_end: newPeriodEnd.toISOString().split("T")[0],
+      });
+
+      // Send receipt
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        await fetch(`${supabaseUrl}/functions/v1/send-subscription-receipt`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            instructor_id: sub.instructor_id,
+            amount: paymentAmount,
+            plan_name: planName,
+            period_start: newPeriodStart.toISOString(),
+            period_end: newPeriodEnd.toISOString(),
+            payment_reference: paymentId,
+            payment_id: paymentId,
+          }),
+        });
+      } catch (receiptErr) {
+        console.error("Failed to send receipt:", receiptErr);
+      }
+    }
+
+    console.log(`Payment ${paymentId} confirmed, period extended, receipt sent`);
   } else if (action === "failed" && subscriptionId) {
+    // Find the subscription
+    const { data: sub } = await supabase
+      .from("instructor_subscriptions")
+      .select("id, instructor_id, plan_id")
+      .eq("gocardless_subscription_id", subscriptionId)
+      .maybeSingle();
+
     await supabase
       .from("instructor_subscriptions")
       .update({
@@ -316,7 +395,54 @@ async function handlePayment(supabase: any, event: any) {
       })
       .eq("gocardless_subscription_id", subscriptionId);
 
-    console.log(`Payment ${paymentId} failed`);
+    // Record failed payment
+    if (sub) {
+      let paymentAmount = 0;
+      try {
+        const { data: plan } = await supabase
+          .from("subscription_plans")
+          .select("price_monthly")
+          .eq("id", sub.plan_id)
+          .single();
+        if (plan) paymentAmount = plan.price_monthly;
+      } catch (e) { /* ignore */ }
+
+      await supabase.from("subscription_payments").insert({
+        instructor_id: sub.instructor_id,
+        subscription_id: sub.id,
+        amount: paymentAmount,
+        currency: "GBP",
+        status: "failed",
+        gocardless_payment_id: paymentId,
+        payment_date: new Date().toISOString().split("T")[0],
+      });
+
+      // Create admin alert
+      await supabase.from("admin_alerts").insert({
+        alert_type: "payment_failed",
+        instructor_id: sub.instructor_id,
+        subscription_id: sub.id,
+        message: `Subscription payment failed (GoCardless: ${paymentId})`,
+        metadata: { gocardless_payment_id: paymentId, plan_id: sub.plan_id },
+      });
+
+      // Notify admin via SMS
+      const ADMIN_PHONE = Deno.env.get("ADMIN_PHONE_NUMBER");
+      if (ADMIN_PHONE) {
+        try {
+          await supabase.functions.invoke("send-sms", {
+            body: {
+              to: ADMIN_PHONE,
+              message: `[EveryDriver] Payment failed for instructor ${sub.instructor_id.slice(0, 8)}. Check admin alerts.`,
+            },
+          });
+        } catch (smsErr) {
+          console.error("Failed to send admin SMS:", smsErr);
+        }
+      }
+    }
+
+    console.log(`Payment ${paymentId} failed, alert created`);
   }
 
   // Handle standalone payments (Instant Bank Pay confirmations)
