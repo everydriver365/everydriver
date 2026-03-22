@@ -514,5 +514,27 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         </p>
       </TabsContent>
     </Tabs>
+
+      {/* PDI Qualification Modal */}
+      <Dialog open={showQualifiedModal} onOpenChange={setShowQualifiedModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>🎉 Congratulations — You've Qualified!</DialogTitle>
+            <DialogDescription>
+              You're now a fully qualified ADI. Choose a plan to unlock premium features 
+              like GPS tracking, dashcam integration, and your own website.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowQualifiedModal(false)}>
+              Later
+            </Button>
+            <Button onClick={() => { setShowQualifiedModal(false); navigate("/instructor/plans"); }}>
+              Choose a Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
