@@ -93,7 +93,7 @@ const sidebarGroups: SidebarGroup[] = [
       { key: "mini-websites", label: "Mini Websites", icon: Smartphone },
       { key: "instructor-onboarding", label: "Signup Wizard", icon: Smartphone },
       { key: "instructor-home", label: "App Homepage", icon: Smartphone },
-      { key: "plan-features", label: "Plan Matrix", icon: Smartphone },
+      
       { key: "comparison-editor", label: "Pricing Comparison", icon: Smartphone },
     ],
   },
