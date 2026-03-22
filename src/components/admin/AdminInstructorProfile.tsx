@@ -411,7 +411,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
 
   const updateField = async (field: string, value: string) => {
     if (!instructor) return;
-    const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length"];
+    const numericFields = ["hourly_rate", "radius_miles", "fuel_cost_per_litre", "vehicle_mpg", "booking_advance_days", "buffer_minutes", "cancellation_policy_hours", "deposit_amount", "school_skim_amount", "school_skim_percentage", "preferred_lesson_length", "commission_split_percent"];
     const updateValue = numericFields.includes(field) ? (value ? Number(value) : null) : (value || null);
     setPendingChanges(prev => ({ ...prev, [field]: updateValue }));
     setInstructor(prev => prev ? { ...prev, [field]: updateValue } : prev);
