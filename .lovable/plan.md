@@ -1,50 +1,54 @@
 
 
-## Plan: Drive365 Franchise Landing Page
+## Plan: Healthcare Benefits — GPS Tier and Above (Option A)
 
-### Key Point
-The franchise page lives on the **Drive365 site** (learner-facing, `MainLayout`), NOT on EveryDriver. Route: `/franchise`. This targets instructors who visit the Drive365 site and see the opportunity.
+### Strategy
+- **Free & All-In**: No healthcare. All-In stays at £4.99/mo — the affordable entry point.
+- **GPS (£16/mo → £31/mo)**: Basic healthcare (Dental £150/yr + Optical £100/yr cashback).
+- **Single Dashcam (£25/mo → £37/mo)**: Full healthcare (adds GP access, Physio, Mental Health).
+- **Duo Dashcam (£29/mo → £42/mo)**: Full healthcare (same as Single).
+- **Multi-School (£49/mo → £59/mo)**: Premium healthcare (full + family cover options).
 
-### Database Migration
+All tiers achieve the £10/mo profit target after £15 healthcare cost.
 
-**New table: `franchise_enquiries`**
+### Database Changes
+
+**1. Update `subscription_plans` prices**
 ```sql
-CREATE TABLE public.franchise_enquiries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  email text NOT NULL,
-  phone text,
-  current_situation text,
-  preferred_tier text,
-  message text,
-  status text DEFAULT 'new',
-  created_at timestamptz DEFAULT now()
-);
-ALTER TABLE public.franchise_enquiries ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Anyone can submit" ON public.franchise_enquiries FOR INSERT WITH CHECK (true);
+UPDATE subscription_plans SET price_monthly = 31 WHERE slug = 'gps';
+UPDATE subscription_plans SET price_monthly = 37 WHERE slug = 'single_dashcam';
+UPDATE subscription_plans SET price_monthly = 42 WHERE slug = 'duo_dashcam';
+UPDATE subscription_plans SET price_monthly = 59 WHERE slug = 'multi_school';
 ```
 
-### New Page: `src/pages/FranchisePage.tsx`
+**2. Add `healthcare` feature flag to GPS+ plan features**
+```sql
+UPDATE subscription_plans SET features = features || '["healthcare_basic"]' WHERE slug = 'gps';
+UPDATE subscription_plans SET features = features || '["healthcare_full"]' WHERE slug IN ('single_dashcam', 'duo_dashcam');
+UPDATE subscription_plans SET features = features || '["healthcare_premium"]' WHERE slug = 'multi_school';
+```
 
-Uses `MainLayout` (Drive365 branding). Sections:
+**3. Add healthcare rows to `comparison_features`**
+Insert new rows in a "Healthcare & Wellbeing" category:
+- "Dental cashback (£150/yr)" — ✗ Free, ✗ All-In, ✓ GPS+
+- "Optical cashback (£100/yr)" — ✗ Free, ✗ All-In, ✓ GPS+
+- "24/7 GP access" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
+- "Physio sessions" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
+- "Mental health & EAP" — ✗ Free, ✗ All-In, ✗ GPS, ✓ Single+
+- "Family cover option" — ✗ all except ✓ Multi-School
 
-1. **Hero** — "Join the UK's Most Rewarding Driving Franchise" with healthcare + £50 bonus headline
-2. **Healthcare Showcase** — Full card grid: dental cashback £150/yr, optical £100/yr, physio sessions, 24/7 GP access, mental health support, EAP — "Free. Included. No catch."
-3. **£50 Bonus Calculator** — Slider: "How many pupils do you pass per year?" → shows bonus income (20 passes = £1,000/yr)
-4. **Tier Comparison** — Starter £99/wk, Pro £129/wk, Elite £149/wk with feature breakdown
-5. **Competitor Comparison** — vs RED £250/wk, AA £200/wk, Bill Plant £175/wk — savings per year
-6. **Tech Platform** — Grid showing diary, GPS, dashcam, MTD, pupil app, website — "All included"
-7. **Enquiry Form** — Name, email, phone, current situation, preferred tier, message → inserts to `franchise_enquiries`
-8. **FAQ Accordion** — Common franchise questions
+**4. Update `comparison_plans` prices** to reflect new pricing in the comparison table.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| Database migration | Create `franchise_enquiries` table with public insert policy |
-| `src/pages/FranchisePage.tsx` | **New** — full franchise page using `MainLayout` |
-| `src/routes/publicRoutes.tsx` | Add `/franchise` route |
-| `src/components/DomainRouter.tsx` | Add `/franchise` to `LEARNER_ALLOWED_ROUTES` |
-| `src/components/layout/Header.tsx` | Add "Franchise" link to Drive365 nav |
-| `src/pages/Index.tsx` | Add franchise promotion banner section |
+| Database migration | Update prices, features arrays, add comparison rows |
+| `src/pages/ComparisonPage.tsx` | No code changes needed — dynamically renders from DB |
+| `src/components/instructor/dashboard/UpgradePlanSheet.tsx` | No code changes — reads from DB |
+
+### What Users See
+- The `/compare` page automatically shows the new prices and healthcare feature rows
+- GPS+ plans prominently display healthcare as a key differentiator
+- Free and All-In users see healthcare benefits locked, encouraging upgrade to GPS tier
 
