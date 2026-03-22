@@ -9,6 +9,7 @@ const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [postcode, setPostcode] = useState("");
+  const { logo, logoAlt, homeLink } = useRouteLogo();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
