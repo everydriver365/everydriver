@@ -38,6 +38,7 @@ export function MobileHomepage() {
   const { hero } = useHomepageHero();
   const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
   const navigate = useNavigate();
+  const routeLogo = useRouteLogo();
   const location = useLocation();
   const { toast } = useToast();
   const branding = useDomainBranding();

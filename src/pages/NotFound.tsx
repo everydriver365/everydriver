@@ -35,8 +35,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-md text-center">
-        <Link to="/drive365" className="inline-block mb-8">
-          <img src={drive365Logo} alt="Drive365" className="h-10 mx-auto" />
+        <Link to={homeLink} className="inline-block mb-8">
+          <img src={logo} alt={logoAlt} className="h-10 mx-auto" />
         </Link>
 
         <h1 className="text-7xl font-black text-primary mb-2">404</h1>
