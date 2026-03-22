@@ -1,48 +1,54 @@
 
 
-## Plan: Add All Missing Features to Comparison Table
+## Plan: Add Remaining Missing Features to Comparison Table
 
-### Audit Results
-Cross-referencing the app's codebase against the current `comparison_features` table reveals **~18 features** that exist in the platform but are missing from the comparison table.
+### Audit Summary
+Cross-referencing the Discover Features list (44 features), Feature Toggles (13 toggles), and all app pages against the current comparison_features table reveals **~14 features** still missing.
 
-### Missing Features (grouped by category)
+### Missing Features by Category
 
 **Business Tools** (add to existing):
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Xero / QuickBooks / Sage export | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Bookable quotes | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Deposit payments | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Dynamic pricing rules | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Intake questions | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Drive-time alerts | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| AI Receptionist (live chat) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Instant Bank Pay (GoCardless) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Direct Debit for pupils | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Lesson packages & bundles | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| No-show & cancellation policy | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Workflow automations | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Payment reminders | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**Pupil & Parent** (add to existing):
+**Lesson Tracking** (add to existing or new category):
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Post-lesson feedback | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Reflective logs | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Voice notes on lessons | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Pupil self-booking | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Course completion bonus (£50) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Standards Check prep | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| CPD logging | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Lesson notes & templates | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**Tools & Wellbeing** (add to existing):
+**Tools & Navigation** (new category):
 | Feature | Free | All-In | GPS | Single | Duo | Multi |
 |---------|------|--------|-----|--------|-----|-------|
-| Morning briefing (AI) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Auto re-engagement SMS | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Offline sync & PWA | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Cancellation analytics | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Built-in SatNav | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Find nearby (toilets, cafés) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Find cheapest fuel | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Weather alerts | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Community road alerts | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Digital checklists (vehicle/incident) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Document vault | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Growth & Community** (add to existing or new):
+| Feature | Free | All-In | GPS | Single | Duo | Multi |
+|---------|------|--------|-----|--------|-----|-------|
+| Test swap marketplace | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Nearby ADIs map | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| GPS Clock in/out | ✗ | ✗ | ✓ | ✓ | ✓ | ✓ |
+
+### Already Covered (no action needed)
+Features like SatNav, Find Fuel, Weather, Checklists, Document Vault, Clock In/Out, Test Swap, and Nearby ADIs exist as pages/components but were never added to the comparison table.
 
 ### Implementation
-Single database INSERT of ~18 rows into `comparison_features` with correct `plan_values` JSONB, categories, and display orders. No code changes needed — the comparison page and admin editor already render dynamically.
+Single database INSERT of ~17 rows into `comparison_features` with correct categories, plan_values JSONB, and display_orders. No code changes — the UI renders dynamically.
 
 ### Files Changed
 | File | Change |
 |------|--------|
-| Database (comparison_features) | INSERT ~18 rows |
+| Database (comparison_features) | INSERT ~17 rows |
 | No code changes | UI reads dynamically |
 
