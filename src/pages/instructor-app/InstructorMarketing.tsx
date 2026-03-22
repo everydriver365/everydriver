@@ -84,11 +84,11 @@ export default function InstructorMarketing() {
               Marketing is just the start
             </h2>
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-              Explore all 50+ features across diary, payments, telematics, dashcam and more — see exactly what each plan includes.
+              Explore all 50+ features and see exactly what each plan includes — from diary management to dashcam and telematics.
             </p>
             <Button size="lg" className="bg-[#0075c9] hover:bg-[#0075c9]/90 text-white" asChild>
-              <Link to="/instructor-app/all-features">
-                See All 50+ Features
+              <Link to="/compare">
+                Compare Plans & Features
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
