@@ -1225,6 +1225,81 @@ export type Database = {
         }
         Relationships: []
       }
+      comparison_features: {
+        Row: {
+          category: string
+          created_at: string | null
+          display_order: number
+          feature_name: string
+          id: string
+          plan_values: Json
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          display_order?: number
+          feature_name: string
+          id?: string
+          plan_values?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          display_order?: number
+          feature_name?: string
+          id?: string
+          plan_values?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      comparison_plans: {
+        Row: {
+          created_at: string | null
+          cta_text: string
+          description: string | null
+          display_order: number
+          icon_name: string | null
+          id: string
+          is_popular: boolean | null
+          name: string
+          period: string | null
+          price: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cta_text: string
+          description?: string | null
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          is_popular?: boolean | null
+          name: string
+          period?: string | null
+          price: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cta_text?: string
+          description?: string | null
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          is_popular?: boolean | null
+          name?: string
+          period?: string | null
+          price?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       compliance_reminders: {
         Row: {
           days_before: number
