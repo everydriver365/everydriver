@@ -10,7 +10,7 @@ import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/drive365-hero-learner.png";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";

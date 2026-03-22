@@ -10,7 +10,7 @@ import { SecondaryNav } from "./SecondaryNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 const navLinks = [
   { href: "/drive365", label: "Home" },

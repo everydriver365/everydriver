@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Home, BookOpen, HelpCircle, Phone, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 
 const NotFound = () => {
   const location = useLocation();

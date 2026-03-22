@@ -21,7 +21,7 @@ import {
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import drive365Logo from "@/assets/drive365-logo.png";
+import { useRouteLogo } from "@/hooks/useRouteLogo";
 import { EarlierTestRequestTile } from "@/components/benefits/EarlierTestRequestTile";
 
 export default function Benefits() {
