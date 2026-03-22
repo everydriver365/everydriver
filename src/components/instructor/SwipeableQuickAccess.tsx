@@ -47,7 +47,20 @@ interface QuickTile {
   accent: string;
   route: string;
   quickAction?: string;
+  requiredFeature?: string;
 }
+
+// Map tiles to required features
+const TILE_FEATURE_MAP: Record<string, string> = {
+  "Track Lesson": "telematics",
+  "Take Payment": "payment_tracking",
+  "Find My Car": "telematics",
+  "Vehicle Health": "telematics",
+  "Fill Gaps": "sms_notifications",
+  "SatNav": "telematics",
+  "Expenses": "expense_tracking",
+  "Month End": "payment_tracking",
+};
 
 const quickActionRoutes: Record<string, string> = {
   "Agenda": "/instructor/schedule?action=add",
