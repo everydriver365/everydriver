@@ -24,7 +24,8 @@ interface LessonData {
   pickup_postcode?: string;
   notes?: string;
   google_event_id?: string;
-  pupils?: { name: string } | null;
+  status?: string;
+  pupils?: { name: string; postcode?: string } | null;
 }
 
 // Base64url encode
@@ -300,7 +301,7 @@ Deno.serve(async (req) => {
         if (item.action === "syncLesson") {
           const { data: lessonRaw } = await supabase
             .from("scheduled_lessons")
-            .select(`*, pupils:pupil_id (name)`)
+            .select(`*, pupils:pupil_id (name, postcode)`)
             .eq("id", item.lesson_id)
             .maybeSingle();
 
@@ -334,11 +335,76 @@ Deno.serve(async (req) => {
           }
 
           const startDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
-          const endDateTime = new Date(startDateTime.getTime() + lesson.duration_minutes * 60000);
+          let totalDuration = lesson.duration_minutes;
+          let travelNote = "";
+
+          // Check smart buffer settings to extend event with travel time
+          try {
+            const { data: instrSettings } = await supabase
+              .from("instructors")
+              .select("smart_buffer_enabled, smart_buffer_mode, smart_buffer_padding_minutes, buffer_minutes")
+              .eq("id", item.instructor_id)
+              .single();
+
+            const s = instrSettings as any;
+            if (s?.smart_buffer_enabled && s.smart_buffer_mode !== "flat" && lesson.pupils?.postcode) {
+              // Find the next lesson on the same day to calculate travel buffer
+              const { data: nextLessons } = await supabase
+                .from("scheduled_lessons")
+                .select("start_time, pupils:pupil_id (postcode)")
+                .eq("instructor_id", item.instructor_id)
+                .eq("lesson_date", lesson.lesson_date)
+                .neq("id", lesson.id)
+                .neq("status", "cancelled")
+                .gt("start_time", lesson.start_time)
+                .order("start_time")
+                .limit(1);
+
+              const nextLesson = nextLessons?.[0] as any;
+              const nextPostcode = nextLesson?.pupils?.postcode;
+
+              if (nextPostcode && lesson.pupils?.postcode) {
+                const tomtomApiKey = Deno.env.get("TOMTOM_API_KEY");
+                if (tomtomApiKey) {
+                  // Geocode postcodes
+                  const cleanFrom = lesson.pupils.postcode.replace(/\s+/g, "").toUpperCase();
+                  const cleanTo = nextPostcode.replace(/\s+/g, "").toUpperCase();
+                  const geoRes = await fetch("https://api.postcodes.io/postcodes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ postcodes: [cleanFrom, cleanTo] }),
+                  });
+                  if (geoRes.ok) {
+                    const geoData = await geoRes.json();
+                    const fromResult = geoData.result?.[0]?.result;
+                    const toResult = geoData.result?.[1]?.result;
+                    if (fromResult && toResult) {
+                      const routeUrl = `https://api.tomtom.com/routing/1/calculateRoute/${fromResult.latitude},${fromResult.longitude}:${toResult.latitude},${toResult.longitude}/json?key=${tomtomApiKey}&traffic=true`;
+                      const routeRes = await fetch(routeUrl);
+                      if (routeRes.ok) {
+                        const routeData = await routeRes.json();
+                        const travelMins = Math.round((routeData.routes?.[0]?.summary?.travelTimeInSeconds || 0) / 60);
+                        const padding = s.smart_buffer_mode === "travel_time_plus" ? (s.smart_buffer_padding_minutes || 0) : 0;
+                        const bufferMins = travelMins + padding;
+                        if (bufferMins > 0) {
+                          totalDuration += bufferMins;
+                          travelNote = `\n🚗 Travel buffer: ${bufferMins} min (${travelMins} min drive${padding ? ` + ${padding} min padding` : ""})`;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } catch (bufferErr) {
+            console.error("Smart buffer calc error (non-fatal):", bufferErr);
+          }
+
+          const endDateTime = new Date(startDateTime.getTime() + totalDuration * 60000);
 
           const eventDetails = {
             summary: `Driving Lesson - ${lesson.pupils?.name || "Pupil"}`,
-            description: `Lesson Type: ${lesson.lesson_type}\nNotes: ${lesson.notes || "None"}`,
+            description: `Lesson Type: ${lesson.lesson_type}\nNotes: ${lesson.notes || "None"}${travelNote}`,
             start: startDateTime.toISOString(),
             end: endDateTime.toISOString(),
             location: lesson.pickup_location || lesson.pickup_postcode,
