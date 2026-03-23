@@ -243,6 +243,33 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${queueItems.length} calendar sync items`);
 
+    // Deduplicate: group by lesson_id, keep only the latest entry per lesson
+    const latestByLesson = new Map<string, QueueItem>();
+    const duplicateIds: string[] = [];
+
+    for (const item of queueItems as QueueItem[]) {
+      const existing = latestByLesson.get(item.lesson_id);
+      if (existing) {
+        // Mark the older one as a duplicate
+        duplicateIds.push(existing.id);
+      }
+      latestByLesson.set(item.lesson_id, item);
+    }
+
+    // Mark duplicates as processed immediately
+    if (duplicateIds.length > 0) {
+      console.log(`Marking ${duplicateIds.length} duplicate queue entries as processed`);
+      for (const dupId of duplicateIds) {
+        await supabase
+          .from("calendar_sync_queue")
+          .update({ processed_at: new Date().toISOString(), error: "Deduplicated" })
+          .eq("id", dupId);
+      }
+    }
+
+    const deduplicatedItems = Array.from(latestByLesson.values());
+    console.log(`Processing ${deduplicatedItems.length} unique lessons (deduplicated from ${queueItems.length})`);
+
     // Get service account access token once for all items
     const jwt = await generateJWT(serviceEmail, privateKey);
     const accessToken = await getAccessToken(jwt);
@@ -250,7 +277,7 @@ Deno.serve(async (req) => {
     let successCount = 0;
     let errorCount = 0;
 
-    for (const item of queueItems as QueueItem[]) {
+    for (const item of deduplicatedItems) {
       try {
         // Look up instructor's calendar ID from service account table
         const { data: calendarConfig } = await supabase
@@ -317,7 +344,14 @@ Deno.serve(async (req) => {
             location: lesson.pickup_location || lesson.pickup_postcode,
           };
 
-          let googleEventId = lesson.google_event_id;
+          // Idempotency check: re-fetch google_event_id fresh to prevent race conditions
+          const { data: freshLesson } = await supabase
+            .from("scheduled_lessons")
+            .select("google_event_id")
+            .eq("id", item.lesson_id)
+            .maybeSingle();
+
+          let googleEventId = freshLesson?.google_event_id || lesson.google_event_id;
 
           if (googleEventId) {
             try {
