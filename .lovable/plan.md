@@ -1,36 +1,32 @@
 
 
-## Plan: WhatsApp as Primary Messaging Channel with In-App Fallback
+## Plan: Global WhatsApp Chat Widget on All Pages
 
 ### What's Changing
-When an instructor sends a message to a pupil, it defaults to WhatsApp (via the `send-whatsapp` edge function) if the pupil has a phone number. If no phone number or WhatsApp fails, it falls back to in-app messaging. All conversations remain visible in the Unified Inbox.
+Create a floating WhatsApp chat button (green FAB) that appears on all public-facing pages. When clicked, it opens an in-app chat window that sends messages through the existing WhatsApp webhook/AI system.
 
-### Changes
+### Approach
+
+The existing `LiveChatWidget` pattern is the perfect template — a floating button that opens a chat window. We'll create a similar `WhatsAppChatWidget` component and add it to the two main layouts.
+
+### Files
 
 | File | Change |
 |------|--------|
-| `src/hooks/useWhatsAppMessages.ts` | Update `sendMessage` mutation to call the `send-whatsapp` edge function (which already handles WhatsApp → SMS fallback) when sending outbound messages, in addition to logging them in `whatsapp_messages` |
-| `src/components/instructor/QuickMessageSheet.tsx` | Replace the `sms:` link default with a call to `send-whatsapp` edge function. If pupil has a phone number, send via WhatsApp; otherwise fall back to in-app. Show "Sent via WhatsApp" / "Sent via SMS" feedback |
-| `src/components/instructor/InstructorInbox.tsx` | Add a "Send via WhatsApp" toggle or auto-detect: when composing a message to a pupil with a phone number, route through WhatsApp instead of in-app only. Add a small WhatsApp icon indicator on messages sent via WhatsApp |
-| `src/components/instructor/ChatWindow.tsx` | Add a WhatsApp send option — if the pupil has a phone number, show a toggle to send via WhatsApp vs in-app. Messages sent via WhatsApp get logged in both `whatsapp_messages` and shown in the chat thread |
-| `supabase/functions/send-whatsapp/index.ts` | Minor update: also log outbound messages to `whatsapp_messages` table and create/update `whatsapp_conversations` entry so they appear in the WhatsApp tab |
+| `src/components/whatsapp/WhatsAppChatWidget.tsx` | **New** — Floating WhatsApp FAB (green, bottom-left to avoid conflicting with existing live chat on bottom-right). Opens an in-app chat window. Collects visitor name + phone on first message, then sends/receives via `whatsapp-webhook` edge function. Shows AI responses in real-time. |
+| `src/components/layout/MainLayout.tsx` | Add `<WhatsAppChatWidget />` alongside existing `LiveChatWidget` |
+| `src/components/mini-website/MiniWebsiteLayout.tsx` | Add `<WhatsAppChatWidget />` with the instructor's ID and WhatsApp number so messages route to the correct instructor |
 
-### Message Routing Logic
+### Widget Behaviour
 
-```text
-Instructor sends message
-    ↓
-Pupil has phone number?
-  YES → Call send-whatsapp edge function
-        → Log in whatsapp_messages + whatsapp_conversations
-        → Also log in conversations table for in-app history
-        → Show "Sent via WhatsApp ✓" in chat
-  NO  → Send via in-app messaging only (existing flow)
-```
-
-### Quick Message Sheet Update
-The `QuickMessageSheet` (used from lesson cards for "On my way", "5 mins late" etc.) currently opens the native SMS app. It will instead call the `send-whatsapp` edge function directly, giving instant delivery via WhatsApp with SMS fallback — no need to leave the app.
+- **Position**: Bottom-left corner (existing live chat is bottom-right)
+- **Icon**: WhatsApp branded green (#25D366) with WhatsApp SVG icon
+- **Pre-chat**: Simple form asking for name and phone number
+- **Chat**: Messages sent to `whatsapp-webhook` edge function, AI replies displayed in the widget
+- **On mini-websites**: Routes to the specific instructor's WhatsApp AI
+- **On main site**: Routes to admin/general enquiries
+- **Mobile**: Positioned above the bottom nav bar
 
 ### No database changes needed
-Both `whatsapp_conversations` and `whatsapp_messages` tables already exist. The `send-whatsapp` edge function already handles WhatsApp → SMS fallback.
+Uses existing `whatsapp_conversations` and `whatsapp_messages` tables + `whatsapp-webhook` edge function.
 
