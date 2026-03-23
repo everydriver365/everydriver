@@ -36,27 +36,31 @@ const healthcareBenefits = [
 
 const tiers = [
   {
-    name: "Starter",
+    name: "PDI",
     price: "£50",
     period: "/pw",
-    desc: "Perfect for newly qualified ADIs getting started",
+    desc: "Trainee instructor? Start earning while you learn",
+    subtitle: "Potential Driving Instructor",
+    icon: GraduationCap,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
       { name: "£50 per intensive course completed", included: true },
       { name: "1-page mini website", included: true },
       { name: "Pupil app access", included: true },
+      { name: "PDI training support", included: true },
       { name: "GPS tracking", included: false },
       { name: "Dashcam system", included: false },
-      { name: "Custom domain website", included: false },
     ],
   },
   {
-    name: "Pro",
+    name: "Part Time",
     price: "£50",
     period: "/pw",
     popular: true,
-    desc: "Our most popular package — everything you need",
+    desc: "Flexible hours? Get the full package, your way",
+    subtitle: "Up to 25 hours per week",
+    icon: Clock,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
@@ -69,10 +73,12 @@ const tiers = [
     ],
   },
   {
-    name: "Elite",
+    name: "Full Time",
     price: "£50",
     period: "/pw",
-    desc: "The full package — stand out from the crowd",
+    desc: "Go all-in with every tool and feature included",
+    subtitle: "25+ hours per week",
+    icon: Zap,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
