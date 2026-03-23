@@ -1,33 +1,49 @@
 
 
-## Fix: Google Calendar Double Bookings
+## Plan: Wire Up Smart Buffer to Scheduling & Calendar
 
-### Root Cause
+### What's Changing
+Make the smart buffer settings actually work — apply travel-time or flat buffer when checking slot availability and when creating Google Calendar events.
 
-The `process-calendar-queue` function has no deduplication. When multiple queue entries exist for the same lesson (which happens when a lesson is inserted and then immediately updated, or when both the cron job and `confirm-booking` trigger processing simultaneously), each entry creates a **separate Google Calendar event** because:
+### Changes
 
-1. Queue entry #1 processes: lesson has no `google_event_id` → creates new event, saves ID
-2. Queue entry #2 processes concurrently or before #1's update is committed → also sees no `google_event_id` → creates another new event
+| Area | File(s) | Change |
+|------|---------|--------|
+| **Slot availability** | `src/components/instructor/end-lesson/StepBookNext.tsx` | When `smart_buffer_enabled` + mode is `travel_time` or `travel_time_plus`, call `check-travel-buffer` edge function using the pupil's postcode and adjacent lesson postcodes instead of using flat `buffer_minutes` |
+| **Booking portal slots** | `src/components/booking/LessonScheduler.tsx` (or equivalent slot calculator) | Same logic — if smart buffer enabled, use travel time between consecutive lesson postcodes to determine minimum gap |
+| **Calendar event padding** | `supabase/functions/process-calendar-queue/index.ts` | When creating/updating Google Calendar events, extend the event time or add a separate "travel" event block based on the instructor's buffer settings and adjacent lesson postcodes |
+| **Helper hook** | `src/hooks/useSmartBuffer.ts` | **New** — shared hook that takes instructor ID + two postcodes, checks smart buffer settings, and returns the required buffer minutes (either flat or via `check-travel-buffer` call) |
 
-### Fix (2 changes)
+### Buffer Logic
 
-#### 1. Deduplicate queue before processing (`process-calendar-queue/index.ts`)
+```text
+Get instructor smart_buffer settings
+  ↓
+smart_buffer_enabled = false?
+  → Use flat buffer_minutes (existing behaviour)
+  ↓
+mode = "flat"?
+  → Use flat buffer_minutes
+  ↓
+mode = "travel_time"?
+  → Call check-travel-buffer(from_postcode, to_postcode)
+  → Use returned travel_minutes as buffer
+  ↓
+mode = "travel_time_plus"?
+  → Call check-travel-buffer with padding_minutes
+  → Use travel_minutes + padding as buffer
+```
 
-Before processing, group queue items by `lesson_id` and only process the **latest** entry per lesson. Mark older duplicates as processed immediately.
+### Calendar Buffer Display
+When creating Google Calendar events, add the buffer as either:
+- Extended event duration (e.g., 60min lesson shows as 75min with 15min travel), or
+- A separate "Travel to [pupil name]" event in the gap
 
-#### 2. Add idempotency check before creating events (`process-calendar-queue/index.ts`)
-
-Before creating a new Google Calendar event, re-fetch the lesson's `google_event_id` to check if another queue item already created one. If it exists, update instead of create.
-
-### Technical Details
-
-**File: `supabase/functions/process-calendar-queue/index.ts`**
-
-- After fetching queue items (line 225-230), deduplicate by `lesson_id` — keep only the latest entry per lesson, mark the rest as processed
-- Before `createGoogleEvent` (line 329), re-read `google_event_id` from the database as a fresh check to avoid race conditions
-- This prevents both the "multiple queue entries" and "concurrent processing" scenarios
+### Prerequisites
+- Pupils need a `postcode` field populated (already exists in the schema)
+- Adjacent lessons need postcodes to calculate travel between them
+- `TOMTOM_API_KEY` secret is already configured
 
 ### No database changes needed
-
-The existing schema is fine. The fix is purely in the edge function logic.
+All settings columns already exist on the `instructors` table. Pupil postcodes are already stored.
 
