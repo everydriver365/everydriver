@@ -9,7 +9,7 @@ import {
   Star, Clock, TrendingUp, Award, BadgeCheck, Headphones,
   Sparkles, Microscope, Scissors, PersonStanding,
   Ribbon, Gift, Smartphone, BookOpen, Mail, CheckCircle2,
-  Car, Baby, Quote
+  Car, Baby, Quote, ArrowRight
 } from "lucide-react";
 
 import heroImg from "@/assets/health-warm-hero.jpg";
