@@ -111,9 +111,9 @@ const serviceDetails = [
 ];
 
 const faqs = [
-  { q: "I'm a self-employed ADI — can I join?", a: "Absolutely. Even as a sole trader, you can join as a business of one at the same £15.50/month." },
+  { q: "Do I need to pay extra for this?", a: "No. Private healthcare is included free with every EveryDriver GPS and dashcam plan." },
   { q: "Is there an excess to pay?", a: "No. There are zero excesses or co-payments on any service." },
-  { q: "Are there age restrictions?", a: "No. Everyone pays £15.50/month regardless of age — no age loading." },
+  { q: "Are there age restrictions?", a: "No. There's no age loading — everyone is covered regardless of age." },
   { q: "Can I add my family?", a: "Yes. Partners and children can be added for an additional fee per person." },
   { q: "What about pre-existing conditions?", a: "Some services have a 6-month qualifying period for pre-existing conditions. New conditions are covered immediately." },
   { q: "Is this private health insurance?", a: "No — it's a mutual healthcare society, so there's no medical underwriting and no claim forms." },
