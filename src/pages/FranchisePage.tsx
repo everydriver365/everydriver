@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock, Activity, Baby, Dumbbell, Hotel, Pill, Star, Users, Sparkles, BadgeCheck } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock, Baby, Dumbbell, Hotel, Pill, Star, Users, Sparkles, BadgeCheck, HeartPulse, Scan, CircleDollarSign, HandHeart, Award, BriefcaseMedical, Search, Ribbon } from "lucide-react";
 import heroImg from "@/assets/franchise-hero-drive365.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ import {
 const healthcareCategories = [
   {
     title: "GP Access",
-    icon: Phone,
+    icon: Stethoscope,
     color: "bg-accent/15 text-accent",
     highlights: [
       "Unlimited virtual GP appointments",
@@ -48,7 +48,7 @@ const healthcareCategories = [
   },
   {
     title: "Physiotherapy",
-    icon: Activity,
+    icon: HeartPulse,
     color: "bg-blue-500/15 text-blue-500",
     highlights: [
       "Up to 6 physio sessions per year",
@@ -58,7 +58,7 @@ const healthcareCategories = [
   },
   {
     title: "Hospital & Surgery",
-    icon: Heart,
+    icon: BriefcaseMedical,
     color: "bg-rose-500/15 text-rose-500",
     highlights: [
       "100% of eligible in-patient & day-patient costs covered",
@@ -70,7 +70,7 @@ const healthcareCategories = [
   },
   {
     title: "Cancer Cover",
-    icon: Shield,
+    icon: Ribbon,
     color: "bg-amber-500/15 text-amber-500",
     highlights: [
       "All cancers covered following diagnosis",
@@ -79,7 +79,7 @@ const healthcareCategories = [
   },
   {
     title: "Quick Consultant Access",
-    icon: Stethoscope,
+    icon: Search,
     color: "bg-teal-500/15 text-teal-500",
     highlights: [
       "Find local consultants on the app",
@@ -97,7 +97,7 @@ const healthcareCategories = [
   },
   {
     title: "Cash Benefits",
-    icon: BadgeCheck,
+    icon: CircleDollarSign,
     color: "bg-emerald-500/15 text-emerald-500",
     highlights: [
       "£100 for private prescriptions",
@@ -108,7 +108,7 @@ const healthcareCategories = [
   },
   {
     title: "Extra Care",
-    icon: Sparkles,
+    icon: HandHeart,
     color: "bg-indigo-500/15 text-indigo-500",
     highlights: [
       "Home nursing & rehabilitation services",
@@ -119,7 +119,7 @@ const healthcareCategories = [
   },
   {
     title: "Wellbeing & Rewards",
-    icon: Dumbbell,
+    icon: Award,
     color: "bg-orange-500/15 text-orange-500",
     highlights: [
       "50% off selected gym memberships",
