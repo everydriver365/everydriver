@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calendar, Car, MapPin, FileText, Smartphone, Globe, Check, X, ChevronRight, Sparkles, Star, ArrowRight, Zap, Award, TrendingUp } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calendar, Car, MapPin, FileText, Smartphone, Globe, Check, ChevronRight, Sparkles, Star, ArrowRight, Zap, Award, TrendingUp, Gift, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import heroImg from "@/assets/franchise-hero-instructor.jpg";
 
-// Shared data
 const healthcareBenefits = [
   { icon: Heart, title: "Dental Cashback", value: "£150/yr" },
   { icon: Eye, title: "Optical Cover", value: "£100/yr" },
@@ -32,441 +31,157 @@ const techFeatures = [
 ];
 
 // ═══════════════════════════════════════════════════════
-// DESIGN A — "Dark Cinematic" (iOS dark mode, glassmorphism)
+// DESIGN D — "Warm Sand" (warm neutrals, terracotta accent)
 // ═══════════════════════════════════════════════════════
-function DesignA() {
+function DesignD() {
   const [passes, setPasses] = useState([20]);
   return (
-    <div className="bg-[hsl(220,52%,8%)] text-white">
-      {/* Hero - full bleed image with dark overlay */}
-      <section className="relative min-h-[600px] flex items-center overflow-hidden">
-        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,52%,8%)] via-[hsl(220,52%,8%/0.85)] to-transparent" />
-        <div className="relative z-10 px-8 md:px-16 max-w-2xl py-20">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-sm mb-6">
-              <Sparkles className="h-4 w-4 text-emerald-400" />
-              Now Recruiting Nationwide
-            </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Your career.
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                Supercharged.
-              </span>
-            </h1>
-            <p className="text-lg text-white/60 mt-6 max-w-lg leading-relaxed">
-              Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £50/pw.
-            </p>
-            <div className="flex gap-4 mt-8">
-              <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl px-8 h-14 text-base font-semibold">
-                Apply Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 rounded-2xl px-8 h-14 text-base">
-                View Packages
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Stat pills */}
-      <section className="px-8 md:px-16 -mt-8 relative z-20">
-        <div className="grid grid-cols-3 gap-4 max-w-3xl">
-          {[
-            { label: "Per week", value: "£50", sub: "All tiers" },
-            { label: "Per intensive", value: "£50", sub: "Bonus" },
-            { label: "Healthcare", value: "Free", sub: "Included" },
-          ].map((s) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 text-center"
-            >
-              <p className="text-3xl font-bold text-emerald-400">{s.value}</p>
-              <p className="text-xs text-white/40 mt-1">{s.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Healthcare - glass cards */}
-      <section className="px-8 md:px-16 py-20">
-        <h2 className="text-3xl font-bold mb-2">Private Healthcare, On Us</h2>
-        <p className="text-white/50 mb-10 max-w-lg">No other franchise includes this. Dental, optical, physio, GP, mental health — all free.</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {healthcareBenefits.map((b, i) => (
-            <motion.div
-              key={b.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="group bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                  <b.icon className="h-5 w-5 text-emerald-400" />
-                </div>
-                <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">{b.value}</span>
+    <div className="bg-[hsl(35,30%,96%)] text-[hsl(25,20%,18%)]">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="grid md:grid-cols-2 min-h-[560px]">
+          <div className="flex items-center px-8 md:px-16 py-20">
+            <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, type: "spring" }}>
+              <div className="inline-flex items-center gap-2 bg-[hsl(25,60%,95%)] text-[hsl(25,60%,40%)] rounded-full px-4 py-2 text-sm font-medium mb-6 border border-[hsl(25,40%,88%)]">
+                <Sparkles className="h-4 w-4" /> Now Recruiting
               </div>
-              <h3 className="font-semibold text-lg">{b.title}</h3>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Tier cards - glass */}
-      <section className="px-8 md:px-16 py-20">
-        <h2 className="text-3xl font-bold mb-2">Choose Your Package</h2>
-        <p className="text-white/50 mb-10">All tiers include healthcare and the £50 intensive course bonus</p>
-        <div className="grid md:grid-cols-3 gap-6">
-          {tiers.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className={`relative rounded-3xl p-px ${t.popular ? "bg-gradient-to-b from-emerald-500/50 to-transparent" : "bg-white/10"}`}
-            >
-              <div className="bg-[hsl(220,52%,10%)] rounded-3xl p-7 h-full flex flex-col">
-                {t.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-emerald-500 text-white text-xs font-bold px-4 py-1.5 rounded-full">Most Popular</span>
-                  </div>
-                )}
-                <h3 className="text-xl font-bold">{t.name}</h3>
-                <div className="flex items-baseline gap-1 mt-3">
-                  <span className="text-4xl font-bold">{t.price}</span>
-                  <span className="text-white/40">/pw</span>
-                </div>
-                <ul className="mt-6 space-y-3 flex-1">
-                  {t.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm text-white/70">
-                      <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button className={`w-full mt-6 rounded-2xl h-12 ${t.popular ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-white/10 hover:bg-white/15 text-white"}`}>
-                  Get Started
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.08]">
+                Build your
+                <br />
+                business,
+                <br />
+                <span className="text-[hsl(15,70%,50%)]">your way.</span>
+              </h1>
+              <p className="text-lg text-[hsl(25,10%,50%)] mt-6 leading-relaxed max-w-md">
+                Free healthcare. £50 per intensive course. The UK's best tech platform. Just £50/pw with zero car tie-in.
+              </p>
+              <div className="flex gap-3 mt-8">
+                <Button size="lg" className="bg-[hsl(15,70%,50%)] hover:bg-[hsl(15,70%,45%)] text-white rounded-full px-8 h-13 text-base font-semibold shadow-[0_8px_24px_-8px_hsl(15,70%,50%/0.4)]">
+                  Apply Now <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="ghost" className="rounded-full px-8 h-13 text-base text-[hsl(25,10%,40%)]">
+                  View Packages
                 </Button>
               </div>
             </motion.div>
-          ))}
+          </div>
+          <div className="relative hidden md:block">
+            <img src={heroImg} alt="Driving instructor" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[hsl(35,30%,96%)] via-transparent to-transparent w-1/3" />
+          </div>
         </div>
       </section>
 
-      {/* Bonus calculator */}
-      <section className="px-8 md:px-16 py-20">
-        <div className="max-w-xl mx-auto bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center">
-          <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
-          <p className="text-white/50 text-sm mb-6">How many intensive courses do your pupils complete per year?</p>
-          <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
-          <p className="text-sm text-white/40">{passes[0]} courses</p>
-          <p className="text-5xl font-bold text-emerald-400 mt-4">£{(passes[0] * 50).toLocaleString()}</p>
-          <p className="text-xs text-white/40 mt-2">extra per year</p>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════
-// DESIGN B — "Clean & Bold" (iOS light, SF-style cards)
-// ═══════════════════════════════════════════════════════
-function DesignB() {
-  const [passes, setPasses] = useState([20]);
-  return (
-    <div className="bg-[hsl(220,20%,97%)] text-[hsl(220,30%,15%)]">
-      {/* Hero - clean white with large type */}
-      <section className="relative py-24 px-8 md:px-16 overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/2 h-full">
-          <img src={heroImg} alt="" className="w-full h-full object-cover rounded-bl-[80px]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,20%,97%)] via-[hsl(220,20%,97%/0.3)] to-transparent" />
-        </div>
-        <div className="relative z-10 max-w-xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, type: "spring" }}>
-            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 rounded-full px-4 py-2 text-sm font-medium mb-8 border border-emerald-200">
-              <Zap className="h-4 w-4" /> Recruiting Now
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]">
-              The franchise
-              <br />
-              that pays{" "}
-              <span className="relative">
-                <span className="text-emerald-600">you</span>
-                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 8" fill="none">
-                  <path d="M0 6 Q25 0, 50 4 T100 4" stroke="hsl(142,71%,45%)" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-              </span>
-              {" "}back.
-            </h1>
-            <p className="text-lg text-[hsl(220,10%,45%)] mt-6 leading-relaxed max-w-md">
-              Free healthcare. £50 per intensive course. The UK's best instructor tech. All for just £50/pw.
-            </p>
-            <div className="flex gap-4 mt-10">
-              <Button size="lg" className="bg-[hsl(220,52%,17%)] hover:bg-[hsl(220,52%,22%)] text-white rounded-2xl px-8 h-14 text-base font-semibold shadow-lg">
-                Apply Now
-              </Button>
-              <Button size="lg" variant="outline" className="rounded-2xl px-8 h-14 text-base border-[hsl(220,20%,85%)]">
-                Learn More
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Value props - pill cards */}
-      <section className="px-8 md:px-16 pb-16">
-        <div className="grid grid-cols-3 gap-4 max-w-3xl">
+      {/* Stat ribbon */}
+      <section className="bg-[hsl(25,20%,22%)] text-white py-6 px-8">
+        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-12">
           {[
-            { icon: Award, value: "£50/pw", label: "All-inclusive" },
-            { icon: TrendingUp, value: "£50", label: "Per intensive bonus" },
-            { icon: Heart, value: "Free", label: "Private healthcare" },
-          ].map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, type: "spring" }}
-              className="bg-white rounded-2xl p-6 shadow-[0_2px_20px_-4px_hsl(220,30%,15%/0.08)] border border-[hsl(220,20%,92%)]"
-            >
-              <s.icon className="h-6 w-6 text-emerald-600 mb-3" />
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-sm text-[hsl(220,10%,55%)]">{s.label}</p>
-            </motion.div>
+            { v: "£50", l: "per week" },
+            { v: "£50", l: "per intensive bonus" },
+            { v: "Free", l: "private healthcare" },
+            { v: "Zero", l: "car tie-in" },
+          ].map((s) => (
+            <div key={s.l} className="text-center">
+              <p className="text-2xl font-bold text-[hsl(15,70%,60%)]">{s.v}</p>
+              <p className="text-xs text-white/50 uppercase tracking-wider mt-1">{s.l}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Healthcare grid */}
-      <section className="px-8 md:px-16 py-20 bg-white">
-        <h2 className="text-3xl font-bold mb-2">Healthcare included, free</h2>
-        <p className="text-[hsl(220,10%,50%)] mb-10">No other franchise offers this. Zero cost. Zero catch.</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {healthcareBenefits.map((b, i) => (
-            <motion.div
-              key={b.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.06 }}
-              className="bg-[hsl(220,20%,97%)] rounded-2xl p-6 border border-[hsl(220,20%,93%)] hover:shadow-md transition-shadow"
-            >
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
-                <b.icon className="h-5 w-5 text-emerald-600" />
-              </div>
-              <h3 className="font-semibold">{b.title}</h3>
-              <p className="text-sm text-emerald-600 font-medium mt-1">{b.value}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Tiers - clean cards */}
+      {/* Healthcare */}
       <section className="px-8 md:px-16 py-20">
-        <h2 className="text-3xl font-bold text-center mb-2">Simple pricing</h2>
-        <p className="text-center text-[hsl(220,10%,50%)] mb-10">Healthcare and bonuses included in every tier</p>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {tiers.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className={`bg-white rounded-3xl p-7 border-2 flex flex-col ${t.popular ? "border-emerald-500 shadow-[0_0_0_1px_hsl(142,71%,45%/0.2),0_8px_30px_-8px_hsl(142,71%,45%/0.15)]" : "border-[hsl(220,20%,92%)]"}`}
-            >
-              {t.popular && (
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 self-start px-3 py-1 rounded-full mb-4 border border-emerald-200">POPULAR</span>
-              )}
-              <h3 className="text-lg font-bold">{t.name}</h3>
-              <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-4xl font-bold">{t.price}</span>
-                <span className="text-[hsl(220,10%,55%)]">/pw</span>
-              </div>
-              <ul className="mt-6 space-y-3 flex-1">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-[hsl(220,10%,40%)]">
-                    <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className={`w-full mt-6 rounded-2xl h-12 ${t.popular ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-[hsl(220,20%,97%)] hover:bg-[hsl(220,20%,94%)] text-[hsl(220,30%,15%)]"}`}>
-                Get Started
-              </Button>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Bonus calc */}
-      <section className="px-8 md:px-16 py-20 bg-white">
-        <div className="max-w-xl mx-auto bg-[hsl(220,20%,97%)] rounded-3xl p-8 text-center border border-[hsl(220,20%,92%)]">
-          <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
-          <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
-          <p className="text-sm text-[hsl(220,10%,55%)]">{passes[0]} intensive courses / year</p>
-          <p className="text-5xl font-bold text-emerald-600 mt-4">£{(passes[0] * 50).toLocaleString()}</p>
-          <p className="text-xs text-[hsl(220,10%,55%)] mt-2">extra per year in your pocket</p>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════
-// DESIGN C — "Gradient Luxe" (dark gradients, warm accents)
-// ═══════════════════════════════════════════════════════
-function DesignC() {
-  const [passes, setPasses] = useState([20]);
-  return (
-    <div className="bg-[hsl(222,47%,11%)] text-white">
-      {/* Hero - gradient mesh with floating elements */}
-      <section className="relative py-28 px-8 md:px-16 overflow-hidden">
-        {/* Gradient orbs */}
-        <div className="absolute top-20 left-10 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-20 w-[400px] h-[400px] bg-sky-500/15 rounded-full blur-[100px]" />
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur border border-white/15 px-5 py-2 text-sm mb-8">
-              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-              Recruiting Nationwide
-            </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Drive your career
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-                further than ever
-              </span>
-            </h1>
-            <p className="text-lg text-white/50 mt-8 max-w-xl mx-auto leading-relaxed">
-              Free private healthcare. £50 per intensive course bonus. The UK's most advanced instructor platform. Just £50/pw.
-            </p>
-
-            {/* Floating stat cards */}
-            <div className="flex flex-wrap justify-center gap-4 mt-12">
-              {[
-                { v: "£50/pw", l: "All-inclusive" },
-                { v: "£50", l: "Per intensive" },
-                { v: "Free", l: "Healthcare" },
-                { v: "Zero", l: "Car tie-in" },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.l}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.1, type: "spring" }}
-                  className="bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-2xl px-6 py-4 min-w-[120px]"
-                >
-                  <p className="text-xl font-bold text-emerald-400">{s.v}</p>
-                  <p className="text-xs text-white/40">{s.l}</p>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="flex gap-4 justify-center mt-12">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-10 h-14 text-base font-semibold shadow-[0_8px_32px_-8px_hsl(142,71%,45%/0.5)]">
-                Apply Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Healthcare - horizontal scroll cards */}
-      <section className="py-20 px-8 md:px-16">
-        <h2 className="text-3xl font-bold mb-2">Healthcare included</h2>
-        <p className="text-white/40 mb-10">No other franchise offers this — completely free.</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {healthcareBenefits.map((b, i) => (
-            <motion.div
-              key={b.title}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] backdrop-blur border border-white/[0.08] rounded-2xl p-6 hover:border-emerald-500/30 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center">
-                  <b.icon className="h-6 w-6 text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{b.title}</h3>
-                  <p className="text-sm text-emerald-400 font-medium">{b.value}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Tiers - gradient border cards */}
-      <section className="px-8 md:px-16 py-20">
-        <h2 className="text-3xl font-bold text-center mb-2">Choose your package</h2>
-        <p className="text-center text-white/40 mb-12">Healthcare and bonuses included in every tier</p>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {tiers.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-              className="relative group"
-            >
-              {t.popular && (
-                <div className="absolute -inset-px bg-gradient-to-b from-emerald-500 via-teal-500/50 to-transparent rounded-3xl" />
-              )}
-              <div className={`relative bg-[hsl(222,47%,13%)] rounded-3xl p-7 h-full flex flex-col ${!t.popular ? "border border-white/10" : ""}`}>
-                {t.popular && (
-                  <div className="flex items-center gap-2 mb-4">
-                    <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-bold text-amber-400">MOST POPULAR</span>
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold mb-2">Private healthcare, on us</h2>
+          <p className="text-[hsl(25,10%,50%)] mb-10 max-w-lg">Every benefit included at no extra cost. No other franchise offers this.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {healthcareBenefits.map((b, i) => (
+              <motion.div
+                key={b.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                className="bg-white rounded-2xl p-6 border border-[hsl(35,20%,90%)] shadow-[0_1px_12px_-4px_hsl(25,20%,20%/0.06)] hover:shadow-[0_4px_20px_-6px_hsl(25,20%,20%/0.1)] transition-shadow"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-11 w-11 rounded-full bg-[hsl(25,50%,94%)] flex items-center justify-center">
+                    <b.icon className="h-5 w-5 text-[hsl(15,70%,50%)]" />
                   </div>
-                )}
+                  <div>
+                    <h3 className="font-semibold">{b.title}</h3>
+                    <p className="text-sm text-[hsl(15,70%,50%)] font-medium">{b.value}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tiers */}
+      <section className="px-8 md:px-16 py-20 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-2">Choose your package</h2>
+          <p className="text-center text-[hsl(25,10%,50%)] mb-10">Healthcare + bonuses included in every tier</p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {tiers.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-3xl p-7 flex flex-col ${t.popular ? "bg-[hsl(25,20%,22%)] text-white ring-4 ring-[hsl(15,70%,50%)/0.2]" : "bg-[hsl(35,30%,96%)] border border-[hsl(35,20%,88%)]"}`}
+              >
+                {t.popular && <span className="text-xs font-bold text-[hsl(15,70%,60%)] mb-3">★ MOST POPULAR</span>}
                 <h3 className="text-xl font-bold">{t.name}</h3>
                 <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-4xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{t.price}</span>
-                  <span className="text-white/40">/pw</span>
+                  <span className="text-4xl font-bold">{t.price}</span>
+                  <span className={t.popular ? "text-white/50" : "text-[hsl(25,10%,55%)]"}>/pw</span>
                 </div>
                 <ul className="mt-6 space-y-3 flex-1">
                   {t.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm text-white/60">
-                      <div className="h-5 w-5 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                        <Check className="h-3 w-3 text-emerald-400" />
-                      </div>
+                    <li key={f} className={`flex items-center gap-3 text-sm ${t.popular ? "text-white/70" : "text-[hsl(25,10%,45%)]"}`}>
+                      <Check className={`h-4 w-4 shrink-0 ${t.popular ? "text-[hsl(15,70%,60%)]" : "text-[hsl(15,70%,50%)]"}`} />
                       {f}
                     </li>
                   ))}
                 </ul>
-                <Button className={`w-full mt-6 rounded-2xl h-12 font-semibold ${t.popular ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-[0_4px_20px_-4px_hsl(142,71%,45%/0.4)]" : "bg-white/10 hover:bg-white/15 text-white"}`}>
+                <Button className={`w-full mt-6 rounded-full h-12 font-semibold ${t.popular ? "bg-[hsl(15,70%,50%)] hover:bg-[hsl(15,70%,45%)] text-white" : "bg-[hsl(25,20%,22%)] hover:bg-[hsl(25,20%,28%)] text-white"}`}>
                   Get Started
                 </Button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Bonus calc */}
       <section className="px-8 md:px-16 py-20">
-        <div className="max-w-xl mx-auto relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 rounded-[28px] blur-xl" />
-          <div className="relative bg-[hsl(222,47%,13%)] border border-white/10 rounded-3xl p-8 text-center">
-            <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
-            <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
-            <p className="text-sm text-white/40">{passes[0]} intensive courses / year</p>
-            <p className="text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent mt-4">
-              £{(passes[0] * 50).toLocaleString()}
-            </p>
-            <p className="text-xs text-white/40 mt-2">extra per year</p>
+        <div className="max-w-xl mx-auto bg-white rounded-3xl p-8 text-center border border-[hsl(35,20%,90%)] shadow-[0_2px_16px_-4px_hsl(25,20%,20%/0.06)]">
+          <Gift className="h-8 w-8 text-[hsl(15,70%,50%)] mx-auto mb-4" />
+          <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
+          <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
+          <p className="text-sm text-[hsl(25,10%,55%)]">{passes[0]} intensive courses / year</p>
+          <p className="text-5xl font-bold text-[hsl(15,70%,50%)] mt-4">£{(passes[0] * 50).toLocaleString()}</p>
+          <p className="text-xs text-[hsl(25,10%,55%)] mt-2">extra per year</p>
+        </div>
+      </section>
+
+      {/* Tech */}
+      <section className="px-8 md:px-16 py-20 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-10">Tech no other franchise offers</h2>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {techFeatures.map((f) => (
+              <div key={f.label} className="flex flex-col items-center gap-2">
+                <div className="h-14 w-14 rounded-2xl bg-[hsl(35,30%,96%)] border border-[hsl(35,20%,90%)] flex items-center justify-center">
+                  <f.icon className="h-6 w-6 text-[hsl(25,20%,30%)]" />
+                </div>
+                <span className="text-xs font-medium text-[hsl(25,10%,45%)]">{f.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -475,23 +190,335 @@ function DesignC() {
 }
 
 // ═══════════════════════════════════════════════════════
-// DEMO CHOOSER PAGE
+// DESIGN E — "Frosted Mint" (cool mint/sage, airy, Apple-like)
+// ═══════════════════════════════════════════════════════
+function DesignE() {
+  const [passes, setPasses] = useState([20]);
+  return (
+    <div className="bg-white text-[hsl(200,15%,15%)]">
+      {/* Hero - large centered text, image below */}
+      <section className="pt-20 pb-12 px-8 md:px-16 text-center">
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <div className="inline-flex items-center gap-2 bg-[hsl(160,40%,95%)] text-[hsl(160,50%,30%)] rounded-full px-5 py-2 text-sm font-medium mb-8 border border-[hsl(160,30%,88%)]">
+            <Leaf className="h-4 w-4" /> Franchise Opportunities
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] max-w-4xl mx-auto">
+            A better way to
+            <br />
+            <span className="bg-gradient-to-r from-[hsl(160,50%,40%)] to-[hsl(180,50%,40%)] bg-clip-text text-transparent">
+              run your business
+            </span>
+          </h1>
+          <p className="text-lg text-[hsl(200,10%,50%)] mt-6 max-w-xl mx-auto leading-relaxed">
+            Free healthcare. £50 per intensive course. World-class tech. Just £50/pw.
+          </p>
+          <div className="flex gap-4 justify-center mt-10">
+            <Button size="lg" className="bg-[hsl(160,50%,38%)] hover:bg-[hsl(160,50%,33%)] text-white rounded-2xl px-10 h-14 text-base font-semibold">
+              Apply Now
+            </Button>
+            <Button size="lg" variant="outline" className="rounded-2xl px-10 h-14 text-base border-[hsl(200,15%,85%)]">
+              View Packages
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Hero image strip */}
+      <section className="px-8 md:px-16 pb-16">
+        <div className="max-w-5xl mx-auto overflow-hidden rounded-3xl h-[280px] relative">
+          <img src={heroImg} alt="Driving instructor" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent" />
+          {/* Floating pills over image */}
+          <div className="absolute bottom-6 left-6 right-6 flex flex-wrap gap-3">
+            {[
+              { v: "£50/pw", icon: Award },
+              { v: "£50 bonus", icon: TrendingUp },
+              { v: "Free healthcare", icon: Heart },
+              { v: "No car tie-in", icon: Car },
+            ].map((s) => (
+              <div key={s.v} className="bg-white/90 backdrop-blur-xl rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/50">
+                <s.icon className="h-4 w-4 text-[hsl(160,50%,38%)]" />
+                <span className="text-sm font-semibold text-[hsl(200,15%,15%)]">{s.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Healthcare */}
+      <section className="px-8 md:px-16 py-20 bg-[hsl(160,30%,97%)]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold">Private healthcare, included</h2>
+            <p className="text-[hsl(200,10%,50%)] mt-2">No other franchise offers this — completely free.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {healthcareBenefits.map((b, i) => (
+              <motion.div
+                key={b.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="bg-white rounded-2xl p-6 border border-[hsl(160,20%,92%)] shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="h-10 w-10 rounded-xl bg-[hsl(160,40%,94%)] flex items-center justify-center mb-4">
+                  <b.icon className="h-5 w-5 text-[hsl(160,50%,38%)]" />
+                </div>
+                <h3 className="font-semibold">{b.title}</h3>
+                <p className="text-sm text-[hsl(160,50%,38%)] font-medium mt-1">{b.value}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tiers */}
+      <section className="px-8 md:px-16 py-20">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-2">Simple, transparent pricing</h2>
+          <p className="text-center text-[hsl(200,10%,50%)] mb-10">Healthcare and bonuses included in every tier</p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {tiers.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-3xl p-7 flex flex-col border-2 ${t.popular ? "border-[hsl(160,50%,38%)] bg-[hsl(160,30%,97%)] shadow-[0_0_0_1px_hsl(160,50%,38%/0.1),0_8px_32px_-8px_hsl(160,50%,38%/0.12)]" : "border-[hsl(200,15%,92%)] bg-white"}`}
+              >
+                {t.popular && (
+                  <span className="text-xs font-bold text-[hsl(160,50%,35%)] bg-[hsl(160,40%,92%)] self-start px-3 py-1 rounded-full mb-4 border border-[hsl(160,30%,86%)]">POPULAR</span>
+                )}
+                <h3 className="text-xl font-bold">{t.name}</h3>
+                <div className="flex items-baseline gap-1 mt-2">
+                  <span className="text-4xl font-bold">{t.price}</span>
+                  <span className="text-[hsl(200,10%,55%)]">/pw</span>
+                </div>
+                <ul className="mt-6 space-y-3 flex-1">
+                  {t.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm text-[hsl(200,10%,40%)]">
+                      <Check className="h-4 w-4 text-[hsl(160,50%,38%)] shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button className={`w-full mt-6 rounded-2xl h-12 font-semibold ${t.popular ? "bg-[hsl(160,50%,38%)] hover:bg-[hsl(160,50%,33%)] text-white" : "bg-[hsl(200,15%,96%)] hover:bg-[hsl(200,15%,93%)] text-[hsl(200,15%,15%)]"}`}>
+                  Get Started
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Bonus calc */}
+      <section className="px-8 md:px-16 py-20 bg-[hsl(160,30%,97%)]">
+        <div className="max-w-xl mx-auto bg-white rounded-3xl p-8 text-center border border-[hsl(160,20%,92%)] shadow-sm">
+          <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
+          <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
+          <p className="text-sm text-[hsl(200,10%,55%)]">{passes[0]} intensive courses / year</p>
+          <p className="text-5xl font-bold text-[hsl(160,50%,38%)] mt-4">£{(passes[0] * 50).toLocaleString()}</p>
+          <p className="text-xs text-[hsl(200,10%,55%)] mt-2">extra per year</p>
+        </div>
+      </section>
+
+      {/* Tech */}
+      <section className="px-8 md:px-16 py-20">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-10">Tech no other franchise offers</h2>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
+            {techFeatures.map((f) => (
+              <div key={f.label} className="flex flex-col items-center gap-3">
+                <div className="h-16 w-16 rounded-2xl bg-[hsl(160,30%,97%)] border border-[hsl(160,20%,92%)] flex items-center justify-center shadow-sm">
+                  <f.icon className="h-7 w-7 text-[hsl(160,50%,38%)]" />
+                </div>
+                <span className="text-xs font-medium text-[hsl(200,10%,45%)]">{f.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// DESIGN F — "Soft Lavender" (soft purple, elegant, editorial)
+// ═══════════════════════════════════════════════════════
+function DesignF() {
+  const [passes, setPasses] = useState([20]);
+  return (
+    <div className="bg-[hsl(260,20%,98%)] text-[hsl(260,20%,15%)]">
+      {/* Hero - editorial split */}
+      <section className="relative min-h-[580px] overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroImg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(260,20%,98%)] via-[hsl(260,20%,98%/0.92)] to-[hsl(260,20%,98%/0.4)]" />
+        </div>
+        <div className="relative z-10 px-8 md:px-16 py-24 max-w-2xl">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+            <p className="text-sm font-medium text-[hsl(260,40%,55%)] tracking-widest uppercase mb-6">Drive365 Franchise</p>
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.08]">
+              Where ambition
+              <br />
+              meets{" "}
+              <span className="text-[hsl(260,40%,55%)]">opportunity</span>
+            </h1>
+            <p className="text-lg text-[hsl(260,10%,45%)] mt-6 leading-relaxed max-w-md">
+              Free private healthcare. £50 per intensive course completed. The best instructor platform. Just £50/pw.
+            </p>
+            <div className="flex gap-4 mt-10">
+              <Button size="lg" className="bg-[hsl(260,40%,50%)] hover:bg-[hsl(260,40%,45%)] text-white rounded-2xl px-10 h-14 text-base font-semibold shadow-[0_8px_24px_-8px_hsl(260,40%,50%/0.35)]">
+                Apply Now <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button size="lg" variant="ghost" className="rounded-2xl px-8 h-14 text-base text-[hsl(260,10%,40%)]">
+                Learn More
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats row */}
+      <section className="px-8 md:px-16 -mt-6 relative z-20">
+        <div className="max-w-4xl mx-auto grid grid-cols-4 gap-4">
+          {[
+            { v: "£50", l: "Per week" },
+            { v: "£50", l: "Per intensive" },
+            { v: "Free", l: "Healthcare" },
+            { v: "Zero", l: "Car tie-in" },
+          ].map((s, i) => (
+            <motion.div
+              key={s.l}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="bg-white rounded-2xl p-5 text-center shadow-[0_2px_16px_-4px_hsl(260,20%,15%/0.06)] border border-[hsl(260,15%,93%)]"
+            >
+              <p className="text-2xl font-bold text-[hsl(260,40%,50%)]">{s.v}</p>
+              <p className="text-xs text-[hsl(260,10%,55%)] mt-1">{s.l}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Healthcare */}
+      <section className="px-8 md:px-16 py-20">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold mb-2">Healthcare included, free</h2>
+          <p className="text-[hsl(260,10%,50%)] mb-10">No other franchise offers this.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {healthcareBenefits.map((b, i) => (
+              <motion.div
+                key={b.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="bg-white rounded-2xl p-6 border border-[hsl(260,15%,93%)] shadow-sm hover:shadow-md transition-shadow group"
+              >
+                <div className="h-10 w-10 rounded-xl bg-[hsl(260,30%,95%)] group-hover:bg-[hsl(260,30%,92%)] flex items-center justify-center mb-4 transition-colors">
+                  <b.icon className="h-5 w-5 text-[hsl(260,40%,50%)]" />
+                </div>
+                <h3 className="font-semibold">{b.title}</h3>
+                <p className="text-sm text-[hsl(260,40%,55%)] font-medium mt-1">{b.value}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tiers */}
+      <section className="px-8 md:px-16 py-20 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-2">Your package</h2>
+          <p className="text-center text-[hsl(260,10%,50%)] mb-10">Healthcare and bonuses in every tier</p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {tiers.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-3xl p-7 flex flex-col ${t.popular ? "bg-[hsl(260,40%,50%)] text-white shadow-[0_12px_40px_-10px_hsl(260,40%,50%/0.3)]" : "bg-[hsl(260,20%,98%)] border border-[hsl(260,15%,93%)]"}`}
+              >
+                {t.popular && <span className="text-xs font-bold text-[hsl(260,60%,80%)] mb-3">★ MOST POPULAR</span>}
+                <h3 className="text-xl font-bold">{t.name}</h3>
+                <div className="flex items-baseline gap-1 mt-2">
+                  <span className="text-4xl font-bold">{t.price}</span>
+                  <span className={t.popular ? "text-white/60" : "text-[hsl(260,10%,55%)]"}>/pw</span>
+                </div>
+                <ul className="mt-6 space-y-3 flex-1">
+                  {t.features.map((f) => (
+                    <li key={f} className={`flex items-center gap-3 text-sm ${t.popular ? "text-white/80" : "text-[hsl(260,10%,45%)]"}`}>
+                      <Check className={`h-4 w-4 shrink-0 ${t.popular ? "text-[hsl(260,60%,80%)]" : "text-[hsl(260,40%,55%)]"}`} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button className={`w-full mt-6 rounded-2xl h-12 font-semibold ${t.popular ? "bg-white hover:bg-white/90 text-[hsl(260,40%,45%)]" : "bg-[hsl(260,40%,50%)] hover:bg-[hsl(260,40%,45%)] text-white"}`}>
+                  Get Started
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Bonus calc */}
+      <section className="px-8 md:px-16 py-20">
+        <div className="max-w-xl mx-auto bg-white rounded-3xl p-8 text-center border border-[hsl(260,15%,93%)] shadow-sm">
+          <Star className="h-8 w-8 text-[hsl(260,40%,55%)] mx-auto mb-4" />
+          <h3 className="text-2xl font-bold mb-6">Bonus Calculator</h3>
+          <Slider value={passes} onValueChange={setPasses} min={5} max={60} className="w-full mb-4" />
+          <p className="text-sm text-[hsl(260,10%,55%)]">{passes[0]} intensive courses / year</p>
+          <p className="text-5xl font-bold text-[hsl(260,40%,50%)] mt-4">£{(passes[0] * 50).toLocaleString()}</p>
+          <p className="text-xs text-[hsl(260,10%,55%)] mt-2">extra per year</p>
+        </div>
+      </section>
+
+      {/* Tech */}
+      <section className="px-8 md:px-16 py-20 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-10">Tech no other franchise offers</h2>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
+            {techFeatures.map((f) => (
+              <div key={f.label} className="flex flex-col items-center gap-3">
+                <div className="h-14 w-14 rounded-2xl bg-[hsl(260,30%,96%)] border border-[hsl(260,15%,92%)] flex items-center justify-center">
+                  <f.icon className="h-6 w-6 text-[hsl(260,40%,50%)]" />
+                </div>
+                <span className="text-xs font-medium text-[hsl(260,10%,45%)]">{f.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// DEMO CHOOSER
 // ═══════════════════════════════════════════════════════
 export default function FranchiseDemo() {
-  const [activeDesign, setActiveDesign] = useState<"A" | "B" | "C">("A");
+  const [activeDesign, setActiveDesign] = useState<"D" | "E" | "F">("D");
 
   const designs = [
-    { key: "A" as const, label: "Dark Cinematic", desc: "Moody dark glass with emerald accents" },
-    { key: "B" as const, label: "Clean & Bold", desc: "Light iOS style, crisp and minimal" },
-    { key: "C" as const, label: "Gradient Luxe", desc: "Dark gradient mesh, premium feel" },
+    { key: "D" as const, label: "Warm Sand", desc: "Warm neutrals, terracotta accent" },
+    { key: "E" as const, label: "Frosted Mint", desc: "Cool sage/mint, Apple-like clarity" },
+    { key: "F" as const, label: "Soft Lavender", desc: "Elegant purple, editorial feel" },
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(222,47%,8%)]">
-      {/* Design selector bar */}
-      <div className="sticky top-0 z-50 bg-[hsl(222,47%,11%)]/90 backdrop-blur-xl border-b border-white/10 px-6 py-4">
+    <div className="min-h-screen bg-[hsl(220,20%,97%)]">
+      {/* Selector bar */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[hsl(220,15%,90%)] px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-6">
-          <span className="text-white/50 text-sm font-medium shrink-0">Choose a design:</span>
+          <span className="text-[hsl(220,10%,40%)] text-sm font-medium shrink-0">Choose a design:</span>
           <div className="flex gap-3">
             {designs.map((d) => (
               <button
@@ -499,8 +526,8 @@ export default function FranchiseDemo() {
                 onClick={() => setActiveDesign(d.key)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   activeDesign === d.key
-                    ? "bg-emerald-500 text-white shadow-[0_4px_16px_-4px_hsl(142,71%,45%/0.5)]"
-                    : "bg-white/10 text-white/60 hover:bg-white/15 hover:text-white"
+                    ? "bg-[hsl(220,52%,17%)] text-white shadow-lg"
+                    : "bg-[hsl(220,15%,94%)] text-[hsl(220,10%,40%)] hover:bg-[hsl(220,15%,90%)]"
                 }`}
               >
                 <span className="font-bold">{d.key}.</span> {d.label}
@@ -510,7 +537,6 @@ export default function FranchiseDemo() {
         </div>
       </div>
 
-      {/* Active design */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeDesign}
@@ -519,9 +545,9 @@ export default function FranchiseDemo() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeDesign === "A" && <DesignA />}
-          {activeDesign === "B" && <DesignB />}
-          {activeDesign === "C" && <DesignC />}
+          {activeDesign === "D" && <DesignD />}
+          {activeDesign === "E" && <DesignE />}
+          {activeDesign === "F" && <DesignF />}
         </motion.div>
       </AnimatePresence>
     </div>
