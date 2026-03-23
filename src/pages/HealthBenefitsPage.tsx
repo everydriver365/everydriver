@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
 import {
-  Heart, Phone, Brain, Users, Activity, Stethoscope, Shield,
-  Star, Clock, TrendingUp, Award, Smile, BadgeCheck, Headphones,
-  Baby, Sparkles, Microscope, Scissors, PersonStanding, HeartPulse,
-  Ribbon, Gift, Smartphone, BookOpen, Mail, ArrowRight, CheckCircle2
+  Heart, Brain, Stethoscope, Shield,
+  Award, BadgeCheck, Headphones,
+  Baby, Sparkles, Microscope, Scissors, PersonStanding,
+  Ribbon, Gift, Smartphone, BookOpen, ArrowRight, CheckCircle2
 } from "lucide-react";
 
 const fadeIn = {
@@ -20,13 +20,6 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const benefits = [
-  { icon: TrendingUp, title: "Reduce Sick Days", desc: "Fast access to diagnostics and treatment gets your team back on the road sooner." },
-  { icon: Users, title: "Improve Retention", desc: "Show your instructors you value their wellbeing — they'll stay longer." },
-  { icon: Activity, title: "Increase Productivity", desc: "Healthy instructors deliver better lessons and maintain fuller diaries." },
-  { icon: Star, title: "Attract Talent", desc: "Stand out from competitors by offering a genuine healthcare benefit." },
-  { icon: Shield, title: "Peace of Mind", desc: "Your team knows they're covered — no excesses, no age loading, no surprises." },
-];
 
 const services = [
   { icon: Stethoscope, title: "24/7 GP", desc: "Round-the-clock access to a GP via phone or video — no waiting for appointments." },
@@ -109,54 +102,18 @@ export default function HealthBenefitsPage() {
               <span className="text-accent">Business</span>
             </motion.h1>
             <motion.p variants={fadeIn} className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-              Give your driving instructors access to 24/7 GPs, diagnostics, physiotherapy and mental health support — all for one simple, affordable price.
+              Access 24/7 GPs, diagnostics, physiotherapy and mental health support — included in all packages from GPS Plus.
             </motion.p>
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <div className="bg-primary-foreground/15 backdrop-blur-sm rounded-2xl px-8 py-4 text-center">
-                <div className="text-4xl font-bold">£15.50</div>
-                <div className="text-sm text-primary-foreground/70">per employee / month</div>
-              </div>
-              <div className="space-y-2">
-                <Button size="lg" variant="accent" className="rounded-xl text-base" asChild>
-                  <a href="tel:08082562910">
-                    <Phone className="h-4 w-4 mr-2" /> Call 0808 256 2910
-                  </a>
-                </Button>
-                <p className="text-xs text-primary-foreground/60">No excesses · No age loading · No medical underwriting</p>
+            <motion.div variants={fadeIn}>
+              <div className="inline-flex items-center gap-2 bg-primary-foreground/15 backdrop-blur-sm rounded-2xl px-6 py-3">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="font-semibold">Included in all packages from GPS Plus</span>
               </div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Why Invest */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-5xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
-            <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold text-foreground">Why Invest in Employee Healthcare?</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">Healthy instructors mean fewer cancellations, better lessons, and a stronger business.</p>
-            </motion.div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {benefits.map((b) => (
-                <motion.div key={b.title} variants={fadeIn}>
-                  <Card className="h-full hover:shadow-md transition-shadow">
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <b.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground mb-1">{b.title}</h3>
-                        <p className="text-sm text-muted-foreground">{b.desc}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* What's Included */}
       <section className="py-16 md:py-20 bg-muted/30">
@@ -262,43 +219,6 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-lg">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <Card className="border-2 border-primary/20 shadow-lg">
-              <CardHeader className="text-center pb-2">
-                <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent rounded-full px-3 py-1 text-xs font-medium mx-auto mb-3">
-                  <Smile className="h-3.5 w-3.5" /> Simple Pricing
-                </div>
-                <CardTitle className="text-2xl">£15.50 <span className="text-base font-normal text-muted-foreground">/ employee / month</span></CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <ul className="space-y-2.5">
-                  {[
-                    "All 12 services included",
-                    "No excesses or co-payments",
-                    "No age loading — same price for everyone",
-                    "No medical underwriting or claim forms",
-                    "Family members can be added",
-                    "Cancel anytime",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button size="lg" className="w-full rounded-xl" asChild>
-                  <a href="tel:08082562910">
-                    <Phone className="h-4 w-4 mr-2" /> Get Started — Call Now
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
 
       {/* FAQs */}
       <section className="py-16 md:py-20 bg-muted/30">
@@ -321,32 +241,12 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-2xl text-center space-y-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-6">
-            <motion.h2 variants={fadeIn} className="text-3xl font-bold text-foreground">
-              Ready to Look After Your Team?
-            </motion.h2>
-            <motion.p variants={fadeIn} className="text-muted-foreground">
-              Get in touch with Benenden Health to set up healthcare for your driving instructors.
-            </motion.p>
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button size="lg" className="rounded-xl" asChild>
-                <a href="tel:08082562910">
-                  <Phone className="h-4 w-4 mr-2" /> 0808 256 2910
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" className="rounded-xl" asChild>
-                <a href="mailto:sales.support@benenden.co.uk">
-                  <Mail className="h-4 w-4 mr-2" /> Email Sales Team
-                </a>
-              </Button>
-            </motion.div>
-            <motion.p variants={fadeIn} className="text-xs text-muted-foreground">
-              Benenden Health is a trading name of The Benenden Healthcare Society Limited. Registered office: Holgate Park Drive, York, YO26 4GG.
-            </motion.p>
-          </motion.div>
+      {/* Footer Note */}
+      <section className="py-10 bg-background">
+        <div className="container max-w-2xl text-center">
+          <p className="text-xs text-muted-foreground">
+            Benenden Health is a trading name of The Benenden Healthcare Society Limited. Registered office: Holgate Park Drive, York, YO26 4GG.
+          </p>
         </div>
       </section>
     </MainLayout>
