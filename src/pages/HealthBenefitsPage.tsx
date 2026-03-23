@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,7 +104,7 @@ const faqs = [
 
 export default function HealthBenefitsPage() {
   return (
-    <MainLayout>
+    <InstructorSaaSLayout>
       <SEOHead
         title="Healthcare Benefits for Driving Instructors | EveryDriver"
         description="Offer your driving instructors affordable healthcare from £15.50/month. 24/7 GP, diagnostics, physiotherapy, mental health support and more — no excesses, no age loading."
@@ -433,6 +433,6 @@ export default function HealthBenefitsPage() {
           </motion.div>
         </div>
       </section>
-    </MainLayout>
+    </InstructorSaaSLayout>
   );
 }
