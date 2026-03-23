@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UserX } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { 
   Clock, 
@@ -68,6 +69,7 @@ interface ExpandableLessonCardProps {
   onOnWay: (lesson: ScheduledLesson, delayMinutes?: number) => void;
   onCancel: (lesson: ScheduledLesson) => void;
   onReschedule: (lesson: ScheduledLesson) => void;
+  onNoShow?: (lesson: ScheduledLesson) => void;
   sendingMessage: string | null;
   cardColor?: string;
   onColorChange?: (color: string) => void;
@@ -94,6 +96,7 @@ export function ExpandableLessonCard({
   onOnWay,
   onCancel,
   onReschedule,
+  onNoShow,
   sendingMessage,
   cardColor = "bg-card",
   onColorChange,
