@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2 } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift } from "lucide-react";
+import heroImg from "@/assets/franchise-hero-drive365.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -155,29 +156,55 @@ export default function FranchisePage() {
         description="The UK's most rewarding driving instructor franchise. Free private healthcare, £50 bonus per intensive course completed, and the best tech platform in the industry. Just £50/pw."
       />
 
-      {/* Hero */}
-      <section className="relative bg-primary text-primary-foreground py-20 md:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="container max-w-5xl relative z-10 text-center space-y-6">
-          <Badge className="bg-accent text-accent-foreground text-sm px-4 py-1.5">
-            Now Recruiting Nationwide
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            Join the UK's Most{" "}
-            <span className="text-accent">Rewarding</span>{" "}
-            Driving Franchise
-          </h1>
-          <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £50/pw.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button size="lg" variant="secondary" className="text-base px-8" asChild>
-              <a href="#enquiry-form">Apply Now</a>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
-              <a href="#tiers">View Packages</a>
-            </Button>
-          </div>
+      {/* Hero - Full Bleed */}
+      <section className="relative min-h-[600px] flex items-center overflow-hidden">
+        <img src={heroImg} alt="Drive365 instructor" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--primary)/0.95)] via-[hsl(var(--primary)/0.8)] to-[hsl(var(--primary)/0.4)]" />
+        <div className="relative z-10 container max-w-6xl py-20">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-xl">
+            <Badge className="bg-accent text-accent-foreground text-sm px-4 py-1.5 mb-6">
+              Recruiting Nationwide
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-black text-primary-foreground tracking-tight leading-[0.95]">
+              THE FRANCHISE<br />THAT <span className="text-accent">PAYS</span><br />YOU BACK
+            </h1>
+            <p className="text-lg text-primary-foreground/70 mt-6 max-w-md leading-relaxed">
+              Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £50/pw.
+            </p>
+            <div className="flex gap-3 mt-8">
+              <Button size="lg" className="rounded-full h-13 px-8 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg text-base font-semibold" asChild>
+                <a href="#enquiry-form">Apply Now <ArrowRight className="ml-2 h-5 w-5" /></a>
+              </Button>
+              <Button size="lg" variant="outline" className="rounded-full h-13 px-8 text-base border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
+                <a href="#tiers">View Packages</a>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Floating stat cards */}
+      <section className="container max-w-5xl -mt-10 relative z-20 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { v: "£50/pw", l: "All-inclusive", icon: Zap },
+            { v: "£50", l: "Per intensive", icon: Gift },
+            { v: "Free", l: "Healthcare", icon: Heart },
+            { v: "Zero", l: "Car tie-in", icon: Car },
+          ].map((s, i) => (
+            <motion.div
+              key={s.l}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="bg-card border border-border rounded-2xl p-5 text-center shadow-lg"
+            >
+              <s.icon className="h-6 w-6 text-primary mx-auto mb-2" />
+              <p className="text-xl font-bold text-foreground">{s.v}</p>
+              <p className="text-xs text-muted-foreground">{s.l}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -428,9 +455,9 @@ export default function FranchisePage() {
                 <Select value={formData.preferred_tier} onValueChange={(v) => setFormData(p => ({ ...p, preferred_tier: v }))}>
                   <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter — £99/wk</SelectItem>
-                    <SelectItem value="pro">Pro — £129/wk</SelectItem>
-                    <SelectItem value="elite">Elite — £149/wk</SelectItem>
+                    <SelectItem value="starter">Starter — £50/pw</SelectItem>
+                    <SelectItem value="pro">Pro — £50/pw</SelectItem>
+                    <SelectItem value="elite">Elite — £50/pw</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -476,7 +503,7 @@ export default function FranchisePage() {
         <div className="container max-w-3xl text-center space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold">Start Earning More. Stress Less.</h2>
           <p className="text-primary-foreground/80 text-lg">
-            Free healthcare. £50 per pass. The best tech. From £99/week. No car tie-in. No catch.
+            Free healthcare. £50 per intensive course. The best tech. Just £50/pw. No car tie-in. No catch.
           </p>
           <Button size="lg" variant="secondary" className="text-base px-8" asChild>
             <a href="#enquiry-form">Apply Now</a>
