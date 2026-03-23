@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday, parseISO, startOfDay, endOfDay } from "date-fns";
@@ -205,6 +206,52 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const handleRescheduleLesson = (lesson: ScheduledLesson) => { setSelectedLesson(lesson); setRescheduleDialogOpen(true); };
   const handleDeleteLesson = (lesson: ScheduledLesson) => { setSelectedLesson(lesson); setCancelDialogOpen(true); };
 
+  const handleNoShow = async (lesson: ScheduledLesson) => {
+    try {
+      await supabase
+        .from("scheduled_lessons")
+        .update({ status: "no_show" as any, marked_no_show_at: new Date().toISOString() } as any)
+        .eq("id", lesson.id);
+
+      // Auto-charge no-show fee if configured
+      try {
+        const { data: prefs } = await supabase
+          .from("instructor_reminder_preferences")
+          .select("no_show_fee, auto_charge_no_show")
+          .eq("instructor_id", instructorId)
+          .maybeSingle();
+
+        if (prefs?.auto_charge_no_show && prefs.no_show_fee > 0) {
+          const newBalance = (lesson.pupil?.account_balance || 0) - prefs.no_show_fee;
+          await supabase.from("pupils").update({ account_balance: newBalance }).eq("id", lesson.pupil.id);
+          await supabase.from("payment_history").insert({
+            pupil_id: lesson.pupil.id,
+            instructor_id: instructorId,
+            amount: -prefs.no_show_fee,
+            payment_method: "No-Show Fee",
+            notes: `No-show charge for ${lesson.lesson_date} ${lesson.start_time}`,
+          });
+        }
+      } catch (e) {
+        console.error("No-show fee error:", e);
+      }
+
+      // Fire automations
+      triggerAutomations({
+        triggerType: "no_show",
+        instructorId,
+        pupilId: lesson.pupil.id,
+        pupilName: lesson.pupil.name,
+      });
+
+      toast({ title: "Marked as no-show", description: `${lesson.pupil.name} didn't turn up` });
+      fetchLessons();
+    } catch (e) {
+      console.error("No-show error:", e);
+      toast({ title: "Error", description: "Failed to mark no-show", variant: "destructive" });
+    }
+  };
+
   const handleColorChange = (lessonId: string, color: string) => {
     setLessonColors(prev => ({ ...prev, [lessonId]: color }));
     const stored = JSON.parse(localStorage.getItem('lessonColors') || '{}');
@@ -307,6 +354,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onOnWay={handleOnWay}
                     onCancel={handleCancelLesson}
                     onReschedule={handleRescheduleLesson}
+                    onNoShow={handleNoShow}
                     sendingMessage={sendingMessage}
                     cardColor={lessonColors[lesson.id] || "bg-card"}
                     onColorChange={(color) => handleColorChange(lesson.id, color)}

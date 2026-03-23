@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UserX } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { 
   Clock, 
@@ -68,6 +69,7 @@ interface ExpandableLessonCardProps {
   onOnWay: (lesson: ScheduledLesson, delayMinutes?: number) => void;
   onCancel: (lesson: ScheduledLesson) => void;
   onReschedule: (lesson: ScheduledLesson) => void;
+  onNoShow?: (lesson: ScheduledLesson) => void;
   sendingMessage: string | null;
   cardColor?: string;
   onColorChange?: (color: string) => void;
@@ -94,6 +96,7 @@ export function ExpandableLessonCard({
   onOnWay,
   onCancel,
   onReschedule,
+  onNoShow,
   sendingMessage,
   cardColor = "bg-card",
   onColorChange,
@@ -392,6 +395,20 @@ export function ExpandableLessonCard({
                     <X className="h-3.5 w-3.5 mr-1" />
                     Cancel
                   </Button>
+                  {onNoShow && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 h-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNoShow(lesson);
+                      }}
+                    >
+                      <UserX className="h-3.5 w-3.5 mr-1" />
+                      No Show
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
