@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useSendViaWhatsApp } from "@/hooks/useSendViaWhatsApp";
 
 interface QuickMessageSheetProps {
   open: boolean;
@@ -67,7 +68,8 @@ export function QuickMessageSheet({
   onSend,
 }: QuickMessageSheetProps) {
   const [customMessage, setCustomMessage] = useState("");
-  const [sending, setSending] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const { sendMessage: sendViaWhatsApp, sending: whatsAppSending } = useSendViaWhatsApp();
 
   const formatMessage = (template: string) => {
     return template.replace("{name}", pupilName.split(" ")[0]);
@@ -79,34 +81,56 @@ export function QuickMessageSheet({
       return;
     }
 
-    setSending(template.id);
+    setSendingId(template.id);
     const message = formatMessage(template.message);
 
     try {
       if (onSend) {
         await onSend(message);
       } else {
-        // Default: open SMS app
-        const encodedMessage = encodeURIComponent(message);
-        window.location.href = `sms:${pupilPhone}?body=${encodedMessage}`;
+        const result = await sendViaWhatsApp(pupilPhone, message);
+        if (result.success) {
+          const channel = result.sent_via === "whatsapp" ? "WhatsApp" : "SMS";
+          toast.success(`Sent via ${channel} ✓`);
+        } else {
+          // Fallback to native SMS
+          const encodedMessage = encodeURIComponent(message);
+          window.location.href = `sms:${pupilPhone}?body=${encodedMessage}`;
+          toast.success("SMS opened");
+        }
       }
-      toast.success("Message ready to send");
       onOpenChange(false);
     } catch (error) {
       toast.error("Failed to send message");
     } finally {
-      setSending(null);
+      setSendingId(null);
     }
   };
 
-  const handleCustomSend = () => {
+  const handleCustomSend = async () => {
     if (!pupilPhone || !customMessage.trim()) return;
 
-    const encodedMessage = encodeURIComponent(customMessage);
-    window.location.href = `sms:${pupilPhone}?body=${encodedMessage}`;
-    setCustomMessage("");
-    onOpenChange(false);
+    setSendingId("custom");
+    try {
+      const result = await sendViaWhatsApp(pupilPhone, customMessage);
+      if (result.success) {
+        const channel = result.sent_via === "whatsapp" ? "WhatsApp" : "SMS";
+        toast.success(`Sent via ${channel} ✓`);
+      } else {
+        const encodedMessage = encodeURIComponent(customMessage);
+        window.location.href = `sms:${pupilPhone}?body=${encodedMessage}`;
+        toast.success("SMS opened");
+      }
+      setCustomMessage("");
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to send message");
+    } finally {
+      setSendingId(null);
+    }
   };
+
+  const isSending = sendingId !== null || whatsAppSending;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -127,9 +151,9 @@ export function QuickMessageSheet({
                 variant="outline"
                 className="flex items-center justify-start gap-2 h-auto py-3 px-3"
                 onClick={() => handleSend(template)}
-                disabled={sending !== null || !pupilPhone}
+                disabled={isSending || !pupilPhone}
               >
-                {sending === template.id ? (
+                {sendingId === template.id ? (
                   <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                 ) : (
                   <template.icon className={`h-4 w-4 shrink-0 ${template.color}`} />
@@ -152,9 +176,13 @@ export function QuickMessageSheet({
               <Button
                 size="icon"
                 onClick={handleCustomSend}
-                disabled={!customMessage.trim() || !pupilPhone}
+                disabled={!customMessage.trim() || !pupilPhone || isSending}
               >
-                <Send className="h-4 w-4" />
+                {sendingId === "custom" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>

@@ -28,14 +28,33 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
 
+    const userId = claimsData.claims.sub;
+
     const { to, message, template } = await req.json();
 
     if (!to || !message) {
       return new Response(JSON.stringify({ error: "Missing 'to' or 'message'" }), { status: 400, headers: corsHeaders });
     }
 
+    // Use service role client for logging
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Look up instructor
+    const { data: instructor } = await serviceClient
+      .from("instructors")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle();
+
     const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
     const WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+
+    let sentVia: string = "whatsapp";
+    let messageId: string | null = null;
+    let smsSid: string | null = null;
 
     if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
       // WhatsApp not configured — fall back to SMS via Twilio
@@ -73,39 +92,92 @@ Deno.serve(async (req) => {
         }
       );
       const smsData = await smsRes.json();
+      sentVia = "sms";
+      smsSid = smsData.sid;
+    } else {
+      // Send via WhatsApp Business Cloud API
+      const waRes = await fetch(
+        `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: to.replace(/\D/g, ""),
+            type: "text",
+            text: { body: message },
+          }),
+        }
+      );
 
-      return new Response(JSON.stringify({ sent_via: "sms", sid: smsData.sid }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Send via WhatsApp Business Cloud API
-    const waRes = await fetch(
-      `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: to.replace(/\D/g, ""),
-          type: "text",
-          text: { body: message },
-        }),
+      const waData = await waRes.json();
+      if (!waRes.ok) {
+        console.error("WhatsApp API error:", waData);
+        return new Response(JSON.stringify({ error: "WhatsApp send failed", details: waData }), {
+          status: 500, headers: corsHeaders,
+        });
       }
-    );
-
-    const waData = await waRes.json();
-    if (!waRes.ok) {
-      console.error("WhatsApp API error:", waData);
-      return new Response(JSON.stringify({ error: "WhatsApp send failed", details: waData }), {
-        status: 500, headers: corsHeaders,
-      });
+      messageId = waData.messages?.[0]?.id;
     }
 
-    return new Response(JSON.stringify({ sent_via: "whatsapp", message_id: waData.messages?.[0]?.id }), {
+    // Log to whatsapp_conversations and whatsapp_messages if instructor found
+    if (instructor) {
+      try {
+        const phoneClean = to.replace(/\D/g, "");
+
+        // Upsert conversation
+        const { data: conv } = await serviceClient
+          .from("whatsapp_conversations")
+          .select("id")
+          .eq("instructor_id", instructor.id)
+          .eq("phone_number", phoneClean)
+          .maybeSingle();
+
+        let conversationId: string;
+        if (conv) {
+          conversationId = conv.id;
+          await serviceClient
+            .from("whatsapp_conversations")
+            .update({ last_message_at: new Date().toISOString() })
+            .eq("id", conv.id);
+        } else {
+          const { data: newConv } = await serviceClient
+            .from("whatsapp_conversations")
+            .insert({
+              instructor_id: instructor.id,
+              phone_number: phoneClean,
+              visitor_name: null,
+              ai_enabled: true,
+              last_message_at: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
+          conversationId = newConv!.id;
+        }
+
+        // Log outbound message
+        await serviceClient
+          .from("whatsapp_messages")
+          .insert({
+            conversation_id: conversationId,
+            content: message,
+            direction: "outbound",
+            sender_type: "instructor",
+          });
+      } catch (logErr) {
+        console.error("Failed to log WhatsApp message:", logErr);
+        // Don't fail the whole request if logging fails
+      }
+    }
+
+    return new Response(JSON.stringify({ 
+      sent_via: sentVia, 
+      message_id: messageId,
+      sid: smsSid,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
