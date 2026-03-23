@@ -7155,7 +7155,17 @@ export type Database = {
           adi_badge_number: string | null
           adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
+          ai_auto_invoices_enabled: boolean
+          ai_cancellation_risk_enabled: boolean
+          ai_lesson_plans_enabled: boolean
+          ai_morning_briefing_enabled: boolean
+          ai_parent_reports_enabled: boolean
+          ai_pricing_suggestions_enabled: boolean
+          ai_re_engagement_enabled: boolean
           ai_receptionist_enabled: boolean
+          ai_test_readiness_enabled: boolean
+          ai_waitlist_filling_enabled: boolean
+          ai_weekly_report_enabled: boolean
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
@@ -7289,7 +7299,17 @@ export type Database = {
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          ai_auto_invoices_enabled?: boolean
+          ai_cancellation_risk_enabled?: boolean
+          ai_lesson_plans_enabled?: boolean
+          ai_morning_briefing_enabled?: boolean
+          ai_parent_reports_enabled?: boolean
+          ai_pricing_suggestions_enabled?: boolean
+          ai_re_engagement_enabled?: boolean
           ai_receptionist_enabled?: boolean
+          ai_test_readiness_enabled?: boolean
+          ai_waitlist_filling_enabled?: boolean
+          ai_weekly_report_enabled?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
@@ -7423,7 +7443,17 @@ export type Database = {
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
+          ai_auto_invoices_enabled?: boolean
+          ai_cancellation_risk_enabled?: boolean
+          ai_lesson_plans_enabled?: boolean
+          ai_morning_briefing_enabled?: boolean
+          ai_parent_reports_enabled?: boolean
+          ai_pricing_suggestions_enabled?: boolean
+          ai_re_engagement_enabled?: boolean
           ai_receptionist_enabled?: boolean
+          ai_test_readiness_enabled?: boolean
+          ai_waitlist_filling_enabled?: boolean
+          ai_weekly_report_enabled?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
