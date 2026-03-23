@@ -9,7 +9,7 @@ import {
   Star, Clock, TrendingUp, Award, BadgeCheck, Headphones,
   Sparkles, Microscope, Scissors, PersonStanding,
   Ribbon, Gift, Smartphone, BookOpen, Mail, CheckCircle2,
-  Car, Baby, Quote
+  Car, Baby, Quote, ArrowRight
 } from "lucide-react";
 
 import heroImg from "@/assets/health-warm-hero.jpg";
@@ -111,9 +111,9 @@ const serviceDetails = [
 ];
 
 const faqs = [
-  { q: "I'm a self-employed ADI — can I join?", a: "Absolutely. Even as a sole trader, you can join as a business of one at the same £15.50/month." },
+  { q: "Do I need to pay extra for this?", a: "No. Private healthcare is included free with every EveryDriver GPS and dashcam plan." },
   { q: "Is there an excess to pay?", a: "No. There are zero excesses or co-payments on any service." },
-  { q: "Are there age restrictions?", a: "No. Everyone pays £15.50/month regardless of age — no age loading." },
+  { q: "Are there age restrictions?", a: "No. There's no age loading — everyone is covered regardless of age." },
   { q: "Can I add my family?", a: "Yes. Partners and children can be added for an additional fee per person." },
   { q: "What about pre-existing conditions?", a: "Some services have a 6-month qualifying period for pre-existing conditions. New conditions are covered immediately." },
   { q: "Is this private health insurance?", a: "No — it's a mutual healthcare society, so there's no medical underwriting and no claim forms." },
@@ -124,8 +124,8 @@ export default function HealthBenefitsPage() {
   return (
     <InstructorSaaSLayout>
       <SEOHead
-        title="Healthcare for Driving Instructors | £15.50/month | EveryDriver"
-        description="Affordable healthcare designed for ADIs. 24/7 GP, physiotherapy for back pain, mental health support, diagnostics — all for £15.50/month with no excesses."
+        title="Free Healthcare for Driving Instructors | EveryDriver"
+        description="Free private healthcare included with every GPS and dashcam plan. 24/7 GP, physiotherapy, mental health support, diagnostics — all at no extra cost."
       />
 
       {/* ─── HERO ─── */}
@@ -141,23 +141,23 @@ export default function HealthBenefitsPage() {
                 <span className="text-[hsl(145,35%,40%)]">Who looks after you?</span>
               </motion.h1>
               <motion.p variants={fadeIn} className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">
-                Affordable healthcare built around the reality of being a driving instructor — back pain, stress, impossible GP hours, and NHS waits.
+                Private healthcare included free with every EveryDriver GPS or dashcam plan — back pain physio, 24/7 GP, mental health support, and more.
               </motion.p>
               <motion.div variants={fadeIn} className="flex flex-wrap gap-4 items-center">
-                <div className="bg-card border rounded-2xl px-6 py-4 text-center shadow-sm">
-                  <div className="text-3xl font-bold text-foreground">£15.50</div>
-                  <div className="text-xs text-muted-foreground">per month · no excesses</div>
+                <div className="bg-[hsl(145,40%,90%)] border border-[hsl(145,35%,80%)] rounded-2xl px-6 py-4 text-center">
+                  <div className="text-2xl font-bold text-[hsl(145,35%,30%)]">Included Free</div>
+                  <div className="text-xs text-[hsl(145,35%,45%)]">with GPS or Dashcam plan</div>
                 </div>
                 <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white shadow-md" asChild>
-                  <a href="tel:08082562910">
-                    <Phone className="h-4 w-4 mr-2" /> Call 0808 256 2910
+                  <a href="/compare">
+                    View Plans <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </Button>
               </motion.div>
               <motion.div variants={fadeIn} className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No extra cost</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No excesses</span>
                 <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No age loading</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No underwriting</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> Self-employed welcome</span>
               </motion.div>
             </motion.div>
 
@@ -256,8 +256,8 @@ export default function HealthBenefitsPage() {
         <div className="container max-w-5xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
             <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Everything included for £15.50/month</h2>
-              <p className="text-muted-foreground">12 services. No excesses. No hidden costs.</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Everything included — at no extra cost</h2>
+              <p className="text-muted-foreground">12 services. All free with your GPS or dashcam plan.</p>
             </motion.div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {allServices.map((s) => (
@@ -351,43 +351,22 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* ─── PRICING ─── */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container max-w-md">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <Card className="border-2 border-[hsl(145,35%,80%)] shadow-lg overflow-hidden">
-              <div className="bg-[hsl(145,30%,95%)] p-6 text-center space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-[hsl(145,35%,40%)]">Simple pricing for ADIs</p>
-                <div className="text-4xl font-bold text-foreground">£15.50<span className="text-lg font-normal text-muted-foreground">/month</span></div>
-                <p className="text-xs text-muted-foreground">Less than 52p a day</p>
-              </div>
-              <CardContent className="p-6 space-y-5">
-                <ul className="space-y-2.5">
-                  {[
-                    "All 12 services included",
-                    "No excesses or co-payments",
-                    "No age loading",
-                    "No medical underwriting",
-                    "Self-employed ADIs welcome",
-                    "Add family members",
-                    "Cancel anytime",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-[hsl(145,50%,45%)] shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button size="lg" className="w-full rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
-                  <a href="tel:08082562910">
-                    <Phone className="h-4 w-4 mr-2" /> Get Started — Call Now
-                  </a>
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  Or email <a href="mailto:sales.support@benenden.co.uk" className="underline">sales.support@benenden.co.uk</a>
-                </p>
-              </CardContent>
-            </Card>
+      {/* ─── INCLUDED BANNER ─── */}
+      <section className="py-16 md:py-20 bg-background">
+        <div className="container max-w-2xl text-center">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="space-y-6">
+            <div className="inline-flex items-center gap-2 bg-[hsl(145,40%,90%)] rounded-full px-5 py-2 text-sm font-semibold text-[hsl(145,35%,30%)] mx-auto">
+              <Gift className="h-4 w-4" /> Included with every GPS & Dashcam plan
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">No extra cost. No sign-up hassle.</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              When you subscribe to any EveryDriver plan with GPS tracking or a dashcam, Benenden Health private healthcare is included automatically. All 12 services, no excesses, no age loading.
+            </p>
+            <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
+              <a href="/compare">
+                View Plans <ArrowRight className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -421,22 +400,22 @@ export default function HealthBenefitsPage() {
               You deserve the same care you give your pupils
             </motion.h2>
             <motion.p variants={fadeIn} className="text-muted-foreground leading-relaxed">
-              Whether you're a self-employed ADI or run a driving school — get healthcare that actually works around your life, from £15.50/month.
+              Private healthcare is included free with every EveryDriver GPS and dashcam plan. No extra cost, no hassle.
             </motion.p>
             <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
-                <a href="tel:08082562910">
-                  <Phone className="h-4 w-4 mr-2" /> 0808 256 2910
+                <a href="/compare">
+                  View Plans <ArrowRight className="h-4 w-4 ml-2" />
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="rounded-xl" asChild>
-                <a href="mailto:sales.support@benenden.co.uk">
-                  <Mail className="h-4 w-4 mr-2" /> Email Sales Team
+                <a href="tel:08082562910">
+                  <Phone className="h-4 w-4 mr-2" /> Speak to Us
                 </a>
               </Button>
             </motion.div>
             <motion.p variants={fadeIn} className="text-[10px] text-muted-foreground pt-4">
-              Benenden Health is a trading name of The Benenden Healthcare Society Limited. Registered office: Holgate Park Drive, York, YO26 4GG.
+              Healthcare provided by Benenden Health, a trading name of The Benenden Healthcare Society Limited.
             </motion.p>
           </motion.div>
         </div>
