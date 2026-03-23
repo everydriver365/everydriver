@@ -218,6 +218,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
         instructorId={instructorId}
         onBack={() => setSelectedConversation(null)}
         onDelete={handleDeleteConversation}
+        pupilPhone={selectedConversation.pupil?.phone || null}
       />
     );
   }

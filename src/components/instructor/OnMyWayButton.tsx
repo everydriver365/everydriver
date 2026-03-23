@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMinutes } from "date-fns";
+import { useSendViaWhatsApp } from "@/hooks/useSendViaWhatsApp";
 
 interface OnMyWayButtonProps {
   instructorId: string;
@@ -27,6 +28,7 @@ export function OnMyWayButton({
   size = "sm",
 }: OnMyWayButtonProps) {
   const [sent, setSent] = useState(false);
+  const { sendMessage, sending } = useSendViaWhatsApp();
   const firstName = pupilName.split(" ")[0];
   const arrivalTime = format(addMinutes(new Date(), etaMinutes), "HH:mm");
   const message = `Hi ${firstName}, I'm on my way! ETA: ${arrivalTime}. See you soon! 🚗`;
@@ -49,13 +51,20 @@ export function OnMyWayButton({
       console.error("Failed to log notification:", e);
     }
 
-    // Open native SMS
-    const a = document.createElement("a");
-    a.href = `sms:${pupilPhone}?body=${encodeURIComponent(message)}`;
-    a.click();
+    // Send via WhatsApp/SMS edge function
+    const result = await sendMessage(pupilPhone, message);
+    if (result.success) {
+      const channel = result.sent_via === "whatsapp" ? "WhatsApp" : "SMS";
+      toast.success(`Sent via ${channel} ✓`);
+    } else {
+      // Fallback to native SMS
+      const a = document.createElement("a");
+      a.href = `sms:${pupilPhone}?body=${encodeURIComponent(message)}`;
+      a.click();
+      toast.success("SMS opened!");
+    }
 
     setSent(true);
-    toast.success("SMS opened!");
   };
 
   return (
@@ -63,7 +72,7 @@ export function OnMyWayButton({
       variant={sent ? "secondary" : variant}
       size={size}
       onClick={(e) => { e.stopPropagation(); handleSend(); }}
-      disabled={!pupilPhone}
+      disabled={!pupilPhone || sending}
       className="gap-1.5"
     >
       {sent ? (
