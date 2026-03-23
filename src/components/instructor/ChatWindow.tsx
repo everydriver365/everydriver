@@ -41,7 +41,7 @@ interface ChatWindowProps {
   pupilPhone?: string | null;
 }
 
-export function ChatWindow({ conversation, instructorId, onBack, onDelete }: ChatWindowProps) {
+export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupilPhone }: ChatWindowProps) {
   const { messages, loading, sendMessage, markAsRead, softDeleteMessage, softDeleteAllMessages, toggleUrgent } = useConversationMessages(
     conversation.id,
     "instructor"
@@ -49,6 +49,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sendAsUrgent, setSendAsUrgent] = useState(false);
+  const [sendViaWhatsApp, setSendViaWhatsApp] = useState(!!pupilPhone);
+  const { sendMessage: sendWhatsApp } = useSendViaWhatsApp();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
