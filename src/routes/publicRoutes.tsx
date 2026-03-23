@@ -108,5 +108,6 @@ export const publicRoutes = (
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
+    <Route path="/health-benefits" element={<HealthBenefitsPage />} />
   </>
 );
