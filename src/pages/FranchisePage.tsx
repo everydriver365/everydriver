@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock } from "lucide-react";
 import heroImg from "@/assets/franchise-hero-drive365.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
