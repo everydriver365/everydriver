@@ -104,7 +104,7 @@ const techFeatures = [
 const faqs = [
   { q: "Do I need my own car?", a: "Yes — Drive365 is a non-car-supply franchise. You use your own dual-control vehicle, which means no car tie-ins and lower weekly fees." },
   { q: "Is the healthcare really free?", a: "Yes. Private healthcare (dental, optical, physio, GP, mental health, EAP) is included at no extra cost on all franchise tiers. No catch." },
-  { q: "How does the £50 course completion bonus work?", a: "Every time one of your pupils completes their course and passes their test, you receive a £50 bonus. It's paid directly and tracked automatically through the platform." },
+  { q: "How does the £50 intensive course bonus work?", a: "Every time one of your pupils completes an intensive course, you receive a £50 bonus. It's paid directly and tracked automatically through the platform." },
   { q: "Can I switch from another franchise?", a: "Absolutely. We make switching easy — import your pupils, keep your existing car, and be up and running within a week. No lengthy notice periods required from our side." },
   { q: "What's included in the platform?", a: "Everything: smart diary, automated reminders, payment collection, pupil portal, GPS tracking, MTD-ready accounting, your own branded website, and more. It's all included." },
   { q: "Are there any hidden fees?", a: "No. Your weekly fee covers everything listed in your tier. Healthcare, the platform, bonuses — all included. The only optional extras are premium add-ons like custom domains." },
