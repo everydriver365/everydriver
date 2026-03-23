@@ -101,13 +101,18 @@ export const publicRoutes = (
     <Route path="/i/:slug/tests" element={<MiniWebsiteTests />} />
     <Route path="/review/:slug" element={<SubmitReview />} />
 
+    {/* Drive365 franchise route */}
+    <Route path="/drive365/franchise" element={<FranchisePage />} />
+    <Route path="/franchise" element={<FranchisePage />} />
+
+    {/* Instructor-facing marketing */}
+    <Route path="/health-benefits" element={<HealthBenefitsPage />} />
+
     {/* Public utility routes */}
     <Route path="/switch" element={<SwitchToEveryDriver />} />
-    <Route path="/franchise" element={<FranchisePage />} />
     <Route path="/availability/:shareToken" element={<PublicAvailability />} />
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
-    <Route path="/health-benefits" element={<HealthBenefitsPage />} />
   </>
 );
