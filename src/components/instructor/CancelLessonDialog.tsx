@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 interface CancelLessonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

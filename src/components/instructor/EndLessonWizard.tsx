@@ -11,6 +11,7 @@ import { StepSkills } from "./end-lesson/StepSkills";
 import { StepBookNext } from "./end-lesson/StepBookNext";
 import { StepLessonSummary } from "./end-lesson/StepLessonSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 
 interface EndLessonWizardProps {
   open: boolean;
