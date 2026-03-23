@@ -38,6 +38,7 @@ interface ChatWindowProps {
   instructorId: string;
   onBack: () => void;
   onDelete?: () => void;
+  pupilPhone?: string | null;
 }
 
 export function ChatWindow({ conversation, instructorId, onBack, onDelete }: ChatWindowProps) {
