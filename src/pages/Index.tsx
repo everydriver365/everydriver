@@ -1067,7 +1067,7 @@ export default function Index() {
             and the best tech platform in the business. From just £99/week.
           </p>
           <Button size="lg" variant="secondary" className="text-base px-8" asChild>
-            <Link to="/franchise">
+            <Link to="/drive365/franchise">
               Learn More <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </Button>
