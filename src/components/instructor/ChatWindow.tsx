@@ -168,6 +168,16 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
 
     setUploading(false);
 
+    // Also send via WhatsApp/SMS if toggled on and phone available
+    if (sendViaWhatsApp && pupilPhone && newMessage.trim()) {
+      const waResult = await sendWhatsApp(pupilPhone, newMessage);
+      if (waResult.success) {
+        toast({
+          title: `Sent via ${waResult.sent_via === "whatsapp" ? "WhatsApp" : "SMS"} ✓`,
+        });
+      }
+    }
+
     const success = await sendMessage(newMessage, instructorId, {
       attachmentUrl: attachmentData?.url,
       attachmentType: attachmentData?.type,
