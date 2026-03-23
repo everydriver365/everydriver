@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical, AlertTriangle, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AnimatePresence } from "framer-motion";
+import { useSendViaWhatsApp } from "@/hooks/useSendViaWhatsApp";
+import { Switch } from "@/components/ui/switch";
 
 import {
   DropdownMenu,
