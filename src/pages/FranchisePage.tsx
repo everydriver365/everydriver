@@ -151,8 +151,8 @@ export default function FranchisePage() {
   return (
     <MainLayout>
       <SEOHead
-        title="Join Drive365 Franchise | Free Healthcare + £50 Per Pass Bonus"
-        description="The UK's most rewarding driving instructor franchise. Free private healthcare, £50 per pupil pass bonus, and the best tech platform in the industry. From £99/wk."
+        title="Join Drive365 Franchise | Free Healthcare + £50 Per Intensive Course Bonus"
+        description="The UK's most rewarding driving instructor franchise. Free private healthcare, £50 bonus per intensive course completed, and the best tech platform in the industry. Just £40/wk."
       />
 
       {/* Hero */}
@@ -168,7 +168,7 @@ export default function FranchisePage() {
             Driving Franchise
           </h1>
           <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            Free private healthcare. £50 bonus every time a pupil passes. The best tech in the business. From just £99/week.
+            Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £40/week.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button size="lg" variant="secondary" className="text-base px-8" asChild>
@@ -218,14 +218,14 @@ export default function FranchisePage() {
       <section className="py-16 md:py-24 bg-muted/50">
         <div className="container max-w-3xl space-y-8 text-center">
           <div className="space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold">£50 Per Pass. Every Time.</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">£50 Per Intensive Course. Every Time.</h2>
             <p className="text-muted-foreground">
-              Every pupil who completes their course earns you a £50 bonus. How much could you earn?
+              Every pupil who completes an intensive course earns you a £50 bonus. How much could you earn?
             </p>
           </div>
           <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
             <label className="text-sm font-medium text-muted-foreground">
-              How many pupils do you pass per year?
+              How many intensive courses do your pupils complete per year?
             </label>
             <Slider
               value={passesPerYear}
@@ -236,9 +236,9 @@ export default function FranchisePage() {
               className="w-full"
             />
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>5 passes</span>
-              <span className="text-lg font-bold text-foreground">{passesPerYear[0]} passes</span>
-              <span>60 passes</span>
+              <span>5 courses</span>
+              <span className="text-lg font-bold text-foreground">{passesPerYear[0]} courses</span>
+              <span>60 courses</span>
             </div>
             <div className="pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground">Your annual bonus income</p>
@@ -258,7 +258,7 @@ export default function FranchisePage() {
         <div className="container max-w-5xl space-y-10">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-4xl font-bold">Choose Your Package</h2>
-            <p className="text-muted-foreground">All tiers include healthcare and the £50 per pass bonus</p>
+            <p className="text-muted-foreground">All tiers include healthcare and the £50 per intensive course bonus</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {tiers.map((tier) => (
@@ -340,7 +340,7 @@ export default function FranchisePage() {
             ))}
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            Switch to Drive365 Pro and save up to <strong className="text-foreground">£6,292/year</strong> vs RED — <em>and</em> get free healthcare + bonuses they don't offer.
+            Switch to Drive365 and save up to <strong className="text-foreground">£10,920/year</strong> vs RED — <em>and</em> get free healthcare + bonuses they don't offer.
           </p>
         </div>
       </section>
