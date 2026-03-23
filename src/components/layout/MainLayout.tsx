@@ -19,6 +19,7 @@ export function MainLayout({ children, hideFooter = false }: MainLayoutProps) {
       <MobileBottomNav />
       <BackToTopButton />
       <LiveChatWidget sessionType="admin" />
+      <WhatsAppChatWidget />
     </div>
   );
 }
