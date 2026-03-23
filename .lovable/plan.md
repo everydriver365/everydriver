@@ -1,99 +1,36 @@
 
 
-## Plan: AI WhatsApp Auto-Reply with Pricing & Availability
+## Plan: WhatsApp as Primary Messaging Channel with In-App Fallback
 
-### What It Does
-When a prospect messages the instructor's WhatsApp number, AI automatically replies with pricing, availability, and course info — pulling live data from the database. The instructor gets notified and can take over at any time.
+### What's Changing
+When an instructor sends a message to a pupil, it defaults to WhatsApp (via the `send-whatsapp` edge function) if the pupil has a phone number. If no phone number or WhatsApp fails, it falls back to in-app messaging. All conversations remain visible in the Unified Inbox.
 
-This complements in-app messaging rather than replacing it:
-- **WhatsApp AI** → catches new enquiries 24/7 (prospects who don't have your app)
-- **In-app messaging** → manages existing pupil relationships
+### Changes
 
-### Architecture
+| File | Change |
+|------|--------|
+| `src/hooks/useWhatsAppMessages.ts` | Update `sendMessage` mutation to call the `send-whatsapp` edge function (which already handles WhatsApp → SMS fallback) when sending outbound messages, in addition to logging them in `whatsapp_messages` |
+| `src/components/instructor/QuickMessageSheet.tsx` | Replace the `sms:` link default with a call to `send-whatsapp` edge function. If pupil has a phone number, send via WhatsApp; otherwise fall back to in-app. Show "Sent via WhatsApp" / "Sent via SMS" feedback |
+| `src/components/instructor/InstructorInbox.tsx` | Add a "Send via WhatsApp" toggle or auto-detect: when composing a message to a pupil with a phone number, route through WhatsApp instead of in-app only. Add a small WhatsApp icon indicator on messages sent via WhatsApp |
+| `src/components/instructor/ChatWindow.tsx` | Add a WhatsApp send option — if the pupil has a phone number, show a toggle to send via WhatsApp vs in-app. Messages sent via WhatsApp get logged in both `whatsapp_messages` and shown in the chat thread |
+| `supabase/functions/send-whatsapp/index.ts` | Minor update: also log outbound messages to `whatsapp_messages` table and create/update `whatsapp_conversations` entry so they appear in the WhatsApp tab |
+
+### Message Routing Logic
 
 ```text
-Prospect sends WhatsApp message
-        ↓
-Meta Webhook → whatsapp-webhook edge function
-        ↓
-  ┌─ Log message to whatsapp_conversations table
-  ├─ Look up instructor by phone number
-  ├─ Check ai_receptionist_enabled toggle
-  ├─ Query live data (pricing, availability, courses)
-  └─ AI generates reply → send via WhatsApp API
-        ↓
-  Instructor sees conversation in Unified Inbox
-  (can take over manually at any time)
+Instructor sends message
+    ↓
+Pupil has phone number?
+  YES → Call send-whatsapp edge function
+        → Log in whatsapp_messages + whatsapp_conversations
+        → Also log in conversations table for in-app history
+        → Show "Sent via WhatsApp ✓" in chat
+  NO  → Send via in-app messaging only (existing flow)
 ```
 
-### Database Changes
+### Quick Message Sheet Update
+The `QuickMessageSheet` (used from lesson cards for "On my way", "5 mins late" etc.) currently opens the native SMS app. It will instead call the `send-whatsapp` edge function directly, giving instant delivery via WhatsApp with SMS fallback — no need to leave the app.
 
-**New table: `whatsapp_conversations`**
-- `id`, `instructor_id`, `phone_number`, `visitor_name`
-- `ai_enabled` (boolean, default true — instructor can disable per-conversation)
-- `last_message_at`, `created_at`
-
-**New table: `whatsapp_messages`**
-- `id`, `conversation_id`, `direction` (inbound/outbound)
-- `content`, `sender_type` (visitor/ai/instructor)
-- `created_at`
-- Enable realtime for live updates
-
-### Edge Function: `whatsapp-webhook`
-
-Handles both GET (Meta verification) and POST (inbound messages):
-
-1. **GET** — Returns the hub challenge for Meta webhook verification
-2. **POST** — Processes inbound messages:
-   - Extract sender phone number and message text
-   - Find instructor by matching WhatsApp phone number
-   - Check `ai_receptionist_enabled` toggle
-   - Log the inbound message
-   - Query instructor's live data:
-     - `instructors` → pricing, car details, areas
-     - `instructor_courses` → course packages and prices
-     - `scheduled_lessons` + `instructor_working_hours` → next available slots
-   - Call Lovable AI (Gemini) with context to generate a natural reply
-   - Send reply via WhatsApp Business API
-   - Log the outbound AI message
-   - If AI can't handle the query → notify instructor via push/in-app
-
-### System Prompt Context (what AI knows)
-
-The AI will have access to:
-- Instructor name, phone, hourly rate, car details
-- All course packages with prices and durations
-- Next 5 available booking slots (calculated from working hours minus booked lessons)
-- Service areas (from postcode)
-- Existing conversation history for context
-
-### Unified Inbox Integration
-
-| File | Change |
-|------|--------|
-| `src/pages/InstructorUnifiedInbox.tsx` | Add 4th tab: "WhatsApp" with badge showing unread count |
-| `src/components/instructor/WhatsAppInbox.tsx` | New component — list of WhatsApp conversations with last message preview |
-| `src/components/instructor/WhatsAppChat.tsx` | New component — chat view for a single WhatsApp conversation. Shows AI vs instructor messages differently. Toggle to disable AI for this conversation and reply manually |
-
-### Instructor Controls
-
-- Existing `ai_receptionist_enabled` toggle controls whether AI replies to WhatsApp
-- Per-conversation "Take over" button disables AI for that specific chat
-- AI messages are prefixed with 🤖 so the instructor can see what was sent
-- Smart handoff: if the prospect asks something the AI can't answer, it says "Let me get [instructor name] to help you with that" and flags the conversation
-
-### New Secret Needed
-`WHATSAPP_VERIFY_TOKEN` — a custom string the instructor sets in their Meta webhook configuration (for webhook verification handshake)
-
-### Files Changed
-
-| File | Change |
-|------|--------|
-| **Migration** | Create `whatsapp_conversations` and `whatsapp_messages` tables with RLS |
-| `supabase/functions/whatsapp-webhook/index.ts` | New edge function handling inbound WhatsApp messages + AI reply |
-| `src/pages/InstructorUnifiedInbox.tsx` | Add WhatsApp tab |
-| `src/components/instructor/WhatsAppInbox.tsx` | New — conversation list |
-| `src/components/instructor/WhatsAppChat.tsx` | New — chat window with manual takeover |
-| `src/hooks/useWhatsAppConversations.ts` | New — fetch conversations + realtime |
-| `src/hooks/useWhatsAppMessages.ts` | New — fetch messages for a conversation + realtime |
+### No database changes needed
+Both `whatsapp_conversations` and `whatsapp_messages` tables already exist. The `send-whatsapp` edge function already handles WhatsApp → SMS fallback.
 
