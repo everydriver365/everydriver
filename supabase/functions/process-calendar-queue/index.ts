@@ -24,7 +24,8 @@ interface LessonData {
   pickup_postcode?: string;
   notes?: string;
   google_event_id?: string;
-  pupils?: { name: string } | null;
+  status?: string;
+  pupils?: { name: string; postcode?: string } | null;
 }
 
 // Base64url encode
