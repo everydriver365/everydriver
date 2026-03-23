@@ -34,7 +34,7 @@ import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestions
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
-import { SmartBufferSettings } from "@/components/instructor/SmartBufferSettings";
+
 
 
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
@@ -1043,17 +1043,6 @@ export default function InstructorSettings() {
               <ReminderSettings instructorId={instructorId} />
               </SettingsTile>
 
-              {/* Smart Buffer Time */}
-              <SettingsTile
-                id="smart-buffer"
-                icon={Timer}
-                title="Smart Buffer Time"
-                description="Travel-aware gaps between lessons"
-                iconColor="text-violet-600"
-                iconBg="bg-violet-100 dark:bg-violet-900/30"
-              >
-                <SmartBufferSettings instructorId={instructorId} />
-              </SettingsTile>
           </div>
         </div>
 
