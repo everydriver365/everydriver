@@ -15,6 +15,7 @@ const DRIVE365_ROUTE_PREFIXES = [
   "/contact",
   "/benefits",
   "/theory",
+  "/franchise",
 ];
 
 export function useRouteLogo() {
