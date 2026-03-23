@@ -1,67 +1,31 @@
 
 
-## Audit: Features with UI Built But Not Fully Functional
+## Plan: Create Benenden Health Benefits Sales Page
 
-### 1. Automations — NEVER TRIGGERED (High Priority)
+### What We're Building
+A new public-facing page at `/health-benefits` that presents the Benenden Healthcare for Business offering as an employee benefit for driving instructors. The page will be a polished, conversion-focused landing page with all the key data extracted from the brochure.
 
-**Problem**: The `process-automations` edge function exists and handles triggers like `lesson_completed`, `cancellation`, `no_show`, `test_passed`, etc. The UI for creating automations works (AutomationBuilder + AutomationCard). But **nothing in the app ever calls `process-automations`**. There is zero client-side code that invokes it.
+### Page Structure
 
-When an instructor completes a lesson, cancels a lesson, marks a no-show, or records a test pass — none of these flows call `supabase.functions.invoke('process-automations', ...)`. The automations just sit in the database doing nothing.
+| Section | Content |
+|---------|---------|
+| **Hero** | "Healthcare for Your Business" headline, £15.50/month price callout, CTA to enquire |
+| **Why Invest** | 5 benefit cards: Reduce sick days, Improve retention, Increase productivity, Attract talent, Peace of mind |
+| **What's Included** | Grid of 12 service tiles with icons: 24/7 GP, Mental Health Helpline, Adult Care, Neurodiversity Advice, Medical Diagnostics (up to £2,500), Surgical Treatment, Physiotherapy (up to 6 sessions), Mental Health Support (up to 6 sessions), Cancer Advice, Employee Rewards, Health App, Wellbeing Hub |
+| **Service Details** | Expandable accordion for each service with overview, what's included, what's excluded |
+| **Key Stats** | 180,451 members helped in 2024, 870,000+ members, 120 years experience, 4.6 Trustpilot rating, 7 years "Best Healthcare Service" |
+| **Pricing** | Simple pricing card: £15.50/employee/month, no excesses, no age loading, family add-on option |
+| **FAQs** | Accordion with key questions from the brochure |
+| **CTA** | Contact section with phone (0808 256 2910) and email (sales.support@benenden.co.uk) |
 
-**What needs wiring**:
-- End-lesson flow → invoke `process-automations` with `trigger_type: "lesson_completed"`
-- Cancel lesson flow → invoke with `trigger_type: "cancellation"`
-- No-show marking → invoke with `trigger_type: "no_show"`
-- Test pass recording → invoke with `trigger_type: "test_passed"`
-- New booking/enquiry → invoke with `trigger_type: "new_enquiry"`
+### Technical Details
 
-**Also**: The `send_email` action type is listed in the AutomationBuilder UI but has **no handler** in the edge function. It would silently do nothing.
-
----
-
-### 2. Workflows — ALSO NEVER TRIGGERED (High Priority)
-
-**Problem**: Same issue as automations. The `process-workflows` edge function exists, the `WorkflowBuilder` UI lets instructors create multi-step workflows, but **nothing ever calls `process-workflows`** from the client. The workflows table gets populated but never executed.
-
----
-
-### 3. Lesson Check-In — NO CRON JOB (Medium Priority)
-
-**Problem**: The `send-lesson-checkin` edge function exists and would send push notifications to pupils the day before their lesson asking them to confirm attendance. The database has `check_in_sent_at`, `check_in_status`, and `check_in_responded_at` columns on `scheduled_lessons`. But there is **no pg_cron job** scheduled to call this function. It never runs.
-
-**What needs wiring**: A daily cron job (e.g. 6 PM) that calls `send-lesson-checkin`.
-
----
-
-### 4. Abandoned Checkout Remarketing — NO CRON/TRIGGER (Medium Priority)
-
-**Problem**: The `AbandonedCheckoutTracker` UI component exists and reads from `abandoned_checkouts`. The UI has a "Resend Reminder" button. But there is **no automated process** that detects abandoned checkouts (booking started but not completed) or sends the initial reminder. The table exists but nothing populates it automatically, and no edge function sends the reminders.
-
----
-
-### 5. Pipeline "Convert to Pupil" — NO AUTOMATION TRIGGER (Low Priority)
-
-**Problem**: When a lead is converted to a pupil via `handleConvert` in `KanbanBoard.tsx`, it inserts into `pupils` and moves the lead to "active" stage. But it does **not** trigger any automation (e.g., a welcome SMS or note). If the instructor has set up a `new_enquiry` or related automation, it won't fire on conversion.
-
----
-
-### Summary
-
-| Feature | UI Built | Edge Function | Actually Triggered | Status |
-|---------|----------|---------------|-------------------|--------|
-| Automations | Yes | Yes | **No** | Dead code |
-| Workflows | Yes | Yes | **No** | Dead code |
-| Lesson Check-In | Yes (DB columns) | Yes | **No cron** | Dead code |
-| Abandoned Checkout | Yes (UI) | No | **No** | Partial |
-| `send_email` action | Listed in UI | **No handler** | N/A | Missing |
-
-### Recommended Fix Priority
-
-1. **Wire automations to trigger points** — add `process-automations` calls to end-lesson, cancel, no-show, test-pass, and new-enquiry flows
-2. **Wire workflows** to the same trigger points (or combine with automations call)
-3. **Add lesson check-in cron job** — daily at 6 PM
-4. **Add `send_email` handler** to `process-automations` edge function
-5. **Wire abandoned checkout detection** into the booking flow
-
-Would you like me to tackle all of these, or start with a specific one?
+| Item | Detail |
+|------|--------|
+| **New file** | `src/pages/HealthBenefitsPage.tsx` |
+| **Route** | Add `/health-benefits` to `publicRoutes.tsx` |
+| **Layout** | Standalone public page with Drive365 header/footer styling |
+| **Icons** | Lucide icons for each service tile |
+| **Animations** | Framer Motion fade-in on scroll |
+| **No database needed** | All content is static, extracted from the brochure |
 
