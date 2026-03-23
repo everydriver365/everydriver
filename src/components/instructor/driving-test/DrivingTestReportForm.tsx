@@ -345,6 +345,16 @@ export function DrivingTestReportForm({
         description: `${pupilName} — ${finalResult.toUpperCase()}`,
       });
 
+      // Fire automation if test passed (not mock)
+      if (!isMock && finalResult === "pass" && instructor?.id) {
+        triggerAutomations({
+          triggerType: "test_passed",
+          instructorId: instructor.id,
+          pupilId,
+          pupilName,
+        });
+      }
+
       onSaved?.();
       onOpenChange(false);
     } catch (e) {
