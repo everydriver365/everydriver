@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,11 +29,25 @@ const featureToggles: FeatureToggle[] = [
   { key: "prefer_earliest_slot", label: "Earliest Slot Priority", description: "Offer pupils the earliest available slot first to keep your day compact and avoid gaps", defaultValue: false },
 ];
 
+const aiFeatureToggles: FeatureToggle[] = [
+  { key: "ai_lesson_plans_enabled", label: "AI Lesson Plans", description: "Auto-generate lesson plans from your notes and voice feedback", defaultValue: true },
+  { key: "ai_test_readiness_enabled", label: "Test Readiness Predictor", description: "AI predicts when a pupil is ready for their test based on progress data", defaultValue: true },
+  { key: "ai_pricing_suggestions_enabled", label: "Smart Pricing", description: "Get AI pricing suggestions based on local demand and your schedule", defaultValue: true },
+  { key: "ai_cancellation_risk_enabled", label: "Cancellation Risk Alerts", description: "Get warned when a pupil is likely to cancel based on patterns", defaultValue: true },
+  { key: "ai_parent_reports_enabled", label: "AI Parent Reports", description: "Automatically generate weekly progress summaries for parents", defaultValue: true },
+  { key: "ai_waitlist_filling_enabled", label: "Smart Waitlist Filling", description: "Auto-offer cancelled slots to the best-matched replacement pupil", defaultValue: true },
+  { key: "ai_auto_invoices_enabled", label: "Auto-Invoice Generation", description: "Automatically create and send invoices after lessons", defaultValue: true },
+  { key: "ai_weekly_report_enabled", label: "AI Weekly Report", description: "Receive an AI-generated summary of your week's performance", defaultValue: true },
+  { key: "ai_morning_briefing_enabled", label: "Morning Briefing", description: "Get a daily AI briefing with schedule highlights and reminders", defaultValue: true },
+  { key: "ai_receptionist_enabled", label: "AI Receptionist", description: "AI handles enquiry responses and initial pupil communications", defaultValue: true },
+  { key: "ai_re_engagement_enabled", label: "Auto Re-engagement", description: "Automatically send SMS to inactive pupils to win them back", defaultValue: true },
+];
+
 interface FeatureTogglesSettingsProps {
   instructorId: string;
 }
 
-export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsProps) {
+function ToggleList({ toggles, instructorId }: { toggles: FeatureToggle[]; instructorId: string }) {
   const { instructor, refreshInstructor } = useInstructorAuth();
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -58,8 +72,8 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
   };
 
   return (
-    <div>
-      {featureToggles.map((toggle, index) => {
+    <>
+      {toggles.map((toggle, index) => {
         const currentValue = instructor?.[toggle.key as keyof typeof instructor] as boolean | null ?? toggle.defaultValue;
         const isSaving = saving === toggle.key;
 
@@ -82,12 +96,30 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
                 />
               </div>
             </div>
-            {index < featureToggles.length - 1 && (
+            {index < toggles.length - 1 && (
               <div className="ml-1 border-b border-border/40" />
             )}
           </div>
         );
       })}
+    </>
+  );
+}
+
+export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsProps) {
+  return (
+    <div className="space-y-6">
+      <ToggleList toggles={featureToggles} instructorId={instructorId} />
+
+      <div className="pt-2">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">AI & Automation</span>
+        </div>
+        <div className="rounded-lg border border-border/60 bg-muted/30 px-1">
+          <ToggleList toggles={aiFeatureToggles} instructorId={instructorId} />
+        </div>
+      </div>
     </div>
   );
 }
