@@ -36,8 +36,8 @@ const healthcareBenefits = [
 const tiers = [
   {
     name: "Starter",
-    price: "£40",
-    period: "/wk",
+    price: "£50",
+    period: "/pw",
     desc: "Perfect for newly qualified ADIs getting started",
     features: [
       { name: "Full platform access", included: true },
@@ -52,8 +52,8 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "£40",
-    period: "/wk",
+    price: "£50",
+    period: "/pw",
     popular: true,
     desc: "Our most popular package — everything you need",
     features: [
@@ -69,8 +69,8 @@ const tiers = [
   },
   {
     name: "Elite",
-    price: "£40",
-    period: "/wk",
+    price: "£50",
+    period: "/pw",
     desc: "The full package — stand out from the crowd",
     features: [
       { name: "Full platform access", included: true },
@@ -89,7 +89,7 @@ const competitors = [
   { name: "RED Driving School", weekly: 250 },
   { name: "AA Driving School", weekly: 200 },
   { name: "Bill Plant", weekly: 175 },
-  { name: "Drive365", weekly: 40, highlight: true },
+  { name: "Drive365", weekly: 50, highlight: true },
 ];
 
 const techFeatures = [
@@ -152,7 +152,7 @@ export default function FranchisePage() {
     <MainLayout>
       <SEOHead
         title="Join Drive365 Franchise | Free Healthcare + £50 Per Intensive Course Bonus"
-        description="The UK's most rewarding driving instructor franchise. Free private healthcare, £50 bonus per intensive course completed, and the best tech platform in the industry. Just £40/wk."
+        description="The UK's most rewarding driving instructor franchise. Free private healthcare, £50 bonus per intensive course completed, and the best tech platform in the industry. Just £50/pw."
       />
 
       {/* Hero */}
@@ -168,7 +168,7 @@ export default function FranchisePage() {
             Driving Franchise
           </h1>
           <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £40/week.
+            Free private healthcare. £50 bonus for every intensive course completed. The best tech in the business. Just £50/pw.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button size="lg" variant="secondary" className="text-base px-8" asChild>
