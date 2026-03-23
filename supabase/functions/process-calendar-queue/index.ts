@@ -344,7 +344,14 @@ Deno.serve(async (req) => {
             location: lesson.pickup_location || lesson.pickup_postcode,
           };
 
-          let googleEventId = lesson.google_event_id;
+          // Idempotency check: re-fetch google_event_id fresh to prevent race conditions
+          const { data: freshLesson } = await supabase
+            .from("scheduled_lessons")
+            .select("google_event_id")
+            .eq("id", item.lesson_id)
+            .maybeSingle();
+
+          let googleEventId = freshLesson?.google_event_id || lesson.google_event_id;
 
           if (googleEventId) {
             try {
