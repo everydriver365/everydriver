@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock } from "lucide-react";
 import heroImg from "@/assets/franchise-hero-drive365.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,27 +36,31 @@ const healthcareBenefits = [
 
 const tiers = [
   {
-    name: "Starter",
+    name: "PDI",
     price: "£50",
     period: "/pw",
-    desc: "Perfect for newly qualified ADIs getting started",
+    desc: "Trainee instructor? Start earning while you learn",
+    subtitle: "Potential Driving Instructor",
+    icon: GraduationCap,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
       { name: "£50 per intensive course completed", included: true },
       { name: "1-page mini website", included: true },
       { name: "Pupil app access", included: true },
+      { name: "PDI training support", included: true },
       { name: "GPS tracking", included: false },
       { name: "Dashcam system", included: false },
-      { name: "Custom domain website", included: false },
     ],
   },
   {
-    name: "Pro",
+    name: "Part Time",
     price: "£50",
     period: "/pw",
     popular: true,
-    desc: "Our most popular package — everything you need",
+    desc: "Flexible hours? Get the full package, your way",
+    subtitle: "Up to 25 hours per week",
+    icon: Clock,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
@@ -69,10 +73,12 @@ const tiers = [
     ],
   },
   {
-    name: "Elite",
+    name: "Full Time",
     price: "£50",
     period: "/pw",
-    desc: "The full package — stand out from the crowd",
+    desc: "Go all-in with every tool and feature included",
+    subtitle: "25+ hours per week",
+    icon: Zap,
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
@@ -343,10 +349,16 @@ export default function FranchisePage() {
                     Most Popular
                   </Badge>
                 )}
-                <div className="space-y-1">
-                  <h3 className="text-xl font-bold">{tier.name}</h3>
-                  <p className="text-sm text-muted-foreground">{tier.desc}</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tier.popular ? 'bg-accent/15 text-accent' : 'bg-muted text-muted-foreground'}`}>
+                    <tier.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">{tier.name}</h3>
+                    <p className="text-xs text-muted-foreground font-medium">{tier.subtitle}</p>
+                  </div>
                 </div>
+                <p className="text-sm text-muted-foreground">{tier.desc}</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold">{tier.price}</span>
                   <span className="text-muted-foreground">{tier.period}</span>
