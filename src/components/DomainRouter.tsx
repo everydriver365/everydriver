@@ -38,7 +38,8 @@ const LEARNER_ALLOWED_ROUTES = [
   "/instructor-app/login", // Instructor login page
   "/instructor",         // Instructor portal (used after login)
   "/admin/login",        // Admin login page
-  "/franchise",          // Franchise recruitment page
+  "/drive365/franchise", // Franchise recruitment page
+  "/franchise",          // Franchise recruitment page (legacy)
 ];
 
 // Routes that should stay on their current domain (shared routes)
