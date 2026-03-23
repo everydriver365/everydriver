@@ -15181,6 +15181,86 @@ export type Database = {
           },
         ]
       }
+      whatsapp_conversations: {
+        Row: {
+          ai_enabled: boolean
+          created_at: string
+          id: string
+          instructor_id: string
+          last_message_at: string | null
+          phone_number: string
+          visitor_name: string | null
+        }
+        Insert: {
+          ai_enabled?: boolean
+          created_at?: string
+          id?: string
+          instructor_id: string
+          last_message_at?: string | null
+          phone_number: string
+          visitor_name?: string | null
+        }
+        Update: {
+          ai_enabled?: boolean
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          last_message_at?: string | null
+          phone_number?: string
+          visitor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          direction?: string
+          id?: string
+          sender_type?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       public_instructors: {
