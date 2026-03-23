@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parse } from "date-fns";
 import { toast } from "sonner";
+import { useSmartBufferSettings, getSmartBufferMinutes } from "@/hooks/useSmartBuffer";
 
 interface StepBookNextProps {
   pupilId: string;
@@ -31,21 +32,31 @@ export function StepBookNext({
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState<string | null>(null);
+  const { settings: bufferSettings, loading: bufferLoading } = useSmartBufferSettings(instructorId);
 
   useEffect(() => {
-    findAvailableSlots();
-  }, []);
+    if (!bufferLoading) {
+      findAvailableSlots();
+    }
+  }, [bufferLoading]);
 
   const findAvailableSlots = async () => {
     try {
-      // Fetch instructor buffer_minutes and earliest slot preference
+      // Fetch instructor preferences
       const { data: instructorData } = await supabase
         .from("instructors")
-        .select("buffer_minutes, prefer_earliest_slot")
+        .select("prefer_earliest_slot")
         .eq("id", instructorId)
         .single();
-      const bufferMins = instructorData?.buffer_minutes || 0;
       const preferEarliest = (instructorData as any)?.prefer_earliest_slot ?? false;
+
+      // Fetch pupil postcode for travel time calculations
+      const { data: pupilData } = await supabase
+        .from("pupils")
+        .select("postcode")
+        .eq("id", pupilId)
+        .single();
+      const pupilPostcode = pupilData?.postcode || null;
 
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
@@ -68,7 +79,7 @@ export function StepBookNext({
 
         const { data: existing } = await supabase
           .from("scheduled_lessons")
-          .select("start_time, duration_minutes")
+          .select("start_time, duration_minutes, pupils:pupil_id (postcode)")
           .eq("instructor_id", instructorId)
           .eq("lesson_date", dateStr)
           .neq("status", "cancelled")
@@ -82,7 +93,6 @@ export function StepBookNext({
             return format(ev.start, "yyyy-MM-dd") === dateStr;
           });
 
-        // Simple: suggest slots at 9am, 11am, 1pm, 3pm that don't conflict
         const candidateTimes = preferEarliest 
           ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
           : ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
@@ -92,15 +102,44 @@ export function StepBookNext({
           const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
           const candidateEnd = candidateStart + durationMinutes * 60000;
 
-          const bufferMs = bufferMins * 60000;
-          const lessonConflict = (existing || []).some((ex) => {
-            const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime() - bufferMs;
-            const exEnd = exStart + bufferMs + (ex.duration_minutes || 60) * 60000 + bufferMs;
-            return candidateStart < exEnd && candidateEnd > exStart;
-          });
+          // Check conflicts with existing lessons using smart buffer
+          let lessonConflict = false;
+          for (const ex of (existing || [])) {
+            const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
+            const exEnd = exStart + (ex.duration_minutes || 60) * 60000;
+            const exPostcode = (ex.pupils as any)?.postcode || null;
 
+            // Calculate buffer before this lesson (travel from candidate to existing)
+            let bufferBefore = bufferSettings.flatBufferMinutes;
+            let bufferAfter = bufferSettings.flatBufferMinutes;
+
+            if (bufferSettings.enabled && bufferSettings.mode !== "flat") {
+              // Buffer between candidate end and existing start (travel from pupil to existing pupil)
+              if (candidateEnd <= exStart && pupilPostcode && exPostcode) {
+                const result = await getSmartBufferMinutes(bufferSettings, pupilPostcode, exPostcode);
+                bufferAfter = result.bufferMinutes;
+              }
+              // Buffer between existing end and candidate start (travel from existing pupil to this pupil)
+              if (exEnd <= candidateStart && exPostcode && pupilPostcode) {
+                const result = await getSmartBufferMinutes(bufferSettings, exPostcode, pupilPostcode);
+                bufferBefore = result.bufferMinutes;
+              }
+            }
+
+            const bufferBeforeMs = bufferBefore * 60000;
+            const bufferAfterMs = bufferAfter * 60000;
+
+            // Check overlap with buffer zones
+            if (candidateStart < (exEnd + bufferBeforeMs) && candidateEnd > (exStart - bufferAfterMs)) {
+              lessonConflict = true;
+              break;
+            }
+          }
+
+          // Check calendar conflicts with flat buffer (calendar events don't have postcodes)
+          const flatBufferMs = bufferSettings.flatBufferMinutes * 60000;
           const calConflict = dayCalBusy.some(ev =>
-            candidateStart < (ev.end.getTime() + bufferMs) && candidateEnd > (ev.start.getTime() - bufferMs)
+            candidateStart < (ev.end.getTime() + flatBufferMs) && candidateEnd > (ev.start.getTime() - flatBufferMs)
           );
 
           if (!lessonConflict && !calConflict) {
@@ -145,7 +184,7 @@ export function StepBookNext({
     }
   };
 
-  if (loading) {
+  if (loading || bufferLoading) {
     return (
       <div className="flex items-center justify-center py-6">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
