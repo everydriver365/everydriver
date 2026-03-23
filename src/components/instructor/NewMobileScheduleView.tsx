@@ -354,6 +354,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onOnWay={handleOnWay}
                     onCancel={handleCancelLesson}
                     onReschedule={handleRescheduleLesson}
+                    onNoShow={handleNoShow}
                     sendingMessage={sendingMessage}
                     cardColor={lessonColors[lesson.id] || "bg-card"}
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
