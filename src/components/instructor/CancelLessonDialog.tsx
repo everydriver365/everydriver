@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 interface CancelLessonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -161,6 +162,14 @@ export function CancelLessonDialog({
       } catch (smsError) {
         console.error("Failed to send cancellation SMS:", smsError);
       }
+
+      // Fire automations for cancellation
+      triggerAutomations({
+        triggerType: "cancellation",
+        instructorId,
+        pupilId,
+        pupilName,
+      });
 
       onCancelled();
       onOpenChange(false);

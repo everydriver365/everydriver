@@ -11,6 +11,7 @@ import { StepSkills } from "./end-lesson/StepSkills";
 import { StepBookNext } from "./end-lesson/StepBookNext";
 import { StepLessonSummary } from "./end-lesson/StepLessonSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 
 interface EndLessonWizardProps {
   open: boolean;
@@ -277,6 +278,14 @@ export function EndLessonWizard({
       setRouteReportData(report);
 
       toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
+
+      // Fire automations for lesson_completed
+      triggerAutomations({
+        triggerType: "lesson_completed",
+        instructorId,
+        pupilId,
+        pupilName,
+      });
 
       // Show course complete step if last lesson, otherwise show summary
       setStep(isLastLesson ? "course_complete" : "completed");

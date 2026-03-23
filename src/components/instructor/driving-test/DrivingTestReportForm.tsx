@@ -37,6 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 
 import { CompetencySection, SectionHeader } from "./CompetencySection";
 import { FaultRow } from "./FaultRow";
@@ -343,6 +344,16 @@ export function DrivingTestReportForm({
         title: isMock ? "Mock test saved" : "Test saved",
         description: `${pupilName} — ${finalResult.toUpperCase()}`,
       });
+
+      // Fire automation if test passed (not mock)
+      if (!isMock && finalResult === "pass" && instructor?.id) {
+        triggerAutomations({
+          triggerType: "test_passed",
+          instructorId: instructor.id,
+          pupilId,
+          pupilName,
+        });
+      }
 
       onSaved?.();
       onOpenChange(false);

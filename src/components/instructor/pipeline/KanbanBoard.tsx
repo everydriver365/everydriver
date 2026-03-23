@@ -8,6 +8,7 @@ import { AddLeadSheet } from "./AddLeadSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 
 const STAGES = [
   { value: "new_lead", label: "New Lead", color: "bg-blue-500" },
@@ -114,6 +115,14 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
 
       queryClient.invalidateQueries({ queryKey: ["pipeline-leads"] });
       toast.success(`${lead.name} converted to pupil!`);
+
+      // Fire automation for new enquiry/conversion
+      triggerAutomations({
+        triggerType: "new_enquiry",
+        instructorId,
+        pupilName: lead.name,
+        context: { pupil_phone: lead.phone },
+      });
     } catch {
       toast.error("Failed to convert lead");
     }
