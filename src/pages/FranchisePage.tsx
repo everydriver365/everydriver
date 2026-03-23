@@ -349,10 +349,16 @@ export default function FranchisePage() {
                     Most Popular
                   </Badge>
                 )}
-                <div className="space-y-1">
-                  <h3 className="text-xl font-bold">{tier.name}</h3>
-                  <p className="text-sm text-muted-foreground">{tier.desc}</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tier.popular ? 'bg-accent/15 text-accent' : 'bg-muted text-muted-foreground'}`}>
+                    <tier.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">{tier.name}</h3>
+                    <p className="text-xs text-muted-foreground font-medium">{tier.subtitle}</p>
+                  </div>
                 </div>
+                <p className="text-sm text-muted-foreground">{tier.desc}</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold">{tier.price}</span>
                   <span className="text-muted-foreground">{tier.period}</span>
