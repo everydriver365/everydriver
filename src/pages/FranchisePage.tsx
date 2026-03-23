@@ -36,13 +36,13 @@ const healthcareBenefits = [
 const tiers = [
   {
     name: "Starter",
-    price: "£99",
+    price: "£40",
     period: "/wk",
     desc: "Perfect for newly qualified ADIs getting started",
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
-      { name: "£50 per pass bonus", included: true },
+      { name: "£50 per intensive course completed", included: true },
       { name: "1-page mini website", included: true },
       { name: "Pupil app access", included: true },
       { name: "GPS tracking", included: false },
@@ -52,14 +52,14 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "£129",
+    price: "£40",
     period: "/wk",
     popular: true,
     desc: "Our most popular package — everything you need",
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
-      { name: "£50 per pass bonus", included: true },
+      { name: "£50 per intensive course completed", included: true },
       { name: "Multi-page website", included: true },
       { name: "Pupil app access", included: true },
       { name: "GPS tracking", included: true },
@@ -69,13 +69,13 @@ const tiers = [
   },
   {
     name: "Elite",
-    price: "£149",
+    price: "£40",
     period: "/wk",
     desc: "The full package — stand out from the crowd",
     features: [
       { name: "Full platform access", included: true },
       { name: "Free healthcare package", included: true },
-      { name: "£50 per pass bonus", included: true },
+      { name: "£50 per intensive course completed", included: true },
       { name: "Multi-page website", included: true },
       { name: "Pupil app access", included: true },
       { name: "GPS tracking", included: true },
@@ -89,7 +89,7 @@ const competitors = [
   { name: "RED Driving School", weekly: 250 },
   { name: "AA Driving School", weekly: 200 },
   { name: "Bill Plant", weekly: 175 },
-  { name: "Drive365 (Pro)", weekly: 129, highlight: true },
+  { name: "Drive365", weekly: 40, highlight: true },
 ];
 
 const techFeatures = [
