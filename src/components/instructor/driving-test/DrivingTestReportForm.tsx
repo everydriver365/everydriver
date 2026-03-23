@@ -37,6 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { triggerAutomations } from "@/utils/triggerAutomations";
 
 import { CompetencySection, SectionHeader } from "./CompetencySection";
 import { FaultRow } from "./FaultRow";

@@ -279,6 +279,14 @@ export function EndLessonWizard({
 
       toast.success(`Lesson completed! ${pupilName} earned +${pointsAwarded} points 🎉`);
 
+      // Fire automations for lesson_completed
+      triggerAutomations({
+        triggerType: "lesson_completed",
+        instructorId,
+        pupilId,
+        pupilName,
+      });
+
       // Show course complete step if last lesson, otherwise show summary
       setStep(isLastLesson ? "course_complete" : "completed");
     } catch (e) {

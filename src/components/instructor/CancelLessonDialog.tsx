@@ -163,6 +163,14 @@ export function CancelLessonDialog({
         console.error("Failed to send cancellation SMS:", smsError);
       }
 
+      // Fire automations for cancellation
+      triggerAutomations({
+        triggerType: "cancellation",
+        instructorId,
+        pupilId,
+        pupilName,
+      });
+
       onCancelled();
       onOpenChange(false);
       // Show backfill sheet after cancellation
