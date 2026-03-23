@@ -87,6 +87,25 @@ serve(async (req) => {
             }
             break;
           }
+          case "send_email": {
+            const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+            if (RESEND_API_KEY && context?.pupil_email) {
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${RESEND_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  from: "noreply@everydriver.lovable.app",
+                  to: context.pupil_email,
+                  subject: config.subject || `Update from your instructor`,
+                  html: `<p>${message.replace(/\n/g, "<br>")}</p>`,
+                }),
+              });
+            }
+            break;
+          }
           case "move_pipeline": {
             if (config.target_stage) {
               await supabase
