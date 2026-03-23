@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
         if (item.action === "syncLesson") {
           const { data: lessonRaw } = await supabase
             .from("scheduled_lessons")
-            .select(`*, pupils:pupil_id (name)`)
+            .select(`*, pupils:pupil_id (name, postcode)`)
             .eq("id", item.lesson_id)
             .maybeSingle();
 
