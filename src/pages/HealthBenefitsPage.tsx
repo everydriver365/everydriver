@@ -117,7 +117,7 @@ const faqs = [
   { q: "Can I add my family?", a: "Yes. Partners and children can be added for an additional fee per person." },
   { q: "What about pre-existing conditions?", a: "Some services have a 6-month qualifying period for pre-existing conditions. New conditions are covered immediately." },
   { q: "Is this private health insurance?", a: "No — it's a mutual healthcare society, so there's no medical underwriting and no claim forms." },
-  { q: "How do I access services?", a: "Through the Benenden Health app, by phone, or online. GP appointments available 24/7." },
+  { q: "How do I access services?", a: "Through the EveryDriver health app, by phone, or online. GP appointments available 24/7." },
 ];
 
 export default function HealthBenefitsPage() {
@@ -243,7 +243,7 @@ export default function HealthBenefitsPage() {
             >
               <Quote className="h-8 w-8 text-white/50" />
               <p className="text-lg md:text-xl text-white font-medium leading-relaxed italic">
-                "I couldn't get a GP appointment for weeks. With Benenden I saw a doctor on my lunch break — from the car."
+                "I couldn't get a GP appointment for weeks. With EveryDriver I saw a doctor on my lunch break — from the car."
               </p>
               <p className="text-sm text-white/70">— ADI, West Midlands</p>
             </motion.blockquote>
@@ -329,7 +329,7 @@ export default function HealthBenefitsPage() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
             <motion.div variants={fadeIn} className="text-center space-y-2">
               <h2 className="text-2xl md:text-3xl font-bold">Trusted since 1905</h2>
-              <p className="text-white/60 text-sm">Benenden Health is a not-for-profit mutual — every penny goes back into member care.</p>
+              <p className="text-white/60 text-sm">EveryDriver Healthcare is a not-for-profit service — every penny goes back into member care.</p>
             </motion.div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((s) => (
@@ -360,7 +360,7 @@ export default function HealthBenefitsPage() {
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">No extra cost. No sign-up hassle.</h2>
             <p className="text-muted-foreground leading-relaxed">
-              When you subscribe to any EveryDriver plan with GPS tracking or a dashcam, Benenden Health private healthcare is included automatically. All 12 services, no excesses, no age loading.
+              When you subscribe to any EveryDriver plan with GPS tracking or a dashcam, private healthcare is included automatically. All 12 services, no excesses, no age loading.
             </p>
             <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
               <a href="/compare">
@@ -415,7 +415,7 @@ export default function HealthBenefitsPage() {
               </Button>
             </motion.div>
             <motion.p variants={fadeIn} className="text-[10px] text-muted-foreground pt-4">
-              Healthcare provided by Benenden Health, a trading name of The Benenden Healthcare Society Limited.
+              Healthcare provided as part of your EveryDriver subscription.
             </motion.p>
           </motion.div>
         </div>
