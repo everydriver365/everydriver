@@ -42,6 +42,7 @@ const SubmitReview = lazy(() => import("@/pages/mini-website/SubmitReview"));
 const PublicAvailability = lazy(() => import("@/pages/PublicAvailability"));
 const RemoteSigning = lazy(() => import("@/pages/RemoteSigning"));
 const SwitchToEveryDriver = lazy(() => import("@/pages/SwitchToEveryDriver"));
+const FranchiseDemo = lazy(() => import("@/pages/FranchiseDemo"));
 const FranchisePage = lazy(() => import("@/pages/FranchisePage"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
@@ -103,6 +104,7 @@ export const publicRoutes = (
 
     {/* Drive365 franchise route */}
     <Route path="/drive365/franchise" element={<FranchisePage />} />
+    <Route path="/franchise-demo" element={<FranchiseDemo />} />
     <Route path="/franchise" element={<FranchisePage />} />
 
     {/* Instructor-facing marketing */}
