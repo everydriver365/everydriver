@@ -1,177 +1,226 @@
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
 import {
-  Heart, Phone, Brain, Users, Activity, Stethoscope, Shield,
-  Star, Clock, TrendingUp, Award, Smile, BadgeCheck, Headphones,
-  Baby, Sparkles, Microscope, Scissors, PersonStanding, HeartPulse,
-  Ribbon, Gift, Smartphone, BookOpen, Mail, ArrowRight, CheckCircle2,
-  AlertTriangle, Car
+  Heart, Phone, Brain, Users, Stethoscope, Shield,
+  Star, Clock, TrendingUp, Award, BadgeCheck, Headphones,
+  Sparkles, Microscope, Scissors, PersonStanding,
+  Ribbon, Gift, Smartphone, BookOpen, Mail, CheckCircle2,
+  Car, Baby, Quote
 } from "lucide-react";
 
-import heroImg from "@/assets/health-instructor-hero.jpg";
-import physioImg from "@/assets/health-physio-driving.jpg";
-import gpAppImg from "@/assets/health-gp-app.jpg";
-import mentalImg from "@/assets/health-mental-support.jpg";
+import heroImg from "@/assets/health-warm-hero.jpg";
+import gpImg from "@/assets/health-warm-gp.jpg";
+import physioImg from "@/assets/health-warm-physio.jpg";
+import mentalImg from "@/assets/health-warm-mental.jpg";
+import calmImg from "@/assets/health-calm-driving.jpg";
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.08 } },
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const benefits = [
-  { icon: TrendingUp, title: "Reduce Sick Days", desc: "Fast access to diagnostics and treatment gets your team back on the road sooner." },
-  { icon: Users, title: "Improve Retention", desc: "Show your instructors you value their wellbeing — they'll stay longer." },
-  { icon: Activity, title: "Increase Productivity", desc: "Healthy instructors deliver better lessons and maintain fuller diaries." },
-  { icon: Star, title: "Attract Talent", desc: "Stand out from competitors by offering a genuine healthcare benefit." },
-  { icon: Shield, title: "Peace of Mind", desc: "Your team knows they're covered — no excesses, no age loading, no surprises." },
+/* ---------- DATA ---------- */
+
+const painPoints = [
+  {
+    icon: PersonStanding,
+    title: "Back & Neck Pain",
+    problem: "8+ hours in the passenger seat every day takes its toll.",
+    solution: "6 physiotherapy sessions per year included — no excess to pay.",
+    image: physioImg,
+  },
+  {
+    icon: Brain,
+    title: "Stress & Isolation",
+    problem: "Working alone, managing pupils, and running a business is mentally exhausting.",
+    solution: "6 counselling sessions plus a 24/7 mental health helpline.",
+    image: mentalImg,
+  },
+  {
+    icon: Clock,
+    title: "Can't See a GP",
+    problem: "Your diary runs 8am–6pm. When are you supposed to get an appointment?",
+    solution: "24/7 video GP — see a doctor between lessons or after hours.",
+    image: gpImg,
+  },
+  {
+    icon: Microscope,
+    title: "NHS Waiting Lists",
+    problem: "A 6-month wait for a scan means 6 months of pain and lost income.",
+    solution: "Up to £2,500 for diagnostics — MRI, CT scans, blood tests. Fast.",
+    image: null,
+  },
 ];
 
-const services = [
-  { icon: Stethoscope, title: "24/7 GP", desc: "Round-the-clock access to a GP via phone or video — no waiting for appointments.", highlight: true, tag: "Perfect between lessons" },
-  { icon: Headphones, title: "Mental Health Helpline", desc: "Confidential 24/7 support for stress, anxiety, and emotional wellbeing.", highlight: true, tag: "ADI burnout support" },
-  { icon: Baby, title: "Adult Care", desc: "Guidance and support for caring responsibilities outside of work." },
-  { icon: Sparkles, title: "Neurodiversity Advice", desc: "Specialist advice for neurodivergent employees and their managers." },
-  { icon: Microscope, title: "Medical Diagnostics", desc: "Up to £2,500 towards diagnostic tests including MRI, CT scans and blood tests.", highlight: true, tag: "Skip NHS waits" },
-  { icon: Scissors, title: "Surgical Treatment", desc: "Access to surgical procedures when NHS waiting times are too long." },
-  { icon: PersonStanding, title: "Physiotherapy", desc: "Up to 6 sessions per year — essential for instructors with back and neck strain.", highlight: true, tag: "Back & neck relief" },
-  { icon: Brain, title: "Mental Health Support", desc: "Up to 6 counselling or CBT sessions per year with qualified therapists.", highlight: true, tag: "Isolation support" },
-  { icon: Ribbon, title: "Cancer Advice", desc: "Specialist cancer support and guidance for employees and their families." },
-  { icon: Gift, title: "Employee Rewards", desc: "Discounts on gym memberships, retail, holidays and more." },
-  { icon: Smartphone, title: "Health App", desc: "Manage your health on the go — book appointments, track wellbeing and more." },
-  { icon: BookOpen, title: "Wellbeing Hub", desc: "Articles, videos and tools to support physical and mental health." },
+const allServices = [
+  { icon: Stethoscope, title: "24/7 GP Access", desc: "Phone or video consultations any time, 365 days a year." },
+  { icon: Headphones, title: "Mental Health Helpline", desc: "Confidential 24/7 support for stress and anxiety." },
+  { icon: PersonStanding, title: "Physiotherapy", desc: "Up to 6 sessions per year for musculoskeletal issues." },
+  { icon: Brain, title: "Counselling & CBT", desc: "Up to 6 sessions per year with qualified therapists." },
+  { icon: Microscope, title: "Medical Diagnostics", desc: "Up to £2,500 towards MRI, CT scans, blood tests." },
+  { icon: Scissors, title: "Surgical Treatment", desc: "Access to surgery when NHS wait times are too long." },
+  { icon: Baby, title: "Adult Care Support", desc: "Guidance for caring responsibilities outside of work." },
+  { icon: Sparkles, title: "Neurodiversity Advice", desc: "Specialist support for neurodivergent individuals." },
+  { icon: Ribbon, title: "Cancer Support", desc: "Specialist advice and guidance for you and your family." },
+  { icon: Gift, title: "Employee Rewards", desc: "Discounts on gym, retail, holidays, and more." },
+  { icon: Smartphone, title: "Health App", desc: "Book appointments and track wellbeing on the go." },
+  { icon: BookOpen, title: "Wellbeing Hub", desc: "Articles, videos, and tools for physical and mental health." },
 ];
 
 const stats = [
   { value: "180,451", label: "Members helped in 2024" },
-  { value: "870,000+", label: "Total members" },
-  { value: "120", label: "Years of experience" },
-  { value: "4.6★", label: "Trustpilot rating" },
-];
-
-const instructorProblems = [
-  { icon: PersonStanding, problem: "Back & Neck Pain", detail: "Hours in the passenger seat cause chronic musculoskeletal issues. Physio sessions are included — up to 6 per year." },
-  { icon: Brain, problem: "Stress & Burnout", detail: "Long hours, difficult pupils, and isolation lead to mental health struggles. Get 6 counselling sessions plus 24/7 helpline access." },
-  { icon: Clock, problem: "Can't Get a GP Appointment", detail: "Your diary is packed 8am–6pm. With 24/7 video GP access, you can see a doctor between lessons or after hours." },
-  { icon: AlertTriangle, problem: "NHS Waiting Lists", detail: "A 6-month wait for an MRI means 6 months of pain and lost income. Get diagnostics worth up to £2,500 — fast." },
+  { value: "870K+", label: "Total members" },
+  { value: "120yrs", label: "Of experience" },
+  { value: "4.6★", label: "Trustpilot" },
 ];
 
 const serviceDetails = [
   {
     title: "24/7 GP Service",
-    included: ["Unlimited phone and video consultations", "Available 365 days a year", "Prescriptions sent to your local pharmacy", "Referral letters when needed"],
+    included: ["Unlimited phone & video consultations", "365 days a year", "Prescriptions to your pharmacy", "Referral letters"],
     excluded: ["Face-to-face appointments", "Home visits"],
   },
   {
     title: "Medical Diagnostics",
-    included: ["Up to £2,500 per diagnosis", "MRI, CT and PET scans", "Blood tests and pathology", "Endoscopy and colonoscopy", "GP referral required"],
-    excluded: ["Routine health screenings", "Pre-existing conditions in first 6 months"],
+    included: ["Up to £2,500 per diagnosis", "MRI, CT, PET scans", "Blood tests & pathology", "Endoscopy & colonoscopy"],
+    excluded: ["Routine screenings", "Pre-existing conditions (first 6 months)"],
   },
   {
     title: "Physiotherapy",
-    included: ["Up to 6 sessions per year", "Musculoskeletal conditions", "Post-operative rehabilitation", "GP or specialist referral required"],
+    included: ["Up to 6 sessions/year", "Musculoskeletal conditions", "Post-op rehabilitation"],
     excluded: ["Chronic long-term conditions", "Sports massage"],
   },
   {
     title: "Mental Health Support",
-    included: ["Up to 6 sessions per year", "CBT, counselling and talking therapies", "Self-referral accepted", "Face-to-face or remote sessions"],
-    excluded: ["Psychiatric medication management", "Inpatient treatment"],
+    included: ["Up to 6 sessions/year", "CBT & talking therapies", "Self-referral accepted", "Remote or face-to-face"],
+    excluded: ["Psychiatric medication", "Inpatient treatment"],
   },
   {
     title: "Surgical Treatment",
-    included: ["Day-case and inpatient surgery", "Consultant-led treatment", "Pre and post-operative care", "GP referral required"],
-    excluded: ["Cosmetic surgery", "Fertility treatment", "Dental surgery"],
+    included: ["Day-case & inpatient surgery", "Consultant-led treatment", "Pre & post-op care"],
+    excluded: ["Cosmetic surgery", "Fertility treatment"],
   },
 ];
 
 const faqs = [
-  { q: "Is there a minimum number of employees?", a: "Yes, Benenden Health for Business requires a minimum of 1 employee. There's no maximum limit." },
-  { q: "Are there any age restrictions?", a: "No. There's no age loading — everyone pays the same £15.50/month regardless of age." },
-  { q: "Is there an excess to pay?", a: "No. There are no excesses or co-payments on any of the services." },
-  { q: "Can employees add family members?", a: "Yes. Employees can add their partner and children for an additional fee per person." },
-  { q: "What's the waiting period?", a: "Some services have a 6-month qualifying period for pre-existing conditions. New conditions are covered immediately." },
-  { q: "How do employees access services?", a: "Through the Benenden Health app, by phone, or online. GP appointments can be booked 24/7." },
-  { q: "Is this private health insurance?", a: "No — Benenden Health is a mutual healthcare society, not an insurance product. This means no medical underwriting and no claim forms." },
-  { q: "I'm a self-employed ADI — can I join?", a: "Yes. Even if you're a sole trader, you can join as a business of one. The same £15.50/month rate applies." },
+  { q: "I'm a self-employed ADI — can I join?", a: "Absolutely. Even as a sole trader, you can join as a business of one at the same £15.50/month." },
+  { q: "Is there an excess to pay?", a: "No. There are zero excesses or co-payments on any service." },
+  { q: "Are there age restrictions?", a: "No. Everyone pays £15.50/month regardless of age — no age loading." },
+  { q: "Can I add my family?", a: "Yes. Partners and children can be added for an additional fee per person." },
+  { q: "What about pre-existing conditions?", a: "Some services have a 6-month qualifying period for pre-existing conditions. New conditions are covered immediately." },
+  { q: "Is this private health insurance?", a: "No — it's a mutual healthcare society, so there's no medical underwriting and no claim forms." },
+  { q: "How do I access services?", a: "Through the Benenden Health app, by phone, or online. GP appointments available 24/7." },
 ];
 
 export default function HealthBenefitsPage() {
   return (
     <InstructorSaaSLayout>
       <SEOHead
-        title="Healthcare Benefits for Driving Instructors | EveryDriver"
-        description="Offer your driving instructors affordable healthcare from £15.50/month. 24/7 GP, diagnostics, physiotherapy, mental health support and more — no excesses, no age loading."
+        title="Healthcare for Driving Instructors | £15.50/month | EveryDriver"
+        description="Affordable healthcare designed for ADIs. 24/7 GP, physiotherapy for back pain, mental health support, diagnostics — all for £15.50/month with no excesses."
       />
 
-      {/* Hero with image */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/80 text-primary-foreground">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.15),transparent_70%)]" />
-        <div className="container max-w-6xl relative z-10 py-16 md:py-24">
+      {/* ─── HERO ─── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[hsl(145,30%,95%)] to-background">
+        <div className="container max-w-6xl py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6">
-              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium">
-                <Heart className="h-4 w-4" /> Built for Driving Instructors
+              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium bg-[hsl(145,40%,90%)] text-[hsl(145,40%,25%)]">
+                <Heart className="h-4 w-4" /> Healthcare for ADIs
               </motion.div>
-              <motion.h1 variants={fadeIn} className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-                Healthcare That<br />
-                <span className="text-accent">Keeps You Driving</span>
+              <motion.h1 variants={fadeIn} className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight tracking-tight">
+                You look after your pupils.<br />
+                <span className="text-[hsl(145,35%,40%)]">Who looks after you?</span>
               </motion.h1>
-              <motion.p variants={fadeIn} className="text-base md:text-lg text-primary-foreground/80 max-w-lg">
-                Back pain from the passenger seat? Can't get a GP appointment around your diary? Stressed and isolated? Get 24/7 GP access, physio, mental health support and more — all for £15.50/month.
+              <motion.p variants={fadeIn} className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">
+                Affordable healthcare built around the reality of being a driving instructor — back pain, stress, impossible GP hours, and NHS waits.
               </motion.p>
-              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 items-start">
-                <div className="bg-primary-foreground/15 backdrop-blur-sm rounded-2xl px-6 py-3 text-center">
-                  <div className="text-3xl font-bold">£15.50</div>
-                  <div className="text-xs text-primary-foreground/70">per month · no excesses</div>
+              <motion.div variants={fadeIn} className="flex flex-wrap gap-4 items-center">
+                <div className="bg-card border rounded-2xl px-6 py-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-foreground">£15.50</div>
+                  <div className="text-xs text-muted-foreground">per month · no excesses</div>
                 </div>
-                <div className="space-y-2">
-                  <Button size="lg" variant="accent" className="rounded-xl" asChild>
-                    <a href="tel:08082562910">
-                      <Phone className="h-4 w-4 mr-2" /> Call 0808 256 2910
-                    </a>
-                  </Button>
-                  <p className="text-xs text-primary-foreground/60">No age loading · No medical underwriting</p>
-                </div>
+                <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white shadow-md" asChild>
+                  <a href="tel:08082562910">
+                    <Phone className="h-4 w-4 mr-2" /> Call 0808 256 2910
+                  </a>
+                </Button>
+              </motion.div>
+              <motion.div variants={fadeIn} className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No age loading</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> No underwriting</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[hsl(145,50%,45%)]" /> Self-employed welcome</span>
               </motion.div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="hidden md:block">
-              <img src={heroImg} alt="Happy driving instructor in car" className="rounded-2xl shadow-2xl w-full object-cover aspect-[4/3]" width={1280} height={720} />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="hidden md:block"
+            >
+              <img
+                src={heroImg}
+                alt="Relaxed driving instructor beside their car"
+                className="rounded-2xl shadow-lg w-full object-cover aspect-[4/3]"
+                width={1280}
+                height={800}
+              />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Why ADIs Need This */}
-      <section className="py-16 md:py-20 bg-background">
+      {/* ─── PAIN POINTS ─── */}
+      <section className="py-16 md:py-24 bg-background">
         <div className="container max-w-5xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
-            <motion.div variants={fadeIn} className="text-center space-y-3">
-              <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive rounded-full px-4 py-1.5 text-sm font-medium mx-auto">
-                <Car className="h-4 w-4" /> The Reality for ADIs
-              </div>
-              <h2 className="text-3xl font-bold text-foreground">The Health Challenges Instructors Face</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">Driving instruction takes a real toll on your body and mind. Here's how Benenden Health helps.</p>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-12">
+            <motion.div variants={fadeIn} className="text-center space-y-3 max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">The toll of teaching people to drive</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                You spend your career keeping others safe. But the physical and mental demands of the job are real — and often ignored.
+              </p>
             </motion.div>
-            <div className="grid sm:grid-cols-2 gap-5">
-              {instructorProblems.map((p) => (
-                <motion.div key={p.problem} variants={fadeIn}>
-                  <Card className="h-full border-l-4 border-l-accent hover:shadow-md transition-shadow">
-                    <CardContent className="p-5 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                          <p.icon className="h-5 w-5 text-accent" />
+
+            <div className="space-y-6">
+              {painPoints.map((pp, i) => (
+                <motion.div key={pp.title} variants={fadeIn}>
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                    <div className={`grid ${pp.image ? 'md:grid-cols-[1fr_280px]' : ''} items-stretch`}>
+                      <CardContent className="p-6 md:p-8 flex flex-col justify-center space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-[hsl(145,40%,92%)] flex items-center justify-center shrink-0">
+                            <pp.icon className="h-5 w-5 text-[hsl(145,35%,40%)]" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-foreground">{pp.title}</h3>
                         </div>
-                        <h3 className="font-semibold text-foreground">{p.problem}</h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground pl-[52px]">{p.detail}</p>
-                    </CardContent>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{pp.problem}</p>
+                        <div className="flex items-start gap-2 bg-[hsl(145,40%,95%)] rounded-xl p-3">
+                          <CheckCircle2 className="h-4 w-4 text-[hsl(145,50%,40%)] mt-0.5 shrink-0" />
+                          <p className="text-sm font-medium text-foreground">{pp.solution}</p>
+                        </div>
+                      </CardContent>
+                      {pp.image && (
+                        <div className="hidden md:block">
+                          <img
+                            src={pp.image}
+                            alt={pp.title}
+                            loading="lazy"
+                            width={800}
+                            height={544}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </Card>
                 </motion.div>
               ))}
@@ -180,84 +229,46 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* GP between lessons image strip */}
-      <section className="py-12 bg-muted/20">
-        <div className="container max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-6">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="relative rounded-xl overflow-hidden group">
-              <img src={gpAppImg} alt="GP video call from car" loading="lazy" width={800} height={544} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                <p className="text-sm font-medium text-white">See a GP between lessons — no waiting rooms</p>
-              </div>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="relative rounded-xl overflow-hidden group">
-              <img src={physioImg} alt="Instructor stretching after lessons" loading="lazy" width={800} height={544} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                <p className="text-sm font-medium text-white">Physio for the back & neck strain of instruction</p>
-              </div>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="relative rounded-xl overflow-hidden group">
-              <img src={mentalImg} alt="Mental health counselling session" loading="lazy" width={800} height={544} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                <p className="text-sm font-medium text-white">Counselling for the isolation of self-employment</p>
-              </div>
-            </motion.div>
+      {/* ─── FULL-WIDTH IMAGE BREAK ─── */}
+      <section className="relative h-64 md:h-80 overflow-hidden">
+        <img src={calmImg} alt="Calm moment behind the wheel" loading="lazy" width={800} height={544} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 to-transparent flex items-center">
+          <div className="container max-w-5xl">
+            <motion.blockquote
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="max-w-md space-y-2"
+            >
+              <Quote className="h-8 w-8 text-white/50" />
+              <p className="text-lg md:text-xl text-white font-medium leading-relaxed italic">
+                "I couldn't get a GP appointment for weeks. With Benenden I saw a doctor on my lunch break — from the car."
+              </p>
+              <p className="text-sm text-white/70">— ADI, West Midlands</p>
+            </motion.blockquote>
           </div>
         </div>
       </section>
 
-      {/* Why Invest */}
-      <section className="py-16 md:py-20 bg-background">
+      {/* ─── ALL 12 SERVICES ─── */}
+      <section className="py-16 md:py-24 bg-[hsl(145,25%,97%)]">
         <div className="container max-w-5xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
             <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold text-foreground">Why Invest in Instructor Healthcare?</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">Healthy instructors mean fewer cancellations, better lessons, and a stronger business.</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Everything included for £15.50/month</h2>
+              <p className="text-muted-foreground">12 services. No excesses. No hidden costs.</p>
             </motion.div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {benefits.map((b) => (
-                <motion.div key={b.title} variants={fadeIn}>
-                  <Card className="h-full hover:shadow-md transition-shadow">
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <b.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground mb-1">{b.title}</h3>
-                        <p className="text-sm text-muted-foreground">{b.desc}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* What's Included */}
-      <section className="py-16 md:py-20 bg-muted/30">
-        <div className="container max-w-5xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
-            <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold text-foreground">What's Included</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">12 healthcare services — all included in one simple monthly fee.</p>
-            </motion.div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((s) => (
+              {allServices.map((s) => (
                 <motion.div key={s.title} variants={fadeIn}>
-                  <Card className={`h-full hover:shadow-md transition-shadow ${s.highlight ? 'ring-2 ring-accent/30 bg-accent/5' : ''}`}>
-                    <CardContent className="p-5 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${s.highlight ? 'bg-accent/20' : 'bg-accent/10'}`}>
-                          <s.icon className="h-4.5 w-4.5 text-accent" />
-                        </div>
-                        {s.tag && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wider bg-accent/15 text-accent px-2 py-0.5 rounded-full">{s.tag}</span>
-                        )}
+                  <Card className="h-full hover:shadow-sm transition-shadow bg-card">
+                    <CardContent className="p-5 space-y-2.5">
+                      <div className="h-9 w-9 rounded-lg bg-[hsl(145,40%,92%)] flex items-center justify-center">
+                        <s.icon className="h-4 w-4 text-[hsl(145,35%,40%)]" />
                       </div>
-                      <h3 className="font-semibold text-foreground">{s.title}</h3>
-                      <p className="text-sm text-muted-foreground">{s.desc}</p>
+                      <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -267,41 +278,37 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* Service Details Accordion */}
+      {/* ─── SERVICE DETAILS ─── */}
       <section className="py-16 md:py-20 bg-background">
         <div className="container max-w-3xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-8">
             <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold text-foreground">Service Details</h2>
-              <p className="text-muted-foreground">What's covered and what's not — fully transparent.</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">What's covered — in detail</h2>
+              <p className="text-muted-foreground text-sm">Full transparency. No surprises.</p>
             </motion.div>
             <motion.div variants={fadeIn}>
               <Accordion type="single" collapsible className="space-y-2">
                 {serviceDetails.map((sd, i) => (
-                  <AccordionItem key={i} value={`service-${i}`} className="border rounded-xl px-4">
-                    <AccordionTrigger className="text-base font-semibold">{sd.title}</AccordionTrigger>
+                  <AccordionItem key={i} value={`service-${i}`} className="border rounded-xl px-4 bg-card">
+                    <AccordionTrigger className="text-sm font-semibold">{sd.title}</AccordionTrigger>
                     <AccordionContent>
-                      <div className="grid sm:grid-cols-2 gap-6 pb-2">
+                      <div className="grid sm:grid-cols-2 gap-5 pb-2">
                         <div>
-                          <h4 className="font-medium text-sm text-foreground mb-2 flex items-center gap-1.5">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Included
-                          </h4>
+                          <h4 className="font-medium text-xs uppercase tracking-wider text-[hsl(145,35%,40%)] mb-2">Included</h4>
                           <ul className="space-y-1.5">
                             {sd.included.map((item) => (
                               <li key={item} className="text-sm text-muted-foreground flex items-start gap-2">
-                                <span className="text-emerald-500 mt-1">•</span> {item}
+                                <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(145,50%,45%)] mt-0.5 shrink-0" /> {item}
                               </li>
                             ))}
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-foreground mb-2 flex items-center gap-1.5">
-                            <Shield className="h-4 w-4 text-muted-foreground" /> Not Included
-                          </h4>
+                          <h4 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Not included</h4>
                           <ul className="space-y-1.5">
                             {sd.excluded.map((item) => (
                               <li key={item} className="text-sm text-muted-foreground flex items-start gap-2">
-                                <span className="text-muted-foreground/50 mt-1">•</span> {item}
+                                <span className="text-muted-foreground/40 mt-0.5">–</span> {item}
                               </li>
                             ))}
                           </ul>
@@ -316,85 +323,86 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* Key Stats */}
-      <section className="py-16 md:py-20 bg-primary text-primary-foreground">
+      {/* ─── TRUST STATS ─── */}
+      <section className="py-16 md:py-20 bg-[hsl(145,30%,25%)] text-white">
         <div className="container max-w-4xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-10">
-            <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold">Trusted by Hundreds of Thousands</h2>
-              <p className="text-primary-foreground/70">Benenden Health has been looking after people since 1905.</p>
+            <motion.div variants={fadeIn} className="text-center space-y-2">
+              <h2 className="text-2xl md:text-3xl font-bold">Trusted since 1905</h2>
+              <p className="text-white/60 text-sm">Benenden Health is a not-for-profit mutual — every penny goes back into member care.</p>
             </motion.div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((s) => (
                 <motion.div key={s.label} variants={fadeIn} className="text-center space-y-1">
-                  <div className="text-3xl md:text-4xl font-bold">{s.value}</div>
-                  <div className="text-sm text-primary-foreground/60">{s.label}</div>
+                  <div className="text-2xl md:text-3xl font-bold">{s.value}</div>
+                  <div className="text-xs text-white/50">{s.label}</div>
                 </motion.div>
               ))}
             </div>
-            <motion.div variants={fadeIn} className="flex justify-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2 bg-primary-foreground/10 rounded-full px-4 py-2 text-sm">
-                <Award className="h-4 w-4" /> 7× Best Healthcare Service
+            <motion.div variants={fadeIn} className="flex justify-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 text-xs">
+                <Award className="h-3.5 w-3.5" /> 7× Best Healthcare Service
               </div>
-              <div className="flex items-center gap-2 bg-primary-foreground/10 rounded-full px-4 py-2 text-sm">
-                <BadgeCheck className="h-4 w-4" /> Not-for-profit mutual
+              <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 text-xs">
+                <BadgeCheck className="h-3.5 w-3.5" /> Not-for-profit
               </div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-lg">
+      {/* ─── PRICING ─── */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container max-w-md">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <Card className="border-2 border-primary/20 shadow-lg">
-              <CardHeader className="text-center pb-2">
-                <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent rounded-full px-3 py-1 text-xs font-medium mx-auto mb-3">
-                  <Smile className="h-3.5 w-3.5" /> Simple Pricing
-                </div>
-                <CardTitle className="text-2xl">£15.50 <span className="text-base font-normal text-muted-foreground">/ month</span></CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">That's less than 52p a day for complete healthcare</p>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+            <Card className="border-2 border-[hsl(145,35%,80%)] shadow-lg overflow-hidden">
+              <div className="bg-[hsl(145,30%,95%)] p-6 text-center space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-[hsl(145,35%,40%)]">Simple pricing for ADIs</p>
+                <div className="text-4xl font-bold text-foreground">£15.50<span className="text-lg font-normal text-muted-foreground">/month</span></div>
+                <p className="text-xs text-muted-foreground">Less than 52p a day</p>
+              </div>
+              <CardContent className="p-6 space-y-5">
                 <ul className="space-y-2.5">
                   {[
                     "All 12 services included",
                     "No excesses or co-payments",
-                    "No age loading — same price for everyone",
-                    "No medical underwriting or claim forms",
-                    "Family members can be added",
+                    "No age loading",
+                    "No medical underwriting",
                     "Self-employed ADIs welcome",
+                    "Add family members",
                     "Cancel anytime",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-[hsl(145,50%,45%)] shrink-0" />
                       {item}
                     </li>
                   ))}
                 </ul>
-                <Button size="lg" className="w-full rounded-xl" asChild>
+                <Button size="lg" className="w-full rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
                   <a href="tel:08082562910">
                     <Phone className="h-4 w-4 mr-2" /> Get Started — Call Now
                   </a>
                 </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  Or email <a href="mailto:sales.support@benenden.co.uk" className="underline">sales.support@benenden.co.uk</a>
+                </p>
               </CardContent>
             </Card>
           </motion.div>
         </div>
       </section>
 
-      {/* FAQs */}
-      <section className="py-16 md:py-20 bg-muted/30">
+      {/* ─── FAQs ─── */}
+      <section className="py-16 md:py-20 bg-[hsl(145,25%,97%)]">
         <div className="container max-w-3xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-8">
-            <motion.div variants={fadeIn} className="text-center space-y-3">
-              <h2 className="text-3xl font-bold text-foreground">Frequently Asked Questions</h2>
+            <motion.div variants={fadeIn} className="text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Questions from instructors</h2>
             </motion.div>
             <motion.div variants={fadeIn}>
               <Accordion type="single" collapsible className="space-y-2">
                 {faqs.map((faq, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4">
+                  <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4 bg-card">
                     <AccordionTrigger className="text-sm font-semibold text-left">{faq.q}</AccordionTrigger>
                     <AccordionContent className="text-sm text-muted-foreground">{faq.a}</AccordionContent>
                   </AccordionItem>
@@ -405,18 +413,18 @@ export default function HealthBenefitsPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-2xl text-center space-y-6">
+      {/* ─── FINAL CTA ─── */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container max-w-2xl text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-6">
-            <motion.h2 variants={fadeIn} className="text-3xl font-bold text-foreground">
-              Ready to Look After Yourself?
+            <motion.h2 variants={fadeIn} className="text-2xl md:text-3xl font-bold text-foreground">
+              You deserve the same care you give your pupils
             </motion.h2>
-            <motion.p variants={fadeIn} className="text-muted-foreground">
-              Whether you're a self-employed ADI or run a driving school, Benenden Health has you covered from £15.50/month.
+            <motion.p variants={fadeIn} className="text-muted-foreground leading-relaxed">
+              Whether you're a self-employed ADI or run a driving school — get healthcare that actually works around your life, from £15.50/month.
             </motion.p>
             <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button size="lg" className="rounded-xl" asChild>
+              <Button size="lg" className="rounded-xl bg-[hsl(145,35%,40%)] hover:bg-[hsl(145,35%,35%)] text-white" asChild>
                 <a href="tel:08082562910">
                   <Phone className="h-4 w-4 mr-2" /> 0808 256 2910
                 </a>
@@ -427,7 +435,7 @@ export default function HealthBenefitsPage() {
                 </a>
               </Button>
             </motion.div>
-            <motion.p variants={fadeIn} className="text-xs text-muted-foreground">
+            <motion.p variants={fadeIn} className="text-[10px] text-muted-foreground pt-4">
               Benenden Health is a trading name of The Benenden Healthcare Society Limited. Registered office: Holgate Park Drive, York, YO26 4GG.
             </motion.p>
           </motion.div>
