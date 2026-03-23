@@ -5,6 +5,7 @@ import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSe
 import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
+import { WhatsAppChatWidget } from "@/components/whatsapp/WhatsAppChatWidget";
 import { useMiniWebsiteSEO } from "@/hooks/useMiniWebsiteSEO";
 
 interface Instructor {
