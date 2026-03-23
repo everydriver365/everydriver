@@ -242,41 +242,81 @@ export default function FranchisePage() {
       </section>
 
       {/* £50 Bonus Calculator */}
-      <section className="py-16 md:py-24 bg-muted/50">
-        <div className="container max-w-3xl space-y-8 text-center">
-          <div className="space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold">£50 Per Intensive Course. Every Time.</h2>
-            <p className="text-muted-foreground">
-              Every pupil who completes an intensive course earns you a £50 bonus. How much could you earn?
+      <section className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
+        <div className="container max-w-4xl space-y-10 text-center">
+          <motion.div 
+            className="space-y-3"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <Badge className="bg-accent/20 text-accent border-accent/30 text-xs font-semibold px-3 py-1">
+              <Gift className="w-3 h-3 mr-1" /> BONUS CALCULATOR
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight">
+              £50 PER INTENSIVE.<br /><span className="text-accent">EVERY TIME.</span>
+            </h2>
+            <p className="text-primary-foreground/60 max-w-lg mx-auto">
+              Every pupil who completes an intensive course earns you a £50 bonus — paid automatically.
             </p>
-          </div>
-          <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
-            <label className="text-sm font-medium text-muted-foreground">
-              How many intensive courses do your pupils complete per year?
-            </label>
-            <Slider
-              value={passesPerYear}
-              onValueChange={setPassesPerYear}
-              min={5}
-              max={60}
-              step={1}
-              className="w-full"
-            />
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>5 courses</span>
-              <span className="text-lg font-bold text-foreground">{passesPerYear[0]} courses</span>
-              <span>60 courses</span>
-            </div>
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">Your annual bonus income</p>
-              <p className="text-5xl font-bold text-accent mt-1">
-                £{bonusAmount.toLocaleString()}
+          </motion.div>
+
+          <motion.div 
+            className="relative bg-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 rounded-3xl p-8 md:p-10 space-y-8"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-br from-accent/20 via-transparent to-accent/10 rounded-3xl blur-xl opacity-50 pointer-events-none" />
+            
+            <div className="relative space-y-6">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-primary-foreground/50 uppercase tracking-wider">
+                  Intensive courses per year
+                </p>
+                <p className="text-6xl md:text-7xl font-black tabular-nums text-accent">
+                  {passesPerYear[0]}
+                </p>
+              </div>
+
+              <div className="px-2">
+                <Slider
+                  value={passesPerYear}
+                  onValueChange={setPassesPerYear}
+                  min={5}
+                  max={60}
+                  step={1}
+                  className="w-full [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-accent [&_[role=slider]]:border-2 [&_[role=slider]]:border-accent [&_[role=slider]]:shadow-[0_0_20px_hsl(var(--accent)/0.4)] [&_[data-orientation=horizontal]>.bg-primary]:bg-accent [&_span[role=slider]]:ring-offset-primary"
+                />
+                <div className="flex items-center justify-between text-xs text-primary-foreground/40 mt-2 font-medium">
+                  <span>5 courses</span>
+                  <span>60 courses</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="bg-primary-foreground/5 rounded-2xl p-5 border border-primary-foreground/10">
+                  <p className="text-xs text-primary-foreground/40 uppercase tracking-wider font-medium">Annual bonus</p>
+                  <p className="text-3xl md:text-4xl font-black text-accent mt-1">
+                    £{bonusAmount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-primary-foreground/5 rounded-2xl p-5 border border-primary-foreground/10">
+                  <p className="text-xs text-primary-foreground/40 uppercase tracking-wider font-medium">Monthly extra</p>
+                  <p className="text-3xl md:text-4xl font-black text-primary-foreground mt-1">
+                    £{Math.round(bonusAmount / 12)}
+                  </p>
+                  <p className="text-xs text-primary-foreground/40 mt-1">per month</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-primary-foreground/50 pt-2">
+                That's <span className="text-accent font-semibold">£{bonusAmount.toLocaleString()} extra per year</span> on top of your lesson income — just for doing what you already do.
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                That's £{Math.round(bonusAmount / 12)}/month extra in your pocket
-              </p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
