@@ -499,6 +499,18 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
       </ScrollArea>
 
       <CardContent className="p-2 border-t shrink-0 space-y-1.5">
+        {/* WhatsApp toggle */}
+        {pupilPhone && (
+          <div className="flex items-center gap-2 px-1">
+            <MessageSquare className="h-3.5 w-3.5 text-emerald-500" />
+            <span className="text-xs text-muted-foreground">Also send via WhatsApp</span>
+            <Switch
+              checked={sendViaWhatsApp}
+              onCheckedChange={setSendViaWhatsApp}
+              className="h-4 w-8 [&>span]:h-3 [&>span]:w-3 data-[state=checked]:bg-emerald-500"
+            />
+          </div>
+        )}
         {/* File preview */}
         {selectedFile && (
           <div className="flex items-center gap-2 p-1.5 bg-muted rounded-lg">
