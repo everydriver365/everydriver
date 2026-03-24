@@ -41,6 +41,7 @@ export default function InstructorTakePayment() {
       }}
       paymentQrUrl={getActivePaymentQrUrl(instructor)}
       commissionPayer={instructor?.commission_payer}
+      commissionSplitPercent={instructor?.commission_split_percent}
       instructorName={instructor?.name}
       instructorId={instructor?.id}
       pupils={pupils}
