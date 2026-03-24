@@ -1,49 +1,53 @@
 
 
-## Simplify to 4-Tier Pricing Model
+## Differentiate Basic vs Enhanced Health in Comparison Table
 
-Consolidate the current 6-tier structure into 4 clean tiers with healthcare bundled into the hardware plans.
+Currently all healthcare features show "✓ Included" identically for both GPS + Health and Dashcam + Health tiers. We need to clearly show that **GPS + Health = Basic Health** and **Dashcam + Health = Enhanced Health (includes cancer care)**.
 
-### New Pricing Structure
+### What Changes
 
-| Tier | Price | What's Included |
-|------|-------|----------------|
-| **Free** | £0 | Basic diary, calendar, mini website |
-| **All-In** | £4.99 | All digital features (AI, MTD, SMS, payments) |
-| **GPS + Health** | £29.99 | All-In + GPS tracking + Basic Health cover |
-| **Dashcam + Health** | £49.99 | All-In + Dashcam + Enhanced Health cover |
+**1. Update existing comparison_features healthcare rows**
 
-Multi-School moves to a hidden "contact us" flow (deactivated from public pricing).
+Split the values so GPS shows "Basic" and Dashcam shows "Enhanced" or "✓" where appropriate:
 
-### Implementation Steps
+| Feature | Free | All-In | GPS + Health | Dashcam + Health |
+|---------|------|--------|-------------|-----------------|
+| Dental cashback (£150/yr) | — | — | ✓ Included | ✓ Included |
+| Optical cashback (£100/yr) | — | — | ✓ Included | ✓ Included |
+| 24/7 GP access | — | — | ✓ Included | ✓ Included |
+| Physio sessions | — | — | ✓ Included | ✓ Enhanced |
+| Mental health & EAP | — | — | ✓ Included | ✓ Enhanced |
+| Family cover option | — | — | — | ✓ Included |
+| **Cancer care & support** | — | — | — | ✓ Included |
+| **Hospital cash benefit** | — | — | — | ✓ Included |
 
-**1. Update `subscription_plans` table data**
-- Update GPS tier: rename to "GPS + Health", change price from £16 → £29.99, add `healthcare_basic` to features, update description
-- Update Single Dashcam tier: rename to "Dashcam + Health", change price from £25 → £49.99, add `healthcare_enhanced` to features, update description
-- Deactivate Duo Dashcam tier (`is_active = false`) — handle as in-dashboard upsell later
-- Deactivate Multi-School tier (`is_active = false`) — move to franchise enquiry flow
+**2. Add new Enhanced-only healthcare features**
 
-**2. Update `comparison_plans` table data**
-- Update GPS plan: name → "GPS + Health", price → "£29.99", description updated
-- Update Single Dashcam plan: name → "Dashcam + Health", price → "£49.99", description updated
-- Remove/hide Duo Dashcam and Multi-School comparison columns
+Insert 2-3 new rows in the `comparison_features` table for features exclusive to Enhanced Health:
+- Cancer care & support
+- Hospital cash benefit  
+- Specialist consultations
 
-**3. Update `comparison_features` healthcare rows**
-- Change healthcare plan_values: GPS → ✓ (included), Single Dashcam → ✓ (included), Free/All-In → "—"
+These will show "—" for Free/All-In/GPS and "✓ Included" for Dashcam + Health only.
 
-**4. Update UI components**
-- `UpgradePlanSheet.tsx` — will auto-reflect from database changes
-- `StepPlanSelection.tsx` — will auto-reflect
-- Compare page — will auto-reflect since it's database-driven
-- Update any hardcoded references to "Single Dashcam" or "Duo Dashcam" tier names in marketing copy
+**3. Add a sub-label row or category split**
 
-**5. Add healthcare add-on option for lower tiers**
-- Add `healthcare_basic` and `healthcare_enhanced` as add-on types in the instructor add-on marketplace (for Free/All-In users who want health cover without hardware)
-- Basic Health: £20.50/mo, Enhanced Health: £30/mo
+Rename the category or add a visual separator:
+- "Healthcare — Basic" for shared features
+- "Healthcare — Enhanced" for Dashcam-only features
+
+Alternatively, keep one "Healthcare & Wellbeing" category but add a row like "Health cover level" with values: `— | — | Basic | Enhanced + Cancer Care`
+
+**4. Update DemoPricingPage.tsx**
+
+Update the hardcoded healthcare section in the demo pricing page to reflect the differentiation.
+
+**5. Update health-benefits page copy**
+
+Update any marketing pages that reference healthcare to clarify the two tiers.
 
 ### Technical Details
-- All pricing changes are data updates (no schema migrations needed)
-- The comparison page is fully database-driven so it updates automatically
-- Feature gating already works via the `features` array on plans
-- The `instructor_addons` table already supports custom add-on types
+- All changes are data updates to `comparison_features` table (no schema changes)
+- The `/compare` page auto-reflects database changes
+- `DemoPricingPage.tsx` has hardcoded feature data that needs manual update
 
