@@ -440,7 +440,7 @@ export default function ComparisonPage() {
               <Heart className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               <h3 className="text-lg font-bold text-foreground">Enhanced Health + Cancer Care</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4"><p className="text-xs text-muted-foreground mb-4">Included with Dashcam + Health · £59.99/mo</p></p>
+            <p className="text-xs text-muted-foreground mb-4">Included with Dashcam + Health · £54.99/mo</p>
 
             <div className="space-y-2.5 mb-5">
               {[
@@ -513,7 +513,7 @@ export default function ComparisonPage() {
               <div className="p-4 text-center bg-primary-foreground/10 border-x border-primary-foreground/10">
                 <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ EveryDriver</div>
                 <div className="text-xl font-black">From FREE</div>
-                <div className="text-[10px] opacity-70"><div className="text-[10px] opacity-70">4 plans up to £59.99/mo</div></div>
+                <div className="text-[10px] opacity-70">4 plans up to £54.99/mo</div>
               </div>
               {[
                 { name: "Total Drive", price: "~£24/mo" },
@@ -535,7 +535,7 @@ export default function ComparisonPage() {
               { feature: "Pupil & parent apps", ed: "Both included", td: "Pupil only", mdt: "Limited", adi: "None", health: false },
               { feature: "AI lesson plans & automation", ed: true, td: false, mdt: false, adi: false, health: false },
               { feature: "GPS route tracking", ed: "From £34.99/mo", td: false, mdt: false, adi: false, health: false },
-              { feature: "Forward & cabin dashcam", ed: "From £59.99/mo", td: false, mdt: false, adi: false, health: false },
+              { feature: "Forward & cabin dashcam", ed: "From £54.99/mo", td: false, mdt: false, adi: false, health: false },
               { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false, health: false },
               { feature: "Basic Health cover", ed: "Incl. with GPS", td: false, mdt: false, adi: false, health: true },
               { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", td: false, mdt: false, adi: false, health: true },
@@ -567,7 +567,7 @@ export default function ComparisonPage() {
             { feature: "All-in digital plan", ed: "Just £7.99/mo", others: "£16–£24/mo", health: false },
             { feature: "AI lesson plans & automation", ed: "Included", others: "Not available", health: false },
             { feature: "GPS route tracking", ed: "£34.99/mo", others: "Not available", health: false },
-            { feature: "Forward & cabin dashcam", ed: "£59.99/mo", others: "Not available", health: false },
+            { feature: "Forward & cabin dashcam", ed: "£54.99/mo", others: "Not available", health: false },
             { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available", health: false },
             { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none", health: false },
             { feature: "Basic Health cover", ed: "Incl. with GPS", others: "Not available", health: true },
