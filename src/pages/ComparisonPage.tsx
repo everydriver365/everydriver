@@ -1,10 +1,11 @@
-import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight } from "lucide-react";
+import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight, Sparkles, Pill, Activity, Users, Plane, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { EnhancedHealthModal } from "@/components/EnhancedHealthModal";
 
 function CellValue({ value, popular }: { value: boolean | string; popular: boolean }) {
   if (typeof value === "string") {
