@@ -1,10 +1,11 @@
-import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight } from "lucide-react";
+import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight, Sparkles, Pill, Activity, Users, Plane, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { EnhancedHealthModal } from "@/components/EnhancedHealthModal";
 
 function CellValue({ value, popular }: { value: boolean | string; popular: boolean }) {
   if (typeof value === "string") {
@@ -297,6 +298,8 @@ export default function ComparisonPage() {
   const { data: plans = [], isLoading: plansLoading } = useComparisonPlans();
   const { data: features = [], isLoading: featuresLoading } = useComparisonFeatures();
   const navigate = useNavigate();
+  const [healthModalOpen, setHealthModalOpen] = useState(false);
+  const [healthModalTier, setHealthModalTier] = useState<"basic" | "enhanced">("enhanced");
 
   const featureGroups = useMemo(() => groupFeatures(features), [features]);
   const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
@@ -380,72 +383,113 @@ export default function ComparisonPage() {
         />
       </div>
 
-      {/* Healthcare Benefits Showcase — MOVED ABOVE competitor comparison */}
+      {/* Healthcare Benefits Showcase — Two-tier layout */}
       <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
-        <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-background dark:from-rose-950/20 dark:to-background overflow-hidden">
-          <div className="p-6 md:p-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-              <div>
-                <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
-                  <Heart className="h-3 w-3 mr-1" /> Included Free on GPS+
-                </Badge>
-                <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
-                <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mt-1">
-                  The only driving instructor app that includes healthcare benefits.
-                </p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  Every GPS plan and above comes with comprehensive health cover — dental, optical, GP access and more. No extra cost.
-                </p>
-              </div>
-              <div className="text-left md:text-right">
-                <div className="text-3xl font-black text-foreground">FREE<span className="text-sm font-normal text-muted-foreground"> with GPS+</span></div>
-                <p className="text-xs text-muted-foreground">Included on GPS & Dashcam plans</p>
-              </div>
-            </div>
+        <div className="text-center mb-8">
+          <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
+            <Heart className="h-3 w-3 mr-1" /> Included Free — No Other ADI App Offers This
+          </Badge>
+          <h2 className="text-2xl md:text-3xl font-black text-foreground">Private Healthcare & Wellbeing</h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl mx-auto">
+            Underwritten by AXA Health. Real private medical insurance — not a discount card.
+            Dental, GP, physio, mental health & cancer care included with your plan.
+          </p>
+        </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-5">
+          {/* Basic Health — GPS tier */}
+          <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/40 to-background dark:from-rose-950/20 dark:to-background p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Heart className="h-5 w-5 text-rose-500" />
+              <h3 className="text-lg font-bold text-foreground">Basic Health</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Included with GPS + Health · £29.99/mo</p>
+
+            <div className="space-y-2.5 mb-5">
               {[
-                { icon: <SmilePlus className="h-5 w-5" />, title: "Dental Cashback", desc: "Up to £150/yr back on dental treatments", highlight: "£150/yr" },
-                { icon: <Eye className="h-5 w-5" />, title: "Optical Cashback", desc: "Up to £100/yr back on eye tests & glasses", highlight: "£100/yr" },
-                { icon: <Stethoscope className="h-5 w-5" />, title: "24/7 GP Access", desc: "Phone & video consultations anytime, day or night", highlight: "Unlimited" },
-                { icon: <ShieldCheck className="h-5 w-5" />, title: "Physio Sessions", desc: "Get treated faster — no NHS waiting lists", highlight: "Included" },
-                { icon: <Brain className="h-5 w-5" />, title: "Mental Health Support", desc: "Counselling sessions & wellbeing resources", highlight: "Included" },
-                { icon: <Heart className="h-5 w-5" />, title: "Employee Assistance", desc: "24/7 confidential helpline for life's challenges", highlight: "24/7" },
-              ].map((benefit) => (
-                <div key={benefit.title} className="flex gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-rose-200 dark:hover:border-rose-800 transition-colors">
-                  <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                    {benefit.icon}
+                { icon: <Stethoscope className="h-4 w-4" />, label: "24/7 GP — phone & video" },
+                { icon: <SmilePlus className="h-4 w-4" />, label: "Dental cashback — up to £400/yr" },
+                { icon: <Eye className="h-4 w-4" />, label: "Optical cashback — up to £200/yr" },
+                { icon: <Activity className="h-4 w-4" />, label: "Physio & musculoskeletal access" },
+                { icon: <Phone className="h-4 w-4" />, label: "24/7 health support line" },
+                { icon: <Brain className="h-4 w-4" />, label: "EAP — legal, debt & family advice" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-md bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                    {item.icon}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">{benefit.title}</span>
-                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{benefit.highlight}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{benefit.desc}</p>
-                  </div>
+                  <span className="text-sm text-foreground">{item.label}</span>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-              <Button
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white"
-                onClick={() => navigate("/instructor-app/signup")}
-              >
-                <Heart className="h-4 w-4 mr-2" />
-                Get a GPS Plan with Healthcare
-              </Button>
-              <Link
-                to="/health-benefits"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:underline"
-              >
-                Learn more about healthcare benefits <ArrowRight className="h-4 w-4" />
-              </Link>
+            <button
+              onClick={() => { setHealthModalTier("basic"); setHealthModalOpen(true); }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline"
+            >
+              <Info className="h-3.5 w-3.5" /> View full cover details
+            </button>
+          </div>
+
+          {/* Enhanced Health — Dashcam tier */}
+          <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50/40 to-background dark:from-amber-950/20 dark:to-background p-6 relative">
+            <Badge className="absolute -top-2.5 right-4 bg-amber-500 text-white border-amber-500 text-[10px]">
+              <Sparkles className="h-3 w-3 mr-1" /> Most Comprehensive
+            </Badge>
+            <div className="flex items-center gap-2 mb-1">
+              <Heart className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <h3 className="text-lg font-bold text-foreground">Enhanced Health + Cancer Care</h3>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">No waiting period · Instant cover · Cancel anytime</p>
+            <p className="text-xs text-muted-foreground mb-4">Included with Dashcam + Health · £49.99/mo</p>
+
+            <div className="space-y-2.5 mb-5">
+              {[
+                { icon: <Stethoscope className="h-4 w-4" />, label: "Everything in Basic, plus…" },
+                { icon: <Building2 className="h-4 w-4" />, label: "Private hospital treatment — paid in full" },
+                { icon: <Heart className="h-4 w-4" />, label: "Cancer care — chemo & radiotherapy" },
+                { icon: <Brain className="h-4 w-4" />, label: "Mental health — 8 counselling sessions" },
+                { icon: <Activity className="h-4 w-4" />, label: "10 therapy sessions (physio, chiro, osteo)" },
+                { icon: <Pill className="h-4 w-4" />, label: "CT, MRI & PET scans — paid in full" },
+                { icon: <Users className="h-4 w-4" />, label: "Family cover option" },
+                { icon: <Plane className="h-4 w-4" />, label: "Worldwide travel insurance" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-md bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                    {item.icon}
+                  </div>
+                  <span className="text-sm text-foreground">{item.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => { setHealthModalTier("enhanced"); setHealthModalOpen(true); }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              <Info className="h-3.5 w-3.5" /> View full cover details
+            </button>
           </div>
         </div>
+
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white"
+            onClick={() => navigate("/instructor-app/signup")}
+          >
+            <Heart className="h-4 w-4 mr-2" />
+            Get Healthcare with Your Plan
+          </Button>
+          <Link
+            to="/health-benefits"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:underline"
+          >
+            Compare health tiers in detail <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <p className="text-xs text-muted-foreground text-center mt-3">Underwritten by AXA Health · No waiting period · Cancel anytime</p>
       </div>
+
+      <EnhancedHealthModal open={healthModalOpen} onClose={() => setHealthModalOpen(false)} tier={healthModalTier} />
 
       {/* Competitor Comparison — now below healthcare */}
       <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
