@@ -451,7 +451,7 @@ export default function ComparisonPage() {
                 { icon: <Activity className="h-4 w-4" />, label: "10 therapy sessions (physio, chiro, osteo)" },
                 { icon: <Pill className="h-4 w-4" />, label: "CT, MRI & PET scans — paid in full" },
                 { icon: <Users className="h-4 w-4" />, label: "Family cover option" },
-                { icon: <Plane className="h-4 w-4" />, label: "Worldwide travel insurance" },
+                
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-md bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
