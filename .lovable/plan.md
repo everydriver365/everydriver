@@ -1,35 +1,26 @@
 
 
-## Promote Healthcare More Prominently Across the Platform
+## Update Plan Pricing to Recommended Levels
 
-Healthcare is your killer differentiator — no competitor offers it. Right now it's buried at the bottom of `/compare` and exists on a separate `/health-benefits` page. Let's make it unmissable.
+Update the three paid tier prices in the database and ensure the comparison page reflects the new pricing.
 
-### What Changes
+### Price Changes
+- **All-In**: £4.99 → **£7.99**/mo
+- **GPS + Health**: £29.99 → **£34.99**/mo  
+- **Dashcam + Health**: £49.99 → **£59.99**/mo
 
-**1. Add a healthcare banner to the `/compare` hero section**
-- Insert a prominent callout strip directly below the hero heading: "The only ADI app with FREE private healthcare — dental, GP, physio, mental health & cancer care included."
-- Rose/warm accent styling to stand out from the pricing table.
+### What This Does to Margins
+| Tier | Revenue | Est. Costs | Profit | Margin |
+|------|---------|------------|--------|--------|
+| All-In | £7.99 | ~£0.50 | ~£7.49 | 94% |
+| GPS + Health | £34.99 | ~£21–23 | ~£12–14 | 34–40% |
+| Dashcam + Health | £59.99 | ~£42 | ~£17.99 | 30% |
 
-**2. Move the Healthcare Showcase section ABOVE the competitor comparison**
-- Currently the healthcare benefits grid sits at the very bottom of the page (below competitors). Move it up so visitors see it before the competitor table — reinforcing the value before they compare prices.
+### Technical Steps
 
-**3. Add healthcare callouts to each GPS+ plan column header**
-- In the plan header cards (both mobile and desktop), add a small badge like "🩺 Basic Health included" on GPS + Health and "🩺 Enhanced Health + Cancer Care" on Dashcam + Health. This makes the health benefit visible without scrolling.
+1. **Update `comparison_plans` table** — run three UPDATE statements via the insert tool to change the `price` column for the `all-in`, `gps-health`, and `dashcam-health` plan slugs.
 
-**4. Add a healthcare highlight row to the competitor comparison**
-- Make the existing health rows more visually distinct — add a rose background tint to the "Basic Health cover" and "Enhanced Health + Cancer Care" rows so they pop against the sea of checkmarks.
+2. **Verify the comparison page** — since the `/compare` page reads pricing dynamically from the database, no code changes are needed. The new prices will render automatically.
 
-**5. Add a "Learn more about healthcare" link**
-- Below the healthcare showcase section, add a prominent link/button to the existing `/health-benefits` page for instructors who want the full breakdown.
-
-### Technical Details
-
-All changes are in `src/pages/ComparisonPage.tsx`:
-- Reorder JSX sections (move healthcare showcase up)
-- Add a healthcare banner component after the hero
-- Add badge elements to the plan header rendering
-- Add conditional row styling for healthcare feature rows in the competitor grid
-- Add a "Learn more" CTA linking to `/health-benefits`
-
-No database or schema changes needed.
+3. **Check for any hardcoded price references** — search the codebase for `£4.99`, `£29.99`, `£49.99` strings and update any that appear outside the dynamic comparison table (e.g. marketing copy, CTAs, or GoCardless payment amounts).
 
