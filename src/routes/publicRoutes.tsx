@@ -47,6 +47,7 @@ const FranchisePage = lazy(() => import("@/pages/FranchisePage"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 const HealthBenefitsPage = lazy(() => import("@/pages/HealthBenefitsPage"));
+const DataDeletion = lazy(() => import("@/pages/DataDeletion"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -109,6 +110,7 @@ export const publicRoutes = (
 
     {/* Instructor-facing marketing */}
     <Route path="/health-benefits" element={<HealthBenefitsPage />} />
+    <Route path="/data-deletion" element={<DataDeletion />} />
 
     {/* Public utility routes */}
     <Route path="/switch" element={<SwitchToEveryDriver />} />
