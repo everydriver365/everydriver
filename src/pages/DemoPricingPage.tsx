@@ -137,7 +137,7 @@ function Table1() {
             {planNames.map((_, i) => (
               <td key={i} className={cn("p-4 text-center", i === popularIdx && "bg-primary/5")}>
                 <Button variant={i === popularIdx ? "default" : "outline"} size="sm" className="text-xs font-semibold w-full">
-                  {planNames[i] === "Multi-School" && <Phone className="h-3 w-3 mr-1" />}
+                  
                   {planCtas[i]}
                 </Button>
               </td>
