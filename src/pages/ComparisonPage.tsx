@@ -1,10 +1,10 @@
-import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck } from "lucide-react";
+import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function CellValue({ value, popular }: { value: boolean | string; popular: boolean }) {
   if (typeof value === "string") {
@@ -32,6 +32,32 @@ function groupFeatures(features: ComparisonFeature[]) {
     else groups.push({ category: f.category, features: [f] });
   }
   return groups;
+}
+
+/** Health badge for plan headers */
+function HealthBadge({ slug }: { slug: string }) {
+  if (slug === "gps" || slug === "gps_health") {
+    return (
+      <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 text-[9px] font-bold text-rose-700 dark:text-rose-300">
+        <Heart className="h-2.5 w-2.5" /> Basic Health
+      </div>
+    );
+  }
+  if (slug === "single_dashcam" || slug === "dashcam_health") {
+    return (
+      <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 text-[9px] font-bold text-rose-700 dark:text-rose-300">
+        <Heart className="h-2.5 w-2.5" /> Enhanced Health + Cancer Care
+      </div>
+    );
+  }
+  return null;
+}
+
+/** Check if a feature row is healthcare-related */
+function isHealthcareRow(featureName: string) {
+  const healthKeywords = ["health", "dental", "optical", "gp access", "physio", "mental", "cancer", "hospital", "eap", "wellbeing", "specialist"];
+  const lower = featureName.toLowerCase();
+  return healthKeywords.some((k) => lower.includes(k));
 }
 
 /** Mobile: swipeable plan cards */
@@ -106,6 +132,7 @@ function MobileComparison({
         {plan.description && (
           <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
         )}
+        <HealthBadge slug={plan.slug} />
         <Button
           variant={idx === popularIdx ? "default" : "outline"}
           size="sm"
@@ -128,17 +155,18 @@ function MobileComparison({
               {group.features.map((feat, fi) => {
                 const val = feat.plan_values[plan.slug] ?? false;
                 const isIncluded = val === true || (typeof val === "string" && val.length > 0);
+                const isHealth = isHealthcareRow(feat.feature_name);
                 return (
                   <div
                     key={feat.id}
                     className={cn(
                       "flex items-center justify-between px-3 py-2 text-xs",
-                      fi % 2 !== 0 && "bg-muted/5",
+                      isHealth ? "bg-rose-50/60 dark:bg-rose-950/20" : fi % 2 !== 0 && "bg-muted/5",
                       fi < group.features.length - 1 && "border-b border-border/10"
                     )}
                   >
                     <span className={cn("font-medium", isIncluded ? "text-foreground" : "text-muted-foreground/50")}>
-                      {feat.feature_name}
+                      {isHealth && "🩺 "}{feat.feature_name}
                     </span>
                     <CellValue value={val} popular={idx === popularIdx} />
                   </div>
@@ -193,6 +221,7 @@ function DesktopComparison({
                 <span className="text-xs font-normal opacity-60">{plan.period}</span>
               </div>
               <div className="text-xs font-semibold mt-0.5 opacity-90">{plan.name}</div>
+              <HealthBadge slug={plan.slug} />
             </div>
           ))}
         </div>
@@ -204,27 +233,34 @@ function DesktopComparison({
               <div className="px-4 py-2 bg-muted/15 border-y border-border/20">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{group.category}</span>
               </div>
-              {group.features.map((feat, fi) => (
-                <div key={feat.id} className={cn("flex border-b border-border/10", fi % 2 !== 0 && "bg-muted/5")}>
-                  <div className="w-48 shrink-0 p-2.5 pl-4 text-xs text-foreground font-medium flex items-center">
-                    {feat.feature_name}
-                  </div>
-                  {plans.map((plan, vi) => (
-                    <div
-                      key={plan.id}
-                      className={cn(
-                        "flex-1 min-w-[100px] p-2.5 flex items-center justify-center",
-                        vi === popularIdx && "bg-primary/5"
-                      )}
-                    >
-                      <CellValue
-                        value={feat.plan_values[plan.slug] ?? false}
-                        popular={vi === popularIdx}
-                      />
+              {group.features.map((feat, fi) => {
+                const isHealth = isHealthcareRow(feat.feature_name);
+                return (
+                  <div key={feat.id} className={cn(
+                    "flex border-b border-border/10",
+                    isHealth ? "bg-rose-50/50 dark:bg-rose-950/15" : fi % 2 !== 0 && "bg-muted/5"
+                  )}>
+                    <div className="w-48 shrink-0 p-2.5 pl-4 text-xs text-foreground font-medium flex items-center">
+                      {isHealth && <Heart className="h-3 w-3 text-rose-500 mr-1.5 shrink-0" />}
+                      {feat.feature_name}
                     </div>
-                  ))}
-                </div>
-              ))}
+                    {plans.map((plan, vi) => (
+                      <div
+                        key={plan.id}
+                        className={cn(
+                          "flex-1 min-w-[100px] p-2.5 flex items-center justify-center",
+                          vi === popularIdx && "bg-primary/5"
+                        )}
+                      >
+                        <CellValue
+                          value={feat.plan_values[plan.slug] ?? false}
+                          popular={vi === popularIdx}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           ))}
 
@@ -300,6 +336,26 @@ export default function ComparisonPage() {
         </div>
       </div>
 
+      {/* Healthcare Banner */}
+      <div className="bg-gradient-to-r from-rose-50 to-rose-100/50 dark:from-rose-950/30 dark:to-rose-900/10 border-b border-rose-200 dark:border-rose-800/40">
+        <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-5 flex flex-col md:flex-row items-center justify-center gap-3 text-center md:text-left">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-rose-200 dark:bg-rose-800/50 flex items-center justify-center shrink-0">
+              <Heart className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+            </div>
+            <p className="text-sm md:text-base font-bold text-rose-900 dark:text-rose-100">
+              The only ADI app with FREE private healthcare — dental, GP, physio, mental health & cancer care included.
+            </p>
+          </div>
+          <Link
+            to="/health-benefits"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:underline whitespace-nowrap"
+          >
+            Learn more <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+
       {/* Mobile: card-based view */}
       <div className="md:hidden">
         <MobileComparison
@@ -324,7 +380,74 @@ export default function ComparisonPage() {
         />
       </div>
 
-      {/* Competitor Comparison */}
+      {/* Healthcare Benefits Showcase — MOVED ABOVE competitor comparison */}
+      <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
+        <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-background dark:from-rose-950/20 dark:to-background overflow-hidden">
+          <div className="p-6 md:p-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+              <div>
+                <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
+                  <Heart className="h-3 w-3 mr-1" /> Included Free on GPS+
+                </Badge>
+                <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
+                <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mt-1">
+                  The only driving instructor app that includes healthcare benefits.
+                </p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+                  Every GPS plan and above comes with comprehensive health cover — dental, optical, GP access and more. No extra cost.
+                </p>
+              </div>
+              <div className="text-left md:text-right">
+                <div className="text-3xl font-black text-foreground">FREE<span className="text-sm font-normal text-muted-foreground"> with GPS+</span></div>
+                <p className="text-xs text-muted-foreground">Included on GPS & Dashcam plans</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { icon: <SmilePlus className="h-5 w-5" />, title: "Dental Cashback", desc: "Up to £150/yr back on dental treatments", highlight: "£150/yr" },
+                { icon: <Eye className="h-5 w-5" />, title: "Optical Cashback", desc: "Up to £100/yr back on eye tests & glasses", highlight: "£100/yr" },
+                { icon: <Stethoscope className="h-5 w-5" />, title: "24/7 GP Access", desc: "Phone & video consultations anytime, day or night", highlight: "Unlimited" },
+                { icon: <ShieldCheck className="h-5 w-5" />, title: "Physio Sessions", desc: "Get treated faster — no NHS waiting lists", highlight: "Included" },
+                { icon: <Brain className="h-5 w-5" />, title: "Mental Health Support", desc: "Counselling sessions & wellbeing resources", highlight: "Included" },
+                { icon: <Heart className="h-5 w-5" />, title: "Employee Assistance", desc: "24/7 confidential helpline for life's challenges", highlight: "24/7" },
+              ].map((benefit) => (
+                <div key={benefit.title} className="flex gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-rose-200 dark:hover:border-rose-800 transition-colors">
+                  <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                    {benefit.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{benefit.title}</span>
+                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{benefit.highlight}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{benefit.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+              <Button
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white"
+                onClick={() => navigate("/instructor-app/signup")}
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Get a GPS Plan with Healthcare
+              </Button>
+              <Link
+                to="/health-benefits"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:underline"
+              >
+                Learn more about healthcare benefits <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">No waiting period · Instant cover · Cancel anytime</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Competitor Comparison — now below healthcare */}
       <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
         <div className="text-center mb-8">
           <Badge className="mb-3 bg-primary/10 text-primary border-primary/20 text-xs">
@@ -361,21 +484,27 @@ export default function ComparisonPage() {
             </div>
 
             {[
-              { feature: "Starting price", ed: "FREE (£0)", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
-              { feature: "All-in digital plan", ed: "£4.99/mo", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
-              { feature: "Diary & scheduling", ed: true, td: true, mdt: true, adi: true },
-              { feature: "Professional website", ed: true, td: true, mdt: true, adi: true },
-              { feature: "Pupil & parent apps", ed: "Both included", td: "Pupil only", mdt: "Limited", adi: "None" },
-              { feature: "AI lesson plans & automation", ed: true, td: false, mdt: false, adi: false },
-              { feature: "GPS route tracking", ed: "From £29.99/mo", td: false, mdt: false, adi: false },
-              { feature: "Dashcam telematics", ed: "From £49.99/mo", td: false, mdt: false, adi: false },
-              { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false },
-              { feature: "Basic Health cover", ed: "Incl. with GPS", td: false, mdt: false, adi: false },
-              { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", td: false, mdt: false, adi: false },
-              { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true },
+              { feature: "Starting price", ed: "FREE (£0)", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo", health: false },
+              { feature: "All-in digital plan", ed: "£4.99/mo", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo", health: false },
+              { feature: "Diary & scheduling", ed: true, td: true, mdt: true, adi: true, health: false },
+              { feature: "Professional website", ed: true, td: true, mdt: true, adi: true, health: false },
+              { feature: "Pupil & parent apps", ed: "Both included", td: "Pupil only", mdt: "Limited", adi: "None", health: false },
+              { feature: "AI lesson plans & automation", ed: true, td: false, mdt: false, adi: false, health: false },
+              { feature: "GPS route tracking", ed: "From £29.99/mo", td: false, mdt: false, adi: false, health: false },
+              { feature: "Dashcam telematics", ed: "From £49.99/mo", td: false, mdt: false, adi: false, health: false },
+              { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false, health: false },
+              { feature: "Basic Health cover", ed: "Incl. with GPS", td: false, mdt: false, adi: false, health: true },
+              { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", td: false, mdt: false, adi: false, health: true },
+              { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true, health: false },
             ].map((row, ri) => (
-              <div key={row.feature} className={cn("grid grid-cols-5 border-t border-border/10", ri % 2 !== 0 && "bg-muted/5")}>
-                <div className="p-3 pl-4 text-xs font-medium text-foreground flex items-center">{row.feature}</div>
+              <div key={row.feature} className={cn(
+                "grid grid-cols-5 border-t border-border/10",
+                row.health ? "bg-rose-50/60 dark:bg-rose-950/20" : ri % 2 !== 0 && "bg-muted/5"
+              )}>
+                <div className="p-3 pl-4 text-xs font-medium text-foreground flex items-center">
+                  {row.health && <Heart className="h-3 w-3 text-rose-500 mr-1.5 shrink-0" />}
+                  {row.feature}
+                </div>
                 <div className="p-3 flex items-center justify-center bg-primary/5 border-x border-border/10">
                   <CompetitorCell value={row.ed} highlight />
                 </div>
@@ -390,88 +519,33 @@ export default function ComparisonPage() {
         {/* Mobile: stacked cards */}
         <div className="md:hidden space-y-3">
           {[
-            { feature: "Starting price", ed: "FREE (£0)", others: "From £16–£24/mo" },
-            { feature: "All-in digital plan", ed: "Just £4.99/mo", others: "£16–£24/mo" },
-            { feature: "AI lesson plans & automation", ed: "Included", others: "Not available" },
-            { feature: "GPS route tracking", ed: "£29.99/mo", others: "Not available" },
-            { feature: "Dashcam telematics", ed: "£49.99/mo", others: "Not available" },
-            { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available" },
-            { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none" },
-            { feature: "Basic Health cover", ed: "Incl. with GPS", others: "Not available" },
-            { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", others: "Not available" },
+            { feature: "Starting price", ed: "FREE (£0)", others: "From £16–£24/mo", health: false },
+            { feature: "All-in digital plan", ed: "Just £4.99/mo", others: "£16–£24/mo", health: false },
+            { feature: "AI lesson plans & automation", ed: "Included", others: "Not available", health: false },
+            { feature: "GPS route tracking", ed: "£29.99/mo", others: "Not available", health: false },
+            { feature: "Dashcam telematics", ed: "£49.99/mo", others: "Not available", health: false },
+            { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available", health: false },
+            { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none", health: false },
+            { feature: "Basic Health cover", ed: "Incl. with GPS", others: "Not available", health: true },
+            { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", others: "Not available", health: true },
           ].map((row) => (
-            <div key={row.feature} className="rounded-xl border bg-card p-4">
-              <div className="text-xs font-bold text-foreground mb-2">{row.feature}</div>
+            <div key={row.feature} className={cn(
+              "rounded-xl border bg-card p-4",
+              row.health && "border-rose-200 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/15"
+            )}>
+              <div className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                {row.health && <Heart className="h-3 w-3 text-rose-500" />}
+                {row.feature}
+              </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-xs font-semibold text-primary">{row.ed}</span>
+                  <div className={cn("h-2 w-2 rounded-full", row.health ? "bg-rose-500" : "bg-primary")} />
+                  <span className={cn("text-xs font-semibold", row.health ? "text-rose-700 dark:text-rose-300" : "text-primary")}>{row.ed}</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">{row.others}</span>
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Healthcare Benefits Showcase */}
-      <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
-        <div className="rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-background dark:from-rose-950/20 dark:to-background overflow-hidden">
-          <div className="p-6 md:p-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-              <div>
-                <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
-                  <Heart className="h-3 w-3 mr-1" /> Included Free on GPS+
-                </Badge>
-                <h2 className="text-2xl md:text-3xl font-black text-foreground">Healthcare & Wellbeing</h2>
-                <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mt-1">
-                  The only driving instructor app that includes healthcare benefits.
-                </p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  Every GPS plan and above comes with comprehensive health cover — dental, optical, GP access and more. No extra cost.
-                </p>
-              </div>
-              <div className="text-left md:text-right">
-                <div className="text-3xl font-black text-foreground">FREE<span className="text-sm font-normal text-muted-foreground"> with GPS+</span></div>
-                <p className="text-xs text-muted-foreground">Included on GPS, Single, Duo & Multi plans</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { icon: <SmilePlus className="h-5 w-5" />, title: "Dental Cashback", desc: "Up to £150/yr back on dental treatments", highlight: "£150/yr" },
-                { icon: <Eye className="h-5 w-5" />, title: "Optical Cashback", desc: "Up to £100/yr back on eye tests & glasses", highlight: "£100/yr" },
-                { icon: <Stethoscope className="h-5 w-5" />, title: "24/7 GP Access", desc: "Phone & video consultations anytime, day or night", highlight: "Unlimited" },
-                { icon: <ShieldCheck className="h-5 w-5" />, title: "Physio Sessions", desc: "Get treated faster — no NHS waiting lists", highlight: "Included" },
-                { icon: <Brain className="h-5 w-5" />, title: "Mental Health Support", desc: "Counselling sessions & wellbeing resources", highlight: "Included" },
-                { icon: <Heart className="h-5 w-5" />, title: "Employee Assistance", desc: "24/7 confidential helpline for life's challenges", highlight: "24/7" },
-              ].map((benefit) => (
-                <div key={benefit.title} className="flex gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-rose-200 dark:hover:border-rose-800 transition-colors">
-                  <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                    {benefit.icon}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">{benefit.title}</span>
-                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{benefit.highlight}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{benefit.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-              <Button
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white"
-                onClick={() => navigate("/instructor-app/signup")}
-              >
-                <Heart className="h-4 w-4 mr-2" />
-                Get a GPS Plan with Healthcare
-              </Button>
-              <p className="text-xs text-muted-foreground">No waiting period · Instant cover · Cancel anytime</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
