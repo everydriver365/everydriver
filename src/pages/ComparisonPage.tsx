@@ -68,11 +68,13 @@ function MobileComparison({
   featureGroups,
   popularIdx,
   onCtaClick,
+  billing,
 }: {
   plans: ComparisonPlan[];
   featureGroups: { category: string; features: ComparisonFeature[] }[];
   popularIdx: number;
   onCtaClick: (slug: string) => void;
+  billing: "monthly" | "annual";
 }) {
   const [idx, setIdx] = useState(Math.max(popularIdx, 0));
   const plan = plans[idx];
@@ -127,9 +129,14 @@ function MobileComparison({
           <Badge className="mb-2 text-[10px]">★ Most Popular</Badge>
         )}
         <div className="text-3xl font-black text-foreground">
-          {plan.price}
-          <span className="text-sm font-normal text-muted-foreground">{plan.period}</span>
+          {billing === "annual" && plan.price_annual ? plan.price_annual : plan.price}
+          <span className="text-sm font-normal text-muted-foreground">{billing === "annual" && plan.price_annual ? "/yr" : plan.period}</span>
         </div>
+        {billing === "annual" && plan.price_annual && plan.price && (
+          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+            Save {getSavings(plan.price, plan.price_annual)}
+          </div>
+        )}
         <div className="text-sm font-semibold text-foreground mt-1">{plan.name}</div>
         {plan.description && (
           <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
@@ -188,11 +195,13 @@ function DesktopComparison({
   featureGroups,
   popularIdx,
   onCtaClick,
+  billing,
 }: {
   plans: ComparisonPlan[];
   featureGroups: { category: string; features: ComparisonFeature[] }[];
   popularIdx: number;
   onCtaClick: (slug: string) => void;
+  billing: "monthly" | "annual";
 }) {
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-12">
@@ -219,10 +228,15 @@ function DesktopComparison({
                 <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ Popular</div>
               )}
               <div className="text-2xl font-black">
-                {plan.price}
-                <span className="text-xs font-normal opacity-60">{plan.period}</span>
+                {billing === "annual" && plan.price_annual ? plan.price_annual : plan.price}
+                <span className="text-xs font-normal opacity-60">{billing === "annual" && plan.price_annual ? "/yr" : plan.period}</span>
               </div>
               <div className="text-xs font-semibold mt-0.5 opacity-90">{plan.name}</div>
+              {billing === "annual" && plan.price_annual && plan.price && (
+                <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">
+                  Save {getSavings(plan.price, plan.price_annual)}
+                </div>
+              )}
               <HealthBadge slug={plan.slug} />
             </div>
           ))}
