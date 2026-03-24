@@ -1,32 +1,41 @@
 
 
-## Add Annual Pricing Toggle (10% Discount)
+## Churn Analysis Dashboard for Admin Portal
 
-### Annual Prices (10% off monthly × 12)
-| Plan | Monthly | Annual Total | Monthly Equiv. | Savings |
-|------|---------|-------------|----------------|---------|
-| Free | £0 | £0 | £0 | — |
-| All-In | £7.99 | £86.29 | £7.19 | £9.59 |
-| GPS + Health | £34.99 | £377.89 | £31.49 | £41.99 |
-| Dashcam + Health | £54.99 | £593.89 | £49.49 | £65.99 |
+A new admin section providing detailed subscriber churn analytics broken down by tier, with trends over time and actionable insights.
 
-### Database
-1. **Add `price_annual` column** to `comparison_plans` — nullable text field.
-2. **Populate values** — `£86.29` for All-In, `£377.89` for GPS+Health, `£593.89` for Dashcam+Health.
+### What You Get
 
-### Frontend Changes
+- **Churn summary cards**: Current churn rate, total churned (30d), average subscription lifetime, net subscriber change
+- **Churn by tier breakdown**: Bar chart showing churn counts per plan (Free, All-In, GPS+Health, Dashcam+Health)
+- **Churn trend over time**: Area chart showing monthly churn rate over last 6 months
+- **Retention cohort view**: Table showing how many subscribers from each month are still active
+- **At-risk subscribers list**: Table of subscriptions nearing expiry or with failed payments
 
-1. **`src/hooks/useComparisonData.ts`** — add `price_annual: string | null` to `ComparisonPlan` interface.
+### Data Sources (all existing)
 
-2. **`src/pages/ComparisonPage.tsx`**:
-   - Add a Monthly/Annual toggle below the hero with a "Save 10%" badge.
-   - When Annual is selected, swap `plan.price` for `plan.price_annual` and show `/yr` period.
-   - Show small "Save £X" text under annual prices.
-   - Pass `&billing=annual` to CTA URLs when annual is active.
-   - Apply to both desktop table header and mobile card views.
+- `instructor_subscriptions` — status, plan_id, created_at, current_period_end
+- `subscription_plans` — plan names, slugs, pricing
+- `subscription_payments` — payment status for identifying failed payments
+
+No database changes needed. All data is already available.
+
+### Technical Steps
+
+1. **Create `src/components/admin/ChurnAnalyticsDashboard.tsx`** — new component with:
+   - Fetches all subscriptions + plans from database
+   - Computes churn rate per tier (inactive subs whose period ended in last 30 days)
+   - Builds 6-month trend data by iterating months
+   - Cohort retention table grouping subscribers by signup month
+   - At-risk list filtering subscriptions with `current_period_end` in next 14 days or failed payment status
+   - Uses Recharts (BarChart, AreaChart) matching existing `RevenueAnalytics` patterns
+   - Uses existing StatCard, Card, Table, Badge components
+
+2. **Register in `src/pages/AdminPortal.tsx`**:
+   - Add "Churn Analysis" as a new sidebar item under the existing analytics/pricing group
+   - Wire it to render `ChurnAnalyticsDashboard` when selected
 
 ### Files Modified
-- `supabase/migrations/` — new migration for `price_annual` column
-- `src/hooks/useComparisonData.ts`
-- `src/pages/ComparisonPage.tsx`
+- `src/components/admin/ChurnAnalyticsDashboard.tsx` (new)
+- `src/pages/AdminPortal.tsx` (add import + sidebar item + render case)
 
