@@ -71,11 +71,16 @@ const featureData: FeatureRow[] = [
   {
     category: "Healthcare & Wellbeing",
     features: [
-      { name: "Basic Health cover", values: ["—", "—", "✓ Included", "—"] },
-      { name: "Enhanced Health cover", values: ["—", "—", "—", "✓ Included"] },
-      { name: "Dental & optical cashback", values: [false, false, true, true] },
-      { name: "24/7 GP access", values: [false, false, true, true] },
-      { name: "Mental health & EAP", values: [false, false, false, true] },
+      { name: "Health cover level", values: ["—", "—", "Basic", "Enhanced + Cancer Care"] },
+      { name: "Dental cashback (£150/yr)", values: ["—", "—", "✓ Included", "✓ Included"] },
+      { name: "Optical cashback (£100/yr)", values: ["—", "—", "✓ Included", "✓ Included"] },
+      { name: "24/7 GP access", values: ["—", "—", "✓ Included", "✓ Included"] },
+      { name: "Physio sessions", values: ["—", "—", "✓ Included", "✓ Enhanced"] },
+      { name: "Mental health & EAP", values: ["—", "—", "✓ Included", "✓ Enhanced"] },
+      { name: "Family cover option", values: ["—", "—", "—", "✓ Included"] },
+      { name: "Cancer care & support", values: ["—", "—", "—", "✓ Included"] },
+      { name: "Hospital cash benefit", values: ["—", "—", "—", "✓ Included"] },
+      { name: "Specialist consultations", values: ["—", "—", "—", "✓ Included"] },
     ],
   },
 ];
