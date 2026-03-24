@@ -332,7 +332,7 @@ export default function ComparisonPage() {
           </Badge>
           <h2 className="text-2xl md:text-3xl font-black text-foreground">How We Compare to Other Diary Apps</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">
-            Same diary features, plus GPS, dashcams, healthcare & more — starting from FREE.
+            4 simple plans. GPS, dashcams, healthcare & AI included — starting from FREE.
           </p>
         </div>
 
@@ -346,7 +346,7 @@ export default function ComparisonPage() {
               <div className="p-4 text-center bg-primary-foreground/10 border-x border-primary-foreground/10">
                 <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ EveryDriver</div>
                 <div className="text-xl font-black">From FREE</div>
-                <div className="text-[10px] opacity-70">to £49/mo</div>
+                <div className="text-[10px] opacity-70">4 plans up to £49.99/mo</div>
               </div>
               {[
                 { name: "Total Drive", price: "~£24/mo" },
@@ -361,14 +361,17 @@ export default function ComparisonPage() {
             </div>
 
             {[
-              { feature: "Starting price", ed: "FREE", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
+              { feature: "Starting price", ed: "FREE (£0)", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
+              { feature: "All-in digital plan", ed: "£4.99/mo", td: "£24/mo", mdt: "£19/mo", adi: "£16/mo" },
               { feature: "Diary & scheduling", ed: true, td: true, mdt: true, adi: true },
               { feature: "Professional website", ed: true, td: true, mdt: true, adi: true },
               { feature: "Pupil & parent apps", ed: "Both included", td: "Pupil only", mdt: "Limited", adi: "None" },
-              { feature: "GPS route tracking", ed: true, td: false, mdt: false, adi: false },
-              { feature: "Dashcam telematics", ed: true, td: false, mdt: false, adi: false },
+              { feature: "AI lesson plans & automation", ed: true, td: false, mdt: false, adi: false },
+              { feature: "GPS route tracking", ed: "From £29.99/mo", td: false, mdt: false, adi: false },
+              { feature: "Dashcam telematics", ed: "From £49.99/mo", td: false, mdt: false, adi: false },
               { feature: "HMRC MTD tax filing", ed: "Free", td: false, mdt: false, adi: false },
-              { feature: "Healthcare benefits", ed: "Included (GPS+)", td: false, mdt: false, adi: false },
+              { feature: "Basic Health cover", ed: "Incl. with GPS", td: false, mdt: false, adi: false },
+              { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", td: false, mdt: false, adi: false },
               { feature: "No tie-in contract", ed: true, td: true, mdt: true, adi: true },
             ].map((row, ri) => (
               <div key={row.feature} className={cn("grid grid-cols-5 border-t border-border/10", ri % 2 !== 0 && "bg-muted/5")}>
@@ -387,12 +390,15 @@ export default function ComparisonPage() {
         {/* Mobile: stacked cards */}
         <div className="md:hidden space-y-3">
           {[
-            { feature: "Starting price", ed: "FREE", others: "From £16–£24/mo" },
-            { feature: "GPS route tracking", ed: "Included", others: "Not available" },
-            { feature: "Dashcam telematics", ed: "Included", others: "Not available" },
+            { feature: "Starting price", ed: "FREE (£0)", others: "From £16–£24/mo" },
+            { feature: "All-in digital plan", ed: "Just £4.99/mo", others: "£16–£24/mo" },
+            { feature: "AI lesson plans & automation", ed: "Included", others: "Not available" },
+            { feature: "GPS route tracking", ed: "£29.99/mo", others: "Not available" },
+            { feature: "Dashcam telematics", ed: "£49.99/mo", others: "Not available" },
             { feature: "HMRC MTD tax filing", ed: "Free", others: "Not available" },
             { feature: "Pupil & parent apps", ed: "Both included", others: "Limited or none" },
-            { feature: "Healthcare benefits", ed: "Included (GPS+)", others: "Not available" },
+            { feature: "Basic Health cover", ed: "Incl. with GPS", others: "Not available" },
+            { feature: "Enhanced Health + Cancer Care", ed: "Incl. with Dashcam", others: "Not available" },
           ].map((row) => (
             <div key={row.feature} className="rounded-xl border bg-card p-4">
               <div className="text-xs font-bold text-foreground mb-2">{row.feature}</div>
