@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check } from "lucide-react";
+import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check, PoundSterling } from "lucide-react";
 import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
 import {
   Dialog,
@@ -15,6 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAdminFee } from "@/hooks/useAdminFee";
+import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 type View = "picker" | "qr" | "link";
 
@@ -31,6 +33,7 @@ interface TakePaymentModalProps {
   onOpenChange: (open: boolean) => void;
   paymentQrUrl?: string | null;
   commissionPayer?: string | null;
+  commissionSplitPercent?: number | null;
   instructorName?: string;
   instructorId?: string;
   pupils: Pupil[];
@@ -41,6 +44,7 @@ export function TakePaymentModal({
   onOpenChange,
   paymentQrUrl,
   commissionPayer,
+  commissionSplitPercent,
   instructorName = "Your Instructor",
   instructorId,
   pupils,
@@ -57,6 +61,11 @@ export function TakePaymentModal({
   const [clearForManual, setClearForManual] = useState(false);
 
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
+
+  // Admin fee calculation
+  const parsedAmount = parseFloat(amount) || 0;
+  const splitPct = commissionPayer === "instructor" ? 0 : commissionSplitPercent ?? 100;
+  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(parsedAmount, splitPct);
 
   const handleClose = (o: boolean) => {
     if (!o) {
@@ -100,7 +109,7 @@ export function TakePaymentModal({
     }
   };
 
-  // Send Link
+  // Generate Square payment link then send via SMS/email
   const handleSendLink = async () => {
     if (!instructorId) return;
     if (!manualPhone && !manualEmail) return;
@@ -108,9 +117,40 @@ export function TakePaymentModal({
     setSending(true);
     try {
       const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
-      const paymentLink = isManualOnly
-        ? `${window.location.origin}/pay/${instructorId}`
-        : `${window.location.origin}/pay/${instructorId}?pupil=${selectedPupilId}`;
+      let paymentLink: string;
+
+      // If amount is set, generate a Square payment link with the total (including admin fee)
+      if (parsedAmount > 0) {
+        const chargeAmount = hasFee ? totalCharge : parsedAmount;
+        const recipientName = isManualOnly ? "Payment" : (selectedPupil?.name || "Payment");
+        const orderRef = `PR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("square-checkout", {
+          body: {
+            amount: chargeAmount,
+            orderReference: orderRef,
+            customerEmail: manualEmail || undefined,
+            customerPhone: manualPhone || undefined,
+            customerName: recipientName,
+            description: `Payment request from ${instructorName}`,
+            returnUrl: `${window.location.origin}/pay/${instructorId}?success=true`,
+            cancelUrl: `${window.location.origin}/pay/${instructorId}?cancelled=true`,
+            instructorId,
+            pupilId: isManualOnly ? undefined : selectedPupilId,
+          },
+        });
+
+        if (checkoutError || !checkoutData?.checkoutUrl) {
+          throw new Error(checkoutData?.error || "Failed to generate payment link");
+        }
+
+        paymentLink = checkoutData.checkoutUrl;
+      } else {
+        // No amount — send generic payment page link
+        paymentLink = isManualOnly
+          ? `${window.location.origin}/pay/${instructorId}`
+          : `${window.location.origin}/pay/${instructorId}?pupil=${selectedPupilId}`;
+      }
 
       const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
         body: {
@@ -128,12 +168,14 @@ export function TakePaymentModal({
       if (data?.sent > 0 || data?.emailSent > 0) {
         setLinkSent(true);
         const recipientName = isManualOnly ? (manualPhone || manualEmail) : selectedPupil?.name;
-        toast.success(`Payment link sent to ${recipientName}`);
+        const amountText = parsedAmount > 0 ? ` for £${(hasFee ? totalCharge : parsedAmount).toFixed(2)}` : "";
+        toast.success(`Payment request${amountText} sent to ${recipientName}`);
       } else {
         toast.error("Failed to send — check contact details");
       }
-    } catch {
-      toast.error("Failed to send payment link");
+    } catch (e) {
+      console.error("Send payment link error:", e);
+      toast.error(e instanceof Error ? e.message : "Failed to send payment link");
     } finally {
       setSending(false);
     }
@@ -151,8 +193,8 @@ export function TakePaymentModal({
     {
       id: "link" as const,
       icon: Send,
-      label: "Send Link",
-      desc: "Send payment link via SMS or email",
+      label: "Send Request",
+      desc: "Send payment request via SMS or email",
       color: "text-blue-600",
       bg: "bg-blue-500/10",
     },
@@ -173,12 +215,12 @@ export function TakePaymentModal({
                <DialogTitle className="text-base">
                 {view === "picker" && "Take Payment"}
                 {view === "qr" && "QR Code"}
-                {view === "link" && "Send Payment Link"}
+                {view === "link" && "Send Payment Request"}
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {view === "picker" && "Choose a payment method"}
                 {view === "qr" && "Pupil scans to pay"}
-                {view === "link" && "Send a link via SMS or email"}
+                {view === "link" && "Set amount and send via SMS or email"}
               </DialogDescription>
             </div>
           </div>
@@ -258,13 +300,51 @@ export function TakePaymentModal({
                   <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <Check className="h-6 w-6 text-emerald-600" />
                   </div>
-                  <p className="font-medium text-sm">Link sent!</p>
-                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setManualPhone(""); setManualEmail(""); setClearForManual(false); }}>
+                  <p className="font-medium text-sm">Payment request sent!</p>
+                  <Button variant="outline" size="sm" onClick={() => { setLinkSent(false); setSelectedPupilId(""); setAmount(""); setManualPhone(""); setManualEmail(""); setClearForManual(false); }}>
                     Send Another
                   </Button>
                 </div>
               ) : (
                 <>
+                  {/* Amount input */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Amount to request</Label>
+                    <div className="relative">
+                      <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        min="1"
+                        max="5000"
+                        step="0.01"
+                        placeholder="Enter amount"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="pl-9 text-lg"
+                      />
+                    </div>
+                    {/* Quick amount buttons */}
+                    <div className="flex gap-2 flex-wrap">
+                      {[30, 40, 50, 100].map((v) => (
+                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setAmount(v.toString())}>
+                          £{v}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Admin fee breakdown */}
+                  {parsedAmount > 0 && (
+                    <AdminFeeBreakdown
+                      baseAmount={parsedAmount}
+                      adminFee={adminFee}
+                      totalCharge={totalCharge}
+                      hasFee={hasFee}
+                      instructorAbsorbs={instructorAbsorbs}
+                      fullFee={fullFee}
+                    />
+                  )}
+
                   {/* Pupil selector (optional) */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Select Pupil (optional)</Label>
@@ -344,11 +424,13 @@ export function TakePaymentModal({
 
                   <Button
                     className="w-full"
-                    disabled={(!sendViaSms && !sendViaEmail) || sending}
+                    disabled={(!sendViaSms && !sendViaEmail) || sending || parsedAmount <= 0}
                     onClick={handleSendLink}
                   >
                     {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Send Payment Link
+                    {parsedAmount > 0
+                      ? `Send Request for £${(hasFee ? totalCharge : parsedAmount).toFixed(2)}`
+                      : "Enter an amount"}
                   </Button>
                 </>
               )}
