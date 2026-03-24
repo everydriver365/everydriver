@@ -62,6 +62,15 @@ function isHealthcareRow(featureName: string) {
   return healthKeywords.some((k) => lower.includes(k));
 }
 
+/** Calculate savings between monthly×12 and annual price */
+function getSavings(monthlyPrice: string, annualPrice: string): string {
+  const monthly = parseFloat(monthlyPrice.replace(/[^0-9.]/g, ""));
+  const annual = parseFloat(annualPrice.replace(/[^0-9.]/g, ""));
+  if (isNaN(monthly) || isNaN(annual)) return "";
+  const savings = (monthly * 12 - annual).toFixed(2);
+  return `£${savings}`;
+}
+
 /** Mobile: swipeable plan cards */
 function MobileComparison({
   plans,
