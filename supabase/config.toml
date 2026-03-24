@@ -269,3 +269,6 @@ verify_jwt = false
 
 [functions.confirm-booking]
 verify_jwt = false
+
+[functions.meta-data-deletion]
+verify_jwt = false
