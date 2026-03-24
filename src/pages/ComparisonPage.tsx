@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo, useState } from "react";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { useNavigate, Link } from "react-router-dom";
 import { EnhancedHealthModal } from "@/components/EnhancedHealthModal";
 
@@ -61,17 +62,28 @@ function isHealthcareRow(featureName: string) {
   return healthKeywords.some((k) => lower.includes(k));
 }
 
+/** Calculate savings between monthly×12 and annual price */
+function getSavings(monthlyPrice: string, annualPrice: string): string {
+  const monthly = parseFloat(monthlyPrice.replace(/[^0-9.]/g, ""));
+  const annual = parseFloat(annualPrice.replace(/[^0-9.]/g, ""));
+  if (isNaN(monthly) || isNaN(annual)) return "";
+  const savings = (monthly * 12 - annual).toFixed(2);
+  return `£${savings}`;
+}
+
 /** Mobile: swipeable plan cards */
 function MobileComparison({
   plans,
   featureGroups,
   popularIdx,
   onCtaClick,
+  billing,
 }: {
   plans: ComparisonPlan[];
   featureGroups: { category: string; features: ComparisonFeature[] }[];
   popularIdx: number;
   onCtaClick: (slug: string) => void;
+  billing: "monthly" | "annual";
 }) {
   const [idx, setIdx] = useState(Math.max(popularIdx, 0));
   const plan = plans[idx];
@@ -126,9 +138,14 @@ function MobileComparison({
           <Badge className="mb-2 text-[10px]">★ Most Popular</Badge>
         )}
         <div className="text-3xl font-black text-foreground">
-          {plan.price}
-          <span className="text-sm font-normal text-muted-foreground">{plan.period}</span>
+          {billing === "annual" && plan.price_annual ? plan.price_annual : plan.price}
+          <span className="text-sm font-normal text-muted-foreground">{billing === "annual" && plan.price_annual ? "/yr" : plan.period}</span>
         </div>
+        {billing === "annual" && plan.price_annual && plan.price && (
+          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+            Save {getSavings(plan.price, plan.price_annual)}
+          </div>
+        )}
         <div className="text-sm font-semibold text-foreground mt-1">{plan.name}</div>
         {plan.description && (
           <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
@@ -187,11 +204,13 @@ function DesktopComparison({
   featureGroups,
   popularIdx,
   onCtaClick,
+  billing,
 }: {
   plans: ComparisonPlan[];
   featureGroups: { category: string; features: ComparisonFeature[] }[];
   popularIdx: number;
   onCtaClick: (slug: string) => void;
+  billing: "monthly" | "annual";
 }) {
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-12">
@@ -218,10 +237,15 @@ function DesktopComparison({
                 <div className="text-[9px] uppercase tracking-widest font-bold text-warning mb-1">★ Popular</div>
               )}
               <div className="text-2xl font-black">
-                {plan.price}
-                <span className="text-xs font-normal opacity-60">{plan.period}</span>
+                {billing === "annual" && plan.price_annual ? plan.price_annual : plan.price}
+                <span className="text-xs font-normal opacity-60">{billing === "annual" && plan.price_annual ? "/yr" : plan.period}</span>
               </div>
               <div className="text-xs font-semibold mt-0.5 opacity-90">{plan.name}</div>
+              {billing === "annual" && plan.price_annual && plan.price && (
+                <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">
+                  Save {getSavings(plan.price, plan.price_annual)}
+                </div>
+              )}
               <HealthBadge slug={plan.slug} />
             </div>
           ))}
@@ -300,19 +324,21 @@ export default function ComparisonPage() {
   const navigate = useNavigate();
   const [healthModalOpen, setHealthModalOpen] = useState(false);
   const [healthModalTier, setHealthModalTier] = useState<"basic" | "enhanced">("enhanced");
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
 
   const featureGroups = useMemo(() => groupFeatures(features), [features]);
   const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
 
   const handleCtaClick = (slug: string) => {
+    const billingParam = billing === "annual" ? "&billing=annual" : "";
     if (slug === "multi_school") {
       navigate("/instructor-app/contact");
     } else if (slug === "all_in") {
-      navigate("/instructor-app/signup?plan=all_in&promo=first-month-free");
+      navigate(`/instructor-app/signup?plan=all_in&promo=first-month-free${billingParam}`);
     } else if (slug === "free") {
       navigate("/instructor-app/signup");
     } else {
-      navigate(`/instructor-app/signup?plan=${slug}`);
+      navigate(`/instructor-app/signup?plan=${slug}${billingParam}`);
     }
   };
 
@@ -366,6 +392,26 @@ export default function ComparisonPage() {
         </div>
       </div>
 
+      {/* Billing Toggle */}
+      <div className="flex justify-center py-6">
+        <div className="flex items-center gap-3">
+          <IOSSegmentedControl
+            segments={[
+              { value: "monthly", label: "Monthly" },
+              { value: "annual", label: "Annual" },
+            ]}
+            value={billing}
+            onChange={(v) => setBilling(v as "monthly" | "annual")}
+            className="w-56"
+          />
+          {billing === "annual" && (
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700 text-[10px]">
+              Save 10%
+            </Badge>
+          )}
+        </div>
+      </div>
+
       {/* Mobile: card-based view */}
       <div className="md:hidden">
         <MobileComparison
@@ -373,6 +419,7 @@ export default function ComparisonPage() {
           featureGroups={featureGroups}
           popularIdx={popularIdx}
           onCtaClick={handleCtaClick}
+          billing={billing}
         />
         <div className="text-center pb-8 space-y-1 px-4">
           <p className="text-xs text-muted-foreground">All plans include pupil app, parent portal & unlimited lesson records.</p>
@@ -387,6 +434,7 @@ export default function ComparisonPage() {
           featureGroups={featureGroups}
           popularIdx={popularIdx}
           onCtaClick={handleCtaClick}
+          billing={billing}
         />
       </div>
 

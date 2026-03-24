@@ -12,6 +12,7 @@ export interface ComparisonPlan {
   is_popular: boolean;
   description: string | null;
   display_order: number;
+  price_annual: string | null;
 }
 
 export interface ComparisonFeature {

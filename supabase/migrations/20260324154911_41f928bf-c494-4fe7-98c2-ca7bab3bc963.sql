@@ -1,0 +1,1 @@
+ALTER TABLE public.comparison_plans ADD COLUMN price_annual text;
