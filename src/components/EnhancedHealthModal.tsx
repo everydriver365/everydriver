@@ -44,7 +44,7 @@ const ENHANCED_EXTRAS = [
   { icon: <Activity className="h-4 w-4" />, title: "Enhanced Therapies", desc: "Physio, chiropractor, osteopath & acupuncture — up to 10 sessions, more on specialist referral." },
   { icon: <Pill className="h-4 w-4" />, title: "Specialist & Diagnostics", desc: "CT, MRI & PET scans paid in full. Specialist consultations and diagnostic surgery covered." },
   { icon: <Users className="h-4 w-4" />, title: "Family Cover Option", desc: "Extend cover to your family. Hospital accommodation for a parent while a child is treated." },
-  { icon: <Plane className="h-4 w-4" />, title: "Worldwide Travel Insurance", desc: "Up to £5M medical cover, baggage, cancellation & emergency repatriation." },
+  
   { icon: <ShieldCheck className="h-4 w-4" />, title: "Hospital Cash Benefit", desc: "Up to £100/night for a relative to stay nearby during your treatment." },
 ];
 
@@ -148,7 +148,6 @@ export function EnhancedHealthModal({ open, onClose, tier = "enhanced" }: Enhanc
                 Private medical insurance covers the private treatment of new acute medical conditions arising after joining.
                 Cover is for treatment in the UK shown to be safe and effective by NICE.
                 Pre-existing conditions, chronic/long-term conditions, and pregnancy are excluded.
-                Travel cover applies to trips up to 65 days worldwide.
               </p>
             ) : (
               <p>
