@@ -1,26 +1,32 @@
 
 
-## Update Plan Pricing to Recommended Levels
+## Add Annual Pricing Toggle (10% Discount)
 
-Update the three paid tier prices in the database and ensure the comparison page reflects the new pricing.
+### Annual Prices (10% off monthly × 12)
+| Plan | Monthly | Annual Total | Monthly Equiv. | Savings |
+|------|---------|-------------|----------------|---------|
+| Free | £0 | £0 | £0 | — |
+| All-In | £7.99 | £86.29 | £7.19 | £9.59 |
+| GPS + Health | £34.99 | £377.89 | £31.49 | £41.99 |
+| Dashcam + Health | £54.99 | £593.89 | £49.49 | £65.99 |
 
-### Price Changes
-- **All-In**: £4.99 → **£7.99**/mo
-- **GPS + Health**: £29.99 → **£34.99**/mo  
-- **Dashcam + Health**: £49.99 → **£59.99**/mo
+### Database
+1. **Add `price_annual` column** to `comparison_plans` — nullable text field.
+2. **Populate values** — `£86.29` for All-In, `£377.89` for GPS+Health, `£593.89` for Dashcam+Health.
 
-### What This Does to Margins
-| Tier | Revenue | Est. Costs | Profit | Margin |
-|------|---------|------------|--------|--------|
-| All-In | £7.99 | ~£0.50 | ~£7.49 | 94% |
-| GPS + Health | £34.99 | ~£21–23 | ~£12–14 | 34–40% |
-| Dashcam + Health | £59.99 | ~£42 | ~£17.99 | 30% |
+### Frontend Changes
 
-### Technical Steps
+1. **`src/hooks/useComparisonData.ts`** — add `price_annual: string | null` to `ComparisonPlan` interface.
 
-1. **Update `comparison_plans` table** — run three UPDATE statements via the insert tool to change the `price` column for the `all-in`, `gps-health`, and `dashcam-health` plan slugs.
+2. **`src/pages/ComparisonPage.tsx`**:
+   - Add a Monthly/Annual toggle below the hero with a "Save 10%" badge.
+   - When Annual is selected, swap `plan.price` for `plan.price_annual` and show `/yr` period.
+   - Show small "Save £X" text under annual prices.
+   - Pass `&billing=annual` to CTA URLs when annual is active.
+   - Apply to both desktop table header and mobile card views.
 
-2. **Verify the comparison page** — since the `/compare` page reads pricing dynamically from the database, no code changes are needed. The new prices will render automatically.
-
-3. **Check for any hardcoded price references** — search the codebase for `£4.99`, `£29.99`, `£49.99` strings and update any that appear outside the dynamic comparison table (e.g. marketing copy, CTAs, or GoCardless payment amounts).
+### Files Modified
+- `supabase/migrations/` — new migration for `price_annual` column
+- `src/hooks/useComparisonData.ts`
+- `src/pages/ComparisonPage.tsx`
 
