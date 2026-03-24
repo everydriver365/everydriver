@@ -326,35 +326,42 @@ export default function ComparisonPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
+      {/* Hero — Healthcare-led */}
       <div className="bg-primary text-primary-foreground py-10 md:py-16 px-4">
         <div className="max-w-[1200px] mx-auto text-center">
-          <Badge className="mb-4 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 text-xs">
-            Simple, transparent pricing
+          <Badge className="mb-4 bg-rose-500/20 text-rose-200 border-rose-400/30 text-xs">
+            <Heart className="h-3 w-3 mr-1" /> No other ADI app offers this
           </Badge>
-          <h1 className="text-3xl md:text-5xl font-black mb-3">Choose Your Plan</h1>
-          <p className="text-primary-foreground/70 text-base md:text-lg max-w-xl mx-auto">
-            Start free. Upgrade when you're ready. No contracts, cancel anytime.
+          <h1 className="text-3xl md:text-5xl font-black mb-3">
+            The Only ADI App with{" "}
+            <span className="text-rose-300">FREE Private Healthcare</span>
+          </h1>
+          <p className="text-primary-foreground/80 text-base md:text-lg max-w-2xl mx-auto mb-2">
+            Dental, GP, physio, mental health & cancer care — included free with GPS and Dashcam plans. 
+            Underwritten by AXA Health, not a discount card.
           </p>
-        </div>
-      </div>
-
-      {/* Healthcare Banner */}
-      <div className="bg-gradient-to-r from-rose-50 to-rose-100/50 dark:from-rose-950/30 dark:to-rose-900/10 border-b border-rose-200 dark:border-rose-800/40">
-        <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-5 flex flex-col md:flex-row items-center justify-center gap-3 text-center md:text-left">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-rose-200 dark:bg-rose-800/50 flex items-center justify-center shrink-0">
-              <Heart className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-            </div>
-            <p className="text-sm md:text-base font-bold text-rose-900 dark:text-rose-100">
-              The only ADI app with FREE private healthcare — dental, GP, physio, mental health & cancer care included.
-            </p>
+          <p className="text-primary-foreground/50 text-sm">
+            Simple pricing. No contracts, cancel anytime.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            {[
+              { icon: SmilePlus, label: "Dental & Optical" },
+              { icon: Stethoscope, label: "24/7 GP Access" },
+              { icon: Activity, label: "Physio & Specialists" },
+              { icon: Brain, label: "Mental Health" },
+              { icon: ShieldCheck, label: "Cancer Care" },
+            ].map((item) => (
+              <div key={item.label} className="inline-flex items-center gap-1.5 bg-primary-foreground/10 rounded-full px-3 py-1.5 text-[11px] font-semibold text-primary-foreground/90">
+                <item.icon className="h-3.5 w-3.5 text-rose-300" />
+                {item.label}
+              </div>
+            ))}
           </div>
           <Link
             to="/health-benefits"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:underline whitespace-nowrap"
+            className="inline-flex items-center gap-1 mt-5 text-xs font-semibold text-rose-300 hover:text-rose-200 transition-colors"
           >
-            Learn more <ArrowRight className="h-3 w-3" />
+            Full healthcare breakdown <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
       </div>
