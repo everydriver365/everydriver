@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useComparisonPlans, useComparisonFeatures, type ComparisonPlan, type ComparisonFeature } from "@/hooks/useComparisonData";
 import { useMemo, useState } from "react";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { useNavigate, Link } from "react-router-dom";
 import { EnhancedHealthModal } from "@/components/EnhancedHealthModal";
 
