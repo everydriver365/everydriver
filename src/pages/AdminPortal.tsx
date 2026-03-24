@@ -79,6 +79,7 @@ import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
+import { ChurnAnalyticsDashboard } from "@/components/admin/ChurnAnalyticsDashboard";
 import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
@@ -176,6 +177,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
   "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
+  "churn-analysis": { title: "Churn Analysis", group: "Dashboard", icon: TrendingUp },
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
 };
 
@@ -934,6 +936,15 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="analytics" className="mb-4" />
             <RevenueAnalytics />
+          </motion.div>
+        );
+
+      case "churn-analysis":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="churn-analysis" className="mb-4" />
+            <ChurnAnalyticsDashboard />
           </motion.div>
         );
 
