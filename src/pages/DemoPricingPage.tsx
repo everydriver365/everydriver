@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /* ─── Data ─── */
-const planNames = ["Free", "All-In", "GPS", "Single Dashcam", "Duo Dashcam", "Multi-School"];
-const planPrices = ["£0", "£4.99", "£16", "£25", "£29", "Custom"];
-const planPeriods = ["/mo", "/mo", "/mo", "/mo", "/mo", ""];
-const planCtas = ["Start Free", "Get All-In", "Add GPS", "Add Dashcam", "Go Duo", "Contact Us"];
+const planNames = ["Free", "All-In", "GPS + Health", "Dashcam + Health"];
+const planPrices = ["£0", "£4.99", "£29.99", "£49.99"];
+const planPeriods = ["/mo", "/mo", "/mo", "/mo"];
+const planCtas = ["Start Free", "Get All-In", "Add GPS + Health", "Add Dashcam + Health"];
 const planIcons = [
   <Star className="h-4 w-4" />, <Zap className="h-4 w-4" />, <MapPin className="h-4 w-4" />,
-  <Camera className="h-4 w-4" />, <Video className="h-4 w-4" />, <Building2 className="h-4 w-4" />,
+  <Camera className="h-4 w-4" />,
 ];
 const popularIdx = 1;
-const bestValueIdx = 4;
+const bestValueIdx = 3;
 
 interface FeatureRow {
   category: string;
