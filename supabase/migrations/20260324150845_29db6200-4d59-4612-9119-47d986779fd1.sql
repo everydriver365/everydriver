@@ -1,0 +1,1 @@
+DELETE FROM comparison_features WHERE id = '424f0a42-0e82-4794-b56f-6f5ee0947f87';
