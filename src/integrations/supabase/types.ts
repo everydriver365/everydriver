@@ -9142,6 +9142,30 @@ export type Database = {
           },
         ]
       }
+      meta_data_deletions: {
+        Row: {
+          confirmation_code: string
+          created_at: string
+          id: string
+          meta_user_id: string
+          status: string
+        }
+        Insert: {
+          confirmation_code: string
+          created_at?: string
+          id?: string
+          meta_user_id: string
+          status?: string
+        }
+        Update: {
+          confirmation_code?: string
+          created_at?: string
+          id?: string
+          meta_user_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       mileage_log: {
         Row: {
           created_at: string
