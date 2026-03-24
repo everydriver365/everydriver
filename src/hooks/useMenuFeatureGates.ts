@@ -20,7 +20,7 @@ interface PlanInfo {
 }
 
 // Plan tier order for determining minimum required plan
-const PLAN_ORDER = ['free', 'all_in', 'gps', 'single_dashcam', 'duo_dashcam', 'multi_school'];
+const PLAN_ORDER = ['free', 'all_in', 'gps', 'single_dashcam'];
 
 export function useMenuFeatureGates() {
   const [gates, setGates] = useState<MenuFeatureGate[]>([]);
