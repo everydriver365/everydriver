@@ -1315,6 +1315,7 @@ export type Database = {
           name: string
           period: string | null
           price: string
+          price_annual: string | null
           slug: string
           updated_at: string | null
         }
@@ -1329,6 +1330,7 @@ export type Database = {
           name: string
           period?: string | null
           price: string
+          price_annual?: string | null
           slug: string
           updated_at?: string | null
         }
@@ -1343,6 +1345,7 @@ export type Database = {
           name?: string
           period?: string | null
           price?: string
+          price_annual?: string | null
           slug?: string
           updated_at?: string | null
         }
