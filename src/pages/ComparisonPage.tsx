@@ -298,6 +298,8 @@ export default function ComparisonPage() {
   const { data: plans = [], isLoading: plansLoading } = useComparisonPlans();
   const { data: features = [], isLoading: featuresLoading } = useComparisonFeatures();
   const navigate = useNavigate();
+  const [healthModalOpen, setHealthModalOpen] = useState(false);
+  const [healthModalTier, setHealthModalTier] = useState<"basic" | "enhanced">("enhanced");
 
   const featureGroups = useMemo(() => groupFeatures(features), [features]);
   const popularIdx = useMemo(() => plans.findIndex((p) => p.is_popular), [plans]);
