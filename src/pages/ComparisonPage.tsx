@@ -403,7 +403,7 @@ export default function ComparisonPage() {
               <Heart className="h-5 w-5 text-rose-500" />
               <h3 className="text-lg font-bold text-foreground">Basic Health</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Included with GPS + Health · £29.99/mo</p>
+            <p className="text-xs text-muted-foreground mb-4">Included with GPS + Health · £29.99/mo · Benenden Health</p>
 
             <div className="space-y-2.5 mb-5">
               {[
