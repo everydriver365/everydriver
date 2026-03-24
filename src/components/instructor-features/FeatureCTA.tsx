@@ -17,7 +17,7 @@ export function FeatureCTA() {
             More Features. Lower Price. No Tie-In.
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-8">
-            Join hundreds of ADIs who switched from Total Drive and ADI Book. From just £4.99/mo — it's your platform.
+            Join hundreds of instructors who switched from Total Drive and ADI Book. From just £7.99/mo — it's your platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-8" asChild>

@@ -330,10 +330,10 @@ export default function ComparisonPage() {
       <div className="bg-primary text-primary-foreground py-10 md:py-16 px-4">
         <div className="max-w-[1200px] mx-auto text-center">
           <Badge className="mb-4 bg-rose-500/20 text-rose-200 border-rose-400/30 text-xs">
-            <Heart className="h-3 w-3 mr-1" /> No other ADI app offers this
+            <Heart className="h-3 w-3 mr-1" /> No other instructor app offers this
           </Badge>
           <h1 className="text-3xl md:text-5xl font-black mb-3">
-            The Only ADI App with{" "}
+            The Only Instructor App with{" "}
             <span className="text-rose-300">FREE Private Healthcare</span>
           </h1>
           <p className="text-primary-foreground/80 text-base md:text-lg max-w-2xl mx-auto mb-2">
@@ -394,7 +394,7 @@ export default function ComparisonPage() {
       <div className="max-w-[1200px] mx-auto px-4 py-12 md:py-16">
         <div className="text-center mb-8">
           <Badge className="mb-2 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-700 text-xs">
-            <Heart className="h-3 w-3 mr-1" /> Included Free — No Other ADI App Offers This
+            <Heart className="h-3 w-3 mr-1" /> Included Free — No Other Instructor App Offers This
           </Badge>
           <h2 className="text-2xl md:text-3xl font-black text-foreground">Private Healthcare & Wellbeing</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl mx-auto">
