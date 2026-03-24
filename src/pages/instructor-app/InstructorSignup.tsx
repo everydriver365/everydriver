@@ -167,7 +167,7 @@ export default function InstructorSignup() {
                       🎉 First month free on the All-In plan!
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      £4.99/mo after your free trial — cancel anytime
+                      £7.99/mo after your free trial — cancel anytime
                     </p>
                   </div>
                 )}
