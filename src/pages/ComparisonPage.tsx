@@ -408,11 +408,11 @@ export default function ComparisonPage() {
             <div className="space-y-2.5 mb-5">
               {[
                 { icon: <Stethoscope className="h-4 w-4" />, label: "24/7 GP — phone & video" },
-                { icon: <SmilePlus className="h-4 w-4" />, label: "Dental cashback — up to £400/yr" },
-                { icon: <Eye className="h-4 w-4" />, label: "Optical cashback — up to £200/yr" },
-                { icon: <Activity className="h-4 w-4" />, label: "Physio & musculoskeletal access" },
-                { icon: <Phone className="h-4 w-4" />, label: "24/7 health support line" },
-                { icon: <Brain className="h-4 w-4" />, label: "EAP — legal, debt & family advice" },
+                { icon: <Brain className="h-4 w-4" />, label: "24/7 Mental Health Helpline" },
+                { icon: <Activity className="h-4 w-4" />, label: "Physiotherapy — up to 6 sessions" },
+                { icon: <Search className="h-4 w-4" />, label: "Medical diagnostics — up to £2,500" },
+                { icon: <Scissors className="h-4 w-4" />, label: "Private surgical treatment" },
+                { icon: <MessageCircle className="h-4 w-4" />, label: "Cancer advice & support team" },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-md bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
