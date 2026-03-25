@@ -167,6 +167,7 @@ export default function BookingConfirmation() {
           .select(`
             id, name, email, phone, address, postcode, course_type, prepaid_hours,
             payment_type, deposit_paid, balance_due_date, account_balance,
+            instructor_id,
             instructor:instructors(id, name, phone, email, car_make, car_model, car_type, profile_image_url)
           `)
           .eq("id", resolvedPupilId)

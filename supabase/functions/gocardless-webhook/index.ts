@@ -236,7 +236,7 @@ async function createGoCardlessSubscription(supabase: any, subscription: any) {
         .update({
           gocardless_subscription_id: gcSubscriptionId,
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          current_period_end: (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString(); })(),
         })
         .eq("id", subscription.id);
 
@@ -310,7 +310,6 @@ async function handlePayment(supabase: any, event: any) {
       .maybeSingle();
 
     const newPeriodStart = new Date();
-    const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // Update subscription period
     await supabase
@@ -331,13 +330,17 @@ async function handlePayment(supabase: any, event: any) {
       try {
         const { data: plan } = await supabase
           .from("subscription_plans")
-          .select("price_monthly, name")
+          .select("price_monthly, name, billing_interval_months")
           .eq("id", sub.plan_id)
           .single();
         if (plan) {
           paymentAmount = Math.round(plan.price_monthly * 100);
           planName = plan.name;
         }
+
+        const intervalMonths = (plan as any)?.billing_interval_months ?? 1;
+        const newPeriodEnd = new Date(newPeriodStart);
+        newPeriodEnd.setMonth(newPeriodEnd.getMonth() + intervalMonths);
       } catch (e) {
         console.error("Error fetching plan:", e);
       }

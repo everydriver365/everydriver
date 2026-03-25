@@ -1249,6 +1249,13 @@ export default function Courses() {
                         </motion.div>
                       ))}
                     </div>
+                    {filteredCourses.length > 6 && (
+                      <div className="mt-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          Showing 6 of {filteredCourses.length} courses
+                        </p>
+                      </div>
+                    )}
                   )
                 ) : (
                   <div className="py-16 text-center max-w-md mx-auto">
