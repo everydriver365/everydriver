@@ -924,6 +924,15 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "calendar-sync":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="calendar-sync" className="mb-4" />
+            <CalendarSyncQueueManager />
+          </motion.div>
+        );
+
       case "campaigns":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
