@@ -28,10 +28,13 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
   const slug = subdomainSlug || paramSlug;
   const [searchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
+  const initialHours = searchParams.get("hours") ? Number(searchParams.get("hours")) : null;
+  const initialDate = searchParams.get("date") || "";
   const { page, instructor, loading: pageLoading, notFound } = useWebsitePage(slug, "services");
   const links = useMiniWebsiteLinks(slug);
   const isMobile = useIsMobile();
   const autoSearchedRef = useRef(false);
+  const autoDateSetRef = useRef(false);
 
   const {
     postcode,
