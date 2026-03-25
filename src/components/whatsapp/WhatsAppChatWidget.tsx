@@ -86,6 +86,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [inputMessage, setInputMessage] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isAwaitingReply, setIsAwaitingReply] = useState(false);
+  const instructorOnline = useInstructorOnlineStatus(instructorId);
 
   // Booking flow state
   const [bookingStep, setBookingStep] = useState<BookingStep>(null);
