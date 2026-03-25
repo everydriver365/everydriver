@@ -471,6 +471,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     addLocalBotMessage(`${label} — noted! 📍 Now enter your postcode so I can find the best options near you.`);
     setBookingStep("postcode");
   };
+
+  const handleSend = () => {
     handleSendMessage(inputMessage.trim());
     setInputMessage("");
   };
