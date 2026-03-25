@@ -30,7 +30,7 @@ export function useWhatsAppMessages(conversationId: string | null) {
     enabled: !!conversationId,
   });
 
-  // Send manual message (instructor takeover)
+  // Send manual message (instructor takeover) + forward via SMS to visitor
   const sendMessage = useMutation({
     mutationFn: async (content: string) => {
       if (!conversationId) throw new Error("No conversation");
@@ -46,6 +46,19 @@ export function useWhatsAppMessages(conversationId: string | null) {
       await supabase.from("whatsapp_conversations").update({
         last_message_at: new Date().toISOString(),
       }).eq("id", conversationId);
+
+      // Forward reply to visitor via SMS
+      try {
+        await supabase.functions.invoke("whatsapp-webhook", {
+          body: {
+            instructor_reply: true,
+            conversation_id: conversationId,
+            message: content,
+          },
+        });
+      } catch (e) {
+        console.warn("SMS forward failed (message still saved):", e);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-messages", conversationId] });
