@@ -1,58 +1,40 @@
 
 
-## Fix Payment & Fee Calculation Bugs
+## Add Calendar Sync Queue Dashboard to Admin Portal
 
-After inspecting every file, here's the status of each bug and what actually needs changing.
+### Overview
+Create a new admin section showing all `calendar_sync_queue` items grouped by status (pending, failed, processed), with retry capability for failed items.
 
-### Bug Assessment
+### New Component
+**`src/components/admin/CalendarSyncQueueManager.tsx`**
 
-| # | File | Status | Action |
-|---|------|--------|--------|
-| 1 | `square-booking-wallet-payment` | **Already implemented** — 340 lines of working code, not a stub | No change needed |
-| 2 | `square-wallet-payment` — race condition | **Valid** | Fix: replace read-then-write with `increment_pupil_balance` RPC |
-| 3 | `square-wallet-payment` — diverging timestamps | **Valid** | Fix: single `ts` variable reused |
-| 4 | `square-payment` — swallowed DB errors | **Valid** | Fix: return partial-success flag on DB failure |
-| 5A | `square-checkout` — missing cancelUrl | **Valid** | Fix: add `cancel_url` to checkout_options |
-| 5B | `square-checkout` — environment check | **Valid** | Fix: standardise to multi-alias pattern |
-| 6 | `SquarePaymentForm` — null check | **Already guarded** (line 87) | No change needed |
-| 7 | `SquarePaymentForm` — customerPhone unused | **Valid** | Fix: pass `customerPhone` in processPayment body |
-| 8 | `TakePaymentModal` — `clearForManual` | **Actually used** — bound to checkbox `checked` prop (line 373) and read in logic (line 91) | No change needed |
-| 9 | `useInstructorTierConfig` — return type | **Already present** (line 15) | No change needed |
-| 10 | `OrderReviewSummary` — unused `Clock` import | **Valid** — imported but never referenced in JSX | Fix: remove from import |
+A tabbed dashboard with three views:
+- **Pending** — `processed_at IS NULL` — items waiting to be synced
+- **Failed** — `processed_at IS NOT NULL AND error IS NOT NULL AND error != 'Deduplicated'` — items that errored
+- **Processed** — `processed_at IS NOT NULL AND (error IS NULL OR error = 'Deduplicated')` — successfully completed
 
-### Changes to Make
+Each row shows: instructor name (joined from `instructors`), lesson ID, action type, created time, processed time, error message.
 
-**`supabase/functions/square-wallet-payment/index.ts`** (bugs 2 & 3):
-- Replace two separate `Date.now()` calls with one shared `ts` constant
-- Replace manual balance read-then-write with `supabase.rpc("increment_pupil_balance", ...)`
-- Still fetch pupil name for notification text
+**Retry button** on failed items: resets `processed_at` and `error` to `null` so the next queue run picks them up again. Uses a direct update via Supabase client.
 
-**`supabase/functions/square-payment/index.ts`** (bug 4):
-- Wrap DB operations in try/catch that returns `{ success: true, dbError: "..." }` on failure
-- Reorder: RPC first, then payment_history insert, then payment_intents update
-- On DB error, return 200 with `dbError` flag so frontend can alert user
+**Bulk retry** button to reset all failed items at once.
 
-**`supabase/functions/square-checkout/index.ts`** (bug 5):
-- Add `cancel_url: body.cancelUrl || returnUrl` to checkout_options
-- Standardise environment detection to `env.toLowerCase()` with `production/prod/live` aliases
+Auto-refreshes every 30 seconds. Manual refresh button. Shows counts in tab badges.
 
-**`src/components/payments/SquarePaymentForm.tsx`** (bug 7):
-- Add `customerPhone` to the destructured props (it's in the type but not destructured)
-- Pass it in the `processPayment` invoke body
+### Admin Portal Integration
+**`src/pages/AdminPortal.tsx`**:
+- Add `"calendar-sync"` to `sectionMeta` under "System Settings" group with `Calendar` icon
+- Add case in `renderContent` switch to render `<CalendarSyncQueueManager />`
+- Import the new component
 
-**`src/components/booking/OrderReviewSummary.tsx`** (bug 10):
-- Remove `Clock` from the lucide-react import
+### RLS Consideration
+The admin uses authenticated queries. The `calendar_sync_queue` table needs a SELECT policy for admin users and an UPDATE policy for retry. Will add two RLS policies using the `has_role` function.
 
-### Files Modified
-- `supabase/functions/square-wallet-payment/index.ts`
-- `supabase/functions/square-payment/index.ts`
-- `supabase/functions/square-checkout/index.ts`
-- `src/components/payments/SquarePaymentForm.tsx`
-- `src/components/booking/OrderReviewSummary.tsx`
+### Database Changes
+- Add RLS policy: admins can SELECT from `calendar_sync_queue`
+- Add RLS policy: admins can UPDATE `calendar_sync_queue` (for retry — clearing `processed_at` and `error`)
 
-### Skipped (no change needed)
-- Bug 1: `square-booking-wallet-payment` is already fully implemented
-- Bug 6: googlePay null guard already exists
-- Bug 8: `clearForManual` is actively used in UI and logic
-- Bug 9: return type annotation already present
+### Files
+- **New**: `src/components/admin/CalendarSyncQueueManager.tsx`
+- **Modified**: `src/pages/AdminPortal.tsx` — add section metadata + switch case
 
