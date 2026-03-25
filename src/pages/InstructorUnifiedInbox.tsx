@@ -2,16 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { InstructorInbox } from "@/components/instructor/InstructorInbox";
-import { VisitorChatManager } from "@/components/instructor/VisitorChatManager";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { WhatsAppInbox } from "@/components/instructor/WhatsAppInbox";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
-import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { WhatsAppBadge } from "@/components/instructor/WhatsAppBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Headphones, ShieldCheck, Loader2 } from "lucide-react";
+import { MessageCircle, ShieldCheck, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // WhatsApp icon as inline SVG since lucide doesn't have it
