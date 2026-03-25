@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock, Baby, Dumbbell, Hotel, Pill, Star, Users, Sparkles, BadgeCheck, HeartPulse, Scan, CircleDollarSign, HandHeart, Award, BriefcaseMedical, Search, Ribbon } from "lucide-react";
+import { Heart, Shield, Eye, Brain, Phone, Stethoscope, Calculator, Check, X, ChevronRight, Calendar, Car, MapPin, FileText, Smartphone, Globe, Send, Loader2, ArrowRight, Zap, Gift, GraduationCap, Clock, Baby, Dumbbell, Hotel, Pill, Star, Users, Sparkles, BadgeCheck, HeartPulse, Scan, CircleDollarSign, HandHeart, Award, BriefcaseMedical, Search, Ribbon, PoundSterling, Camera, Unlock } from "lucide-react";
+import franchiseHealthcare from "@/assets/franchise-healthcare.jpg";
+import franchiseDashcam from "@/assets/franchise-dashcam.jpg";
+import franchisePrice from "@/assets/franchise-price.jpg";
+import franchiseNoTieIn from "@/assets/franchise-no-tie-in.jpg";
 import heroImg from "@/assets/franchise-hero-drive365.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
