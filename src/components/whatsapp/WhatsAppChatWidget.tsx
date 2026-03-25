@@ -428,7 +428,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const handleBookingCardSelect = (result: BookingResult) => {
     const slug = result.slug || result.instructorId;
     const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
-    navigate(`/i/${slug}/book?hours=${result.hours}&date=${dateStr}`);
+    navigate(`/i/${slug}/courses?hours=${result.hours}&date=${dateStr}`);
   };
 
   const cancelBookingFlow = () => {
