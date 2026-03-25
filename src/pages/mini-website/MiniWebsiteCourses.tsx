@@ -28,10 +28,13 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
   const slug = subdomainSlug || paramSlug;
   const [searchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
+  const initialHours = searchParams.get("hours") ? Number(searchParams.get("hours")) : null;
+  const initialDate = searchParams.get("date") || "";
   const { page, instructor, loading: pageLoading, notFound } = useWebsitePage(slug, "services");
   const links = useMiniWebsiteLinks(slug);
   const isMobile = useIsMobile();
   const autoSearchedRef = useRef(false);
+  const autoDateSetRef = useRef(false);
 
   const {
     postcode,
@@ -65,6 +68,28 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
       handleSearch();
     }
   }, [initialPostcode, instructor?.id, coursesLoading]);
+
+  // Auto-select the date from URL params after search results load
+  useEffect(() => {
+    if (initialDate && !autoDateSetRef.current && availableDatesInMonth.length > 0) {
+      const targetDate = new Date(initialDate + "T00:00:00");
+      if (!isNaN(targetDate.getTime())) {
+        // Set the month if needed
+        const targetMonth = format(targetDate, "yyyy-MM");
+        if (selectedMonth !== targetMonth && monthOptions.some((m: any) => (m.value || m) === targetMonth)) {
+          setSelectedMonth(targetMonth);
+        }
+        // Check if this date is available
+        const matchingDate = availableDatesInMonth.find(
+          d => format(d, "yyyy-MM-dd") === initialDate
+        );
+        if (matchingDate) {
+          setSelectedDate(matchingDate);
+          autoDateSetRef.current = true;
+        }
+      }
+    }
+  }, [initialDate, availableDatesInMonth, selectedMonth, monthOptions]);
 
   const [showFilters, setShowFilters] = useState(false);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
