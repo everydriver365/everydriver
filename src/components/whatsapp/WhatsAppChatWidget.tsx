@@ -832,7 +832,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                           suggestions = [
                             "💰 How much is an intensive course?",
                             "⏱️ How long does it take?",
-                            "📅 When's the next one?",
+                            "📅 When's the next intensive course?",
                             "🆕 Can beginners do intensive?",
                           ];
                         } else if (askedTopics.beginner && !askedTopics.transmission) {
