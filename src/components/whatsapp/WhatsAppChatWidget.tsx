@@ -100,8 +100,9 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [visibleResultsCount, setVisibleResultsCount] = useState(4);
-
-  // Restore session — but detect stuck conversations
+  const [courseTypePref, setCourseTypePref] = useState<CourseType>(null);
+  const [transmissionPref, setTransmissionPref] = useState<TransmissionPref>(null);
+  const [genderPref, setGenderPref] = useState<GenderPref>(null);
   useEffect(() => {
     const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
     const stored = localStorage.getItem(key);
