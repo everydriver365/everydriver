@@ -56,6 +56,7 @@ import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { FeatureGatingManager } from "@/components/admin/FeatureGatingManager";
 import { CommissionDashboard } from "@/components/admin/CommissionDashboard";
+import { ProfitProjectionDashboard } from "@/components/admin/ProfitProjectionDashboard";
 import { CommissionSettingsManager } from "@/components/admin/CommissionSettingsManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
@@ -954,6 +955,9 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="commission" className="mb-4" />
             <CommissionDashboard />
+            <div className="mt-8">
+              <ProfitProjectionDashboard />
+            </div>
           </motion.div>
         );
 
