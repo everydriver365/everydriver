@@ -308,6 +308,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     setBookingHours(hours);
     setBookingStep("results");
     setBookingLoading(true);
+    setVisibleResultsCount(4);
 
     try {
       // Geocode postcode
