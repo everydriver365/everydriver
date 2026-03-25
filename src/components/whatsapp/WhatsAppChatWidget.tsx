@@ -129,14 +129,12 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     }
   };
 
-  const handleSend = async () => {
-    if (!inputMessage.trim() || !conversationId) return;
-    const content = inputMessage.trim();
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim() || !conversationId) return;
     setInputMessage("");
     setSending(true);
 
     try {
-      // Log inbound message from visitor
       await supabase.from("whatsapp_messages").insert({
         conversation_id: conversationId,
         content,
@@ -144,12 +142,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         sender_type: "visitor",
       });
 
-      // Update conversation timestamp
       await supabase.from("whatsapp_conversations").update({
         last_message_at: new Date().toISOString(),
       }).eq("id", conversationId);
 
-      // Trigger AI reply via edge function
       supabase.functions.invoke("whatsapp-webhook", {
         body: {
           widget_message: true,
@@ -166,6 +162,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSend = () => {
+    handleSendMessage(inputMessage.trim());
   };
 
   const handleClose = () => { setIsOpen(false); setIsMinimized(false); };
