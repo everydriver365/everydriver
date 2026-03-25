@@ -284,10 +284,11 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                       {(messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (
                         <div className="flex flex-wrap gap-2 pt-2 px-1">
                           {[
-                            "🚗 Manual or automatic?",
+                            "🚗 Manual lessons",
+                            "🚗 Automatic lessons",
                             "💰 How much are lessons?",
                             "📅 What's available this week?",
-                            "🎓 Do you do intensive courses?",
+                            "🎓 Intensive courses",
                             "📍 What areas do you cover?",
                             "🆕 I'm a complete beginner",
                           ].map((suggestion) => (
