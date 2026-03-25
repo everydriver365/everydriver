@@ -83,12 +83,15 @@ serve(async (req: Request) => {
 
     // Square uses amount in smallest currency unit (pence for GBP)
     const amountInPence = Math.round(amount * 100);
-    const idempotencyKey = `BOOKING-${instructorId.slice(0, 8)}-${Date.now()}`;
-    const orderReference = `BOOK-${instructorId.slice(0, 8)}-${Date.now()}`;
+    const ts = Date.now();
+    const orderReference = `BOOK-${instructorId.slice(0, 8)}-${ts}`;
+    const idempotencyKey = orderReference;
 
     // Square API base URL
-    const baseUrl = environment === "production" 
-      ? "https://connect.squareup.com" 
+    const env = environment.toLowerCase();
+    const isProduction = env === "production" || env === "prod" || env === "live";
+    const baseUrl = isProduction
+      ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
 
     // Create payment using the token

@@ -13588,6 +13588,7 @@ export type Database = {
       subscription_plans: {
         Row: {
           base_price_monthly: number | null
+          billing_interval_months: number
           commission_fixed_pence: number | null
           commission_rate_percent: number | null
           created_at: string | null
@@ -13615,6 +13616,7 @@ export type Database = {
         }
         Insert: {
           base_price_monthly?: number | null
+          billing_interval_months?: number
           commission_fixed_pence?: number | null
           commission_rate_percent?: number | null
           created_at?: string | null
@@ -13642,6 +13644,7 @@ export type Database = {
         }
         Update: {
           base_price_monthly?: number | null
+          billing_interval_months?: number
           commission_fixed_pence?: number | null
           commission_rate_percent?: number | null
           created_at?: string | null

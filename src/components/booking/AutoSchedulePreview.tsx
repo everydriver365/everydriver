@@ -87,9 +87,10 @@ export function AutoSchedulePreview({
     if (preferredTimes.length > 0 || preferredDays.length > 0) {
       findSlots();
     }
-  }, [instructorId, totalHours, preferredTimes.join(','), preferredDays.join(',')]);
+  }, [instructorId, totalHours, preferredTimes.join('|'), preferredDays.join('|')]);
 
   const handleConfirm = () => {
+    if (!isComplete || confirmed) return;
     const convertedSlots: SelectedSlot[] = suggestedSlots.map(slot => ({
       date: new Date(slot.date),
       startTime: slot.startTime,
