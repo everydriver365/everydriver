@@ -1225,39 +1225,40 @@ export default function Courses() {
                     </div>
                   ) : (
                     // Desktop: 2-column grid with flip cards
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      {filteredCourses.slice(0, 6).map((course, index) => (
-                        <motion.div
-                          key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <DynamicCourseCard
-                            instructor={course.instructor}
-                            hours={course.hours}
-                            nextAvailable={course.bookableDate}
-                            courseImageUrl={course.courseImageUrl}
-                            isPopular={course.isPopular}
-                            availableFrom={course.availableFrom}
-                            distance={course.distance}
-                            features={course.features}
-                            isIntensive={course.isIntensive}
-                            discountedPrice={course.discountedPrice}
-                            customFeatures={course.customFeatures}
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                    {filteredCourses.length > 6 && (
-                      <div className="mt-6 text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Showing 6 of {filteredCourses.length} courses
-                        </p>
+                    <>
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        {filteredCourses.slice(0, 6).map((course, index) => (
+                          <motion.div
+                            key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <DynamicCourseCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              courseImageUrl={course.courseImageUrl}
+                              isPopular={course.isPopular}
+                              availableFrom={course.availableFrom}
+                              distance={course.distance}
+                              features={course.features}
+                              isIntensive={course.isIntensive}
+                              discountedPrice={course.discountedPrice}
+                              customFeatures={course.customFeatures}
+                            />
+                          </motion.div>
+                        ))}
                       </div>
-                    )}
-                  </>
-                )
+                      {filteredCourses.length > 6 && (
+                        <div className="mt-6 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Showing 6 of {filteredCourses.length} courses
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )
                 ) : (
                   <div className="py-16 text-center max-w-md mx-auto">
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
