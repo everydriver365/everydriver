@@ -310,6 +310,30 @@ async function handlePayment(supabase: any, event: any) {
       .maybeSingle();
 
     const newPeriodStart = new Date();
+    let newPeriodEnd = new Date(newPeriodStart);
+    newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1); // default 1 month
+
+    // Record the payment
+    let paymentAmount = 0;
+    let planName = "Unknown";
+    if (sub) {
+      try {
+        const { data: plan } = await supabase
+          .from("subscription_plans")
+          .select("price_monthly, name, billing_interval_months")
+          .eq("id", sub.plan_id)
+          .single();
+        if (plan) {
+          paymentAmount = Math.round(plan.price_monthly * 100);
+          planName = plan.name;
+          const intervalMonths = (plan as any)?.billing_interval_months ?? 1;
+          newPeriodEnd = new Date(newPeriodStart);
+          newPeriodEnd.setMonth(newPeriodEnd.getMonth() + intervalMonths);
+        }
+      } catch (e) {
+        console.error("Error fetching plan:", e);
+      }
+    }
 
     // Update subscription period
     await supabase
@@ -322,29 +346,7 @@ async function handlePayment(supabase: any, event: any) {
       })
       .eq("gocardless_subscription_id", subscriptionId);
 
-    // Record the payment
     if (sub) {
-      // Get payment amount from GoCardless
-      let paymentAmount = 0;
-      let planName = "Unknown";
-      try {
-        const { data: plan } = await supabase
-          .from("subscription_plans")
-          .select("price_monthly, name, billing_interval_months")
-          .eq("id", sub.plan_id)
-          .single();
-        if (plan) {
-          paymentAmount = Math.round(plan.price_monthly * 100);
-          planName = plan.name;
-        }
-
-        const intervalMonths = (plan as any)?.billing_interval_months ?? 1;
-        const newPeriodEnd = new Date(newPeriodStart);
-        newPeriodEnd.setMonth(newPeriodEnd.getMonth() + intervalMonths);
-      } catch (e) {
-        console.error("Error fetching plan:", e);
-      }
-
       await supabase.from("subscription_payments").insert({
         instructor_id: sub.instructor_id,
         subscription_id: sub.id,
