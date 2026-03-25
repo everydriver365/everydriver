@@ -59,8 +59,9 @@ export function PupilPaymentDrawer({
 
   const amountOwed = Math.abs(accountBalance);
   const paymentAmount = parseFloat(amount) || 0;
+  const tierConfig = useInstructorTierConfig(instructorId);
   const splitPercent = commissionPayer === "instructor" ? 0 : commissionPayer === "split" ? 50 : 100;
-  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, splitPercent);
+  const { adminFee, totalCharge, hasFee } = useAdminFee(paymentAmount, splitPercent, tierConfig);
 
   // Fetch recent payments when drawer opens
   useEffect(() => {
