@@ -326,16 +326,32 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
       // Fetch instructors, courses, working hours, overrides
       const [
-        { data: instructors },
-        { data: courses },
-        { data: workingHours },
-        { data: dateOverrides },
+        { data: instructors, error: instructorsError },
+        { data: courses, error: coursesError },
+        { data: workingHours, error: workingHoursError },
+        { data: dateOverrides, error: dateOverridesError },
       ] = await Promise.all([
-        supabase.from("instructors").select("id, name, profile_image_url, car_type, hourly_rate, available_from, home_latitude, home_longitude, app_slug").eq("is_active", true),
+        supabase
+          .from("instructors")
+          .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, home_latitude:lat, home_longitude:lng")
+          .eq("is_active", true),
         supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true).eq("course_hours", hours),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active").eq("is_active", true),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
+
+      if (instructorsError || coursesError || workingHoursError || dateOverridesError) {
+        console.error("Booking search query failed", {
+          instructorsError,
+          coursesError,
+          workingHoursError,
+          dateOverridesError,
+        });
+        addLocalBotMessage("😕 I couldn't load instructor availability right now. Please try again in a moment.");
+        setBookingStep(null);
+        setBookingLoading(false);
+        return;
+      }
 
       if (!instructors?.length) {
         addLocalBotMessage("😕 No instructors found at the moment. Try chatting with us for help!");
