@@ -213,6 +213,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         visitorName: visitorName.trim(),
         visitorPhone: visitorPhone.trim(),
       }));
+
+      // Immediately prompt for postcode after starting
+      addLocalBotMessage(`Hi ${visitorName.trim()}! 👋 Enter your postcode below so I can find driving courses near you.`);
+      setBookingStep("postcode");
     } catch (err) {
       console.error("Failed to start chat:", err);
       toast.error("Failed to start chat");
