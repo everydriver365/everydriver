@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle, RotateCcw } from "lucide-react";
+import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle, RotateCcw, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -451,13 +451,17 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     if (bookingStep === "postcode") {
       return (
         <div className="px-4 py-3 border-t border-border space-y-2">
+          <div className="flex items-center gap-1.5 mb-1">
+            <MapPin className="h-3.5 w-3.5 text-primary" />
+            <p className="text-xs font-semibold text-foreground">Enter your postcode to find courses nearby</p>
+          </div>
           <div className="flex items-center gap-2">
             <Input
               value={bookingPostcode}
               onChange={e => setBookingPostcode(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handlePostcodeSubmit()}
-              placeholder="Enter postcode e.g. SW1A 1AA"
-              className="flex-1 uppercase"
+              placeholder="e.g. SW1A 1AA"
+              className="flex-1 uppercase text-sm font-medium"
               autoFocus
             />
             <Button size="icon" onClick={handlePostcodeSubmit} disabled={!bookingPostcode.trim()} className="shrink-0">
