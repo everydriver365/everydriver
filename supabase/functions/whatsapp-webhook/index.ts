@@ -232,9 +232,28 @@ async function handleInstructorReply(body: any) {
   const senderName = instr?.name || "Your driving instructor";
   const smsBody = `${senderName}: ${message}`;
 
-  await sendSMSNotification(conv.phone_number, smsBody);
+  const smsSuccess = await sendSMSNotification(conv.phone_number, smsBody);
+  const deliveryStatus = smsSuccess ? "delivered" : "failed";
 
-  return new Response(JSON.stringify({ status: "sms_sent" }), {
+  // Update delivery_status on the most recent outbound instructor message for this conversation
+  const { data: recentMsg } = await supabase
+    .from("whatsapp_messages")
+    .select("id")
+    .eq("conversation_id", conversation_id)
+    .eq("direction", "outbound")
+    .eq("sender_type", "instructor")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (recentMsg) {
+    await supabase
+      .from("whatsapp_messages")
+      .update({ delivery_status: deliveryStatus })
+      .eq("id", recentMsg.id);
+  }
+
+  return new Response(JSON.stringify({ status: smsSuccess ? "sms_sent" : "sms_failed", delivery_status: deliveryStatus }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
@@ -391,7 +410,8 @@ async function handleWidgetMessage(body: any) {
 }
 
 // ── Send SMS notification via Twilio ──
-async function sendSMSNotification(to: string, text: string) {
+// Returns true if SMS was accepted by Twilio, false otherwise
+async function sendSMSNotification(to: string, text: string): Promise<boolean> {
   const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
   const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
   const TWILIO_MSG_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
@@ -399,7 +419,7 @@ async function sendSMSNotification(to: string, text: string) {
 
   if (!TWILIO_SID || !TWILIO_TOKEN) {
     console.log("Twilio credentials not configured, skipping SMS notification");
-    return;
+    return false;
   }
 
   // Normalize phone number
@@ -435,11 +455,14 @@ async function sendSMSNotification(to: string, text: string) {
 
     if (!resp.ok) {
       console.error("SMS notification failed:", resp.status, await resp.text());
+      return false;
     } else {
       console.log("SMS notification sent to:", normalizedPhone);
+      return true;
     }
   } catch (err) {
     console.error("SMS notification error:", err);
+    return false;
   }
 }
 
