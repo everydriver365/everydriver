@@ -195,6 +195,50 @@ Deno.serve(async (req) => {
   }
 });
 
+// ── Handle instructor reply: forward to visitor via SMS ──
+async function handleInstructorReply(body: any) {
+  const { conversation_id, message } = body;
+  if (!conversation_id || !message) {
+    return new Response(JSON.stringify({ status: "missing_fields" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Get conversation to find visitor phone
+  const { data: conv } = await supabase
+    .from("whatsapp_conversations")
+    .select("phone_number, visitor_name, instructor_id")
+    .eq("id", conversation_id)
+    .maybeSingle();
+
+  if (!conv?.phone_number) {
+    return new Response(JSON.stringify({ status: "no_phone" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Get instructor name for the SMS
+  const { data: instr } = await supabase
+    .from("instructors")
+    .select("name")
+    .eq("id", conv.instructor_id)
+    .maybeSingle();
+
+  const senderName = instr?.name || "Your driving instructor";
+  const smsBody = `${senderName}: ${message}`;
+
+  await sendSMSNotification(conv.phone_number, smsBody);
+
+  return new Response(JSON.stringify({ status: "sms_sent" }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 // Rate-limit tracker: conversation_id -> last SMS timestamp
 const smsRateLimits = new Map<string, number>();
 
