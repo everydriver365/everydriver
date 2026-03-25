@@ -311,6 +311,37 @@ export default function FranchisePage() {
         </div>
       </section>
 
+      {/* Manifesto Intro */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-6 text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-tight">
+              Tired of the Same Old Driving School Experience?{" "}
+              <span className="text-primary">So Are We.</span>
+            </h2>
+            <div className="space-y-5 text-muted-foreground text-base md:text-lg leading-relaxed text-left max-w-3xl mx-auto">
+              <p>
+                At Drive365, we've reached a breaking point. In the traditional franchise model, instructors are often sidelined — undervalued, overworked, and left to navigate outdated systems alone. We've had enough of that.
+              </p>
+              <p>
+                That's why we're doing things differently. Our franchise charges very little to join, yet provides full telematics, free healthcare, and even a £50 bonus for every successfully completed intensive course. Instructors are at the heart of what we do — supported, rewarded, and empowered.
+              </p>
+              <p>
+                Learners benefit too. With better-trained instructors and smarter systems, every pupil gets the attention and guidance they deserve. No compromises. No frustration. Just better training, better support, and better results for everyone involved.
+              </p>
+              <p className="font-semibold text-foreground">
+                If you're ready to be part of a franchise that truly values expertise, integrity, and growth, Drive365 is your next step. Together, we can redefine the driving industry — one lesson at a time.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Healthcare Showcase */}
       <section className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
         <div className="container max-w-6xl space-y-12">
