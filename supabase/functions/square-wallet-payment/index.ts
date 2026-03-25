@@ -146,30 +146,27 @@ serve(async (req: Request) => {
 
     console.log(`Pupil balance incremented by ${amount}`);
 
-    {
-
-      // Send payment receipt email
-      try {
-        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-        await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseAnonKey}`,
-          },
-          body: JSON.stringify({
-            pupilId,
-            instructorId,
-            amount,
-            paymentMethod: walletType === "apple" ? "Apple Pay" : "Google Pay",
-            transactionReference: orderReference,
-            receiptUrl: data.payment.receipt_url,
-          }),
-        });
-        console.log("Payment receipt email triggered");
-      } catch (emailError) {
-        console.error("Failed to send receipt email:", emailError);
-      }
+    // Send payment receipt email
+    try {
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          pupilId,
+          instructorId,
+          amount,
+          paymentMethod: walletType === "apple" ? "Apple Pay" : "Google Pay",
+          transactionReference: orderReference,
+          receiptUrl: data.payment.receipt_url,
+        }),
+      });
+      console.log("Payment receipt email triggered");
+    } catch (emailError) {
+      console.error("Failed to send receipt email:", emailError);
     }
 
     // Notify instructor of payment received
