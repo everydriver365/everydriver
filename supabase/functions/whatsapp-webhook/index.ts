@@ -362,12 +362,14 @@ async function handleWidgetMessage(body: any) {
   // Check if AI is still enabled for this conversation
   const { data: convCheck } = await supabase
     .from("whatsapp_conversations")
-    .select("ai_enabled")
+    .select("ai_enabled, last_message_at")
     .eq("id", conversation_id)
     .maybeSingle();
 
   if (convCheck && convCheck.ai_enabled === false) {
-    // Check if instructor has replied in the last 30 minutes
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+
+    // Check if an instructor has replied recently (actively handling)
     const { data: recentInstructorMsg } = await supabase
       .from("whatsapp_messages")
       .select("created_at")
@@ -377,19 +379,21 @@ async function handleWidgetMessage(body: any) {
       .limit(1)
       .maybeSingle();
 
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const hasRecentReply = recentInstructorMsg && recentInstructorMsg.created_at > thirtyMinAgo;
+    const hasRecentInstructorReply = recentInstructorMsg && recentInstructorMsg.created_at > thirtyMinAgo;
 
-    if (hasRecentReply) {
-      // Instructor is actively responding — keep AI disabled
+    // Also check if the handoff itself happened recently (within 30 min)
+    const handoffHappenedRecently = convCheck.last_message_at && convCheck.last_message_at > thirtyMinAgo;
+
+    if (hasRecentInstructorReply || handoffHappenedRecently) {
+      // Either instructor is actively responding, or handoff just happened — keep AI disabled
       return new Response(JSON.stringify({ status: "forwarded_to_human" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // No recent instructor reply — auto-re-enable AI
+    // No activity in 30 min — auto-re-enable AI so visitor isn't stuck
     await supabase.from("whatsapp_conversations").update({ ai_enabled: true }).eq("id", conversation_id);
-    console.log("Auto-re-enabled AI for conversation", conversation_id, "(no instructor reply in 30 min)");
+    console.log("Auto-re-enabled AI for conversation", conversation_id, "(no activity in 30 min)");
   }
 
   if (targetInstructor) {
