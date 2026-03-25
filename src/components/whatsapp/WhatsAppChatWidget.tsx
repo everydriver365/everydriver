@@ -363,6 +363,18 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
       const withDistance = instructors
         .filter((i: any) => i.home_latitude && i.home_longitude)
+        .filter((i: any) => {
+          // Filter by transmission preference
+          if (transmissionPref && transmissionPref !== "no-preference") {
+            const carType = (i.car_type || "").toLowerCase();
+            if (!carType.includes(transmissionPref)) return false;
+          }
+          // Filter by gender preference
+          if (genderPref && genderPref !== "no-preference" && i.gender) {
+            if (i.gender.toLowerCase() !== genderPref) return false;
+          }
+          return true;
+        })
         .map((i: any) => {
           const dLat = (i.home_latitude - searchLat) * 111;
           const dLng = (i.home_longitude - searchLng) * 111 * Math.cos(searchLat * Math.PI / 180);
