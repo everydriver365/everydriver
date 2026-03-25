@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -6,14 +7,16 @@ interface TypingIndicatorProps {
   className?: string;
 }
 
-export function TypingIndicator({ name, className }: TypingIndicatorProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      className={cn("flex items-center gap-2 px-4 py-2", className)}
-    >
+export const TypingIndicator = forwardRef<HTMLDivElement, TypingIndicatorProps>(
+  function TypingIndicator({ name, className }, ref) {
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        className={cn("flex items-center gap-2 px-4 py-2", className)}
+      >
       <div className="flex items-center gap-1 bg-muted rounded-2xl rounded-bl-md px-4 py-2">
         <div className="flex items-center gap-1">
           <motion.span
@@ -40,4 +43,5 @@ export function TypingIndicator({ name, className }: TypingIndicatorProps) {
       </div>
     </motion.div>
   );
-}
+  }
+);
