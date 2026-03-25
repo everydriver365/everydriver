@@ -224,9 +224,18 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     if (!content.trim() || !conversationId) return;
 
     // Intercept booking trigger
-    if (/i'd like to book|id like to book/i.test(content)) {
+    if (/i'd like to book|id like to book|like to book|want to book|book a course|book lessons/i.test(content)) {
       addLocalBotMessage("📍 Where are you based? Enter your postcode below so I can find instructors near you.");
       setBookingStep("postcode");
+      return;
+    }
+
+    // Detect UK postcode typed directly — auto-enter booking flow
+    const postcodeMatch = content.trim().match(/^([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i);
+    if (postcodeMatch) {
+      setBookingPostcode(postcodeMatch[1].toUpperCase());
+      addLocalBotMessage(`📍 Searching near ${postcodeMatch[1].toUpperCase()}…\n\nWhat type of course are you looking for?`);
+      setBookingStep("course");
       return;
     }
 
