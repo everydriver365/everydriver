@@ -280,28 +280,91 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                         );
                       })}
 
-                      {/* Show suggestion chips when last message is from AI or no messages yet */}
-                      {(messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (
-                        <div className="flex flex-wrap gap-2 pt-2 px-1">
-                          {[
+                      {/* Contextual suggestion chips */}
+                      {(messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (() => {
+                        const allContent = messages.map(m => m.content.toLowerCase()).join(" ");
+                        const askedTopics = {
+                          transmission: /manual|automatic|gearbox/i.test(allContent),
+                          pricing: /price|cost|how much|£|rate/i.test(allContent),
+                          availability: /available|when|this week|book|schedule/i.test(allContent),
+                          intensive: /intensive|crash course|fast track|quick/i.test(allContent),
+                          areas: /area|cover|where|location|postcode/i.test(allContent),
+                          beginner: /beginner|first time|never driven|new learner/i.test(allContent),
+                          test: /test|exam|pass|practical/i.test(allContent),
+                        };
+
+                        let suggestions: string[] = [];
+
+                        if (messages.length === 0) {
+                          // Initial suggestions
+                          suggestions = [
                             "🚗 Manual lessons",
                             "🚗 Automatic lessons",
                             "💰 How much are lessons?",
-                            "📅 What's available this week?",
                             "🎓 Intensive courses",
-                            "📍 What areas do you cover?",
                             "🆕 I'm a complete beginner",
-                          ].map((suggestion) => (
-                            <button
-                              key={suggestion}
-                              onClick={() => handleSendMessage(suggestion)}
-                              className="px-3 py-1.5 text-xs rounded-full border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                          ];
+                        } else if (askedTopics.transmission && !askedTopics.pricing) {
+                          suggestions = [
+                            "💰 How much per hour?",
+                            "📅 When can I start?",
+                            "🎓 Any intensive options?",
+                            "📍 Do you cover my area?",
+                          ];
+                        } else if (askedTopics.pricing && !askedTopics.availability) {
+                          suggestions = [
+                            "📅 What's available this week?",
+                            "💳 Do you offer payment plans?",
+                            "🎓 Any package deals?",
+                            "📞 Can I speak to someone?",
+                          ];
+                        } else if (askedTopics.availability && !askedTopics.test) {
+                          suggestions = [
+                            "📝 How do I book?",
+                            "🕐 How long are lessons?",
+                            "🎯 When will I be test ready?",
+                            "📞 Can I speak to someone?",
+                          ];
+                        } else if (askedTopics.intensive && !askedTopics.pricing) {
+                          suggestions = [
+                            "💰 How much is an intensive course?",
+                            "⏱️ How long does it take?",
+                            "📅 When's the next one?",
+                            "🆕 Can beginners do intensive?",
+                          ];
+                        } else if (askedTopics.beginner && !askedTopics.transmission) {
+                          suggestions = [
+                            "🚗 Should I learn manual or auto?",
+                            "💰 How much are lessons?",
+                            "⏱️ How many hours will I need?",
+                            "📅 When can I start?",
+                          ];
+                        } else {
+                          // General follow-ups for later in conversation
+                          const remaining: string[] = [];
+                          if (!askedTopics.pricing) remaining.push("💰 How much are lessons?");
+                          if (!askedTopics.availability) remaining.push("📅 What's available?");
+                          if (!askedTopics.areas) remaining.push("📍 What areas do you cover?");
+                          if (!askedTopics.test) remaining.push("🎯 When will I be test ready?");
+                          remaining.push("📞 Can I speak to someone?");
+                          remaining.push("📝 I'd like to book");
+                          suggestions = remaining.slice(0, 4);
+                        }
+
+                        return (
+                          <div className="flex flex-wrap gap-2 pt-2 px-1">
+                            {suggestions.map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                onClick={() => handleSendMessage(suggestion)}
+                                className="px-3 py-1.5 text-xs rounded-full border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
                       <Input
