@@ -199,7 +199,169 @@ Deno.serve(async (req) => {
   }
 });
 
-async function getOrCreateConversation(supabase: any, instructorId: string, phone: string, name: string | null) {
+// ── Handle widget messages: forward to WhatsApp + generate AI reply ──
+async function handleWidgetMessage(body: any) {
+  const { conversation_id, message, visitor_name, visitor_phone, instructor_id } = body;
+
+  if (!conversation_id || !message) {
+    return new Response(JSON.stringify({ status: "missing_fields" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Determine who to forward the message to via WhatsApp
+  let forwardToPhone: string | null = null;
+  let targetInstructor: any = null;
+
+  if (instructor_id) {
+    // Widget is on an instructor's page — forward to that instructor's WhatsApp
+    const { data: instr } = await supabase
+      .from("instructors")
+      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+      .eq("id", instructor_id)
+      .maybeSingle();
+
+    if (instr) {
+      targetInstructor = instr;
+      forwardToPhone = instr.whatsapp_phone || instr.phone || null;
+    }
+  }
+
+  // Fallback: forward to admin WhatsApp number
+  if (!forwardToPhone) {
+    forwardToPhone = Deno.env.get("ADMIN_PHONE_NUMBER") || null;
+  }
+
+  // Forward the visitor's message to WhatsApp (so instructor/admin sees it on their phone)
+  if (forwardToPhone) {
+    const senderLabel = visitor_name || visitor_phone || "Website visitor";
+    const forwardText = `💬 New chat message from ${senderLabel}:\n\n"${message}"`;
+    await sendWhatsAppMessage(forwardToPhone, forwardText);
+  }
+
+  // Generate AI reply
+  let aiReply: string | null = null;
+
+  if (targetInstructor) {
+    const context = await gatherInstructorContext(supabase, targetInstructor);
+    const { data: history } = await supabase
+      .from("whatsapp_messages")
+      .select("content, direction, sender_type, created_at")
+      .eq("conversation_id", conversation_id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    const reversedHistory = (history || []).reverse();
+    aiReply = await generateAIReply(message, context, reversedHistory, targetInstructor.name);
+  } else {
+    // No instructor context — use a generic reply
+    aiReply = await generateGenericReply(message, visitor_name);
+  }
+
+  if (aiReply) {
+    // Store AI reply in DB
+    await supabase.from("whatsapp_messages").insert({
+      conversation_id,
+      content: aiReply,
+      direction: "outbound",
+      sender_type: "ai",
+    });
+
+    // Update conversation timestamp
+    await supabase.from("whatsapp_conversations").update({
+      last_message_at: new Date().toISOString(),
+    }).eq("id", conversation_id);
+  }
+
+  return new Response(JSON.stringify({ status: "ok", ai_reply: aiReply }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+// ── Send a WhatsApp message via Meta API ──
+async function sendWhatsAppMessage(to: string, text: string) {
+  const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
+  const WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+
+  if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
+    console.log("WhatsApp credentials not configured, skipping forward");
+    return;
+  }
+
+  // Normalize phone number (ensure country code, no spaces/dashes)
+  let normalizedPhone = to.replace(/[\s\-\(\)]/g, "");
+  if (normalizedPhone.startsWith("0")) {
+    normalizedPhone = "44" + normalizedPhone.slice(1); // UK default
+  }
+  if (!normalizedPhone.startsWith("+")) {
+    normalizedPhone = normalizedPhone; // Already without +, Meta expects no +
+  } else {
+    normalizedPhone = normalizedPhone.slice(1);
+  }
+
+  try {
+    const resp = await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: normalizedPhone,
+        type: "text",
+        text: { body: text },
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error("WhatsApp forward failed:", resp.status, await resp.text());
+    } else {
+      console.log("Message forwarded to WhatsApp:", normalizedPhone);
+    }
+  } catch (err) {
+    console.error("WhatsApp forward error:", err);
+  }
+}
+
+// ── Generic AI reply for non-instructor chats ──
+async function generateGenericReply(message: string, visitorName: string | null): Promise<string | null> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) return null;
+
+  try {
+    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are a friendly AI receptionist for Drive365, a driving instructor franchise. Answer questions about driving lessons, courses, and the franchise helpfully and concisely. Use British English. Plain text only — no markdown. If you can't answer something, say "Let me get someone to help you — they'll be in touch shortly."`,
+          },
+          { role: "user", content: message },
+        ],
+      }),
+    });
+
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch {
+    return null;
+  }
+}
+
+
   const { data: existing } = await supabase
     .from("whatsapp_conversations")
     .select("*")
