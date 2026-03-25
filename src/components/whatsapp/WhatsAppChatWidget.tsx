@@ -130,7 +130,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !conversationId) return;
+    if (!content.trim() || !conversationId) {
+      console.log("handleSendMessage blocked:", { content: !!content.trim(), conversationId });
+      return;
+    }
     setInputMessage("");
     setSending(true);
 
