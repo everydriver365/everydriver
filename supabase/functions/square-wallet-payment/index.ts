@@ -52,8 +52,9 @@ serve(async (req: Request) => {
 
     // Square uses amount in smallest currency unit (pence for GBP)
     const amountInPence = Math.round(amount * 100);
-    const idempotencyKey = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
-    const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
+    const ts = Date.now();
+    const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${ts}`;
+    const idempotencyKey = orderReference;
 
     const env = environment.toLowerCase();
     const isProduction = env === "production" || env === "prod" || env === "live";
@@ -116,70 +117,56 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get current pupil balance
-    const { data: pupil, error: pupilError } = await supabase
+    // Fetch pupil name for notifications
+    const { data: pupil } = await supabase
       .from("pupils")
-      .select("account_balance, name")
+      .select("name")
       .eq("id", pupilId)
       .single();
 
-    if (pupilError) {
-      console.error("Failed to fetch pupil:", pupilError);
-    } else {
-      const currentBalance = pupil.account_balance || 0;
-      const newBalance = currentBalance + amount;
+    // Atomically increment balance (no race condition)
+    const { error: rpcError } = await supabase.rpc("increment_pupil_balance", {
+      p_pupil_id: pupilId,
+      p_amount: amount,
+    });
 
-      // Update pupil balance
-      const { error: updateError } = await supabase
-        .from("pupils")
-        .update({ account_balance: newBalance })
-        .eq("id", pupilId);
+    if (rpcError) {
+      console.error("Failed to update balance via RPC:", rpcError);
+    }
 
-      if (updateError) {
-        console.error("Failed to update balance:", updateError);
-      }
+    // Record transaction in payment_history
+    await supabase.from("payment_history").insert({
+      pupil_id: pupilId,
+      instructor_id: instructorId,
+      amount: amount,
+      payment_type: "payment",
+      payment_method: walletType === "apple" ? "Apple Pay" : "Google Pay",
+      transaction_reference: orderReference,
+    });
 
-      // Record transaction in payment_history
-      const { error: historyError } = await supabase
-        .from("payment_history")
-        .insert({
-          pupil_id: pupilId,
-          instructor_id: instructorId,
-          amount: amount,
-          payment_type: "payment",
-          payment_method: walletType === "apple" ? "Apple Pay" : "Google Pay",
-          description: `Balance payment via ${walletType === "apple" ? "Apple Pay" : "Google Pay"}`,
-          transaction_reference: orderReference,
-        });
+    console.log(`Pupil balance incremented by ${amount}`);
 
-      if (historyError) {
-        console.error("Failed to record payment history:", historyError);
-      }
-
-      console.log(`Pupil balance updated: ${currentBalance} -> ${newBalance}`);
-
-      // Send payment receipt email
-      try {
-        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-        await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseAnonKey}`,
-          },
-          body: JSON.stringify({
-            pupilId,
-            instructorId,
-            amount,
-            paymentMethod: walletType === "apple" ? "Apple Pay" : "Google Pay",
-            transactionReference: orderReference,
-            receiptUrl: data.payment.receipt_url,
-          }),
-        });
-        console.log("Payment receipt email triggered");
-      } catch (emailError) {
-        console.error("Failed to send receipt email:", emailError);
-      }
+    // Send payment receipt email
+    try {
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          pupilId,
+          instructorId,
+          amount,
+          paymentMethod: walletType === "apple" ? "Apple Pay" : "Google Pay",
+          transactionReference: orderReference,
+          receiptUrl: data.payment.receipt_url,
+        }),
+      });
+      console.log("Payment receipt email triggered");
+    } catch (emailError) {
+      console.error("Failed to send receipt email:", emailError);
     }
 
     // Notify instructor of payment received

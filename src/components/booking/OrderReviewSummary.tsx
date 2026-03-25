@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Calendar, Clock, ShoppingBag, Receipt, CheckCircle } from "lucide-react";
+import { ChevronDown, Calendar, ShoppingBag, Receipt, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
