@@ -1,6 +1,6 @@
 import { useState } from "react";
 import defaultHeroImage from "@/assets/frontpagesquare-4.png";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
 import klarnaRoundLogo from "@/assets/klarna-round-logo.svg";

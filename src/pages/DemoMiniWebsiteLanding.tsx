@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 
 const INSTRUCTOR_ID = "c9843b58-6edb-4b97-8238-65d725e30aea";
 

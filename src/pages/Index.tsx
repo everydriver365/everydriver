@@ -61,7 +61,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 import heroMobile from "@/assets/hero-mobile.png";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 import heroInstructorNew from "@/assets/hero-instructor-new.png";
 import heroLearner from "@/assets/hero-learner.jpg";
 import referFriends from "@/assets/refer-friends.png";

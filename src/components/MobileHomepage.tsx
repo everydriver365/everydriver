@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
-import earlierTestGuaranteedBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlierTestGuaranteedBadge from "@/assets/free-retest-badge.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 

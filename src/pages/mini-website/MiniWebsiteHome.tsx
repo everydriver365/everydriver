@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 import defaultHeroImage from "@/assets/frontpagesquare-4.png";
 import intensiveCourseTile from "@/assets/intensive-course-tile.jpg";
 import weeklyLessonsTile from "@/assets/weekly-lessons-tile.webp";
