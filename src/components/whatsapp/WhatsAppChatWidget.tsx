@@ -95,6 +95,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [bookingHours, setBookingHours] = useState<number>(0);
   const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [visibleResultsCount, setVisibleResultsCount] = useState(4);
 
   // Restore session — but detect stuck conversations
   useEffect(() => {
@@ -307,6 +308,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     setBookingHours(hours);
     setBookingStep("results");
     setBookingLoading(true);
+    setVisibleResultsCount(4);
 
     try {
       // Geocode postcode
@@ -372,7 +374,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         .sort((a: any, b: any) => a.distance - b.distance);
 
       const results: BookingResult[] = [];
-      for (const inst of withDistance.slice(0, 6)) {
+      for (const inst of withDistance.slice(0, 20)) {
         const nextDate = findFirstAvailableDate(inst, workingHours || [], dateOverrides || []);
         if (!nextDate) continue;
 
@@ -636,9 +638,17 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
                       {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
                         <div className="space-y-2 pt-1">
-                          {bookingResults.slice(0, 4).map(result => (
+                          {bookingResults.slice(0, visibleResultsCount).map(result => (
                             <WhatsAppBookingCard key={result.instructorId} result={result} onSelect={handleBookingCardSelect} />
                           ))}
+                          {bookingResults.length > visibleResultsCount && (
+                            <button
+                              onClick={() => setVisibleResultsCount(prev => prev + 4)}
+                              className="w-full py-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10"
+                            >
+                              View more courses ({bookingResults.length - visibleResultsCount} more)
+                            </button>
+                          )}
                         </div>
                       )}
 
