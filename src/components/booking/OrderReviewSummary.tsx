@@ -139,7 +139,7 @@ export function OrderReviewSummary({
               {/* Admin Fee */}
               {hasFee && adminFee > 0 && (
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Admin fee</span>
+                  <span>Service fee</span>
                   <span>£{adminFee.toFixed(2)}</span>
                 </div>
               )}

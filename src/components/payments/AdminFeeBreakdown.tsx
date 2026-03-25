@@ -26,7 +26,7 @@ export function AdminFeeBreakdown({ baseAmount, adminFee, totalCharge, hasFee, i
       </div>
       <div className="flex items-center justify-between text-muted-foreground">
         <span className="flex items-center gap-1">
-          Admin fee
+          Service fee
           <Info className="h-3 w-3" />
         </span>
         <span>£{adminFee.toFixed(2)}</span>
@@ -36,6 +36,7 @@ export function AdminFeeBreakdown({ baseAmount, adminFee, totalCharge, hasFee, i
           Full fee £{fullFee!.toFixed(2)} — instructor absorbs £{instructorAbsorbs!.toFixed(2)}
         </div>
       )}
+      <p className="text-[10px] text-muted-foreground/60">Platform service fee for booking management</p>
       <div className="border-t border-border pt-1.5 flex items-center justify-between font-semibold text-foreground">
         <span>Total</span>
         <span>£{totalCharge.toFixed(2)}</span>

@@ -70,7 +70,7 @@ export function AdminFeeIncomeTile({ onClick }: AdminFeeIncomeTileProps) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          Admin Fee Income
+          Service Fee Income
         </CardTitle>
       </CardHeader>
       <CardContent>

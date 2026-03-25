@@ -48,9 +48,9 @@ export function CommissionPayerSettings({ instructorId, initialPayer, initialSpl
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <Label className="text-sm font-medium">Admin Fee Split</Label>
+        <Label className="text-sm font-medium">Service Fee Split</Label>
         <p className="text-xs text-muted-foreground">
-          Control how much of the admin fee your pupil pays vs how much you absorb.
+          Control how much of the service fee your pupil pays vs how much you absorb.
         </p>
       </div>
 
