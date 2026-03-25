@@ -34,6 +34,7 @@ const DemoMobileBookingUX = lazy(() => import("@/pages/demo/DemoMobileBookingUX"
 const DemoKenDMobileHeroes = lazy(() => import("@/pages/demo/DemoKenDMobileHeroes"));
 const DemoTomorrowTileDesigns = lazy(() => import("@/pages/demo/DemoTomorrowTileDesigns"));
 const DemoTelematicsRedesign = lazy(() => import("@/pages/demo/DemoTelematicsRedesign"));
+const DemoFranchiseBenefits = lazy(() => import("@/pages/demo/DemoFranchiseBenefits"));
 const DemoPricingPage = lazy(() => import("@/pages/DemoPricingPage"));
 const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 
@@ -87,6 +88,7 @@ export const demoRoutes = (
     <Route path="/demo/ken-d-mobile-heroes" element={<DemoKenDMobileHeroes />} />
     <Route path="/demo/tomorrow-tile-designs" element={<DemoTomorrowTileDesigns />} />
     <Route path="/demo/telematics-redesign" element={<DemoTelematicsRedesign />} />
+    <Route path="/demo/franchise-benefits" element={<DemoFranchiseBenefits />} />
     <Route path="/demo/pricing" element={<DemoPricingPage />} />
     <Route path="/compare" element={<ComparisonPage />} />
   </>
