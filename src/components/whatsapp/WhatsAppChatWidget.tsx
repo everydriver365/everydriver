@@ -218,6 +218,12 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
           visitor_phone: visitorPhone,
           instructor_id: instructorId,
         },
+      }).then(({ data }) => {
+        // If no AI reply is coming (e.g. forwarded to human, AI disabled), clear typing immediately
+        if (data?.status === "forwarded_to_human" || !data?.ai_reply) {
+          clearTimeout(awaitingTimeout);
+          setIsAwaitingReply(false);
+        }
       }).catch(err => {
         console.error("AI reply error:", err);
         clearTimeout(awaitingTimeout);
