@@ -237,6 +237,51 @@ async function handleWidgetMessage(body: any) {
     forwardToPhone = Deno.env.get("ADMIN_PHONE_NUMBER") || null;
   }
 
+  // Detect human handoff request
+  const isHandoffRequest = /speak to someone|talk to a person|real person|human|call me|phone me|contact me/i.test(message);
+
+  if (isHandoffRequest) {
+    // Send urgent handoff message to admin with conversation context
+    const adminPhone = Deno.env.get("ADMIN_PHONE_NUMBER");
+    const handoffPhone = adminPhone || forwardToPhone;
+
+    if (handoffPhone) {
+      // Get conversation history for context
+      const { data: history } = await supabase
+        .from("whatsapp_messages")
+        .select("content, direction, sender_type, created_at")
+        .eq("conversation_id", conversation_id)
+        .order("created_at", { ascending: true })
+        .limit(20);
+
+      const chatSummary = (history || [])
+        .map((m: any) => `${m.direction === "inbound" ? "👤 Visitor" : "🤖 AI"}: ${m.content}`)
+        .join("\n");
+
+      const handoffText = `🚨 HUMAN HANDOFF REQUESTED\n\n👤 Name: ${visitor_name || "Unknown"}\n📱 Phone: ${visitor_phone || "Not provided"}\n\n📝 Conversation so far:\n${chatSummary}\n\n⚡ Please reply to this visitor directly.`;
+      await sendWhatsAppMessage(handoffPhone, handoffText);
+    }
+
+    // Disable AI for this conversation so future messages go straight to admin
+    await supabase.from("whatsapp_conversations").update({
+      ai_enabled: false,
+      last_message_at: new Date().toISOString(),
+    }).eq("id", conversation_id);
+
+    // Send a friendly handoff reply to the visitor
+    const handoffReply = "Of course! I've notified the team and someone will be in touch with you shortly. They'll be able to see our conversation so you won't need to repeat yourself. 😊";
+    await supabase.from("whatsapp_messages").insert({
+      conversation_id,
+      content: handoffReply,
+      direction: "outbound",
+      sender_type: "ai",
+    });
+
+    return new Response(JSON.stringify({ status: "handoff", ai_reply: handoffReply }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   // Forward the visitor's message to WhatsApp (so instructor/admin sees it on their phone)
   if (forwardToPhone) {
     const senderLabel = visitor_name || visitor_phone || "Website visitor";
@@ -246,6 +291,20 @@ async function handleWidgetMessage(body: any) {
 
   // Generate AI reply
   let aiReply: string | null = null;
+
+  // Check if AI is still enabled for this conversation
+  const { data: convCheck } = await supabase
+    .from("whatsapp_conversations")
+    .select("ai_enabled")
+    .eq("id", conversation_id)
+    .maybeSingle();
+
+  if (convCheck && convCheck.ai_enabled === false) {
+    // AI disabled — just forward to admin, no AI reply
+    return new Response(JSON.stringify({ status: "forwarded_to_human" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   if (targetInstructor) {
     const context = await gatherInstructorContext(supabase, targetInstructor);
