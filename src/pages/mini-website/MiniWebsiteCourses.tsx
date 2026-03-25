@@ -76,7 +76,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
       if (!isNaN(targetDate.getTime())) {
         // Set the month if needed
         const targetMonth = format(targetDate, "yyyy-MM");
-        if (selectedMonth !== targetMonth && monthOptions.includes(targetMonth)) {
+        if (selectedMonth !== targetMonth && monthOptions.some((m: any) => (m.value || m) === targetMonth)) {
           setSelectedMonth(targetMonth);
         }
         // Check if this date is available
