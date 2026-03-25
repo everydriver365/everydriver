@@ -220,6 +220,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         },
       }).catch(err => {
         console.error("AI reply error:", err);
+        clearTimeout(awaitingTimeout);
         setIsAwaitingReply(false);
       });
     } catch (err) {

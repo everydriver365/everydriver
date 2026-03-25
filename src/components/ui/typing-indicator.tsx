@@ -43,4 +43,5 @@ export const TypingIndicator = forwardRef<HTMLDivElement, TypingIndicatorProps>(
       </div>
     </motion.div>
   );
-}
+  }
+);
