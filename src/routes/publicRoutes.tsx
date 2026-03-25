@@ -44,6 +44,10 @@ const RemoteSigning = lazy(() => import("@/pages/RemoteSigning"));
 const SwitchToEveryDriver = lazy(() => import("@/pages/SwitchToEveryDriver"));
 const FranchiseDemo = lazy(() => import("@/pages/FranchiseDemo"));
 const FranchisePage = lazy(() => import("@/pages/FranchisePage"));
+const FranchiseHealthcare = lazy(() => import("@/pages/franchise/FranchiseHealthcare"));
+const FranchiseBonus = lazy(() => import("@/pages/franchise/FranchiseBonus"));
+const FranchiseWhatsIncluded = lazy(() => import("@/pages/franchise/FranchiseWhatsIncluded"));
+const FranchiseTechnology = lazy(() => import("@/pages/franchise/FranchiseTechnology"));
 const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 const HealthBenefitsPage = lazy(() => import("@/pages/HealthBenefitsPage"));
@@ -105,6 +109,10 @@ export const publicRoutes = (
 
     {/* Drive365 franchise route */}
     <Route path="/drive365/franchise" element={<FranchisePage />} />
+    <Route path="/drive365/franchise/healthcare" element={<FranchiseHealthcare />} />
+    <Route path="/drive365/franchise/bonus" element={<FranchiseBonus />} />
+    <Route path="/drive365/franchise/whats-included" element={<FranchiseWhatsIncluded />} />
+    <Route path="/drive365/franchise/technology" element={<FranchiseTechnology />} />
     <Route path="/franchise-demo" element={<FranchiseDemo />} />
     <Route path="/franchise" element={<FranchisePage />} />
 
