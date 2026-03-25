@@ -139,15 +139,12 @@ serve(async (req: Request) => {
         const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
         const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-        // Update payment_intents if exists
-        await supabase
-          .from("payment_intents")
-          .update({
-            status: "completed",
-            gateway_reference: payment.id,
-            completed_at: new Date().toISOString(),
-          })
-          .eq("order_reference", orderReference);
+        // Atomically increment balance first (most critical)
+        const { error: rpcError } = await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId,
+          p_amount: amount,
+        });
+        if (rpcError) throw rpcError;
 
         // Record in payment_history
         await supabase.from("payment_history").insert({
@@ -158,15 +155,30 @@ serve(async (req: Request) => {
           notes: `Square payment ${payment.id} — ${orderReference}`,
         });
 
-        // Increment pupil balance
-        await supabase.rpc("increment_pupil_balance", {
-          p_pupil_id: pupilId,
-          p_amount: amount,
-        });
+        // Update payment_intents if exists
+        await supabase
+          .from("payment_intents")
+          .update({
+            status: "completed",
+            gateway_reference: payment.id,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("order_reference", orderReference);
 
         console.log("[square-payment] Balance updated for pupil:", pupilId);
       } catch (dbError) {
         console.error("[square-payment] DB update error (payment still succeeded):", dbError);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            paymentId: payment.id,
+            status: payment.status,
+            receiptUrl: payment.receipt_url,
+            orderReference,
+            dbError: "Balance update failed — please contact support",
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
 

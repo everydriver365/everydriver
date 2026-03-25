@@ -72,8 +72,10 @@ serve(async (req: Request) => {
     }
 
     // Square API base URL
-    const baseUrl = environment === "production" 
-      ? "https://connect.squareup.com" 
+    const env = environment.toLowerCase();
+    const isProduction = env === "production" || env === "prod" || env === "live";
+    const baseUrl = isProduction
+      ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
 
     // Create payment link using Square Checkout API
@@ -89,6 +91,7 @@ serve(async (req: Request) => {
       },
       checkout_options: {
         redirect_url: returnUrl,
+        cancel_url: body.cancelUrl || returnUrl,
         ask_for_shipping_address: false
       },
       pre_populated_data: {
