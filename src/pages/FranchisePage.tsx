@@ -7,7 +7,7 @@ import franchisePrice from "@/assets/franchise-price.jpg";
 import franchiseNoTieIn from "@/assets/franchise-no-tie-in.jpg";
 import { Link } from "react-router-dom";
 import heroImg from "@/assets/franchise-hero-drive365.png";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MainLayout } from "@/components/layout/MainLayout";
