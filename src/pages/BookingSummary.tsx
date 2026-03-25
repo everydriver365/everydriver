@@ -263,13 +263,11 @@ export default function BookingSummary() {
     const fetchDetails = async () => {
       if (!instructorId) return;
 
-      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, workingHoursRes, dateOverridesRes] = await Promise.all([
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes] = await Promise.all([
         supabase.from("instructors").select("*, deposit_enabled, deposit_amount, deposit_deadline_days, cancellation_policy_text, booking_mode").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
-        supabase.from("instructor_working_hours").select("day_of_week, is_active").eq("instructor_id", instructorId),
-        supabase.from("instructor_date_overrides").select("override_date, override_end_date, is_available").eq("instructor_id", instructorId),
       ]);
 
       if (instructorRes.error || !instructorRes.data) {
