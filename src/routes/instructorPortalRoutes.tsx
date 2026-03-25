@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 import { FeatureGate } from "@/components/instructor/FeatureGate";
 
