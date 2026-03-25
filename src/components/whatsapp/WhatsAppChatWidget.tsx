@@ -373,7 +373,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         .sort((a: any, b: any) => a.distance - b.distance);
 
       const results: BookingResult[] = [];
-      for (const inst of withDistance.slice(0, 6)) {
+      for (const inst of withDistance.slice(0, 20)) {
         const nextDate = findFirstAvailableDate(inst, workingHours || [], dateOverrides || []);
         if (!nextDate) continue;
 
