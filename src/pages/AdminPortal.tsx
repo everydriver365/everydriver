@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -85,6 +85,7 @@ import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard"
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueManager";
+import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -182,6 +183,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "churn-analysis": { title: "Churn Analysis", group: "Dashboard", icon: TrendingUp },
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
   "calendar-sync": { title: "Calendar Sync Queue", group: "System Settings", icon: Calendar },
+  "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
 };
 
 export default function AdminPortal() {
@@ -930,6 +932,14 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="calendar-sync" className="mb-4" />
             <CalendarSyncQueueManager />
+          </motion.div>
+        );
+
+      case "payment-reconciliation":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <PaymentReconciliationDashboard />
           </motion.div>
         );
 
