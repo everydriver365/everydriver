@@ -56,8 +56,7 @@ export function WhatsAppBookingCard({ result, onSelect }: WhatsAppBookingCardPro
 
       <Button
         size="sm"
-        className="w-full text-xs h-8 text-white"
-        style={{ backgroundColor: "#25D366" }}
+        className="w-full text-xs h-8"
         onClick={() => onSelect(result)}
       >
         View & Book

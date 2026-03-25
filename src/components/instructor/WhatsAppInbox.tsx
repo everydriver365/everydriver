@@ -63,9 +63,9 @@ export function WhatsAppInbox({ instructorId }: WhatsAppInboxProps) {
           ) : filtered.length === 0 ? (
             <div className="text-center py-8 px-4">
               <MessageCircle className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No WhatsApp conversations yet</p>
+              <p className="text-sm text-muted-foreground">No enquiries yet</p>
               <p className="text-xs text-muted-foreground mt-1">
-                When prospects message your WhatsApp number, conversations will appear here.
+                When prospects message you, conversations will appear here.
               </p>
             </div>
           ) : (
