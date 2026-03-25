@@ -61,7 +61,7 @@ export function CommissionSettingsManager() {
           <p className="text-xs text-muted-foreground">
             <strong>How it works:</strong> When <em>commission_payer</em> is set to "pupil" on an instructor,
             the admin fee (percentage + fixed) is added on top of the payment amount at checkout.
-            When set to "instructor", the fee is absorbed by the instructor and deducted from their payout.
+            When set to "instructor", the fee is absorbed by the instructor and deducted from their payout. This is a platform service fee, not a payment surcharge.
           </p>
         </CardContent>
       </Card>

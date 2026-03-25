@@ -67,7 +67,7 @@ const settingsCategories: SettingsCategory[] = [
     icon: PoundSterling,
     iconColor: "text-green-500",
     links: [
-      { key: "commission-settings", title: "Commission & Fees", description: "Set admin fee rates and fixed charges on payments." },
+      { key: "commission-settings", title: "Commission & Fees", description: "Set service fee rates and fixed charges on payments." },
       { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
       { key: "payments", title: "Payment History", description: "Track all payment transactions." },
       { key: "instructor-payouts", title: "Instructor Payouts", description: "Transfer payments received by instructors.", badgeKey: "pendingPayouts" },
