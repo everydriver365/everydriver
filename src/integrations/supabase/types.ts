@@ -15216,7 +15216,7 @@ export type Database = {
           ai_enabled: boolean
           created_at: string
           id: string
-          instructor_id: string
+          instructor_id: string | null
           last_message_at: string | null
           phone_number: string
           visitor_name: string | null
@@ -15225,7 +15225,7 @@ export type Database = {
           ai_enabled?: boolean
           created_at?: string
           id?: string
-          instructor_id: string
+          instructor_id?: string | null
           last_message_at?: string | null
           phone_number: string
           visitor_name?: string | null
@@ -15234,7 +15234,7 @@ export type Database = {
           ai_enabled?: boolean
           created_at?: string
           id?: string
-          instructor_id?: string
+          instructor_id?: string | null
           last_message_at?: string | null
           phone_number?: string
           visitor_name?: string | null

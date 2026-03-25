@@ -1,0 +1,1 @@
+ALTER TABLE public.whatsapp_conversations ALTER COLUMN instructor_id DROP NOT NULL;
