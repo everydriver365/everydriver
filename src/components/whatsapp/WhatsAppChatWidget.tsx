@@ -551,7 +551,13 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                         );
                       })}
 
-                      {/* Booking result cards */}
+                      {/* Typing indicator */}
+                      <AnimatePresence>
+                        {isAwaitingReply && (
+                          <TypingIndicator name={instructorName || "Assistant"} />
+                        )}
+                      </AnimatePresence>
+
                       {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
                         <div className="space-y-2 pt-1">
                           {bookingResults.slice(0, 4).map(result => (
