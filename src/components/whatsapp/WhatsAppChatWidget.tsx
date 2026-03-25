@@ -208,6 +208,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       }).eq("id", conversationId);
 
       setIsAwaitingReply(true);
+      const awaitingTimeout = setTimeout(() => setIsAwaitingReply(false), 30000);
       supabase.functions.invoke("whatsapp-webhook", {
         body: {
           widget_message: true,
