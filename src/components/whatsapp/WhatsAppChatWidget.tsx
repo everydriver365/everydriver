@@ -255,7 +255,62 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                   <>
                     <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
                       {messages.length === 0 && (
-                        <p className="text-center text-muted-foreground text-xs mt-8">Send a message to get started!</p>
+                        <div className="mt-6 space-y-3">
+                          <p className="text-center text-muted-foreground text-xs">Tap a question or type your own!</p>
+                          <div className="flex flex-wrap gap-2 justify-center px-2">
+                            {[
+                              "🚗 Manual or automatic?",
+                              "💰 How much are lessons?",
+                              "📅 What's available this week?",
+                              "🎓 Do you do intensive courses?",
+                              "📍 What areas do you cover?",
+                              "🆕 I'm a complete beginner",
+                            ].map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                onClick={() => {
+                                  setInputMessage(suggestion);
+                                  setTimeout(() => {
+                                    const syntheticSend = async () => {
+                                      setSending(true);
+                                      try {
+                                        await supabase.from("whatsapp_messages").insert({
+                                          conversation_id: conversationId,
+                                          content: suggestion,
+                                          direction: "inbound",
+                                          sender_type: "visitor",
+                                        });
+                                        await supabase.from("whatsapp_conversations").update({
+                                          last_message_at: new Date().toISOString(),
+                                        }).eq("id", conversationId);
+                                        supabase.functions.invoke("whatsapp-webhook", {
+                                          body: {
+                                            widget_message: true,
+                                            conversation_id: conversationId,
+                                            message: suggestion,
+                                            visitor_name: visitorName,
+                                            visitor_phone: visitorPhone,
+                                            instructor_id: instructorId,
+                                          },
+                                        }).catch(err => console.error("AI reply error:", err));
+                                      } catch (err) {
+                                        console.error("Send failed:", err);
+                                        toast.error("Failed to send message");
+                                      } finally {
+                                        setSending(false);
+                                        setInputMessage("");
+                                      }
+                                    };
+                                    syntheticSend();
+                                  }, 0);
+                                }}
+                                className="px-3 py-1.5 text-xs rounded-full border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       {messages.map(msg => {
                         const isOutbound = msg.direction === "outbound";
