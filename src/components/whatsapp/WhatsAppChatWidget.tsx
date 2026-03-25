@@ -639,8 +639,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
                       {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
                         <div className="space-y-2 pt-1">
-                          {bookingResults.slice(0, visibleResultsCount).map(result => (
-                            <WhatsAppBookingCard key={result.instructorId} result={result} onSelect={handleBookingCardSelect} />
+                          {bookingResults.slice(0, visibleResultsCount).map((result, idx) => (
+                            <WhatsAppBookingCard key={`${result.instructorId}-${result.hours}`} result={result} onSelect={handleBookingCardSelect} />
                           ))}
                           {bookingResults.length > visibleResultsCount && (
                             <button
