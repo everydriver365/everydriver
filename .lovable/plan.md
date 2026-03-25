@@ -1,37 +1,42 @@
 
 
-## Make Fee Structure UK-Compliant
+## Implement Tiered Service Fees (2% + 25p Free / 1.5% + 25p Paid)
 
-You're right — the UK Payment Services Regulations 2017 prohibit surcharging customers for card payments. Calling it a "processing fee" or linking it to payment method would be illegal.
+### Overview
 
-### Compliant Approach: "Service Fee"
+Set different service fee rates per subscription tier. Free-tier instructors pay **2% + 25p**, paid subscribers pay **1.5% + 25p**. The comparison page highlights this as a benefit of upgrading.
 
-The fee is legal if it's framed as a **platform service fee** (for using the booking/management platform) — not tied to the payment method. This is how Deliveroo, Just Eat, Uber, etc. operate in the UK.
+### Database Changes
 
-### Changes
+1. **Update `platform_commission_config`** — Set the "payment" row to the free-tier default: `rate_percent = 2.0`, `fixed_fee_pence = 25`
 
-**Rename across the entire app** — every instance of "Admin fee" or "Processing fee" becomes **"Service fee"**:
+2. **Update `subscription_plans`** — Set `commission_rate_percent` and `commission_fixed_pence` on each plan:
+   - `free` → `2.0` / `25`
+   - All paid plans (`all_in`, `gps_health`, `dashcam_health`, etc.) → `1.5` / `25`
 
-1. **`AdminFeeBreakdown.tsx`** — label text "Admin fee" → "Service fee"
-2. **`OrderReviewSummary.tsx`** — label text "Admin fee" → "Service fee"
-3. **`CommissionPayerSettings.tsx`** — heading and description updated
-4. **`CommissionSettingsManager.tsx`** — help text updated
-5. **`AdminFeeIncomeTile.tsx`** — tile title "Admin Fee Income" → "Service Fee Income"
-6. **`AdminSettingsGrid.tsx`** — description text updated
-7. **`TakePaymentModal.tsx`** — comments only (no user-facing text)
+3. **Add a row to `comparison_features`** in the "Payments & Billing" category:
+   - Feature name: "Service fee on payments"
+   - `plan_values`: `{ "free": "2% + 25p", "all_in": "1.5% + 25p", "gps_health": "1.5% + 25p", "dashcam_health": "1.5% + 25p" }`
 
-**Add a small disclosure line** in `AdminFeeBreakdown.tsx`:
-> "Platform service fee for booking management"
+### Code Changes
 
-This makes clear the fee is for the platform service, not for the payment method — keeping it fully compliant.
+**`src/hooks/useAdminFee.ts`** — Update to accept an optional `instructorId` and auto-detect the tier:
+- Query the instructor's active subscription → join to `subscription_plans` to get `commission_rate_percent` and `commission_fixed_pence`
+- If the plan has custom rates, use those instead of the global `platform_commission_config`
+- Falls back to global config if no subscription found (free tier default)
+
+Alternative simpler approach: Add `instructorTier` parameter. Callers already fetch the instructor's subscription info — pass the plan's commission rates directly:
+- New signature: `useAdminFee(baseAmount, commissionSplitPercent, tierConfig?)`
+- Where `tierConfig` = `{ ratePercent, fixedFeePence }` from the instructor's subscription plan
+- If not provided, falls back to global `platform_commission_config` (which is the free-tier rate)
+
+**`src/pages/ComparisonPage.tsx`** — No code changes needed; the new "Service fee on payments" row will appear automatically from the database since features are data-driven.
 
 ### Files Modified
-- `src/components/payments/AdminFeeBreakdown.tsx`
-- `src/components/booking/OrderReviewSummary.tsx`
-- `src/components/instructor/CommissionPayerSettings.tsx`
-- `src/components/admin/CommissionSettingsManager.tsx`
-- `src/components/admin/AdminFeeIncomeTile.tsx`
-- `src/components/admin/AdminSettingsGrid.tsx`
-
-No database or logic changes — just label/copy updates.
+- `src/hooks/useAdminFee.ts` — tier-aware fee calculation
+- `src/components/parent/ParentPaymentTopUp.tsx` — pass plan commission rates
+- `src/components/instructor/TakePaymentModal.tsx` — pass plan commission rates
+- `src/components/pupil-portal/PupilPaymentModal.tsx` — pass plan commission rates
+- `src/components/pupil-portal/PupilPaymentDrawer.tsx` — pass plan commission rates
+- Database: `platform_commission_config`, `subscription_plans`, `comparison_features` data updates
 
