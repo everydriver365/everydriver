@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminFee } from "@/hooks/useAdminFee";
+import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 type View = "picker" | "qr" | "link";
@@ -62,10 +63,11 @@ export function TakePaymentModal({
 
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
-  // Admin fee calculation
+  // Admin fee calculation with tier-specific rates
+  const tierConfig = useInstructorTierConfig(instructorId);
   const parsedAmount = parseFloat(amount) || 0;
   const splitPct = commissionPayer === "instructor" ? 0 : commissionSplitPercent ?? 100;
-  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(parsedAmount, splitPct);
+  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(parsedAmount, splitPct, tierConfig);
 
   const handleClose = (o: boolean) => {
     if (!o) {

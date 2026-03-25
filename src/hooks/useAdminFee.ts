@@ -24,12 +24,16 @@ interface AdminFeeResult {
 /**
  * Fetches the active platform commission config and calculates the admin fee
  * using the commission_split_percent (0–100) to determine pupil vs instructor share.
+ *
+ * If `tierConfig` is provided (from the instructor's subscription plan),
+ * those rates are used instead of the global platform_commission_config.
  */
 export function useAdminFee(
   baseAmount: number,
-  commissionSplitPercent: number | null | undefined
+  commissionSplitPercent: number | null | undefined,
+  tierConfig?: { ratePercent: number; fixedFeePence: number } | null
 ): AdminFeeResult {
-  const { data: config, isLoading } = useQuery<AdminFeeConfig | null>({
+  const { data: globalConfig, isLoading } = useQuery<AdminFeeConfig | null>({
     queryKey: ["platform-commission-config"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -48,6 +52,8 @@ export function useAdminFee(
     staleTime: 5 * 60 * 1000,
   });
 
+  // Use tier-specific config if available, otherwise fall back to global
+  const config = tierConfig ?? globalConfig;
   const splitPct = commissionSplitPercent ?? 100; // default: pupil pays all
 
   if (!config || baseAmount <= 0) {
