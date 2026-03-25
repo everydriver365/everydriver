@@ -235,8 +235,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
     // Intercept booking trigger
     if (/i'd like to book|id like to book|like to book|want to book|book a course|book lessons/i.test(content)) {
-      addLocalBotMessage("📍 Where are you based? Enter your postcode below so I can find instructors near you.");
-      setBookingStep("postcode");
+      addLocalBotMessage("Great! Let me help you find the perfect course. What type of lessons are you looking for?");
+      setBookingStep("courseType");
       return;
     }
 
