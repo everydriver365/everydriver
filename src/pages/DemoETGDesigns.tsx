@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ChevronRight, ShieldCheck, Clock, Zap, ArrowRight, BadgeCheck, Sparkles } from "lucide-react";
-import earlierTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlierTestBadge from "@/assets/free-retest-badge.png";
 
 const designs = [
   { id: "A", label: "Bold Split Card" },

@@ -2,7 +2,7 @@ import heroOption1 from "@/assets/hero-option-1.jpg";
 import heroOption2 from "@/assets/hero-option-2.jpg";
 import heroOption3 from "@/assets/hero-option-3.jpg";
 import currentHero from "@/assets/frontpagesquare-4.png";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 import { Star, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

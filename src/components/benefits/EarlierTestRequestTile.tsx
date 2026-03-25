@@ -14,7 +14,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import earlyTestBadge from "@/assets/earlier-test-guaranteed-badge.png";
+import earlyTestBadge from "@/assets/free-retest-badge.png";
 
 interface TestCentre {
   id: string;
