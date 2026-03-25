@@ -149,9 +149,9 @@ export function MobileHomepage() {
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
            <div className="text-center mb-3">
-              <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
-                EARLIER TEST <span className="text-amber-400 font-black">GUARANTEED</span>
-              </h3>
+               <h3 className="text-base font-bold text-primary-foreground uppercase tracking-wider">
+                 FREE RE-TEST <span className="text-amber-400 font-black">IF YOU FAIL</span>
+               </h3>
               <p className="text-xs text-primary-foreground/80 mt-0.5">
                 Find your nearest instructor
               </p>
@@ -249,7 +249,7 @@ export function MobileHomepage() {
         </div>
       </div>
       
-      {/* Guaranteed Earlier Test Promotion */}
+      {/* Free Re-Test if you Fail Promotion */}
       <div className="px-4 pt-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
@@ -261,11 +261,11 @@ export function MobileHomepage() {
         >
           <div className="flex">
             <div className="w-2/5 bg-emerald-600 flex items-center justify-center p-5">
-              <img src={earlierTestGuaranteedBadge} alt="Earlier Test Guarantee" className="w-full max-w-[120px] object-contain drop-shadow-lg" />
+              <img src={earlierTestGuaranteedBadge} alt="Free Re-Test if you Fail" className="w-full max-w-[120px] object-contain drop-shadow-lg" />
             </div>
             <div className="flex-1 bg-card p-4 flex flex-col justify-center">
               <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">✓ Guaranteed</span>
-              <h4 className="font-bold text-foreground text-sm mt-1">Earlier Driving Test</h4>
+              <h4 className="font-bold text-foreground text-sm mt-1">Free Re-Test if you Fail</h4>
               <p className="text-xs text-muted-foreground mt-1">Or your £62 test fee refunded in full</p>
               <div className="mt-2 flex items-center gap-1 text-emerald-600">
                 <span className="text-xs font-semibold">Find out more</span>
@@ -411,14 +411,14 @@ export function MobileHomepage() {
         </DialogContent>
       </Dialog>
 
-      {/* Guaranteed Earlier Test Modal */}
+      {/* Free Re-Test Modal */}
       <Dialog open={showTestGuaranteeModal} onOpenChange={setShowTestGuaranteeModal}>
         <DialogContent className="w-[calc(100vw-32px)] max-w-sm max-h-[80vh] overflow-y-auto rounded-2xl p-0">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4">
             <DialogHeader className="pb-0">
               <DialogTitle className="flex items-center gap-2 text-white">
                 <CalendarSearch className="h-5 w-5" />
-                Guaranteed Earlier Test
+                Free Re-Test if you Fail
               </DialogTitle>
             </DialogHeader>
           </div>

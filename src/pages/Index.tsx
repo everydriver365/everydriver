@@ -247,7 +247,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Guaranteed Earlier Test Promotion Banner — Feature Grid */}
+      {/* Free Re-Test Promotion Banner — Feature Grid */}
       <section className="py-4">
           <Link to="/earlier-test-guarantee">
             <motion.div
@@ -259,8 +259,8 @@ export default function Index() {
             >
               <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-8 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="w-28 h-28 object-contain drop-shadow-lg" />
-                  <h3 className="text-2xl font-black text-white">Earlier Test Guarantee</h3>
+                  <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="w-28 h-28 object-contain drop-shadow-lg" />
+                  <h3 className="text-2xl font-black text-white">Free Re-Test if you Fail</h3>
                 </div>
                 <Badge className="bg-white/20 text-white border-0 hover:bg-white/20 text-sm px-4 py-1">Most Popular</Badge>
               </div>
@@ -333,7 +333,7 @@ export default function Index() {
                   <Zap className="h-3 w-3" />
                   Fast Track
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Intensive Courses</h3>
@@ -388,7 +388,7 @@ export default function Index() {
                   <Star className="h-3 w-3" />
                   Popular
                 </Badge>
-                <img src={earlyTestBadge} alt="Earlier Test Guarantee" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
+                <img src={earlyTestBadge} alt="Free Re-Test if you Fail" className="absolute left-2 bottom-2 w-32 h-32 drop-shadow-lg object-contain" />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold">Semi-Intensive</h3>
