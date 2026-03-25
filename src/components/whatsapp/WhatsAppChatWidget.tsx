@@ -231,12 +231,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       return;
     }
 
-    // Detect UK postcode typed directly — auto-enter booking flow
+    // Detect UK postcode typed directly — auto-enter booking flow and search all courses
     const postcodeMatch = content.trim().match(/^([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i);
     if (postcodeMatch) {
-      setBookingPostcode(postcodeMatch[1].toUpperCase());
-      addLocalBotMessage(`📍 Searching near ${postcodeMatch[1].toUpperCase()}…\n\nWhat type of course are you looking for?`);
-      setBookingStep("course");
+      handleAllCoursesSearch(postcodeMatch[1]);
       return;
     }
 
@@ -298,22 +296,20 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
   const handlePostcodeSubmit = () => {
     if (!bookingPostcode.trim()) return;
-    addLocalBotMessage(`📍 Searching near ${bookingPostcode.toUpperCase()}…\n\nWhat type of course are you looking for?`);
-    setBookingStep("course");
+    handleAllCoursesSearch(bookingPostcode.trim());
   };
 
-  const handleCourseSelect = async (hours: number) => {
-    const label = COURSE_OPTIONS.find(c => c.hours === hours)?.label || `${hours} Hours`;
-    addLocalBotMessage(`🔎 Finding available ${label} courses near ${bookingPostcode.toUpperCase()}…`);
-    setBookingHours(hours);
+  const handleAllCoursesSearch = async (postcode: string) => {
+    const pc = postcode.toUpperCase();
+    setBookingPostcode(pc);
+    addLocalBotMessage(`🔎 Finding all available courses near ${pc}…`);
     setBookingStep("results");
     setBookingLoading(true);
     setVisibleResultsCount(4);
 
     try {
-      // Geocode postcode
       const geoRes = await supabase.functions.invoke("geocode-postcode", {
-        body: { postcodes: [bookingPostcode.trim()] },
+        body: { postcodes: [pc] },
       });
       const geoResults = geoRes.data?.results || [];
       const searchLat = geoResults[0]?.latitude;
@@ -326,7 +322,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         return;
       }
 
-      // Fetch instructors, courses, working hours, overrides
       const [
         { data: instructors, error: instructorsError },
         { data: courses, error: coursesError },
@@ -337,18 +332,13 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
           .from("instructors")
           .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, home_latitude:lat, home_longitude:lng")
           .eq("is_active", true),
-        supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true).eq("course_hours", hours),
+        supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active").eq("is_active", true),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
 
       if (instructorsError || coursesError || workingHoursError || dateOverridesError) {
-        console.error("Booking search query failed", {
-          instructorsError,
-          coursesError,
-          workingHoursError,
-          dateOverridesError,
-        });
+        console.error("Booking search query failed", { instructorsError, coursesError, workingHoursError, dateOverridesError });
         addLocalBotMessage("😕 I couldn't load instructor availability right now. Please try again in a moment.");
         setBookingStep(null);
         setBookingLoading(false);
@@ -362,7 +352,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         return;
       }
 
-      // Calculate distances and filter nearby (within ~15 miles ≈ 24km)
       const withDistance = instructors
         .filter((i: any) => i.home_latitude && i.home_longitude)
         .map((i: any) => {
@@ -378,26 +367,54 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         const nextDate = findFirstAvailableDate(inst, workingHours || [], dateOverrides || []);
         if (!nextDate) continue;
 
-        const ic = (courses || []).find((c: any) => c.instructor_id === inst.id);
-
-        results.push({
-          instructorId: inst.id,
-          instructorName: inst.name,
-          profileImageUrl: inst.profile_image_url,
-          hourlyRate: inst.hourly_rate,
-          carType: inst.car_type || "Car",
-          nextAvailable: nextDate,
-          hours,
-          discountedPrice: ic?.discounted_price || null,
-          slug: inst.app_slug,
-        });
+        // Get all courses this instructor offers
+        const instructorCourses = (courses || []).filter((c: any) => c.instructor_id === inst.id);
+        
+        if (instructorCourses.length > 0) {
+          // Create a result for each course the instructor offers
+          for (const ic of instructorCourses) {
+            results.push({
+              instructorId: inst.id,
+              instructorName: inst.name,
+              profileImageUrl: inst.profile_image_url,
+              hourlyRate: inst.hourly_rate,
+              carType: inst.car_type || "Car",
+              nextAvailable: nextDate,
+              hours: ic.course_hours,
+              discountedPrice: ic.discounted_price || null,
+              slug: inst.app_slug,
+            });
+          }
+        } else {
+          // Fallback: show with default hourly rate for common hours
+          for (const opt of COURSE_OPTIONS) {
+            results.push({
+              instructorId: inst.id,
+              instructorName: inst.name,
+              profileImageUrl: inst.profile_image_url,
+              hourlyRate: inst.hourly_rate,
+              carType: inst.car_type || "Car",
+              nextAvailable: nextDate,
+              hours: opt.hours,
+              discountedPrice: null,
+              slug: inst.app_slug,
+            });
+          }
+        }
       }
+
+      // Sort by price (cheapest first)
+      results.sort((a, b) => {
+        const priceA = a.discountedPrice ?? (a.hourlyRate ? a.hourlyRate * a.hours : Infinity);
+        const priceB = b.discountedPrice ?? (b.hourlyRate ? b.hourlyRate * b.hours : Infinity);
+        return priceA - priceB;
+      });
 
       setBookingResults(results);
       if (results.length === 0) {
-        addLocalBotMessage("😕 No instructors with availability found near you for this course. Try a different postcode or course type.");
+        addLocalBotMessage("😕 No instructors with availability found near you. Try a different postcode.");
       } else {
-        addLocalBotMessage(`🎉 Found ${results.length} instructor${results.length > 1 ? "s" : ""} near you! Tap a course to book.`);
+        addLocalBotMessage(`🎉 Found ${results.length} course${results.length > 1 ? "s" : ""} near you! Tap one to book.`);
       }
     } catch (err) {
       console.error("Booking search error:", err);
@@ -411,7 +428,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const handleBookingCardSelect = (result: BookingResult) => {
     const slug = result.slug || result.instructorId;
     const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
-    navigate(`/i/${slug}/courses?hours=${result.hours}&date=${dateStr}`);
+    navigate(`/i/${slug}/book?hours=${result.hours}&date=${dateStr}`);
   };
 
   const cancelBookingFlow = () => {
@@ -455,24 +472,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     }
 
     if (bookingStep === "course") {
-      return (
-        <div className="px-4 py-3 border-t border-border space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {COURSE_OPTIONS.map(opt => (
-              <button
-                key={opt.hours}
-                onClick={() => handleCourseSelect(opt.hours)}
-                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <ArrowLeft className="h-3 w-3" /> Back to chat
-          </button>
-        </div>
-      );
+      // Course step is now skipped - auto-search all courses
+      return null;
     }
 
     if (bookingStep === "results") {
@@ -638,8 +639,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
                       {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
                         <div className="space-y-2 pt-1">
-                          {bookingResults.slice(0, visibleResultsCount).map(result => (
-                            <WhatsAppBookingCard key={result.instructorId} result={result} onSelect={handleBookingCardSelect} />
+                          {bookingResults.slice(0, visibleResultsCount).map((result, idx) => (
+                            <WhatsAppBookingCard key={`${result.instructorId}-${result.hours}`} result={result} onSelect={handleBookingCardSelect} />
                           ))}
                           {bookingResults.length > visibleResultsCount && (
                             <button
