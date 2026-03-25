@@ -1,58 +1,51 @@
 
 
-## Remove WhatsApp Dependency — Use In-App Chat + SMS Notifications
+## Merge Two Chat Systems Into One
 
-The good news: the chat widget already works as a fully in-app system. Messages are stored in your database, AI replies work, and instructors can see all conversations in their inbox. The only thing that breaks is the Meta API forwarding (because the app isn't approved).
+Currently there are **two separate floating chat widgets** on every page:
+- **LiveChatWidget** (bottom-right, green) — uses `live_chat_sessions` / `live_chat_messages` tables, has typing indicators, online status, quick reply flow, instructor/course cards, and calls `ai-receptionist` / `ai-admin-receptionist` edge functions
+- **WhatsAppChatWidget** (bottom-left, primary) — uses `whatsapp_conversations` / `whatsapp_messages` tables, has the booking flow (postcode → course → results), and calls `whatsapp-webhook` edge function with SMS forwarding
 
-### What Changes
+The instructor inbox also has **two separate tabs** for these: "Visitors" (live chat) and "Enquiries" (whatsapp).
 
-**1. Edge function: Replace WhatsApp forwarding with SMS via Twilio**
-- In `supabase/functions/whatsapp-webhook/index.ts`, replace the `sendWhatsAppMessage` function with a `sendSMSNotification` function that uses your existing Twilio credentials (already configured: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID`)
-- When a visitor sends a message, the instructor gets an SMS like: "New enquiry from John: 'How much are lessons?' — Reply in your dashboard"
-- Handoff requests also go via SMS instead of WhatsApp
-- Rate-limit SMS notifications to avoid spamming (max 1 SMS per conversation per 10 minutes)
+### Decision: Keep WhatsApp widget as the single widget, pull in Live Chat's best features
 
-**2. Rebrand the widget UI from "WhatsApp" to "Chat"**
-- `src/components/whatsapp/WhatsAppChatWidget.tsx`: Replace the WhatsApp icon with a generic `MessageCircle` icon, change the green `#25D366` colour to match the site brand, update header text from "WhatsApp Chat" to the instructor name or "Chat with us"
-- Update suggestion chip styles accordingly
+The WhatsApp/Chat widget already has: AI replies, booking flow, SMS forwarding, and conversation persistence. It's the more complete system. We'll merge the Live Chat's unique features into it.
 
-**3. Rebrand the instructor inbox**
-- `src/components/instructor/WhatsAppInbox.tsx`: Change the empty-state text from "No WhatsApp conversations" to "No enquiries yet" and "When prospects message you, conversations will appear here"
-- Update the tab label if referenced elsewhere
+### What gets merged in from Live Chat
 
-**4. No database changes needed**
-- The existing `whatsapp_conversations` and `whatsapp_messages` tables continue to work as-is — they're just chat tables regardless of name
-- Realtime subscriptions, AI replies, and the booking flow all remain untouched
+1. **Typing indicators** — show "typing…" animation when AI/instructor is composing
+2. **Online status** — show green dot + "Online now" when instructor is online (reuse `useInstructorOnlineStatus` hook)
+3. **Quick reply suggestions** — the guided first-message flow from `QuickReplySuggestions` (step-by-step questions)
+4. **Instructor & course cards** — `InstructorChatCards` and `CourseChatCards` that render rich cards inside AI responses
 
-### Technical Details
+### Changes
 
-The SMS notification in the edge function will look like:
+**1. `src/components/whatsapp/WhatsAppChatWidget.tsx`**
+- Import and use `useInstructorOnlineStatus` — show online dot in header
+- Import `QuickReplySuggestions` from `live-chat/` — show before first message if no booking flow active
+- Import `InstructorChatCards` and `CourseChatCards` — parse AI response messages for card data and render rich cards
+- Add a simple typing indicator (reuse `TypingIndicator` component) triggered when waiting for AI response
 
-```typescript
-async function sendSMSNotification(to: string, text: string) {
-  const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-  const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-  const TWILIO_MSG_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
-  if (!TWILIO_SID || !TWILIO_TOKEN) return;
+**2. `src/components/layout/MainLayout.tsx`**
+- Remove `LiveChatWidget` import and usage — only keep `WhatsAppChatWidget`
 
-  const params = new URLSearchParams();
-  if (TWILIO_MSG_SID) params.append("MessagingServiceSid", TWILIO_MSG_SID);
-  params.append("To", to);
-  params.append("Body", text);
+**3. `src/components/mini-website/MiniWebsiteLayout.tsx`**
+- Remove `LiveChatWidget` import and usage — only keep `WhatsAppChatWidget`
 
-  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
-    method: "POST",
-    headers: {
-      Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_TOKEN}`),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params.toString(),
-  });
-}
-```
+**4. `src/pages/InstructorUnifiedInbox.tsx`**
+- Remove the "Visitors" tab (which used `VisitorChatManager` for live chat sessions)
+- Reduce tabs from 4 to 3: Pupils, Enquiries, Support
+- The "Enquiries" tab (WhatsApp inbox) becomes the single place for all visitor conversations
 
-### Files Modified
-- `supabase/functions/whatsapp-webhook/index.ts` — swap WhatsApp forwarding for SMS
-- `src/components/whatsapp/WhatsAppChatWidget.tsx` — rebrand UI
-- `src/components/instructor/WhatsAppInbox.tsx` — rebrand empty states
+**5. Route cleanup**
+- Remove or redirect the standalone `InstructorVisitorChats` page since it's now redundant
+
+### What stays unchanged
+- All existing `whatsapp_conversations` / `whatsapp_messages` tables and realtime subscriptions
+- The `whatsapp-webhook` edge function (AI + SMS forwarding)
+- The booking flow (postcode → course → results)
+- The `live_chat_*` tables remain in the database (no migration needed) — they just won't receive new data
+
+### No database changes required
 
