@@ -95,6 +95,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [bookingHours, setBookingHours] = useState<number>(0);
   const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [visibleResultsCount, setVisibleResultsCount] = useState(4);
 
   // Restore session — but detect stuck conversations
   useEffect(() => {
