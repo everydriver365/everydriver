@@ -15261,6 +15261,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          delivery_status: string
           direction: string
           id: string
           sender_type: string
@@ -15269,6 +15270,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          delivery_status?: string
           direction?: string
           id?: string
           sender_type?: string
@@ -15277,6 +15279,7 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          delivery_status?: string
           direction?: string
           id?: string
           sender_type?: string
