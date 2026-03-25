@@ -32,6 +32,11 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
 
+    // ── Instructor reply → forward to visitor via SMS ──
+    if (body?.instructor_reply) {
+      return await handleInstructorReply(body);
+    }
+
     // ── Widget message (from in-app chat widget) ──
     if (body?.widget_message) {
       return await handleWidgetMessage(body);
