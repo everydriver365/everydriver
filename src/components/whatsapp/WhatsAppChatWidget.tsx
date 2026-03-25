@@ -636,9 +636,17 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
                       {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
                         <div className="space-y-2 pt-1">
-                          {bookingResults.slice(0, 4).map(result => (
+                          {bookingResults.slice(0, visibleResultsCount).map(result => (
                             <WhatsAppBookingCard key={result.instructorId} result={result} onSelect={handleBookingCardSelect} />
                           ))}
+                          {bookingResults.length > visibleResultsCount && (
+                            <button
+                              onClick={() => setVisibleResultsCount(prev => prev + 4)}
+                              className="w-full py-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10"
+                            >
+                              View more courses ({bookingResults.length - visibleResultsCount} more)
+                            </button>
+                          )}
                         </div>
                       )}
 
