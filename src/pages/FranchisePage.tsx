@@ -346,6 +346,61 @@ export default function FranchisePage() {
         </div>
       </section>
 
+      {/* What's Included — £50/week */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-3">
+              Others Charge Extra.<br />We Include It <span className="text-primary">All</span>.
+            </h2>
+            <p className="text-muted-foreground text-lg">Everything below is included in your £50/week franchise fee.</p>
+          </motion.div>
+
+          <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/10 p-8 md:p-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+              {[
+                { icon: PoundSterling, title: "Just £50/week", subtitle: "The lowest franchise fee in the UK", description: "No hidden costs. No surprises. Just a simple, affordable weekly fee that lets you keep more of what you earn.", image: franchisePrice, color: "from-amber-500 to-orange-600", accentColor: "text-amber-600" },
+                { icon: Heart, title: "Free Healthcare", subtitle: "Private medical cover included", description: "Full private healthcare — dental, GP access, physio, mental health support and more. All included.", image: franchiseHealthcare, color: "from-rose-500 to-pink-600", accentColor: "text-rose-600" },
+                { icon: Camera, title: "Free Dashcam", subtitle: "AI-powered telematics fitted free", description: "Professional dual-lens dashcam with full telematics — fitted, maintained, and monitored at zero cost to you.", image: franchiseDashcam, color: "from-blue-500 to-indigo-600", accentColor: "text-blue-600" },
+                { icon: Unlock, title: "No Tie-In", subtitle: "Leave anytime, no penalties", description: "No long contracts. No exit fees. No notice period tricks. If it's not working, you're free to go.", image: franchiseNoTieIn, color: "from-emerald-500 to-teal-600", accentColor: "text-emerald-600" },
+              ].map((b, i) => (
+                <motion.div
+                  key={b.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="relative mx-auto w-28 h-28 mb-4">
+                    <img src={b.image} alt={b.title} className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white" loading="lazy" width={640} height={640} />
+                    <div className={`absolute -bottom-1 -right-1 bg-gradient-to-br ${b.color} rounded-full p-1.5 shadow-md`}>
+                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-foreground mb-1">{b.title}</h3>
+                  <p className={`text-xs font-bold ${b.accentColor} mb-2 uppercase tracking-wide`}>{b.subtitle}</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-10 pt-8 border-t border-primary/10 text-center">
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-6">
+                {["No contracts", "No hidden fees", "Cancel anytime", "Keep your pupils"].map((t) => (
+                  <span key={t} className="flex items-center gap-1.5">
+                    <Check className="h-4 w-4 text-emerald-500" /> {t}
+                  </span>
+                ))}
+              </div>
+              <Button size="xl" className="rounded-full shadow-xl">
+                Join Drive365 <ArrowRight className="h-5 w-5 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Healthcare Showcase */}
       <section className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
         <div className="container max-w-6xl space-y-12">
