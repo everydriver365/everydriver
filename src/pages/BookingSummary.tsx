@@ -189,6 +189,8 @@ export default function BookingSummary() {
       localStorage.removeItem("gc_pending_booking");
     }
   }, []);
+
+  const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
 
