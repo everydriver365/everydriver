@@ -394,9 +394,14 @@ export default function FranchisePage() {
                   </span>
                 ))}
               </div>
-              <Button size="xl" className="rounded-full shadow-xl">
-                Join Drive365 <ArrowRight className="h-5 w-5 ml-1" />
+              <Button size="xl" className="rounded-full shadow-xl" asChild>
+                <a href="#enquiry-form">Join Drive365 <ArrowRight className="h-5 w-5 ml-1" /></a>
               </Button>
+              <div className="mt-3">
+                <Button variant="link" className="text-muted-foreground" asChild>
+                  <Link to="/drive365/franchise/whats-included">Read more about what's included <ChevronRight className="h-4 w-4 ml-1" /></Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -451,7 +456,7 @@ export default function FranchisePage() {
           </div>
 
           <motion.div 
-            className="text-center pt-4"
+            className="text-center pt-4 space-y-3"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -459,6 +464,9 @@ export default function FranchisePage() {
             <p className="text-xs text-primary-foreground/40 max-w-xl mx-auto">
               Terms and conditions apply. Partner benefits available for adult members aged 18+. Family cover: you only pay for one child, additional children included free.
             </p>
+            <Button variant="link" className="text-primary-foreground/60 hover:text-primary-foreground" asChild>
+              <Link to="/drive365/franchise/healthcare">Read more about healthcare <ChevronRight className="h-4 w-4 ml-1" /></Link>
+            </Button>
           </motion.div>
         </div>
       </section>
