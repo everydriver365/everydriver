@@ -339,7 +339,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       ] = await Promise.all([
         supabase
           .from("instructors")
-          .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, home_latitude:lat, home_longitude:lng")
+          .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, gender, home_latitude:lat, home_longitude:lng")
           .eq("is_active", true),
         supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active").eq("is_active", true),
