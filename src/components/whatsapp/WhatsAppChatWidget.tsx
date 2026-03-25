@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle, RotateCcw } from "lucide-react";
+import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle, RotateCcw, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
