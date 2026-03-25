@@ -27,7 +27,11 @@ interface ChatMessage {
   created_at: string;
 }
 
-type BookingStep = null | "postcode" | "course" | "results";
+type BookingStep = null | "courseType" | "transmission" | "genderPref" | "postcode" | "results";
+
+type CourseType = "intensive" | "semi-intensive" | "weekly" | null;
+type TransmissionPref = "automatic" | "manual" | "no-preference" | null;
+type GenderPref = "male" | "female" | "no-preference" | null;
 
 // Chat icon component
 function ChatIcon({ className }: { className?: string }) {
@@ -96,8 +100,9 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [visibleResultsCount, setVisibleResultsCount] = useState(4);
-
-  // Restore session — but detect stuck conversations
+  const [courseTypePref, setCourseTypePref] = useState<CourseType>(null);
+  const [transmissionPref, setTransmissionPref] = useState<TransmissionPref>(null);
+  const [genderPref, setGenderPref] = useState<GenderPref>(null);
   useEffect(() => {
     const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
     const stored = localStorage.getItem(key);
@@ -214,9 +219,9 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         visitorPhone: visitorPhone.trim(),
       }));
 
-      // Immediately prompt for postcode after starting
-      addLocalBotMessage(`Hi ${visitorName.trim()}! 👋 Enter your postcode below so I can find driving courses near you.`);
-      setBookingStep("postcode");
+      // Start the intake flow - ask course type first
+      addLocalBotMessage(`Hi ${visitorName.trim()}! 👋 What type of lessons are you looking for?`);
+      setBookingStep("courseType");
     } catch (err) {
       console.error("Failed to start chat:", err);
       toast.error("Failed to start chat");
@@ -230,8 +235,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
     // Intercept booking trigger
     if (/i'd like to book|id like to book|like to book|want to book|book a course|book lessons/i.test(content)) {
-      addLocalBotMessage("📍 Where are you based? Enter your postcode below so I can find instructors near you.");
-      setBookingStep("postcode");
+      addLocalBotMessage("Great! Let me help you find the perfect course. What type of lessons are you looking for?");
+      setBookingStep("courseType");
       return;
     }
 
@@ -334,7 +339,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       ] = await Promise.all([
         supabase
           .from("instructors")
-          .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, home_latitude:lat, home_longitude:lng")
+          .select("id, name, profile_image_url, car_type, hourly_rate, available_from, app_slug, gender, home_latitude:lat, home_longitude:lng")
           .eq("is_active", true),
         supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active").eq("is_active", true),
@@ -358,6 +363,18 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
       const withDistance = instructors
         .filter((i: any) => i.home_latitude && i.home_longitude)
+        .filter((i: any) => {
+          // Filter by transmission preference
+          if (transmissionPref && transmissionPref !== "no-preference") {
+            const carType = (i.car_type || "").toLowerCase();
+            if (!carType.includes(transmissionPref)) return false;
+          }
+          // Filter by gender preference
+          if (genderPref && genderPref !== "no-preference" && i.gender) {
+            if (i.gender.toLowerCase() !== genderPref) return false;
+          }
+          return true;
+        })
         .map((i: any) => {
           const dLat = (i.home_latitude - searchLat) * 111;
           const dLng = (i.home_longitude - searchLng) * 111 * Math.cos(searchLat * Math.PI / 180);
@@ -440,7 +457,31 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     setBookingPostcode("");
     setBookingHours(0);
     setBookingResults([]);
+    setCourseTypePref(null);
+    setTransmissionPref(null);
+    setGenderPref(null);
     addLocalBotMessage("No problem! Feel free to ask me anything else. 😊");
+  };
+
+  const handleCourseTypeSelect = (type: CourseType) => {
+    setCourseTypePref(type);
+    const label = type === "intensive" ? "Intensive course" : type === "semi-intensive" ? "Semi-intensive course" : "Weekly lessons";
+    addLocalBotMessage(`Great choice — ${label}! 🚗 Do you prefer automatic or manual?`);
+    setBookingStep("transmission");
+  };
+
+  const handleTransmissionSelect = (pref: TransmissionPref) => {
+    setTransmissionPref(pref);
+    const label = pref === "no-preference" ? "No preference" : pref === "automatic" ? "Automatic" : "Manual";
+    addLocalBotMessage(`${label} it is! 👤 Do you have a preference for a male or female instructor?`);
+    setBookingStep("genderPref");
+  };
+
+  const handleGenderSelect = (pref: GenderPref) => {
+    setGenderPref(pref);
+    const label = pref === "no-preference" ? "No preference" : pref === "male" ? "Male instructor" : "Female instructor";
+    addLocalBotMessage(`${label} — noted! 📍 Now enter your postcode so I can find the best options near you.`);
+    setBookingStep("postcode");
   };
 
   const handleSend = () => {
@@ -452,6 +493,85 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const handleMinimize = () => { setIsMinimized(true); setIsOpen(false); };
 
   const renderBookingInput = () => {
+    if (bookingStep === "courseType") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">🎓 What type of course?</p>
+          <div className="grid grid-cols-1 gap-1.5">
+            {[
+              { value: "intensive" as CourseType, label: "🔥 Intensive (1-2 weeks)", desc: "Pass fast" },
+              { value: "semi-intensive" as CourseType, label: "⚡ Semi-Intensive (2-4 weeks)", desc: "Balanced pace" },
+              { value: "weekly" as CourseType, label: "📅 Weekly Lessons", desc: "Learn at your own pace" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleCourseTypeSelect(opt.value)}
+                className="flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors text-left"
+              >
+                <span>{opt.label}</span>
+                <span className="text-muted-foreground text-[10px]">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "transmission") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">🚗 Automatic or Manual?</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: "automatic" as TransmissionPref, label: "Automatic" },
+              { value: "manual" as TransmissionPref, label: "Manual" },
+              { value: "no-preference" as TransmissionPref, label: "Either" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleTransmissionSelect(opt.value)}
+                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "genderPref") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">👤 Instructor preference?</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: "male" as GenderPref, label: "Male" },
+              { value: "female" as GenderPref, label: "Female" },
+              { value: "no-preference" as GenderPref, label: "Either" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleGenderSelect(opt.value)}
+                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
     if (bookingStep === "postcode") {
       return (
         <div className="px-4 py-3 border-t border-border space-y-2">
@@ -479,10 +599,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       );
     }
 
-    if (bookingStep === "course") {
-      // Course step is now skipped - auto-search all courses
-      return null;
-    }
 
     if (bookingStep === "results") {
       return (
