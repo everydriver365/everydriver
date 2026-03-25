@@ -129,14 +129,12 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     }
   };
 
-  const handleSend = async () => {
-    if (!inputMessage.trim() || !conversationId) return;
-    const content = inputMessage.trim();
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim() || !conversationId) return;
     setInputMessage("");
     setSending(true);
 
     try {
-      // Log inbound message from visitor
       await supabase.from("whatsapp_messages").insert({
         conversation_id: conversationId,
         content,
@@ -144,12 +142,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         sender_type: "visitor",
       });
 
-      // Update conversation timestamp
       await supabase.from("whatsapp_conversations").update({
         last_message_at: new Date().toISOString(),
       }).eq("id", conversationId);
 
-      // Trigger AI reply via edge function
       supabase.functions.invoke("whatsapp-webhook", {
         body: {
           widget_message: true,
@@ -166,6 +162,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSend = () => {
+    handleSendMessage(inputMessage.trim());
   };
 
   const handleClose = () => { setIsOpen(false); setIsMinimized(false); };
@@ -255,62 +255,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                   <>
                     <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
                       {messages.length === 0 && (
-                        <div className="mt-6 space-y-3">
-                          <p className="text-center text-muted-foreground text-xs">Tap a question or type your own!</p>
-                          <div className="flex flex-wrap gap-2 justify-center px-2">
-                            {[
-                              "🚗 Manual or automatic?",
-                              "💰 How much are lessons?",
-                              "📅 What's available this week?",
-                              "🎓 Do you do intensive courses?",
-                              "📍 What areas do you cover?",
-                              "🆕 I'm a complete beginner",
-                            ].map((suggestion) => (
-                              <button
-                                key={suggestion}
-                                onClick={() => {
-                                  setInputMessage(suggestion);
-                                  setTimeout(() => {
-                                    const syntheticSend = async () => {
-                                      setSending(true);
-                                      try {
-                                        await supabase.from("whatsapp_messages").insert({
-                                          conversation_id: conversationId,
-                                          content: suggestion,
-                                          direction: "inbound",
-                                          sender_type: "visitor",
-                                        });
-                                        await supabase.from("whatsapp_conversations").update({
-                                          last_message_at: new Date().toISOString(),
-                                        }).eq("id", conversationId);
-                                        supabase.functions.invoke("whatsapp-webhook", {
-                                          body: {
-                                            widget_message: true,
-                                            conversation_id: conversationId,
-                                            message: suggestion,
-                                            visitor_name: visitorName,
-                                            visitor_phone: visitorPhone,
-                                            instructor_id: instructorId,
-                                          },
-                                        }).catch(err => console.error("AI reply error:", err));
-                                      } catch (err) {
-                                        console.error("Send failed:", err);
-                                        toast.error("Failed to send message");
-                                      } finally {
-                                        setSending(false);
-                                        setInputMessage("");
-                                      }
-                                    };
-                                    syntheticSend();
-                                  }, 0);
-                                }}
-                                className="px-3 py-1.5 text-xs rounded-full border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
-                              >
-                                {suggestion}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        <p className="text-center text-muted-foreground text-xs mt-8">Tap a suggestion or type your own!</p>
                       )}
                       {messages.map(msg => {
                         const isOutbound = msg.direction === "outbound";
@@ -331,6 +276,28 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                           </div>
                         );
                       })}
+
+                      {/* Show suggestion chips when last message is from AI or no messages yet */}
+                      {(messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (
+                        <div className="flex flex-wrap gap-2 pt-2 px-1">
+                          {[
+                            "🚗 Manual or automatic?",
+                            "💰 How much are lessons?",
+                            "📅 What's available this week?",
+                            "🎓 Do you do intensive courses?",
+                            "📍 What areas do you cover?",
+                            "🆕 I'm a complete beginner",
+                          ].map((suggestion) => (
+                            <button
+                              key={suggestion}
+                              onClick={() => handleSendMessage(suggestion)}
+                              className="px-3 py-1.5 text-xs rounded-full border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
                       <Input
