@@ -132,7 +132,11 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         table: "whatsapp_messages",
         filter: `conversation_id=eq.${conversationId}`,
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as ChatMessage]);
+        const newMsg = payload.new as ChatMessage;
+        setMessages(prev => [...prev, newMsg]);
+        if (newMsg.direction === "outbound") {
+          setIsAwaitingReply(false);
+        }
       })
       .subscribe();
 
@@ -203,6 +207,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         last_message_at: new Date().toISOString(),
       }).eq("id", conversationId);
 
+      setIsAwaitingReply(true);
       supabase.functions.invoke("whatsapp-webhook", {
         body: {
           widget_message: true,
@@ -212,7 +217,10 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
           visitor_phone: visitorPhone,
           instructor_id: instructorId,
         },
-      }).catch(err => console.error("AI reply error:", err));
+      }).catch(err => {
+        console.error("AI reply error:", err);
+        setIsAwaitingReply(false);
+      });
     } catch (err) {
       console.error("Send failed:", err);
       toast.error("Failed to send message");
@@ -468,8 +476,20 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                     <ChatIcon className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">{instructorName || "Chat with us"}</h3>
-                    <p className="text-xs opacity-80">Usually replies instantly</p>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "inline-block h-2.5 w-2.5 rounded-full",
+                          instructorOnline ? "bg-green-400 animate-pulse" : "bg-white/40"
+                        )}
+                      />
+                      <h3 className="font-semibold text-sm">{instructorName || "Chat with us"}</h3>
+                    </div>
+                    <p className="text-xs opacity-80">
+                      {instructorOnline
+                        ? "Online now"
+                        : "Usually replies instantly"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
