@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle } from "lucide-react";
+import { X, Minimize2, Send, ArrowLeft, Search, Loader2, MessageCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -96,20 +96,58 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
 
-  // Restore session
+  // Restore session — but detect stuck conversations
   useEffect(() => {
     const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
     const stored = localStorage.getItem(key);
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        setConversationId(data.conversationId);
-        setVisitorName(data.visitorName);
-        setVisitorPhone(data.visitorPhone);
-        setHasStarted(true);
+        // Check if conversation is still alive before restoring
+        (async () => {
+          const { data: conv } = await supabase
+            .from("whatsapp_conversations")
+            .select("ai_enabled, instructor_id, last_message_at")
+            .eq("id", data.conversationId)
+            .maybeSingle();
+
+          if (!conv) {
+            // Conversation deleted or not found — clear session
+            localStorage.removeItem(key);
+            return;
+          }
+
+          // If AI is disabled and no instructor assigned, auto-reset AI
+          if (!conv.ai_enabled && !conv.instructor_id) {
+            await supabase.from("whatsapp_conversations")
+              .update({ ai_enabled: true })
+              .eq("id", data.conversationId);
+          }
+
+          setConversationId(data.conversationId);
+          setVisitorName(data.visitorName);
+          setVisitorPhone(data.visitorPhone);
+          setHasStarted(true);
+        })();
       } catch { localStorage.removeItem(key); }
     }
   }, [instructorId]);
+
+  // Start a fresh conversation
+  const handleNewChat = () => {
+    const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
+    localStorage.removeItem(key);
+    setConversationId(null);
+    setMessages([]);
+    setHasStarted(false);
+    setVisitorName("");
+    setVisitorPhone("");
+    setBookingStep(null);
+    setBookingPostcode("");
+    setBookingHours(0);
+    setBookingResults([]);
+    setInputMessage("");
+  };
 
   // Fetch messages
   useEffect(() => {
@@ -501,6 +539,11 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  {hasStarted && (
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-primary-foreground hover:bg-white/20" onClick={handleNewChat} title="New conversation">
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-primary-foreground hover:bg-white/20" onClick={handleMinimize}>
                     <Minimize2 className="h-4 w-4" />
                   </Button>

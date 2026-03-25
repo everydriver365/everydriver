@@ -367,10 +367,29 @@ async function handleWidgetMessage(body: any) {
     .maybeSingle();
 
   if (convCheck && convCheck.ai_enabled === false) {
-    // AI disabled — just forward to admin, no AI reply
-    return new Response(JSON.stringify({ status: "forwarded_to_human" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Check if instructor has replied in the last 30 minutes
+    const { data: recentInstructorMsg } = await supabase
+      .from("whatsapp_messages")
+      .select("created_at")
+      .eq("conversation_id", conversation_id)
+      .eq("sender_type", "instructor")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const hasRecentReply = recentInstructorMsg && recentInstructorMsg.created_at > thirtyMinAgo;
+
+    if (hasRecentReply) {
+      // Instructor is actively responding — keep AI disabled
+      return new Response(JSON.stringify({ status: "forwarded_to_human" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // No recent instructor reply — auto-re-enable AI
+    await supabase.from("whatsapp_conversations").update({ ai_enabled: true }).eq("id", conversation_id);
+    console.log("Auto-re-enabled AI for conversation", conversation_id, "(no instructor reply in 30 min)");
   }
 
   if (targetInstructor) {
