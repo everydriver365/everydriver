@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minimize2, Send } from "lucide-react";
+import { X, Minimize2, Send, ArrowLeft, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, addDays, startOfDay, getDay } from "date-fns";
 import { cn } from "@/lib/utils";
+import { WhatsAppBookingCard, type BookingResult } from "./WhatsAppBookingCard";
+import { useNavigate } from "react-router-dom";
 
 interface WhatsAppChatWidgetProps {
   instructorId?: string;
@@ -23,6 +25,8 @@ interface ChatMessage {
   created_at: string;
 }
 
+type BookingStep = null | "postcode" | "course" | "results";
+
 // WhatsApp SVG icon
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -34,7 +38,46 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 const STORAGE_KEY = "whatsapp_widget_session";
 
+const COURSE_OPTIONS = [
+  { hours: 10, label: "10 Hours" },
+  { hours: 20, label: "20 Hours" },
+  { hours: 30, label: "30 Hours" },
+  { hours: 40, label: "40 Hours" },
+  { hours: 28, label: "Test in a Week" },
+];
+
+function findFirstAvailableDate(
+  instructor: any,
+  workingHours: any[],
+  dateOverrides: any[]
+): Date | null {
+  const today = startOfDay(new Date());
+  for (let i = 0; i < 90; i++) {
+    const day = addDays(today, i);
+    const dateStr = format(day, "yyyy-MM-dd");
+
+    if (instructor.available_from && instructor.available_from > dateStr) continue;
+
+    const dayOfWeek = getDay(day);
+    const override = dateOverrides.find(
+      (o: any) =>
+        o.instructor_id === instructor.id &&
+        (o.override_date === dateStr ||
+          (o.override_end_date && dateStr >= o.override_date && dateStr <= o.override_end_date))
+    );
+    if (override) {
+      if (override.is_available) return day;
+      continue;
+    }
+    if (workingHours.some((wh: any) => wh.instructor_id === instructor.id && wh.day_of_week === dayOfWeek && wh.is_active)) {
+      return day;
+    }
+  }
+  return null;
+}
+
 export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppChatWidgetProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [visitorName, setVisitorName] = useState("");
@@ -45,6 +88,13 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [inputMessage, setInputMessage] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Booking flow state
+  const [bookingStep, setBookingStep] = useState<BookingStep>(null);
+  const [bookingPostcode, setBookingPostcode] = useState("");
+  const [bookingHours, setBookingHours] = useState<number>(0);
+  const [bookingResults, setBookingResults] = useState<BookingResult[]>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   // Restore session
   useEffect(() => {
@@ -92,7 +142,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   // Auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  }, [messages, bookingStep, bookingResults]);
 
   const handleStartChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +150,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     setSending(true);
 
     try {
-      // Create conversation
       const { data: conv, error: convErr } = await supabase
         .from("whatsapp_conversations")
         .insert({
@@ -130,10 +179,15 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !conversationId) {
-      console.log("handleSendMessage blocked:", { content: !!content.trim(), conversationId });
+    if (!content.trim() || !conversationId) return;
+
+    // Intercept booking trigger
+    if (/i'd like to book|id like to book/i.test(content)) {
+      addLocalBotMessage("📍 Where are you based? Enter your postcode below so I can find instructors near you.");
+      setBookingStep("postcode");
       return;
     }
+
     setInputMessage("");
     setSending(true);
 
@@ -167,12 +221,211 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     }
   };
 
+  const addLocalBotMessage = (content: string) => {
+    const msg: ChatMessage = {
+      id: `local-${Date.now()}`,
+      content,
+      direction: "outbound",
+      sender_type: "bot",
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, msg]);
+  };
+
+  const handlePostcodeSubmit = () => {
+    if (!bookingPostcode.trim()) return;
+    addLocalBotMessage(`📍 Searching near ${bookingPostcode.toUpperCase()}…\n\nWhat type of course are you looking for?`);
+    setBookingStep("course");
+  };
+
+  const handleCourseSelect = async (hours: number) => {
+    const label = COURSE_OPTIONS.find(c => c.hours === hours)?.label || `${hours} Hours`;
+    addLocalBotMessage(`🔎 Finding available ${label} courses near ${bookingPostcode.toUpperCase()}…`);
+    setBookingHours(hours);
+    setBookingStep("results");
+    setBookingLoading(true);
+
+    try {
+      // Geocode postcode
+      const geoRes = await supabase.functions.invoke("geocode-postcode", {
+        body: { postcodes: [bookingPostcode.trim()] },
+      });
+      const geoResults = geoRes.data?.results || [];
+      const searchLat = geoResults[0]?.latitude;
+      const searchLng = geoResults[0]?.longitude;
+
+      if (!searchLat || !searchLng) {
+        addLocalBotMessage("😕 I couldn't find that postcode. Please try again.");
+        setBookingStep("postcode");
+        setBookingLoading(false);
+        return;
+      }
+
+      // Fetch instructors, courses, working hours, overrides
+      const [
+        { data: instructors },
+        { data: courses },
+        { data: workingHours },
+        { data: dateOverrides },
+      ] = await Promise.all([
+        supabase.from("instructors").select("id, name, profile_image_url, car_type, hourly_rate, available_from, home_latitude, home_longitude, app_slug").eq("is_active", true),
+        supabase.from("instructor_courses").select("instructor_id, course_hours, discounted_price, is_active").eq("is_active", true).eq("course_hours", hours),
+        supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active").eq("is_active", true),
+        supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
+      ]);
+
+      if (!instructors?.length) {
+        addLocalBotMessage("😕 No instructors found at the moment. Try chatting with us for help!");
+        setBookingStep(null);
+        setBookingLoading(false);
+        return;
+      }
+
+      // Calculate distances and filter nearby (within ~15 miles ≈ 24km)
+      const withDistance = instructors
+        .filter((i: any) => i.home_latitude && i.home_longitude)
+        .map((i: any) => {
+          const dLat = (i.home_latitude - searchLat) * 111;
+          const dLng = (i.home_longitude - searchLng) * 111 * Math.cos(searchLat * Math.PI / 180);
+          return { ...i, distance: Math.sqrt(dLat * dLat + dLng * dLng) };
+        })
+        .filter((i: any) => i.distance < 24)
+        .sort((a: any, b: any) => a.distance - b.distance);
+
+      const results: BookingResult[] = [];
+      for (const inst of withDistance.slice(0, 6)) {
+        const nextDate = findFirstAvailableDate(inst, workingHours || [], dateOverrides || []);
+        if (!nextDate) continue;
+
+        const ic = (courses || []).find((c: any) => c.instructor_id === inst.id);
+
+        results.push({
+          instructorId: inst.id,
+          instructorName: inst.name,
+          profileImageUrl: inst.profile_image_url,
+          hourlyRate: inst.hourly_rate,
+          carType: inst.car_type || "Car",
+          nextAvailable: nextDate,
+          hours,
+          discountedPrice: ic?.discounted_price || null,
+          slug: inst.app_slug,
+        });
+      }
+
+      setBookingResults(results);
+      if (results.length === 0) {
+        addLocalBotMessage("😕 No instructors with availability found near you for this course. Try a different postcode or course type.");
+      } else {
+        addLocalBotMessage(`🎉 Found ${results.length} instructor${results.length > 1 ? "s" : ""} near you! Tap a course to book.`);
+      }
+    } catch (err) {
+      console.error("Booking search error:", err);
+      addLocalBotMessage("😕 Something went wrong searching. Please try again.");
+      setBookingStep("postcode");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const handleBookingCardSelect = (result: BookingResult) => {
+    const slug = result.slug || result.instructorId;
+    const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
+    navigate(`/i/${slug}/courses?hours=${result.hours}&date=${dateStr}`);
+  };
+
+  const cancelBookingFlow = () => {
+    setBookingStep(null);
+    setBookingPostcode("");
+    setBookingHours(0);
+    setBookingResults([]);
+    addLocalBotMessage("No problem! Feel free to ask me anything else. 😊");
+  };
+
   const handleSend = () => {
     handleSendMessage(inputMessage.trim());
+    setInputMessage("");
   };
 
   const handleClose = () => { setIsOpen(false); setIsMinimized(false); };
   const handleMinimize = () => { setIsMinimized(true); setIsOpen(false); };
+
+  const renderBookingInput = () => {
+    if (bookingStep === "postcode") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <div className="flex items-center gap-2">
+            <Input
+              value={bookingPostcode}
+              onChange={e => setBookingPostcode(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handlePostcodeSubmit()}
+              placeholder="Enter postcode e.g. SW1A 1AA"
+              className="flex-1 uppercase"
+              autoFocus
+            />
+            <Button size="icon" onClick={handlePostcodeSubmit} disabled={!bookingPostcode.trim()} className="text-white shrink-0" style={{ backgroundColor: "#25D366" }}>
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "course") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            {COURSE_OPTIONS.map(opt => (
+              <button
+                key={opt.hours}
+                onClick={() => handleCourseSelect(opt.hours)}
+                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "results") {
+      return (
+        <div className="px-4 py-3 border-t border-border">
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    // Default chat input
+    return (
+      <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
+        <Input
+          value={inputMessage}
+          onChange={e => setInputMessage(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSend()}
+          placeholder="Type a message…"
+          className="flex-1"
+        />
+        <Button
+          size="icon"
+          onClick={handleSend}
+          disabled={!inputMessage.trim() || sending}
+          className="text-white"
+          style={{ backgroundColor: "#25D366" }}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -280,8 +533,24 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                         );
                       })}
 
+                      {/* Booking result cards */}
+                      {bookingStep === "results" && !bookingLoading && bookingResults.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                          {bookingResults.slice(0, 4).map(result => (
+                            <WhatsAppBookingCard key={result.instructorId} result={result} onSelect={handleBookingCardSelect} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Loading spinner for booking search */}
+                      {bookingLoading && (
+                        <div className="flex justify-center py-4">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+
                       {/* Contextual suggestion chips */}
-                      {(messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (() => {
+                      {bookingStep === null && (messages.length === 0 || messages[messages.length - 1]?.direction === "outbound") && !sending && (() => {
                         const allContent = messages.map(m => m.content.toLowerCase()).join(" ");
                         const askedTopics = {
                           transmission: /manual|automatic|gearbox/i.test(allContent),
@@ -296,7 +565,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                         let suggestions: string[] = [];
 
                         if (messages.length === 0) {
-                          // Initial suggestions
                           suggestions = [
                             "🚗 Manual lessons",
                             "🚗 Automatic lessons",
@@ -340,7 +608,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                             "📅 When can I start?",
                           ];
                         } else {
-                          // General follow-ups for later in conversation
                           const remaining: string[] = [];
                           if (!askedTopics.pricing) remaining.push("💰 How much are lessons?");
                           if (!askedTopics.availability) remaining.push("📅 What's available?");
@@ -366,24 +633,9 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                         );
                       })()}
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
-                      <Input
-                        value={inputMessage}
-                        onChange={e => setInputMessage(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && handleSend()}
-                        placeholder="Type a message…"
-                        className="flex-1"
-                      />
-                      <Button
-                        size="icon"
-                        onClick={handleSend}
-                        disabled={!inputMessage.trim() || sending}
-                        className="text-white"
-                        style={{ backgroundColor: "#25D366" }}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
+
+                    {/* Bottom input area - context-dependent */}
+                    {renderBookingInput()}
                   </>
                 )}
               </div>
