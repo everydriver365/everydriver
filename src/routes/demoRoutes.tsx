@@ -34,6 +34,7 @@ const DemoMobileBookingUX = lazy(() => import("@/pages/demo/DemoMobileBookingUX"
 const DemoKenDMobileHeroes = lazy(() => import("@/pages/demo/DemoKenDMobileHeroes"));
 const DemoTomorrowTileDesigns = lazy(() => import("@/pages/demo/DemoTomorrowTileDesigns"));
 const DemoTelematicsRedesign = lazy(() => import("@/pages/demo/DemoTelematicsRedesign"));
+const DemoFranchiseBenefits = lazy(() => import("@/pages/demo/DemoFranchiseBenefits"));
 const DemoPricingPage = lazy(() => import("@/pages/DemoPricingPage"));
 const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 
