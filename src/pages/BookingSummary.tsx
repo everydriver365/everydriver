@@ -183,7 +183,12 @@ export default function BookingSummary() {
     .filter((u) => selectedUpsells.includes(u.id))
     .reduce((sum, u) => sum + Number(u.price), 0);
 
-  const hours = parseInt(searchParams.get("hours") || "10");
+  // Clean up GoCardless pending booking on cancellation
+  useEffect(() => {
+    if (searchParams.get("gocardless") === "cancelled") {
+      localStorage.removeItem("gc_pending_booking");
+    }
+  }, []);
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
 
@@ -401,6 +406,7 @@ export default function BookingSummary() {
       }
 
       setBookingPupilId(data.pupilId);
+      bookingPupilIdRef.current = data.pupilId;
       toast.info(`Booking created — completing payment...`);
       return data.pupilId as string;
     } finally {
