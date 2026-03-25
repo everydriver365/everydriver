@@ -11,6 +11,10 @@ import { format, addDays, startOfDay, getDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { WhatsAppBookingCard, type BookingResult } from "./WhatsAppBookingCard";
 import { useNavigate } from "react-router-dom";
+import { useInstructorOnlineStatus } from "@/hooks/useInstructorOnlineStatus";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
+import { WhatsAppBookingCard, type BookingResult } from "./WhatsAppBookingCard";
+import { useNavigate } from "react-router-dom";
 
 interface WhatsAppChatWidgetProps {
   instructorId?: string;
