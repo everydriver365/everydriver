@@ -219,9 +219,9 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
         visitorPhone: visitorPhone.trim(),
       }));
 
-      // Immediately prompt for postcode after starting
-      addLocalBotMessage(`Hi ${visitorName.trim()}! 👋 Enter your postcode below so I can find driving courses near you.`);
-      setBookingStep("postcode");
+      // Start the intake flow - ask course type first
+      addLocalBotMessage(`Hi ${visitorName.trim()}! 👋 What type of lessons are you looking for?`);
+      setBookingStep("courseType");
     } catch (err) {
       console.error("Failed to start chat:", err);
       toast.error("Failed to start chat");
@@ -445,10 +445,32 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     setBookingPostcode("");
     setBookingHours(0);
     setBookingResults([]);
+    setCourseTypePref(null);
+    setTransmissionPref(null);
+    setGenderPref(null);
     addLocalBotMessage("No problem! Feel free to ask me anything else. 😊");
   };
 
-  const handleSend = () => {
+  const handleCourseTypeSelect = (type: CourseType) => {
+    setCourseTypePref(type);
+    const label = type === "intensive" ? "Intensive course" : type === "semi-intensive" ? "Semi-intensive course" : "Weekly lessons";
+    addLocalBotMessage(`Great choice — ${label}! 🚗 Do you prefer automatic or manual?`);
+    setBookingStep("transmission");
+  };
+
+  const handleTransmissionSelect = (pref: TransmissionPref) => {
+    setTransmissionPref(pref);
+    const label = pref === "no-preference" ? "No preference" : pref === "automatic" ? "Automatic" : "Manual";
+    addLocalBotMessage(`${label} it is! 👤 Do you have a preference for a male or female instructor?`);
+    setBookingStep("genderPref");
+  };
+
+  const handleGenderSelect = (pref: GenderPref) => {
+    setGenderPref(pref);
+    const label = pref === "no-preference" ? "No preference" : pref === "male" ? "Male instructor" : "Female instructor";
+    addLocalBotMessage(`${label} — noted! 📍 Now enter your postcode so I can find the best options near you.`);
+    setBookingStep("postcode");
+  };
     handleSendMessage(inputMessage.trim());
     setInputMessage("");
   };
