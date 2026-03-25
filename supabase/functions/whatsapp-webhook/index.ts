@@ -154,24 +154,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send reply via WhatsApp
-    const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
-    const WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
-
-    if (WHATSAPP_TOKEN && WHATSAPP_PHONE_ID) {
-      await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: senderPhone,
-          type: "text",
-          text: { body: aiReply },
-        }),
-      });
+    // Send SMS notification to instructor instead of WhatsApp reply
+    // (The AI reply is still stored in DB and visible in the dashboard)
+    // For real WhatsApp inbound, we can't reply without Meta API approval
+    // So we just log it and notify the instructor via SMS
+    const instructorPhone = targetInstructor.whatsapp_phone || targetInstructor.phone;
+    if (instructorPhone) {
+      const senderLabel = senderName || senderPhone;
+      const notifyText = `💬 New WhatsApp message from ${senderLabel}: "${messageText.substring(0, 120)}"\n\nAI replied automatically. Check your dashboard.`;
+      await sendSMSNotification(instructorPhone, notifyText);
     }
 
     // Log the AI reply
@@ -199,7 +190,10 @@ Deno.serve(async (req) => {
   }
 });
 
-// ── Handle widget messages: forward to WhatsApp + generate AI reply ──
+// Rate-limit tracker: conversation_id -> last SMS timestamp
+const smsRateLimits = new Map<string, number>();
+
+// ── Handle widget messages: in-app chat + SMS notification to instructor ──
 async function handleWidgetMessage(body: any) {
   const { conversation_id, message, visitor_name, visitor_phone, instructor_id } = body;
 
@@ -241,12 +235,11 @@ async function handleWidgetMessage(body: any) {
   const isHandoffRequest = /speak to someone|talk to a person|real person|human|call me|phone me|contact me/i.test(message);
 
   if (isHandoffRequest) {
-    // Send urgent handoff message to admin with conversation context
+    // Send urgent SMS to admin/instructor
     const adminPhone = Deno.env.get("ADMIN_PHONE_NUMBER");
     const handoffPhone = adminPhone || forwardToPhone;
 
     if (handoffPhone) {
-      // Get conversation history for context
       const { data: history } = await supabase
         .from("whatsapp_messages")
         .select("content, direction, sender_type, created_at")
@@ -255,11 +248,12 @@ async function handleWidgetMessage(body: any) {
         .limit(20);
 
       const chatSummary = (history || [])
-        .map((m: any) => `${m.direction === "inbound" ? "👤 Visitor" : "🤖 AI"}: ${m.content}`)
+        .slice(-5)
+        .map((m: any) => `${m.direction === "inbound" ? "Visitor" : "AI"}: ${m.content}`)
         .join("\n");
 
-      const handoffText = `🚨 HUMAN HANDOFF REQUESTED\n\n👤 Name: ${visitor_name || "Unknown"}\n📱 Phone: ${visitor_phone || "Not provided"}\n\n📝 Conversation so far:\n${chatSummary}\n\n⚡ Please reply to this visitor directly.`;
-      await sendWhatsAppMessage(handoffPhone, handoffText);
+      const handoffText = `🚨 HUMAN HANDOFF REQUESTED\n\n👤 Name: ${visitor_name || "Unknown"}\n📱 Phone: ${visitor_phone || "Not provided"}\n\n📝 Recent messages:\n${chatSummary}\n\n⚡ Reply in your dashboard.`;
+      await sendSMSNotification(handoffPhone, handoffText);
     }
 
     // Disable AI for this conversation so future messages go straight to admin
@@ -282,11 +276,16 @@ async function handleWidgetMessage(body: any) {
     });
   }
 
-  // Forward the visitor's message to WhatsApp (so instructor/admin sees it on their phone)
+  // Send SMS notification to instructor (rate-limited: max 1 per conversation per 10 min)
   if (forwardToPhone) {
-    const senderLabel = visitor_name || visitor_phone || "Website visitor";
-    const forwardText = `💬 New chat message from ${senderLabel}:\n\n"${message}"`;
-    await sendWhatsAppMessage(forwardToPhone, forwardText);
+    const lastSms = smsRateLimits.get(conversation_id) || 0;
+    const now = Date.now();
+    if (now - lastSms > 10 * 60 * 1000) {
+      const senderLabel = visitor_name || visitor_phone || "Website visitor";
+      const notifyText = `💬 New enquiry from ${senderLabel}: "${message.substring(0, 120)}"\n\nReply in your dashboard.`;
+      await sendSMSNotification(forwardToPhone, notifyText);
+      smsRateLimits.set(conversation_id, now);
+    }
   }
 
   // Generate AI reply
@@ -342,49 +341,56 @@ async function handleWidgetMessage(body: any) {
   });
 }
 
-// ── Send a WhatsApp message via Meta API ──
-async function sendWhatsAppMessage(to: string, text: string) {
-  const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
-  const WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+// ── Send SMS notification via Twilio ──
+async function sendSMSNotification(to: string, text: string) {
+  const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+  const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const TWILIO_MSG_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
+  const TWILIO_FROM = Deno.env.get("TWILIO_PHONE_NUMBER");
 
-  if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
-    console.log("WhatsApp credentials not configured, skipping forward");
+  if (!TWILIO_SID || !TWILIO_TOKEN) {
+    console.log("Twilio credentials not configured, skipping SMS notification");
     return;
   }
 
-  // Normalize phone number (ensure country code, no spaces/dashes)
+  // Normalize phone number
   let normalizedPhone = to.replace(/[\s\-\(\)]/g, "");
   if (normalizedPhone.startsWith("0")) {
-    normalizedPhone = "44" + normalizedPhone.slice(1); // UK default
+    normalizedPhone = "+44" + normalizedPhone.slice(1);
   }
   if (!normalizedPhone.startsWith("+")) {
-    normalizedPhone = normalizedPhone; // Already without +, Meta expects no +
-  } else {
-    normalizedPhone = normalizedPhone.slice(1);
+    normalizedPhone = "+" + normalizedPhone;
   }
 
   try {
-    const resp = await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: normalizedPhone,
-        type: "text",
-        text: { body: text },
-      }),
-    });
+    const params = new URLSearchParams();
+    if (TWILIO_MSG_SID) {
+      params.append("MessagingServiceSid", TWILIO_MSG_SID);
+    } else if (TWILIO_FROM) {
+      params.append("From", TWILIO_FROM);
+    }
+    params.append("To", normalizedPhone);
+    params.append("Body", text);
+
+    const resp = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_TOKEN}`),
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      }
+    );
 
     if (!resp.ok) {
-      console.error("WhatsApp forward failed:", resp.status, await resp.text());
+      console.error("SMS notification failed:", resp.status, await resp.text());
     } else {
-      console.log("Message forwarded to WhatsApp:", normalizedPhone);
+      console.log("SMS notification sent to:", normalizedPhone);
     }
   } catch (err) {
-    console.error("WhatsApp forward error:", err);
+    console.error("SMS notification error:", err);
   }
 }
 
