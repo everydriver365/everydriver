@@ -587,10 +587,6 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
       );
     }
 
-    if (bookingStep === "course") {
-      // Course step is now skipped - auto-search all courses
-      return null;
-    }
 
     if (bookingStep === "results") {
       return (
