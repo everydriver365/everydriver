@@ -295,6 +295,278 @@ function OptionE() {
   );
 }
 
+/* ─────────────── OPTION F: Pricing table style ─────────────── */
+function OptionF() {
+  return (
+    <section className="py-20 px-4 bg-white">
+      <div className="max-w-5xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-3">
+            Others Charge Extra.<br />We Include It <span className="text-primary">All</span>.
+          </h2>
+          <p className="text-muted-foreground text-lg">Everything below is included in your £50/week franchise fee.</p>
+        </motion.div>
+
+        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/10 p-8 md:p-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {benefits.map((b, i) => (
+              <motion.div
+                key={b.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="text-center"
+              >
+                <div className="relative mx-auto w-28 h-28 mb-4">
+                  <img src={b.image} alt={b.title} className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white" loading="lazy" width={640} height={640} />
+                  <div className={`absolute -bottom-1 -right-1 bg-gradient-to-br ${b.color} rounded-full p-1.5 shadow-md`}>
+                    <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-extrabold text-foreground mb-1">{b.title}</h3>
+                <p className={`text-xs font-bold ${b.accentColor} mb-2 uppercase tracking-wide`}>{b.subtitle}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-10 pt-8 border-t border-primary/10 text-center">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-6">
+              {["No contracts", "No hidden fees", "Cancel anytime", "Keep your pupils"].map((t) => (
+                <span key={t} className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500" /> {t}
+                </span>
+              ))}
+            </div>
+            <Button size="xl" className="rounded-full shadow-xl">
+              Join Drive365 <ArrowRight className="h-5 w-5 ml-1" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── OPTION G: Bento grid ─────────────── */
+function OptionG() {
+  return (
+    <section className="py-20 px-4 bg-slate-950">
+      <div className="max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+            One Fee. <span className="text-emerald-400">Everything</span> Included.
+          </h2>
+          <p className="text-slate-400 text-lg">£50/week gets you the full package. No extras. No upsells.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Large card - Price */}
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="md:row-span-2 relative rounded-3xl overflow-hidden group">
+            <img src={benefits[0].image} alt={benefits[0].title} className="w-full h-full min-h-[300px] object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" width={640} height={640} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <div className="bg-amber-500 text-slate-900 font-extrabold text-5xl inline-block px-5 py-2 rounded-2xl mb-3">£50</div>
+              <h3 className="text-3xl font-extrabold text-white mb-1">Per Week</h3>
+              <p className="text-white/70 text-base">{benefits[0].description}</p>
+            </div>
+          </motion.div>
+
+          {/* Healthcare */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative rounded-3xl overflow-hidden group h-64">
+            <img src={benefits[1].image} alt={benefits[1].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" width={640} height={640} />
+            <div className="absolute inset-0 bg-gradient-to-t from-rose-900/80 via-rose-900/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="h-6 w-6 text-rose-300" />
+                <h3 className="text-2xl font-extrabold text-white">{benefits[1].title}</h3>
+              </div>
+              <p className="text-white/70 text-sm">{benefits[1].subtitle}</p>
+            </div>
+          </motion.div>
+
+          {/* Dashcam + No tie-in side by side on mobile stacked */}
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="relative rounded-3xl overflow-hidden group h-64">
+              <img src={benefits[2].image} alt={benefits[2].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" width={640} height={640} />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <Camera className="h-5 w-5 text-blue-300 mb-1" />
+                <h3 className="text-lg font-extrabold text-white">{benefits[2].title}</h3>
+                <p className="text-white/60 text-xs">{benefits[2].subtitle}</p>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="relative rounded-3xl overflow-hidden group h-64">
+              <img src={benefits[3].image} alt={benefits[3].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" width={640} height={640} />
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/80 via-emerald-900/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <Unlock className="h-5 w-5 text-emerald-300 mb-1" />
+                <h3 className="text-lg font-extrabold text-white">{benefits[3].title}</h3>
+                <p className="text-white/60 text-xs">{benefits[3].subtitle}</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── OPTION H: Glassmorphic floating cards ─────────────── */
+function OptionH() {
+  return (
+    <section className="py-20 px-4 bg-gradient-to-br from-primary via-primary/90 to-accent relative overflow-hidden">
+      {/* Decorative circles */}
+      <div className="absolute top-20 -left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+            What £50/week<br />Actually Gets You
+          </h2>
+          <p className="text-white/60 text-lg max-w-lg mx-auto">More than any other franchise. Less than a tank of fuel.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {benefits.map((b, i) => (
+            <motion.div
+              key={b.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white/15 transition-all group"
+            >
+              <div className="flex items-start gap-4">
+                <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover shadow-lg shrink-0 group-hover:scale-105 transition-transform" loading="lazy" width={640} height={640} />
+                <div>
+                  <h3 className="text-xl font-extrabold text-white mb-0.5">{b.title}</h3>
+                  <p className="text-white/50 text-sm font-medium mb-2">{b.subtitle}</p>
+                  <p className="text-white/70 text-sm leading-relaxed">{b.description}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
+          <Button size="xl" className="rounded-full bg-white text-primary font-extrabold shadow-2xl hover:bg-white/90">
+            Get Started <ArrowRight className="h-5 w-5 ml-1" />
+          </Button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── OPTION I: Timeline / steps ─────────────── */
+function OptionI() {
+  return (
+    <section className="py-20 px-4 bg-slate-50">
+      <div className="max-w-4xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <span className="inline-block bg-primary/10 text-primary font-bold px-4 py-1.5 rounded-full text-sm mb-4">YOUR FRANCHISE INCLUDES</span>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground">
+            Everything. <span className="text-primary">Sorted.</span>
+          </h2>
+        </motion.div>
+
+        <div className="relative">
+          {/* Vertical line */}
+          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary/20 -translate-x-1/2 hidden sm:block" />
+
+          {benefits.map((b, i) => (
+            <motion.div
+              key={b.title}
+              initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className={`relative flex flex-col sm:flex-row items-center gap-6 mb-12 ${i % 2 !== 0 ? 'sm:flex-row-reverse' : ''}`}
+            >
+              {/* Content card */}
+              <div className={`flex-1 ${i % 2 !== 0 ? 'sm:text-right' : ''}`}>
+                <div className="bg-white rounded-2xl shadow-lg border border-border/50 overflow-hidden hover:shadow-xl transition-shadow">
+                  <div className="relative h-40 overflow-hidden">
+                    <img src={b.image} alt={b.title} className="w-full h-full object-cover" loading="lazy" width={640} height={640} />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${b.color} opacity-40`} />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-xl font-extrabold text-foreground mb-1">{b.title}</h3>
+                    <p className={`text-sm font-semibold ${b.accentColor} mb-2`}>{b.subtitle}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center dot */}
+              <div className={`shrink-0 hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${b.color} shadow-lg z-10`}>
+                <b.icon className="h-5 w-5 text-white" />
+              </div>
+
+              {/* Spacer */}
+              <div className="flex-1 hidden sm:block" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── OPTION J: Big number callout ─────────────── */
+function OptionJ() {
+  const stats = [
+    { number: "£50", unit: "/week", label: "Franchise Fee", desc: "Lowest in the UK. No hidden costs." },
+    { number: "£0", unit: "", label: "Healthcare Cost", desc: "Full private medical cover included." },
+    { number: "£0", unit: "", label: "Dashcam & Telematics", desc: "Fitted, maintained, monitored free." },
+    { number: "0", unit: " days", label: "Notice Period", desc: "No tie-in. Leave anytime you want." },
+  ];
+
+  return (
+    <section className="py-20 px-4 bg-foreground">
+      <div className="max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">The Numbers Speak</h2>
+          <p className="text-white/50 text-lg">No spin. No small print. Just the facts.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="text-center group"
+            >
+              <div className="relative mb-4 mx-auto w-32 h-32 flex items-center justify-center">
+                <img src={benefits[i].image} alt={s.label} className="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-30 group-hover:opacity-50 transition-opacity" loading="lazy" width={640} height={640} />
+                <div className="relative">
+                  <span className="text-4xl md:text-5xl font-black text-white">{s.number}</span>
+                  <span className="text-lg text-white/60 font-bold">{s.unit}</span>
+                </div>
+              </div>
+              <h3 className="text-lg font-extrabold text-white mb-1">{s.label}</h3>
+              <p className="text-white/50 text-sm">{s.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-14">
+          <Button size="xl" className="rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold shadow-xl">
+            Join Drive365 Now <ArrowRight className="h-5 w-5 ml-1" />
+          </Button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 /* ─────────────── MAIN DEMO PAGE ─────────────── */
 export default function DemoFranchiseBenefits() {
   const options = [
@@ -303,6 +575,11 @@ export default function DemoFranchiseBenefits() {
     { label: "C", name: "Icon Grid", component: <OptionC /> },
     { label: "D", name: "Gradient Pillars", component: <OptionD /> },
     { label: "E", name: "Checklist Style", component: <OptionE /> },
+    { label: "F", name: "Circle Portraits", component: <OptionF /> },
+    { label: "G", name: "Bento Grid", component: <OptionG /> },
+    { label: "H", name: "Glassmorphic", component: <OptionH /> },
+    { label: "I", name: "Timeline", component: <OptionI /> },
+    { label: "J", name: "Big Numbers", component: <OptionJ /> },
   ];
 
   return (
@@ -312,7 +589,7 @@ export default function DemoFranchiseBenefits() {
         <p className="text-muted-foreground max-w-xl mx-auto">Choose your favourite layout for the £50/week, free healthcare, free dashcam, and no tie-in section.</p>
       </div>
 
-      {options.map((opt, i) => (
+      {options.map((opt) => (
         <div key={opt.label}>
           <div className="text-center py-6 border-t border-dashed border-border">
             <span className="inline-block bg-primary text-primary-foreground font-bold px-4 py-1.5 rounded-full text-sm">
