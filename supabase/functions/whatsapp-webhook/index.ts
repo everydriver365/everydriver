@@ -361,7 +361,7 @@ async function generateGenericReply(message: string, visitorName: string | null)
   }
 }
 
-
+async function getOrCreateConversation(supabase: any, instructorId: string, phone: string, name: string | null) {
   const { data: existing } = await supabase
     .from("whatsapp_conversations")
     .select("*")
