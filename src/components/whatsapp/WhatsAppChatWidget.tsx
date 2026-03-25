@@ -472,24 +472,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
     }
 
     if (bookingStep === "course") {
-      return (
-        <div className="px-4 py-3 border-t border-border space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {COURSE_OPTIONS.map(opt => (
-              <button
-                key={opt.hours}
-                onClick={() => handleCourseSelect(opt.hours)}
-                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <ArrowLeft className="h-3 w-3" /> Back to chat
-          </button>
-        </div>
-      );
+      // Course step is now skipped - auto-search all courses
+      return null;
     }
 
     if (bookingStep === "results") {
