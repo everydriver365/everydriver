@@ -547,6 +547,11 @@ export default function FranchisePage() {
               </p>
             </div>
           </motion.div>
+          <div className="text-center mt-4">
+            <Button variant="link" className="text-primary-foreground/60 hover:text-primary-foreground" asChild>
+              <Link to="/drive365/franchise/bonus">Read more about the bonus scheme <ChevronRight className="h-4 w-4 ml-1" /></Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -666,6 +671,11 @@ export default function FranchisePage() {
                 <span className="font-medium text-sm">{f.label}</span>
               </div>
             ))}
+          </div>
+          <div className="text-center mt-6">
+            <Button variant="link" asChild>
+              <Link to="/drive365/franchise/technology">Read more about our technology <ChevronRight className="h-4 w-4 ml-1" /></Link>
+            </Button>
           </div>
         </div>
       </section>
