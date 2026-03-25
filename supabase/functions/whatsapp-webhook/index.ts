@@ -31,8 +31,13 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+
+    // ── Widget message (from in-app chat widget) ──
+    if (body?.widget_message) {
+      return await handleWidgetMessage(body);
+    }
     
-    // Meta sends a specific structure
+    // ── Meta webhook (real WhatsApp inbound) ──
     const entry = body?.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
