@@ -481,6 +481,85 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const handleMinimize = () => { setIsMinimized(true); setIsOpen(false); };
 
   const renderBookingInput = () => {
+    if (bookingStep === "courseType") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">🎓 What type of course?</p>
+          <div className="grid grid-cols-1 gap-1.5">
+            {[
+              { value: "intensive" as CourseType, label: "🔥 Intensive (1-2 weeks)", desc: "Pass fast" },
+              { value: "semi-intensive" as CourseType, label: "⚡ Semi-Intensive (2-4 weeks)", desc: "Balanced pace" },
+              { value: "weekly" as CourseType, label: "📅 Weekly Lessons", desc: "Learn at your own pace" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleCourseTypeSelect(opt.value)}
+                className="flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors text-left"
+              >
+                <span>{opt.label}</span>
+                <span className="text-muted-foreground text-[10px]">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "transmission") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">🚗 Automatic or Manual?</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: "automatic" as TransmissionPref, label: "Automatic" },
+              { value: "manual" as TransmissionPref, label: "Manual" },
+              { value: "no-preference" as TransmissionPref, label: "Either" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleTransmissionSelect(opt.value)}
+                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
+    if (bookingStep === "genderPref") {
+      return (
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          <p className="text-xs font-semibold text-foreground">👤 Instructor preference?</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: "male" as GenderPref, label: "Male" },
+              { value: "female" as GenderPref, label: "Female" },
+              { value: "no-preference" as GenderPref, label: "Either" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleGenderSelect(opt.value)}
+                className="px-3 py-2.5 text-xs font-medium rounded-lg border border-border bg-muted/50 text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={cancelBookingFlow} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back to chat
+          </button>
+        </div>
+      );
+    }
+
     if (bookingStep === "postcode") {
       return (
         <div className="px-4 py-3 border-t border-border space-y-2">
