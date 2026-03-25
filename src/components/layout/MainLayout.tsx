@@ -2,7 +2,6 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { BackToTopButton } from "./BackToTopButton";
-import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 import { WhatsAppChatWidget } from "@/components/whatsapp/WhatsAppChatWidget";
 
 interface MainLayoutProps {
@@ -18,7 +17,6 @@ export function MainLayout({ children, hideFooter = false }: MainLayoutProps) {
       {!hideFooter && <Footer />}
       <MobileBottomNav />
       <BackToTopButton />
-      <LiveChatWidget sessionType="admin" />
       <WhatsAppChatWidget />
     </div>
   );

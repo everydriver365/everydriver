@@ -2,16 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { InstructorInbox } from "@/components/instructor/InstructorInbox";
-import { VisitorChatManager } from "@/components/instructor/VisitorChatManager";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { WhatsAppInbox } from "@/components/instructor/WhatsAppInbox";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
-import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { WhatsAppBadge } from "@/components/instructor/WhatsAppBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Headphones, ShieldCheck, Loader2 } from "lucide-react";
+import { MessageCircle, ShieldCheck, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // WhatsApp icon as inline SVG since lucide doesn't have it
@@ -53,20 +51,15 @@ export default function InstructorUnifiedInbox() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-4 h-10">
+          <TabsList className="w-full grid grid-cols-3 h-10">
             <TabsTrigger value="pupils" className="flex items-center gap-1.5 text-xs sm:text-sm">
               <MessageCircle className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Pupils</span>
               <MessageNotificationBadge instructorId={instructor.id} className="ml-0.5 scale-90" />
             </TabsTrigger>
-            <TabsTrigger value="visitors" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <Headphones className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Visitors</span>
-              <VisitorChatBadge instructorId={instructor.id} className="ml-0.5 scale-90" />
-            </TabsTrigger>
-            <TabsTrigger value="whatsapp" className="flex items-center gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="enquiries" className="flex items-center gap-1.5 text-xs sm:text-sm">
               <WhatsAppIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">WhatsApp</span>
+              <span className="hidden sm:inline">Enquiries</span>
               <WhatsAppBadge instructorId={instructor.id} className="ml-0.5 scale-90" />
             </TabsTrigger>
             <TabsTrigger value="admin" className="flex items-center gap-1.5 text-xs sm:text-sm relative">
@@ -80,11 +73,7 @@ export default function InstructorUnifiedInbox() {
             <InstructorInbox instructorId={instructor.id} />
           </TabsContent>
 
-          <TabsContent value="visitors" className="mt-4">
-            <VisitorChatManager instructorId={instructor.id} />
-          </TabsContent>
-
-          <TabsContent value="whatsapp" className="mt-4">
+          <TabsContent value="enquiries" className="mt-4">
             <WhatsAppInbox instructorId={instructor.id} />
           </TabsContent>
 

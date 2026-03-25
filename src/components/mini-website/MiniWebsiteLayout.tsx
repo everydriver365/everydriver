@@ -4,7 +4,6 @@ import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe, Men
 import { MiniWebsiteSecondaryNav } from "@/components/mini-website/MiniWebsiteSecondaryNav";
 import { MiniWebsiteMobileBottomNav } from "@/components/mini-website/MiniWebsiteMobileBottomNav";
 import { Button } from "@/components/ui/button";
-import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 import { WhatsAppChatWidget } from "@/components/whatsapp/WhatsAppChatWidget";
 import { useMiniWebsiteSEO } from "@/hooks/useMiniWebsiteSEO";
 
@@ -332,13 +331,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
       {/* Mobile Bottom Nav */}
       <MiniWebsiteMobileBottomNav slug={slug} />
 
-      {/* Live Chat Widget */}
-      <LiveChatWidget
-        sessionType="instructor"
-        instructorId={instructor.id}
-        instructorName={instructor.name}
-        primaryColor={primaryColor}
-      />
+      {/* Chat Widget */}
       <WhatsAppChatWidget
         instructorId={instructor.id}
         instructorName={instructor.name}

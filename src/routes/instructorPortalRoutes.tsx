@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 import { FeatureGate } from "@/components/instructor/FeatureGate";
 
@@ -38,7 +38,7 @@ const AccountingCallback = lazy(() => import("@/pages/instructor/AccountingCallb
 
 // Communication
 const InstructorMessages = lazy(() => import("@/pages/InstructorUnifiedInbox"));
-const InstructorVisitorChats = lazy(() => import("@/pages/InstructorVisitorChats"));
+
 const InstructorAdminChat = lazy(() => import("@/pages/InstructorAdminChat"));
 const InstructorContact = lazy(() => import("@/pages/InstructorContact"));
 const InstructorTeamChannels = lazy(() => import("@/pages/InstructorTeamChannels"));
@@ -156,7 +156,7 @@ export const instructorPortalRoutes = (
 
     {/* Communication — always accessible */}
     <Route path="/instructor/messages" element={<InstructorMessages />} />
-    <Route path="/instructor/visitor-chats" element={<InstructorVisitorChats />} />
+    <Route path="/instructor/visitor-chats" element={<Navigate to="/instructor/messages" replace />} />
     <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
     <Route path="/instructor/contact" element={<InstructorContact />} />
     <Route path="/instructor/team-channels" element={<InstructorTeamChannels />} />
