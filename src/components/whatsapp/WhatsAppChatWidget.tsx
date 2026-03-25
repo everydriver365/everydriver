@@ -27,7 +27,11 @@ interface ChatMessage {
   created_at: string;
 }
 
-type BookingStep = null | "postcode" | "course" | "results";
+type BookingStep = null | "courseType" | "transmission" | "genderPref" | "postcode" | "results";
+
+type CourseType = "intensive" | "semi-intensive" | "weekly" | null;
+type TransmissionPref = "automatic" | "manual" | "no-preference" | null;
+type GenderPref = "male" | "female" | "no-preference" | null;
 
 // Chat icon component
 function ChatIcon({ className }: { className?: string }) {
