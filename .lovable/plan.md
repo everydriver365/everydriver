@@ -1,58 +1,58 @@
 
 
-## Interactive Booking Flow in WhatsApp Widget
+## Remove WhatsApp Dependency — Use In-App Chat + SMS Notifications
 
-When a visitor clicks "I'd like to book", the widget will switch to a multi-step booking flow embedded directly in the chat, rather than sending a plain text message.
+The good news: the chat widget already works as a fully in-app system. Messages are stored in your database, AI replies work, and instructors can see all conversations in their inbox. The only thing that breaks is the Meta API forwarding (because the app isn't approved).
 
-### Flow
+### What Changes
 
-```text
-Step 1: Postcode Input
-  "Where are you based?" + postcode text field + Submit
+**1. Edge function: Replace WhatsApp forwarding with SMS via Twilio**
+- In `supabase/functions/whatsapp-webhook/index.ts`, replace the `sendWhatsAppMessage` function with a `sendSMSNotification` function that uses your existing Twilio credentials (already configured: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID`)
+- When a visitor sends a message, the instructor gets an SMS like: "New enquiry from John: 'How much are lessons?' — Reply in your dashboard"
+- Handoff requests also go via SMS instead of WhatsApp
+- Rate-limit SMS notifications to avoid spamming (max 1 SMS per conversation per 10 minutes)
 
-Step 2: Course Selection
-  Grid of 5 course option buttons:
-  - 10 Hours
-  - 20 Hours
-  - 30 Hours
-  - 40 Hours
-  - Test in a Week
+**2. Rebrand the widget UI from "WhatsApp" to "Chat"**
+- `src/components/whatsapp/WhatsAppChatWidget.tsx`: Replace the WhatsApp icon with a generic `MessageCircle` icon, change the green `#25D366` colour to match the site brand, update header text from "WhatsApp Chat" to the instructor name or "Chat with us"
+- Update suggestion chip styles accordingly
 
-Step 3: Results
-  Query the database for available instructors near postcode,
-  display compact course tiles inside the widget.
-  Each tile shows: instructor name, price, next available date, transmission type.
-  Tapping a tile navigates to /book/{instructorId}?hours=X&date=Y
+**3. Rebrand the instructor inbox**
+- `src/components/instructor/WhatsAppInbox.tsx`: Change the empty-state text from "No WhatsApp conversations" to "No enquiries yet" and "When prospects message you, conversations will appear here"
+- Update the tab label if referenced elsewhere
+
+**4. No database changes needed**
+- The existing `whatsapp_conversations` and `whatsapp_messages` tables continue to work as-is — they're just chat tables regardless of name
+- Realtime subscriptions, AI replies, and the booking flow all remain untouched
+
+### Technical Details
+
+The SMS notification in the edge function will look like:
+
+```typescript
+async function sendSMSNotification(to: string, text: string) {
+  const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+  const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const TWILIO_MSG_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
+  if (!TWILIO_SID || !TWILIO_TOKEN) return;
+
+  const params = new URLSearchParams();
+  if (TWILIO_MSG_SID) params.append("MessagingServiceSid", TWILIO_MSG_SID);
+  params.append("To", to);
+  params.append("Body", text);
+
+  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
+    method: "POST",
+    headers: {
+      Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_TOKEN}`),
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+}
 ```
 
-### Technical Changes
-
-**File: `src/components/whatsapp/WhatsAppChatWidget.tsx`**
-
-1. Add booking flow state:
-   - `bookingStep`: `null | "postcode" | "course" | "results"`
-   - `bookingPostcode`: string
-   - `bookingHours`: number
-   - `bookingResults`: array of course results
-
-2. Intercept "I'd like to book" click: instead of calling `handleSendMessage`, set `bookingStep = "postcode"` and insert a local "bot" message bubble saying "Where are you based? Enter your postcode below."
-
-3. Render step-specific UI at the bottom of the chat area:
-   - **Postcode step**: Replace the text input area with a postcode input + "Search" button. On submit, set `bookingStep = "course"`.
-   - **Course step**: Show 5 styled buttons (10hr, 20hr, 30hr, 40hr, Test in a Week). On click, query the database and set `bookingStep = "results"`.
-   - **Results step**: Query `instructors` (active, near postcode using geocoding via the existing postcode lookup pattern), `instructor_courses`, `instructor_working_hours`, and `instructor_date_overrides`. Use the same `findFirstAvailableDate` logic from `useFeaturedCourses`. Display up to 4 compact course tiles inside the chat scroll area.
-
-4. Create a new `WhatsAppBookingCard` sub-component for the mini course tile rendered inside the chat. It will show:
-   - Course badge image (reuse existing badge assets)
-   - Instructor name + avatar
-   - Price
-   - Next available date
-   - "View Details" button that navigates to `/book/{instructorId}?hours=X&date=Y`
-
-5. Add a "Back" / "Cancel" option to return to normal chat at any step.
-
-**New file: `src/components/whatsapp/WhatsAppBookingCard.tsx`**
-- Compact card component sized for the chat widget (~300px wide)
-- Uses the same badge images (10hr, 20hr, etc.) from existing assets
-- Shows instructor avatar, name, price, date, and a CTA button
+### Files Modified
+- `supabase/functions/whatsapp-webhook/index.ts` — swap WhatsApp forwarding for SMS
+- `src/components/whatsapp/WhatsAppChatWidget.tsx` — rebrand UI
+- `src/components/instructor/WhatsAppInbox.tsx` — rebrand empty states
 
