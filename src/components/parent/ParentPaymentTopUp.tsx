@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminFee } from "@/hooks/useAdminFee";
+import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface ParentPaymentTopUpProps {
@@ -35,8 +36,9 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
     staleTime: 5 * 60 * 1000,
   });
 
+  const tierConfig = useInstructorTierConfig(instructorId);
   const baseAmount = selectedAmount || 0;
-  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(baseAmount, splitPercent);
+  const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(baseAmount, splitPercent, tierConfig);
 
   const handlePayment = async () => {
     if (!selectedAmount) return;

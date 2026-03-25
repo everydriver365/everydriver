@@ -11,6 +11,7 @@ import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { PupilPaymentDrawer } from "./PupilPaymentDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdminFee } from "@/hooks/useAdminFee";
+import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
 interface PupilPaymentModalProps {
