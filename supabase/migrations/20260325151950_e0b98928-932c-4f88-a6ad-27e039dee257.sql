@@ -1,0 +1,1 @@
+ALTER TABLE public.whatsapp_messages ADD COLUMN IF NOT EXISTS delivery_status text NOT NULL DEFAULT 'sent';

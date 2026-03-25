@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Send, Bot, User, Phone } from "lucide-react";
+import { ArrowLeft, Send, Bot, User, Phone, Check, CheckCheck, AlertCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -103,12 +103,33 @@ export function WhatsAppChat({ conversation, onBack }: WhatsAppChatProps) {
                   )}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p className={cn(
-                    "text-[10px] mt-1",
-                    isOutbound ? (isAI ? "text-muted-foreground" : "text-primary-foreground/60") : "text-muted-foreground"
+                  <div className={cn(
+                    "flex items-center gap-1 mt-1",
+                    isOutbound ? (isAI ? "justify-end" : "justify-end") : ""
                   )}>
-                    {format(new Date(msg.created_at), "HH:mm")}
-                  </p>
+                    <span className={cn(
+                      "text-[10px]",
+                      isOutbound ? (isAI ? "text-muted-foreground" : "text-primary-foreground/60") : "text-muted-foreground"
+                    )}>
+                      {format(new Date(msg.created_at), "HH:mm")}
+                    </span>
+                    {isOutbound && msg.sender_type === "instructor" && (
+                      <span className="inline-flex items-center">
+                        {msg.delivery_status === "sending" && (
+                          <Loader2 className="h-3 w-3 animate-spin text-primary-foreground/50" />
+                        )}
+                        {msg.delivery_status === "sent" && (
+                          <Check className="h-3 w-3 text-primary-foreground/50" />
+                        )}
+                        {msg.delivery_status === "delivered" && (
+                          <CheckCheck className="h-3 w-3 text-primary-foreground/70" />
+                        )}
+                        {msg.delivery_status === "failed" && (
+                          <AlertCircle className="h-3 w-3 text-destructive" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

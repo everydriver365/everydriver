@@ -9,6 +9,7 @@ export interface WhatsAppMessage {
   direction: string;
   sender_type: string;
   created_at: string;
+  delivery_status?: string;
 }
 
 export function useWhatsAppMessages(conversationId: string | null) {
@@ -39,6 +40,7 @@ export function useWhatsAppMessages(conversationId: string | null) {
         content,
         direction: "outbound",
         sender_type: "instructor",
+        delivery_status: "sending",
       });
       if (error) throw error;
 
@@ -47,17 +49,33 @@ export function useWhatsAppMessages(conversationId: string | null) {
         last_message_at: new Date().toISOString(),
       }).eq("id", conversationId);
 
-      // Forward reply to visitor via SMS
+      // Forward reply to visitor via SMS — webhook will update delivery_status
       try {
-        await supabase.functions.invoke("whatsapp-webhook", {
+        const { data } = await supabase.functions.invoke("whatsapp-webhook", {
           body: {
             instructor_reply: true,
             conversation_id: conversationId,
             message: content,
           },
         });
+        return data;
       } catch (e) {
         console.warn("SMS forward failed (message still saved):", e);
+        // Mark as failed if we couldn't even reach the webhook
+        const { data: recentMsg } = await supabase
+          .from("whatsapp_messages")
+          .select("id")
+          .eq("conversation_id", conversationId)
+          .eq("direction", "outbound")
+          .eq("sender_type", "instructor")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (recentMsg) {
+          await supabase.from("whatsapp_messages")
+            .update({ delivery_status: "failed" })
+            .eq("id", recentMsg.id);
+        }
       }
     },
     onSuccess: () => {
