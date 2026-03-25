@@ -85,6 +85,7 @@ import { InstructorLeaderboard } from "@/components/admin/InstructorLeaderboard"
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueManager";
+import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -182,6 +183,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "churn-analysis": { title: "Churn Analysis", group: "Dashboard", icon: TrendingUp },
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
   "calendar-sync": { title: "Calendar Sync Queue", group: "System Settings", icon: Calendar },
+  "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
 };
 
 export default function AdminPortal() {
