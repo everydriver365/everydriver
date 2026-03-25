@@ -7219,6 +7219,7 @@ export type Database = {
           extra_info: string | null
           facebook_url: string | null
           fuel_cost_per_litre: number | null
+          gender: string | null
           google_access_token: string | null
           google_calendar_id: string | null
           google_refresh_token: string | null
@@ -7363,6 +7364,7 @@ export type Database = {
           extra_info?: string | null
           facebook_url?: string | null
           fuel_cost_per_litre?: number | null
+          gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
@@ -7507,6 +7509,7 @@ export type Database = {
           extra_info?: string | null
           facebook_url?: string | null
           fuel_cost_per_litre?: number | null
+          gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
