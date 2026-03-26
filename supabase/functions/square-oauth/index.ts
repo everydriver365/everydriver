@@ -57,6 +57,15 @@ serve(async (req: Request) => {
 
         const authorizeUrl = `${baseUrl}/oauth2/authorize?client_id=${appId}&scope=${scopes}&session=false&state=${encodeURIComponent(state)}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
+        console.log("[DEBUG] Square OAuth authorize:", {
+          appId: appId?.substring(0, 12) + "...",
+          environment: env,
+          isProduction,
+          baseUrl,
+          redirect_uri,
+          authorizeUrl,
+        });
+
         return new Response(
           JSON.stringify({ url: authorizeUrl }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
