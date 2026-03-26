@@ -92,11 +92,24 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
           <p className="text-xs text-muted-foreground">
             Connect your Square account to receive pupil payments directly. Without a connected account, payments are collected by the platform and transferred to you manually.
           </p>
-          <Button size="sm" onClick={handleConnect} disabled={connecting}>
-            {connecting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5 mr-1.5" />}
-            Connect Square Account
-            <ExternalLink className="h-3 w-3 ml-1.5" />
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button size="sm" onClick={handleConnect} disabled={connecting}>
+              {connecting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5 mr-1.5" />}
+              Connect Square Account
+              <ExternalLink className="h-3 w-3 ml-1.5" />
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Don't have a Square account?{" "}
+              <a
+                href="https://squareup.com/signup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                Sign up for free
+              </a>
+            </p>
+          </div>
         </>
       )}
     </div>
