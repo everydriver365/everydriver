@@ -187,13 +187,25 @@ serve(async (req: Request) => {
         if (rpcError) throw rpcError;
 
         // Record in payment_history
+        const payoutStatus = useInstructorToken ? "auto_transferred" : "pending";
         await supabase.from("payment_history").insert({
           pupil_id: pupilId,
           instructor_id: instructorId || null,
           amount,
           payment_method: "card",
-          notes: `Square payment ${payment.id} — ${orderReference}`,
+          payout_status: payoutStatus,
+          notes: `Square payment ${payment.id} — ${orderReference}${useInstructorToken ? ' (auto-paid via Square)' : ''}`,
         });
+
+        // If auto-transferred, create instructor_payouts record
+        if (useInstructorToken && instructorId) {
+          await supabase.from("instructor_payouts").insert({
+            instructor_id: instructorId,
+            amount,
+            payment_ids: [],
+            notes: `Auto-paid via Square OAuth — ${payment.id}`,
+          });
+        }
 
         // Update payment_intents if exists
         await supabase
