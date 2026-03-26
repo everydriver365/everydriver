@@ -9,6 +9,7 @@ import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
 import { VoiceAssistantHeaderButton, VoiceAssistantOverlay } from "@/components/instructor/VoiceAssistantButton";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useInstructorPresence } from "@/hooks/useInstructorPresence";
+import { usePaymentReceivedAlert } from "@/hooks/usePaymentReceivedAlert";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
