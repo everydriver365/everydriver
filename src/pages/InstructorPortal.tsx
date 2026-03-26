@@ -314,7 +314,7 @@ export default function InstructorPortal() {
               <Calendar className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{todaysLessonCount}</p>
+              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}</p>
               <p className="text-[11px] text-muted-foreground">Today's Lessons</p>
             </div>
           </button>
@@ -326,7 +326,7 @@ export default function InstructorPortal() {
               <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{statsLoading ? '...' : `£${monthEarnings.toLocaleString()}`}</p>
+              <p className="text-lg font-bold text-foreground">{isDemoMode ? `£${demoStats.monthEarnings.toLocaleString()}` : statsLoading ? '...' : `£${monthEarnings.toLocaleString()}`}</p>
               <p className="text-[11px] text-muted-foreground">This Month</p>
             </div>
           </button>
@@ -338,7 +338,7 @@ export default function InstructorPortal() {
               <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{pupils.length}</p>
+              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.activePupils : pupils.length}</p>
               <p className="text-[11px] text-muted-foreground">Active Pupils</p>
             </div>
           </button>
@@ -350,7 +350,7 @@ export default function InstructorPortal() {
               <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{statsLoading ? '...' : hoursThisWeek}</p>
+              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.hoursThisWeek : statsLoading ? '...' : hoursThisWeek}</p>
               <p className="text-[11px] text-muted-foreground">Hours This Week</p>
             </div>
           </button>
