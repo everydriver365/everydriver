@@ -86,6 +86,7 @@ import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueManager";
 import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
+import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
