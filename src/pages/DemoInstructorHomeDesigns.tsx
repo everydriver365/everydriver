@@ -1065,9 +1065,7 @@ function MinimalZenDesign() {
   );
 }
 
-// ─── Main Demo Page ──────────────────────────────────────────
-export default function DemoInstructorHomeDesigns() {
-  const [active, setActive] = useState(designs[0].id);
+
 
 // ─── Design 9: iOS Stack ──────────────────────────────────────
 function IOSStackDesign() {
