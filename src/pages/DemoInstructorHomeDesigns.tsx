@@ -571,6 +571,496 @@ function MissionControlDesign() {
   );
 }
 
+// ─── Design 5: Driver Hub ─────────────────────────────────────
+function DriverHubDesign() {
+  return (
+    <div className="space-y-4">
+      {/* Motivational header */}
+      <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/10 p-5">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center">
+            <Sun className="h-7 w-7 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold">Good afternoon, Ken 👋</h2>
+            <p className="text-sm text-muted-foreground">You've completed 3 of 5 lessons · £180 earned so far</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">92%</p>
+            <p className="text-[10px] text-muted-foreground">Pass rate</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Next lesson card */}
+      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Play className="h-4 w-4 text-primary" />
+          <span className="text-xs font-semibold text-primary uppercase tracking-wide">Next Up — 14:00</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">SM</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold">Sarah Mitchell</p>
+              <p className="text-sm text-muted-foreground">Lesson 8 · Roundabouts & Dual Carriageways</p>
+              <div className="flex items-center gap-2 mt-1">
+                <MapPin className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">14 Oak Lane, SE5 8NP</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-xl"><Phone className="h-4 w-4" /></Button>
+            <Button size="sm" className="rounded-xl"><Navigation className="h-4 w-4 mr-1" /> Go</Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Metric pills */}
+      <div className="flex gap-3">
+        {[
+          { icon: Calendar, value: "5 lessons", color: "bg-primary/10 text-primary" },
+          { icon: PoundSterling, value: "£2,340 month", color: "bg-emerald-500/10 text-emerald-600" },
+          { icon: Users, value: "23 pupils", color: "bg-amber-500/10 text-amber-600" },
+          { icon: Timer, value: "32h week", color: "bg-purple-500/10 text-purple-600" },
+        ].map((m) => (
+          <div key={m.value} className={cn("flex-1 flex items-center gap-2 rounded-xl p-3 cursor-pointer hover:scale-[1.02] transition-transform", m.color)}>
+            <m.icon className="h-4 w-4" />
+            <span className="text-sm font-semibold">{m.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick actions grid */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { icon: CreditCard, label: "Take Payment", sub: "3 outstanding", accent: "bg-emerald-500/10", iconColor: "text-emerald-600" },
+          { icon: MessageSquare, label: "Messages", sub: "2 unread", accent: "bg-blue-500/10", iconColor: "text-blue-600", badge: 2 },
+          { icon: Calendar, label: "Fill Gaps", sub: "4 open slots", accent: "bg-amber-500/10", iconColor: "text-amber-600" },
+          { icon: Heart, label: "Health Hub", sub: "Wellness tips", accent: "bg-pink-500/10", iconColor: "text-pink-600" },
+          { icon: Shield, label: "Vehicle Health", sub: "MOT & service", accent: "bg-muted", iconColor: "text-muted-foreground" },
+          { icon: Gauge, label: "Telematics", sub: "Drive data", accent: "bg-primary/10", iconColor: "text-primary" },
+        ].map((a) => (
+          <Card key={a.label} className="border-border hover:shadow-md transition-all cursor-pointer group">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", a.accent)}>
+                  <a.icon className={cn("h-5 w-5", a.iconColor)} />
+                </div>
+                {a.badge && <Badge variant="destructive" className="text-[10px] h-5">{a.badge}</Badge>}
+              </div>
+              <p className="font-semibold text-sm">{a.label}</p>
+              <p className="text-xs text-muted-foreground">{a.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Today's schedule compact */}
+      <Card className="border-border">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" /> Remaining Today
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {[
+              { time: "14:00", name: "Sarah M.", type: "Lesson 8", current: true },
+              { time: "16:00", name: "Ben W.", type: "Assessment" },
+              { time: "17:30", name: "Lucy F.", type: "Lesson 12" },
+            ].map((l, i) => (
+              <div key={i} className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm",
+                l.current ? "bg-primary/5 border border-primary/20" : "bg-muted/30"
+              )}>
+                <span className="font-mono text-xs text-muted-foreground w-10">{l.time}</span>
+                <span className="font-medium flex-1">{l.name}</span>
+                <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+                {l.current && <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Design 6: Split Pane ─────────────────────────────────────
+function SplitPaneDesign() {
+  return (
+    <div className="grid grid-cols-5 gap-4">
+      {/* Left — Schedule (3 cols) */}
+      <div className="col-span-3 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-primary" /> Thursday, 26 March
+          </h2>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-lg">
+              <Plus className="h-4 w-4 mr-1" /> Add Lesson
+            </Button>
+          </div>
+        </div>
+
+        {/* Time grid */}
+        <Card className="border-border overflow-hidden">
+          <div className="divide-y divide-border">
+            {[
+              { time: "09:00", name: "James Turner", type: "Lesson 3", loc: "12 High St", done: true },
+              { time: "11:00", name: "Priya Kapoor", type: "Mock Test", loc: "Test Centre", done: true },
+              { time: "12:00", label: "Lunch Break", break: true },
+              { time: "14:00", name: "Sarah Mitchell", type: "Lesson 8", loc: "14 Oak Lane", current: true },
+              { time: "16:00", name: "Ben Walker", type: "Assessment", loc: "23 Park Rd" },
+              { time: "17:30", name: "Lucy Fisher", type: "Lesson 12", loc: "8 Elm Close" },
+            ].map((slot, i) => (
+              <div key={i} className={cn(
+                "flex items-center gap-4 px-5 py-3.5 transition-colors",
+                slot.current && "bg-primary/5",
+                slot.done && "opacity-50",
+                slot.break && "bg-muted/30"
+              )}>
+                <span className="font-mono text-sm text-muted-foreground w-12">{slot.time}</span>
+                {slot.break ? (
+                  <span className="text-sm text-muted-foreground italic">{slot.label}</span>
+                ) : (
+                  <>
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                        {slot.name?.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{slot.name}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {slot.loc}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">{slot.type}</Badge>
+                    {slot.current && (
+                      <Button size="sm" className="rounded-lg text-xs">
+                        <Navigation className="h-3 w-3 mr-1" /> Navigate
+                      </Button>
+                    )}
+                    {slot.done && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Right — Panels (2 cols) */}
+      <div className="col-span-2 space-y-3">
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: "Today", value: "£180", icon: PoundSterling, color: "text-emerald-600" },
+            { label: "This Month", value: "£2,340", icon: Wallet, color: "text-primary" },
+            { label: "Hours", value: "32h", icon: Clock, color: "text-purple-600" },
+            { label: "Pupils", value: "23", icon: Users, color: "text-amber-600" },
+          ].map((s) => (
+            <Card key={s.label} className="border-border cursor-pointer hover:shadow-sm transition-all">
+              <CardContent className="p-3 flex items-center gap-2">
+                <s.icon className={cn("h-4 w-4", s.color)} />
+                <div>
+                  <p className="text-sm font-bold">{s.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Messages */}
+        <Card className="border-border">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+              <Inbox className="h-3.5 w-3.5 text-primary" /> Messages
+              <Badge variant="destructive" className="ml-auto text-[10px] h-4">2</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 space-y-2">
+            {[
+              { name: "Ben W.", msg: "Can we reschedule Thursday?", time: "11:30" },
+              { name: "Priya K.", msg: "Thanks for today!", time: "12:15" },
+            ].map((m, i) => (
+              <div key={i} className="flex items-center gap-3 p-2.5 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{m.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium">{m.name}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{m.msg}</p>
+                </div>
+                <span className="text-[10px] text-muted-foreground">{m.time}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Alerts */}
+        <Card className="border-border bg-gradient-to-br from-amber-500/5 to-transparent">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-xs font-semibold flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Attention
+            </p>
+            <div className="text-xs bg-card border border-border rounded-lg p-2.5">Lucy F. — test in 3 days</div>
+            <div className="text-xs bg-card border border-border rounded-lg p-2.5">2 payments overdue (£120)</div>
+            <div className="text-xs bg-card border border-border rounded-lg p-2.5">DBS renewal in 18 days</div>
+          </CardContent>
+        </Card>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { icon: CreditCard, label: "Payment", color: "text-emerald-600" },
+            { icon: Route, label: "Gaps", color: "text-amber-600" },
+            { icon: Heart, label: "Health", color: "text-pink-600" },
+            { icon: Gauge, label: "Telematics", color: "text-primary" },
+            { icon: Eye, label: "Website", color: "text-purple-600" },
+            { icon: Settings, label: "Settings", color: "text-muted-foreground" },
+          ].map((a) => (
+            <button key={a.label} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors cursor-pointer">
+              <a.icon className={cn("h-5 w-5", a.color)} />
+              <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 7: Kanban Board ───────────────────────────────────
+function KanbanDesign() {
+  const columns = [
+    {
+      title: "To Prepare",
+      color: "border-amber-500/30 bg-amber-500/5",
+      headerColor: "text-amber-700",
+      items: [
+        { label: "Review Sarah's progress notes", type: "prep", icon: Eye },
+        { label: "Print route plan for Ben", type: "prep", icon: Route },
+        { label: "Chase Lucy's test confirmation", type: "admin", icon: Phone },
+      ],
+    },
+    {
+      title: "In Progress",
+      color: "border-primary/30 bg-primary/5",
+      headerColor: "text-primary",
+      items: [
+        { label: "Sarah Mitchell — Lesson 8", type: "lesson", icon: Car, highlight: true },
+        { label: "Process James's payment", type: "payment", icon: CreditCard },
+      ],
+    },
+    {
+      title: "Done Today",
+      color: "border-emerald-500/30 bg-emerald-500/5",
+      headerColor: "text-emerald-700",
+      items: [
+        { label: "James Turner — Lesson 3", type: "lesson", icon: CheckCircle2 },
+        { label: "Priya Kapoor — Mock Test", type: "lesson", icon: CheckCircle2 },
+        { label: "Sent weekly schedule update", type: "admin", icon: Send },
+      ],
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Stats bar */}
+      <div className="flex items-center gap-4 bg-card border border-border rounded-xl p-4">
+        <div className="flex items-center gap-3 flex-1">
+          <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">KD</AvatarFallback></Avatar>
+          <div>
+            <p className="font-semibold text-sm">Ken Dawson</p>
+            <p className="text-xs text-muted-foreground">3/5 lessons · £180 earned</p>
+          </div>
+        </div>
+        <div className="flex gap-4">
+          {[
+            { label: "Lessons", value: "5", color: "text-primary" },
+            { label: "Revenue", value: "£2.3k", color: "text-emerald-600" },
+            { label: "Pupils", value: "23", color: "text-amber-600" },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <p className={cn("text-lg font-bold", s.color)}>{s.value}</p>
+              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Kanban columns */}
+      <div className="grid grid-cols-3 gap-4">
+        {columns.map((col) => (
+          <div key={col.title} className={cn("rounded-xl border-2 p-3", col.color)}>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <Hash className={cn("h-4 w-4", col.headerColor)} />
+              <h3 className={cn("text-sm font-bold", col.headerColor)}>{col.title}</h3>
+              <Badge variant="outline" className="ml-auto text-[10px] h-5">{col.items.length}</Badge>
+            </div>
+            <div className="space-y-2">
+              {col.items.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} className={cn(
+                    "bg-card border border-border rounded-lg p-3 cursor-pointer hover:shadow-sm transition-all",
+                    item.highlight && "ring-2 ring-primary/20"
+                  )}>
+                    <div className="flex items-start gap-2.5">
+                      <Icon className={cn("h-4 w-4 mt-0.5 shrink-0",
+                        item.type === "lesson" ? "text-primary" :
+                        item.type === "payment" ? "text-emerald-600" :
+                        "text-muted-foreground"
+                      )} />
+                      <div>
+                        <p className="text-sm font-medium leading-snug">{item.label}</p>
+                        <Badge variant="outline" className="text-[9px] h-4 mt-1.5">{item.type}</Badge>
+                      </div>
+                    </div>
+                    {item.highlight && (
+                      <div className="mt-2 pt-2 border-t border-border flex items-center gap-2">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[11px] text-muted-foreground">14 Oak Lane, SE5 8NP</span>
+                        <Button size="sm" className="ml-auto h-6 text-[10px] rounded-md">Navigate</Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick action strip */}
+      <div className="flex gap-2">
+        {[
+          { icon: Plus, label: "Add Lesson" },
+          { icon: CreditCard, label: "Take Payment" },
+          { icon: MessageSquare, label: "Messages" },
+          { icon: Heart, label: "Health Hub" },
+          { icon: Shield, label: "Vehicle" },
+        ].map((a) => (
+          <Button key={a.label} variant="outline" className="flex-1 rounded-xl h-10 text-xs gap-1.5">
+            <a.icon className="h-4 w-4" /> {a.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 8: Minimal Zen ────────────────────────────────────
+function MinimalZenDesign() {
+  return (
+    <div className="max-w-2xl mx-auto space-y-8">
+      {/* Greeting */}
+      <div className="text-center pt-4">
+        <p className="text-muted-foreground text-sm">Thursday, 26 March</p>
+        <h1 className="text-2xl font-bold mt-1">Good afternoon, Ken</h1>
+        <p className="text-muted-foreground text-sm mt-1">3 lessons done · 2 remaining · £180 earned</p>
+      </div>
+
+      {/* Next lesson — hero */}
+      <div className="rounded-2xl border-2 border-primary/15 bg-gradient-to-b from-primary/5 to-transparent p-6">
+        <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Next Lesson</p>
+        <div className="flex items-center gap-5">
+          <Avatar className="h-16 w-16 border-2 border-primary/20">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">SM</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold">Sarah Mitchell</h2>
+            <p className="text-muted-foreground">Lesson 8 · Roundabouts & Dual Carriageways</p>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-sm flex items-center gap-1 text-muted-foreground"><Clock className="h-3.5 w-3.5" /> 14:00 — 15:30</span>
+              <span className="text-sm flex items-center gap-1 text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> 14 Oak Lane</span>
+            </div>
+          </div>
+          <Button size="lg" className="rounded-xl"><Navigation className="h-4 w-4 mr-2" /> Navigate</Button>
+        </div>
+      </div>
+
+      {/* Remaining schedule */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Later Today</h3>
+        <div className="space-y-2">
+          {[
+            { time: "16:00", name: "Ben Walker", type: "Assessment" },
+            { time: "17:30", name: "Lucy Fisher", type: "Lesson 12" },
+          ].map((l, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors cursor-pointer">
+              <span className="font-mono text-sm text-muted-foreground w-12">{l.time}</span>
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="text-xs bg-muted">{l.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-medium text-sm">{l.name}</p>
+                <p className="text-xs text-muted-foreground">{l.type}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-4 gap-4">
+        {[
+          { label: "This Month", value: "£2,340", sub: "+12% vs last", color: "text-emerald-600" },
+          { label: "Hours", value: "32h", sub: "of 44h target", color: "text-primary" },
+          { label: "Active Pupils", value: "23", sub: "1 at risk", color: "text-amber-600" },
+          { label: "Pass Rate", value: "92%", sub: "above average", color: "text-purple-600" },
+        ].map((m) => (
+          <div key={m.label} className="text-center p-4 rounded-xl bg-card border border-border cursor-pointer hover:shadow-sm transition-all">
+            <p className={cn("text-2xl font-bold", m.color)}>{m.value}</p>
+            <p className="text-xs font-medium mt-1">{m.label}</p>
+            <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Needs attention */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Needs Your Attention</h3>
+        <div className="space-y-2">
+          {[
+            { text: "Lucy Fisher — practical test in 3 days", icon: AlertTriangle, color: "text-amber-600" },
+            { text: "2 messages unread", icon: MessageSquare, color: "text-primary" },
+            { text: "£120 in overdue payments", icon: PoundSterling, color: "text-red-500" },
+          ].map((a, i) => (
+            <div key={i} className="flex items-center gap-3 p-4 rounded-xl border border-border hover:bg-muted/30 transition-colors cursor-pointer">
+              <a.icon className={cn("h-5 w-5", a.color)} />
+              <span className="text-sm flex-1">{a.text}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-3 pb-8">
+        {[
+          { icon: CreditCard, label: "Take Payment", color: "text-emerald-600" },
+          { icon: Plus, label: "Add Lesson", color: "text-primary" },
+          { icon: Heart, label: "Health Hub", color: "text-pink-600" },
+          { icon: Gauge, label: "Telematics", color: "text-primary" },
+        ].map((a) => (
+          <Button key={a.label} variant="outline" className="h-14 rounded-xl text-sm gap-2 justify-start px-5">
+            <a.icon className={cn("h-5 w-5", a.color)} /> {a.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Demo Page ──────────────────────────────────────────
 export default function DemoInstructorHomeDesigns() {
   const [active, setActive] = useState(designs[0].id);
@@ -581,6 +1071,10 @@ export default function DemoInstructorHomeDesigns() {
       case "timeline": return <TimelineDesign />;
       case "glassmorphic": return <GlassmorphicDesign />;
       case "mission-control": return <MissionControlDesign />;
+      case "driver-hub": return <DriverHubDesign />;
+      case "split-pane": return <SplitPaneDesign />;
+      case "kanban-flow": return <KanbanDesign />;
+      case "minimal-zen": return <MinimalZenDesign />;
       default: return null;
     }
   };
