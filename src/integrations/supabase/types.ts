@@ -7210,6 +7210,7 @@ export type Database = {
           data_retention_months: number | null
           dbs_certificate_expiry: string | null
           deleted_at: string | null
+          demo_mode: boolean | null
           deposit_amount: number | null
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
@@ -7355,6 +7356,7 @@ export type Database = {
           data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
           deleted_at?: string | null
+          demo_mode?: boolean | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
@@ -7500,6 +7502,7 @@ export type Database = {
           data_retention_months?: number | null
           dbs_certificate_expiry?: string | null
           deleted_at?: string | null
+          demo_mode?: boolean | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null

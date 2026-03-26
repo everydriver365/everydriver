@@ -40,6 +40,7 @@ import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useDemoMode } from "@/context/DemoModeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +90,28 @@ const settingsCategories: SettingsCategory[] = [
   { id: "tracking", title: "Tracking & Routes", icon: Navigation, iconColor: "text-amber-600", iconBg: "bg-amber-100 dark:bg-amber-900/30" },
   { id: "preferences", title: "Preferences & Data", icon: Settings, iconColor: "text-gray-600", iconBg: "bg-gray-100 dark:bg-gray-900/30" },
 ];
+
+function DemoModeToggle() {
+  const { isDemoMode, toggleDemoMode, loading } = useDemoMode();
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Toggle demo mode to preview the app with realistic sample data. Your real account data is never affected.
+      </p>
+      <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+        <div>
+          <p className="text-sm font-medium">{isDemoMode ? "Demo Mode Active" : "Demo Mode Off"}</p>
+          <p className="text-xs text-muted-foreground">{isDemoMode ? "Viewing sample data" : "Viewing your real data"}</p>
+        </div>
+        <Switch
+          checked={isDemoMode}
+          onCheckedChange={() => toggleDemoMode()}
+          disabled={loading}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function InstructorSettings() {
   const navigate = useNavigate();
@@ -1096,6 +1119,17 @@ export default function InstructorSettings() {
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[6]} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Demo Mode Section */}
+              <SettingsTile
+                id="demo-mode"
+                icon={Eye}
+                title="Demo Mode"
+                description="Preview the app with sample data"
+                iconColor="text-amber-600"
+                iconBg="bg-amber-100 dark:bg-amber-900/30"
+              >
+                <DemoModeToggle />
+              </SettingsTile>
               {/* Appearance Section */}
               <SettingsTile 
                 id="appearance" 
