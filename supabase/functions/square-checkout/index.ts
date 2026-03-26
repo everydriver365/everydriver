@@ -215,12 +215,12 @@ serve(async (req: Request) => {
           instructor_id: body.instructorId,
           pupil_id: body.pupilId || null,
           provider: "square_checkout",
-          provider_reference: data.payment_link.order_id,
-          amount: amountInPence,
-          status: "pending",
           order_ref: orderReference,
+          amount_pence: amountInPence,
+          status: "pending",
+          transaction_unique: data.payment_link.order_id,
         });
-        console.log(`Created payment_intent for order ${data.payment_link.order_id}`);
+        console.log(`Created payment_intent for order ${data.payment_link.order_id}, ref ${orderReference}`);
       } catch (intentErr) {
         console.error("Failed to create payment_intent (non-blocking):", intentErr);
       }
