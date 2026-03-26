@@ -29,6 +29,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
+import squareLogo from "@/assets/square-logo.png";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
 import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
@@ -860,6 +861,14 @@ export default function InstructorSettings() {
                 description="Connect for automatic payouts"
                 iconColor="text-blue-600"
                 iconBg="bg-blue-100 dark:bg-blue-900/30"
+                iconSrc={squareLogo}
+                statusBadge={
+                  (profile as any)?.square_merchant_id ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 bg-emerald-500/10 text-emerald-600">
+                      Connected
+                    </Badge>
+                  ) : null
+                }
               >
                 <SquareConnectSettings 
                   instructorId={instructorId} 
