@@ -25,6 +25,10 @@ const designs = [
   { id: "split-pane", label: "Split Pane", description: "Two-column desktop-first layout — schedule on the left, everything else on the right. Maximises screen real-estate." },
   { id: "kanban-flow", label: "Kanban Board", description: "Visual column-based workflow: To-Do → In Progress → Done. Drag-style layout for task-oriented instructors." },
   { id: "minimal-zen", label: "Minimal Zen", description: "Ultra-clean single-column layout with generous whitespace. Focus on the essentials with calm, intentional design." },
+  { id: "ios-stack", label: "iOS Stack", description: "Native iOS widget-stack feel with grouped rounded sections, subtle separators, and SF-style typography." },
+  { id: "radar", label: "Radar View", description: "Circular progress rings and radial stats. A fitness-tracker-inspired dashboard with visual progress indicators." },
+  { id: "newspaper", label: "Newspaper", description: "Editorial masonry layout with bold headlines, pull-quotes, and a news-feed aesthetic for daily briefings." },
+  { id: "neon-dark", label: "Neon Dark", description: "High-contrast dark theme with neon accent glows, sharp borders, and a cyberpunk-inspired command terminal feel." },
 ];
 
 // ─── Design 1: Focus Cards ────────────────────────────────────
