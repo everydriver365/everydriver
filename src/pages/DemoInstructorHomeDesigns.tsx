@@ -29,6 +29,11 @@ const designs = [
   { id: "radar", label: "Radar View", description: "Circular progress rings and radial stats. A fitness-tracker-inspired dashboard with visual progress indicators." },
   { id: "newspaper", label: "Newspaper", description: "Editorial masonry layout with bold headlines, pull-quotes, and a news-feed aesthetic for daily briefings." },
   { id: "neon-dark", label: "Neon Dark", description: "High-contrast dark theme with neon accent glows, sharp borders, and a cyberpunk-inspired command terminal feel." },
+  { id: "widget-grid", label: "Widget Grid", description: "Configurable widget tiles with a prominent settings gear. Drag-style grid with resizable areas and a personalisation panel." },
+  { id: "coach-pro", label: "Coach Pro", description: "Professional coaching dashboard with pupil pipeline, revenue chart, and a settings sidebar always visible." },
+  { id: "card-carousel", label: "Carousel", description: "Swipeable horizontal card rows for schedule, actions, and stats. Feels like a native app launcher with settings access." },
+  { id: "tabbed-home", label: "Tabbed Home", description: "Segmented tabs at top — Today / Pupils / Money / Settings. Each tab loads a focused mini-dashboard." },
+  { id: "command-palette", label: "Command Palette", description: "Search-first design with a spotlight-style command bar. Type to navigate, with quick-access settings and preferences." },
 ];
 
 // ─── Design 1: Focus Cards ────────────────────────────────────
