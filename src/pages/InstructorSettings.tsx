@@ -40,6 +40,7 @@ import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useDemoMode } from "@/context/DemoModeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
