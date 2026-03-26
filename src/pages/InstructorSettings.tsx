@@ -91,7 +91,28 @@ const settingsCategories: SettingsCategory[] = [
   { id: "preferences", title: "Preferences & Data", icon: Settings, iconColor: "text-gray-600", iconBg: "bg-gray-100 dark:bg-gray-900/30" },
 ];
 
-export default function InstructorSettings() {
+function DemoModeToggle() {
+  const { isDemoMode, toggleDemoMode, loading } = useDemoMode();
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Toggle demo mode to preview the app with realistic sample data. Your real account data is never affected.
+      </p>
+      <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+        <div>
+          <p className="text-sm font-medium">{isDemoMode ? "Demo Mode Active" : "Demo Mode Off"}</p>
+          <p className="text-xs text-muted-foreground">{isDemoMode ? "Viewing sample data" : "Viewing your real data"}</p>
+        </div>
+        <Switch
+          checked={isDemoMode}
+          onCheckedChange={() => toggleDemoMode()}
+          disabled={loading}
+        />
+      </div>
+    </div>
+  );
+}
+
   const navigate = useNavigate();
   const { instructor: authInstructor, refreshInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
