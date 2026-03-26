@@ -182,7 +182,7 @@ function DesignMockup({ design, isSelected }: { design: DesignOption; isSelected
 export default function InstructorHomeDesigns() {
   const { instructor, loading: authLoading } = useInstructorAuth();
   const instructorId = instructor?.id;
-  const { layoutStyle, setLayoutStyle, loading: appearanceLoading } = useInstructorAppearance(instructorId);
+  const { layoutStyle, updateAppearance, loading: appearanceLoading } = useInstructorAppearance(instructorId);
   const [selectedDesign, setSelectedDesign] = useState<LayoutStyle | null>(null);
   const [saving, setSaving] = useState(false);
 
