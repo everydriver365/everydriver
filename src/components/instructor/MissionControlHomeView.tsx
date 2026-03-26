@@ -20,7 +20,7 @@ import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { cn } from "@/lib/utils";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { cn } from "@/lib/utils";
