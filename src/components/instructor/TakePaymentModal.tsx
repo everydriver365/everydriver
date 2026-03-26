@@ -88,6 +88,7 @@ export function TakePaymentModal({
       setClearForManual(false);
       setQrAmount("");
       setQrCheckoutUrl(null);
+      setQrSelectedPupilId("");
     }
     onOpenChange(o);
   };
@@ -305,6 +306,23 @@ export function TakePaymentModal({
                 </div>
               ) : (
                 <>
+                  {/* Pupil selector */}
+                  {pupils.length > 0 && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Select Pupil (optional)</Label>
+                      <Select value={qrSelectedPupilId} onValueChange={setQrSelectedPupilId}>
+                        <SelectTrigger className="w-full h-10">
+                          <SelectValue placeholder="-- No pupil --" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[200]">
+                          {pupils.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Amount</Label>
                     <div className="relative">
@@ -319,6 +337,13 @@ export function TakePaymentModal({
                         onChange={(e) => setQrAmount(e.target.value)}
                         className="pl-9 text-lg"
                       />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[30, 40, 50, 100].map((v) => (
+                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setQrAmount(v.toString())}>
+                          £{v}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 
