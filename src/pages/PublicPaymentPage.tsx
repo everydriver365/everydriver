@@ -81,7 +81,14 @@ export default function PublicPaymentPage() {
   // Show success screen FIRST — derived from URL, works even before data loads
   if (isSuccess || paid) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+        <button
+          onClick={() => window.close()}
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors"
+          aria-label="Close"
+        >
+          <X className="h-6 w-6 text-muted-foreground" />
+        </button>
         <div className="text-center max-w-sm">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground">Payment Successful</h1>
