@@ -269,7 +269,7 @@ export function TakePaymentModal({
           )}
 
           {/* === Payment type switcher (shown on sub-views) === */}
-          {view !== "picker" && (
+          {view !== "picker" && view !== "received" && (
             <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
               {options.map((opt) => {
                 const Icon = opt.icon;
