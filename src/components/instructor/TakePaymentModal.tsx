@@ -19,7 +19,7 @@ import { useAdminFee } from "@/hooks/useAdminFee";
 import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
 import { AdminFeeBreakdown } from "@/components/payments/AdminFeeBreakdown";
 
-type View = "picker" | "qr" | "link";
+type View = "picker" | "qr" | "link" | "received";
 
 interface Pupil {
   id: string;
@@ -231,11 +231,13 @@ export function TakePaymentModal({
                 {view === "picker" && "Take Payment"}
                 {view === "qr" && "QR Code"}
                 {view === "link" && "Send Payment Request"}
+                {view === "received" && "Payment Received"}
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {view === "picker" && "Choose a payment method"}
                 {view === "qr" && "Pupil scans to pay"}
                 {view === "link" && "Set amount and send via SMS or email"}
+                {view === "received" && "Thank you!"}
               </DialogDescription>
             </div>
           </div>
@@ -298,13 +300,32 @@ export function TakePaymentModal({
                   <div className="bg-white p-4 rounded-xl shadow-md">
                     <QRCodeSVG value={qrCheckoutUrl} size={220} />
                   </div>
-                  <p className="text-sm text-muted-foreground text-center font-medium">
-                    Scan to pay £{(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)}
-                  </p>
-                  <Button variant="outline" size="sm" onClick={() => { setQrCheckoutUrl(null); setQrAmount(""); }}>
-                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                    New Amount
-                  </Button>
+                  {(() => {
+                    const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
+                    const parts: string[] = [];
+                    if (qrPupil) parts.push(qrPupil.name);
+                    if (qrReason) parts.push(qrReason);
+                    return (
+                      <>
+                        <p className="text-sm text-muted-foreground text-center font-medium">
+                          Scan to pay £{(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)}
+                        </p>
+                        {parts.length > 0 && (
+                          <p className="text-xs text-muted-foreground text-center">{parts.join(" — ")}</p>
+                        )}
+                      </>
+                    );
+                  })()}
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { setQrCheckoutUrl(null); setQrAmount(""); }}>
+                      <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                      New Amount
+                    </Button>
+                    <Button size="sm" onClick={() => setView("received")}>
+                      <Check className="h-3.5 w-3.5 mr-1.5" />
+                      Payment Done
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -413,6 +434,33 @@ export function TakePaymentModal({
                   </Button>
                 </>
               )}
+            </div>
+          )}
+
+          {/* === Payment Received === */}
+          {view === "received" && (
+            <div className="flex flex-col items-center gap-4 py-8">
+              <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Check className="h-8 w-8 text-emerald-600" />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="font-semibold text-lg">Payment Received</p>
+                <p className="text-sm text-muted-foreground">
+                  £{(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)} received
+                  {(() => {
+                    const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
+                    return qrPupil ? ` from ${qrPupil.name}` : "";
+                  })()}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleClose(false)}
+                className="mt-2"
+              >
+                ✕ Close
+              </Button>
             </div>
           )}
 
