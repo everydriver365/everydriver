@@ -309,7 +309,7 @@ export default function InstructorPay() {
         onOpenChange={setPaymentModalOpen}
         paymentQrUrl={resolvedQrUrl}
         commissionPayer={commissionPayer}
-        commissionSplitPercent={instructor?.commission_split_percent}
+        commissionSplitPercent={authInstructor?.commission_split_percent}
         instructorName={instructorName}
         instructorId={instructorId}
         pupils={pupils}
