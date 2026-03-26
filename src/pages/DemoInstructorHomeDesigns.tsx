@@ -1069,6 +1069,509 @@ function MinimalZenDesign() {
 export default function DemoInstructorHomeDesigns() {
   const [active, setActive] = useState(designs[0].id);
 
+// ─── Design 9: iOS Stack ──────────────────────────────────────
+function IOSStackDesign() {
+  return (
+    <div className="max-w-lg mx-auto space-y-5">
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-1">
+        <div>
+          <p className="text-2xl font-bold">Home</p>
+        </div>
+        <Avatar className="h-9 w-9 border border-border">
+          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">KD</AvatarFallback>
+        </Avatar>
+      </div>
+
+      {/* Next lesson widget */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden">
+        <div className="px-4 py-2.5 bg-muted/30 border-b border-border">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+            <Play className="h-3 w-3" /> Next Lesson
+          </p>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-11 w-11">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">SM</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <p className="font-semibold text-[15px]">Sarah Mitchell</p>
+              <p className="text-[13px] text-muted-foreground">Lesson 8 · 14:00</p>
+            </div>
+            <Button size="sm" className="rounded-full h-9 px-4 text-xs">
+              <Navigation className="h-3.5 w-3.5 mr-1" /> Go
+            </Button>
+          </div>
+          <div className="flex items-center gap-1.5 mt-3 text-[13px] text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5" /> 14 Oak Lane, SE5 8NP
+          </div>
+        </div>
+      </div>
+
+      {/* Stats group */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+        <div className="px-4 py-2.5 bg-muted/30">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Today's Summary</p>
+        </div>
+        {[
+          { label: "Lessons Completed", value: "3 of 5", icon: CheckCircle2, color: "text-emerald-600" },
+          { label: "Earned Today", value: "£180", icon: PoundSterling, color: "text-primary" },
+          { label: "Hours This Week", value: "32h", icon: Clock, color: "text-purple-600" },
+          { label: "Active Pupils", value: "23", icon: Users, color: "text-amber-600" },
+        ].map((s) => (
+          <div key={s.label} className="flex items-center gap-3 px-4 py-3">
+            <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center">
+              <s.icon className={cn("h-4 w-4", s.color)} />
+            </div>
+            <span className="flex-1 text-[15px]">{s.label}</span>
+            <span className="text-[15px] font-semibold text-muted-foreground">{s.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions group */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+        <div className="px-4 py-2.5 bg-muted/30">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</p>
+        </div>
+        {[
+          { label: "Take Payment", sub: "3 outstanding", icon: CreditCard, color: "text-emerald-600", badge: "3" },
+          { label: "Messages", sub: "2 unread", icon: MessageSquare, color: "text-primary", badge: "2" },
+          { label: "Fill Gaps", sub: "4 open slots", icon: Calendar, color: "text-amber-600" },
+          { label: "Health Hub", sub: "Wellness & breaks", icon: Heart, color: "text-pink-600" },
+          { label: "Vehicle Health", sub: "MOT & service", icon: Shield, color: "text-muted-foreground" },
+          { label: "Telematics", sub: "Drive data", icon: Gauge, color: "text-primary" },
+        ].map((a) => (
+          <div key={a.label} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors">
+            <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center">
+              <a.icon className={cn("h-4 w-4", a.color)} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[15px]">{a.label}</p>
+              <p className="text-[13px] text-muted-foreground">{a.sub}</p>
+            </div>
+            {a.badge && (
+              <Badge variant="destructive" className="text-[10px] h-5 rounded-full">{a.badge}</Badge>
+            )}
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        ))}
+      </div>
+
+      {/* Remaining schedule group */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+        <div className="px-4 py-2.5 bg-muted/30">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Remaining Today</p>
+        </div>
+        {[
+          { time: "16:00", name: "Ben Walker", type: "Assessment" },
+          { time: "17:30", name: "Lucy Fisher", type: "Lesson 12" },
+        ].map((l, i) => (
+          <div key={i} className="flex items-center gap-3 px-4 py-3">
+            <span className="font-mono text-[13px] text-muted-foreground w-10">{l.time}</span>
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="text-[10px] bg-muted">{l.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <p className="text-[15px]">{l.name}</p>
+            </div>
+            <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 10: Radar View ────────────────────────────────────
+function RadarDesign() {
+  const rings = [
+    { label: "Lessons", value: 60, max: 100, color: "stroke-primary", display: "3/5" },
+    { label: "Revenue", value: 78, max: 100, color: "stroke-emerald-500", display: "£2.3k" },
+    { label: "Hours", value: 72, max: 100, color: "stroke-purple-500", display: "32h" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Progress rings header */}
+      <div className="rounded-2xl bg-gradient-to-br from-card to-muted/30 border border-border p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold">Daily Progress</h2>
+            <p className="text-sm text-muted-foreground">Thursday, 26 March</p>
+          </div>
+          <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-xs">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" /> Online
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-center gap-12">
+          {rings.map((ring) => {
+            const circumference = 2 * Math.PI * 40;
+            const offset = circumference - (ring.value / ring.max) * circumference;
+            return (
+              <div key={ring.label} className="relative flex flex-col items-center">
+                <svg width="100" height="100" className="-rotate-90">
+                  <circle cx="50" cy="50" r="40" fill="none" strokeWidth="6" className="stroke-muted/30" />
+                  <circle
+                    cx="50" cy="50" r="40" fill="none" strokeWidth="6"
+                    className={ring.color}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    style={{ transition: "stroke-dashoffset 1s ease" }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <p className="text-lg font-bold">{ring.display}</p>
+                  <p className="text-[10px] text-muted-foreground">{ring.label}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Next up */}
+      <Card className="border-border overflow-hidden">
+        <div className="flex">
+          <div className="w-1.5 bg-primary" />
+          <CardContent className="p-4 flex-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">SM</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-xs text-muted-foreground">NEXT · 14:00</p>
+                  <p className="font-semibold">Sarah Mitchell — Lesson 8</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <MapPin className="h-3 w-3" /> 14 Oak Lane, SE5
+                  </p>
+                </div>
+              </div>
+              <Button className="rounded-xl" size="sm"><Navigation className="h-4 w-4 mr-1" /> Go</Button>
+            </div>
+          </CardContent>
+        </div>
+      </Card>
+
+      {/* Metric tiles + actions */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { icon: Users, label: "Pupils", value: "23", color: "text-amber-600 bg-amber-500/10" },
+          { icon: Star, label: "Rating", value: "4.9", color: "text-purple-600 bg-purple-500/10" },
+          { icon: Target, label: "Pass Rate", value: "92%", color: "text-emerald-600 bg-emerald-500/10" },
+          { icon: Flame, label: "Streak", value: "14d", color: "text-red-500 bg-red-500/10" },
+        ].map((m) => (
+          <Card key={m.label} className="border-border cursor-pointer hover:shadow-sm transition-all">
+            <CardContent className="p-4 text-center">
+              <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mx-auto mb-2", m.color)}>
+                <m.icon className="h-5 w-5" />
+              </div>
+              <p className="text-lg font-bold">{m.value}</p>
+              <p className="text-[10px] text-muted-foreground">{m.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Two-col: schedule + actions */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="border-border">
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Remaining</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {[
+              { time: "16:00", name: "Ben W.", type: "Assessment" },
+              { time: "17:30", name: "Lucy F.", type: "Lesson 12" },
+            ].map((l, i) => (
+              <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 text-sm">
+                <span className="font-mono text-xs text-muted-foreground">{l.time}</span>
+                <span className="font-medium flex-1">{l.name}</span>
+                <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { icon: CreditCard, label: "Payment", color: "text-emerald-600" },
+            { icon: MessageSquare, label: "Messages", color: "text-primary", badge: 2 },
+            { icon: Calendar, label: "Fill Gaps", color: "text-amber-600" },
+            { icon: Heart, label: "Health", color: "text-pink-600" },
+            { icon: Shield, label: "Vehicle", color: "text-muted-foreground" },
+            { icon: Gauge, label: "Telematics", color: "text-primary" },
+          ].map((a) => (
+            <button key={a.label} className="relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-card border border-border hover:bg-muted/30 transition-colors">
+              <a.icon className={cn("h-5 w-5", a.color)} />
+              <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
+              {a.badge && (
+                <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-destructive flex items-center justify-center">
+                  <span className="text-[9px] text-destructive-foreground font-bold">{a.badge}</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 11: Newspaper ─────────────────────────────────────
+function NewspaperDesign() {
+  return (
+    <div className="space-y-4">
+      {/* Masthead */}
+      <div className="text-center border-b-2 border-foreground pb-3">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Thursday, 26 March 2026</p>
+        <h1 className="text-3xl font-black tracking-tight mt-1" style={{ fontFamily: "Georgia, serif" }}>The Daily Drive</h1>
+        <p className="text-xs text-muted-foreground mt-1">Ken Dawson · Grade A · DVSA Approved</p>
+      </div>
+
+      {/* Lead story */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2">
+          <div className="border-b border-border pb-4">
+            <Badge className="bg-primary/10 text-primary border-0 text-[10px] mb-2">HEADLINE</Badge>
+            <h2 className="text-xl font-bold leading-tight" style={{ fontFamily: "Georgia, serif" }}>
+              Next Lesson: Sarah Mitchell at 14:00
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+              Lesson 8 focuses on roundabouts and dual carriageways. Pickup at 14 Oak Lane, SE5 8NP. 
+              Sarah has shown strong progress — mock test readiness at 78%.
+            </p>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" className="rounded-lg text-xs"><Navigation className="h-3.5 w-3.5 mr-1" /> Navigate</Button>
+              <Button size="sm" variant="outline" className="rounded-lg text-xs"><Eye className="h-3.5 w-3.5 mr-1" /> View Profile</Button>
+            </div>
+          </div>
+
+          {/* Schedule column */}
+          <div className="mt-4">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground border-b border-border pb-1 mb-3">Today's Schedule</h3>
+            <div className="space-y-2">
+              {[
+                { time: "09:00", name: "James Turner", type: "Lesson 3", done: true },
+                { time: "11:00", name: "Priya Kapoor", type: "Mock Test", done: true },
+                { time: "14:00", name: "Sarah Mitchell", type: "Lesson 8", current: true },
+                { time: "16:00", name: "Ben Walker", type: "Assessment" },
+                { time: "17:30", name: "Lucy Fisher", type: "Lesson 12" },
+              ].map((l, i) => (
+                <div key={i} className={cn(
+                  "flex items-center gap-3 text-sm py-1.5",
+                  l.done && "opacity-40 line-through",
+                  l.current && "font-semibold text-primary"
+                )}>
+                  <span className="font-mono text-xs w-10 text-muted-foreground">{l.time}</span>
+                  <span className="flex-1">{l.name}</span>
+                  <span className="text-xs text-muted-foreground">{l.type}</span>
+                  {l.current && <Badge className="bg-primary text-primary-foreground text-[9px] h-4">NOW</Badge>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar columns */}
+        <div className="space-y-4 border-l border-border pl-4">
+          {/* By the numbers */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground border-b border-border pb-1 mb-3">By The Numbers</h3>
+            <div className="space-y-3">
+              {[
+                { label: "Month Revenue", value: "£2,340", change: "+12%" },
+                { label: "Weekly Hours", value: "32h", change: "+3h" },
+                { label: "Active Pupils", value: "23", change: "−1" },
+                { label: "Pass Rate", value: "92%", change: "+4%" },
+              ].map((s) => (
+                <div key={s.label} className="flex items-baseline justify-between">
+                  <span className="text-xs text-muted-foreground">{s.label}</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold">{s.value}</span>
+                    <span className="text-[10px] text-emerald-600 ml-1">{s.change}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Alerts */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground border-b border-border pb-1 mb-3">Breaking</h3>
+            <div className="space-y-2 text-xs">
+              <div className="border-l-2 border-red-500 pl-2 py-1">
+                <p className="font-semibold">Lucy F. — Test in 3 days</p>
+                <p className="text-muted-foreground">Practical test booked</p>
+              </div>
+              <div className="border-l-2 border-amber-500 pl-2 py-1">
+                <p className="font-semibold">2 Payments Overdue</p>
+                <p className="text-muted-foreground">£120 outstanding</p>
+              </div>
+              <div className="border-l-2 border-primary pl-2 py-1">
+                <p className="font-semibold">2 New Messages</p>
+                <p className="text-muted-foreground">Ben W., Priya K.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground border-b border-border pb-1 mb-3">Quick Links</h3>
+            <div className="space-y-1.5">
+              {["Take Payment", "Messages", "Fill Gaps", "Health Hub", "Vehicle Health", "Settings"].map((label) => (
+                <button key={label} className="block text-xs text-primary hover:underline cursor-pointer">{label} →</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 12: Neon Dark ─────────────────────────────────────
+function NeonDarkDesign() {
+  return (
+    <div className="space-y-4">
+      {/* Dark header */}
+      <div className="rounded-2xl bg-[#0a0a0f] border border-[#1a1a2e] p-5 text-white overflow-hidden relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,255,136,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.05),transparent_50%)]" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-[#00ff88]/10 border border-[#00ff88]/20 flex items-center justify-center">
+                <span className="text-[#00ff88] font-bold text-sm">KD</span>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Ken Dawson</p>
+                <p className="text-xs text-white/40">Grade A · DVSA Approved</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded-full px-3 py-1">
+              <div className="h-2 w-2 rounded-full bg-[#00ff88] animate-pulse" />
+              <span className="text-[10px] text-[#00ff88] font-medium">ONLINE</span>
+            </div>
+          </div>
+
+          {/* Neon stat cards */}
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { label: "Lessons", value: "5", color: "#00ff88", icon: Calendar },
+              { label: "Revenue", value: "£2.3k", color: "#6366f1", icon: PoundSterling },
+              { label: "Pupils", value: "23", color: "#f59e0b", icon: Users },
+              { label: "Hours", value: "32h", color: "#ec4899", icon: Clock },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl p-3 border" style={{
+                backgroundColor: `${s.color}08`,
+                borderColor: `${s.color}20`,
+                boxShadow: `0 0 20px ${s.color}08`,
+              }}>
+                <s.icon className="h-4 w-4 mb-2" style={{ color: s.color }} />
+                <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-[10px] text-white/40">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Next lesson with glow border */}
+      <div className="rounded-2xl p-[1px] bg-gradient-to-r from-[#00ff88]/40 via-[#6366f1]/40 to-[#00ff88]/40">
+        <div className="rounded-2xl bg-[#0a0a0f] p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 flex items-center justify-center">
+                <Play className="h-5 w-5 text-[#6366f1]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-mono text-[#00ff88]">NEXT_LESSON // 14:00</p>
+                <p className="font-semibold text-white text-sm mt-0.5">Sarah Mitchell — Lesson 8</p>
+                <p className="text-xs text-white/40 flex items-center gap-1 mt-0.5">
+                  <MapPin className="h-3 w-3" /> 14 Oak Lane, SE5 8NP
+                </p>
+              </div>
+            </div>
+            <button className="h-10 px-4 rounded-xl text-xs font-semibold text-[#0a0a0f] bg-[#00ff88] hover:bg-[#00ff88]/90 transition-colors flex items-center gap-1.5">
+              <Navigation className="h-3.5 w-3.5" /> Navigate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        {/* Schedule */}
+        <div className="col-span-2 rounded-2xl bg-[#0a0a0f] border border-[#1a1a2e] overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-[#1a1a2e] flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-[#00ff88]" />
+            <span className="text-[10px] font-mono text-white/50 uppercase">Schedule.today</span>
+          </div>
+          <div className="divide-y divide-[#1a1a2e]">
+            {[
+              { time: "09:00", name: "James T.", type: "L3", done: true },
+              { time: "11:00", name: "Priya K.", type: "Mock", done: true },
+              { time: "14:00", name: "Sarah M.", type: "L8", current: true },
+              { time: "16:00", name: "Ben W.", type: "Assess" },
+              { time: "17:30", name: "Lucy F.", type: "L12" },
+            ].map((l, i) => (
+              <div key={i} className={cn(
+                "flex items-center gap-3 px-4 py-2.5 text-sm",
+                l.done && "opacity-30",
+                l.current && "bg-[#00ff88]/5"
+              )}>
+                <span className="font-mono text-xs text-white/30 w-10">{l.time}</span>
+                <span className={cn("flex-1 text-white/80", l.done && "line-through")}>{l.name}</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded border border-[#1a1a2e] text-white/40">{l.type}</span>
+                {l.current && <div className="h-2 w-2 rounded-full bg-[#00ff88] animate-pulse" />}
+                {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-[#00ff88]/60" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-3">
+          <div className="rounded-2xl bg-[#0a0a0f] border border-[#1a1a2e] p-3">
+            <p className="text-[10px] font-mono text-white/30 uppercase mb-2 px-1">Actions</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { icon: CreditCard, label: "Pay", color: "#00ff88" },
+                { icon: MessageSquare, label: "Msg", color: "#6366f1" },
+                { icon: Calendar, label: "Gaps", color: "#f59e0b" },
+                { icon: Heart, label: "Health", color: "#ec4899" },
+                { icon: Shield, label: "Vehicle", color: "#64748b" },
+                { icon: Gauge, label: "Data", color: "#06b6d4" },
+              ].map((a) => (
+                <button key={a.label} className="flex flex-col items-center gap-1 p-2.5 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-[#1a1a2e]">
+                  <a.icon className="h-4 w-4" style={{ color: a.color }} />
+                  <span className="text-[9px] font-mono text-white/40">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-[#0a0a0f] border border-[#1a1a2e] p-3">
+            <p className="text-[10px] font-mono text-red-400/60 uppercase mb-2 px-1">⚠ Alerts</p>
+            <div className="space-y-1.5 text-xs">
+              <div className="px-2 py-1.5 rounded border border-red-500/20 bg-red-500/5 text-red-400/80 font-mono">Test → 3 days</div>
+              <div className="px-2 py-1.5 rounded border border-amber-500/20 bg-amber-500/5 text-amber-400/80 font-mono">£120 overdue</div>
+              <div className="px-2 py-1.5 rounded border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1]/80 font-mono">2 msgs unread</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Demo Page ──────────────────────────────────────────
+export default function DemoInstructorHomeDesigns() {
+  const [active, setActive] = useState(designs[0].id);
+
   const renderDesign = () => {
     switch (active) {
       case "focus-cards": return <FocusCardsDesign />;
@@ -1079,6 +1582,10 @@ export default function DemoInstructorHomeDesigns() {
       case "split-pane": return <SplitPaneDesign />;
       case "kanban-flow": return <KanbanDesign />;
       case "minimal-zen": return <MinimalZenDesign />;
+      case "ios-stack": return <IOSStackDesign />;
+      case "radar": return <RadarDesign />;
+      case "newspaper": return <NewspaperDesign />;
+      case "neon-dark": return <NeonDarkDesign />;
       default: return null;
     }
   };
