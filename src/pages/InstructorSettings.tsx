@@ -55,6 +55,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 interface InstructorProfile {
