@@ -40,6 +40,13 @@ export default function PublicPaymentPage() {
   const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
 
   useEffect(() => {
+    if (successParam === "true") {
+      setPaid(true);
+      setShowCheckout(false);
+    }
+  }, [successParam]);
+
+  useEffect(() => {
     if (!instructorId) return;
     (async () => {
       const { data } = await supabase
