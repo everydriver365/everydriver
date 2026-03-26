@@ -136,7 +136,8 @@ serve(async (req: Request) => {
         const { data: existing } = await supabase
           .from("payment_history")
           .select("id")
-          .eq("transaction_reference", paymentId)
+          .eq("pupil_id", pupilId)
+          .ilike("notes", `%${paymentId}%`)
           .maybeSingle();
 
         if (existing) {
@@ -182,7 +183,6 @@ serve(async (req: Request) => {
           payment_method: "square_checkout",
           payout_status: payoutStatus,
           notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}${isAutoTransfer ? ' (auto-paid via Square)' : ''}`,
-          transaction_reference: paymentId,
         });
 
         // Credit pupil balance
