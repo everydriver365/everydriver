@@ -1,25 +1,43 @@
 
 
-## Fix: "View & Book" should navigate to the booking page, not the course search page
+## QR Code with Square Payment Link
 
-### Problem
-When a user clicks "View & Book" on a chat result card, they are sent to `/i/:slug/courses?postcode=...&hours=...&date=...` — which is a search/discovery page. The user expects to land on the actual booking page for that specific instructor and course.
+### Current State
+The QR code view currently shows a generic payment page link (`/pay/:instructorId`) via `PaymentLinkShare`. It does NOT generate a Square checkout — the pupil lands on a custom payment page where they still have to enter an amount and go through checkout manually.
 
-### Solution
-Change the navigation in `handleBookingCardSelect` to go to `/book/:instructorId` instead — the dedicated booking summary page that already accepts `hours` and `date` query params.
+The "Send Request" view already generates a real Square checkout link with a specific amount via the `square-checkout` edge function. The QR view doesn't have this capability.
 
-### Changes
+### Plan
 
-**File: `src/components/whatsapp/WhatsAppChatWidget.tsx`** (~line 449-454)
+Enhance the QR code view to let the instructor enter an amount, generate a Square checkout link, and display a QR code that the pupil scans to pay directly — no intermediate page.
 
-Update `handleBookingCardSelect` to navigate to the booking page:
+**File: `src/components/instructor/TakePaymentModal.tsx`**
 
-```typescript
-const handleBookingCardSelect = (result: BookingResult) => {
-  const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
-  navigate(`/book/${result.instructorId}?hours=${result.hours}&date=${dateStr}`);
-};
+1. When the instructor selects "QR Code", show an amount input (with quick-select buttons like £30/£40/£50/£100) and optional pupil selector — similar to the "Send Request" view
+2. Add a "Generate QR" button that calls the `square-checkout` edge function with the entered amount
+3. Once the Square checkout URL is returned, display a QR code (using `qrcode.react`) containing that direct Square payment URL
+4. Include the admin fee breakdown below the amount input (reuse existing `AdminFeeBreakdown` component)
+5. Show a "Reset" button to generate a new QR for a different amount
+
+**File: `src/components/instructor/PaymentLinkShare.tsx`**
+
+No changes needed — we'll build the new Square QR flow directly in the TakePaymentModal's QR view, replacing the current `PaymentLinkShare` usage with a richer inline component.
+
+### Flow
+```text
+Instructor taps "QR Code"
+  → Enters amount (e.g. £50)
+  → Sees admin fee breakdown
+  → Taps "Generate QR"
+  → Edge function creates Square checkout link
+  → QR code displayed with the Square URL
+  → Pupil scans → lands on Square's hosted checkout → pays
 ```
 
-This sends the user directly to the `BookingSummary` page with the correct instructor, hours, and date pre-selected — no intermediate search step.
+### Technical Details
+- Reuses the existing `square-checkout` edge function (already working for Send Request)
+- Reuses `useAdminFee` and `AdminFeeBreakdown` for fee display
+- Uses `QRCodeSVG` from `qrcode.react` (already installed)
+- The return URL will be `/pay/:instructorId?success=true`
+- Loading state while Square link is generated
 
