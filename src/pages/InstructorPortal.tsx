@@ -74,6 +74,7 @@ interface InstructorData {
 export default function InstructorPortal() {
   const { instructor: authInstructor, loading: authLoading, user, refreshInstructor, subscription, signOut } = useInstructorAuth();
   const instructorId = authInstructor?.id;
+  const { isDemoMode } = useDemoMode();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
