@@ -77,8 +77,30 @@ serve(async (req: Request) => {
         if (instructor?.square_merchant_id && instructor?.square_access_token_encrypted) {
           useInstructorToken = true;
           effectiveAccessToken = instructor.square_access_token_encrypted;
-          // Use platform location for checkout but payments go to instructor's merchant
           console.log(`Using instructor's Square OAuth token for ${body.instructorId}`);
+
+          // Fetch instructor's main location from Square API
+          try {
+            const locEnv = environment.toLowerCase();
+            const locIsProduction = locEnv === "production" || locEnv === "prod" || locEnv === "live";
+            const locBaseUrl = locIsProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
+            const locRes = await fetch(`${locBaseUrl}/v2/locations`, {
+              headers: {
+                "Authorization": `Bearer ${effectiveAccessToken}`,
+                "Square-Version": "2024-01-18",
+              },
+            });
+            if (locRes.ok) {
+              const locData = await locRes.json();
+              const mainLoc = locData.locations?.find((l: any) => l.status === "ACTIVE") || locData.locations?.[0];
+              if (mainLoc?.id) {
+                effectiveLocationId = mainLoc.id;
+                console.log(`Using instructor's location: ${effectiveLocationId}`);
+              }
+            }
+          } catch (locErr) {
+            console.error("Error fetching instructor locations:", locErr);
+          }
 
           // Calculate platform fee (service fee)
           if (body.platformFeePence && body.platformFeePence > 0) {
