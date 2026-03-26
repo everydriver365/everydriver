@@ -1571,9 +1571,7 @@ function NeonDarkDesign() {
   );
 }
 
-// ─── Main Demo Page ──────────────────────────────────────────
-export default function DemoInstructorHomeDesigns() {
-  const [active, setActive] = useState(designs[0].id);
+
 
 // ─── Design 13: Widget Grid ───────────────────────────────────
 function WidgetGridDesign() {
