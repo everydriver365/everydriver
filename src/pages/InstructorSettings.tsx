@@ -113,6 +113,7 @@ function DemoModeToggle() {
   );
 }
 
+export default function InstructorSettings() {
   const navigate = useNavigate();
   const { instructor: authInstructor, refreshInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
