@@ -116,6 +116,19 @@ const designs: DesignOption[] = [
       { label: "Milestones", height: "h-10", color: "bg-pink-500/10" },
     ],
   },
+  {
+    id: "mission-control",
+    name: "Mission Control",
+    subtitle: "Data-dense cockpit",
+    description: "Dense, data-rich 4-pane grid inspired by flight decks. Schedule, alerts, and actions all visible at once — everything without scrolling.",
+    tags: ["4-Pane Grid", "Dense", "No Scrolling"],
+    gradient: "from-slate-800 to-zinc-900",
+    mockupSections: [
+      { label: "Status Strip + Stats", height: "h-10", color: "bg-gradient-to-r from-slate-500/15 to-zinc-500/15" },
+      { label: "Schedule | Alerts | Actions", height: "h-24", color: "bg-slate-500/10" },
+      { label: "Next Lesson + Insight Tiles", height: "h-14", color: "bg-slate-500/8" },
+    ],
+  },
 ];
 
 function DesignMockup({ design, isSelected }: { design: DesignOption; isSelected: boolean }) {
