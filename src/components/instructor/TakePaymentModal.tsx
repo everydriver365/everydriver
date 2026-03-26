@@ -317,14 +317,6 @@ export function TakePaymentModal({
                         value={qrAmount}
                         onChange={(e) => setQrAmount(e.target.value)}
                         className="pl-9 text-lg"
-                      />
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {[30, 40, 50, 100].map((v) => (
-                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setQrAmount(v.toString())}>
-                          £{v}
-                        </Button>
-                      ))}
                     </div>
                   </div>
 
