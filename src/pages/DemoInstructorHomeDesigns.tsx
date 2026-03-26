@@ -4,7 +4,9 @@ import {
   Calendar, Users, TrendingUp, Clock, Globe, ChevronRight, MessageSquare,
   CreditCard, MapPin, Bell, Star, Zap, ArrowUpRight, BarChart3, Car,
   CheckCircle2, AlertTriangle, Plus, PoundSterling, Eye, Settings,
-  Activity, Briefcase, Target, Flame, Award, CircleDot
+  Activity, Briefcase, Target, Flame, Award, CircleDot,
+  Navigation, Phone, Wallet, Heart, Shield, Gauge, Route, Sun, Moon,
+  Layers, Grip, Hash, Inbox, Send, Timer, Play
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
