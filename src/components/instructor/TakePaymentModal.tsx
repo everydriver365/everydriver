@@ -64,6 +64,7 @@ export function TakePaymentModal({
   const [qrAmount, setQrAmount] = useState("");
   const [qrCheckoutUrl, setQrCheckoutUrl] = useState<string | null>(null);
   const [qrGenerating, setQrGenerating] = useState(false);
+  const [qrReason, setQrReason] = useState("");
 
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
@@ -89,6 +90,7 @@ export function TakePaymentModal({
       setQrAmount("");
       setQrCheckoutUrl(null);
       setQrSelectedPupilId("");
+      setQrReason("");
     }
     onOpenChange(o);
   };
@@ -323,6 +325,18 @@ export function TakePaymentModal({
                     </div>
                   )}
 
+                  {/* Reason (optional) */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Reason (optional)</Label>
+                    <Input
+                      type="text"
+                      maxLength={100}
+                      placeholder="e.g. Lesson payment, top-up"
+                      value={qrReason}
+                      onChange={(e) => setQrReason(e.target.value)}
+                    />
+                  </div>
+
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Amount</Label>
                     <div className="relative">
@@ -372,7 +386,7 @@ export function TakePaymentModal({
                           body: {
                             amount: chargeAmount,
                             orderReference: orderRef,
-                            description: qrPupil ? `Payment from ${qrPupil.name}` : `QR payment to ${instructorName}`,
+                            description: qrReason || (qrPupil ? `Payment from ${qrPupil.name}` : `QR payment to ${instructorName}`),
                             customerName: qrPupil?.name,
                             customerEmail: qrPupil?.email || undefined,
                             customerPhone: qrPupil?.phone || undefined,
