@@ -23,7 +23,8 @@ serve(async (req: Request) => {
     console.log("Received Square webhook:", eventType);
 
     switch (eventType) {
-      case "payment.completed": {
+      case "payment.completed":
+      case "payment.updated": {
         const payment = data?.payment || data;
         const paymentId = payment?.id;
         const referenceId = payment?.reference_id;
