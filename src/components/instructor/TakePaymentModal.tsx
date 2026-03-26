@@ -437,6 +437,33 @@ export function TakePaymentModal({
             </div>
           )}
 
+          {/* === Payment Received === */}
+          {view === "received" && (
+            <div className="flex flex-col items-center gap-4 py-8">
+              <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Check className="h-8 w-8 text-emerald-600" />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="font-semibold text-lg">Payment Received</p>
+                <p className="text-sm text-muted-foreground">
+                  £{(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)} received
+                  {(() => {
+                    const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
+                    return qrPupil ? ` from ${qrPupil.name}` : "";
+                  })()}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleClose(false)}
+                className="mt-2"
+              >
+                ✕ Close
+              </Button>
+            </div>
+          )}
+
           {/* === Send Link === */}
           {view === "link" && (
             <div className="space-y-4">
