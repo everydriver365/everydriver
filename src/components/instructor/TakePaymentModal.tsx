@@ -317,6 +317,7 @@ export function TakePaymentModal({
                         value={qrAmount}
                         onChange={(e) => setQrAmount(e.target.value)}
                         className="pl-9 text-lg"
+                      />
                     </div>
                   </div>
 
