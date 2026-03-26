@@ -1,12 +1,16 @@
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 /**
  * Subscribes to realtime INSERT events on payment_history
- * for the given instructor and shows an in-app toast.
+ * for the given instructor, shows an in-app toast, and
+ * invalidates payment-related queries so dashboards update.
  */
 export function usePaymentReceivedAlert(instructorId?: string) {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (!instructorId) return;
 
@@ -26,6 +30,13 @@ export function usePaymentReceivedAlert(instructorId?: string) {
             pupil_id?: string;
             payment_method?: string;
           };
+
+          // Invalidate all payment/earnings queries so figures refresh
+          queryClient.invalidateQueries({ queryKey: ["daily-earnings"] });
+          queryClient.invalidateQueries({ queryKey: ["payment"] });
+          queryClient.invalidateQueries({ queryKey: ["payments"] });
+          queryClient.invalidateQueries({ queryKey: ["recent-payments"] });
+          queryClient.invalidateQueries({ queryKey: ["pupil-balance"] });
 
           let pupilName = "a pupil";
           if (row.pupil_id) {
@@ -52,5 +63,5 @@ export function usePaymentReceivedAlert(instructorId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [instructorId]);
+  }, [instructorId, queryClient]);
 }
