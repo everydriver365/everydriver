@@ -1,49 +1,75 @@
 
+Diagnosis:
 
-## Problem: Square QR Payments Not Recording
+The success page logic is already present in the code, so this is not primarily a “missing UI” problem.
 
-### Root Cause (two issues)
+What I found:
+1. The public route exists correctly:
+   - `/pay/:instructorId` maps to `PublicPaymentPage`.
 
-**1. Square webhook not receiving events**
-The `square-webhook` edge function logs are empty — Square is not sending `payment.completed` events to your system. This means the Square Webhook URL has not been configured in your Square Developer Dashboard. Without the webhook, completed payments are never recorded in `payment_history` and the pupil balance is never credited.
+2. `PublicPaymentPage` already reads `?success=true`:
+   - `const successParam = searchParams.get("success");`
+   - initial state uses `successParam === "true"`
+   - there is also a `useEffect` that sets `paid=true` when `successParam === "true"`
 
-**2. No `payment_intent` record created for QR payments**
-Even if the webhook fires, the `square-webhook` function tries to match payments by looking up `payment_intents.provider_reference = orderId`. But the `square-checkout` function never creates a `payment_intent` record. So the webhook would fail to match the payment to a pupil/instructor and skip it with "could not match to a pupil/instructor".
+3. When `paid` is true, the page should render the success screen immediately:
+   - “Payment Successful”
+   - message with instructor name
+   - close-page text
 
-### What happened with the £1.27 payment
-- QR code was generated successfully (Square order `tfzw5I4j6RYGYMOU0QOHiudUl3GZY` for Charlotte D)
-- Payment was completed on Square's side
-- Square never called back to your system → no `payment_history` record, Charlotte D balance stays at £0.00
+4. The QR / payment modal is generating Square checkout links with:
+   - `returnUrl: https://everydriver.lovable.app/pay/${instructorId}?success=true`
 
-### Fix Plan
+Most likely root cause:
+- The live published site is still serving stale cached JS/PWA assets, so the browser is running an older version of `PublicPaymentPage` that does not include the latest success-page logic.
+- This project uses `vite-plugin-pwa` with a service worker and navigation fallback, so published users can easily get an older bundle until the cache updates.
+- That fits your symptom exactly: the redirect URL is correct, but the success screen still does not appear on the live domain.
 
-**Step 1: Update `square-checkout` to create a `payment_intent` record**
-After successfully creating the checkout link, insert a record into `payment_intents` with:
-- `pupil_id`, `instructor_id` from the request body
-- `provider` = `"square_checkout"`
-- `provider_reference` = the Square `order_id` returned
-- `amount_pence` = the amount in pence
-- `status` = `"pending"`
-- `order_ref` = the `orderReference` from the request
+Secondary issue to harden:
+- The current page stores success in local React state (`paid`) instead of deriving it directly from the URL on render.
+- Even though there is a `useEffect`, this flow is still more fragile than necessary for redirects/reloads/cached bundles.
 
-This gives the webhook something to match against.
+Implementation plan:
+1. Harden `PublicPaymentPage`
+   - Derive success directly from the URL query each render, instead of depending on state synchronization.
+   - Make the success screen independent of prior component state.
+   - Prefer:
+     - `const isSuccess = searchParams.get("success") === "true"`
+     - render success view directly from `isSuccess`
 
-**Step 2: Configure Square Webhook URL**
-You need to add the webhook URL in your Square Developer Dashboard:
-- URL: `https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/square-webhook`
-- Events to subscribe: `payment.completed`
+2. Preserve useful redirect context
+   - Also read `transactionId` / `orderId` from the URL so the success page can be shown deterministically even after a full reload.
+   - Optionally show a small reference if present.
 
-**Step 3: Fix redirect URL to use published domain**
-The checkout redirect currently points to the preview domain (`ca10d01e-...lovableproject.com`). It should use `https://everydriver.lovable.app` so pupils land on the correct page after payment.
+3. Remove stale-state edge cases
+   - Ensure `showCheckout` is ignored when `success=true`
+   - Ensure the page never falls back to the payment form once success is in the URL
 
-**Step 4: Add fallback matching in `square-webhook`**
-Update the webhook to also match by `order_ref` column (not just `provider_reference`) as a safety net, so QR payments can always be reconciled.
+4. Check published-vs-preview behavior
+   - Confirm whether preview already has the fix while published does not
+   - If so, that strongly confirms a cached published bundle / service worker issue
 
-### Files to modify
-- `supabase/functions/square-checkout/index.ts` — create `payment_intent` record after checkout link creation; fix redirect URL
-- `supabase/functions/square-webhook/index.ts` — add fallback `order_ref` matching
+5. Optional cache-busting improvement
+   - Add a lightweight versioned redirect pattern or success route strategy if needed, e.g. a dedicated `/pay/:instructorId/success` route, which is less fragile than relying only on query params
 
-### Manual step required from you
-Add the webhook URL in Square Developer Dashboard → Webhooks → Add Endpoint:
-`https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/square-webhook`
+Technical details:
+```text
+Current flow:
+Square redirect
+  -> /pay/:instructorId?success=true&transactionId=...&orderId=...
+  -> PublicPaymentPage
+  -> should render success screen
 
+Why it can fail:
+- old cached JS bundle on published site
+- component state initialized from older logic
+- success handling depends on state instead of pure URL-driven rendering
+```
+
+Files to inspect/update:
+- `src/pages/PublicPaymentPage.tsx`
+- optionally `src/components/instructor/TakePaymentModal.tsx` if we want a more robust success redirect target
+- optionally PWA caching behavior if the live site continues serving stale assets
+
+Expected outcome after implementation:
+- Any visit to `/pay/{instructorId}?success=true...` will always show the success page immediately, even after full reloads and redirects.
