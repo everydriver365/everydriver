@@ -108,6 +108,7 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
               >
                 Sign up for free
               </a>
+              {" "}— get free processing on the first £1,000 taken!
             </p>
           </div>
         </>
