@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
-import { cn } from "@/lib/utils";
 
 interface MissionControlHomeViewProps {
   instructorId: string | undefined;
