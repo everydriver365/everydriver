@@ -173,7 +173,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
               <div key={i} className="text-xs p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5">
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                  {a.message}
+                  {a.title}
                 </div>
               </div>
             ))}
@@ -282,7 +282,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
       <InsightTilesGrid gapCount={gapCount} />
 
       {/* Bottom promos */}
-      <BottomPromoGroup instructorId={instructorId} />
+      <BottomPromoGroup />
     </div>
   );
 }
