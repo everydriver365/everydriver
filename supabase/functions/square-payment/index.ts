@@ -53,6 +53,38 @@ serve(async (req: Request) => {
       ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
 
+    // Check if instructor has connected Square OAuth
+    let effectiveAccessToken = accessToken;
+    let useInstructorToken = false;
+    let appFeeAmountPence = 0;
+
+    if (instructorId) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const supa = createClient(supabaseUrl, serviceRoleKey);
+
+        const { data: instructor } = await supa
+          .from("instructors")
+          .select("square_merchant_id, square_access_token_encrypted")
+          .eq("id", instructorId)
+          .maybeSingle();
+
+        if (instructor?.square_merchant_id && instructor?.square_access_token_encrypted) {
+          useInstructorToken = true;
+          effectiveAccessToken = instructor.square_access_token_encrypted;
+          console.log(`[square-payment] Using instructor's Square OAuth token`);
+
+          // Calculate platform fee from body
+          if (body.platformFeePence && body.platformFeePence > 0) {
+            appFeeAmountPence = body.platformFeePence;
+          }
+        }
+      } catch (e) {
+        console.error("[square-payment] Error checking instructor OAuth:", e);
+      }
+    }
+
     // Create payment via Square Payments API
     const payload: Record<string, unknown> = {
       idempotency_key: idempotencyKey,
@@ -67,6 +99,14 @@ serve(async (req: Request) => {
       autocomplete: true,
     };
 
+    // Add app_fee_money for instructor OAuth payments
+    if (useInstructorToken && appFeeAmountPence > 0) {
+      payload.app_fee_money = {
+        amount: appFeeAmountPence,
+        currency: "GBP",
+      };
+    }
+
     // Add buyer email if provided
     if (customerEmail) {
       payload.buyer_email_address = customerEmail;
@@ -78,7 +118,7 @@ serve(async (req: Request) => {
       method: "POST",
       headers: {
         "Square-Version": "2024-01-18",
-        "Authorization": `Bearer ${accessToken}`,
+        "Authorization": `Bearer ${effectiveAccessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -147,13 +187,25 @@ serve(async (req: Request) => {
         if (rpcError) throw rpcError;
 
         // Record in payment_history
+        const payoutStatus = useInstructorToken ? "auto_transferred" : "pending";
         await supabase.from("payment_history").insert({
           pupil_id: pupilId,
           instructor_id: instructorId || null,
           amount,
           payment_method: "card",
-          notes: `Square payment ${payment.id} — ${orderReference}`,
+          payout_status: payoutStatus,
+          notes: `Square payment ${payment.id} — ${orderReference}${useInstructorToken ? ' (auto-paid via Square)' : ''}`,
         });
+
+        // If auto-transferred, create instructor_payouts record
+        if (useInstructorToken && instructorId) {
+          await supabase.from("instructor_payouts").insert({
+            instructor_id: instructorId,
+            amount,
+            payment_ids: [],
+            notes: `Auto-paid via Square OAuth — ${payment.id}`,
+          });
+        }
 
         // Update payment_intents if exists
         await supabase

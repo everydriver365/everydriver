@@ -28,6 +28,7 @@ import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutManager";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
+import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
 import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
@@ -836,6 +837,23 @@ export default function InstructorSettings() {
                     </div>
                   </div>
                 </div>
+              </SettingsTile>
+
+              {/* Square Account Connection */}
+              <SettingsTile 
+                id="square-connect" 
+                icon={CreditCard} 
+                title="Square Account" 
+                description="Connect for automatic payouts"
+                iconColor="text-blue-600"
+                iconBg="bg-blue-100 dark:bg-blue-900/30"
+              >
+                <SquareConnectSettings 
+                  instructorId={instructorId} 
+                  squareMerchantId={(profile as any)?.square_merchant_id}
+                  squareConnectedAt={(profile as any)?.square_connected_at}
+                  onUpdate={() => refreshInstructor()}
+                />
               </SettingsTile>
 
               {/* Referral Programme (moved from Preferences) */}

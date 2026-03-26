@@ -114,6 +114,17 @@ serve(async (req: Request) => {
           break;
         }
 
+        // Check if instructor has Square OAuth connected
+        let isAutoTransfer = false;
+        if (instructorId) {
+          const { data: instrData } = await supabase
+            .from("instructors")
+            .select("square_merchant_id")
+            .eq("id", instructorId)
+            .maybeSingle();
+          isAutoTransfer = !!instrData?.square_merchant_id;
+        }
+
         // Get commission config
         const { data: commConfig } = await supabase
           .from("platform_commission_config")
@@ -123,11 +134,15 @@ serve(async (req: Request) => {
 
         let feeAmount = 0;
         let creditAmount = amountPounds;
-        if (commConfig) {
+        if (commConfig && !isAutoTransfer) {
+          // Only deduct fee from platform account when NOT using instructor OAuth
+          // (OAuth payments already split via app_fee_money)
           feeAmount = amountPounds * (commConfig.rate_percent / 100) + (commConfig.fixed_fee_pence / 100);
           feeAmount = Math.round(feeAmount * 100) / 100;
           creditAmount = amountPounds - feeAmount;
         }
+
+        const payoutStatus = isAutoTransfer ? "auto_transferred" : "pending";
 
         // Record payment_history
         await supabase.from("payment_history").insert({
@@ -135,7 +150,8 @@ serve(async (req: Request) => {
           pupil_id: pupilId,
           amount: creditAmount,
           payment_method: "square_checkout",
-          notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}`,
+          payout_status: payoutStatus,
+          notes: `Square Checkout Payment - ID: ${paymentId}${feeAmount > 0 ? ` (admin fee: £${feeAmount.toFixed(2)})` : ''}${isAutoTransfer ? ' (auto-paid via Square)' : ''}`,
           transaction_reference: paymentId,
         });
 
@@ -144,7 +160,17 @@ serve(async (req: Request) => {
           p_pupil_id: pupilId,
           p_amount: creditAmount,
         });
-        console.log(`Credited £${creditAmount.toFixed(2)} to pupil ${pupilId}`);
+        console.log(`Credited £${creditAmount.toFixed(2)} to pupil ${pupilId} (${payoutStatus})`);
+
+        // Create auto-payout record for OAuth payments
+        if (isAutoTransfer && instructorId) {
+          await supabase.from("instructor_payouts").insert({
+            instructor_id: instructorId,
+            amount: creditAmount,
+            payment_ids: [],
+            notes: `Auto-paid via Square OAuth — ${paymentId}`,
+          });
+        }
 
         // Record commission
         if (feeAmount > 0) {

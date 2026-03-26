@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PoundSterling, CheckCircle, Clock, User, Loader2, Send, ChevronDown, ChevronRight } from "lucide-react";
+import { PoundSterling, CheckCircle, Clock, User, Loader2, Send, ChevronDown, ChevronRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -320,10 +320,17 @@ export function AdminInstructorPayouts() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-emerald-600">£{Number(payout.amount).toFixed(2)}</span>
-                          <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Paid
-                          </Badge>
+                          {payout.notes?.includes("Auto-paid via Square") ? (
+                            <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 text-xs">
+                              <Zap className="h-3 w-3 mr-1" />
+                              Auto-paid
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-xs">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Paid
+                            </Badge>
+                          )}
                         </div>
                       </button>
                       {expandedPayout === payout.id && (

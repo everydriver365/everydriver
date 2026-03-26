@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,6 +56,40 @@ serve(async (req: Request) => {
       );
     }
 
+    // Check if instructor has connected Square OAuth
+    let useInstructorToken = false;
+    let effectiveAccessToken = accessToken;
+    let effectiveLocationId = locationId;
+    let appFeeAmountPence = 0;
+
+    if (body.instructorId) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+        const { data: instructor } = await supabase
+          .from("instructors")
+          .select("square_merchant_id, square_access_token_encrypted")
+          .eq("id", body.instructorId)
+          .maybeSingle();
+
+        if (instructor?.square_merchant_id && instructor?.square_access_token_encrypted) {
+          useInstructorToken = true;
+          effectiveAccessToken = instructor.square_access_token_encrypted;
+          // Use platform location for checkout but payments go to instructor's merchant
+          console.log(`Using instructor's Square OAuth token for ${body.instructorId}`);
+
+          // Calculate platform fee (service fee)
+          if (body.platformFeePence && body.platformFeePence > 0) {
+            appFeeAmountPence = body.platformFeePence;
+          }
+        }
+      } catch (e) {
+        console.error("Error checking instructor Square OAuth:", e);
+      }
+    }
+
     // Square uses amount in smallest currency unit (pence for GBP)
     const amountInPence = Math.round(amount * 100);
     const idempotencyKey = `${orderReference}-${Date.now()}`;
@@ -79,7 +114,7 @@ serve(async (req: Request) => {
       : "https://connect.squareupsandbox.com";
 
     // Create payment link using Square Checkout API
-    const payload = {
+    const payload: Record<string, unknown> = {
       idempotency_key: idempotencyKey,
       quick_pay: {
         name: itemName,
@@ -87,7 +122,7 @@ serve(async (req: Request) => {
           amount: amountInPence,
           currency: "GBP"
         },
-        location_id: locationId
+        location_id: effectiveLocationId
       },
       checkout_options: {
         redirect_url: returnUrl,
@@ -100,13 +135,21 @@ serve(async (req: Request) => {
       }
     };
 
+    // Add app_fee_money for OAuth connected instructors (platform takes this fee)
+    if (useInstructorToken && appFeeAmountPence > 0) {
+      (payload as any).quick_pay.price_money.app_fee_money = {
+        amount: appFeeAmountPence,
+        currency: "GBP"
+      };
+    }
+
     console.log("Square API payload:", JSON.stringify(payload, null, 2));
 
     const response = await fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
       method: "POST",
       headers: {
         "Square-Version": "2024-01-18",
-        "Authorization": `Bearer ${accessToken}`,
+        "Authorization": `Bearer ${effectiveAccessToken}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
