@@ -356,6 +356,11 @@ export default function InstructorPortal() {
           </button>
         </div>
 
+        {/* Demo Mode Invite for empty accounts */}
+        {!isDemoMode && pupils.length === 0 && todaysLessonCount === 0 && (
+          <DemoModeInviteCard />
+        )}
+
         {/* Today at a Glance */}
         <TodayAtAGlance instructorId={instructorId} />
 
