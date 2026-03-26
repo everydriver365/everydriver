@@ -21,6 +21,10 @@ const designs = [
   { id: "timeline", label: "Timeline Flow", description: "Time-driven vertical layout showing your day as a flowing timeline. Contextual widgets snap into the flow." },
   { id: "glassmorphic", label: "Glass Dashboard", description: "Modern frosted-glass aesthetic with layered depth. Stats float over a branded gradient canvas." },
   { id: "mission-control", label: "Mission Control", description: "Dense, data-rich control panel inspired by flight decks. Everything visible at once — no scrolling needed." },
+  { id: "driver-hub", label: "Driver Hub", description: "Warm, approachable card layout with rounded corners, soft gradients, and a motivational daily summary." },
+  { id: "split-pane", label: "Split Pane", description: "Two-column desktop-first layout — schedule on the left, everything else on the right. Maximises screen real-estate." },
+  { id: "kanban-flow", label: "Kanban Board", description: "Visual column-based workflow: To-Do → In Progress → Done. Drag-style layout for task-oriented instructors." },
+  { id: "minimal-zen", label: "Minimal Zen", description: "Ultra-clean single-column layout with generous whitespace. Focus on the essentials with calm, intentional design." },
 ];
 
 // ─── Design 1: Focus Cards ────────────────────────────────────
