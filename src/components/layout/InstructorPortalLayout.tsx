@@ -844,6 +844,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               </div>
             </header>
 
+            {/* Square Connected Banner */}
+            {(instructor as any)?.square_merchant_id && (
+              <div className="bg-emerald-500 text-white text-center text-xs py-1 font-medium flex items-center justify-center gap-1.5">
+                <CheckCircle className="h-3 w-3" />
+                Square Connected — Auto-Payouts Active
+              </div>
+            )}
+
             {/* Breadcrumb */}
             <div className="border-b bg-muted/30 px-6 py-1.5">
               <nav className="flex items-center text-xs text-muted-foreground">
