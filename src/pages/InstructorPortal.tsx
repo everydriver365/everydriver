@@ -14,8 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
-import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
+import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
@@ -86,8 +85,7 @@ export default function InstructorPortal() {
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
-  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
-  const [paymentQROpen, setPaymentQROpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   
@@ -228,25 +226,17 @@ export default function InstructorPortal() {
         <InstructorMobileHome 
           instructor={instructorData}
           todaysLessonCount={todaysLessonCount}
-          onPaymentClick={() => setPaymentSheetOpen(true)}
+          onPaymentClick={() => setPaymentModalOpen(true)}
         />
-        <TakePaymentSheet
-          open={paymentSheetOpen}
-          onOpenChange={setPaymentSheetOpen}
+        <TakePaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
           paymentQrUrl={getActivePaymentQrUrl(instructorData)}
           commissionPayer={instructorData?.commission_payer}
+          commissionSplitPercent={authInstructor?.commission_split_percent}
           instructorName={instructorData?.name}
           instructorId={instructorId}
           pupils={pupils}
-          onShowQR={() => setPaymentQROpen(true)}
-          onRecordPayment={() => navigate("/instructor/pupils")}
-        />
-        <PaymentQRModal
-          open={paymentQROpen}
-          onOpenChange={setPaymentQROpen}
-          paymentQrUrl={getActivePaymentQrUrl(instructorData)}
-          commissionPayer={instructorData?.commission_payer}
-          instructorName={instructorData?.name}
         />
         <WelcomeTour instructorId={instructorId} hasCompletedTour={(authInstructor as any)?.has_completed_tour ?? true} />
         </div>
@@ -460,23 +450,15 @@ export default function InstructorPortal() {
         {/* What's New */}
         <WhatsNewModal portalType="instructor" userId={instructorId} />
 
-        <TakePaymentSheet
-          open={paymentSheetOpen}
-          onOpenChange={setPaymentSheetOpen}
+        <TakePaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
           paymentQrUrl={getActivePaymentQrUrl(instructorData)}
           commissionPayer={instructorData?.commission_payer}
+          commissionSplitPercent={authInstructor?.commission_split_percent}
           instructorName={instructorData?.name}
           instructorId={instructorId}
           pupils={pupils}
-          onShowQR={() => setPaymentQROpen(true)}
-          onRecordPayment={() => navigate("/instructor/pupils")}
-        />
-        <PaymentQRModal
-          open={paymentQROpen}
-          onOpenChange={setPaymentQROpen}
-          paymentQrUrl={getActivePaymentQrUrl(instructorData)}
-          commissionPayer={instructorData?.commission_payer}
-          instructorName={instructorData?.name}
         />
 
         {/* Availability Calendar Modal */}

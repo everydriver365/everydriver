@@ -17,8 +17,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
+import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -50,8 +49,7 @@ export default function InstructorPay() {
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>('pupil');
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
-  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
-  const [paymentQROpen, setPaymentQROpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export default function InstructorPay() {
             </div>
             Money
           </h1>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setPaymentSheetOpen(true)}>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setPaymentModalOpen(true)}>
             <QrCode className="h-4 w-4 mr-1.5" />
             Take Payment
           </Button>
@@ -306,27 +304,15 @@ export default function InstructorPay() {
 
       </div>
 
-      <TakePaymentSheet
-        open={paymentSheetOpen}
-        onOpenChange={setPaymentSheetOpen}
+      <TakePaymentModal
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
         paymentQrUrl={resolvedQrUrl}
         commissionPayer={commissionPayer}
+        commissionSplitPercent={authInstructor?.commission_split_percent}
         instructorName={instructorName}
         instructorId={instructorId}
         pupils={pupils}
-        onShowQR={() => setPaymentQROpen(true)}
-        onRecordPayment={() => {
-          setPaymentSheetOpen(false);
-          // Navigate to pupils page for selecting who to record payment for
-          window.location.href = "/instructor/pupils";
-        }}
-      />
-      <PaymentQRModal 
-        open={paymentQROpen} 
-        onOpenChange={setPaymentQROpen}
-        paymentQrUrl={resolvedQrUrl}
-        commissionPayer={commissionPayer}
-        instructorName={instructorName}
       />
     </InstructorPortalLayout>
   );
