@@ -309,33 +309,11 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6 p-3 md:p-4 rounded-xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 shadow-sm">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
-                <input
-                  type="text"
-                  placeholder="Search bookings..."
-                  className="flex h-11 w-full rounded-lg border-0 bg-background/80 backdrop-blur-sm pl-9 pr-3 py-2 text-sm shadow-inner ring-1 ring-primary/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setActiveSection("bookings");
-                    }
-                  }}
-                />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" size="lg" className="shrink-0 flex-1 sm:flex-none" onClick={() => setActiveSection("bookings")}>
-                  <Search className="mr-1 h-4 w-4" /> Search
-                </Button>
-                <Button onClick={() => setIsBespokeOpen(true)} size="lg" className="shadow-md shrink-0 flex-1 sm:flex-none">
-                  <Plus className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Create </span>Bespoke
-                </Button>
-                <Button onClick={() => setIsUrgentAlertOpen(true)} size="lg" variant="destructive" className="shadow-md shrink-0 flex-1 sm:flex-none">
-                  <AlertTriangle className="mr-1 h-4 w-4" /> Alert
-                </Button>
-              </div>
-            </div>
-            <AdminSettingsGrid onNavigate={setActiveSection} />
+            <AdminCommandCenter
+              onNavigate={setActiveSection}
+              onCreateBespoke={() => setIsBespokeOpen(true)}
+              onSendAlert={() => setIsUrgentAlertOpen(true)}
+            />
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
           </>
