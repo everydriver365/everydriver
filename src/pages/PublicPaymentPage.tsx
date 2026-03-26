@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
-import { Loader2, CheckCircle2, PoundSterling, User, Mail } from "lucide-react";
+import { Loader2, CheckCircle2, PoundSterling, User, Mail, X } from "lucide-react";
 
 interface InstructorInfo {
   id: string;
