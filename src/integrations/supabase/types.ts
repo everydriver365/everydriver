@@ -7278,6 +7278,11 @@ export type Database = {
           school_skim_percentage: number | null
           secondary_colour: string | null
           special_skills: string | null
+          square_access_token_encrypted: string | null
+          square_connected_at: string | null
+          square_merchant_id: string | null
+          square_refresh_token_encrypted: string | null
+          square_token_expires_at: string | null
           stripe_account_id: string | null
           tax_code: string | null
           tracking_mode: string
@@ -7424,6 +7429,11 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
+          square_access_token_encrypted?: string | null
+          square_connected_at?: string | null
+          square_merchant_id?: string | null
+          square_refresh_token_encrypted?: string | null
+          square_token_expires_at?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
           tracking_mode?: string
@@ -7570,6 +7580,11 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
+          square_access_token_encrypted?: string | null
+          square_connected_at?: string | null
+          square_merchant_id?: string | null
+          square_refresh_token_encrypted?: string | null
+          square_token_expires_at?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
           tracking_mode?: string
