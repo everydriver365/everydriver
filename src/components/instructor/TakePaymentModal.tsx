@@ -90,6 +90,7 @@ export function TakePaymentModal({
       setQrAmount("");
       setQrCheckoutUrl(null);
       setQrSelectedPupilId("");
+      setQrReason("");
     }
     onOpenChange(o);
   };
@@ -323,6 +324,18 @@ export function TakePaymentModal({
                       </Select>
                     </div>
                   )}
+
+                  {/* Reason (optional) */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Reason (optional)</Label>
+                    <Input
+                      type="text"
+                      maxLength={100}
+                      placeholder="e.g. Lesson payment, top-up"
+                      value={qrReason}
+                      onChange={(e) => setQrReason(e.target.value)}
+                    />
+                  </div>
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Amount</Label>
