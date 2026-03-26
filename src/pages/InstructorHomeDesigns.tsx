@@ -206,7 +206,7 @@ export default function InstructorHomeDesigns() {
     }
     setSaving(true);
     try {
-      await setLayoutStyle(currentSelection);
+      await updateAppearance({ layoutStyle: currentSelection });
       toast.success("Homepage design updated!", { description: `Switched to ${designs.find(d => d.id === currentSelection)?.name}` });
     } catch {
       toast.error("Failed to update design");
