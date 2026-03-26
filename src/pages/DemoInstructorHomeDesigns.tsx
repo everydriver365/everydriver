@@ -1575,6 +1575,723 @@ function NeonDarkDesign() {
 export default function DemoInstructorHomeDesigns() {
   const [active, setActive] = useState(designs[0].id);
 
+// ─── Design 13: Widget Grid ───────────────────────────────────
+function WidgetGridDesign() {
+  return (
+    <div className="space-y-4">
+      {/* Top bar with settings */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border border-border">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">KD</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold text-sm">Good afternoon, Ken</p>
+            <p className="text-xs text-muted-foreground">Thursday, 26 March</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-xs">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" /> Online
+          </Badge>
+          <Button variant="outline" size="icon" className="rounded-xl h-10 w-10">
+            <Settings className="h-5 w-5 text-muted-foreground" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Widget grid */}
+      <div className="grid grid-cols-4 gap-3">
+        {/* Next Lesson — 2 cols */}
+        <Card className="col-span-2 border-border overflow-hidden">
+          <div className="flex h-full">
+            <div className="w-1.5 bg-primary" />
+            <CardContent className="p-4 flex-1">
+              <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-2">Next Up · 14:00</p>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">SM</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">Sarah Mitchell</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> 14 Oak Lane, SE5</p>
+                </div>
+                <Button size="sm" className="rounded-xl text-xs"><Navigation className="h-3.5 w-3.5 mr-1" /> Go</Button>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+
+        {/* Stats widgets */}
+        {[
+          { icon: PoundSterling, value: "£2,340", label: "This Month", color: "text-emerald-600 bg-emerald-500/10" },
+          { icon: Users, value: "23", label: "Pupils", color: "text-amber-600 bg-amber-500/10" },
+        ].map((s) => (
+          <Card key={s.label} className="border-border cursor-pointer hover:shadow-sm transition-all">
+            <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center">
+              <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-2", s.color)}>
+                <s.icon className="h-5 w-5" />
+              </div>
+              <p className="text-lg font-bold">{s.value}</p>
+              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Schedule widget — 2 cols */}
+        <Card className="col-span-2 border-border">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <CardTitle className="text-xs flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5 text-primary" /> Today's Schedule</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-3 space-y-1.5">
+            {[
+              { time: "14:00", name: "Sarah M.", type: "L8", current: true },
+              { time: "16:00", name: "Ben W.", type: "Assess" },
+              { time: "17:30", name: "Lucy F.", type: "L12" },
+            ].map((l, i) => (
+              <div key={i} className={cn("flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm", l.current ? "bg-primary/5 border border-primary/20" : "bg-muted/30")}>
+                <span className="font-mono text-[11px] text-muted-foreground w-10">{l.time}</span>
+                <span className="font-medium flex-1 text-xs">{l.name}</span>
+                <Badge variant="outline" className="text-[9px] h-4">{l.type}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Action widgets */}
+        {[
+          { icon: CreditCard, label: "Payment", sub: "3 due", color: "text-emerald-600 bg-emerald-500/10" },
+          { icon: MessageSquare, label: "Messages", sub: "2 new", color: "text-primary bg-primary/10", badge: 2 },
+        ].map((a) => (
+          <Card key={a.label} className="border-border cursor-pointer hover:shadow-sm transition-all">
+            <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center relative">
+              {a.badge && <Badge variant="destructive" className="absolute top-2 right-2 text-[9px] h-4 w-4 p-0 flex items-center justify-center">{a.badge}</Badge>}
+              <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-2", a.color)}>
+                <a.icon className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-semibold">{a.label}</p>
+              <p className="text-[10px] text-muted-foreground">{a.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* More actions row */}
+        {[
+          { icon: Calendar, label: "Fill Gaps", color: "text-amber-600 bg-amber-500/10" },
+          { icon: Heart, label: "Health Hub", color: "text-pink-600 bg-pink-500/10" },
+          { icon: Shield, label: "Vehicle", color: "text-muted-foreground bg-muted" },
+          { icon: Gauge, label: "Telematics", color: "text-primary bg-primary/10" },
+        ].map((a) => (
+          <Card key={a.label} className="border-border cursor-pointer hover:shadow-sm transition-all">
+            <CardContent className="p-3 flex flex-col items-center justify-center h-full text-center">
+              <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center mb-1.5", a.color)}>
+                <a.icon className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-medium">{a.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Settings tile */}
+      <Card className="border-border bg-gradient-to-r from-muted/50 to-transparent cursor-pointer hover:shadow-sm transition-all">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center">
+            <Settings className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Settings & Preferences</p>
+            <p className="text-xs text-muted-foreground">Layout, notifications, profile, billing</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Design 14: Coach Pro ─────────────────────────────────────
+function CoachProDesign() {
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      {/* Main content — 3 cols */}
+      <div className="col-span-3 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold">Dashboard</h2>
+            <p className="text-sm text-muted-foreground">Thursday, 26 March · 3/5 lessons done</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-lg"><Plus className="h-4 w-4 mr-1" /> Add Lesson</Button>
+            <Button size="sm" className="rounded-lg"><CreditCard className="h-4 w-4 mr-1" /> Take Payment</Button>
+          </div>
+        </div>
+
+        {/* Revenue chart area */}
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> Revenue — March 2026</CardTitle>
+              <span className="text-lg font-bold text-emerald-600">£2,340</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-1 h-20">
+              {[35, 45, 55, 40, 65, 50, 70, 60, 80, 75, 85, 65, 90, 70, 55, 80, 95, 85, 75, 60, 88, 72, 68, 82, 90, 78].map((v, i) => (
+                <div key={i} className="flex-1 bg-primary/20 rounded-t relative overflow-hidden" style={{ height: `${v}%` }}>
+                  <div className="absolute bottom-0 w-full bg-primary rounded-t" style={{ height: `${v * 0.6}%` }} />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
+              <span>1 Mar</span><span>Today</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pupil pipeline */}
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Pupil Pipeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              {[
+                { stage: "New Enquiry", count: 3, color: "bg-blue-500/10 border-blue-500/20 text-blue-700" },
+                { stage: "Active", count: 18, color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-700" },
+                { stage: "Test Ready", count: 4, color: "bg-amber-500/10 border-amber-500/20 text-amber-700" },
+                { stage: "Passed", count: 8, color: "bg-purple-500/10 border-purple-500/20 text-purple-700" },
+                { stage: "At Risk", count: 2, color: "bg-red-500/10 border-red-500/20 text-red-700" },
+              ].map((p) => (
+                <div key={p.stage} className={cn("flex-1 rounded-xl border p-3 text-center cursor-pointer hover:shadow-sm transition-all", p.color)}>
+                  <p className="text-2xl font-bold">{p.count}</p>
+                  <p className="text-[10px] font-medium mt-0.5">{p.stage}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Today's schedule */}
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Today</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {[
+              { time: "09:00", name: "James Turner", type: "Lesson 3", done: true },
+              { time: "11:00", name: "Priya Kapoor", type: "Mock Test", done: true },
+              { time: "14:00", name: "Sarah Mitchell", type: "Lesson 8", current: true },
+              { time: "16:00", name: "Ben Walker", type: "Assessment" },
+              { time: "17:30", name: "Lucy Fisher", type: "Lesson 12" },
+            ].map((l, i) => (
+              <div key={i} className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm",
+                l.done && "opacity-40", l.current && "bg-primary/5 border border-primary/20"
+              )}>
+                <span className="font-mono text-xs text-muted-foreground w-10">{l.time}</span>
+                <span className={cn("flex-1 font-medium", l.done && "line-through")}>{l.name}</span>
+                <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+                {l.current && <Badge className="bg-primary text-primary-foreground text-[9px]">NOW</Badge>}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Settings sidebar — 1 col */}
+      <div className="space-y-3">
+        {/* Settings card */}
+        <Card className="border-border bg-gradient-to-b from-muted/50 to-transparent">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Settings className="h-5 w-5 text-primary" />
+              <p className="font-semibold text-sm">Settings</p>
+            </div>
+            <div className="space-y-1">
+              {[
+                { label: "Profile & Bio", icon: Users },
+                { label: "Notifications", icon: Bell },
+                { label: "Layout Style", icon: Layers },
+                { label: "Pricing & Rates", icon: PoundSterling },
+                { label: "Website Builder", icon: Globe },
+                { label: "Integrations", icon: Grip },
+              ].map((s) => (
+                <button key={s.label} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors text-left">
+                  <s.icon className="h-4 w-4 text-muted-foreground" />
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alerts */}
+        <Card className="border-border">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold mb-3 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Alerts</p>
+            <div className="space-y-2 text-xs">
+              <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-2.5">Lucy — test in 3 days</div>
+              <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5">£120 overdue</div>
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5">2 unread messages</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick stats */}
+        <Card className="border-border">
+          <CardContent className="p-4 space-y-3">
+            {[
+              { label: "Pass Rate", value: "92%", color: "text-emerald-600" },
+              { label: "Weekly Hours", value: "32h", color: "text-primary" },
+              { label: "Rating", value: "4.9★", color: "text-amber-600" },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{s.label}</span>
+                <span className={cn("text-sm font-bold", s.color)}>{s.value}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── Design 15: Carousel ──────────────────────────────────────
+function CarouselDesign() {
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-11 w-11 border-2 border-primary/20">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">KD</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold">Ken Dawson</p>
+            <p className="text-xs text-muted-foreground">3/5 done · £180 earned</p>
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" className="rounded-xl"><Settings className="h-5 w-5" /></Button>
+      </div>
+
+      {/* Next lesson hero */}
+      <div className="rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-80">Next Up · 14:00</p>
+            <h2 className="text-xl font-bold mt-1">Sarah Mitchell</h2>
+            <p className="text-sm opacity-70 mt-1 flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> 14 Oak Lane, SE5 8NP</p>
+          </div>
+          <Button variant="secondary" size="lg" className="rounded-xl shadow-lg"><Navigation className="h-4 w-4 mr-1" /> Go</Button>
+        </div>
+      </div>
+
+      {/* Schedule row — horizontal scroll */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">Today's Schedule</p>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { time: "09:00", name: "James T.", type: "L3", done: true },
+            { time: "11:00", name: "Priya K.", type: "Mock", done: true },
+            { time: "14:00", name: "Sarah M.", type: "L8", current: true },
+            { time: "16:00", name: "Ben W.", type: "Assess" },
+            { time: "17:30", name: "Lucy F.", type: "L12" },
+          ].map((l, i) => (
+            <Card key={i} className={cn(
+              "min-w-[160px] shrink-0 border-border",
+              l.current && "ring-2 ring-primary/30",
+              l.done && "opacity-40"
+            )}>
+              <CardContent className="p-3.5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs text-muted-foreground">{l.time}</span>
+                  {l.current && <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />}
+                  {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
+                </div>
+                <p className="text-sm font-semibold">{l.name}</p>
+                <Badge variant="outline" className="text-[9px] mt-1">{l.type}</Badge>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats row — horizontal */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">Performance</p>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { icon: PoundSterling, value: "£2,340", label: "Revenue", color: "text-emerald-600 bg-emerald-500/10" },
+            { icon: Clock, value: "32h", label: "Hours", color: "text-purple-600 bg-purple-500/10" },
+            { icon: Users, value: "23", label: "Pupils", color: "text-amber-600 bg-amber-500/10" },
+            { icon: Star, value: "4.9", label: "Rating", color: "text-primary bg-primary/10" },
+            { icon: Target, value: "92%", label: "Pass Rate", color: "text-emerald-600 bg-emerald-500/10" },
+          ].map((s) => (
+            <Card key={s.label} className="min-w-[130px] shrink-0 border-border cursor-pointer hover:shadow-sm transition-all">
+              <CardContent className="p-4 text-center">
+                <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center mx-auto mb-1.5", s.color)}>
+                  <s.icon className="h-4 w-4" />
+                </div>
+                <p className="text-lg font-bold">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground">{s.label}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Actions row — horizontal */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">Quick Actions</p>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { icon: CreditCard, label: "Payment", sub: "3 due", accent: "bg-emerald-500/10", iconColor: "text-emerald-600" },
+            { icon: MessageSquare, label: "Messages", sub: "2 new", accent: "bg-primary/10", iconColor: "text-primary", badge: 2 },
+            { icon: Calendar, label: "Fill Gaps", sub: "4 slots", accent: "bg-amber-500/10", iconColor: "text-amber-600" },
+            { icon: Heart, label: "Health", sub: "Wellness", accent: "bg-pink-500/10", iconColor: "text-pink-600" },
+            { icon: Shield, label: "Vehicle", sub: "MOT due", accent: "bg-muted", iconColor: "text-muted-foreground" },
+            { icon: Gauge, label: "Telematics", sub: "Drive data", accent: "bg-primary/10", iconColor: "text-primary" },
+          ].map((a) => (
+            <Card key={a.label} className="min-w-[130px] shrink-0 border-border cursor-pointer hover:shadow-sm transition-all">
+              <CardContent className="p-4 relative">
+                {a.badge && <Badge variant="destructive" className="absolute top-2 right-2 text-[9px] h-4 w-4 p-0 flex items-center justify-center">{a.badge}</Badge>}
+                <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-2", a.accent)}>
+                  <a.icon className={cn("h-5 w-5", a.iconColor)} />
+                </div>
+                <p className="text-sm font-semibold">{a.label}</p>
+                <p className="text-[10px] text-muted-foreground">{a.sub}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Settings tile */}
+      <Card className="border-border bg-gradient-to-r from-muted/50 to-transparent cursor-pointer hover:shadow-sm transition-all">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center">
+            <Settings className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Settings & Preferences</p>
+            <p className="text-xs text-muted-foreground">Layout, notifications, profile, billing</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Design 16: Tabbed Home ───────────────────────────────────
+function TabbedHomeDesign() {
+  const [tab, setTab] = useState("today");
+  const tabs = [
+    { id: "today", label: "Today", icon: Calendar },
+    { id: "pupils", label: "Pupils", icon: Users },
+    { id: "money", label: "Money", icon: PoundSterling },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Tab bar */}
+      <div className="flex bg-muted/50 rounded-xl p-1 gap-1">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all",
+              tab === t.id ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <t.icon className="h-4 w-4" />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab: Today */}
+      {tab === "today" && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border-2 border-primary/15 bg-primary/5 p-5">
+            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">Next Up · 14:00</p>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12"><AvatarFallback className="bg-primary/10 text-primary font-bold">SM</AvatarFallback></Avatar>
+              <div className="flex-1">
+                <p className="font-semibold">Sarah Mitchell — Lesson 8</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> 14 Oak Lane, SE5</p>
+              </div>
+              <Button className="rounded-xl"><Navigation className="h-4 w-4 mr-1" /> Go</Button>
+            </div>
+          </div>
+          <Card className="border-border">
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Schedule</CardTitle></CardHeader>
+            <CardContent className="space-y-1.5">
+              {[
+                { time: "09:00", name: "James T.", type: "L3", done: true },
+                { time: "11:00", name: "Priya K.", type: "Mock", done: true },
+                { time: "14:00", name: "Sarah M.", type: "L8", current: true },
+                { time: "16:00", name: "Ben W.", type: "Assess" },
+                { time: "17:30", name: "Lucy F.", type: "L12" },
+              ].map((l, i) => (
+                <div key={i} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm", l.done && "opacity-40", l.current && "bg-primary/5 border border-primary/20")}>
+                  <span className="font-mono text-xs text-muted-foreground w-10">{l.time}</span>
+                  <span className={cn("flex-1 font-medium", l.done && "line-through")}>{l.name}</span>
+                  <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { icon: CreditCard, label: "Payment", color: "text-emerald-600 bg-emerald-500/10" },
+              { icon: MessageSquare, label: "Messages", color: "text-primary bg-primary/10", badge: 2 },
+              { icon: Heart, label: "Health", color: "text-pink-600 bg-pink-500/10" },
+            ].map((a) => (
+              <Card key={a.label} className="border-border cursor-pointer hover:shadow-sm">
+                <CardContent className="p-4 text-center relative">
+                  {a.badge && <Badge variant="destructive" className="absolute top-2 right-2 text-[9px] h-4 w-4 p-0 flex items-center justify-center">{a.badge}</Badge>}
+                  <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mx-auto mb-2", a.color)}><a.icon className="h-5 w-5" /></div>
+                  <p className="text-sm font-medium">{a.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Pupils */}
+      {tab === "pupils" && (
+        <Card className="border-border">
+          <CardContent className="p-4 divide-y divide-border">
+            {[
+              { name: "Sarah Mitchell", lessons: 8, status: "Active", color: "bg-emerald-500/10 text-emerald-700" },
+              { name: "Ben Walker", lessons: 15, status: "Test Ready", color: "bg-amber-500/10 text-amber-700" },
+              { name: "Lucy Fisher", lessons: 12, status: "Test Ready", color: "bg-amber-500/10 text-amber-700" },
+              { name: "James Turner", lessons: 3, status: "New", color: "bg-blue-500/10 text-blue-700" },
+              { name: "Priya Kapoor", lessons: 20, status: "Active", color: "bg-emerald-500/10 text-emerald-700" },
+            ].map((p) => (
+              <div key={p.name} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0 cursor-pointer hover:bg-muted/30 rounded-lg px-2 -mx-2">
+                <Avatar className="h-9 w-9"><AvatarFallback className="bg-primary/10 text-primary text-xs">{p.name.split(" ").map(n => n[0]).join("")}</AvatarFallback></Avatar>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{p.name}</p>
+                  <p className="text-xs text-muted-foreground">{p.lessons} lessons</p>
+                </div>
+                <Badge className={cn("text-[10px] border-0", p.color)}>{p.status}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab: Money */}
+      {tab === "money" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Today", value: "£180", color: "text-foreground" },
+              { label: "This Week", value: "£720", color: "text-foreground" },
+              { label: "This Month", value: "£2,340", color: "text-emerald-600" },
+            ].map((s) => (
+              <Card key={s.label} className="border-border">
+                <CardContent className="p-4 text-center">
+                  <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold mb-3">Recent Payments</p>
+              <div className="space-y-2">
+                {[
+                  { name: "Priya K.", amount: "£36", time: "Today 12:15" },
+                  { name: "James T.", amount: "£36", time: "Today 10:00" },
+                  { name: "Ben W.", amount: "£72", time: "Yesterday" },
+                ].map((p, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <span className="flex-1">{p.name}</span>
+                    <span className="font-semibold">{p.amount}</span>
+                    <span className="text-xs text-muted-foreground">{p.time}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: Settings */}
+      {tab === "settings" && (
+        <Card className="border-border">
+          <CardContent className="p-0 divide-y divide-border">
+            {[
+              { label: "Profile & Bio", icon: Users, sub: "Name, photo, qualifications" },
+              { label: "Notifications", icon: Bell, sub: "Push, email, SMS preferences" },
+              { label: "Layout Style", icon: Layers, sub: "Choose homepage design" },
+              { label: "Pricing & Rates", icon: PoundSterling, sub: "Lesson prices and packages" },
+              { label: "Website Builder", icon: Globe, sub: "Your public booking page" },
+              { label: "Vehicle Details", icon: Car, sub: "Registration, MOT, insurance" },
+              { label: "Integrations", icon: Grip, sub: "Calendar sync, payments" },
+              { label: "Account & Billing", icon: CreditCard, sub: "Subscription and invoices" },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/30 transition-colors">
+                <div className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center">
+                  <s.icon className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{s.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{s.sub}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ─── Design 17: Command Palette ───────────────────────────────
+function CommandPaletteDesign() {
+  return (
+    <div className="space-y-4">
+      {/* Search / command bar */}
+      <div className="relative">
+        <div className="flex items-center gap-3 bg-card border-2 border-border rounded-2xl px-5 py-4 focus-within:border-primary/40 transition-colors">
+          <Zap className="h-5 w-5 text-primary" />
+          <input
+            type="text"
+            placeholder="Type a command... (e.g. 'take payment', 'add lesson', 'open settings')"
+            className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+            readOnly
+          />
+          <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded border bg-muted px-2 text-[10px] font-mono text-muted-foreground">⌘K</kbd>
+        </div>
+      </div>
+
+      {/* Quick access grid */}
+      <div className="grid grid-cols-6 gap-2">
+        {[
+          { icon: Calendar, label: "Schedule", color: "text-primary" },
+          { icon: CreditCard, label: "Payment", color: "text-emerald-600" },
+          { icon: MessageSquare, label: "Messages", color: "text-blue-600", badge: 2 },
+          { icon: Users, label: "Pupils", color: "text-amber-600" },
+          { icon: Heart, label: "Health", color: "text-pink-600" },
+          { icon: Settings, label: "Settings", color: "text-muted-foreground" },
+        ].map((a) => (
+          <button key={a.label} className="relative flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card border border-border hover:bg-muted/30 transition-colors cursor-pointer">
+            {a.badge && <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-destructive flex items-center justify-center"><span className="text-[9px] text-destructive-foreground font-bold">{a.badge}</span></div>}
+            <a.icon className={cn("h-5 w-5", a.color)} />
+            <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        {/* Next lesson */}
+        <div className="col-span-2">
+          <Card className="border-border overflow-hidden">
+            <div className="flex">
+              <div className="w-1.5 bg-primary" />
+              <CardContent className="p-4 flex-1">
+                <p className="text-[10px] font-mono text-primary uppercase mb-2">▸ next_lesson</p>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">SM</AvatarFallback></Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">Sarah Mitchell — 14:00</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> 14 Oak Lane, SE5</p>
+                  </div>
+                  <Button size="sm" className="rounded-xl text-xs"><Navigation className="h-3.5 w-3.5 mr-1" /> Go</Button>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        </div>
+
+        {/* Metrics */}
+        <Card className="border-border">
+          <CardContent className="p-4 space-y-3">
+            <p className="text-[10px] font-mono text-muted-foreground uppercase">▸ metrics</p>
+            {[
+              { label: "Revenue", value: "£2,340", color: "text-emerald-600" },
+              { label: "Hours", value: "32h", color: "text-purple-600" },
+              { label: "Pupils", value: "23", color: "text-amber-600" },
+              { label: "Pass Rate", value: "92%", color: "text-primary" },
+            ].map((m) => (
+              <div key={m.label} className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{m.label}</span>
+                <span className={cn("text-sm font-bold", m.color)}>{m.value}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Schedule + alerts + settings */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="col-span-2 border-border">
+          <CardHeader className="pb-2"><CardTitle className="text-xs font-mono text-muted-foreground uppercase">▸ schedule.remaining</CardTitle></CardHeader>
+          <CardContent className="space-y-1.5">
+            {[
+              { time: "14:00", name: "Sarah M.", type: "L8", current: true },
+              { time: "16:00", name: "Ben W.", type: "Assess" },
+              { time: "17:30", name: "Lucy F.", type: "L12" },
+            ].map((l, i) => (
+              <div key={i} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm", l.current && "bg-primary/5 border border-primary/20")}>
+                <span className="font-mono text-xs text-muted-foreground w-10">{l.time}</span>
+                <span className="flex-1 font-medium">{l.name}</span>
+                <Badge variant="outline" className="text-[10px]">{l.type}</Badge>
+                {l.current && <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-[10px] font-mono text-amber-600 uppercase mb-2">▸ alerts</p>
+              <div className="space-y-1.5 text-xs">
+                <div className="border-l-2 border-red-500 pl-2 py-1">Test in 3 days — Lucy F.</div>
+                <div className="border-l-2 border-amber-500 pl-2 py-1">£120 overdue</div>
+                <div className="border-l-2 border-primary pl-2 py-1">DBS renewal 18 days</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Settings tile */}
+          <Card className="border-border bg-gradient-to-br from-muted/50 to-transparent cursor-pointer hover:shadow-sm transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                  <Settings className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Settings</p>
+                  <p className="text-[10px] text-muted-foreground">Profile, layout, billing</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Demo Page ──────────────────────────────────────────
+export default function DemoInstructorHomeDesigns() {
+  const [active, setActive] = useState(designs[0].id);
+
   const renderDesign = () => {
     switch (active) {
       case "focus-cards": return <FocusCardsDesign />;
@@ -1589,6 +2306,11 @@ export default function DemoInstructorHomeDesigns() {
       case "radar": return <RadarDesign />;
       case "newspaper": return <NewspaperDesign />;
       case "neon-dark": return <NeonDarkDesign />;
+      case "widget-grid": return <WidgetGridDesign />;
+      case "coach-pro": return <CoachProDesign />;
+      case "card-carousel": return <CarouselDesign />;
+      case "tabbed-home": return <TabbedHomeDesign />;
+      case "command-palette": return <CommandPaletteDesign />;
       default: return null;
     }
   };
