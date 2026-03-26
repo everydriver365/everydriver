@@ -366,15 +366,20 @@ export function TakePaymentModal({
                       setQrGenerating(true);
                       try {
                         const chargeAmount = qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount;
+                        const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
                         const orderRef = `QR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
                         const { data, error } = await supabase.functions.invoke("square-checkout", {
                           body: {
                             amount: chargeAmount,
                             orderReference: orderRef,
-                            description: `QR payment to ${instructorName}`,
+                            description: qrPupil ? `Payment from ${qrPupil.name}` : `QR payment to ${instructorName}`,
+                            customerName: qrPupil?.name,
+                            customerEmail: qrPupil?.email || undefined,
+                            customerPhone: qrPupil?.phone || undefined,
                             returnUrl: `${window.location.origin}/pay/${instructorId}?success=true`,
                             cancelUrl: `${window.location.origin}/pay/${instructorId}?cancelled=true`,
                             instructorId,
+                            pupilId: qrSelectedPupilId || undefined,
                           },
                         });
                         if (error || !data?.checkoutUrl) throw new Error(data?.error || "Failed to generate QR");
