@@ -229,6 +229,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
     <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
     <Route path="/instructor/waiting-room" element={<WaitingRoomPage />} />
+    <Route path="/instructor/home-designs" element={<InstructorHomeDesigns />} />
 
     {/* School */}
     <Route path="/school/dashboard" element={<SchoolDashboard />} />
