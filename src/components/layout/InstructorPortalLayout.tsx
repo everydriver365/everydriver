@@ -66,7 +66,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Check, Monitor, Contrast } from "lucide-react";
+import { Check, Monitor, Contrast, CheckCircle } from "lucide-react";
 
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
