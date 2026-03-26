@@ -78,6 +78,27 @@ export default function PublicPaymentPage() {
     setShowCheckout(true);
   };
 
+  // Show success screen FIRST — derived from URL, works even before data loads
+  if (isSuccess || paid) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center max-w-sm">
+          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground">Payment Successful</h1>
+          <p className="text-muted-foreground mt-2">
+            {instructor
+              ? `Your payment to ${instructor.name} has been processed.`
+              : "Your payment has been processed."}
+          </p>
+          {transactionId && (
+            <p className="text-xs text-muted-foreground mt-2">Ref: {transactionId}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-4">You can close this page.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -92,23 +113,6 @@ export default function PublicPaymentPage() {
         <div className="text-center">
           <h1 className="text-xl font-bold text-foreground">Instructor not found</h1>
           <p className="text-muted-foreground mt-2">This payment link may be invalid.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (paid) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center max-w-sm">
-          <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground">Payment Successful</h1>
-          <p className="text-muted-foreground mt-2">
-            {isValidAmount
-              ? `Your payment of £${parsedAmount.toFixed(2)} to ${instructor.name} has been processed.`
-              : `Your payment to ${instructor.name} has been processed.`}
-          </p>
-          <p className="text-xs text-muted-foreground mt-4">You can close this page.</p>
         </div>
       </div>
     );
