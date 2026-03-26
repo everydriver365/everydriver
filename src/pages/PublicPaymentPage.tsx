@@ -22,6 +22,7 @@ export default function PublicPaymentPage() {
   const [searchParams] = useSearchParams();
   const prefillAmount = searchParams.get("amount");
   const pupilParam = searchParams.get("pupil");
+  const successParam = searchParams.get("success");
 
   const [amount, setAmount] = useState(() => {
     if (prefillAmount) {
@@ -34,7 +35,7 @@ export default function PublicPaymentPage() {
   const [payerEmail, setPayerEmail] = useState("");
   const [pupilLinked, setPupilLinked] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paid, setPaid] = useState(false);
+  const [paid, setPaid] = useState(successParam === "true");
 
   const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
 
