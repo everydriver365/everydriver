@@ -26,14 +26,21 @@ serve(async (req: Request) => {
       case "payment.completed":
       case "payment.updated": {
         const payment = data?.payment || data;
+        const paymentStatus = payment?.status;
         const paymentId = payment?.id;
         const referenceId = payment?.reference_id;
         const orderId = payment?.order_id;
         const amountMoney = payment?.amount_money;
         const receiptUrl = payment?.receipt_url;
 
+        // Only process completed payments
+        if (paymentStatus && paymentStatus !== "COMPLETED") {
+          console.log(`Skipping payment ${paymentId} with status: ${paymentStatus}`);
+          break;
+        }
+
         if (!paymentId || !amountMoney) {
-          console.log("payment.completed: missing payment ID or amount");
+          console.log("payment event: missing payment ID or amount");
           break;
         }
 
