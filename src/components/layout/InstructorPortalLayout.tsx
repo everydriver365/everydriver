@@ -831,6 +831,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate("/instructor/settings")}
+                    className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
+                    title="Settings"
+                  >
+                    <Settings className="h-4.5 w-4.5" />
+                  </Button>
                 </div>
               </div>
             </header>
