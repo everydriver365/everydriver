@@ -22,7 +22,10 @@ export default function PublicPaymentPage() {
   const [searchParams] = useSearchParams();
   const prefillAmount = searchParams.get("amount");
   const pupilParam = searchParams.get("pupil");
-  const successParam = searchParams.get("success");
+
+  // Derive success directly from URL — no state dependency
+  const isSuccess = searchParams.get("success") === "true";
+  const transactionId = searchParams.get("transactionId");
 
   const [amount, setAmount] = useState(() => {
     if (prefillAmount) {
@@ -35,16 +38,9 @@ export default function PublicPaymentPage() {
   const [payerEmail, setPayerEmail] = useState("");
   const [pupilLinked, setPupilLinked] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paid, setPaid] = useState(successParam === "true");
+  const [paid, setPaid] = useState(false);
 
   const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
-
-  useEffect(() => {
-    if (successParam === "true") {
-      setPaid(true);
-      setShowCheckout(false);
-    }
-  }, [successParam]);
 
   useEffect(() => {
     if (!instructorId) return;
