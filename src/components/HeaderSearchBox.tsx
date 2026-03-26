@@ -112,6 +112,16 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
           { label: "Domains", href: "/instructor/domains" },
           { label: "GPS Tracking", href: "/instructor/tracking" },
           { label: "Settings", href: "/instructor/settings" },
+          { label: "Settings — Profile", href: "/instructor/settings" },
+          { label: "Settings — Notifications", href: "/instructor/settings" },
+          { label: "Settings — Appearance", href: "/instructor/settings" },
+          { label: "Settings — Layout Style", href: "/instructor/settings" },
+          { label: "Settings — Branding", href: "/instructor/settings" },
+          { label: "Settings — Payment Setup", href: "/instructor/settings" },
+          { label: "Settings — Availability", href: "/instructor/settings" },
+          { label: "Settings — Calendar Sync", href: "/instructor/settings" },
+          { label: "Settings — GPS & Tracking", href: "/instructor/settings" },
+          { label: "Settings — Integrations", href: "/instructor/settings" },
         ];
         const matchedPages = instructorPages.filter((p) =>
           p.label.toLowerCase().includes(lowerQ)
@@ -144,6 +154,49 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
             }))
           );
         }
+
+        // Admin pages & settings
+        const adminPages = [
+          { label: "Overview", section: "overview" },
+          { label: "Live Map", section: "live-map" },
+          { label: "Analytics", section: "analytics" },
+          { label: "Commission", section: "commission" },
+          { label: "Leaderboard", section: "leaderboard" },
+          { label: "Email Inbox", section: "email" },
+          { label: "Enquiries & Callbacks", section: "enquiries" },
+          { label: "Instructor Support", section: "instructor-messages" },
+          { label: "Visitor Chats", section: "live-chat" },
+          { label: "Campaigns", section: "campaigns" },
+          { label: "Instructors", section: "instructors" },
+          { label: "Pupil Records", section: "pupil-records" },
+          { label: "Compliance", section: "compliance" },
+          { label: "Subscribers", section: "subscribers" },
+          { label: "Courses", section: "courses" },
+          { label: "All Bookings", section: "bookings" },
+          { label: "Payments", section: "payments" },
+          { label: "Upsells", section: "upsells" },
+          { label: "Discount Codes", section: "discount-codes" },
+          { label: "Site Settings", section: "site-settings" },
+          { label: "Settings — Site Settings", section: "site-settings" },
+          { label: "Settings — PWA Config", section: "pwa-apps" },
+          { label: "Settings — Activity Log", section: "activity-log" },
+          { label: "Settings — Notes", section: "admin-notes" },
+          { label: "PWA Config", section: "pwa-apps" },
+          { label: "Activity Log", section: "activity-log" },
+          { label: "Notes", section: "admin-notes" },
+        ];
+        const matchedAdminPages = adminPages.filter((p) =>
+          p.label.toLowerCase().includes(lowerQ)
+        );
+        items.push(
+          ...matchedAdminPages.map((p) => ({
+            id: `admin-${p.section}`,
+            name: p.label,
+            type: "page" as const,
+            subtitle: "Admin Page",
+            href: `/admin?section=${p.section}`,
+          }))
+        );
       }
 
       setResults(items);
