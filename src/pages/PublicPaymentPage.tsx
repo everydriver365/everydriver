@@ -101,8 +101,11 @@ export default function PublicPaymentPage() {
           <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground">Payment Successful</h1>
           <p className="text-muted-foreground mt-2">
-            Your payment of £{parsedAmount.toFixed(2)} to {instructor.name} has been processed.
+            {isValidAmount
+              ? `Your payment of £${parsedAmount.toFixed(2)} to ${instructor.name} has been processed.`
+              : `Your payment to ${instructor.name} has been processed.`}
           </p>
+          <p className="text-xs text-muted-foreground mt-4">You can close this page.</p>
         </div>
       </div>
     );
