@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check, PoundSterling } from "lucide-react";
-import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
+import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check, PoundSterling, RotateCcw } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +60,9 @@ export function TakePaymentModal({
   const [manualPhone, setManualPhone] = useState("");
   const [manualEmail, setManualEmail] = useState("");
   const [clearForManual, setClearForManual] = useState(false);
+  const [qrAmount, setQrAmount] = useState("");
+  const [qrCheckoutUrl, setQrCheckoutUrl] = useState<string | null>(null);
+  const [qrGenerating, setQrGenerating] = useState(false);
 
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
@@ -68,6 +71,10 @@ export function TakePaymentModal({
   const parsedAmount = parseFloat(amount) || 0;
   const splitPct = commissionPayer === "instructor" ? 0 : commissionSplitPercent ?? 100;
   const { adminFee, totalCharge, hasFee, instructorAbsorbs, fullFee } = useAdminFee(parsedAmount, splitPct, tierConfig);
+
+  // QR fee calc
+  const qrParsedAmount = parseFloat(qrAmount) || 0;
+  const qrFee = useAdminFee(qrParsedAmount, splitPct, tierConfig);
 
   const handleClose = (o: boolean) => {
     if (!o) {
@@ -78,6 +85,8 @@ export function TakePaymentModal({
       setManualPhone("");
       setManualEmail("");
       setClearForManual(false);
+      setQrAmount("");
+      setQrCheckoutUrl(null);
     }
     onOpenChange(o);
   };
@@ -278,19 +287,94 @@ export function TakePaymentModal({
           )}
 
           {/* === QR Code === */}
-          {view === "qr" && instructorId && (
-            <PaymentLinkShare
-              instructorId={instructorId}
-              instructorName={instructorName}
-              pupils={pupils.map((p) => ({ id: p.id, name: p.name }))}
-            />
-          )}
-          {view === "qr" && !instructorId && (
-            <div className="w-56 h-56 bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 mx-auto">
-              <div className="text-center">
-                <QrCode className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Unable to generate QR</p>
-              </div>
+          {view === "qr" && (
+            <div className="space-y-4">
+              {qrCheckoutUrl ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-white p-4 rounded-xl shadow-md">
+                    <QRCodeSVG value={qrCheckoutUrl} size={220} />
+                  </div>
+                  <p className="text-sm text-muted-foreground text-center font-medium">
+                    Scan to pay £{(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => { setQrCheckoutUrl(null); setQrAmount(""); }}>
+                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                    New Amount
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Amount</Label>
+                    <div className="relative">
+                      <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        min="1"
+                        max="5000"
+                        step="0.01"
+                        placeholder="Enter amount"
+                        value={qrAmount}
+                        onChange={(e) => setQrAmount(e.target.value)}
+                        className="pl-9 text-lg"
+                      />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[30, 40, 50, 100].map((v) => (
+                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setQrAmount(v.toString())}>
+                          £{v}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {qrParsedAmount > 0 && (
+                    <AdminFeeBreakdown
+                      baseAmount={qrParsedAmount}
+                      adminFee={qrFee.adminFee}
+                      totalCharge={qrFee.totalCharge}
+                      hasFee={qrFee.hasFee}
+                      instructorAbsorbs={qrFee.instructorAbsorbs}
+                      fullFee={qrFee.fullFee}
+                    />
+                  )}
+
+                  <Button
+                    className="w-full"
+                    disabled={qrParsedAmount <= 0 || qrGenerating}
+                    onClick={async () => {
+                      if (!instructorId) return;
+                      setQrGenerating(true);
+                      try {
+                        const chargeAmount = qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount;
+                        const orderRef = `QR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+                        const { data, error } = await supabase.functions.invoke("square-checkout", {
+                          body: {
+                            amount: chargeAmount,
+                            orderReference: orderRef,
+                            description: `QR payment to ${instructorName}`,
+                            returnUrl: `${window.location.origin}/pay/${instructorId}?success=true`,
+                            cancelUrl: `${window.location.origin}/pay/${instructorId}?cancelled=true`,
+                            instructorId,
+                          },
+                        });
+                        if (error || !data?.checkoutUrl) throw new Error(data?.error || "Failed to generate QR");
+                        setQrCheckoutUrl(data.checkoutUrl);
+                      } catch (e) {
+                        console.error("QR generation error:", e);
+                        toast.error(e instanceof Error ? e.message : "Failed to generate QR code");
+                      } finally {
+                        setQrGenerating(false);
+                      }
+                    }}
+                  >
+                    {qrGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <QrCode className="h-4 w-4 mr-2" />}
+                    {qrParsedAmount > 0
+                      ? `Generate QR for £${(qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount).toFixed(2)}`
+                      : "Enter an amount"}
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
