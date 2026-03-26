@@ -219,6 +219,7 @@ interface InstructorPortalLayoutProps {
 export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
+  usePaymentReceivedAlert(instructor?.id);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
