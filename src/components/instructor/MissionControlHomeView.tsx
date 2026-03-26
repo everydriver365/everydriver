@@ -57,9 +57,9 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
 
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase();
-  const hoursThisWeek = weeklyGoals?.hoursCompleted || 0;
-  const monthEarnings = lastWeekComparison?.monthEarnings || 0;
-  const activePupils = lastWeekComparison?.activePupils || 0;
+  const hoursThisWeek = weeklyGoals?.hoursThisWeek || 0;
+  const monthEarnings = weeklyGoals?.earningsThisWeek || 0;
+  const activePupils = lastWeekComparison?.lessonsThisWeek || 0;
   const gapCount = gapSlots?.length || 0;
 
   return (
