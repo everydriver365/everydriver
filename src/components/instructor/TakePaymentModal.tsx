@@ -64,6 +64,7 @@ export function TakePaymentModal({
   const [qrAmount, setQrAmount] = useState("");
   const [qrCheckoutUrl, setQrCheckoutUrl] = useState<string | null>(null);
   const [qrGenerating, setQrGenerating] = useState(false);
+  const [qrReason, setQrReason] = useState("");
 
   const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
