@@ -253,6 +253,9 @@ export default function InstructorPortal() {
     <InstructorPortalLayout>
       <div className="space-y-5">
 
+        {/* Demo Mode Banner */}
+        <DemoModeBanner />
+
         {/* PDI Banner */}
         {(subscription as any)?.is_pdi_programme && (
           <PDIBanner instructorName={instructorData?.name?.split(' ')[0]} />
