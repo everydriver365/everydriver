@@ -38,6 +38,7 @@ const DemoFranchiseBenefits = lazy(() => import("@/pages/demo/DemoFranchiseBenef
 const DemoPricingPage = lazy(() => import("@/pages/DemoPricingPage"));
 const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 const DemoTakePayment = lazy(() => import("@/pages/demo/DemoTakePayment"));
+const DemoAdminDesigns = lazy(() => import("@/pages/DemoAdminDesigns"));
 
 // Instructor portal demo routes
 const NextUpTileDemo = lazy(() => import("@/pages/instructor/NextUpTileDemo"));
