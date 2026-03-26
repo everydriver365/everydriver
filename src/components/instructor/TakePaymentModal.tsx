@@ -52,6 +52,7 @@ export function TakePaymentModal({
 }: TakePaymentModalProps) {
   const [view, setView] = useState<View>("picker");
   const [selectedPupilId, setSelectedPupilId] = useState("");
+  const [qrSelectedPupilId, setQrSelectedPupilId] = useState("");
   const [amount, setAmount] = useState("");
   const [sendViaSms, setSendViaSms] = useState(true);
   const [sendViaEmail, setSendViaEmail] = useState(false);
