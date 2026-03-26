@@ -52,6 +52,7 @@ export function TakePaymentModal({
 }: TakePaymentModalProps) {
   const [view, setView] = useState<View>("picker");
   const [selectedPupilId, setSelectedPupilId] = useState("");
+  const [qrSelectedPupilId, setQrSelectedPupilId] = useState("");
   const [amount, setAmount] = useState("");
   const [sendViaSms, setSendViaSms] = useState(true);
   const [sendViaEmail, setSendViaEmail] = useState(false);
@@ -87,6 +88,7 @@ export function TakePaymentModal({
       setClearForManual(false);
       setQrAmount("");
       setQrCheckoutUrl(null);
+      setQrSelectedPupilId("");
     }
     onOpenChange(o);
   };
@@ -304,6 +306,23 @@ export function TakePaymentModal({
                 </div>
               ) : (
                 <>
+                  {/* Pupil selector */}
+                  {pupils.length > 0 && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Select Pupil (optional)</Label>
+                      <Select value={qrSelectedPupilId} onValueChange={setQrSelectedPupilId}>
+                        <SelectTrigger className="w-full h-10">
+                          <SelectValue placeholder="-- No pupil --" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[200]">
+                          {pupils.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Amount</Label>
                     <div className="relative">
@@ -318,6 +337,13 @@ export function TakePaymentModal({
                         onChange={(e) => setQrAmount(e.target.value)}
                         className="pl-9 text-lg"
                       />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[30, 40, 50, 100].map((v) => (
+                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setQrAmount(v.toString())}>
+                          £{v}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 
@@ -340,15 +366,20 @@ export function TakePaymentModal({
                       setQrGenerating(true);
                       try {
                         const chargeAmount = qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount;
+                        const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
                         const orderRef = `QR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
                         const { data, error } = await supabase.functions.invoke("square-checkout", {
                           body: {
                             amount: chargeAmount,
                             orderReference: orderRef,
-                            description: `QR payment to ${instructorName}`,
+                            description: qrPupil ? `Payment from ${qrPupil.name}` : `QR payment to ${instructorName}`,
+                            customerName: qrPupil?.name,
+                            customerEmail: qrPupil?.email || undefined,
+                            customerPhone: qrPupil?.phone || undefined,
                             returnUrl: `${window.location.origin}/pay/${instructorId}?success=true`,
                             cancelUrl: `${window.location.origin}/pay/${instructorId}?cancelled=true`,
                             instructorId,
+                            pupilId: qrSelectedPupilId || undefined,
                           },
                         });
                         if (error || !data?.checkoutUrl) throw new Error(data?.error || "Failed to generate QR");
