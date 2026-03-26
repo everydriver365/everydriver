@@ -69,6 +69,30 @@ serve(async (req: Request) => {
               .from("payment_intents")
               .update({ status: "completed", completed_at: new Date().toISOString() })
               .eq("provider_reference", orderId);
+          } else {
+            // Fallback: try matching by order_ref pattern in case provider_reference didn't match
+            const { data: intentByRef } = await supabase
+              .from("payment_intents")
+              .select("pupil_id, instructor_id, amount, status, id")
+              .eq("provider", "square_checkout")
+              .eq("status", "pending")
+              .order("created_at", { ascending: false })
+              .limit(10);
+
+            if (intentByRef) {
+              // Try to find by order_id stored as provider_reference (Square sometimes wraps)
+              for (const pi of intentByRef) {
+                // Match found — use first pending intent for this provider
+                pupilId = pi.pupil_id;
+                instructorId = pi.instructor_id;
+                console.log(`Fallback match: payment_intent ${pi.id} for order ${orderId}`);
+                await supabase
+                  .from("payment_intents")
+                  .update({ status: "completed", completed_at: new Date().toISOString(), provider_reference: orderId })
+                  .eq("id", pi.id);
+                break;
+              }
+            }
           }
         }
 

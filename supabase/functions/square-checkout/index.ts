@@ -204,6 +204,28 @@ serve(async (req: Request) => {
 
     console.log("Square checkout URL created:", data.payment_link.url);
 
+    // Create payment_intent record so the webhook can match this payment
+    if (body.instructorId) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+        await supabase.from("payment_intents").insert({
+          instructor_id: body.instructorId,
+          pupil_id: body.pupilId || null,
+          provider: "square_checkout",
+          provider_reference: data.payment_link.order_id,
+          amount: amountInPence,
+          status: "pending",
+          order_ref: orderReference,
+        });
+        console.log(`Created payment_intent for order ${data.payment_link.order_id}`);
+      } catch (intentErr) {
+        console.error("Failed to create payment_intent (non-blocking):", intentErr);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
