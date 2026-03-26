@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN IF NOT EXISTS demo_mode boolean DEFAULT false;
