@@ -39,6 +39,7 @@ const DemoPricingPage = lazy(() => import("@/pages/DemoPricingPage"));
 const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 const DemoTakePayment = lazy(() => import("@/pages/demo/DemoTakePayment"));
 const DemoAdminDesigns = lazy(() => import("@/pages/DemoAdminDesigns"));
+const DemoInstructorHomeDesigns = lazy(() => import("@/pages/DemoInstructorHomeDesigns"));
 
 // Instructor portal demo routes
 const NextUpTileDemo = lazy(() => import("@/pages/instructor/NextUpTileDemo"));
@@ -95,5 +96,6 @@ export const demoRoutes = (
     <Route path="/demo/take-payment" element={<DemoTakePayment />} />
     <Route path="/compare" element={<ComparisonPage />} />
     <Route path="/demo/admin-designs" element={<DemoAdminDesigns />} />
+    <Route path="/demo/instructor-home-designs" element={<DemoInstructorHomeDesigns />} />
   </>
 );
