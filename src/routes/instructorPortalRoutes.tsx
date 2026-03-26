@@ -105,6 +105,7 @@ const WeeklyReportPage = lazy(() => import("@/pages/instructor/WeeklyReportPage"
 const OutstandingTasksPage = lazy(() => import("@/pages/instructor/OutstandingTasksPage"));
 const EndOfDayPage = lazy(() => import("@/pages/instructor/EndOfDayPage"));
 const WaitingRoomPage = lazy(() => import("@/pages/instructor-app/WaitingRoomPage"));
+const InstructorHomeDesigns = lazy(() => import("@/pages/InstructorHomeDesigns"));
 
 // School
 const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
@@ -229,6 +230,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/outstanding-tasks" element={<OutstandingTasksPage />} />
     <Route path="/instructor/end-of-day" element={<EndOfDayPage />} />
     <Route path="/instructor/waiting-room" element={<WaitingRoomPage />} />
+    <Route path="/instructor/home-designs" element={<InstructorHomeDesigns />} />
 
     {/* School */}
     <Route path="/school/dashboard" element={<SchoolDashboard />} />
