@@ -249,6 +249,7 @@ export default function InstructorPortal() {
           instructorName={instructorData?.name}
         />
         <WelcomeTour instructorId={instructorId} hasCompletedTour={(authInstructor as any)?.has_completed_tour ?? true} />
+        </div>
       </InstructorPortalLayout>
     );
   }
