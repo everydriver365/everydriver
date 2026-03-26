@@ -1088,13 +1088,13 @@ export default function DemoInstructorHomeDesigns() {
             <h1 className="text-lg font-bold">Instructor Home — Design Options</h1>
             <Badge variant="outline" className="text-xs">Pick one to apply</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {designs.map((d) => (
               <button
                 key={d.id}
                 onClick={() => setActive(d.id)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0",
                   active === d.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
