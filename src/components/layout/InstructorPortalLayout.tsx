@@ -85,8 +85,7 @@ function getContrastColor(hex: string): string {
   return lum > 0.6 ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.9)";
 }
 import { CommandPalette } from "@/components/CommandPalette";
-import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
+import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
@@ -224,8 +223,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
   const [headerQuickActionsOpen, setHeaderQuickActionsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -669,25 +667,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           onClose={() => setHeaderQuickActionsOpen(false)}
         />
 
-        {/* Payment Sheet */}
-        <TakePaymentSheet
-          open={showPaymentSheet}
-          onOpenChange={setShowPaymentSheet}
+        {/* Take Payment Modal */}
+        <TakePaymentModal
+          open={showPaymentModal}
+          onOpenChange={setShowPaymentModal}
           paymentQrUrl={getActivePaymentQrUrl(instructor)}
+          commissionPayer={instructor?.commission_payer}
+          commissionSplitPercent={instructor?.commission_split_percent}
           instructorName={instructor?.name}
           instructorId={instructor?.id}
           pupils={pupils}
-          onShowQR={() => { setShowPaymentSheet(false); setShowQRModal(true); }}
-          onRecordPayment={() => { setShowPaymentSheet(false); navigate("/instructor/pupils"); }}
-        />
-
-        {/* QR Code Modal */}
-        <PaymentQRModal
-          open={showQRModal}
-          onOpenChange={setShowQRModal}
-          paymentQrUrl={getActivePaymentQrUrl(instructor)}
-          instructorId={instructor?.id}
-          instructorName={instructor?.name}
         />
 
         {/* SOS Emergency Sheet */}
