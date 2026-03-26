@@ -101,7 +101,7 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
             <p className="text-xs text-muted-foreground">
               Don't have a Square account?{" "}
               <a
-                href="https://squareup.com/signup"
+                href="https://squareup.com/i/EVERYDRIVE"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline underline-offset-2 hover:text-primary/80"
