@@ -1096,6 +1096,17 @@ export default function InstructorSettings() {
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[6]} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Demo Mode Section */}
+              <SettingsTile
+                id="demo-mode"
+                icon={Eye}
+                title="Demo Mode"
+                description="Preview the app with sample data"
+                iconColor="text-amber-600"
+                iconBg="bg-amber-100 dark:bg-amber-900/30"
+              >
+                <DemoModeToggle />
+              </SettingsTile>
               {/* Appearance Section */}
               <SettingsTile 
                 id="appearance" 
