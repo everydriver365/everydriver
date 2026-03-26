@@ -29,6 +29,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
+import squareLogo from "@/assets/square-logo.png";
 import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
 import { LessonPackageManager } from "@/components/instructor/LessonPackageManager";
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
@@ -54,6 +55,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
 interface InstructorProfile {
@@ -284,6 +286,8 @@ export default function InstructorSettings() {
     description, 
     iconColor = "text-primary",
     iconBg = "bg-primary/10",
+    statusBadge,
+    iconSrc,
     children 
   }: { 
     id: string; 
@@ -292,6 +296,8 @@ export default function InstructorSettings() {
     description: string; 
     iconColor?: string;
     iconBg?: string;
+    statusBadge?: React.ReactNode;
+    iconSrc?: string;
     children: React.ReactNode;
   }) => (
     <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-sm overflow-hidden">
@@ -300,11 +306,20 @@ export default function InstructorSettings() {
           <div className="p-0">
             <button className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
-                  <Icon className={cn("h-4 w-4", iconColor)} />
-                </div>
+                {iconSrc ? (
+                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+                    <img src={iconSrc} alt={title} className="h-5 w-5 object-contain" />
+                  </div>
+                ) : (
+                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+                    <Icon className={cn("h-4 w-4", iconColor)} />
+                  </div>
+                )}
                 <div className="text-left">
-                  <div className="font-medium text-sm">{title}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{title}</span>
+                    {statusBadge}
+                  </div>
                   <div className="text-xs text-muted-foreground">{description}</div>
                 </div>
               </div>
@@ -847,6 +862,14 @@ export default function InstructorSettings() {
                 description="Connect for automatic payouts"
                 iconColor="text-blue-600"
                 iconBg="bg-blue-100 dark:bg-blue-900/30"
+                iconSrc={squareLogo}
+                statusBadge={
+                  (profile as any)?.square_merchant_id ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 bg-emerald-500/10 text-emerald-600">
+                      Connected
+                    </Badge>
+                  ) : null
+                }
               >
                 <SquareConnectSettings 
                   instructorId={instructorId} 
