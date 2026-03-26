@@ -13,11 +13,6 @@ interface Payout {
   transferred_at: string;
   payment_ids: string[];
 }
-  amount: number;
-  notes: string | null;
-  transferred_at: string;
-  payment_ids: string[];
-}
 
 interface InstructorPayoutHistoryProps {
   instructorId: string;
