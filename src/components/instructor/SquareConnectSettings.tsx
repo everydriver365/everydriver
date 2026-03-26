@@ -22,7 +22,7 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      const redirectUri = `${window.location.origin}/instructor/square-callback`;
+      const redirectUri = `https://everydriver.lovable.app/instructor/square-callback`;
       const { data, error } = await supabase.functions.invoke("square-oauth", {
         body: { action: "authorize", instructor_id: instructorId, redirect_uri: redirectUri },
       });

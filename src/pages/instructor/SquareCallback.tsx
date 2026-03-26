@@ -35,7 +35,7 @@ export default function SquareCallback() {
             action: "callback",
             code,
             instructor_id: parsed.instructor_id,
-            redirect_uri: `${window.location.origin}/instructor/square-callback`,
+            redirect_uri: `https://everydriver.lovable.app/instructor/square-callback`,
           },
         });
 
