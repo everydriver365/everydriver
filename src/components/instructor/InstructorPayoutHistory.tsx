@@ -3,11 +3,16 @@ import { format, startOfMonth } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle, Clock, PoundSterling, Loader2, ArrowDownRight } from "lucide-react";
+import { CheckCircle, Clock, PoundSterling, Loader2, ArrowDownRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Payout {
   id: string;
+  amount: number;
+  notes: string | null;
+  transferred_at: string;
+  payment_ids: string[];
+}
   amount: number;
   notes: string | null;
   transferred_at: string;
@@ -116,9 +121,16 @@ export function InstructorPayoutHistory({ instructorId }: InstructorPayoutHistor
                       </div>
                     </div>
                   </div>
-                  <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]">
-                    Paid
-                  </Badge>
+                  {payout.notes?.includes("Auto-paid via Square") ? (
+                    <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 text-[10px]">
+                      <Zap className="h-2.5 w-2.5 mr-0.5" />
+                      Direct
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]">
+                      Paid
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
