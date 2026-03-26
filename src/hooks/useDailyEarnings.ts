@@ -88,33 +88,54 @@ export function useDailyEarnings(instructorId: string | undefined) {
       const thisWeekHours = (thisWeekLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
       const lastWeekHours = (lastWeekLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
 
-      // Monthly totals
+      // Monthly totals - combine lesson-based earnings AND actual payments
       const monthStart = format(new Date(now.getFullYear(), now.getMonth(), 1), "yyyy-MM-dd");
       const lastMonthStart = format(new Date(now.getFullYear(), now.getMonth() - 1, 1), "yyyy-MM-dd");
       const lastMonthEnd = format(new Date(now.getFullYear(), now.getMonth(), 0), "yyyy-MM-dd");
 
-      const { data: thisMonthLessons } = await supabase
-        .from("lesson_history")
-        .select("duration_minutes")
-        .eq("instructor_id", instructorId)
-        .gte("lesson_date", monthStart);
+      const [thisMonthLessonsRes, lastMonthLessonsRes, thisMonthPaymentsRes, lastMonthPaymentsRes] = await Promise.all([
+        supabase
+          .from("lesson_history")
+          .select("duration_minutes")
+          .eq("instructor_id", instructorId)
+          .gte("lesson_date", monthStart),
+        supabase
+          .from("lesson_history")
+          .select("duration_minutes")
+          .eq("instructor_id", instructorId)
+          .gte("lesson_date", lastMonthStart)
+          .lte("lesson_date", lastMonthEnd),
+        supabase
+          .from("payment_history")
+          .select("amount")
+          .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
+          .gte("recorded_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString()),
+        supabase
+          .from("payment_history")
+          .select("amount")
+          .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
+          .gte("recorded_at", new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString())
+          .lt("recorded_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString()),
+      ]);
 
-      const { data: lastMonthLessons } = await supabase
-        .from("lesson_history")
-        .select("duration_minutes")
-        .eq("instructor_id", instructorId)
-        .gte("lesson_date", lastMonthStart)
-        .lte("lesson_date", lastMonthEnd);
+      const thisMonthHours = (thisMonthLessonsRes.data?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
+      const lastMonthHours = (lastMonthLessonsRes.data?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
 
-      const thisMonthHours = (thisMonthLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
-      const lastMonthHours = (lastMonthLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
+      // Use actual payments if available, otherwise fall back to lesson-based calculation
+      const thisMonthPayments = thisMonthPaymentsRes.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
+      const lastMonthPayments = lastMonthPaymentsRes.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
+
+      const thisMonthEarnings = thisMonthPayments > 0 ? Math.round(thisMonthPayments) : Math.round(thisMonthHours * hourlyRate);
+      const lastMonthEarnings = lastMonthPayments > 0 ? Math.round(lastMonthPayments) : Math.round(lastMonthHours * hourlyRate);
 
       return {
         dailyEarnings,
         thisWeek: Math.round(thisWeekHours * hourlyRate),
         lastWeek: Math.round(lastWeekHours * hourlyRate),
-        thisMonth: Math.round(thisMonthHours * hourlyRate),
-        lastMonth: Math.round(lastMonthHours * hourlyRate),
+        thisMonth: thisMonthEarnings,
+        lastMonth: lastMonthEarnings,
         hoursThisMonth: Math.round(thisMonthHours),
         hourlyRate,
       };
