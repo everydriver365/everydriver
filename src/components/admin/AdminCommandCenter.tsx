@@ -215,18 +215,19 @@ export function AdminCommandCenter({ onNavigate, onCreateBespoke, onSendAlert }:
   const fetchActivityFeed = useCallback(async () => {
     try {
       const [recentPayments, recentEnquiries, recentBookings] = await Promise.all([
-        supabase.from("payment_history").select("id, amount, pupil_name, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("payment_history").select("id, amount, created_at, pupils(name)").order("created_at", { ascending: false }).limit(5),
         supabase.from("course_enquiries").select("id, name, course_type, created_at").order("created_at", { ascending: false }).limit(5),
         supabase.from("scheduled_lessons").select("id, lesson_date, created_at, pupils(name)").order("created_at", { ascending: false }).limit(5),
       ]);
 
       const items: ActivityItem[] = [];
 
-      (recentPayments.data || []).forEach(p => {
+      (recentPayments.data || []).forEach((p: any) => {
+        const pupilName = p.pupils?.name || "Unknown";
         items.push({
           id: `pay-${p.id}`,
           type: "payment",
-          text: `Payment received — £${Number(p.amount).toFixed(0)} from ${p.pupil_name || "Unknown"}`,
+          text: `Payment received — £${Number(p.amount).toFixed(0)} from ${pupilName}`,
           time: p.created_at,
           color: "bg-emerald-500/10",
           borderColor: "border-l-emerald-500",
