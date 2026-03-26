@@ -433,14 +433,6 @@ export function TakePaymentModal({
                         className="pl-9 text-lg"
                       />
                     </div>
-                    {/* Quick amount buttons */}
-                    <div className="flex gap-2 flex-wrap">
-                      {[30, 40, 50, 100].map((v) => (
-                        <Button key={v} variant="outline" size="sm" className="text-xs h-7" onClick={() => setAmount(v.toString())}>
-                          £{v}
-                        </Button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Admin fee breakdown */}
