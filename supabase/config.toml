@@ -272,3 +272,6 @@ verify_jwt = false
 
 [functions.meta-data-deletion]
 verify_jwt = false
+
+[functions.rork-geotab-proxy]
+verify_jwt = false
