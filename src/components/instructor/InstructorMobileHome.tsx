@@ -415,19 +415,15 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Hero Banner */}
-      <HomepageHero
+      {/* 1. David Lloyd Style Hero + Motivation Card */}
+      <DavidLloydHero
         firstName={firstName}
         heroImageUrl={personalHeroUrl || content?.hero_image_url}
         profileImageUrl={instructor?.profile_image_url}
-        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
-        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
-        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
         todayCompleted={todayOverview?.completedCount || 0}
         todayTotal={todayOverview?.lessonCount || 0}
-        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
-        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
-        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        motivationTitle={content?.motivation_title}
+        motivationSubtitle={content?.motivation_subtitle}
       />
 
       {/* Sticky next-up bar */}
@@ -451,11 +447,11 @@ export function InstructorMobileHome({
         )}
       </AnimatePresence>
 
-      {/* Morning Briefing — prominent position above activity tiles */}
+      {/* Morning Briefing */}
       <MorningBriefingCard instructorId={instructorId} />
 
-      {/* 2. Activity Tiles Grid */}
-      <ActivityTilesGrid
+      {/* 2. David Lloyd Action Grid */}
+      <DavidLloydActionGrid
         pendingJobsCount={pendingJobsCount}
         unreadMessagesCount={pupilMsgCount}
         testRequestsCount={testSwapCount}
@@ -478,8 +474,6 @@ export function InstructorMobileHome({
           />
         )}
 
-        
-
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
             lessonId={nextLesson.lessonId}
@@ -495,8 +489,6 @@ export function InstructorMobileHome({
 
       {/* 4. Your Day */}
       <div className="px-4">
-
-        {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
           <QuietDayEmpty className="mt-4" />
         ) : (
@@ -534,7 +526,6 @@ export function InstructorMobileHome({
               className="mt-4"
             />
 
-            {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
               instructorId={instructorId}
               onTap={() => navigate("/instructor/diary")}
@@ -543,7 +534,7 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* 7. Quick Access — Swipeable Grid */}
+        {/* Quick Access */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
         <div className="pb-4">
           <SwipeableQuickAccess />
@@ -567,15 +558,13 @@ export function InstructorMobileHome({
 
         <div className="h-6" />
 
-
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
         {/* Waiting Room & Discover Features */}
         <BottomPromoGroup className="mt-6 mb-6" />
 
-
-        {/* 10. Floating Session Bar */}
+        {/* Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
       </div>
       </>
