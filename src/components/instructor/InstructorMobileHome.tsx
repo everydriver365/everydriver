@@ -50,8 +50,6 @@ import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { HomepageHero } from "@/components/instructor/HomepageHero";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
-import { DavidLloydHero } from "@/components/instructor/DavidLloydHero";
-import { DavidLloydActionGrid } from "@/components/instructor/DavidLloydActionGrid";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
@@ -415,15 +413,19 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. David Lloyd Style Hero + Motivation Card */}
-      <DavidLloydHero
+      {/* 1. Hero Banner */}
+      <HomepageHero
         firstName={firstName}
         heroImageUrl={personalHeroUrl || content?.hero_image_url}
         profileImageUrl={instructor?.profile_image_url}
+        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
+        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
+        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
         todayCompleted={todayOverview?.completedCount || 0}
         todayTotal={todayOverview?.lessonCount || 0}
-        motivationTitle={content?.motivation_title}
-        motivationSubtitle={content?.motivation_subtitle}
+        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
+        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
+        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
       />
 
       {/* Sticky next-up bar */}
@@ -447,11 +449,11 @@ export function InstructorMobileHome({
         )}
       </AnimatePresence>
 
-      {/* Morning Briefing */}
+      {/* Morning Briefing — prominent position above activity tiles */}
       <MorningBriefingCard instructorId={instructorId} />
 
-      {/* 2. David Lloyd Action Grid */}
-      <DavidLloydActionGrid
+      {/* 2. Activity Tiles Grid */}
+      <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
         unreadMessagesCount={pupilMsgCount}
         testRequestsCount={testSwapCount}
@@ -474,6 +476,8 @@ export function InstructorMobileHome({
           />
         )}
 
+        
+
         {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
           <TrackerReminderBanner
             lessonId={nextLesson.lessonId}
@@ -489,6 +493,8 @@ export function InstructorMobileHome({
 
       {/* 4. Your Day */}
       <div className="px-4">
+
+        {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
           <QuietDayEmpty className="mt-4" />
         ) : (
@@ -526,6 +532,7 @@ export function InstructorMobileHome({
               className="mt-4"
             />
 
+            {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
               instructorId={instructorId}
               onTap={() => navigate("/instructor/diary")}
@@ -534,7 +541,7 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* Quick Access */}
+        {/* 7. Quick Access — Swipeable Grid */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
         <div className="pb-4">
           <SwipeableQuickAccess />
@@ -558,13 +565,15 @@ export function InstructorMobileHome({
 
         <div className="h-6" />
 
+
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
         {/* Waiting Room & Discover Features */}
         <BottomPromoGroup className="mt-6 mb-6" />
 
-        {/* Floating Session Bar */}
+
+        {/* 10. Floating Session Bar */}
         <FloatingSessionBar instructorId={instructorId} />
       </div>
       </>
