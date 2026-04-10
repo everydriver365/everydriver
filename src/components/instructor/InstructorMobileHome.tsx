@@ -81,6 +81,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import calendarIcon from "@/assets/calendar-icon.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
