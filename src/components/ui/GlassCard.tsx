@@ -23,7 +23,7 @@ export function GlassCard({
   return (
     <motion.div
       className={cn(
-        "bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-[20px]",
+        "bg-white dark:bg-[#1C1C1E] rounded-[20px]",
         "shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)]",
         "dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)]",
         "ring-1 ring-inset ring-white/60 dark:ring-white/5",
@@ -58,7 +58,7 @@ export function GlassChip({ children, active = false, onClick, className }: Glas
         "px-3 py-1.5 text-xs font-medium transition-all duration-200 rounded-full",
         active
           ? "bg-primary/10 ring-1 ring-primary/30 text-primary"
-          : "bg-[#F2F3F5] dark:bg-[#1C1C1E] ring-1 ring-inset ring-white/60 dark:ring-white/5 text-foreground/80 hover:bg-muted/50",
+          : "bg-white dark:bg-[#1C1C1E] ring-1 ring-inset ring-white/60 dark:ring-white/5 text-foreground/80 hover:bg-muted/50",
         "active:scale-95",
         className
       )}

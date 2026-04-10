@@ -167,7 +167,7 @@ export function SwipeableQuickAccess() {
                       onClick={handleClick}
                       className="relative h-[110px] p-5 rounded-none text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
                       style={{
-                        backgroundColor: "#F2F3F5",
+                        backgroundColor: "#FFFFFF",
                         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
                         opacity: locked ? 0.5 : 1,
                       }}
