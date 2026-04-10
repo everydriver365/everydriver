@@ -65,7 +65,7 @@ function FeatureTile({
       onClick={() => { triggerHaptic("light"); onClick(); }}
       className="flex flex-col items-center gap-2 rounded-none p-5 relative border-0 transition-all duration-200 ease-out"
       style={{
-        backgroundColor: "#F2F3F5",
+        backgroundColor: "#FFFFFF",
         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
       }}
     >
@@ -98,7 +98,7 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
       className="flex flex-col items-center gap-2 rounded-none py-4 shrink-0 border-0 transition-all duration-200 ease-out"
       style={{
         width: 90,
-        backgroundColor: "#F2F3F5",
+        backgroundColor: "#FFFFFF",
         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
       }}
     >

@@ -28,7 +28,7 @@ export function InstructorCard({
   return (
     <motion.div
       className={cn(
-        "bg-[#F2F3F5] dark:bg-[#1C1C1E] rounded-none",
+        "bg-white dark:bg-[#1C1C1E] rounded-none",
         "shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)]",
         "dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)]",
         // Inset highlight for depth
