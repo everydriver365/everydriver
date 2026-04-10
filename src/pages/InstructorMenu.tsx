@@ -168,14 +168,38 @@ export default function InstructorMenu() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-5 pb-24">
-        {/* Page Title */}
-        <div>
-          <h1 className="text-xl font-bold">Menu</h1>
-          <p className="text-sm text-muted-foreground">Quick access to all features</p>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search menu..."
+            className="pl-9 pr-8 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Menu Sections - iOS grouped style */}
-        {menuSections.map((section) => (
+        {menuSections.map((section) => {
+          const q = searchQuery.toLowerCase().trim();
+          const filteredItems = q
+            ? section.items.filter(item =>
+                item.label.toLowerCase().includes(q) ||
+                (item.description || "").toLowerCase().includes(q) ||
+                section.title.toLowerCase().includes(q)
+              )
+            : section.items;
+          if (filteredItems.length === 0) return null;
+
+          return (
           <div key={section.title}>
             {/* iOS-style uppercase grey section label */}
             <div className="px-4 pb-1.5">
