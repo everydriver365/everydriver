@@ -725,7 +725,7 @@ export function PupilCardStack({
       {/* Mobile: Full-screen pupil profile sheet */}
       {isMobile && (
         <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
-          <SheetContent side="bottom" className="h-[95vh] rounded-t-2xl p-0 overflow-y-auto">
+          <SheetContent side="bottom" className="h-[95vh] rounded-none p-0 overflow-y-auto">
             {/* Close button */}
             <button
               onClick={() => setIsExpanded(false)}
@@ -902,7 +902,7 @@ export function PupilCardStack({
       />
 
       <Sheet open={showSyllabusSheet} onOpenChange={setShowSyllabusSheet}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
+        <SheetContent side="bottom" className="h-[85vh] rounded-none overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle>Driving Syllabus - {pupil.name}</SheetTitle>
           </SheetHeader>

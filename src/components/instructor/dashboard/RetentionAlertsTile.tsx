@@ -38,7 +38,7 @@ export function RetentionAlertsTile({ instructorId }: RetentionAlertsTileProps) 
         {alerts.slice(0, 5).map((alert) => (
           <div
             key={alert.pupilId}
-            className="flex items-center justify-between p-2 rounded-lg bg-background/80"
+            className="flex items-center justify-between p-2 rounded-none bg-background/80"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`h-2 w-2 rounded-full shrink-0 ${

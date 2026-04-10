@@ -46,7 +46,7 @@ export function ReferralStatsWidget() {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-none bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
               <Gift className="h-4 w-4 text-pink-600 dark:text-pink-400" />
             </div>
             <h3 className="font-medium text-sm text-foreground">Referrals</h3>

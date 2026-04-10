@@ -18,13 +18,13 @@ export function PlanWidget() {
   const isFreePlan = planSlug === "free";
 
   return (
-    <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+    <div className="rounded-none shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
       {/* Header — Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-3.5 py-3.5 flex items-center gap-3"
       >
-        <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
+        <div className="w-11 h-11 rounded-none overflow-hidden shrink-0">
           <img src={planIcon} alt="Plan" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
         </div>
         <div className="flex-1 min-w-0 text-left">
