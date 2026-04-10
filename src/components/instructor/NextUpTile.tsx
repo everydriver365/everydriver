@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
+import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
-  CloudRain, Thermometer, Battery, Wifi, BookOpen, Banknote,
+  Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
@@ -87,44 +87,38 @@ export function NextUpTile({
     pupilPhone,
   });
 
-  // Haptic feedback when late alert first appears
   useEffect(() => {
     if (isRunningLate && !lateAlertFiredRef.current) {
       lateAlertFiredRef.current = true;
       haptics.medium();
     }
-    if (!isRunningLate) {
-      lateAlertFiredRef.current = false;
-    }
+    if (!isRunningLate) lateAlertFiredRef.current = false;
   }, [isRunningLate]);
 
-  // Auto-refresh countdown every 30s
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 30000);
     return () => clearInterval(id);
   }, []);
 
   const formatTime24 = (time: string) => {
-    try {
-      const parsed = parse(time, "HH:mm:ss", new Date());
-      return format(parsed, "HH:mm");
-    } catch { return time.slice(0, 5); }
+    try { return format(parse(time, "HH:mm:ss", new Date()), "HH:mm"); }
+    catch { return time.slice(0, 5); }
   };
 
   const getDateLabel = () => {
     const date = parseISO(lessonDate);
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
-    return format(date, "EEE");
+    return format(date, "EEE d MMM");
   };
 
   const getCountdownText = () => {
-    if (minutesUntil <= 0) return "now";
-    if (minutesUntil < 60) return `in ${minutesUntil} min`;
+    if (minutesUntil <= 0) return "Now";
+    if (minutesUntil < 60) return `${minutesUntil}m`;
     const hours = Math.floor(minutesUntil / 60);
     const mins = minutesUntil % 60;
-    if (hours >= 24) return `in ${Math.floor(hours / 24)}d`;
-    return mins > 0 ? `in ${hours}h ${mins}m` : `in ${hours}h`;
+    if (hours >= 24) return `${Math.floor(hours / 24)}d`;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
   const formatDuration = () => `${durationMinutes / 60}h`;
@@ -135,7 +129,6 @@ export function NextUpTile({
   const paymentDue = effectiveBalance < 0;
   const noBalance = effectiveBalance <= 0 && prepaidHours <= 0;
 
-  // Weather helpers
   const getWeatherSafetyTip = () => {
     if (!currentWeather) return null;
     const temp = currentWeather.temperature;
@@ -150,7 +143,6 @@ export function NextUpTile({
     return null;
   };
 
-  // Primary device for vehicle health
   const primaryDevice = devices.find(d => d.is_connected) || devices[0] || null;
 
   const handleArrived = () => {
@@ -165,12 +157,8 @@ export function NextUpTile({
   const handleMessage = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}`; a.click(); } };
   const sendSMS = (msg: string) => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`; a.click(); } };
   const handleSendETA = () => {
-    // Update lesson status to en_route
     supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
-    // Send push notification to pupil
-    supabase.functions.invoke("notify-pupil", {
-      body: { pupilId, type: "en_route" },
-    }).catch(() => {});
+    supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route" } }).catch(() => {});
     sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
   };
   const handleCancelled = () => { queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }); queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }); };
@@ -180,236 +168,227 @@ export function NextUpTile({
     switch (trafficCondition?.toLowerCase()) {
       case "heavy": return "bg-red-500";
       case "moderate": return "bg-yellow-400";
-      case "light": return "bg-green-400";
-      case "clear": return "bg-green-400";
-      default: return "bg-gray-400";
+      default: return "bg-emerald-400";
     }
   };
 
-  const pillStyle = "inline-flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold";
+  const isImminent = minutesUntil <= 30;
+  const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : "#10b981";
 
   return (
     <>
-      <div
+      <div className="w-full overflow-hidden rounded-[20px] dark:border dark:border-white/10"
         style={{
-          background: "rgba(255,255,255,0.65)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderRadius: 22,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-          border: "1px solid rgba(255,255,255,0.5)",
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
         }}
-        className="w-full overflow-hidden dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
       >
-        {/* === HEADER (always visible) === */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full px-4 pt-4 pb-3 flex flex-col gap-2.5"
-        >
-          {/* Main row: avatar + info + time */}
-          <div className="flex items-center gap-3">
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              <div
-                className="w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg"
-                style={{ background: "linear-gradient(135deg, #3B82F6, #6366F1)", color: "white" }}
-              >
-                {pupilProfileImage ? (
-                  <img src={pupilProfileImage} alt={pupilName} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  getInitials(pupilName)
+        {/* ── HEADER ── */}
+        <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
+          {/* Top accent bar */}
+          <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
+
+          <div className="px-4 pt-3.5 pb-3">
+            {/* Row 1: Label + countdown badge */}
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-[1px] text-muted-foreground">Next Up</span>
+                {checkInStatus && (
+                  <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
                 )}
               </div>
-              {hasUnread && (
-                <span
-                  className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-red-500 text-white font-bold"
-                  style={{ width: 18, height: 18, fontSize: 10 }}
-                >
-                  {pupilUnreadCount}
-                </span>
-              )}
-            </div>
-
-            {/* Center info */}
-            <div className="flex-1 min-w-0 text-left">
-              <div className="flex items-center gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#6366F1" }}>
-                  Next Up
-                </span>
-                {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="ml-1 text-[9px] py-0 px-1.5 h-4" />
-                )}
-                <span className="text-[11px]" style={{ color: "#D1D5DB" }}>·</span>
-                <span className="text-[11px] font-bold" style={{ color: "#059669" }}>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                style={{ background: `${countdownColor}18` }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: countdownColor }} />
+                <span className="text-[11px] font-bold" style={{ color: countdownColor }}>
                   {getCountdownText()}
                 </span>
               </div>
-              <p className="text-[20px] font-bold truncate mt-0.5" style={{ color: "hsl(var(--foreground))" }}>{pupilName}</p>
             </div>
 
-            {/* Right: time + chevron */}
-            <div className="flex flex-col items-end shrink-0">
-              <span className="text-[22px] font-bold" style={{ color: "hsl(var(--foreground))", fontVariantNumeric: "tabular-nums", fontFamily: "ui-monospace, monospace" }}>
-                {formatTime24(startTime)}
-              </span>
-              <ExpandChevron isExpanded={expanded} className="mt-1" />
-            </div>
-          </div>
+            {/* Row 2: Avatar + name + time */}
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0">
+                <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
+                  style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "white" }}>
+                  {pupilProfileImage ? (
+                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
+                  ) : getInitials(pupilName)}
+                </div>
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-500 text-white font-bold"
+                    style={{ width: 20, height: 20, fontSize: 10, border: "2px solid white" }}>
+                    {pupilUnreadCount}
+                  </span>
+                )}
+              </div>
 
-          {/* Pill badges row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
-              <Calendar className="h-[11px] w-[11px]" /> {getDateLabel()}
-            </span>
-            <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
-              <Clock className="h-[11px] w-[11px]" /> {formatDuration()}
-            </span>
-            {(pickupLocation || pickupPostcode) && (
-              <span className={pillStyle} style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}>
-                <MapPin className="h-[11px] w-[11px]" />
-                <span className="truncate max-w-[200px]">
-                  {[pickupLocation, pickupPostcode].filter(Boolean).join(", ")}
+              <div className="flex-1 min-w-0">
+                <p className="text-[18px] font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>{pupilName}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[12px] text-muted-foreground">{getDateLabel()} · {formatTime24(startTime)} · {formatDuration()}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center shrink-0 gap-1">
+                <span className="text-[28px] font-black leading-none" style={{
+                  color: "hsl(var(--foreground))",
+                  fontVariantNumeric: "tabular-nums",
+                  fontFamily: "ui-monospace, 'SF Mono', monospace",
+                }}>
+                  {formatTime24(startTime)}
                 </span>
-              </span>
+                <ExpandChevron isExpanded={expanded} />
+              </div>
+            </div>
+
+            {/* Row 3: Location strip */}
+            {(pickupLocation || pickupPostcode) && (
+              <div className="flex items-center gap-1.5 mt-2.5 px-3 py-2 rounded-xl"
+                style={{ background: "rgba(99,102,241,0.06)" }}>
+                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#6366F1" }} />
+                <span className="text-[12px] font-medium truncate" style={{ color: "#4338CA" }}>
+                  {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+                </span>
+              </div>
             )}
           </div>
         </button>
 
-        {/* === RUNNING LATE ALERT === */}
+        {/* ── RUNNING LATE ALERT ── */}
         <AnimatePresence>
           {isRunningLate && !lateDismissed && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div
-                className="mx-4 mb-2 flex items-center gap-2.5 p-3 rounded-xl"
-                style={{ background: "rgba(251,191,36,0.2)", border: "1px solid rgba(251,191,36,0.4)" }}
-              >
-                <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: "#FBBF24" }} />
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+              <div className="mx-4 mb-3 flex items-center gap-2.5 p-3 rounded-2xl"
+                style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))", border: "1px solid rgba(251,191,36,0.3)" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "rgba(251,191,36,0.2)" }}>
+                  <AlertTriangle className="h-5 w-5" style={{ color: "#FBBF24" }} />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
-                    You may arrive ~{lateByMinutes} min late
+                    ~{lateByMinutes} min late
                   </p>
-                  <p className="text-[10px] mt-0.5 text-muted-foreground">
-                    ETA {arrivalTimeText}
-                  </p>
+                  <p className="text-[10px] mt-0.5 text-muted-foreground">ETA {arrivalTimeText}</p>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
-                  className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold"
-                  style={{ background: "#FBBF24", color: "#1a1a2e" }}
-                >
+                <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
+                  className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold text-amber-900"
+                  style={{ background: "#FBBF24" }}>
                   Send ETA
                 </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }}
-                  className="shrink-0"
-                >
-                  <X className="h-4 w-4" style={{ color: "rgba(255,255,255,0.5)" }} />
+                <button onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }} className="shrink-0 p-1">
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* === EXPANDED CONTENT === */}
+        {/* ── QUICK ACTION BAR (always visible) ── */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center gap-2">
+            {[
+              { icon: Navigation, label: "Navigate", color: "#3B82F6", bg: "rgba(59,130,246,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+              { icon: Phone, label: "Call", color: "#10b981", bg: "rgba(16,185,129,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+              { icon: MessageSquare, label: "SMS", color: "#f97316", bg: "rgba(249,115,22,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+              { icon: MapPin, label: "I'm Here", color: "#22c55e", bg: "rgba(34,197,94,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+            ].map((btn) => (
+              <button key={btn.label} onClick={btn.action}
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                style={{ background: btn.bg }}>
+                <btn.icon className="h-[18px] w-[18px]" style={{ color: btn.color }} />
+                <span className="text-[9px] font-bold" style={{ color: btn.color }}>{btn.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── EXPANDED CONTENT ── */}
         <AnimatePresence>
           {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="overflow-hidden"
-            >
-              <div className="px-[18px] pb-[18px]" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(0,0,0,0.06)" }} />
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="overflow-hidden">
+              <div className="px-4 pb-4 flex flex-col gap-3">
+                <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
 
-                {/* 1. Info Badges Row */}
-                <div className="grid grid-cols-3 gap-[10px]">
-                  {/* Start */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Clock className="h-4 w-4 mb-1 text-muted-foreground" />
-                    <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{formatTime24(startTime)}</span>
-                    <span className="text-[10px] mt-0.5 text-muted-foreground">Start</span>
-                  </div>
-                  {/* Duration */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Hourglass className="h-4 w-4 mb-1 text-muted-foreground" />
-                    <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{formatDuration()}</span>
-                    <span className="text-[10px] mt-0.5 text-muted-foreground">Duration</span>
-                  </div>
-                  {/* Balance / Due */}
-                  <div className="flex flex-col items-center py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <PoundSterling className="h-4 w-4 mb-1 text-muted-foreground" />
-                    <span className={`text-[15px] font-bold ${effectiveBalance < 0 ? "text-orange-500" : "text-emerald-600"}`}>
-                      £{Math.abs(effectiveBalance).toFixed(0)}
-                    </span>
-                    <span className="text-[10px] mt-0.5 text-muted-foreground">
-                      {effectiveBalance < 0 ? "Due" : "Balance"}
-                    </span>
-                  </div>
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: Clock, label: "Start", value: formatTime24(startTime), color: "#6366F1" },
+                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "#8B5CF6" },
+                    { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
+                        <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+                      </div>
+                      <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</span>
+                    </div>
+                  ))}
                 </div>
 
-                {/* 2. Live ETA Row */}
+                {/* Live ETA */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Car className="h-5 w-5 shrink-0" style={{ color: "#6366F1" }} />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(99,102,241,0.05)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(99,102,241,0.1)" }}>
+                      <Car className="h-5 w-5" style={{ color: "#6366F1" }} />
+                    </div>
                     {etaLoading ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         <span className="text-[11px] text-muted-foreground">Calculating ETA...</span>
                       </div>
                     ) : (
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground">Live ETA</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>~{etaMinutes} min</span>
-                          {trafficCondition && (
-                            <>
-                              <span className="text-muted-foreground">·</span>
-                              <span className={`w-2 h-2 rounded-full ${getTrafficDot()}`} />
-                              <span className="text-[11px] capitalize text-muted-foreground">
-                                {trafficCondition} traffic
-                              </span>
-                            </>
-                          )}
+                      <div className="flex-1 flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground">Drive time</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>~{etaMinutes} min</span>
+                            {trafficCondition && (
+                              <>
+                                <span className={`w-2 h-2 rounded-full ${getTrafficDot()}`} />
+                                <span className="text-[11px] capitalize text-muted-foreground">{trafficCondition}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* 2b. Weather Conditions Strip */}
+                {/* Weather */}
                 {currentWeather && currentWeather.temperature != null && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Thermometer className="h-5 w-5 shrink-0" style={{ color: "#f59e0b" }} />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.1)" }}>
+                      <Thermometer className="h-5 w-5" style={{ color: "#f59e0b" }} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-[14px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{currentWeather.temperature}°C</span>
-                        {currentWeather.description && (
-                          <span className="text-[11px] text-muted-foreground">{currentWeather.description}</span>
-                        )}
+                        {currentWeather.description && <span className="text-[11px] text-muted-foreground">{currentWeather.description}</span>}
                       </div>
                       {getWeatherSafetyTip() && (
-                        <p className="text-[10px] mt-0.5" style={{ color: getWeatherSafetyTip()!.color }}>
-                          ⚠ {getWeatherSafetyTip()!.tip}
-                        </p>
+                        <p className="text-[10px] mt-0.5" style={{ color: getWeatherSafetyTip()!.color }}>⚠ {getWeatherSafetyTip()!.tip}</p>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* 2c. Vehicle Health Quick Status */}
+                {/* Vehicle Health */}
                 {primaryDevice && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Car className="h-5 w-5 shrink-0" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
-                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: primaryDevice.is_connected ? "rgba(22,163,74,0.1)" : "rgba(220,38,38,0.1)" }}>
+                      <Car className="h-5 w-5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
+                    </div>
+                    <div className="flex-1 flex items-center gap-4">
                       <div className="flex items-center gap-1.5">
                         <Wifi className="h-3.5 w-3.5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
                         <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
@@ -432,146 +411,100 @@ export function NextUpTile({
                   </div>
                 )}
 
-                {/* 2d. Last Lesson Plan */}
+                {/* Last Lesson Plan */}
                 {lastLessonPlan && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <BookOpen className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#7c3aed" }} />
+                  <div className="flex items-start gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(124,58,237,0.05)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(124,58,237,0.1)" }}>
+                      <BookOpen className="h-5 w-5" style={{ color: "#7c3aed" }} />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Plan for this lesson</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Lesson Plan</span>
                       <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--foreground))" }}>{lastLessonPlan}</p>
                     </div>
                   </div>
                 )}
 
-                {/* 2e. Payment Warning Banner */}
+                {/* Payment Warning */}
                 {noBalance && (
-                  <div
-                    className="flex items-center gap-2.5 p-3 rounded-xl"
-                    style={{ background: paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)", border: paymentDue ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(251,191,36,0.4)" }}
-                  >
-                    <Banknote className="h-5 w-5 shrink-0" style={{ color: paymentDue ? "#dc2626" : "#d97706" }} />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl"
+                    style={{
+                      background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
+                      border: `1px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
+                    }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)" }}>
+                      <Banknote className="h-5 w-5" style={{ color: paymentDue ? "#dc2626" : "#d97706" }} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
                         {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
                       </p>
-                      <p className="text-[10px] mt-0.5 text-muted-foreground">
-                        Collect payment before or after lesson
-                      </p>
+                      <p className="text-[10px] mt-0.5 text-muted-foreground">Collect before or after lesson</p>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
-                      className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold"
-                      style={{ background: paymentDue ? "#ef4444" : "#FBBF24", color: paymentDue ? "white" : "#1a1a2e" }}
-                    >
+                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                      className="shrink-0 px-3.5 py-2 rounded-xl text-[11px] font-bold text-white"
+                      style={{ background: paymentDue ? "#ef4444" : "#d97706" }}>
                       Collect
                     </button>
                   </div>
                 )}
 
-                {/* 3. Unread Messages Row */}
+                {/* Unread Messages */}
                 {hasUnread && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
-                    className="flex items-center gap-3 p-3 rounded-xl w-full text-left"
-                    style={{ background: "rgba(0,0,0,0.04)" }}
-                  >
-                    <MessageCircle className="h-5 w-5 shrink-0 text-orange-500" />
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
+                    style={{ background: "rgba(249,115,22,0.06)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
+                      <MessageCircle className="h-5 w-5 text-orange-500" />
+                    </div>
                     <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                      {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {firstName}
+                      {pupilUnreadCount} unread from {firstName}
                     </span>
-                    <ChevronDown className="h-4 w-4 -rotate-90 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </button>
                 )}
 
-                {/* 4. Start Lesson Button */}
-                {minutesUntil <= 15 && (
-                  <button
-                    onClick={(e) => {
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2">
+                  {/* Start Lesson */}
+                  {minutesUntil <= 15 && (
+                    <button onClick={(e) => {
                       e.stopPropagation();
                       supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
                       navigate(`/instructor/tracking?lesson=${lessonId}`);
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] text-white font-bold text-[15px]"
-                    style={{ background: "linear-gradient(90deg, #22c55e, rgba(34,197,94,0.8))" }}
-                  >
-                    <Navigation className="h-4 w-4" /> Start Lesson
-                  </button>
-                )}
-
-                {/* End Lesson Button */}
-                {minutesUntil <= 0 && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                    className="w-full flex items-center justify-center gap-2 py-[13px] rounded-[14px] font-bold text-[15px]"
-                    style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
-                  >
-                    <CheckCircle2 className="h-4 w-4" /> End Lesson
-                  </button>
-                )}
-
-                {/* GPS Route Recorder */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowGPSRecorder(!showGPSRecorder); }}
-                  className="w-full flex items-center justify-center gap-2 py-[11px] rounded-[14px] font-bold text-[13px]"
-                  style={{
-                    background: showGPSRecorder ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
-                    color: showGPSRecorder ? "#dc2626" : "#16a34a",
-                  }}
-                >
-                  <Play className="h-4 w-4" />
-                  {showGPSRecorder ? "Hide GPS Recorder" : "📍 Record Route (GPS)"}
-                </button>
-
-                <AnimatePresence>
-                  {showGPSRecorder && instructorId && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <LessonRouteRecorder
-                        instructorId={instructorId}
-                        pupilId={pupilId}
-                        lessonId={lessonId}
-                        onRouteRecorded={() => setShowGPSRecorder(false)}
-                      />
-                    </motion.div>
+                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
+                    style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                      <Navigation className="h-4.5 w-4.5" /> Start Lesson
+                    </button>
                   )}
-                </AnimatePresence>
 
-                <div className="grid grid-cols-6 gap-[8px]">
-                  {/* Prep */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(124,58,237,0.1)" }}
-                  >
-                    <ClipboardList className="h-5 w-5" style={{ color: "#7c3aed" }} />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Prep</span>
-                  </button>
-                  {/* Navigate */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(0,0,0,0.04)" }}
-                  >
-                    <Navigation className="h-5 w-5 text-blue-600" />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Navigate</span>
+                  {/* End Lesson */}
+                  {minutesUntil <= 0 && (
+                    <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                      className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-bold text-[15px] transition-transform active:scale-[0.98]"
+                      style={{ background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))" }}>
+                      <CheckCircle2 className="h-4.5 w-4.5" /> End Lesson
+                    </button>
+                  )}
+                </div>
+
+                {/* Extended actions */}
+                <div className="grid grid-cols-5 gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    style={{ background: "rgba(124,58,237,0.08)" }}>
+                    <ClipboardList className="h-4 w-4" style={{ color: "#7c3aed" }} />
+                    <span className="text-[9px] font-bold text-muted-foreground">Prep</span>
                   </button>
 
-                  {/* On My Way */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button
-                        className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                        style={{ background: "rgba(0,0,0,0.04)" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Send className="h-5 w-5" style={{ color: "#6366F1" }} />
-                        <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>On Way</span>
+                      <button className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                        style={{ background: "rgba(99,102,241,0.08)" }}
+                        onClick={(e) => e.stopPropagation()}>
+                        <Send className="h-4 w-4" style={{ color: "#6366F1" }} />
+                        <span className="text-[9px] font-bold text-muted-foreground">On Way</span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-52">
@@ -587,61 +520,49 @@ export function NextUpTile({
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {/* Call */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(0,0,0,0.04)" }}
-                  >
-                    <Phone className="h-5 w-5 text-emerald-600" />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Call</span>
+                  <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    style={{ background: "rgba(251,191,36,0.08)" }}>
+                    <AlertTriangle className="h-4 w-4" style={{ color: "#d97706" }} />
+                    <span className="text-[9px] font-bold text-muted-foreground">Late</span>
                   </button>
 
-                  {/* SMS */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(0,0,0,0.04)" }}
-                  >
-                    <MessageSquare className="h-5 w-5 text-orange-500" />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>SMS</span>
+                  <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    style={{ background: "rgba(0,0,0,0.04)" }}>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-[9px] font-bold text-muted-foreground">Move</span>
                   </button>
 
-                  {/* Here / Arrived */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleArrived(); }}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl"
-                    style={{ background: "rgba(22,163,74,0.1)" }}
-                  >
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Here</span>
+                  <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    style={{ background: "rgba(239,68,68,0.06)" }}>
+                    <X className="h-4 w-4" style={{ color: "#dc2626" }} />
+                    <span className="text-[9px] font-bold text-muted-foreground">Cancel</span>
                   </button>
                 </div>
 
-                {/* 6. Secondary Actions Row */}
-                <div className="grid grid-cols-3 gap-[10px]">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
-                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
-                    style={{ background: "rgba(251,191,36,0.1)", color: "#d97706" }}
-                  >
-                    <AlertTriangle className="h-3.5 w-3.5" /> Running Late
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
-                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
-                    style={{ background: "rgba(0,0,0,0.04)", color: "hsl(var(--foreground))" }}
-                  >
-                    <Calendar className="h-3.5 w-3.5" /> Reschedule
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
-                    className="flex items-center justify-center gap-1.5 py-[10px] rounded-[10px] text-[12px] font-medium"
-                    style={{ background: "rgba(239,68,68,0.08)", color: "#dc2626" }}
-                  >
-                    <X className="h-3.5 w-3.5" /> Cancel
-                  </button>
-                </div>
+                {/* GPS Route Recorder */}
+                <button onClick={(e) => { e.stopPropagation(); setShowGPSRecorder(!showGPSRecorder); }}
+                  className="w-full flex items-center justify-center gap-2 py-[11px] rounded-2xl font-bold text-[12px] transition-transform active:scale-[0.98]"
+                  style={{
+                    background: showGPSRecorder ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
+                    color: showGPSRecorder ? "#dc2626" : "#16a34a",
+                  }}>
+                  <Play className="h-3.5 w-3.5" />
+                  {showGPSRecorder ? "Hide GPS Recorder" : "📍 Record Route (GPS)"}
+                </button>
+
+                <AnimatePresence>
+                  {showGPSRecorder && instructorId && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
+                      className="overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                      <LessonRouteRecorder instructorId={instructorId} pupilId={pupilId} lessonId={lessonId}
+                        onRouteRecorded={() => setShowGPSRecorder(false)} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           )}
@@ -650,57 +571,24 @@ export function NextUpTile({
 
       {/* Dialogs */}
       {instructorId && (
-        <CancelLessonDialog
-          open={cancelOpen}
-          onOpenChange={setCancelOpen}
-          lessonId={lessonId}
-          pupilId={pupilId}
-          pupilName={pupilName}
-          amountDue={durationMinutes * (40 / 60)}
-          pupilBalance={accountBalance}
-          durationMinutes={durationMinutes}
-          lessonDate={lessonDate}
-          lessonTime={startTime}
-          endTime={getEndTime()}
-          instructorId={instructorId}
-          onCancelled={handleCancelled}
-        />
+        <CancelLessonDialog open={cancelOpen} onOpenChange={setCancelOpen} lessonId={lessonId}
+          pupilId={pupilId} pupilName={pupilName} amountDue={durationMinutes * (40 / 60)}
+          pupilBalance={accountBalance} durationMinutes={durationMinutes} lessonDate={lessonDate}
+          lessonTime={startTime} endTime={getEndTime()} instructorId={instructorId} onCancelled={handleCancelled} />
       )}
       {instructorId && (
-        <RescheduleLessonSheet
-          open={rescheduleOpen}
-          onOpenChange={setRescheduleOpen}
-          lessonId={lessonId}
-          instructorId={instructorId}
-          pupilName={pupilName}
-          currentDate={lessonDate}
-          currentTime={startTime}
-          durationMinutes={durationMinutes}
-          onRescheduled={handleCancelled}
-        />
+        <RescheduleLessonSheet open={rescheduleOpen} onOpenChange={setRescheduleOpen} lessonId={lessonId}
+          instructorId={instructorId} pupilName={pupilName} currentDate={lessonDate}
+          currentTime={startTime} durationMinutes={durationMinutes} onRescheduled={handleCancelled} />
       )}
       {instructorId && (
-        <EndLessonWizard
-          open={wizardOpen}
-          onOpenChange={setWizardOpen}
-          lessonId={lessonId}
-          pupilId={pupilId}
-          pupilName={pupilName}
-          instructorId={instructorId}
-          durationMinutes={durationMinutes}
-          lessonDate={lessonDate}
-          startTime={startTime}
-          currentBalance={accountBalance}
-          onCompleted={handleCancelled}
-        />
+        <EndLessonWizard open={wizardOpen} onOpenChange={setWizardOpen} lessonId={lessonId}
+          pupilId={pupilId} pupilName={pupilName} instructorId={instructorId}
+          durationMinutes={durationMinutes} lessonDate={lessonDate} startTime={startTime}
+          currentBalance={accountBalance} onCompleted={handleCancelled} />
       )}
-      <RunningLateSheet
-        open={lateSheetOpen}
-        onOpenChange={setLateSheetOpen}
-        pupilName={pupilName}
-        pupilPhone={pupilPhone}
-        startTime={startTime}
-      />
+      <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
+        pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime} />
     </>
   );
 }
