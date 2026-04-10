@@ -81,6 +81,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import calendarIcon from "@/assets/calendar-icon.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
@@ -471,9 +472,7 @@ export function InstructorMobileHome({
           className="w-full flex items-center justify-between bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-primary" />
-            </div>
+            <img src={calendarIcon} alt="Schedule" className="w-9 h-9 rounded-xl" />
             <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
