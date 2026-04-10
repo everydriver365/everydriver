@@ -44,7 +44,7 @@ export function TelematicsTile() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl overflow-hidden"
+        className="rounded-none overflow-hidden"
         style={{
           backgroundColor: "#F2F3F5",
           boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",

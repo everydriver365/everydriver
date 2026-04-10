@@ -9,7 +9,7 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={() => navigate("/instructor/waiting-room")}
-      className={`cursor-pointer flex overflow-hidden rounded-2xl border border-border shadow-sm ${className}`}
+      className={`cursor-pointer flex overflow-hidden rounded-none border border-border shadow-sm ${className}`}
     >
       <div className="bg-blue-600 p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
         <span className="text-2xl">☕</span>
