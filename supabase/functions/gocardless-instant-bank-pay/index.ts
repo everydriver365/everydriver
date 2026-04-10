@@ -39,6 +39,13 @@ serve(async (req) => {
       );
     }
 
+    if (amount < 0.50) {
+      return new Response(
+        JSON.stringify({ error: "Minimum payment amount is £0.50" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const amountInPence = Math.round(amount * 100);
 
     // Step 1: Create a billing request with payment_request only (one-off, no mandate)

@@ -46,6 +46,13 @@ serve(async (req: Request) => {
       );
     }
 
+    if (amount < 0.50) {
+      return new Response(
+        JSON.stringify({ error: "Minimum payment amount is £0.50" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const amountInPence = Math.round(amount * 100);
     const env = environment.toLowerCase();
     const isProduction = env === "production" || env === "prod" || env === "live";
