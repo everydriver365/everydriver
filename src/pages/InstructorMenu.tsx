@@ -207,7 +207,7 @@ export default function InstructorMenu() {
             </div>
             {/* White grouped card */}
             <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
-              {section.items.map((item, itemIndex) => {
+              {filteredItems.map((item, itemIndex) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
 
@@ -265,7 +265,7 @@ export default function InstructorMenu() {
                       </div>
                     </motion.button>
                     {/* Inset hairline divider */}
-                    {itemIndex < section.items.length - 1 && (
+                    {itemIndex < filteredItems.length - 1 && (
                       <div className="ml-[56px] border-b border-border/40" />
                     )}
                   </div>
@@ -273,7 +273,8 @@ export default function InstructorMenu() {
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Quick Test Result Form */}
