@@ -178,7 +178,7 @@ export function NextUpTile({
 
   return (
     <>
-      <div className="w-full overflow-hidden rounded-[20px] dark:border dark:border-white/10"
+      <div className="w-full overflow-hidden rounded-none dark:border dark:border-white/10"
         style={{
           background: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(24px)",

@@ -165,7 +165,7 @@ export function HomepageHero({
             {slides.map((slide, i) => (
               <div key={slide.label} className="min-w-0 shrink-0 grow-0 basis-full">
                 <div
-                  className="bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl p-3.5 flex items-center justify-between"
+                  className="bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-none p-3.5 flex items-center justify-between"
                   style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.12)" }}
                 >
                   <div className="flex-1 min-w-0">
