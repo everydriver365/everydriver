@@ -1,39 +1,51 @@
 
-What I found
 
-- The hero container is still rendering; the image is most likely being visually hidden by the current sizing/overlap setup rather than the component disappearing.
-- In `src/components/instructor/HomepageHero.tsx`, these three changes combine to make the photo effectively invisible on mobile:
-  1. The hero was shortened to `aspectRatio: "1 / 0.4"` (about 156px tall on a 390px-wide screen).
-  2. The stats card is pulled upward with `-mt-14`, covering the bottom ~56px.
-  3. A top dark scrim still exists with `h-24`, covering the top ~96px.
+## Make Hero Image Bleed Into Header
 
-Why it looks blank
+The goal is to have the hero image extend behind the sticky header bar, creating the seamless bleed effect shown in the screenshot — where the driving scene photo flows behind the navigation icons.
 
+### Current Structure
 ```text
-390px wide screen
-hero height ≈ 390 × 0.4 = 156px
-bottom overlap ≈ 56px
-visible area left ≈ 100px
-top scrim = 96px
-
-Result: almost the entire visible hero area is covered.
+┌─────────────────────────┐
+│  Header (bg-primary)    │  ← solid opaque background
+├─────────────────────────┤
+│  Hero Image             │  ← separate section below
+│  Greeting text          │
+├─────────────────────────┤
+│  Today's Overview card  │
+└─────────────────────────┘
 ```
 
-- That matches your screenshot: the hero area is there, but what remains visible is almost entirely the dark overlay plus the greeting text.
+### Target Structure
+```text
+┌─────────────────────────┐
+│  Header (transparent)   │  ← icons float over the image
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│  Hero Image (behind)    │  ← image extends under header
+│  Greeting text          │
+├─────────────────────────┤
+│  Today's Overview card  │
+└─────────────────────────┘
+```
 
-Secondary issue I found
+### Changes
 
-- The image source logic only falls back to the default asset when `heroImageUrl` is empty:
-  - `heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg`
-- So if a saved hero URL exists but the file is broken/unavailable, the default image will not be used. That is a separate fallback bug worth fixing too.
+**1. `InstructorPortalLayout.tsx` — Make header transparent on homepage**
+- On the `/instructor` route only, change the header from `bg-primary` to transparent so the hero image shows through
+- Keep `bg-primary` on all other pages (back button pages)
+- Remove the safe-area fill div's opaque background on homepage too
+- The header remains sticky and z-40 so icons stay interactive
 
-Plan to fix
+**2. `HomepageHero.tsx` — Extend image under the header**
+- Remove the `paddingTop: env(safe-area-inset-top)` from the hero wrapper (the header already handles safe area)
+- Add negative top margin to pull the hero image up behind the header area (approximately `-mt-[calc(env(safe-area-inset-top)+56px)]` to account for safe area + header height)
+- Increase the hero image aspect ratio slightly (from `1/0.55` to about `1/0.65`) to compensate for the portion hidden behind the header
+- Keep the greeting text positioned with enough top padding to sit below the header
 
-1. Remove the remaining dark scrim from the hero image.
-2. Slightly reduce the card overlap or increase the hero height so some photo remains visible above the tile.
-3. Add an `onError` fallback on the hero `<img>` so broken saved URLs still show the bundled default image.
-4. Recheck the `/instructor` mobile layout at 390x560 to confirm the photo is clearly visible behind the greeting and above the overlapping card.
+**3. `InstructorPortalLayout.tsx` — Remove graduated fade on homepage**
+- The existing gradient fade below the header (`linear-gradient... hsl(var(--primary))`) would look wrong over the photo — skip or change it to a subtle dark scrim on the homepage route
 
-Main file to update
-
+### Files to modify
+- `src/components/layout/InstructorPortalLayout.tsx`
 - `src/components/instructor/HomepageHero.tsx`
+
