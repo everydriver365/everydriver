@@ -174,6 +174,7 @@ export default function InstructorSettings() {
     { id: "reset-stats", title: "Reset Statistics", description: "Clear lesson history, payments, or progress", category: "Preferences & Data" },
   ], []);
 
+  useEffect(() => {
     if (instructorId) {
       fetchProfile();
     }
