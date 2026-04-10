@@ -476,7 +476,7 @@ export function InstructorMobileHome({
       <div className="px-4 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
+          className="w-full flex items-center justify-between bg-card border border-border rounded-none px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3">
             <img src={calendarIcon} alt="Schedule" className="w-12 h-12" />
