@@ -106,7 +106,7 @@ import planIcon from "@/assets/plan-icon.png";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
-import instructorBg from "@/assets/instructor-bg.png";
+import instructorBg from "@/assets/instructor-bg-signs.png";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -400,9 +400,19 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen overflow-x-hidden instructor-portal bg-background",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden" : isHomePage ? "pb-16" : "pb-16"
+          "min-h-screen overflow-x-hidden instructor-portal",
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : isHomePage ? "pb-16" : "pb-16"
         )}
+        style={
+          !isFullscreenMode
+            ? {
+                backgroundImage: `url(${instructorBg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+              }
+            : undefined
+        }
       >
         {!isFullscreenMode && (
           <>

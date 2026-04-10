@@ -82,7 +82,7 @@ import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import calendarIcon from "@/assets/calendar-icon.png";
-import instructorBg from "@/assets/instructor-bg.png";
+import instructorBg from "@/assets/instructor-bg-signs.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
@@ -334,8 +334,13 @@ export function InstructorMobileHome({
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
        <div
-         className="min-h-screen flex flex-col overflow-x-hidden relative bg-background"
-         style={undefined}
+         className="min-h-screen flex flex-col overflow-x-hidden relative"
+         style={{
+           backgroundImage: `url(${instructorBg})`,
+           backgroundSize: 'cover',
+           backgroundPosition: 'center',
+           backgroundAttachment: 'fixed',
+         }}
        >
 
       {/* Updated feedback banner */}
