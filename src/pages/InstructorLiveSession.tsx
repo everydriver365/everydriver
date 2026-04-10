@@ -388,13 +388,11 @@ export default function InstructorLiveSession() {
     return () => clearInterval(interval);
   }, [sessionStartTime]);
 
-  // Wake lock to keep screen on during tracking
+  // Wake lock to keep screen on while on tracking page
   useEffect(() => {
     let wakeLock: WakeLockSentinel | null = null;
 
     const requestWakeLock = async () => {
-      if (!device?.current_session_id) return;
-      
       try {
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
@@ -409,7 +407,7 @@ export default function InstructorLiveSession() {
 
     // Re-acquire wake lock when page becomes visible
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && device?.current_session_id) {
+      if (document.visibilityState === 'visible') {
         requestWakeLock();
       }
     };
@@ -423,7 +421,7 @@ export default function InstructorLiveSession() {
         console.log('Wake lock released');
       }
     };
-  }, [device?.current_session_id]);
+  }, []);
 
   const startSession = async (
     routeType: "practice" | "test" | "driving_test" = "practice",
