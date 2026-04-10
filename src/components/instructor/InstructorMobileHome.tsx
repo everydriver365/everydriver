@@ -50,6 +50,7 @@ import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { HomepageHero } from "@/components/instructor/HomepageHero";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
+import { TelematicsTile } from "@/components/instructor/TelematicsTile";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
