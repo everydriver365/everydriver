@@ -1,10 +1,13 @@
 
 
-# Fix Rork Database Access — Add Missing Anon RLS Policies (Batch 2)
+## Plan: Replace Instructor App Hero Image
 
-## Root Cause
+**What:** Copy the uploaded car image into `src/assets/` and update the `HomepageHero.tsx` component to use it as the default hero background.
 
-Rork connects with the Supabase **anon key** and no authenticated session. Tables without an explicit `anon SELECT` policy return **empty arrays** silently — no errors, just no data. This is why features appear "broken" even though the code is correct.
+### Steps
 
-### Already covered (20 tables)
-`scheduled_lessons`, `pupils`, `payment_history`, `mileage_logs`, `instructor_expenses`, `instructor_todos`, `clock_entries`, `lesson_telematics`, `telematics_alerts`, `telematics_gps_points`, `live_pupil_positions`, `conversations`, `messages`, `gps_devices`, `geotab_driver_events`, `geotab_fuel_usage`, `geotab_
+1. **Copy the uploaded image** to `src/assets/hero-instructor.jpg` (replacing the existing file)
+2. No code changes needed — `HomepageHero.tsx` already imports from `@/assets/hero-instructor.jpg` (line 5), so the new image will be picked up automatically
+
+That's it — one file copy, zero code changes.
+
