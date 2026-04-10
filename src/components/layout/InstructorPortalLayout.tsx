@@ -106,6 +106,7 @@ import planIcon from "@/assets/plan-icon.png";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
+import instructorBg from "@/assets/instructor-bg.png";
 const sidebarGroups = [
   {
     label: "TEACHING",
