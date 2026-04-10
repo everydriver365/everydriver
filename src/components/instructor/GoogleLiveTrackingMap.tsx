@@ -45,7 +45,7 @@ function getTargetZoom(speedMph: number): number {
 }
 
 // ========== Component ==========
-export default function LiveGoogleTrackingMap({ className = "" }: { className?: string }) {
+export default function LiveGoogleTrackingMap({ className = "", deviceId: deviceIdProp }: { className?: string; deviceId?: string }) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -129,11 +129,17 @@ export default function LiveGoogleTrackingMap({ className = "" }: { className?: 
       setNote(null);
       const { data: auth } = await supabase.auth.getUser();
       if (!auth?.user) { setStatus("Please log in to see tracking."); return; }
-      const { data, error } = await supabase
+      let query = supabase
         .from("gps_devices")
-        .select("id,is_active,last_latitude,last_longitude,last_heading,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id")
-        .eq("is_active", true)
-        .single();
+        .select("id,is_active,last_latitude,last_longitude,last_heading,last_speed_kmh,last_speed_limit_kmh,last_road_name,last_seen_at,current_session_id");
+      
+      if (deviceIdProp) {
+        query = query.eq("id", deviceIdProp);
+      } else {
+        query = query.eq("is_active", true).order("last_seen_at", { ascending: false }).limit(1);
+      }
+      
+      const { data, error } = await query.maybeSingle();
       if (cancelled) return;
       if (error) { setStatus(`Could not load tracker: ${error.message}`); return; }
       setDevice(data as DeviceRow);
