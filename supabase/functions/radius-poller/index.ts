@@ -49,7 +49,7 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
     throw new Error("RADIUS_API_TOKEN not configured");
   }
 
-  console.log("[RadiusPoller] Refreshing access token...");
+  console.log("[RadiusPoller] Refreshing access token, API-Token length:", apiToken.length);
   const res = await fetch(
     "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/",
     {
