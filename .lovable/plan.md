@@ -1,25 +1,27 @@
 
 
-## Make Hero Image Match Reference
+# Fix: Remove all border radius rounding from instructor tiles
 
-The reference image shows a different layout from the current hero:
+## Problem
+The previous fix only changed the **outer container** of each tile to `rounded-none`, but all the **inner elements** (buttons, cards, icons, metric boxes, action bars, stat sections) still have `rounded-xl`, `rounded-2xl`, etc. These are what still look round.
 
-**Current**: Avatar + single-line greeting ("Good Morning, Name") + date subtitle, all on one line with avatar  
-**Reference**: No avatar in the hero area. Two-line greeting — small "Good evening," on top, then large bold "Instructor" (the name) below. No date shown in the hero.
+## Scope
+The following files need all non-circular `rounded-*` classes replaced with `rounded-none`:
 
-### Changes to `src/components/instructor/HomepageHero.tsx`
+**Note:** `rounded-full` on small circular elements like badges, dots, and status indicators will be **kept** — those are intentionally circular (e.g., notification count badges, dot indicators, avatar circles).
 
-1. **Remove the avatar/profile image** from the hero overlay — the greeting area should only have text.
+### Files to update
 
-2. **Restructure greeting text** to match the reference:
-   - Line 1: Small text — just the greeting phrase (e.g. "Good evening,") in ~16px, normal weight, white with slight transparency
-   - Line 2: Large bold name (e.g. "Instructor" / firstName) in ~32-36px, bold, white
+1. **`src/components/instructor/NextUpTile.tsx`** — ~30 instances of `rounded-xl` and `rounded-2xl` on inner sections (avatar, quick action buttons, stat cards, ETA section, weather section, vehicle health, action buttons, Start/End lesson buttons)
 
-3. **Remove the date** line (`format(new Date(), "EEEE d MMMM")`).
+2. **`src/components/instructor/ActivityTilesGrid.tsx`** — `rounded-[10px]` on icon images (×4), `rounded-full` on the "all clear" banner
 
-4. **Adjust vertical positioning** — move the text down so it sits in the lower-left of the hero image (the reference shows the greeting near the bottom of the image area, not at the top). Change from `justify-start` with top padding to `justify-end` with bottom padding (~50px to clear the carousel overlap).
+3. **`src/components/instructor/TelematicsTile.tsx`** — `rounded-xl` on fault codes section and MetricCard component
 
-5. **Keep the hero image aspect ratio** as-is (`1 / 0.43`) — the reference looks similar.
+4. **`src/components/instructor/QuickActionTiles.tsx`** — `rounded-xl` on drag handles, icon containers, available tile list items, and tile containers in the rendered view
 
-These are purely visual/layout changes to the text overlay within the existing hero component.
+### Approach
+- Global find-and-replace within each file: `rounded-2xl` → `rounded-none`, `rounded-xl` → `rounded-none`, `rounded-[10px]` → `rounded-none`
+- Preserve `rounded-full` on truly circular elements (notification badges, dot indicators, status pips, avatar circles)
+- Preserve `rounded-none` that already exists
 
