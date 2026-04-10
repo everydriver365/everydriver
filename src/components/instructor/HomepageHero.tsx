@@ -127,7 +127,7 @@ export function HomepageHero({
   return (
     <div className="relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Background image area */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: "1 / 0.4" }}>
+      <div className="relative" style={{ aspectRatio: "1 / 0.4", borderRadius: 0, overflow: "hidden" }}>
         <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover" />
         {/* Dark scrim at top for text legibility only */}
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/50 to-transparent" />
