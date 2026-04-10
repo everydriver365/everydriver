@@ -127,9 +127,10 @@ export function HomepageHero({
   return (
     <div className="relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Background image area */}
-      <div className="relative h-[180px] overflow-hidden hero-banner-no-top-radius">
-        <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover !rounded-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
+      <div className="relative aspect-square overflow-hidden">
+        <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover" />
+        {/* Dark scrim at top for text legibility only */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/50 to-transparent" />
 
         {/* Top — Avatar + Greeting */}
         <div className="absolute inset-0 flex flex-col justify-start p-5">
