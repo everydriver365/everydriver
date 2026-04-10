@@ -479,7 +479,7 @@ export function InstructorMobileHome({
           className="w-full flex items-center justify-between bg-card border border-border rounded-none px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3">
-            <img src={calendarIcon} alt="Schedule" className="w-12 h-12" />
+            <img src={calendarIcon} alt="Schedule" className="w-8 h-8" />
             <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
