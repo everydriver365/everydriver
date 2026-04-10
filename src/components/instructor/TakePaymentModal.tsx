@@ -237,32 +237,8 @@ export function TakePaymentModal({
         </DialogHeader>
 
         <div className="p-4 max-h-[70vh] overflow-y-auto">
-          {/* === Picker === */}
-          {view === "picker" && (
-            <div className="grid gap-3">
-              {options.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => setView(opt.id)}
-                    className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-accent transition-colors text-left"
-                  >
-                    <div className={`h-11 w-11 rounded-xl ${opt.bg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-5 w-5 ${opt.color}`} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">{opt.label}</p>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* === Payment type switcher (shown on sub-views) === */}
-          {view !== "picker" && view !== "received" && (
+          {/* === Payment type switcher === */}
+          {view !== "received" && (
             <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
               {options.map((opt) => {
                 const Icon = opt.icon;
