@@ -400,10 +400,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen overflow-x-hidden instructor-portal",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : isHomePage ? "pb-16" : "pb-16"
+          "min-h-screen overflow-x-hidden instructor-portal bg-background",
+           isFullscreenMode ? "h-[100dvh] overflow-hidden" : isHomePage ? "pb-16" : "pb-16"
         )}
-        style={undefined}
       >
         {!isFullscreenMode && (
           <>
@@ -414,10 +413,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <header
               className={cn(
                 "sticky top-0 z-40 pt-[env(safe-area-inset-top)]",
-                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-primary"
+                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-background border-b border-border"
               )}
             >
-              <div className="text-primary-foreground relative overflow-hidden">
+              <div className={cn("relative overflow-hidden", isHomePage ? "text-primary-foreground" : "text-foreground")}>
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Hamburger + Title */}
@@ -425,7 +424,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     {showBackButton && (
                       <button
                         onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
+                        className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
@@ -435,7 +434,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
                         >
                           <Menu className="h-5 w-5" />
                         </Button>
@@ -768,11 +767,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
           <div className="flex-1 flex flex-col min-w-0">
             {/* Slim Header */}
-            <header className="sticky top-0 z-50 bg-[#142040] shadow-lg">
+            <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
               <div className="flex items-center justify-between px-4 h-12">
                 {/* Left: Sidebar trigger + Search */}
                 <div className="flex items-center gap-2">
-                  <SidebarTrigger className="text-white/70 hover:text-white hover:bg-white/10" />
+                  <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted" />
                   <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
                 </div>
 
@@ -788,7 +787,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
                       >
                         {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                       </Button>
