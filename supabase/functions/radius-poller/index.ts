@@ -42,20 +42,18 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   }
 
   // 3. Refresh with Velocity Fleet API
-  const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN");
-  const apiToken = Deno.env.get("RADIUS_API_TOKEN");
+  const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
+  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
   if (!refreshToken || !apiToken) {
     return null as unknown as RadiusSession; // Signal caller to skip gracefully
     throw new Error("RADIUS_API_TOKEN not configured");
   }
 
-  console.log("[RadiusPoller] Refreshing access token, API-Token length:", apiToken.length, "first 4 chars:", apiToken.substring(0, 4));
   const refreshUrl = "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/";
   const refreshHeaders: Record<string, string> = {
     "Content-Type": "application/json",
-    "Api-Token": apiToken,
+    "API-Token": apiToken,
   };
-  console.log("[RadiusPoller] Refresh headers:", JSON.stringify(Object.keys(refreshHeaders)));
   const res = await fetch(refreshUrl, {
     method: "POST",
     headers: refreshHeaders,
