@@ -77,6 +77,8 @@ export default function InstructorMenu() {
   const { isFeatureLocked, getUpgradeMessage, getMinimumPlanName } = useMenuFeatureGates();
   const [showTestResultForm, setShowTestResultForm] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handleLogout = async () => {
     await signOut();
     navigate("/instructor-app/login");
