@@ -125,69 +125,70 @@ export function HomepageHero({
   };
 
   return (
-    <div className="relative h-[220px] overflow-hidden hero-banner-no-top-radius" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-      {/* Background image */}
-      <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover !rounded-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
+    <div className="relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      {/* Background image area */}
+      <div className="relative h-[180px] overflow-hidden hero-banner-no-top-radius">
+        <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover !rounded-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
 
-      {/* Content layer */}
-      <div className="absolute inset-0 flex flex-col justify-between p-5 pb-3">
         {/* Top — Avatar + Greeting */}
-        <div className="flex items-center gap-3">
-          {profileImageUrl ? (
-            <img src={profileImageUrl} alt={firstName} className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md" />
-          ) : (
-            <div className="w-11 h-11 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
-              <span className="text-white font-semibold text-[16px]">{firstName.charAt(0).toUpperCase()}</span>
+        <div className="absolute inset-0 flex flex-col justify-start p-5">
+          <div className="flex items-center gap-3">
+            {profileImageUrl ? (
+              <img src={profileImageUrl} alt={firstName} className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md" />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
+                <span className="text-white font-semibold text-[16px]">{firstName.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+            <div>
+              <h1 className="text-[22px] font-bold text-white leading-tight drop-shadow-md">{getGreeting()}</h1>
+              <p className="text-[12px] text-white/70 -mt-0.5">{format(new Date(), "EEEE d MMMM")}</p>
             </div>
-          )}
-          <div>
-            <h1 className="text-[22px] font-bold text-white leading-tight drop-shadow-md">{getGreeting()}</h1>
-            <p className="text-[12px] text-white/70 -mt-0.5">{format(new Date(), "EEEE d MMMM")}</p>
           </div>
         </div>
+      </div>
 
-        {/* Bottom — Swipeable carousel */}
-        <div>
-          <div ref={emblaRef} className="overflow-hidden">
-            <div className="flex">
-              {slides.map((slide, i) => (
-                <div key={slide.label} className="min-w-0 shrink-0 grow-0 basis-full">
-                  <div
-                    className="bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl p-3.5 flex items-center justify-between mx-0"
-                    style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.12)" }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        {slide.label}
-                      </p>
-                      <p className="text-[17px] font-semibold text-foreground mt-0.5 leading-snug">
-                        {getMotivation(slide)}
-                      </p>
-                      <p className="text-[13px] text-muted-foreground mt-0.5">{slide.subtitle}</p>
-                    </div>
-                    <ProgressRing
-                      completed={slide.completed}
-                      total={slide.total}
-                      scheduled={slide.total}
-                      gradientId={slide.gradientId}
-                    />
+      {/* Carousel overlapping the hero — pulled up */}
+      <div className="-mt-14 relative z-10 px-4">
+        <div ref={emblaRef} className="overflow-hidden">
+          <div className="flex">
+            {slides.map((slide, i) => (
+              <div key={slide.label} className="min-w-0 shrink-0 grow-0 basis-full">
+                <div
+                  className="bg-white/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl p-3.5 flex items-center justify-between"
+                  style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.12)" }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      {slide.label}
+                    </p>
+                    <p className="text-[17px] font-semibold text-foreground mt-0.5 leading-snug">
+                      {getMotivation(slide)}
+                    </p>
+                    <p className="text-[13px] text-muted-foreground mt-0.5">{slide.subtitle}</p>
                   </div>
+                  <ProgressRing
+                    completed={slide.completed}
+                    total={slide.total}
+                    scheduled={slide.total}
+                    gradientId={slide.gradientId}
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-          {/* Dot indicators */}
-          <div className="flex justify-center gap-1.5 mt-2">
-            {slides.map((_, i) => (
-              <div
-                key={i}
-                className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
-                  i === selectedIndex ? "bg-white" : "bg-white/40"
-                }`}
-              />
+              </div>
             ))}
           </div>
+        </div>
+        {/* Dot indicators */}
+        <div className="flex justify-center gap-1.5 mt-2">
+          {slides.map((_, i) => (
+            <div
+              key={i}
+              className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
+                i === selectedIndex ? "bg-primary" : "bg-muted-foreground/30"
+              }`}
+            />
+          ))}
         </div>
       </div>
     </div>
