@@ -1,43 +1,31 @@
-import { ArrowLeft, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { CPDLogManager } from "@/components/instructor/CPDLogManager";
-import { useEffect } from "react";
+import { BookOpen } from "lucide-react";
 
 export default function InstructorCPD() {
-  const navigate = useNavigate();
   const { instructor, refreshInstructor } = useInstructorAuth();
-  const [searchParams] = useSearchParams();
 
   if (!instructor) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-bold">CPD Log</h1>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-4 max-w-lg mx-auto">
+    <InstructorPortalLayout>
+      <div className="space-y-4 max-w-lg mx-auto">
+        <InstructorPageHeader lucideIcon={BookOpen} title="CPD Log" />
         <CPDLogManager
           instructorId={instructor.id}
           onUpdate={refreshInstructor}
         />
       </div>
-    </div>
+    </InstructorPortalLayout>
   );
 }
