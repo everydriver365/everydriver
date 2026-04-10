@@ -29,7 +29,7 @@ export function InstructorPageHeader({
   className,
 }: InstructorPageHeaderProps) {
   return (
-    <div className={cn("flex items-center justify-between", className)}>
+    <div className={cn("flex items-center justify-between sticky top-14 z-30 bg-background/95 backdrop-blur-sm py-3 -mx-4 px-4", className)}>
       <div className="flex items-center gap-3">
         {/* 44px icon circle */}
         <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
