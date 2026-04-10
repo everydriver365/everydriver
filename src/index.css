@@ -350,10 +350,10 @@
   z-index: 2 !important;
 }
 
-/* Instructor portal: no border radius on tiles/cards */
-.instructor-portal .bg-card,
-.instructor-portal [class*="shadow-sm"],
-.instructor-portal [class*="shadow-md"],
+/* Instructor portal: no border radius on tiles/cards — preserve rounded-full for avatars, badges, SOS */
+.instructor-portal .bg-card:not(.rounded-full),
+.instructor-portal [class*="shadow-sm"]:not(.rounded-full),
+.instructor-portal [class*="shadow-md"]:not(.rounded-full),
 .instructor-portal [class*="overflow-hidden"]:not(img):not(video):not(.rounded-full):not(.hero-banner-no-top-radius) {
   border-radius: 0 !important;
 }
@@ -364,6 +364,10 @@
 .instructor-portal input,
 .instructor-portal textarea {
   border-radius: 0 !important;
+}
+/* Ensure rounded-full always wins */
+.instructor-portal .rounded-full {
+  border-radius: 9999px !important;
 }
 
 /* Learner app (Drive365): remove all border radius from tiles/cards */
