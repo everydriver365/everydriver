@@ -771,7 +771,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <div className="flex items-center justify-between px-4 h-12">
                 {/* Left: Sidebar trigger + Search */}
                 <div className="flex items-center gap-2">
-                  <SidebarTrigger className="text-white/70 hover:text-white hover:bg-white/10" />
+                  <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted" />
                   <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
                 </div>
 
@@ -787,7 +787,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
                       >
                         {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                       </Button>
