@@ -403,16 +403,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           "min-h-screen overflow-x-hidden instructor-portal",
            isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : isHomePage ? "pb-16" : "pb-16"
         )}
-        style={
-          !isFullscreenMode
-            ? {
-                backgroundImage: `url(${instructorBg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-              }
-            : undefined
-        }
+        style={undefined}
       >
         {!isFullscreenMode && (
           <>
