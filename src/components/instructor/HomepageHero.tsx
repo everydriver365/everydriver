@@ -132,21 +132,18 @@ export function HomepageHero({
         {/* Subtle bottom gradient for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
 
-        {/* Top — Avatar + Greeting, pushed down to clear header */}
-        <div className="absolute inset-0 flex flex-col justify-start" style={{ paddingTop: "calc(env(safe-area-inset-top) + 60px)", paddingLeft: 20, paddingRight: 20 }}>
-          <div className="flex items-center gap-3">
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt={firstName} className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md" />
-            ) : (
-              <div className="w-11 h-11 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
-                <span className="text-white font-semibold text-[16px]">{firstName.charAt(0).toUpperCase()}</span>
-              </div>
-            )}
-            <div>
-              <h1 className="text-[22px] font-bold text-white leading-tight drop-shadow-md">{getGreeting()}</h1>
-              <p className="text-[12px] text-white/70 -mt-0.5">{format(new Date(), "EEEE d MMMM")}</p>
-            </div>
-          </div>
+        {/* Greeting text — bottom-left */}
+        <div className="absolute inset-0 flex flex-col justify-end" style={{ paddingBottom: 50, paddingLeft: 20, paddingRight: 20 }}>
+          <p className="text-[16px] font-normal text-white/80 leading-tight drop-shadow-md">
+            {new Date().getHours() >= 5 && new Date().getHours() < 12
+              ? "Good morning,"
+              : new Date().getHours() >= 12 && new Date().getHours() < 17
+              ? "Good afternoon,"
+              : new Date().getHours() >= 17 && new Date().getHours() < 21
+              ? "Good evening,"
+              : "Hello,"}
+          </p>
+          <h1 className="text-[34px] font-bold text-white leading-tight drop-shadow-md">{firstName}</h1>
         </div>
       </div>
 
