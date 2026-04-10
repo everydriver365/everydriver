@@ -43,7 +43,7 @@ export function DiscoverFeaturesSheet({ open, onOpenChange }: DiscoverFeaturesSh
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[92vh] rounded-t-[14px] p-0 flex flex-col">
+      <SheetContent side="bottom" className="h-[92vh] rounded-none p-0 flex flex-col">
         <div className="flex justify-center pt-2.5 pb-1">
           <div className="w-9 h-[5px] rounded-full bg-muted-foreground/30" />
         </div>
@@ -92,7 +92,7 @@ export function DiscoverFeaturesSheet({ open, onOpenChange }: DiscoverFeaturesSh
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="bg-card rounded-[10px] border border-border divide-y divide-border overflow-hidden">
+                        <div className="bg-card rounded-none border border-border divide-y divide-border overflow-hidden">
                           {features.map((feature) => (
                             <FeatureRow
                               key={feature.title}
@@ -146,7 +146,7 @@ function FeatureRow({
         className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-muted/50 transition-colors"
       >
         <div
-          className="h-[29px] w-[29px] rounded-[7px] flex items-center justify-center shrink-0"
+          className="h-[29px] w-[29px] rounded-none flex items-center justify-center shrink-0"
           style={{ backgroundColor: feature.accent + "20" }}
         >
           <Icon className="h-4 w-4" style={{ color: feature.accent }} />

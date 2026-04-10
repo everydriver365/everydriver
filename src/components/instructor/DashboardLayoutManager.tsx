@@ -144,7 +144,7 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
         Choose which tiles appear on your home screen.
       </p>
 
-      <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+      <div className="p-3 rounded-none bg-primary/5 border border-primary/10">
         <p className="text-sm font-medium text-primary">
           {visibleCount} of {allTiles.length} tile{allTiles.length !== 1 ? "s" : ""} visible
         </p>
@@ -163,7 +163,7 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
               onClick={() => handleToggle(tile)}
               disabled={saving}
               className={cn(
-                "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                "w-full flex items-center gap-3 p-3 rounded-none border transition-all text-left",
                 isVisible
                   ? "bg-card border-primary/20 shadow-[0_1px_4px_rgba(20,37,66,0.06)]"
                   : "bg-muted/30 border-border/50 opacity-70"
@@ -172,7 +172,7 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
               {/* Checkbox */}
               <div
                 className={cn(
-                  "h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                  "h-5 w-5 rounded-none border-2 flex items-center justify-center shrink-0 transition-colors",
                   isVisible
                     ? "bg-primary border-primary"
                     : "border-muted-foreground/40 bg-transparent"
@@ -190,7 +190,7 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
                 className={cn(
                   "h-9 w-9 flex items-center justify-center shrink-0 overflow-hidden",
                   !customImg && (isVisible ? "bg-primary/10" : "bg-muted"),
-                  customImg ? "rounded-none" : "rounded-lg"
+                  customImg ? "rounded-none" : "rounded-none"
                 )}
                 style={radius ? { borderRadius: radius } : undefined}
               >
