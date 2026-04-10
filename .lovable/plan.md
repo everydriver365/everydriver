@@ -1,39 +1,41 @@
 
 
-# Remove All Remaining Border Radius from Instructor Mobile App Tiles
+# Remove All Remaining Border Radius from Instructor Mobile App
 
-## Problem
-Multiple homepage and dashboard tiles still have `rounded-xl`, `rounded-2xl`, `rounded-[20px]`, `rounded-[22px]`, `rounded-[14px]`, `rounded-lg`, `rounded-md`, and `rounded-t-lg` classes on their elements. These need to be replaced with `rounded-none` to match the sharp-edged design.
+## Summary
+Comprehensive sweep of all instructor components to replace every `rounded-xl`, `rounded-2xl`, `rounded-lg`, `rounded-md`, `rounded-sm`, `rounded-t-2xl`, `rounded-t-3xl`, `rounded-[Npx]` with `rounded-none`. Preserve only `rounded-full` (circular avatars/badges).
 
 ## Files to Update
 
-### 1. `src/components/instructor/HomeTodaySchedule.tsx`
-- Line 20: `rounded-xl` → `rounded-none` (loading skeleton card)
-- Line 44: `rounded-xl` → `rounded-none` (main schedule card)
-- Line 76: `rounded-lg` → `rounded-none` (empty-state icon container)
+### Home page tile components
+1. **ContextualHomeHero.tsx** — 7 instances of `rounded-lg` on info cards and buttons
+2. **NextLessonCard.tsx** — `rounded-xl` on card, `rounded-lg` on action buttons
+3. **BriefingActionCards.tsx** — 5 instances of `rounded-xl`/`rounded-lg` on stat boxes, action rows, and AI tip
+4. **BriefingActionModal.tsx** — `rounded-2xl` on dialog, `rounded-xl`/`rounded-lg` on buttons and list items
+5. **CleanHomeView.tsx** — ~15 instances: `rounded-2xl` on card containers, `rounded-[22px]`/`rounded-[16px]`/`rounded-[10px]` on tiles and icons, `rounded-md` on badges
+6. **CompactHomeView.tsx** — `rounded-xl` and `rounded-[14px]` on tile cards
+7. **DiscoverFeaturesSheet.tsx** — `rounded-t-[14px]`, `rounded-[10px]`, `rounded-[7px]`
+8. **DiscoverFeaturesTile.tsx** — `rounded-2xl` on tile container
 
-### 2. `src/components/instructor/InsightTilesGrid.tsx`
-- Line 70: `rounded-[20px]` → `rounded-none` (tile buttons)
+### Dashboard widgets
+9. **dashboard/MessagesWidget.tsx** — `rounded-2xl`, `rounded-xl`, `rounded-lg` on container and items
+10. **dashboard/PlanWidget.tsx** — `rounded-2xl`, `rounded-xl`
+11. **dashboard/MileageTaxSavingsCard.tsx** — `rounded-lg`
+12. **dashboard/NotesWidget.tsx** — `rounded-md` on note cards
+13. **dashboard/ReferralStatsWidget.tsx** — `rounded-lg`
+14. **dashboard/RetentionAlertsTile.tsx** — `rounded-lg`
 
-### 3. `src/components/instructor/BottomPromoGroup.tsx`
-- Line 13: `rounded-xl` → `rounded-none` (outer container)
-- Lines 19, 31: `rounded-lg` → `rounded-none` (icon containers)
+### Overlays and menus
+15. **QuickActionsFAB.tsx** — `rounded-xl`, `rounded-lg`
+16. **QuickActionsPopoverMenu.tsx** — `rounded-2xl`, `rounded-xl`, `rounded-lg`
+17. **PupilCardStack.tsx** — `rounded-t-2xl` on bottom sheets
 
-### 4. `src/components/instructor/BestMateHomeView.tsx`
-- Lines 66, 98: `rounded-[20px]` → `rounded-none` (tile containers)
-- Line 188: `rounded-[14px]` → `rounded-none` (inner section)
-
-### 5. `src/components/instructor/NextLessonTile.tsx`
-- Line 108: `rounded-[22px]` → `rounded-none` (loading skeleton)
-- Line 115: `rounded-xl` → `rounded-none` (inner skeleton block)
-
-### 6. `src/components/instructor/dashboard/UnifiedAgendaTile.tsx`
-- Line 185: `rounded-2xl` → `rounded-none` (outer container)
-- Lines 192, 258, 262, 271: `rounded-xl` / `rounded-lg` / `rounded-md` → `rounded-none` (inner elements like icon containers, tab segments, toggle buttons)
-- Lines 218, 225, 445, 476, 517, 520: `rounded-md` → `rounded-none` (action buttons, checkboxes)
+### Other home-adjacent components
+18. **DormantPupilsCard.tsx** — `rounded-xl`, `rounded-lg`
+19. **DashboardLayoutManager.tsx** — `rounded-lg`, `rounded-xl`, `rounded-md`
 
 ## Approach
-- Simple find-and-replace of `rounded-xl`, `rounded-2xl`, `rounded-lg`, `rounded-md`, `rounded-[Npx]` → `rounded-none` in each file
-- Preserve `rounded-full` on circular badges/dots/avatars
-- Preserve `rounded-none` already in place
+- Run `sed` replacements across all listed files to convert any `rounded-{variant}` (except `rounded-none` and `rounded-full`) to `rounded-none`
+- Single bulk operation per file
+- No functional changes, purely visual
 
