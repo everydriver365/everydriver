@@ -1,10 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-square-hmacsha256-signature",
 };
+
+async function verifySquareSignature(body: string, signature: string, sigKey: string, notificationUrl: string): Promise<boolean> {
+  const combined = notificationUrl + body;
+  const key = new TextEncoder().encode(sigKey);
+  const data = new TextEncoder().encode(combined);
+  const cryptoKey = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, data);
+  const computed = btoa(String.fromCharCode(...new Uint8Array(sig)));
+  return computed === signature;
+}
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -16,7 +27,27 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const payload = await req.json();
+    const rawBody = await req.text();
+
+    // HMAC signature verification
+    const WEBHOOK_SIG_KEY = Deno.env.get("SQUARE_WEBHOOK_SIGNATURE_KEY");
+    if (WEBHOOK_SIG_KEY) {
+      const signature = req.headers.get("x-square-hmacsha256-signature") || "";
+      const notificationUrl = `${supabaseUrl}/functions/v1/square-webhook`;
+      const isValid = await verifySquareSignature(rawBody, signature, WEBHOOK_SIG_KEY, notificationUrl);
+      if (!isValid) {
+        console.error("Square webhook signature verification FAILED");
+        return new Response(
+          JSON.stringify({ error: "Invalid signature" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      console.log("Square webhook signature verified ✓");
+    } else {
+      console.warn("SQUARE_WEBHOOK_SIGNATURE_KEY not set — skipping signature verification");
+    }
+
+    const payload = JSON.parse(rawBody);
     const eventType = payload.type;
     const data = payload.data?.object;
 
