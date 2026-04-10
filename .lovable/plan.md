@@ -1,27 +1,25 @@
 
 
-## Why the hero image is blocked by a blue screen
+## Make Hero Image Match Reference
 
-The root cause is two layers of solid background covering the hero image:
+The reference image shows a different layout from the current hero:
 
-1. **Outer container** (line 403): `bg-primary pb-16` — this is the blue you see. It fills the entire screen.
-2. **Main content area** (line 631): `style={{ backgroundColor: mobileBg }}` where `mobileBg` defaults to `"#E8F1FE"` — another opaque background on top.
+**Current**: Avatar + single-line greeting ("Good Morning, Name") + date subtitle, all on one line with avatar  
+**Reference**: No avatar in the hero area. Two-line greeting — small "Good evening," on top, then large bold "Instructor" (the name) below. No date shown in the hero.
 
-When we made the header transparent and absolute, the hero image (inside `children` / `<main>`) sits *below* the header in the DOM — but the outer container's solid `bg-primary` blue fills the gap the absolute header left behind. The main tag also paints its own opaque background over the hero.
+### Changes to `src/components/instructor/HomepageHero.tsx`
 
-## Fix
+1. **Remove the avatar/profile image** from the hero overlay — the greeting area should only have text.
 
-**File: `src/components/layout/InstructorPortalLayout.tsx`**
+2. **Restructure greeting text** to match the reference:
+   - Line 1: Small text — just the greeting phrase (e.g. "Good evening,") in ~16px, normal weight, white with slight transparency
+   - Line 2: Large bold name (e.g. "Instructor" / firstName) in ~32-36px, bold, white
 
-1. **Outer container** (line 401-404): On the homepage, change `bg-primary` to `bg-transparent` so the blue doesn't fill behind the absolute header area.
-   ```
-   isFullscreenMode ? "..." : isHomePage ? "pb-16" : "bg-primary pb-16"
-   ```
+3. **Remove the date** line (`format(new Date(), "EEEE d MMMM")`).
 
-2. **Main content area** (line 631): On the homepage, remove the inline `backgroundColor` so the hero image shows through. The hero component already has its own backgrounds.
-   ```
-   style={{ backgroundColor: isHomePage ? 'transparent' : mobileBg }}
-   ```
+4. **Adjust vertical positioning** — move the text down so it sits in the lower-left of the hero image (the reference shows the greeting near the bottom of the image area, not at the top). Change from `justify-start` with top padding to `justify-end` with bottom padding (~50px to clear the carousel overlap).
 
-These two changes will let the hero image be visible and bleed behind the transparent header as intended.
+5. **Keep the hero image aspect ratio** as-is (`1 / 0.43`) — the reference looks similar.
+
+These are purely visual/layout changes to the text overlay within the existing hero component.
 
