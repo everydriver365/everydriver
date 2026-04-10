@@ -185,7 +185,7 @@ export function ScheduleLessonsDialog({
 
         <div className="space-y-6 pt-4">
           {/* Hours Summary */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+          <div className="flex items-center justify-between p-3 rounded-none bg-muted">
             <div className="text-sm">
               <span className="text-muted-foreground">Remaining to schedule:</span>
               <span className="ml-2 font-semibold">{remainingHours} hours</span>
@@ -202,7 +202,7 @@ export function ScheduleLessonsDialog({
           </div>
 
           {isOverBooked && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            <div className="p-3 rounded-none bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               You're scheduling more hours than the pupil has prepaid. This will add extra lessons beyond their package.
             </div>
           )}
@@ -236,7 +236,7 @@ export function ScheduleLessonsDialog({
             {slots.map((slot, index) => (
               <div 
                 key={slot.id} 
-                className="flex flex-wrap items-center gap-2 p-3 rounded-lg border bg-card"
+                className="flex flex-wrap items-center gap-2 p-3 rounded-none border bg-card"
               >
                 <Badge variant="secondary" className="mr-2">
                   Lesson {index + 1}

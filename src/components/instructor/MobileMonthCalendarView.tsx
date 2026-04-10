@@ -283,7 +283,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             {allDayEvents.map((evt) => (
               <div
                 key={evt.id}
-                className="bg-warning/10 rounded-xl border border-foreground px-4 py-2.5 flex items-center gap-2"
+                className="bg-warning/10 rounded-none border border-foreground px-4 py-2.5 flex items-center gap-2"
               >
                 <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
                 <span className="text-sm font-bold text-foreground truncate flex-1">{evt.title}</span>
@@ -295,7 +295,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             {timedEvents.map((evt) => (
               <div
                 key={evt.id}
-                className="rounded-xl border border-border px-4 py-2.5 flex items-center justify-between bg-card"
+                className="rounded-none border border-border px-4 py-2.5 flex items-center justify-between bg-card"
               >
               <div className="flex items-center gap-2 min-w-0 flex-1">
                   {evt.type === 'external' && evt.color ? (
@@ -319,7 +319,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         <Button
           variant="outline"
           size="sm"
-          className="w-full rounded-xl"
+          className="w-full rounded-none"
           onClick={goToToday}
         >
           Today

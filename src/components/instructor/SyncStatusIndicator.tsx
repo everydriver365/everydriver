@@ -52,7 +52,7 @@ export function SyncStatusIndicator({ instructorId }: SyncStatusIndicatorProps) 
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-full right-0 mt-2 w-48 bg-popover border border-border rounded-xl shadow-lg p-3 z-50"
+          className="absolute top-full right-0 mt-2 w-48 bg-popover border border-border rounded-none shadow-lg p-3 z-50"
         >
           <p className="text-xs font-medium text-foreground mb-1">
             {!isOnline ? "You're offline" : isSyncing ? "Syncing..." : "Sync Status"}

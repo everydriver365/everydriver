@@ -97,7 +97,7 @@ export function CommissionPayerSettings({ instructorId, initialPayer, initialSpl
       </div>
 
       {/* Live preview */}
-      <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+      <div className="rounded-none bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
         <p className="font-medium text-foreground text-xs">Example: £{exampleBase} lesson (fee £{exampleFee.toFixed(2)})</p>
         <p>Pupil pays: £{pupilPays.toFixed(2)} · You absorb: £{youPay.toFixed(2)}</p>
         <p>Pupil total: £{(exampleBase + pupilPays).toFixed(2)}</p>

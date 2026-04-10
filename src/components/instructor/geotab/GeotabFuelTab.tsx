@@ -109,7 +109,7 @@ export function GeotabFuelTab() {
                 const gallons = (r.fuel_used_litres || 0) * 0.219969;
                 const mpg = gallons > 0 ? Math.round((miles / gallons) * 10) / 10 : 0;
                 return (
-                  <div key={r.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 text-xs">
+                  <div key={r.id} className="flex items-center justify-between p-2 rounded-none hover:bg-muted/50 text-xs">
                     <div>
                       <p className="font-medium">
                         {r.trip_start ? format(new Date(r.trip_start), "dd MMM, HH:mm") : "Unknown"}

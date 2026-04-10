@@ -179,7 +179,7 @@ const VideoClipUploader: React.FC<VideoClipUploaderProps> = ({
         {!file ? (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            className="border-2 border-dashed rounded-none p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
           >
             <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
             <p className="font-medium mb-1">Select video to upload</p>
@@ -197,7 +197,7 @@ const VideoClipUploader: React.FC<VideoClipUploaderProps> = ({
         ) : (
           <div className="space-y-4">
             {/* Video Preview */}
-            <div className="relative rounded-lg overflow-hidden bg-black aspect-video">
+            <div className="relative rounded-none overflow-hidden bg-black aspect-video">
               {previewUrl && (
                 <video
                   src={previewUrl}
@@ -255,7 +255,7 @@ const VideoClipUploader: React.FC<VideoClipUploaderProps> = ({
 
             {/* Share with Pupil */}
             {pupilId && (
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-none">
                 <div className="flex items-center gap-2">
                   <Share2 className="h-4 w-4 text-muted-foreground" />
                   <Label htmlFor="share-pupil" className="cursor-pointer">

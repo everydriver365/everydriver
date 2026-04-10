@@ -249,7 +249,7 @@ export function DNSManagementPanel({
       <CardContent className="space-y-4">
         {/* Add Record Form */}
         {showAddForm && (
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+          <div className="rounded-none border bg-muted/30 p-4 space-y-4">
             <p className="text-sm font-medium">Add New DNS Record</p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
@@ -342,7 +342,7 @@ export function DNSManagementPanel({
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border overflow-hidden">
+          <div className="rounded-none border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -405,7 +405,7 @@ export function DNSManagementPanel({
         )}
 
         {/* Info Box */}
-        <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex gap-3">
+        <div className="rounded-none bg-primary/5 border border-primary/20 p-3 flex gap-3">
           <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
           <div className="text-xs text-muted-foreground">
             <p className="font-medium text-foreground mb-1">About DNS Records</p>

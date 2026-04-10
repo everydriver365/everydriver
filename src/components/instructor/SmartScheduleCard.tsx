@@ -76,7 +76,7 @@ export function SmartScheduleCard({ instructorId }: SmartScheduleCardProps) {
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-muted/50 rounded-lg animate-pulse" />
+              <div key={i} className="h-12 bg-muted/50 rounded-none animate-pulse" />
             ))}
           </div>
         ) : (
@@ -84,7 +84,7 @@ export function SmartScheduleCard({ instructorId }: SmartScheduleCardProps) {
             {suggestions.map((s, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                className="flex items-start gap-2.5 p-2.5 rounded-none bg-muted/30 hover:bg-muted/50 transition-colors"
               >
                 <span className="text-base mt-0.5 shrink-0">{s.icon}</span>
                 <div className="min-w-0">

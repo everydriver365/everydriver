@@ -112,10 +112,10 @@ export function SupportHub() {
                   <Dialog key={resource.id}>
                     <DialogTrigger asChild>
                       <button 
-                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-background/80 transition-colors text-left"
+                        className="w-full flex items-center gap-3 p-2 rounded-none hover:bg-background/80 transition-colors text-left"
                         onClick={() => setSelectedResource(resource)}
                       >
-                        <div className="h-9 w-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                        <div className="h-9 w-9 rounded-none bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                           <IconComp className="h-4 w-4 text-amber-600" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -206,10 +206,10 @@ export function SupportHub() {
                   <Dialog key={resource.id}>
                     <DialogTrigger asChild>
                       <button 
-                        className="w-full flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 p-3 rounded-none border hover:bg-muted/50 transition-colors text-left"
                         onClick={() => setSelectedResource(resource)}
                       >
-                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-none bg-muted flex items-center justify-center flex-shrink-0">
                           <IconComp className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">

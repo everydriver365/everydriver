@@ -127,7 +127,7 @@ export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsP
               </span>
               <div
                 className={`
-                  w-10 h-10 flex items-center justify-center rounded-xl text-base font-bold transition-all
+                  w-10 h-10 flex items-center justify-center rounded-none text-base font-bold transition-all
                   ${selected
                     ? "bg-[#1a3a4a] text-white shadow-md"
                     : "text-foreground"

@@ -165,7 +165,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
       <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-primary/20">
+            <div className="p-2 rounded-none bg-primary/20">
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -186,7 +186,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
         </CardHeader>
         <CardContent className="space-y-2">
           {insights.quickWins.map((win, idx) => (
-            <div key={idx} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+            <div key={idx} className="flex items-start gap-2 p-2 rounded-none bg-muted/50">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
               <span className="text-sm">{win}</span>
             </div>
@@ -211,7 +211,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
           <p className="text-sm text-muted-foreground">{insights.retentionInsights.summary}</p>
           
           {insights.retentionInsights.atRiskPupils && insights.retentionInsights.atRiskPupils.length > 0 && (
-            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <div className="p-2 rounded-none bg-amber-500/10 border border-amber-500/20">
               <p className="text-xs font-medium text-amber-600 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
                 Pupils needing attention:
@@ -245,7 +245,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
             <p className="text-xs font-medium text-muted-foreground">Current Assessment</p>
             <p className="text-sm mt-1">{insights.pricingInsights.currentAssessment}</p>
           </div>
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div className="p-3 rounded-none bg-emerald-500/10 border border-emerald-500/20">
             <p className="text-sm font-medium text-emerald-600">{insights.pricingInsights.recommendation}</p>
             {insights.pricingInsights.potentialRevenue && (
               <p className="text-xs text-emerald-600/80 mt-1">
@@ -271,7 +271,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10">
+            <div className="p-2 rounded-none bg-emerald-500/10">
               <p className="text-xs font-medium text-emerald-600 mb-1">Peak Times</p>
               <div className="space-y-1">
                 {insights.demandForecast.peakTimes.slice(0, 3).map((time, idx) => (
@@ -280,7 +280,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
               </div>
             </div>
             {insights.demandForecast.slowPeriods && insights.demandForecast.slowPeriods.length > 0 && (
-              <div className="p-2 rounded-lg bg-muted">
+              <div className="p-2 rounded-none bg-muted">
                 <p className="text-xs font-medium text-muted-foreground mb-1">Slow Periods</p>
                 <div className="space-y-1">
                   {insights.demandForecast.slowPeriods.slice(0, 3).map((time, idx) => (
@@ -307,7 +307,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
       <Card className="border-primary/30 bg-primary/5">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-primary/20">
+            <div className="p-2 rounded-none bg-primary/20">
               <Target className="h-5 w-5 text-primary" />
             </div>
             <div>

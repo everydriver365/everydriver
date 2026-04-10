@@ -51,7 +51,7 @@ export function PupilSelector({ instructorId, value, onChange, disabled }: Pupil
 
   if (pupils.length === 0) {
     return (
-      <div className="flex items-center gap-2 h-10 px-3 text-sm text-muted-foreground border rounded-md">
+      <div className="flex items-center gap-2 h-10 px-3 text-sm text-muted-foreground border rounded-none">
         <User className="h-4 w-4" />
         No pupils found
       </div>

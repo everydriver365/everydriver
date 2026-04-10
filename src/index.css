@@ -350,20 +350,20 @@
   z-index: 2 !important;
 }
 
-/* Instructor portal: iOS-style rounded corners for all tiles/cards */
+/* Instructor portal: no border radius on tiles/cards */
 .instructor-portal .bg-card,
 .instructor-portal [class*="shadow-sm"],
 .instructor-portal [class*="shadow-md"],
 .instructor-portal [class*="overflow-hidden"]:not(img):not(video):not(.rounded-full):not(.hero-banner-no-top-radius) {
-  border-radius: 20px !important;
+  border-radius: 0 !important;
 }
 .instructor-portal .hero-banner-no-top-radius {
-  border-radius: 0 0 20px 20px !important;
+  border-radius: 0 !important;
 }
-/* Keep inputs and inner elements with appropriate radius */
+/* Keep inputs and inner elements with no radius */
 .instructor-portal input,
 .instructor-portal textarea {
-  border-radius: 10px !important;
+  border-radius: 0 !important;
 }
 
 /* Learner app (Drive365): remove all border radius from tiles/cards */

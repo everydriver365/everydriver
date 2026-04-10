@@ -170,7 +170,7 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                className="flex items-center gap-3 p-3 rounded-none border bg-card"
               >
                 <div className="text-center min-w-[50px]">
                   <div className="font-bold text-sm">{formatTime(lesson.start_time)}</div>

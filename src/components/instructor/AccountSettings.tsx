@@ -377,7 +377,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           <CollapsibleContent>
             <CardContent className="px-4 pt-0 pb-4">
               {/* Info Banner */}
-              <div className="flex items-start gap-2 p-3 mb-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
+              <div className="flex items-start gap-2 p-3 mb-4 bg-primary/5 dark:bg-primary/10 rounded-none border border-primary/20 dark:border-primary/30">
                 <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                 <p className="text-xs text-primary/80 dark:text-primary/70">
                   Select the expenses you claim against your income. These are tracked in your expense records and recurring costs below.
@@ -394,7 +394,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
                     <div
                       key={deduction.id}
                       onClick={() => toggleDeduction(deduction.id)}
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      className={`flex items-start gap-3 p-3 rounded-none border cursor-pointer transition-all ${
                         isSelected 
                           ? 'bg-primary/5 border-primary/30' 
                           : 'bg-card border-border hover:bg-muted/30'

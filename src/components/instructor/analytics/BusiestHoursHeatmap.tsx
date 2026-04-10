@@ -103,7 +103,7 @@ export function BusiestHoursHeatmap({ instructorId }: BusiestHoursHeatmapProps) 
                   return (
                     <div
                       key={hourIdx}
-                      className={`flex-1 aspect-square rounded-sm ${getColor(count)} transition-colors`}
+                      className={`flex-1 aspect-square rounded-none ${getColor(count)} transition-colors`}
                       title={`${day} ${HOURS[hourIdx]}:00 — ${count} lessons`}
                     />
                   );
@@ -113,11 +113,11 @@ export function BusiestHoursHeatmap({ instructorId }: BusiestHoursHeatmapProps) 
             {/* Legend */}
             <div className="flex items-center gap-2 mt-3 justify-end">
               <span className="text-[10px] text-muted-foreground">Less</span>
-              <div className="w-3 h-3 rounded-sm bg-muted/30" />
-              <div className="w-3 h-3 rounded-sm bg-primary/20" />
-              <div className="w-3 h-3 rounded-sm bg-primary/40" />
-              <div className="w-3 h-3 rounded-sm bg-primary/70" />
-              <div className="w-3 h-3 rounded-sm bg-primary" />
+              <div className="w-3 h-3 rounded-none bg-muted/30" />
+              <div className="w-3 h-3 rounded-none bg-primary/20" />
+              <div className="w-3 h-3 rounded-none bg-primary/40" />
+              <div className="w-3 h-3 rounded-none bg-primary/70" />
+              <div className="w-3 h-3 rounded-none bg-primary" />
               <span className="text-[10px] text-muted-foreground">More</span>
             </div>
           </div>

@@ -166,7 +166,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   <motion.div
                     layoutId="activeTab"
                     className={cn(
-                      "absolute inset-0 rounded-lg",
+                      "absolute inset-0 rounded-none",
                       !contrast && "bg-primary"
                     )}
                     style={contrast ? { backgroundColor: contrast.active } : undefined}
@@ -174,7 +174,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   />
                 )}
                 <div
-                  className="flex items-center justify-center rounded-lg w-8 h-8 relative z-10"
+                  className="flex items-center justify-center rounded-none w-8 h-8 relative z-10"
                 >
                   <item.icon
                     className="h-5 w-5 transition-all duration-200"

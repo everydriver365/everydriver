@@ -238,15 +238,15 @@ export function BloodPressureTracker() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-muted/50 rounded-lg p-2">
+              <div className="bg-muted/50 rounded-none p-2">
                 <p className="text-xs text-muted-foreground">Avg Systolic</p>
                 <p className="font-semibold">{avgSystolic}</p>
               </div>
-              <div className="bg-muted/50 rounded-lg p-2">
+              <div className="bg-muted/50 rounded-none p-2">
                 <p className="text-xs text-muted-foreground">Avg Diastolic</p>
                 <p className="font-semibold">{avgDiastolic}</p>
               </div>
-              <div className="bg-muted/50 rounded-lg p-2">
+              <div className="bg-muted/50 rounded-none p-2">
                 <p className="text-xs text-muted-foreground">Trend</p>
                 <div className="flex items-center justify-center gap-1">
                   {trend === "up" && <TrendingUp className="h-4 w-4 text-red-500" />}

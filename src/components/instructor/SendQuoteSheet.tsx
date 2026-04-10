@@ -148,7 +148,7 @@ export function SendQuoteSheet({ open, onOpenChange, instructorId, prefill }: Se
           </div>
 
           {quoteLink ? (
-            <div className="space-y-3 p-4 rounded-lg bg-muted border">
+            <div className="space-y-3 p-4 rounded-none bg-muted border">
               <p className="text-sm font-medium text-foreground">Quote link ready!</p>
               <div className="flex gap-2">
                 <Input value={quoteLink} readOnly className="text-xs" />

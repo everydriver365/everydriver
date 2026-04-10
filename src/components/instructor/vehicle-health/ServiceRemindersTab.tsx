@@ -272,7 +272,7 @@ function ReminderCard({
         </div>
 
         {/* Next due */}
-        <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+        <div className="bg-muted/50 rounded-none p-3 space-y-1">
           <p className="text-xs text-muted-foreground font-medium">Next Due</p>
           <div className="flex flex-wrap gap-3">
             {reminder.next_due_date && (

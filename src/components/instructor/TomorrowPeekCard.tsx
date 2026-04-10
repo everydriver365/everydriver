@@ -71,13 +71,13 @@ export function TomorrowPeekCard({
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+      <div className="rounded-none shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
         {/* Header — Quick Access tile style */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full px-3.5 py-3.5 flex items-center gap-3"
         >
-          <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
+          <div className="w-11 h-11 rounded-none overflow-hidden shrink-0">
             <img src={planAheadIcon} alt="Plan Ahead" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
           <div className="flex-1 min-w-0 text-left">
@@ -109,17 +109,17 @@ export function TomorrowPeekCard({
               <div className="p-4 space-y-3">
                 {/* Summary stats row */}
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-muted/40 rounded-xl p-2.5 text-center">
+                  <div className="bg-muted/40 rounded-none p-2.5 text-center">
                     <Clock className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-0.5" />
                     <p className="text-sm font-bold text-foreground">{totalHours}h</p>
                     <p className="text-[10px] text-muted-foreground">Teaching</p>
                   </div>
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-2.5 text-center">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-none p-2.5 text-center">
                     <PoundSterling className="h-3.5 w-3.5 text-emerald-600 mx-auto mb-0.5" />
                     <p className="text-sm font-bold text-emerald-600">£{expectedEarnings}</p>
                     <p className="text-[10px] text-muted-foreground">Expected</p>
                   </div>
-                  <div className="bg-muted/40 rounded-xl p-2.5 text-center">
+                  <div className="bg-muted/40 rounded-none p-2.5 text-center">
                     <CheckSquare className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-0.5" />
                     <p className="text-sm font-bold text-foreground">{tomorrowTodos.length}</p>
                     <p className="text-[10px] text-muted-foreground">Tasks</p>
@@ -134,7 +134,7 @@ export function TomorrowPeekCard({
                       {lessons.map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-xl"
+                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-none"
                         >
                           <div className="w-1 h-8 rounded-full bg-primary" />
                           <div className="flex-1 min-w-0">
@@ -168,7 +168,7 @@ export function TomorrowPeekCard({
                       {tomorrowTodos.map((todo) => (
                         <div
                           key={todo.id}
-                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-xl"
+                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-none"
                         >
                           <div className="w-1 h-6 rounded-full bg-violet-500" />
                           <div className="flex-1 min-w-0">
@@ -184,7 +184,7 @@ export function TomorrowPeekCard({
                 {/* View full schedule button */}
                 <button
                   onClick={() => navigate("/instructor/schedule")}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-primary hover:bg-muted/30 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-primary hover:bg-muted/30 rounded-none transition-colors"
                 >
                   View full schedule
                   <ChevronRight className="h-3 w-3" />

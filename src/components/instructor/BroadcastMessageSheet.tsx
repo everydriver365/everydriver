@@ -230,7 +230,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-2xl">
+      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-none">
         <SheetHeader className="pb-3">
           <SheetTitle className="flex items-center gap-2 text-base">
             <Megaphone className="h-5 w-5" />
@@ -277,7 +277,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
               </Button>
             </div>
 
-            <ScrollArea className="h-40 rounded-md border">
+            <ScrollArea className="h-40 rounded-none border">
               <div className="p-2 space-y-0.5">
                 {loading ? (
                   <div className="flex items-center justify-center py-6">
@@ -289,7 +289,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
                   filtered.map(p => (
                     <label
                       key={p.id}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer"
+                      className="flex items-center gap-3 px-2 py-1.5 rounded-none hover:bg-muted/50 cursor-pointer"
                     >
                       <Checkbox
                         checked={selectedIds.has(p.id)}
@@ -319,7 +319,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
             </Button>
 
             {showTemplates && (
-              <ScrollArea className="h-48 rounded-md border">
+              <ScrollArea className="h-48 rounded-none border">
                 <div className="p-2 space-y-3">
                   {Object.entries(groupedTemplates).map(([cat, items]) => (
                     <div key={cat}>
@@ -329,7 +329,7 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
                       {items.map(t => (
                         <div
                           key={t.id}
-                          className="flex items-start gap-2 px-2 py-2 rounded-md hover:bg-muted/50 cursor-pointer group"
+                          className="flex items-start gap-2 px-2 py-2 rounded-none hover:bg-muted/50 cursor-pointer group"
                           onClick={() => { setMessage(t.body); setShowTemplates(false); }}
                         >
                           <div className="flex-1 min-w-0">

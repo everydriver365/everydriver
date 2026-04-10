@@ -437,7 +437,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
                       e.preventDefault();
                       toggleSlot(slot.id);
                     }}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all min-h-[48px] touch-manipulation active:scale-[0.98] ${
+                    className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all min-h-[48px] touch-manipulation active:scale-[0.98] ${
                       slot.selected 
                         ? "border-purple-500 bg-purple-500/10" 
                         : "border-border hover:border-purple-500/50"
@@ -524,7 +524,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
             </Button>
 
             {pupilCount === 0 && (
-              <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-500/10 rounded-lg p-2">
+              <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-500/10 rounded-none p-2">
                 <AlertCircle className="h-4 w-4" />
                 Add phone numbers to your pupils first
               </div>

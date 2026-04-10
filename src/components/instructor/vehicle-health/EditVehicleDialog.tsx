@@ -202,7 +202,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange, onSuccess }: Ed
           <div className="space-y-2">
             <Label>Vehicle Photo</Label>
             {imagePreview ? (
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+              <div className="relative aspect-video rounded-none overflow-hidden bg-muted">
                 <img
                   src={imagePreview}
                   alt="Vehicle preview"
@@ -218,7 +218,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange, onSuccess }: Ed
                 </Button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center aspect-video rounded-lg border-2 border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
+              <label className="flex flex-col items-center justify-center aspect-video rounded-none border-2 border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
                 <Camera className="h-8 w-8 text-muted-foreground mb-2" />
                 <span className="text-sm text-muted-foreground">Tap to upload photo</span>
                 <input

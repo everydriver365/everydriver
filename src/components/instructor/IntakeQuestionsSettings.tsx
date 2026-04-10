@@ -112,7 +112,7 @@ export function IntakeQuestionsSettings({ instructorId }: IntakeQuestionsSetting
         </p>
 
         {questions.map((q) => (
-          <div key={q.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+          <div key={q.id} className="flex items-start gap-3 p-3 rounded-none border bg-card">
             <GripVertical className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="flex items-start justify-between">

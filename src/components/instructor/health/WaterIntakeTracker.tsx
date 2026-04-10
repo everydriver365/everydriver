@@ -19,7 +19,7 @@ export function WaterIntakeTracker() {
     <Card className="border-sky-200/50 dark:border-sky-900/30">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-none bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
             <Droplets className="h-4 w-4 text-sky-600 dark:text-sky-400" />
           </div>
           Water Intake
@@ -73,7 +73,7 @@ export function WaterIntakeTracker() {
                 <div
                   key={i}
                   className={cn(
-                    "w-6 h-8 rounded-b-lg border-2 transition-all duration-300",
+                    "w-6 h-8 rounded-none border-2 transition-all duration-300",
                     i < currentCount
                       ? "bg-sky-400 dark:bg-sky-500 border-sky-500 dark:border-sky-400"
                       : "bg-muted/30 border-muted-foreground/20"

@@ -151,7 +151,7 @@ const RouteMapView: React.FC<RouteMapViewProps> = ({
         <div 
           ref={mapContainer} 
           style={{ height, width: '100%' }} 
-          className="rounded-b-lg"
+          className="rounded-none"
         />
         {/* Speed Legend */}
         <div className="flex items-center justify-center gap-4 py-2 px-4 bg-muted/30 text-xs">

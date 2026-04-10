@@ -183,10 +183,10 @@ export function SSLStatusBadge({
   }
 
   return (
-    <div className="rounded-lg border p-4 space-y-3">
+    <div className="rounded-none border p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${config.className}`}>
+          <div className={`p-2 rounded-none ${config.className}`}>
             <Icon className={`h-5 w-5 ${config.iconClassName || ""}`} />
           </div>
           <div>

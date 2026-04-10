@@ -73,7 +73,7 @@ export function AddLeadSheet({ open, onOpenChange, onSubmit, editLead }: AddLead
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-none">
         <SheetHeader>
           <SheetTitle>{editLead ? "Edit Lead" : "Add New Lead"}</SheetTitle>
         </SheetHeader>

@@ -311,7 +311,7 @@ export function StandardsCheckTrigger({ instructorId }: StandardsCheckTriggerPro
         </div>
 
         {triggerStatus?.standardsCheckRequired && (
-          <div className="mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
+          <div className="mt-3 p-3 rounded-none bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
               <div>
@@ -328,7 +328,7 @@ export function StandardsCheckTrigger({ instructorId }: StandardsCheckTriggerPro
         )}
 
         {triggerStatus && triggerStatus.triggersCount > 0 && !triggerStatus.standardsCheckRequired && (
-          <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800">
+          <div className="mt-3 p-3 rounded-none bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800">
             <div className="flex items-start gap-2">
               <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <div>

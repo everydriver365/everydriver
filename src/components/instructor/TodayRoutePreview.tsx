@@ -73,7 +73,7 @@ export function TodayRoutePreview({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-           className="bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+           className="bg-white rounded-none overflow-hidden shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
         >
            <div className="h-40 flex items-center justify-center bg-gray-50">
              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -97,13 +97,13 @@ export function TodayRoutePreview({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-         className="bg-white rounded-xl overflow-hidden cursor-pointer shadow-[0_2px_8px_rgba(20,37,66,0.08)] transition-all border border-border"
+         className="bg-white rounded-none overflow-hidden cursor-pointer shadow-[0_2px_8px_rgba(20,37,66,0.08)] transition-all border border-border"
         onClick={onTap}
       >
         {/* Header */}
          <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-none bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
               <Navigation className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
             <span className="text-sm font-medium">Today's Route</span>

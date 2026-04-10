@@ -247,7 +247,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#0075c9]/10 text-[#0075c9]">
+              <div className="p-2 rounded-none bg-[#0075c9]/10 text-[#0075c9]">
                 <Users className="h-5 w-5" />
               </div>
               <div>
@@ -264,7 +264,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+              <div className="p-2 rounded-none bg-emerald-500/10 text-emerald-500">
                 <Award className="h-5 w-5" />
               </div>
               <div>
@@ -279,7 +279,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+              <div className="p-2 rounded-none bg-purple-500/10 text-purple-500">
                 <TrendingUp className="h-5 w-5" />
               </div>
               <div>
@@ -299,7 +299,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+              <div className="p-2 rounded-none bg-amber-500/10 text-amber-500">
                 <Clock className="h-5 w-5" />
               </div>
               <div>
@@ -394,7 +394,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
             ) : (
               <div className="space-y-2">
                 {recentPasses.map((pupil) => (
-                  <div key={pupil.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+                  <div key={pupil.id} className="flex items-center gap-3 p-2 rounded-none hover:bg-muted/50">
                     <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="sm" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate">{pupil.name}</div>

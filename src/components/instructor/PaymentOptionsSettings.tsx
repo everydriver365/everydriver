@@ -86,7 +86,7 @@ export function PaymentOptionsSettings({ instructorId, compact = false }: Paymen
           </p>
         )}
         {klarnaEnabled && isPro && (
-          <div className="flex items-start gap-2 p-3 bg-pink-50 dark:bg-pink-950/30 rounded-lg border border-pink-200 dark:border-pink-800">
+          <div className="flex items-start gap-2 p-3 bg-pink-50 dark:bg-pink-950/30 rounded-none border border-pink-200 dark:border-pink-800">
             <Info className="h-4 w-4 mt-0.5 text-pink-600 dark:text-pink-400 flex-shrink-0" />
             <div className="text-xs text-pink-800 dark:text-pink-300">
               <p>Klarna charges <strong>3.29% + 20p</strong> per transaction. These fees are deducted from your payment.</p>
@@ -115,7 +115,7 @@ export function PaymentOptionsSettings({ instructorId, compact = false }: Paymen
           </p>
         )}
         {clearpayEnabled && isPro && (
-          <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-none border border-emerald-200 dark:border-emerald-800">
             <Info className="h-4 w-4 mt-0.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <div className="text-xs text-emerald-800 dark:text-emerald-300">
               <p>Clearpay charges <strong>4–6% + 30p</strong> per transaction. These fees are deducted from your payment.</p>

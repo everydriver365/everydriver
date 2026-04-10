@@ -167,7 +167,7 @@ export function WorkflowBuilder() {
       <div className="space-y-4 pb-24">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-none bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
               <GitBranch className="h-4 w-4 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
@@ -234,7 +234,7 @@ export function WorkflowBuilder() {
 
       {/* Builder Sheet */}
       <Sheet open={builderOpen} onOpenChange={setBuilderOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-none">
           <SheetHeader>
             <SheetTitle>New Workflow</SheetTitle>
           </SheetHeader>

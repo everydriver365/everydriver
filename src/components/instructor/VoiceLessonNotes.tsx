@@ -165,7 +165,7 @@ const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 p-2 rounded-lg bg-destructive/10 text-destructive text-sm"
+            className="flex items-center gap-2 p-2 rounded-none bg-destructive/10 text-destructive text-sm"
           >
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <span>{error}</span>
@@ -265,7 +265,7 @@ const VoiceLessonNotes: React.FC<VoiceLessonNotesProps> = ({
 
         {/* Voice Tips */}
         {!isListening && !notes && isSupported && (
-          <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+          <div className="text-xs text-muted-foreground bg-muted/50 rounded-none p-3">
             <p className="font-medium mb-1">💡 Voice Input Tips:</p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>Speak clearly and at a normal pace</li>

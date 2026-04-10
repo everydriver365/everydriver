@@ -48,7 +48,7 @@ export function CoordsMapPreview({
     return (
       <div 
         className={cn(
-          "rounded-lg overflow-hidden border relative z-0",
+          "rounded-none overflow-hidden border relative z-0",
           onClick && "cursor-pointer",
           className
         )}
@@ -116,7 +116,7 @@ export function CoordsMapPreview({
       
       {isExpanded && (
         <div 
-          className="rounded-lg overflow-hidden border relative z-0 cursor-pointer mt-1"
+          className="rounded-none overflow-hidden border relative z-0 cursor-pointer mt-1"
           onClick={handleClick}
           role={onClick ? "button" : undefined}
           tabIndex={onClick ? 0 : undefined}

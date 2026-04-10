@@ -386,19 +386,19 @@ export function SavedRoutesViewer({ instructorId }: SavedRoutesViewerProps) {
             <div className="flex-1 overflow-auto space-y-4">
               {/* Summary */}
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-muted/50 rounded-lg p-3">
+                <div className="bg-muted/50 rounded-none p-3">
                   <p className="text-muted-foreground text-xs">Distance</p>
                   <p className="font-semibold">{selectedRoute?.distance_km ? (selectedRoute.distance_km * 0.621371).toFixed(1) : "?"} mi</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3">
+                <div className="bg-muted/50 rounded-none p-3">
                   <p className="text-muted-foreground text-xs">Waypoints</p>
                   <p className="font-semibold">{routeReport.waypoints.length}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3">
+                <div className="bg-muted/50 rounded-none p-3">
                   <p className="text-muted-foreground text-xs">Alerts</p>
                   <p className="font-semibold text-destructive">{routeReport.alerts.length}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3">
+                <div className="bg-muted/50 rounded-none p-3">
                   <p className="text-muted-foreground text-xs">Date</p>
                   <p className="font-semibold">{selectedRoute ? format(new Date(selectedRoute.created_at), "dd/MM/yy") : "-"}</p>
                 </div>
@@ -407,7 +407,7 @@ export function SavedRoutesViewer({ instructorId }: SavedRoutesViewerProps) {
               {/* Roads Summary */}
               <div>
                 <p className="text-sm font-medium mb-2">Roads Travelled</p>
-                <div className="bg-card border rounded-lg max-h-[120px] overflow-auto">
+                <div className="bg-card border rounded-none max-h-[120px] overflow-auto">
                   {Object.entries(
                     routeReport.waypoints.reduce((acc, w) => {
                       const road = w.name || "Unknown Road";
@@ -430,7 +430,7 @@ export function SavedRoutesViewer({ instructorId }: SavedRoutesViewerProps) {
                     <AlertTriangle className="h-4 w-4 text-destructive" />
                     Driving Alerts
                   </p>
-                  <div className="bg-card border rounded-lg max-h-[150px] overflow-auto">
+                  <div className="bg-card border rounded-none max-h-[150px] overflow-auto">
                     <table className="w-full text-xs">
                       <thead className="bg-muted sticky top-0">
                         <tr>

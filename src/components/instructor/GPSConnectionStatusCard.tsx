@@ -82,7 +82,7 @@ export function GPSConnectionStatusCard({
   };
   
   return (
-    <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${colors.bg}`}>
+    <div className={`rounded-none border-2 backdrop-blur shadow-lg ${colors.bg}`}>
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

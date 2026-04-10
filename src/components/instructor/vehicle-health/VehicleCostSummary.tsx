@@ -168,7 +168,7 @@ export function VehicleCostSummary() {
           {costCategories.filter(c => yearData.totals[c.key] > 0 || c.key === "servicing").map((category) => (
             <div
               key={category.key}
-              className="bg-muted/50 rounded-lg p-3 text-center"
+              className="bg-muted/50 rounded-none p-3 text-center"
             >
               <p className="text-xs text-muted-foreground">{category.label}</p>
               <p className="text-lg font-bold">
@@ -179,7 +179,7 @@ export function VehicleCostSummary() {
         </div>
 
         {/* Total */}
-        <div className="bg-primary/10 rounded-lg p-4 text-center border border-primary/20">
+        <div className="bg-primary/10 rounded-none p-4 text-center border border-primary/20">
           <div className="flex items-center justify-center gap-2 mb-1">
             <TrendingUp className="h-4 w-4 text-primary" />
             <p className="text-sm font-medium">Total Deductible</p>

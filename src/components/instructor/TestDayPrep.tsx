@@ -161,7 +161,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border rounded-xl overflow-hidden">
+      <div className="border rounded-none overflow-hidden">
         {/* Header */}
         <CollapsibleTrigger asChild>
           <button
@@ -202,7 +202,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
           <div className="p-3 space-y-4 border-t">
             {/* Countdown Banner */}
             <div className={cn(
-              "rounded-xl p-4 text-center",
+              "rounded-none p-4 text-center",
               isUrgent ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-primary via-primary/90 to-primary/80"
             )}>
               <Car className="h-8 w-8 mx-auto mb-1 text-white/90" />
@@ -216,7 +216,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
 
             {/* Test Centre Info */}
             {testCentre && (
-              <div className="rounded-xl border bg-card p-3 space-y-2">
+              <div className="rounded-none border bg-card p-3 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="font-medium text-sm">Test Centre</span>
@@ -227,7 +227,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                 </div>
 
                 {testCentre.pass_rate != null && (
-                  <div className="bg-muted/30 rounded-lg p-2.5">
+                  <div className="bg-muted/30 rounded-none p-2.5">
                     <div className="flex items-center justify-between text-xs mb-1">
                       <span className="text-muted-foreground">Pass Rate</span>
                       <span className="font-bold text-primary">{testCentre.pass_rate}%</span>
@@ -244,7 +244,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                 )}
 
                 {testCentre.tips && (
-                  <div className="rounded-lg p-2.5 bg-primary/5 border border-primary/10">
+                  <div className="rounded-none p-2.5 bg-primary/5 border border-primary/10">
                     <h5 className="text-xs font-semibold text-primary mb-1 flex items-center gap-1">
                       <Lightbulb className="h-3 w-3" /> Route & Centre Tips
                     </h5>
@@ -268,7 +268,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             )}
 
             {/* Route Familiarity Tips */}
-            <div className="rounded-xl border bg-card p-3 space-y-2">
+            <div className="rounded-none border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Route className="h-4 w-4 text-emerald-600" />
                 <span className="font-medium text-sm">Route Familiarity</span>
@@ -291,7 +291,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             </div>
 
             {/* Documents Checklist */}
-            <div className="rounded-xl border bg-card p-3">
+            <div className="rounded-none border bg-card p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <FileCheck className="h-4 w-4 text-primary" />
@@ -305,7 +305,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                 {DOCUMENT_CHECKLIST.map((item) => (
                   <button
                     key={item.id}
-                    className="flex items-center gap-2.5 p-2 rounded-lg w-full text-left transition-colors hover:bg-muted/30"
+                    className="flex items-center gap-2.5 p-2 rounded-none w-full text-left transition-colors hover:bg-muted/30"
                     onClick={(e) => { e.stopPropagation(); toggleCheck(item.id); }}
                   >
                     <Checkbox checked={!!checkedItems[item.id]} className="pointer-events-none" />
@@ -318,7 +318,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             </div>
 
             {/* Preparation Checklist */}
-            <div className="rounded-xl border bg-card p-3">
+            <div className="rounded-none border bg-card p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -336,7 +336,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                 {PREPARATION_CHECKLIST.map((item) => (
                   <button
                     key={item.id}
-                    className="flex items-center gap-2.5 p-2 rounded-lg w-full text-left transition-colors hover:bg-muted/30"
+                    className="flex items-center gap-2.5 p-2 rounded-none w-full text-left transition-colors hover:bg-muted/30"
                     onClick={(e) => { e.stopPropagation(); toggleCheck(item.id); }}
                   >
                     <Checkbox checked={!!checkedItems[item.id]} className="pointer-events-none" />
@@ -349,7 +349,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             </div>
 
             {/* Eyesight Test Reminder */}
-            <div className="rounded-xl border bg-card p-3">
+            <div className="rounded-none border bg-card p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Eye className="h-4 w-4 text-violet-600" />
                 <span className="font-medium text-sm">Eyesight Test</span>
@@ -361,7 +361,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             </div>
 
             {/* Show Me / Tell Me */}
-            <div className="rounded-xl border bg-card p-3">
+            <div className="rounded-none border bg-card p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-indigo-600" />
@@ -389,7 +389,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                   const isExpanded = expandedSmtm === q.id;
                   const isRevised = smtmRevised.has(q.id);
                   return (
-                    <div key={q.id} className="rounded-lg border overflow-hidden">
+                    <div key={q.id} className="rounded-none border overflow-hidden">
                       <button
                         className="w-full text-left p-2.5 flex items-start gap-2"
                         onClick={(e) => { e.stopPropagation(); setExpandedSmtm(isExpanded ? null : q.id); }}
@@ -405,7 +405,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                       </button>
                       {isExpanded && (
                         <div className="px-2.5 pb-2.5 space-y-1.5">
-                          <div className="rounded-md p-2 bg-primary/5 text-[11px] text-muted-foreground">
+                          <div className="rounded-none p-2 bg-primary/5 text-[11px] text-muted-foreground">
                             {q.answer}
                           </div>
                           <Button
@@ -425,12 +425,12 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             </div>
 
             {/* Day-Before & Morning Tips */}
-            <div className="rounded-xl border bg-card p-3 space-y-2">
+            <div className="rounded-none border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
                 <span className="font-medium text-sm">Day-of Tips</span>
               </div>
-              <div className="rounded-lg p-2.5 bg-amber-50 dark:bg-amber-950/20">
+              <div className="rounded-none p-2.5 bg-amber-50 dark:bg-amber-950/20">
                 <h5 className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">The Day Before</h5>
                 <ul className="text-xs text-muted-foreground space-y-0.5">
                   <li>• Avoid heavy practice — a short refresher is fine</li>
@@ -439,7 +439,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
                   <li>• Early night — aim for 8 hours sleep</li>
                 </ul>
               </div>
-              <div className="rounded-lg p-2.5 bg-emerald-50 dark:bg-emerald-950/20">
+              <div className="rounded-none p-2.5 bg-emerald-50 dark:bg-emerald-950/20">
                 <h5 className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">Test Morning</h5>
                 <ul className="text-xs text-muted-foreground space-y-0.5">
                   <li>• Eat a light meal — don't skip breakfast</li>

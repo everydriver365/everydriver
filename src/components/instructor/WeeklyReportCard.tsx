@@ -70,7 +70,7 @@ export function WeeklyReportCard({ instructorId }: WeeklyReportCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-200/50 dark:border-violet-800/30 rounded-2xl p-4 mb-4"
+      className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-200/50 dark:border-violet-800/30 rounded-none p-4 mb-4"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -102,19 +102,19 @@ export function WeeklyReportCard({ instructorId }: WeeklyReportCardProps) {
           <p className="text-[13px] leading-relaxed text-muted-foreground mb-3">{report}</p>
           {data && (
             <div className="grid grid-cols-4 gap-2">
-              <div className="text-center bg-white/50 dark:bg-white/5 rounded-lg p-2">
+              <div className="text-center bg-white/50 dark:bg-white/5 rounded-none p-2">
                 <p className="text-sm font-bold text-foreground">{data.lessonCount}</p>
                 <p className="text-[9px] text-muted-foreground">Lessons</p>
               </div>
-              <div className="text-center bg-white/50 dark:bg-white/5 rounded-lg p-2">
+              <div className="text-center bg-white/50 dark:bg-white/5 rounded-none p-2">
                 <p className="text-sm font-bold text-foreground">£{data.revenue}</p>
                 <p className="text-[9px] text-muted-foreground">Revenue</p>
               </div>
-              <div className="text-center bg-white/50 dark:bg-white/5 rounded-lg p-2">
+              <div className="text-center bg-white/50 dark:bg-white/5 rounded-none p-2">
                 <p className="text-sm font-bold text-foreground">{data.totalMiles}</p>
                 <p className="text-[9px] text-muted-foreground">Miles</p>
               </div>
-              <div className="text-center bg-white/50 dark:bg-white/5 rounded-lg p-2">
+              <div className="text-center bg-white/50 dark:bg-white/5 rounded-none p-2">
                 <p className="text-sm font-bold text-foreground">
                   {data.revenueChange > 0 ? "+" : ""}{data.revenueChange}%
                 </p>

@@ -58,7 +58,7 @@ export function PostcodeMapPreview({ postcode, className = "", onClick }: Postco
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center bg-muted rounded-lg h-32 ${className}`}>
+      <div className={`flex items-center justify-center bg-muted rounded-none h-32 ${className}`}>
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -70,7 +70,7 @@ export function PostcodeMapPreview({ postcode, className = "", onClick }: Postco
 
   return (
     <div 
-      className={`rounded-lg overflow-hidden border relative z-0 ${onClick ? "cursor-pointer" : ""} ${className}`}
+      className={`rounded-none overflow-hidden border relative z-0 ${onClick ? "cursor-pointer" : ""} ${className}`}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}

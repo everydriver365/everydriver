@@ -224,7 +224,7 @@ export function InstructorSetupChecklist({
         whileTap={{ scale: 0.97 }}
         className="mx-4 mb-4 cursor-pointer"
       >
-        <Link to={nextItem.href} className="flex overflow-hidden rounded-2xl border border-border shadow-sm">
+        <Link to={nextItem.href} className="flex overflow-hidden rounded-none border border-border shadow-sm">
           <div className="bg-primary p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
             <nextItem.icon className="h-6 w-6 text-primary-foreground" />
             <p className="text-[9px] font-bold text-primary-foreground/70 uppercase tracking-widest mt-1">
@@ -291,7 +291,7 @@ export function InstructorSetupChecklist({
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-none bg-primary/10 flex items-center justify-center">
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -333,7 +333,7 @@ export function InstructorSetupChecklist({
                   <Link to={item.href}>
                     <div
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg transition-all",
+                        "flex items-center gap-3 p-3 rounded-none transition-all",
                         isComplete
                           ? "bg-success/10 border border-success/20"
                           : "bg-muted/50 hover:bg-muted border border-transparent hover:border-border"

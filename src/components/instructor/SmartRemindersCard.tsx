@@ -27,7 +27,7 @@ export function SmartRemindersCard() {
         <Link to="/instructor/jobs">
           <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/15 to-amber-500/10 dark:from-amber-500/15 dark:via-amber-500/20 dark:to-amber-500/15 backdrop-blur-sm rounded-none border border-amber-500/30 p-3 flex items-center gap-3 active:scale-[0.99] transition-transform">
             {/* Icon */}
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/25 shrink-0">
+            <div className="flex items-center justify-center w-10 h-10 rounded-none bg-amber-500/20 dark:bg-amber-500/25 shrink-0">
               <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
 

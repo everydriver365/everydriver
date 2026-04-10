@@ -83,7 +83,7 @@ export function GeofenceAlertsList({ instructorId }: GeofenceAlertsListProps) {
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-1.5 rounded-lg ${alert.alert_type === 'enter' ? 'bg-success/10' : 'bg-warning/10'}`}>
+                    <div className={`p-1.5 rounded-none ${alert.alert_type === 'enter' ? 'bg-success/10' : 'bg-warning/10'}`}>
                       {alert.alert_type === "enter" ? (
                         <LogIn className="h-4 w-4 text-success" />
                       ) : (

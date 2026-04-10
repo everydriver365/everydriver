@@ -139,7 +139,7 @@ export function CancellationBackfillSheet({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-lg bg-card rounded-t-3xl p-5 pb-safe shadow-2xl"
+          className="w-full max-w-lg bg-card rounded-none p-5 pb-safe shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
           {/* Handle bar */}
@@ -147,7 +147,7 @@ export function CancellationBackfillSheet({
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-none bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
                 <Users className="h-4 w-4 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
@@ -185,7 +185,7 @@ export function CancellationBackfillSheet({
                       key={p.pupil_id}
                       onClick={() => togglePupil(p.pupil_id)}
                       className={cn(
-                        "w-full flex items-center gap-3 rounded-xl p-3 transition-all",
+                        "w-full flex items-center gap-3 rounded-none p-3 transition-all",
                         isSelected
                           ? "bg-primary text-primary-foreground shadow-md"
                           : "bg-muted/50 border border-border hover:border-primary/50"

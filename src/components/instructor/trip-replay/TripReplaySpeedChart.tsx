@@ -97,7 +97,7 @@ export function TripReplaySpeedChart({
               if (!active || !payload?.[0]) return null;
               const data = payload[0].payload;
               return (
-                <div className="bg-popover border rounded-md shadow-md p-2 text-xs">
+                <div className="bg-popover border rounded-none shadow-md p-2 text-xs">
                   <div className="font-medium">{data.speed} mph</div>
                   {data.limit && (
                     <div className={data.isSpeeding ? "text-destructive" : "text-muted-foreground"}>

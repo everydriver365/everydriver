@@ -235,17 +235,17 @@ const VehicleHealthManager: React.FC<VehicleHealthManagerProps> = ({ instructorI
       <CardContent className="space-y-4">
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
+          <div className="p-3 bg-muted/50 rounded-none text-center">
             <TrendingUp className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">{vehicleHealth?.current_odometer_km?.toLocaleString() || 0}</p>
             <p className="text-xs text-muted-foreground">km total</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
+          <div className="p-3 bg-muted/50 rounded-none text-center">
             <Fuel className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">{vehicleHealth?.fuel_efficiency_avg?.toFixed(1) || '--'}</p>
             <p className="text-xs text-muted-foreground">L/100km</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
+          <div className="p-3 bg-muted/50 rounded-none text-center">
             <Calendar className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">
               {vehicleHealth?.last_service_date 

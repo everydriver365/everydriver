@@ -120,7 +120,7 @@ export function TestCentreInfo({ testCentre, editable = false, onUpdate }: TestC
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           {testCentre.pass_rate !== null && (
-            <div className="bg-muted/50 rounded-lg p-3">
+            <div className="bg-muted/50 rounded-none p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-muted-foreground">Pass Rate</span>
                 <span className="text-sm font-bold text-primary">{testCentre.pass_rate}%</span>
@@ -129,7 +129,7 @@ export function TestCentreInfo({ testCentre, editable = false, onUpdate }: TestC
             </div>
           )}
           {testCentre.average_wait_weeks !== null && (
-            <div className="bg-muted/50 rounded-lg p-3 text-center">
+            <div className="bg-muted/50 rounded-none p-3 text-center">
               <div className="text-lg font-bold">{testCentre.average_wait_weeks}</div>
               <div className="text-xs text-muted-foreground">Week Wait</div>
             </div>
@@ -149,7 +149,7 @@ export function TestCentreInfo({ testCentre, editable = false, onUpdate }: TestC
             />
           </div>
         ) : testCentre.parking_info ? (
-          <div className="bg-muted/30 rounded-lg p-3">
+          <div className="bg-muted/30 rounded-none p-3">
             <div className="flex items-center gap-2 text-sm font-medium mb-1">
               <Car className="h-4 w-4" />
               Parking
@@ -171,7 +171,7 @@ export function TestCentreInfo({ testCentre, editable = false, onUpdate }: TestC
             />
           </div>
         ) : testCentre.tips ? (
-          <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+          <div className="bg-primary/5 rounded-none p-3 border border-primary/20">
             <div className="text-sm font-medium mb-1">Tips for Pupils</div>
             <p className="text-sm text-muted-foreground">{testCentre.tips}</p>
           </div>

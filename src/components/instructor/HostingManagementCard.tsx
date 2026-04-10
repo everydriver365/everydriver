@@ -52,7 +52,7 @@ export function HostingManagementCard({
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-accent/10">
+            <div className="p-2 rounded-none bg-accent/10">
               <Server className="h-5 w-5 text-accent" />
             </div>
             <div>

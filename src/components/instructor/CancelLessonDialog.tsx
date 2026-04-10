@@ -207,7 +207,7 @@ export function CancelLessonDialog({
               onValueChange={(v) => setChargeOption(v as "no_charge" | "charge")}
               className="space-y-3"
             >
-              <div className="flex items-start space-x-3 rounded-lg border p-4">
+              <div className="flex items-start space-x-3 rounded-none border p-4">
                 <RadioGroupItem value="no_charge" id="no_charge" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="no_charge" className="font-medium cursor-pointer">
@@ -219,7 +219,7 @@ export function CancelLessonDialog({
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 rounded-lg border p-4">
+              <div className="flex items-start space-x-3 rounded-none border p-4">
                 <RadioGroupItem value="charge" id="charge" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="charge" className="font-medium cursor-pointer">

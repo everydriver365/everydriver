@@ -162,7 +162,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+      <SheetContent side="bottom" className="rounded-none max-h-[85vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>New Recurring Subscription</SheetTitle>
         </SheetHeader>
@@ -255,7 +255,7 @@ export function AddSubscriptionSheet({ open, onOpenChange, instructorId, onSucce
 
             {/* Direct Debit mandate URL */}
             {mandateUrl && (
-              <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-3 space-y-2">
+              <div className="rounded-none border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-3 space-y-2">
                 <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   📋 Direct Debit Setup Link
                 </p>

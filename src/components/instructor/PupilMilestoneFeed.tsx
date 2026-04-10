@@ -104,7 +104,7 @@ export function PupilMilestoneFeed({ instructorId }: PupilMilestoneFeedProps) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className="shrink-0 w-44 rounded-xl border bg-card p-3 space-y-2 shadow-sm"
+                className="shrink-0 w-44 rounded-none border bg-card p-3 space-y-2 shadow-sm"
               >
                 <div className="flex items-center gap-2">
                   <PupilAvatar
@@ -114,7 +114,7 @@ export function PupilMilestoneFeed({ instructorId }: PupilMilestoneFeedProps) {
                   />
                   <span className="text-xs font-medium truncate">{m.pupil_name}</span>
                 </div>
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", colorClass)}>
+                <div className={cn("w-8 h-8 rounded-none flex items-center justify-center", colorClass)}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <p className="text-sm font-semibold leading-tight">{m.title}</p>

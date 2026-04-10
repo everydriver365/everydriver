@@ -177,7 +177,7 @@ export function UnauthorisedMovementAlerts({ instructorId }: Props) {
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-lg bg-destructive/10">
+                    <div className="p-1.5 rounded-none bg-destructive/10">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                     </div>
                     <div>

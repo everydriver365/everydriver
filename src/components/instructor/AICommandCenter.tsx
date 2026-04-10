@@ -102,11 +102,11 @@ export function AICommandCenter() {
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl p-0 flex flex-col">
+        <SheetContent side="bottom" className="max-h-[80vh] rounded-none p-0 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-none bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-primary-foreground" />
               </div>
               <div>
@@ -135,7 +135,7 @@ export function AICommandCenter() {
                     <button
                       key={i}
                       onClick={() => setInput(ex)}
-                      className="block w-full text-left text-xs px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-foreground"
+                      className="block w-full text-left text-xs px-3 py-2 rounded-none bg-muted/50 hover:bg-muted transition-colors text-foreground"
                     >
                       "{ex}"
                     </button>
@@ -150,7 +150,7 @@ export function AICommandCenter() {
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
+                    className={`max-w-[85%] rounded-none px-3.5 py-2 text-sm whitespace-pre-wrap ${
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-foreground"
@@ -162,7 +162,7 @@ export function AICommandCenter() {
               ))}
               {loading && (
                 <div className="flex justify-start">
-                  <div className="bg-muted rounded-2xl px-3.5 py-2">
+                  <div className="bg-muted rounded-none px-3.5 py-2">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 </div>

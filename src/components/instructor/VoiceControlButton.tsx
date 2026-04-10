@@ -133,7 +133,7 @@ export function VoiceControlButton({
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
               whitespace-nowrap px-3 py-1.5 bg-foreground text-background 
-              text-xs rounded-lg shadow-lg flex items-center gap-1.5"
+              text-xs rounded-none shadow-lg flex items-center gap-1.5"
           >
             <Volume2 className="h-3 w-3" />
             {showFeedback}
@@ -150,7 +150,7 @@ export function VoiceControlButton({
             exit={{ opacity: 0 }}
             className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
               whitespace-nowrap px-3 py-1.5 bg-muted text-muted-foreground 
-              text-xs rounded-lg shadow-sm max-w-48 truncate"
+              text-xs rounded-none shadow-sm max-w-48 truncate"
           >
             "{transcript}"
           </motion.div>

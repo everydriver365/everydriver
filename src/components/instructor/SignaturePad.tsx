@@ -103,7 +103,7 @@ export function SignaturePad({ onSignatureChange, width = 300, height = 150, dis
 
   return (
     <div className="space-y-2">
-      <div className={`relative border-2 border-dashed rounded-lg overflow-hidden bg-white ${disabled ? 'border-muted-foreground/20 opacity-60' : 'border-muted-foreground/30'}`}>
+      <div className={`relative border-2 border-dashed rounded-none overflow-hidden bg-white ${disabled ? 'border-muted-foreground/20 opacity-60' : 'border-muted-foreground/30'}`}>
         <canvas
           ref={canvasRef}
           width={width}

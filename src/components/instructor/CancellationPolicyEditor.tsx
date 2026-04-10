@@ -206,7 +206,7 @@ export function CancellationPolicyEditor({ instructorId }: CancellationPolicyEdi
         </div>
 
         {/* Preview */}
-        <div className="rounded-lg bg-muted/50 p-4 border">
+        <div className="rounded-none bg-muted/50 p-4 border">
           <p className="text-sm font-medium mb-1">Policy Preview</p>
           <p className="text-sm text-muted-foreground">
             {policyText || "No policy text set"}

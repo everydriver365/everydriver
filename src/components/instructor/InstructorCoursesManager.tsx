@@ -367,7 +367,7 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
               {/* Course Image */}
               <div className="space-y-2">
                 <Label>Course Image</Label>
-                <div className="relative aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 overflow-hidden">
+                <div className="relative aspect-video rounded-none border-2 border-dashed border-muted-foreground/25 bg-muted/50 overflow-hidden">
                   {editingCourse.course_image_url ? (
                     <>
                       <img

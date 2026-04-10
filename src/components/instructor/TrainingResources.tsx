@@ -338,7 +338,7 @@ export function TrainingResources({ instructorId }: TrainingResourcesProps) {
               <Card key={resource.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
+                    <div className="p-2 rounded-none bg-primary/10">
                       <Icon className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">

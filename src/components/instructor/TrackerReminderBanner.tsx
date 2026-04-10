@@ -84,10 +84,10 @@ export function TrackerReminderBanner({
         transition={{ duration: 0.2 }}
         className="mx-4 mt-4"
       >
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl p-3 shadow-sm">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-none p-3 shadow-sm">
           <div className="flex items-start gap-3">
             {/* Icon */}
-            <div className="flex-shrink-0 p-2 bg-amber-100 dark:bg-amber-800/30 rounded-lg">
+            <div className="flex-shrink-0 p-2 bg-amber-100 dark:bg-amber-800/30 rounded-none">
               <Smartphone className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
             

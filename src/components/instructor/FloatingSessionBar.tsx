@@ -100,7 +100,7 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
               "backdrop-blur-xl bg-card/90 dark:bg-card/80",
               "border border-primary/20 dark:border-primary/30",
               "border-l-4 border-l-emerald-500",
-              "rounded-2xl shadow-lg",
+              "rounded-none shadow-lg",
               "active:scale-[0.98] transition-transform"
             )}
             whileTap={{ scale: 0.98 }}

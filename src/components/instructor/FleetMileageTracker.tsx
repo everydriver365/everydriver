@@ -236,7 +236,7 @@ export function FleetMileageTracker({ instructorId }: FleetMileageTrackerProps) 
               {logs.map(log => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-muted/30 rounded-none"
                 >
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <div className="flex items-center gap-2">

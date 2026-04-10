@@ -41,7 +41,7 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
   return (
     <div className="space-y-4">
       <RadioGroup value={mode} onValueChange={setMode} className="space-y-3">
-        <div className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
+        <div className={`flex items-start space-x-3 p-3 rounded-none border transition-colors ${
           mode === 'pupil_choice' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
         }`}>
           <RadioGroupItem value="pupil_choice" id="pupil_choice" className="mt-1" />
@@ -56,7 +56,7 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
           </Label>
         </div>
 
-        <div className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
+        <div className={`flex items-start space-x-3 p-3 rounded-none border transition-colors ${
           mode === 'auto_assign' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
         }`}>
           <RadioGroupItem value="auto_assign" id="auto_assign" className="mt-1" />
@@ -71,7 +71,7 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
           </Label>
         </div>
 
-        <div className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
+        <div className={`flex items-start space-x-3 p-3 rounded-none border transition-colors ${
           mode === 'instructor_assigns' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
         }`}>
           <RadioGroupItem value="instructor_assigns" id="instructor_assigns" className="mt-1" />

@@ -213,7 +213,7 @@ export function DigitalChecklistManager({ instructorId }: { instructorId: string
           </DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Template title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-            <select className="w-full rounded-md border p-2 text-sm bg-background" value={newType} onChange={(e) => setNewType(e.target.value)}>
+            <select className="w-full rounded-none border p-2 text-sm bg-background" value={newType} onChange={(e) => setNewType(e.target.value)}>
               {Object.entries(typeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <div className="space-y-2">
@@ -247,7 +247,7 @@ export function DigitalChecklistManager({ instructorId }: { instructorId: string
           </DialogHeader>
           <div className="space-y-3">
             {showFill?.items.map((item) => (
-              <button key={item.id} className="flex items-center gap-3 w-full text-left p-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setFillResponses((r) => ({ ...r, [item.id]: !r[item.id] }))}>
+              <button key={item.id} className="flex items-center gap-3 w-full text-left p-2 rounded-none hover:bg-secondary transition-colors" onClick={() => setFillResponses((r) => ({ ...r, [item.id]: !r[item.id] }))}>
                 {fillResponses[item.id] ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                 ) : (
