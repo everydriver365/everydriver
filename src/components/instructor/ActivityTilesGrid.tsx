@@ -67,7 +67,7 @@ export function ActivityTilesGrid({
       actionRoute: "/instructor/messages",
     },
     {
-      title: "Test Requests",
+      title: "Tests",
       subtitle: "Pending",
       count: testRequestsCount,
       accent: "#5AC8FA",

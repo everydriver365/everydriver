@@ -152,7 +152,7 @@ export function TestRequestsTile({ instructorId }: TestRequestsTileProps) {
             <div className="flex items-center gap-2.5">
               <img src={blueTickIcon} alt="Test Requests" className="h-9 w-9" />
               <div className="text-left">
-                <span className="font-semibold text-sm">Test Requests</span>
+                <span className="font-semibold text-sm">Tests</span>
                 {notificationCount > 0 && (
                   <p className="text-white/70 text-[10px]">
                     {notificationCount} slot{notificationCount !== 1 ? "s" : ""} match your requests
