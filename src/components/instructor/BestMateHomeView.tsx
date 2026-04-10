@@ -63,7 +63,7 @@ function FeatureTile({
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-[20px] p-5 relative border-0 transition-all duration-200 ease-out"
+      className="flex flex-col items-center gap-2 rounded-none p-5 relative border-0 transition-all duration-200 ease-out"
       style={{
         backgroundColor: "#F2F3F5",
         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
@@ -95,7 +95,7 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-[20px] py-4 shrink-0 border-0 transition-all duration-200 ease-out"
+      className="flex flex-col items-center gap-2 rounded-none py-4 shrink-0 border-0 transition-all duration-200 ease-out"
       style={{
         width: 90,
         backgroundColor: "#F2F3F5",
@@ -185,7 +185,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
           </div>
 
           {/* Stats bar */}
-          <div className="mx-5 mb-5 rounded-[14px] p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
+          <div className="mx-5 mb-5 rounded-none p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
             <div className="grid grid-cols-3 gap-2">
               <div className="text-center">
                 <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>

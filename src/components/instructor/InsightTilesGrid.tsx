@@ -67,7 +67,7 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             transition={{ delay: idx * 0.04, type: "spring", stiffness: 400, damping: 25 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(tile.route)}
-            className="relative h-[110px] p-5 rounded-[20px] text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+            className="relative h-[110px] p-5 rounded-none text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
             style={{
               backgroundColor: "#F2F3F5",
               boxShadow:
