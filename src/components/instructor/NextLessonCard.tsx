@@ -179,7 +179,7 @@ export function NextLessonCard({
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             style={{ x }}
-             className="relative bg-white rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+             className="relative bg-white rounded-none p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
@@ -257,7 +257,7 @@ export function NextLessonCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary"
+                    className="h-8 w-8 rounded-none bg-primary/10 hover:bg-primary/20 text-primary"
                     onClick={handleNavigate}
                   >
                     <Navigation className="h-4 w-4" />
@@ -267,7 +267,7 @@ export function NextLessonCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary"
+                    className="h-8 w-8 rounded-none bg-primary/10 hover:bg-primary/20 text-primary"
                     onClick={handleOpenLateSheet}
                   >
                     <MessageSquare className="h-4 w-4" />

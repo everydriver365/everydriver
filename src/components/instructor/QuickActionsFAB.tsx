@@ -132,7 +132,7 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
               position === "bottom-right" ? "right-0" : "left-0"
             )}
           >
-            <div className="bg-background border border-border rounded-xl shadow-xl overflow-hidden min-w-[200px]">
+            <div className="bg-background border border-border rounded-none shadow-xl overflow-hidden min-w-[200px]">
               <div className="p-1.5 space-y-0.5">
                 {quickActions.map((action, index) => {
                   const Icon = action.icon;
@@ -143,7 +143,7 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.03 }}
                       onClick={() => handleActionClick(action)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-muted transition-colors text-left group"
                     >
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center text-white transition-transform group-hover:scale-110",
