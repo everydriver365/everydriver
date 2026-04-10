@@ -410,7 +410,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Mobile Header */}
             <header
-              className="sticky top-0 z-40 bg-primary pt-[env(safe-area-inset-top)]"
+              className={cn(
+                "sticky top-0 z-40 pt-[env(safe-area-inset-top)]",
+                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-primary"
+              )}
             >
               <div className="text-primary-foreground relative overflow-hidden">
 
