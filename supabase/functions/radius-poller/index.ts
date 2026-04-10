@@ -57,7 +57,10 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
   const res = await fetch(refreshUrl, {
     method: "POST",
     headers: refreshHeaders,
-    body: JSON.stringify({ refresh: refreshToken }),
+    body: JSON.stringify({
+      refresh: refreshToken,
+      token: apiToken,
+    }),
   });
 
   if (!res.ok) {
