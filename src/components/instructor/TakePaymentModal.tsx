@@ -50,7 +50,7 @@ export function TakePaymentModal({
   instructorId,
   pupils,
 }: TakePaymentModalProps) {
-  const [view, setView] = useState<View>("picker");
+  const [view, setView] = useState<View>("qr");
   const [selectedPupilId, setSelectedPupilId] = useState("");
   const [qrSelectedPupilId, setQrSelectedPupilId] = useState("");
   const [amount, setAmount] = useState("");
@@ -80,7 +80,7 @@ export function TakePaymentModal({
 
   const handleClose = (o: boolean) => {
     if (!o) {
-      setView("picker");
+      setView("qr");
       setSelectedPupilId("");
       setAmount("");
       setLinkSent(false);
@@ -96,7 +96,7 @@ export function TakePaymentModal({
   };
 
   const handleBack = () => {
-    setView("picker");
+    setView("qr");
   };
 
   const handlePupilSelectForLink = (pupilId: string) => {
