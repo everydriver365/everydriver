@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
   Settings,
@@ -74,6 +76,8 @@ export default function InstructorMenu() {
   const { instructor, subscription, signOut } = useInstructorAuth();
   const { isFeatureLocked, getUpgradeMessage, getMinimumPlanName } = useMenuFeatureGates();
   const [showTestResultForm, setShowTestResultForm] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleLogout = async () => {
     await signOut();
@@ -164,14 +168,38 @@ export default function InstructorMenu() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-5 pb-24">
-        {/* Page Title */}
-        <div>
-          <h1 className="text-xl font-bold">Menu</h1>
-          <p className="text-sm text-muted-foreground">Quick access to all features</p>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search menu..."
+            className="pl-9 pr-8 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Menu Sections - iOS grouped style */}
-        {menuSections.map((section) => (
+        {menuSections.map((section) => {
+          const q = searchQuery.toLowerCase().trim();
+          const filteredItems = q
+            ? section.items.filter(item =>
+                item.label.toLowerCase().includes(q) ||
+                (item.description || "").toLowerCase().includes(q) ||
+                section.title.toLowerCase().includes(q)
+              )
+            : section.items;
+          if (filteredItems.length === 0) return null;
+
+          return (
           <div key={section.title}>
             {/* iOS-style uppercase grey section label */}
             <div className="px-4 pb-1.5">
@@ -179,7 +207,7 @@ export default function InstructorMenu() {
             </div>
             {/* White grouped card */}
             <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
-              {section.items.map((item, itemIndex) => {
+              {filteredItems.map((item, itemIndex) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
 
@@ -237,7 +265,7 @@ export default function InstructorMenu() {
                       </div>
                     </motion.button>
                     {/* Inset hairline divider */}
-                    {itemIndex < section.items.length - 1 && (
+                    {itemIndex < filteredItems.length - 1 && (
                       <div className="ml-[56px] border-b border-border/40" />
                     )}
                   </div>
@@ -245,7 +273,8 @@ export default function InstructorMenu() {
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Quick Test Result Form */}
