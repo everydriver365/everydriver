@@ -213,7 +213,7 @@ export function NextUpTile({
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
                 <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
-                  style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "white" }}>
+                  style={{ background: "linear-gradient(135deg, hsl(220, 52%, 16%), hsl(220, 52%, 22%))", color: "white" }}>
                   {pupilProfileImage ? (
                     <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
                   ) : getInitials(pupilName)}
@@ -249,9 +249,9 @@ export function NextUpTile({
             {/* Row 3: Location strip */}
             {(pickupLocation || pickupPostcode) && (
               <div className="flex items-center gap-1.5 mt-2.5 px-3 py-2 rounded-xl"
-                style={{ background: "rgba(99,102,241,0.06)" }}>
-                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#6366F1" }} />
-                <span className="text-[12px] font-medium truncate" style={{ color: "#4338CA" }}>
+                style={{ background: "rgba(21,30,48,0.06)" }}>
+                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(220, 52%, 16%)" }} />
+                <span className="text-[12px] font-medium truncate" style={{ color: "hsl(220, 52%, 20%)" }}>
                   {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                 </span>
               </div>
@@ -320,8 +320,8 @@ export function NextUpTile({
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { icon: Clock, label: "Start", value: formatTime24(startTime), color: "#6366F1" },
-                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "#8B5CF6" },
+                    { icon: Clock, label: "Start", value: formatTime24(startTime), color: "hsl(220, 52%, 16%)" },
+                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
                     { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
                   ].map((stat) => (
                     <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
@@ -336,9 +336,9 @@ export function NextUpTile({
 
                 {/* Live ETA */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(99,102,241,0.05)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(99,102,241,0.1)" }}>
-                      <Car className="h-5 w-5" style={{ color: "#6366F1" }} />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(21,30,48,0.05)" }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,30,48,0.1)" }}>
+                      <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />
                     </div>
                     {etaLoading ? (
                       <div className="flex items-center gap-2">
@@ -502,9 +502,9 @@ export function NextUpTile({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                        style={{ background: "rgba(99,102,241,0.08)" }}
+                        style={{ background: "rgba(21,30,48,0.08)" }}
                         onClick={(e) => e.stopPropagation()}>
-                        <Send className="h-4 w-4" style={{ color: "#6366F1" }} />
+                        <Send className="h-4 w-4" style={{ color: "hsl(220, 52%, 16%)" }} />
                         <span className="text-[9px] font-bold text-muted-foreground">On Way</span>
                       </button>
                     </DropdownMenuTrigger>
