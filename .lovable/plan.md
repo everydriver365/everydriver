@@ -1,51 +1,27 @@
 
 
-## Make Hero Image Bleed Into Header
+## Why the hero image is blocked by a blue screen
 
-The goal is to have the hero image extend behind the sticky header bar, creating the seamless bleed effect shown in the screenshot — where the driving scene photo flows behind the navigation icons.
+The root cause is two layers of solid background covering the hero image:
 
-### Current Structure
-```text
-┌─────────────────────────┐
-│  Header (bg-primary)    │  ← solid opaque background
-├─────────────────────────┤
-│  Hero Image             │  ← separate section below
-│  Greeting text          │
-├─────────────────────────┤
-│  Today's Overview card  │
-└─────────────────────────┘
-```
+1. **Outer container** (line 403): `bg-primary pb-16` — this is the blue you see. It fills the entire screen.
+2. **Main content area** (line 631): `style={{ backgroundColor: mobileBg }}` where `mobileBg` defaults to `"#E8F1FE"` — another opaque background on top.
 
-### Target Structure
-```text
-┌─────────────────────────┐
-│  Header (transparent)   │  ← icons float over the image
-│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
-│  Hero Image (behind)    │  ← image extends under header
-│  Greeting text          │
-├─────────────────────────┤
-│  Today's Overview card  │
-└─────────────────────────┘
-```
+When we made the header transparent and absolute, the hero image (inside `children` / `<main>`) sits *below* the header in the DOM — but the outer container's solid `bg-primary` blue fills the gap the absolute header left behind. The main tag also paints its own opaque background over the hero.
 
-### Changes
+## Fix
 
-**1. `InstructorPortalLayout.tsx` — Make header transparent on homepage**
-- On the `/instructor` route only, change the header from `bg-primary` to transparent so the hero image shows through
-- Keep `bg-primary` on all other pages (back button pages)
-- Remove the safe-area fill div's opaque background on homepage too
-- The header remains sticky and z-40 so icons stay interactive
+**File: `src/components/layout/InstructorPortalLayout.tsx`**
 
-**2. `HomepageHero.tsx` — Extend image under the header**
-- Remove the `paddingTop: env(safe-area-inset-top)` from the hero wrapper (the header already handles safe area)
-- Add negative top margin to pull the hero image up behind the header area (approximately `-mt-[calc(env(safe-area-inset-top)+56px)]` to account for safe area + header height)
-- Increase the hero image aspect ratio slightly (from `1/0.55` to about `1/0.65`) to compensate for the portion hidden behind the header
-- Keep the greeting text positioned with enough top padding to sit below the header
+1. **Outer container** (line 401-404): On the homepage, change `bg-primary` to `bg-transparent` so the blue doesn't fill behind the absolute header area.
+   ```
+   isFullscreenMode ? "..." : isHomePage ? "pb-16" : "bg-primary pb-16"
+   ```
 
-**3. `InstructorPortalLayout.tsx` — Remove graduated fade on homepage**
-- The existing gradient fade below the header (`linear-gradient... hsl(var(--primary))`) would look wrong over the photo — skip or change it to a subtle dark scrim on the homepage route
+2. **Main content area** (line 631): On the homepage, remove the inline `backgroundColor` so the hero image shows through. The hero component already has its own backgrounds.
+   ```
+   style={{ backgroundColor: isHomePage ? 'transparent' : mobileBg }}
+   ```
 
-### Files to modify
-- `src/components/layout/InstructorPortalLayout.tsx`
-- `src/components/instructor/HomepageHero.tsx`
+These two changes will let the hero image be visible and bleed behind the transparent header as intended.
 
