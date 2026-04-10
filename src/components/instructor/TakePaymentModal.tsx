@@ -221,21 +221,14 @@ export function TakePaymentModal({
         {/* Header */}
         <DialogHeader className="p-4 pb-2 border-b">
           <div className="flex items-center gap-2">
-            {view !== "picker" && (
-              <button onClick={handleBack} className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-            )}
             <div>
                <DialogTitle className="text-base">
-                {view === "picker" && "Take Payment"}
-                {view === "qr" && "QR Code"}
+                {view === "qr" && "Take Payment"}
                 {view === "link" && "Send Payment Request"}
                 {view === "received" && "Payment Received"}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                {view === "picker" && "Choose a payment method"}
-                {view === "qr" && "Pupil scans to pay"}
+                {view === "qr" && "Generate a QR code for pupil to scan & pay"}
                 {view === "link" && "Set amount and send via SMS or email"}
                 {view === "received" && "Thank you!"}
               </DialogDescription>
