@@ -619,7 +619,7 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-xl overflow-hidden"
+        className="bg-card border border-border rounded-none overflow-hidden"
       >
         {/* Collapsed Card */}
         <button
@@ -670,7 +670,7 @@ export function PupilCardStack({
           {/* Balance badge */}
           {(hasDebt || hasCredit) && (
             <span className={cn(
-              "text-[13px] font-semibold px-2.5 py-1 rounded-lg shrink-0",
+              "text-[13px] font-semibold px-2.5 py-1 rounded-none shrink-0",
               hasDebt ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
             )}>
               £{Math.abs(balance).toFixed(0)}
@@ -778,7 +778,7 @@ export function PupilCardStack({
               </div>
 
               {/* ── Stats Strip ── */}
-              <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
+              <div className="mx-4 -mt-4 bg-card rounded-none border border-border shadow-md">
                 <div className="grid grid-cols-4 divide-x divide-border py-4">
                   {[
                     { value: pupil.lessons_completed || 0, label: "Lessons" },
@@ -801,12 +801,12 @@ export function PupilCardStack({
                 const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
                 return (
                   <div className={cn(
-                    "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
+                    "mx-4 mt-3 rounded-none p-4 flex items-center gap-3",
                     isUrgent
                       ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
                       : "bg-card border border-border"
                   )}>
-                    <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
+                    <div className={cn("h-11 w-11 rounded-none flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
                       <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
                     </div>
                     <div className="flex-1">
@@ -831,7 +831,7 @@ export function PupilCardStack({
                     { icon: PoundSterling, label: "Payment", color: "bg-rose-500/10 text-rose-600", action: () => setShowRecordPaymentModal(true) },
                     { icon: Share2, label: "Share", color: "bg-sky-500/10 text-sky-600", action: () => {} },
                   ].map(({ icon: Icon, label, color, action }) => (
-                    <button key={label} onClick={action} className={`${color} rounded-xl p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform`}>
+                    <button key={label} onClick={action} className={`${color} rounded-none p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform`}>
                       <Icon className="h-5 w-5" />
                       <span className="text-[11px] font-medium">{label}</span>
                     </button>
@@ -866,13 +866,13 @@ export function PupilCardStack({
               {/* ── Action buttons ── */}
               <div className="mx-4 mt-3 space-y-2 pb-4">
                 {onViewTerms && (
-                  <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
+                  <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-none", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
                     {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
                   </Button>
                 )}
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                  <Button variant="ghost" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                  <Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+                  <Button variant="ghost" size="sm" className="rounded-none" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+                  <Button variant="ghost" size="sm" className="rounded-none text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
                 </div>
               </div>
             </div>
