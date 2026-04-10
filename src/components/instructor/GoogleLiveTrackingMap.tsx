@@ -354,62 +354,117 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
     return () => { supabase.removeChannel(channel); };
   }, [device?.id]);
 
-  // 5) Every 3s: fetch new route points, snap to road, draw polyline
+  // 5) Realtime trail: initial fetch + subscribe to new GPS points
+  const snapDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const needsSnapRef = useRef(false);
+
+  const redrawPolyline = useCallback(async () => {
+    if (!polylineRef.current || rawPointsRef.current.length < 2) return;
+    const recent = rawPointsRef.current.slice(-120);
+    const sampled = recent.filter((_, idx) => idx % 2 === 0).slice(-100);
+    let line: Array<{ lat: number; lng: number }>;
+    try {
+      line = await callSnapToRoad(sampled.map((p) => ({ lat: p.lat, lng: p.lng })));
+      if (!line.length) line = sampled.map((p) => ({ lat: p.lat, lng: p.lng }));
+      setNote(null);
+    } catch {
+      line = sampled.map((p) => ({ lat: p.lat, lng: p.lng }));
+      setNote("Road-snapping not available yet (showing straight line).");
+    }
+    const w = window as any;
+    polylineRef.current.setPath(line.map((p) => new w.google.maps.LatLng(p.lat, p.lng)));
+    if (tailPolylineRef.current) {
+      tailPolylineRef.current.setPath([]);
+      if (line.length > 0) {
+        const lastSnapped = line[line.length - 1];
+        tailPolylineRef.current.getPath().push(new w.google.maps.LatLng(lastSnapped.lat, lastSnapped.lng));
+        lastAppendedRef.current = { lat: lastSnapped.lat, lng: lastSnapped.lng };
+      }
+    }
+    needsSnapRef.current = false;
+  }, []);
+
+  const scheduleSnap = useCallback(() => {
+    needsSnapRef.current = true;
+    if (snapDebounceRef.current) clearTimeout(snapDebounceRef.current);
+    snapDebounceRef.current = setTimeout(() => { redrawPolyline(); }, 1500);
+  }, [redrawPolyline]);
+
   useEffect(() => {
     if (!device?.current_session_id || !mapsLoaded || !polylineRef.current) return;
     let cancelled = false;
     rawPointsRef.current = [];
     lastFetchedAtRef.current = null;
 
-    async function tick() {
+    // Initial fetch of existing trail
+    async function initialFetch() {
       try {
-        setNote(null);
-        let query = supabase.from("telematics_gps_points").select("latitude,longitude,recorded_at")
-          .eq("telematics_id", device!.current_session_id!).order("recorded_at", { ascending: true }).limit(250);
-        const lastFetchedAt = lastFetchedAtRef.current;
-        if (lastFetchedAt) query = query.gt("recorded_at", lastFetchedAt);
-        const { data, error } = await query;
-        if (cancelled) return;
-        if (error) throw error;
-        const newPts = ((data as PointRow[]) || [])
+        const { data, error } = await supabase.from("telematics_gps_points")
+          .select("latitude,longitude,recorded_at")
+          .eq("telematics_id", device!.current_session_id!)
+          .order("recorded_at", { ascending: true }).limit(300);
+        if (cancelled || error) return;
+        const pts = ((data as PointRow[]) || [])
           .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
           .map((p) => ({ lat: p.latitude, lng: p.longitude, t: p.recorded_at }));
-        if (newPts.length) {
-          lastFetchedAtRef.current = newPts[newPts.length - 1].t;
-          rawPointsRef.current = [...rawPointsRef.current, ...newPts].slice(-300);
+        if (pts.length) {
+          rawPointsRef.current = pts.slice(-300);
+          lastFetchedAtRef.current = pts[pts.length - 1].t;
+          redrawPolyline();
         }
-        if (rawPointsRef.current.length < 2) return;
-        const recent = rawPointsRef.current.slice(-120);
-        const sampled = recent.filter((_, idx) => idx % 2 === 0).slice(-100);
-        let line: Array<{ lat: number; lng: number }>;
-        try {
-          line = await callSnapToRoad(sampled.map((p) => ({ lat: p.lat, lng: p.lng })));
-          if (!line.length) line = sampled.map((p) => ({ lat: p.lat, lng: p.lng }));
-        } catch {
-          line = sampled.map((p) => ({ lat: p.lat, lng: p.lng }));
-          setNote("Road-snapping not available yet (showing straight line).");
-        }
-        if (cancelled) return;
-        const w = window as any;
-        polylineRef.current.setPath(line.map((p) => new w.google.maps.LatLng(p.lat, p.lng)));
-        if (tailPolylineRef.current) {
-          tailPolylineRef.current.setPath([]);
-          if (line.length > 0) {
-            const lastSnapped = line[line.length - 1];
-            tailPolylineRef.current.getPath().push(new w.google.maps.LatLng(lastSnapped.lat, lastSnapped.lng));
-            lastAppendedRef.current = { lat: lastSnapped.lat, lng: lastSnapped.lng };
-          }
-        }
-      } catch (e: any) {
-        if (!cancelled) setNote(e?.message ?? "Route update failed");
-      }
+      } catch {}
     }
-    tick();
-    const timer = window.setInterval(tick, 5000);
-    return () => { cancelled = true; window.clearInterval(timer); };
-  }, [device?.current_session_id, mapsLoaded]);
+    initialFetch();
 
-  // 5b) Trigger poller every 5s (fast mode = position-only for low latency)
+    // Realtime subscription for new points
+    const channel = supabase
+      .channel(`trail_${device!.current_session_id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "telematics_gps_points",
+        filter: `telematics_id=eq.${device!.current_session_id}`,
+      }, (payload) => {
+        const p = payload.new as any;
+        if (!Number.isFinite(p.latitude) || !Number.isFinite(p.longitude)) return;
+        const newPt = { lat: p.latitude, lng: p.longitude, t: p.recorded_at };
+        rawPointsRef.current = [...rawPointsRef.current, newPt].slice(-300);
+        lastFetchedAtRef.current = newPt.t;
+        scheduleSnap();
+      })
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          // Fallback: poll every 5s if realtime fails
+          console.warn("[Trail] Realtime channel error, falling back to polling");
+          const fallback = setInterval(async () => {
+            let query = supabase.from("telematics_gps_points").select("latitude,longitude,recorded_at")
+              .eq("telematics_id", device!.current_session_id!).order("recorded_at", { ascending: true }).limit(250);
+            if (lastFetchedAtRef.current) query = query.gt("recorded_at", lastFetchedAtRef.current);
+            const { data } = await query;
+            const newPts = ((data as PointRow[]) || [])
+              .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
+              .map((p) => ({ lat: p.latitude, lng: p.longitude, t: p.recorded_at }));
+            if (newPts.length) {
+              lastFetchedAtRef.current = newPts[newPts.length - 1].t;
+              rawPointsRef.current = [...rawPointsRef.current, ...newPts].slice(-300);
+              redrawPolyline();
+            }
+          }, 5000);
+          // Store for cleanup
+          (channel as any)._fallbackTimer = fallback;
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      if (snapDebounceRef.current) clearTimeout(snapDebounceRef.current);
+      const fb = (channel as any)._fallbackTimer;
+      if (fb) clearInterval(fb);
+      supabase.removeChannel(channel);
+    };
+  }, [device?.current_session_id, mapsLoaded, redrawPolyline, scheduleSnap]);
+
+  // 5b) Trigger poller every 3s (fast mode = position-only for low latency)
   useEffect(() => {
     if (!device?.id || !isConnected) return;
     const triggerPoller = async () => {
@@ -417,7 +472,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       catch (err) { console.error("Live map poller trigger failed:", err); }
     };
     triggerPoller();
-    const timer = setInterval(triggerPoller, 5000);
+    const timer = setInterval(triggerPoller, 3000);
     return () => clearInterval(timer);
   }, [device?.id, isConnected]);
 
