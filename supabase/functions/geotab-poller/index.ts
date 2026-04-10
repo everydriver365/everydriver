@@ -203,12 +203,23 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
+// Throttle for slow diagnostics path
+let lastDiagnosticsAt = 0;
+const DIAGNOSTICS_INTERVAL = 60_000; // 60 seconds
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Determine polling mode: "fast" = position-only, "full" = everything
+    let pollMode = "full";
+    try {
+      const body = await req.clone().json();
+      if (body?.mode === "fast") pollMode = "fast";
+    } catch { /* no body or not JSON — default to full */ }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -241,7 +252,20 @@ Deno.serve(async (req) => {
       resolvedGeotabIds.push(internalId || d.geotab_device_id);
     }
 
-    // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed + StatusData + FaultData in ONE request ----
+    // Should we include diagnostics/faults in this cycle?
+    // In fast mode, check DB-based throttle to skip diagnostics most of the time
+    let shouldIncludeDiagnostics = pollMode === "full";
+    if (!shouldIncludeDiagnostics) {
+      const { data: diagConfig } = await supabase
+        .from("cron_sync_config")
+        .select("last_run_at")
+        .eq("id", "geotab_diagnostics")
+        .maybeSingle();
+      const lastDiagRun = diagConfig?.last_run_at ? new Date(diagConfig.last_run_at).getTime() : 0;
+      shouldIncludeDiagnostics = Date.now() - lastDiagRun > DIAGNOSTICS_INTERVAL;
+    }
+
+    // ---- BATCHED CALL ----
     const now = new Date();
     const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
     const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);
@@ -294,52 +318,54 @@ Deno.serve(async (req) => {
 
     const speedLimitCallCount = resolvedGeotabIds.length;
 
-    // Add StatusData calls — one per diagnostic per device for reliable ID mapping
-    for (const gid of resolvedGeotabIds) {
-      for (const diagId of diagnosticIds) {
-        batchCalls.push({
-          method: "Get",
-          params: {
-            typeName: "StatusData",
-            search: {
-              deviceSearch: { id: gid },
-              diagnosticSearch: { id: diagId },
-              fromDate: thirtyMinAgo.toISOString(),
-              toDate: now.toISOString(),
+    // Add StatusData calls — only in diagnostic cycles (every ~60s or full mode)
+    if (shouldIncludeDiagnostics) {
+      for (const gid of resolvedGeotabIds) {
+        for (const diagId of diagnosticIds) {
+          batchCalls.push({
+            method: "Get",
+            params: {
+              typeName: "StatusData",
+              search: {
+                deviceSearch: { id: gid },
+                diagnosticSearch: { id: diagId },
+                fromDate: thirtyMinAgo.toISOString(),
+                toDate: now.toISOString(),
+              },
+              resultsLimit: 5,
             },
-            resultsLimit: 5,
-          },
-        });
+          });
+        }
       }
+
+      // Add FaultData call for all devices
+      batchCalls.push({
+        method: "Get",
+        params: {
+          typeName: "FaultData",
+          search: {
+            fromDate: twentyFourHoursAgo.toISOString(),
+            toDate: now.toISOString(),
+          },
+          resultsLimit: 200,
+        },
+      });
+
+      // Add ExceptionEvent call for impact/harsh event detection (last 2 minutes)
+      batchCalls.push({
+        method: "Get",
+        params: {
+          typeName: "ExceptionEvent",
+          search: {
+            fromDate: twoMinAgo.toISOString(),
+            toDate: now.toISOString(),
+          },
+          resultsLimit: 50,
+        },
+      });
     }
 
-    // Add FaultData call for all devices
-    batchCalls.push({
-      method: "Get",
-      params: {
-        typeName: "FaultData",
-        search: {
-          fromDate: twentyFourHoursAgo.toISOString(),
-          toDate: now.toISOString(),
-        },
-        resultsLimit: 200,
-      },
-    });
-
-    // Add ExceptionEvent call for impact/harsh event detection (last 2 minutes)
-    batchCalls.push({
-      method: "Get",
-      params: {
-        typeName: "ExceptionEvent",
-        search: {
-          fromDate: twoMinAgo.toISOString(),
-          toDate: now.toISOString(),
-        },
-        resultsLimit: 50,
-      },
-    });
-
-    console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods");
+    console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods (mode:", pollMode + ")");
     const batchResults = await geotabMultiCall(session, batchCalls);
 
     // Parse results
@@ -357,26 +383,38 @@ Deno.serve(async (req) => {
       }
     }
 
-    // StatusData results: diagnosticIds.length calls per device, starting after speed limit calls
-    const statusDataOffset = 1 + speedLimitCallCount;
+    // StatusData & FaultData results — only present when diagnostics were included
     const deviceDiagnostics = new Map<string, Record<string, number>>();
-    for (let i = 0; i < resolvedGeotabIds.length; i++) {
-      const diags: Record<string, number> = {};
-      for (let j = 0; j < diagnosticIds.length; j++) {
-        const callIdx = statusDataOffset + i * diagnosticIds.length + j;
-        const sdResults: any[] = batchResults[callIdx] || [];
-        if (sdResults.length > 0) {
-          // Use the last (most recent) value
-          const latest = sdResults[sdResults.length - 1];
-          if (latest.data != null) {
-            diags[diagnosticIds[j]] = latest.data;
+    let exceptionResults: any[] = [];
+
+    if (shouldIncludeDiagnostics) {
+      // Record diagnostics timestamp in DB for cross-isolate throttling
+      await supabase.from("cron_sync_config").upsert({
+        id: "geotab_diagnostics",
+        last_run_at: new Date().toISOString(),
+        is_enabled: true,
+        interval_seconds: 60,
+      });
+      const statusDataOffset = 1 + speedLimitCallCount;
+      for (let i = 0; i < resolvedGeotabIds.length; i++) {
+        const diags: Record<string, number> = {};
+        for (let j = 0; j < diagnosticIds.length; j++) {
+          const callIdx = statusDataOffset + i * diagnosticIds.length + j;
+          const sdResults: any[] = batchResults[callIdx] || [];
+          if (sdResults.length > 0) {
+            const latest = sdResults[sdResults.length - 1];
+            if (latest.data != null) {
+              diags[diagnosticIds[j]] = latest.data;
+            }
           }
         }
+        if (Object.keys(diags).length > 0) {
+          console.log("[GeotabPoller] Diagnostics for device", resolvedGeotabIds[i], ":", JSON.stringify(diags));
+          deviceDiagnostics.set(resolvedGeotabIds[i], diags);
+        }
       }
-      if (Object.keys(diags).length > 0) {
-        console.log("[GeotabPoller] Diagnostics for device", resolvedGeotabIds[i], ":", JSON.stringify(diags));
-        deviceDiagnostics.set(resolvedGeotabIds[i], diags);
-      }
+      // FaultData is second-to-last, ExceptionEvent is last (when diagnostics included)
+      exceptionResults = batchResults[batchResults.length - 1] || [];
     }
 
     const deviceFaults = new Map<string, any[]>();
@@ -473,9 +511,8 @@ Deno.serve(async (req) => {
       return prefix + hex.toString(16).toUpperCase().padStart(4, "0");
     }
 
-    // FaultData results: second-to-last call (ExceptionEvent is last)
-    const faultResults: any[] = batchResults[batchResults.length - 2] || [];
-    const exceptionResults: any[] = batchResults[batchResults.length - 1] || [];
+    // FaultData results: second-to-last call (ExceptionEvent is last) — only when diagnostics included
+    const faultResults: any[] = shouldIncludeDiagnostics ? (batchResults[batchResults.length - 2] || []) : [];
     for (const fault of faultResults) {
       const faultDeviceId = fault.device?.id;
       if (!faultDeviceId) continue;
