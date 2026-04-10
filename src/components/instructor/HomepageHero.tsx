@@ -133,7 +133,7 @@ export function HomepageHero({
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
 
         {/* Greeting text + avatar — bottom-left */}
-        <div className="absolute inset-0 flex flex-col justify-end" style={{ paddingBottom: 65, paddingLeft: 20, paddingRight: 20 }}>
+        <div className="absolute inset-0 flex flex-col justify-end" style={{ paddingBottom: 56, paddingLeft: 20, paddingRight: 20 }}>
           <div className="flex items-end gap-3">
             {profileImageUrl ? (
               <img src={profileImageUrl} alt={firstName} className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md" />
