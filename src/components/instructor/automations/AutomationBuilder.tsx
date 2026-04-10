@@ -72,7 +72,7 @@ export function AutomationBuilder({ open, onOpenChange, onSubmit }: AutomationBu
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-none">
         <SheetHeader>
           <SheetTitle>Create Automation</SheetTitle>
         </SheetHeader>

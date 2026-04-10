@@ -88,7 +88,7 @@ export function TrackerSelectorTile({
           </CardContent>
         </Card>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl">
+      <SheetContent side="bottom" className="rounded-none">
         <SheetHeader>
           <SheetTitle>Select Tracker</SheetTitle>
         </SheetHeader>
@@ -99,7 +99,7 @@ export function TrackerSelectorTile({
               <button
                 key={device.id}
                 onClick={() => handleSelect(device)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${
+                className={`w-full flex items-center gap-3 p-3 rounded-none text-left transition-colors ${
                   isSelected
                     ? "bg-primary/10 border border-primary/30"
                     : "bg-muted/50 hover:bg-muted border border-transparent"

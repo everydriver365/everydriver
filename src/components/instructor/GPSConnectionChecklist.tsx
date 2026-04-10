@@ -32,7 +32,7 @@ export function GPSConnectionChecklist({
   return (
     <div className="w-full space-y-3">
       {/* Connection Status Card */}
-      <div className={`p-4 rounded-xl border-2 ${
+      <div className={`p-4 rounded-none border-2 ${
         isConnected 
           ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700" 
           : "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700"

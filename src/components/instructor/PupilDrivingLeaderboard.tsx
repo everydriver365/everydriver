@@ -223,7 +223,7 @@ export function PupilDrivingLeaderboard({ instructorId }: PupilDrivingLeaderboar
       {/* Leaderboard */}
       {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-none" />)}
         </div>
       ) : scores.length === 0 ? (
         <Card>
@@ -239,7 +239,7 @@ export function PupilDrivingLeaderboard({ instructorId }: PupilDrivingLeaderboar
             {sorted.map((pupil, idx) => (
               <div
                 key={pupil.pupilId}
-                className={`rounded-lg p-3 space-y-2 ${
+                className={`rounded-none p-3 space-y-2 ${
                   idx === 0 ? "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800" : "bg-muted/30"
                 }`}
               >

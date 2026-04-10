@@ -166,7 +166,7 @@ export function UsageAnalytics({ instructorId }: UsageAnalyticsProps) {
                   return (
                     <div key={hour} className="text-center">
                       <div
-                        className="h-8 rounded-sm mb-1 transition-colors"
+                        className="h-8 rounded-none mb-1 transition-colors"
                         style={{
                           backgroundColor: intensity > 0
                             ? `hsl(var(--primary) / ${0.15 + intensity * 0.75})`
@@ -186,7 +186,7 @@ export function UsageAnalytics({ instructorId }: UsageAnalyticsProps) {
                 {[0.15, 0.35, 0.55, 0.75, 0.9].map((op, i) => (
                   <div
                     key={i}
-                    className="h-3 w-3 rounded-sm"
+                    className="h-3 w-3 rounded-none"
                     style={{ backgroundColor: `hsl(var(--primary) / ${op})` }}
                   />
                 ))}

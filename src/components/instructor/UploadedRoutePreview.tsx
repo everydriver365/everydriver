@@ -110,12 +110,12 @@ export function UploadedRoutePreview({ routeId, onNavigateToStart }: UploadedRou
   };
 
   if (loading) {
-    return <div className="h-32 bg-muted animate-pulse rounded-lg" />;
+    return <div className="h-32 bg-muted animate-pulse rounded-none" />;
   }
 
   if (waypoints.length < 2) {
     return (
-      <div className="h-32 bg-muted/50 rounded-lg flex items-center justify-center text-sm text-muted-foreground">
+      <div className="h-32 bg-muted/50 rounded-none flex items-center justify-center text-sm text-muted-foreground">
         No waypoint data available
       </div>
     );
@@ -123,7 +123,7 @@ export function UploadedRoutePreview({ routeId, onNavigateToStart }: UploadedRou
 
   return (
     <div className="space-y-2">
-      <div ref={mapContainerRef} className="h-32 rounded-lg overflow-hidden" />
+      <div ref={mapContainerRef} className="h-32 rounded-none overflow-hidden" />
       <Button
         variant="outline"
         size="sm"

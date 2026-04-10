@@ -67,7 +67,7 @@ const ScoreItem = ({
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.3 }}
-    className="flex items-center justify-between p-2 bg-muted/30 rounded-lg"
+    className="flex items-center justify-between p-2 bg-muted/30 rounded-none"
   >
     <div className="flex items-center gap-2">
       <Icon className={`h-4 w-4 ${getScoreColor(score)}`} />
@@ -111,7 +111,7 @@ const DamoovScoresDisplay: React.FC<DamoovScoresDisplayProps> = ({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20"
+        className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-none border border-primary/20"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -157,7 +157,7 @@ const DamoovScoresDisplay: React.FC<DamoovScoresDisplayProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center justify-center gap-6 p-4 bg-muted/30 rounded-xl"
+          className="flex items-center justify-center gap-6 p-4 bg-muted/30 rounded-none"
         >
           <div className="text-center">
             <motion.p
@@ -176,7 +176,7 @@ const DamoovScoresDisplay: React.FC<DamoovScoresDisplayProps> = ({
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.4, type: 'spring' }}
-              className="flex flex-col items-center gap-1 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20"
+              className="flex flex-col items-center gap-1 p-3 bg-amber-500/10 rounded-none border border-amber-500/20"
             >
               <div className="flex items-center gap-1">
                 <Coins className="h-5 w-5 text-amber-500" />
@@ -203,7 +203,7 @@ const DamoovScoresDisplay: React.FC<DamoovScoresDisplayProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="p-3 bg-primary/10 border border-primary/20 rounded-lg"
+              className="p-3 bg-primary/10 border border-primary/20 rounded-none"
             >
               <p className="text-sm text-primary dark:text-primary/80">
                 💡 <strong>Tip:</strong> Focus on{' '}

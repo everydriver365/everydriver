@@ -150,7 +150,7 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {stats.map((stat) => (
             <div key={stat.label} className="flex items-start gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none bg-primary/10 shrink-0">
                 <stat.icon className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0">

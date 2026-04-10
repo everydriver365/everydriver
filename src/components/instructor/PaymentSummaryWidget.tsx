@@ -123,8 +123,8 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
       <div className="space-y-4">
         <Skeleton className="h-5 w-32" />
         <div className="grid grid-cols-2 gap-4">
-          <Skeleton className="h-20 rounded-xl" />
-          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-none" />
+          <Skeleton className="h-20 rounded-none" />
         </div>
       </div>
     );
@@ -138,13 +138,13 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
           <span className="text-sm font-medium">Payment Summary</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-success/10 rounded-lg p-3">
+          <div className="bg-success/10 rounded-none p-3">
             <div className="text-lg font-bold text-success">
               {formatCurrency(stats?.totalThisMonth || 0)}
             </div>
             <div className="text-xs text-muted-foreground">This Month</div>
           </div>
-          <div className={`rounded-lg p-3 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted'}`}>
+          <div className={`rounded-none p-3 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted'}`}>
             <div className={`text-lg font-bold ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
               {formatCurrency(stats?.totalOutstanding || 0)}
             </div>
@@ -177,7 +177,7 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
         )}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-success/10 rounded-xl p-4">
+        <div className="bg-success/10 rounded-none p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-4 w-4 text-success" />
             <span className="text-sm text-muted-foreground">This Month</span>
@@ -190,7 +190,7 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
           </div>
         </div>
         
-        <div className={`rounded-xl p-4 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted/50'}`}>
+        <div className={`rounded-none p-4 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted/50'}`}>
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className={`h-4 w-4 ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
             <span className="text-sm text-muted-foreground">Outstanding</span>

@@ -67,7 +67,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3 bg-card border border-border rounded-xl p-3"
+        className="flex items-center gap-3 bg-card border border-border rounded-none p-3"
       >
         <Avatar className="h-9 w-9">
           <AvatarImage src={instructor?.profile_image_url || undefined} />
@@ -86,13 +86,13 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
             { label: "Hours", value: `${hoursThisWeek}h`, color: "bg-purple-500/10 text-purple-600" },
             { label: "Pupils", value: activePupils, color: "bg-amber-500/10 text-amber-600" },
           ].map((s) => (
-            <div key={s.label} className={cn("px-2.5 py-1.5 rounded-lg text-center", s.color)}>
+            <div key={s.label} className={cn("px-2.5 py-1.5 rounded-none text-center", s.color)}>
               <p className="text-sm font-bold leading-tight">{s.value}</p>
               <p className="text-[9px] opacity-70">{s.label}</p>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-1.5 bg-emerald-500/10 rounded-lg px-2.5 py-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 bg-emerald-500/10 rounded-none px-2.5 py-1.5 shrink-0">
           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[10px] font-medium text-emerald-600">LIVE</span>
         </div>
@@ -105,7 +105,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="col-span-2 bg-card border border-border rounded-xl overflow-hidden flex flex-col"
+          className="col-span-2 bg-card border border-border rounded-none overflow-hidden flex flex-col"
         >
           <div className="py-2 px-4 bg-muted/30 border-b border-border flex items-center justify-between">
             <span className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide text-muted-foreground">
@@ -149,7 +149,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-card border border-border rounded-xl overflow-hidden flex flex-col"
+          className="bg-card border border-border rounded-none overflow-hidden flex flex-col"
         >
           <div className="py-2 px-4 bg-amber-500/5 border-b border-border">
             <span className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide text-amber-700">
@@ -160,7 +160,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
             {unreadCount > 0 && (
               <button
                 onClick={() => navigate("/instructor/messages")}
-                className="w-full text-left text-xs p-2.5 rounded-lg border border-primary/20 bg-primary/5"
+                className="w-full text-left text-xs p-2.5 rounded-none border border-primary/20 bg-primary/5"
               >
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -169,7 +169,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
               </button>
             )}
             {(alerts || []).slice(0, 3).map((a, i) => (
-              <div key={i} className="text-xs p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5">
+              <div key={i} className="text-xs p-2.5 rounded-none border border-amber-500/20 bg-amber-500/5">
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                   {a.title}
@@ -179,7 +179,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
             {gapCount > 0 && (
               <button
                 onClick={() => navigate("/instructor/gaps")}
-                className="w-full text-left text-xs p-2.5 rounded-lg border border-border bg-muted/30"
+                className="w-full text-left text-xs p-2.5 rounded-none border border-border bg-muted/30"
               >
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
@@ -198,7 +198,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-card border border-border rounded-xl overflow-hidden flex flex-col"
+          className="bg-card border border-border rounded-none overflow-hidden flex flex-col"
         >
           <div className="py-2 px-4 bg-primary/5 border-b border-border">
             <span className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide text-primary">
@@ -218,7 +218,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
                 <button
                   key={a.label}
                   onClick={() => navigate(a.route)}
-                  className="relative flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="relative flex flex-col items-center justify-center gap-1 p-2.5 rounded-none hover:bg-muted/50 transition-colors"
                 >
                   <a.icon className={cn("h-5 w-5", a.color)} />
                   <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
@@ -240,7 +240,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card border-2 border-primary/20 rounded-xl overflow-hidden"
+          className="bg-card border-2 border-primary/20 rounded-none overflow-hidden"
         >
           <div className="flex">
             <div className="w-1.5 bg-primary" />
@@ -266,7 +266,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
                 </div>
                 <Button
                   size="sm"
-                  className="rounded-xl text-xs"
+                  className="rounded-none text-xs"
                   onClick={() => navigate(`/instructor/pupils/${nextLesson.pupilId}`)}
                 >
                   <Navigation className="h-3.5 w-3.5 mr-1" /> View

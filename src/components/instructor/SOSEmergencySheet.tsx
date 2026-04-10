@@ -130,7 +130,7 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
             </p>
             <button
               onClick={handleClose}
-              className="mt-4 w-full h-12 rounded-lg bg-primary text-primary-foreground font-semibold"
+              className="mt-4 w-full h-12 rounded-none bg-primary text-primary-foreground font-semibold"
             >
               Close
             </button>
@@ -155,7 +155,7 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
           <button
             onClick={() => handleAlert("call_me")}
             disabled={!!sending}
-            className="relative flex items-center gap-4 p-4 rounded-xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 transition-colors text-left disabled:opacity-60"
+            className="relative flex items-center gap-4 p-4 rounded-none border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 transition-colors text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-full bg-amber-400 flex items-center justify-center shrink-0">
               {sending === "call_me" ? (
@@ -174,7 +174,7 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
           <button
             onClick={() => handleAlert("help")}
             disabled={!!sending}
-            className="relative flex items-center gap-4 p-4 rounded-xl border-2 border-orange-400 bg-orange-50 hover:bg-orange-100 transition-colors text-left disabled:opacity-60"
+            className="relative flex items-center gap-4 p-4 rounded-none border-2 border-orange-400 bg-orange-50 hover:bg-orange-100 transition-colors text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
               {sending === "help" ? (
@@ -193,7 +193,7 @@ export const SOSEmergencySheet: React.FC<SOSEmergencySheetProps> = ({
           <button
             onClick={() => handleAlert("sos")}
             disabled={!!sending}
-            className="relative flex items-center gap-4 p-4 rounded-xl border-2 border-destructive bg-red-50 hover:bg-red-100 transition-colors text-left disabled:opacity-60"
+            className="relative flex items-center gap-4 p-4 rounded-none border-2 border-destructive bg-red-50 hover:bg-red-100 transition-colors text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-full bg-destructive flex items-center justify-center shrink-0 animate-pulse">
               {sending === "sos" ? (

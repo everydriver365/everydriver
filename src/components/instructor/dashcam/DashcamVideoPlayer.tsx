@@ -45,7 +45,7 @@ export function DashcamVideoPlayer({ mediaId, thumbnailUrl, className = "" }: Da
 
   if (error) {
     return (
-      <div className={`aspect-video bg-muted rounded-lg flex flex-col items-center justify-center gap-2 ${className}`}>
+      <div className={`aspect-video bg-muted rounded-none flex flex-col items-center justify-center gap-2 ${className}`}>
         <AlertCircle className="h-8 w-8 text-destructive/50" />
         <p className="text-sm text-muted-foreground">{error}</p>
         <Button variant="outline" size="sm" onClick={loadVideo}>Retry</Button>
@@ -55,7 +55,7 @@ export function DashcamVideoPlayer({ mediaId, thumbnailUrl, className = "" }: Da
 
   if (videoUrl) {
     return (
-      <div className={`relative aspect-video bg-black rounded-lg overflow-hidden ${className}`}>
+      <div className={`relative aspect-video bg-black rounded-none overflow-hidden ${className}`}>
         <video
           ref={videoRef}
           src={videoUrl}
@@ -82,7 +82,7 @@ export function DashcamVideoPlayer({ mediaId, thumbnailUrl, className = "" }: Da
 
   return (
     <div
-      className={`aspect-video bg-muted rounded-lg flex items-center justify-center cursor-pointer group relative overflow-hidden ${className}`}
+      className={`aspect-video bg-muted rounded-none flex items-center justify-center cursor-pointer group relative overflow-hidden ${className}`}
       onClick={loadVideo}
     >
       {thumbnailUrl && (

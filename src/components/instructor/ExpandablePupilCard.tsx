@@ -479,14 +479,14 @@ export function ExpandablePupilCard({
   };
 
    return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-none">
       {/* Main Card */}
       <motion.div
         layout
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={() => setIsExpanded(!isExpanded)}
-        className="bg-card rounded-xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow relative z-10"
+        className="bg-card rounded-none border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow relative z-10"
       >
       {/* Main Card - Always Visible */}
       <button
@@ -757,15 +757,15 @@ export function ExpandablePupilCard({
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-muted/50 rounded-lg p-2">
+                <div className="bg-muted/50 rounded-none p-2">
                   <div className="text-lg font-bold">{pupil.lessons_completed || 0}</div>
                   <div className="text-xs text-muted-foreground">Lessons</div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2">
+                <div className="bg-muted/50 rounded-none p-2">
                   <div className="text-lg font-bold">{pupil.prepaid_hours || 0}h</div>
                   <div className="text-xs text-muted-foreground">Credit</div>
                 </div>
-                <div className={`rounded-lg p-2 ${(pupil.account_balance || 0) < 0 ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-muted/50'}`}>
+                <div className={`rounded-none p-2 ${(pupil.account_balance || 0) < 0 ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-muted/50'}`}>
                   <div className={`text-lg font-bold ${(pupil.account_balance || 0) < 0 ? 'text-amber-600' : ''}`}>
                     {pupil.account_balance ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance)}` : `£${pupil.account_balance}`) : "£0"}
                   </div>
@@ -782,7 +782,7 @@ export function ExpandablePupilCard({
                   const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
                   
                   return (
-                    <div className={`flex items-center gap-2 text-sm rounded-lg p-3 ${
+                    <div className={`flex items-center gap-2 text-sm rounded-none p-3 ${
                       isOverdue ? 'bg-destructive/10 text-destructive' : 
                       isUrgent ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400' : 
                       'bg-muted/50 text-muted-foreground'
@@ -810,7 +810,7 @@ export function ExpandablePupilCard({
 
               {/* Deposit Forfeited Warning */}
               {pupil.deposit_forfeited && (
-                <div className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive rounded-lg p-3">
+                <div className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive rounded-none p-3">
                   <X className="h-4 w-4 shrink-0" />
                   <span>Booking cancelled - £{pupil.deposit_paid || 0} deposit forfeited due to non-payment</span>
                 </div>
@@ -818,7 +818,7 @@ export function ExpandablePupilCard({
 
               {/* Test Date if set */}
               {pupil.test_date && (
-                <div className="flex items-center gap-2 text-sm bg-primary/5 rounded-lg p-2">
+                <div className="flex items-center gap-2 text-sm bg-primary/5 rounded-none p-2">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span>Test: {new Date(pupil.test_date).toLocaleDateString("en-GB", { 
                     weekday: "short", day: "numeric", month: "short" 
@@ -828,14 +828,14 @@ export function ExpandablePupilCard({
 
               {/* Notes */}
               {pupil.notes && (
-                <div className="flex items-start gap-2 text-sm bg-muted/30 rounded-lg p-3">
+                <div className="flex items-start gap-2 text-sm bg-muted/30 rounded-none p-3">
                   <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <p className="text-muted-foreground line-clamp-2">{pupil.notes}</p>
                 </div>
               )}
 
               {/* Lesson Feedback Section */}
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-3 space-y-3">
+              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-none p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-primary" />
@@ -859,7 +859,7 @@ export function ExpandablePupilCard({
 
                 {/* Latest Feedback Display */}
                 {latestFeedback?.notes && !isAddingFeedback && (
-                  <div className="bg-background/60 rounded-lg p-3 space-y-2">
+                  <div className="bg-background/60 rounded-none p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
                         {format(parseISO(latestFeedback.lesson_date), 'EEE, d MMM')}
@@ -1039,7 +1039,7 @@ export function ExpandablePupilCard({
               )}
 
               {/* Tracking History - Collapsible Section */}
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-none overflow-hidden">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -1391,7 +1391,7 @@ export function ExpandablePupilCard({
 
       {/* Syllabus Sheet */}
       <Sheet open={showSyllabusSheet} onOpenChange={setShowSyllabusSheet}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
+        <SheetContent side="bottom" className="h-[85vh] rounded-none overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle>Driving Syllabus - {pupil.name}</SheetTitle>
           </SheetHeader>

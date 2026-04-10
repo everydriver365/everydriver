@@ -239,7 +239,7 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
         <CardContent className="p-6">
           <div className="animate-pulse space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 bg-muted rounded-lg" />
+              <div key={i} className="h-16 bg-muted rounded-none" />
             ))}
           </div>
         </CardContent>
@@ -364,13 +364,13 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
       <CardContent className="space-y-4 px-4">
         {/* Summary */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-lg text-center">
+          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-none text-center">
             <p className="text-[10px] sm:text-xs text-muted-foreground">Monthly Total</p>
             <p className="text-lg sm:text-xl font-bold text-destructive">
               -£{monthlyTotal.toFixed(2)}
             </p>
           </div>
-          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-lg text-center">
+          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-none text-center">
             <p className="text-[10px] sm:text-xs text-muted-foreground">Yearly Total</p>
             <p className="text-lg sm:text-xl font-bold text-destructive">
               -£{yearlyTotal.toFixed(2)}
@@ -396,13 +396,13 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className={`p-3 border rounded-lg ${
+                    className={`p-3 border rounded-none ${
                       expense.is_active ? 'bg-card' : 'bg-muted/30 opacity-60'
                     }`}
                   >
                     {/* Mobile layout - stacked */}
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                      <div className="p-2 rounded-none bg-primary/10 flex-shrink-0">
                         <Icon className="h-4 w-4 text-primary" />
                       </div>
                       

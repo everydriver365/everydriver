@@ -134,7 +134,7 @@ export function QuickMessageSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-t-2xl">
+      <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-none">
         <SheetHeader className="pb-4">
           <SheetTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />

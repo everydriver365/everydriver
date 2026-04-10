@@ -258,9 +258,9 @@ export function DashcamGalleryView({ instructorId, showAllInstructors = false }:
                   thumbnailUrl={selectedMedia.thumbnail_url}
                 />
               ) : (
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border">
+                <div className="aspect-video bg-muted rounded-none flex items-center justify-center border">
                   {selectedMedia.thumbnail_url ? (
-                    <img src={selectedMedia.thumbnail_url} alt="Preview" className="w-full h-full object-contain rounded-lg" />
+                    <img src={selectedMedia.thumbnail_url} alt="Preview" className="w-full h-full object-contain rounded-none" />
                   ) : (
                     <div className="text-center text-muted-foreground">
                       <Camera className="h-12 w-12 mx-auto mb-2 opacity-40" />

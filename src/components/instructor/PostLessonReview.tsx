@@ -215,7 +215,7 @@ export function PostLessonReview({
   return (
     <div className="space-y-4">
       {/* Summary bar */}
-      <div className="flex items-center justify-between bg-muted/50 rounded-xl px-4 py-2.5">
+      <div className="flex items-center justify-between bg-muted/50 rounded-none px-4 py-2.5">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-foreground">{overallProgress}% complete</span>
           {changedCount > 0 && (

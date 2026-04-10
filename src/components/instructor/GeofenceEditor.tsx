@@ -139,7 +139,7 @@ export function GeofenceEditor({ instructorId }: GeofenceEditorProps) {
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${f.is_active ? 'bg-primary/10' : 'bg-muted/50'}`}>
+                    <div className={`p-2 rounded-none ${f.is_active ? 'bg-primary/10' : 'bg-muted/50'}`}>
                       <MapPin className={`h-4 w-4 ${f.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
                     </div>
                     <div>

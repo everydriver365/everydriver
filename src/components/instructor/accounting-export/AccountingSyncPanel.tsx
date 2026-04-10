@@ -58,7 +58,7 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
 
   if (!connected) {
     return (
-      <div className="p-4 rounded-lg border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
+      <div className="p-4 rounded-none border-2 border-dashed border-muted-foreground/20 text-center space-y-3">
         <div className="flex flex-col items-center gap-2">
           <Link2 className="h-8 w-8 text-muted-foreground/40" />
           <div>
@@ -88,7 +88,7 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
   return (
     <div className="space-y-3">
       {/* Connection status */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+      <div className="flex items-center justify-between p-3 rounded-none bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <div>
@@ -116,7 +116,7 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
       </div>
 
       {/* Sync controls */}
-      <div className="p-3 rounded-lg border space-y-3">
+      <div className="p-3 rounded-none border space-y-3">
         <p className="font-medium text-sm flex items-center gap-1.5">
           <RefreshCw className="h-4 w-4 text-primary" />
           API Sync
@@ -175,7 +175,7 @@ export function AccountingSyncPanel({ platform, instructorId, accounting }: Acco
         .filter((l) => l.platform === platform && l.status === "failed")
         .slice(0, 1)
         .map((log) => (
-          <div key={log.id} className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-xs">
+          <div key={log.id} className="p-2 rounded-none bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-xs">
             <p className="flex items-center gap-1 text-red-700 dark:text-red-300 font-medium">
               <AlertTriangle className="h-3 w-3" />
               Last sync failed

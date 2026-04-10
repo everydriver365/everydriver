@@ -165,7 +165,7 @@ export function ExpandableLessonCard({
       {/* Delete background */}
       {onDelete && (
         <motion.div 
-          className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 bg-destructive rounded-r-xl"
+          className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 bg-destructive rounded-none"
           style={{ opacity: deleteOpacity, scale: deleteScale, width: 100 }}
         >
           <Trash2 className="h-6 w-6 text-white" />

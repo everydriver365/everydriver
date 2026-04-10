@@ -169,7 +169,7 @@ export function GDPRRetentionWidget({ instructorId }: GDPRRetentionWidgetProps) 
         </CardHeader>
         <CardContent className="space-y-3">
           {showSettings && (
-            <div className="flex items-end gap-2 p-2 rounded-md bg-muted/50">
+            <div className="flex items-end gap-2 p-2 rounded-none bg-muted/50">
               <div className="flex-1">
                 <Label className="text-xs">Retention period (months)</Label>
                 <Input
@@ -200,7 +200,7 @@ export function GDPRRetentionWidget({ instructorId }: GDPRRetentionWidgetProps) 
               {stalePupils.slice(0, 5).map((pupil) => (
                 <div
                   key={pupil.id}
-                  className="flex items-center justify-between p-2 rounded-md bg-muted/30 text-sm"
+                  className="flex items-center justify-between p-2 rounded-none bg-muted/30 text-sm"
                 >
                   <div>
                     <p className="font-medium text-xs">{pupil.name}</p>

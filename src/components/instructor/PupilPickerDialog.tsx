@@ -63,7 +63,7 @@ export function PupilPickerDialog({
             />
           </div>
 
-          <ScrollArea className="h-72 rounded-md border">
+          <ScrollArea className="h-72 rounded-none border">
             <div className="p-2">
               {filtered.length === 0 ? (
                 <p className="p-3 text-sm text-muted-foreground">No pupils match that search.</p>

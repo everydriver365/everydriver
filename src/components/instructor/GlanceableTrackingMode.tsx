@@ -125,7 +125,7 @@ export function GlanceableTrackingMode({
 
           {/* Road name */}
           <div
-            className={`flex items-center gap-2 text-center px-4 py-3 rounded-xl ${
+            className={`flex items-center gap-2 text-center px-4 py-3 rounded-none ${
               isSpeeding
                 ? "bg-destructive-foreground/10"
                 : "bg-muted"

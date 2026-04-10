@@ -92,7 +92,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
   return (
     <div className="space-y-6">
       {/* Enable Toggle */}
-      <div className="flex items-center justify-between rounded-lg border p-4">
+      <div className="flex items-center justify-between rounded-none border p-4">
         <div className="space-y-0.5">
           <Label htmlFor="deposit-toggle" className="text-sm font-medium">
             Accept deposit payments
@@ -138,7 +138,7 @@ export function DepositSettingsEditor({ instructorId }: DepositSettingsEditorPro
           </div>
 
           {/* Warning message */}
-          <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-4 space-y-2">
+          <div className="rounded-none bg-amber-500/10 border border-amber-500/30 p-4 space-y-2">
             <div className="flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>

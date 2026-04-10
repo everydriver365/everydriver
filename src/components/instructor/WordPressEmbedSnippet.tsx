@@ -111,7 +111,7 @@ export function WordPressEmbedSnippet({ slug, brandColour }: WordPressEmbedSnipp
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
-          <pre className="bg-muted rounded-lg p-4 text-xs overflow-x-auto max-h-64 overflow-y-auto border">
+          <pre className="bg-muted rounded-none p-4 text-xs overflow-x-auto max-h-64 overflow-y-auto border">
             <code>{snippet}</code>
           </pre>
           <Button
@@ -124,7 +124,7 @@ export function WordPressEmbedSnippet({ slug, brandColour }: WordPressEmbedSnipp
             {copied ? "Copied" : "Copy"}
           </Button>
         </div>
-        <div className="rounded-lg border p-3 bg-accent/30 text-sm text-muted-foreground space-y-1">
+        <div className="rounded-none border p-3 bg-accent/30 text-sm text-muted-foreground space-y-1">
           <p><strong>How to use:</strong></p>
           <ol className="list-decimal list-inside space-y-0.5">
             <li>In your WordPress editor, add a <strong>Custom HTML</strong> block</li>

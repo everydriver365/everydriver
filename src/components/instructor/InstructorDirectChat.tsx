@@ -70,7 +70,7 @@ export function InstructorDirectChat({
             <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
-                  "max-w-[75%] px-3 py-2 rounded-2xl text-sm",
+                  "max-w-[75%] px-3 py-2 rounded-none text-sm",
                   isMine
                     ? "bg-primary text-primary-foreground rounded-br-md"
                     : "bg-muted text-foreground rounded-bl-md"

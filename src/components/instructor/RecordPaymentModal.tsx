@@ -123,7 +123,7 @@ export function RecordPaymentModal({
           {paymentLimit.isAtLimit ? null : (<>
           {/* Current Balance Info */}
           {currentBalance < 0 && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm">
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-none p-3 text-sm">
               <span className="text-amber-700 dark:text-amber-400">
                 Outstanding: <strong>£{Math.abs(currentBalance).toFixed(2)}</strong>
               </span>
@@ -191,7 +191,7 @@ export function RecordPaymentModal({
                   />
                   <Label
                     htmlFor={method.value}
-                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
+                    className="flex flex-col items-center justify-center rounded-none border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
                   >
                     <method.icon className="h-5 w-5 mb-1" />
                     <span className="text-xs">{method.label}</span>

@@ -267,7 +267,7 @@ export function CancellationRequestsView({ instructorId, compact = false }: Canc
           {requests.map((request) => (
             <div
               key={request.id}
-              className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+              className="flex items-start gap-3 p-3 rounded-none border bg-card"
             >
               <PupilAvatar 
                 name={request.pupil.name} 
@@ -332,13 +332,13 @@ export function CancellationRequestsView({ instructorId, compact = false }: Canc
 
           <div className="space-y-4 py-2">
             {selectedRequest?.reason && (
-              <div className="bg-muted/50 rounded-lg p-3">
+              <div className="bg-muted/50 rounded-none p-3">
                 <Label className="text-xs text-muted-foreground">Reason given:</Label>
                 <p className="text-sm mt-1">{selectedRequest.reason}</p>
               </div>
             )}
 
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-none border p-3">
               <div>
                 <Label htmlFor="charge-toggle" className="text-sm font-medium">
                   Apply cancellation charge

@@ -88,7 +88,7 @@ export function PupilSplitPane({ instructorId }: PupilSplitPaneProps) {
   };
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-10rem)] rounded-lg border bg-card">
+    <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-10rem)] rounded-none border bg-card">
       {/* Left: Pupil list */}
       <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
         <div className="flex flex-col h-full">
@@ -290,7 +290,7 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
           ) : (
             <div className="space-y-1.5">
               {recentLessons.map((lesson) => (
-                <div key={lesson.id} className="flex items-center justify-between py-1.5 px-2 rounded-md bg-muted/30 text-sm">
+                <div key={lesson.id} className="flex items-center justify-between py-1.5 px-2 rounded-none bg-muted/30 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>{format(new Date(lesson.lesson_date), "dd MMM yyyy")}</span>
@@ -317,7 +317,7 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
         {pupil.notes && (
           <div>
             <h3 className="text-sm font-semibold mb-1">Notes</h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-md p-3">{pupil.notes}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-none p-3">{pupil.notes}</p>
           </div>
         )}
 

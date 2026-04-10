@@ -102,7 +102,7 @@ export function GeotabImpactTab() {
           <CardContent className="p-3 pt-0">
             <div className="space-y-1.5 max-h-60 overflow-y-auto">
               {history.map(ev => (
-                <div key={ev.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 text-xs">
+                <div key={ev.id} className="flex items-center justify-between p-2 rounded-none hover:bg-muted/50 text-xs">
                   <div>
                     <p className="font-medium">
                       {ev.g_force?.toFixed(1)}g impact

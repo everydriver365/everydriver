@@ -443,7 +443,7 @@ export function AddLessonSheet({
 
       {/* Test Day Checklist */}
       <Collapsible open={checklistOpen} onOpenChange={setChecklistOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg border bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-sm font-medium text-orange-800 dark:text-orange-300">
+        <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-none border bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-sm font-medium text-orange-800 dark:text-orange-300">
           <CheckSquare className="h-4 w-4" />
           Test Day Checklist
           <span className="ml-auto text-xs text-orange-600 dark:text-orange-400">
@@ -451,7 +451,7 @@ export function AddLessonSheet({
           </span>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
-          <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+          <div className="space-y-2 p-3 rounded-none border bg-muted/30">
             {TEST_DAY_CHECKLIST.map((item, i) => (
               <div key={i} className="flex items-start gap-2">
                 <Checkbox id={`checklist-${i}`} className="mt-0.5" />
@@ -507,7 +507,7 @@ export function AddLessonSheet({
 
       {/* Conflict Warning */}
       {conflictWarning && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+        <div className="flex items-center gap-2 p-3 rounded-none bg-destructive/10 border border-destructive/20 text-destructive text-sm">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{conflictWarning}</span>
         </div>
@@ -517,7 +517,7 @@ export function AddLessonSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+      <SheetContent side="bottom" className="h-[85vh] rounded-none">
         <SheetHeader className="pb-4">
           <SheetTitle>{isDrivingTest ? '🚗 Schedule Driving Test' : 'Add Lesson'}</SheetTitle>
         </SheetHeader>
@@ -624,7 +624,7 @@ export function AddLessonSheet({
 
               {/* Recurring Lesson Options - hidden for driving test */}
               {!isDrivingTest && (
-                <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                <div className="border rounded-none p-3 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Repeat className="h-4 w-4 text-muted-foreground" />
@@ -733,7 +733,7 @@ export function AddLessonSheet({
 
               {/* Recurring Lesson Options - hidden for driving test */}
               {!isDrivingTest && (
-                <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                <div className="border rounded-none p-3 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Repeat className="h-4 w-4 text-muted-foreground" />

@@ -111,7 +111,7 @@ export function BulkRescheduleTab({ instructorId }: BulkRescheduleTabProps) {
 
         {lessons.length > 0 && (
           <>
-            <div className="border rounded-lg max-h-48 overflow-y-auto">
+            <div className="border rounded-none max-h-48 overflow-y-auto">
               <div className="flex justify-between p-2 border-b">
                 <span className="text-xs text-muted-foreground">{selectedLessons.length}/{lessons.length} selected</span>
                 <div className="flex gap-2">

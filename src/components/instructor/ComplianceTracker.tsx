@@ -348,10 +348,10 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
             return (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                className="flex items-center justify-between p-3 rounded-none bg-muted/50"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
+                  <div className={`p-2 rounded-none ${
                     status.status === "ok" ? "bg-emerald-500/10" : 
                     status.status === "expired" || status.status === "urgent" ? "bg-destructive/10" : 
                     status.status === "warning" ? "bg-amber-500/10" : "bg-muted"

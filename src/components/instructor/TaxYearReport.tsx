@@ -348,7 +348,7 @@ export function TaxYearReport({
           </Select>
         </div>
 
-        <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+        <div className="p-3 rounded-none bg-muted/50 text-sm text-muted-foreground">
           <p>This report includes:</p>
           <ul className="list-disc ml-5 mt-1 space-y-0.5">
             <li>Income summary from teaching hours</li>

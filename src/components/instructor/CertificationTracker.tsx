@@ -118,7 +118,7 @@ export function CertificationTracker() {
             <Card>
               <CardContent className="p-4 space-y-3">
                 <select
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
                   value={selectedPupil}
                   onChange={e => setSelectedPupil(e.target.value)}
                 >
@@ -126,7 +126,7 @@ export function CertificationTracker() {
                   {pupils?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
                 <select
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
                   value={milestoneType}
                   onChange={e => setMilestoneType(e.target.value)}
                 >

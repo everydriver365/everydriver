@@ -149,10 +149,10 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-xl border border-border p-5"
+        className="bg-card rounded-none border border-border p-5"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-none bg-primary/10 flex items-center justify-center">
             <Trophy className="h-4 w-4 text-primary" />
           </div>
           <h3 className="font-semibold text-foreground">Overall Pass Rate</h3>
@@ -209,10 +209,10 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-card rounded-xl border border-border p-5"
+        className="bg-card rounded-none border border-border p-5"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-none bg-primary/10 flex items-center justify-center">
             <TrendingUp className="h-4 w-4 text-primary" />
           </div>
           <h3 className="font-semibold text-foreground">12-Month Trend</h3>
@@ -239,10 +239,10 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card rounded-xl border border-border p-5"
+          className="bg-card rounded-none border border-border p-5"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-none bg-primary/10 flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">By Test Centre</h3>
@@ -267,15 +267,15 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-card rounded-xl border border-border p-5"
+        className="bg-card rounded-none border border-border p-5"
       >
         <h3 className="font-semibold text-foreground mb-4">Average Minor Faults</h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-emerald-500/10 rounded-xl p-4 text-center">
+          <div className="bg-emerald-500/10 rounded-none p-4 text-center">
             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.avgMinorPass}</p>
             <p className="text-xs text-muted-foreground mt-1">Passes</p>
           </div>
-          <div className="bg-destructive/10 rounded-xl p-4 text-center">
+          <div className="bg-destructive/10 rounded-none p-4 text-center">
             <p className="text-2xl font-bold text-destructive">{stats.avgMinorFail}</p>
             <p className="text-xs text-muted-foreground mt-1">Fails</p>
           </div>

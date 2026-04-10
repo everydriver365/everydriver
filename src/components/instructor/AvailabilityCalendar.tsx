@@ -370,7 +370,7 @@ export function AvailabilityCalendar({ instructorId, onClose }: AvailabilityCale
                     <button
                       disabled={isPast}
                       className={cn(
-                        "aspect-square rounded-lg border-2 flex flex-col items-start justify-start p-2 transition-all duration-200 relative",
+                        "aspect-square rounded-none border-2 flex flex-col items-start justify-start p-2 transition-all duration-200 relative",
                         hasSlots
                           ? "bg-primary border-primary text-primary-foreground hover:bg-primary/90"
                           : "bg-muted/50 border-border text-foreground hover:border-muted-foreground/40",
@@ -393,7 +393,7 @@ export function AvailabilityCalendar({ instructorId, onClose }: AvailabilityCale
                   
                   <PopoverContent className="w-80 p-0" align="start">
                     {/* Header */}
-                    <div className="flex items-center justify-between bg-primary text-primary-foreground px-4 py-3 rounded-t-lg">
+                    <div className="flex items-center justify-between bg-primary text-primary-foreground px-4 py-3 rounded-none">
                       <span className="font-medium">
                         {format(date, "EEE MMM dd yyyy")}
                       </span>

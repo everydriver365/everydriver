@@ -174,7 +174,7 @@ export function SendSigningLinkButton({
             </div>
 
             {!smsSent && pupilPhone && (
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-none">
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 <p className="text-sm">
                   <a

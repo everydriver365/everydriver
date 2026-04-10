@@ -150,11 +150,11 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="mx-4 mt-5 mb-4 relative overflow-hidden"
     >
-      <div className="relative rounded-[20px] overflow-hidden bg-gradient-to-br from-stone-100 to-stone-50 dark:from-stone-900 dark:to-stone-950 shadow-lg ring-1 ring-stone-200/60 dark:ring-stone-700/40">
+      <div className="relative rounded-none overflow-hidden bg-gradient-to-br from-stone-100 to-stone-50 dark:from-stone-900 dark:to-stone-950 shadow-lg ring-1 ring-stone-200/60 dark:ring-stone-700/40">
         <div className="p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-md shadow-amber-400/30">
+              <div className="w-10 h-10 rounded-none bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-md shadow-amber-400/30">
                 <Sun className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -170,7 +170,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
             </button>
           </div>
 
-          <div className="bg-white/80 dark:bg-black/20 rounded-2xl p-3.5 mb-3 ring-1 ring-stone-200/50 dark:ring-stone-700/30">
+          <div className="bg-white/80 dark:bg-black/20 rounded-none p-3.5 mb-3 ring-1 ring-stone-200/50 dark:ring-stone-700/30">
             {loading ? (
               <div className="space-y-2.5 py-1">
                 <Skeleton className="h-3.5 w-full" />

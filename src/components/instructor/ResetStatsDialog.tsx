@@ -145,7 +145,7 @@ export function ResetStatsDialog({ instructorId, instructorName, onReset }: Rese
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50">
+            <div className="flex items-start gap-3 p-3 rounded-none border hover:bg-muted/50">
               <Checkbox
                 id="lessonHistory"
                 checked={options.lessonHistory}
@@ -163,7 +163,7 @@ export function ResetStatsDialog({ instructorId, instructorName, onReset }: Rese
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50">
+            <div className="flex items-start gap-3 p-3 rounded-none border hover:bg-muted/50">
               <Checkbox
                 id="paymentHistory"
                 checked={options.paymentHistory}
@@ -181,7 +181,7 @@ export function ResetStatsDialog({ instructorId, instructorName, onReset }: Rese
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50">
+            <div className="flex items-start gap-3 p-3 rounded-none border hover:bg-muted/50">
               <Checkbox
                 id="scheduledLessons"
                 checked={options.scheduledLessons}
@@ -199,7 +199,7 @@ export function ResetStatsDialog({ instructorId, instructorName, onReset }: Rese
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50">
+            <div className="flex items-start gap-3 p-3 rounded-none border hover:bg-muted/50">
               <Checkbox
                 id="pupilProgress"
                 checked={options.pupilProgress}

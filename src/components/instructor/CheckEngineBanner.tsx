@@ -85,7 +85,7 @@ export function CheckEngineBanner() {
             return (
               <div
                 key={i}
-                className="flex items-start gap-2 text-xs p-2 rounded-lg bg-background/50"
+                className="flex items-start gap-2 text-xs p-2 rounded-none bg-background/50"
               >
                 <Badge
                   variant="outline"

@@ -38,7 +38,7 @@ export function GeotabExtendedDiagnosticsTab({ instructorId }: GeotabExtendedDia
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {Array.from({ length: 7 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-lg" />
+          <Skeleton key={i} className="h-24 rounded-none" />
         ))}
       </div>
     );

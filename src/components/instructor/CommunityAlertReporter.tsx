@@ -81,7 +81,7 @@ export function CommunityAlertReporter({ instructorId }: CommunityAlertReporterP
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl p-5 pb-8 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-none p-5 pb-8 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export function CommunityAlertReporter({ instructorId }: CommunityAlertReporterP
                     key={type.id}
                     onClick={() => handleReport(type.id)}
                     disabled={submitting}
-                    className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted/50 border border-border active:scale-95 transition-all hover:bg-muted"
+                    className="flex flex-col items-center gap-2 p-4 rounded-none bg-muted/50 border border-border active:scale-95 transition-all hover:bg-muted"
                   >
                     {submitting ? (
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -116,7 +116,7 @@ export function CommunityAlertReporter({ instructorId }: CommunityAlertReporterP
                 placeholder="Optional description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="w-full px-4 py-2.5 rounded-none bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
               <p className="text-[10px] text-muted-foreground mt-2 text-center">
                 Alerts expire automatically after 2 hours

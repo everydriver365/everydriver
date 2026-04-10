@@ -87,9 +87,9 @@ export function DomainLinkModal({
 
         <div className="space-y-4">
           {/* Domain Info */}
-          <div className="rounded-lg border bg-muted/30 p-4">
+          <div className="rounded-none border bg-muted/30 p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
+              <div className="p-2 rounded-none bg-primary/10">
                 <Globe className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -101,10 +101,10 @@ export function DomainLinkModal({
 
           {/* Mini-Website Info */}
           {miniWebsiteSlug ? (
-            <div className="rounded-lg border bg-accent/5 p-4">
+            <div className="rounded-none border bg-accent/5 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-accent/10">
+                  <div className="p-2 rounded-none bg-accent/10">
                     <ExternalLink className="h-5 w-5 text-accent" />
                   </div>
                   <div>
@@ -124,7 +124,7 @@ export function DomainLinkModal({
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+            <div className="rounded-none border border-amber-500/30 bg-amber-500/5 p-4">
               <p className="text-sm text-amber-700 dark:text-amber-400">
                 You don't have a mini-website set up yet. Create one first in Settings.
               </p>
@@ -162,7 +162,7 @@ export function DomainLinkModal({
           </div>
 
           {/* DNS Note */}
-          <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+          <div className="rounded-none bg-muted/50 p-3 text-xs text-muted-foreground">
             <strong>Note:</strong> DNS propagation can take up to 48 hours. Your domain may not
             work immediately after linking.
           </div>

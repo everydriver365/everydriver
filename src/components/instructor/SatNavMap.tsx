@@ -86,7 +86,7 @@ export function SatNavMap({ latitude, longitude, className = "" }: SatNavMapProp
   return (
     <div 
       ref={mapRef} 
-      className={`w-full h-48 rounded-lg overflow-hidden border ${className}`}
+      className={`w-full h-48 rounded-none overflow-hidden border ${className}`}
       style={{ minHeight: "192px" }}
     />
   );

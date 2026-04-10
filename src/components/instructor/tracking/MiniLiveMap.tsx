@@ -143,7 +143,7 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
   }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+    <div className="rounded-none border bg-card text-card-foreground shadow-sm overflow-hidden">
       <div className="relative h-[200px]">
         {hasPosition ? (
           <>

@@ -144,7 +144,7 @@ export function RunningLateSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl pb-safe">
+      <SheetContent side="bottom" className="rounded-none pb-safe">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-left">Running Late?</SheetTitle>
         </SheetHeader>
@@ -231,7 +231,7 @@ export function RunningLateSheet({
                   exit={{ opacity: 0 }}
                   className="flex items-center gap-2"
                 >
-                  <div className="flex-1 bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
+                  <div className="flex-1 bg-muted rounded-none px-3 py-2 flex items-center gap-2">
                     <Mic className="h-4 w-4 text-primary" />
                     <span className="text-sm">Voice note ({formatTime(recordingTime)})</span>
                   </div>

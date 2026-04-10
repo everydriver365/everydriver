@@ -15,8 +15,8 @@ const quickActions = [
 export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
   return (
     <div className={`text-center ${className}`}>
-      <div className="bg-card border border-border/40 rounded-2xl p-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-2xl mb-4">
+      <div className="bg-card border border-border/40 rounded-none p-6">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-none mb-4">
           <Calendar className="h-6 w-6 text-muted-foreground" />
         </div>
         
@@ -33,7 +33,7 @@ export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
             const Icon = action.icon;
             return (
               <Link key={action.route} to={action.route}>
-                <button className="flex flex-col items-center gap-1.5 px-4 py-2.5 bg-muted/30 rounded-xl text-foreground transition-colors hover:bg-muted/50">
+                <button className="flex flex-col items-center gap-1.5 px-4 py-2.5 bg-muted/30 rounded-none text-foreground transition-colors hover:bg-muted/50">
                   <Icon className="h-5 w-5 text-muted-foreground" />
                   <span className="text-[10px] font-medium">{action.label}</span>
                 </button>
@@ -45,12 +45,12 @@ export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
         {/* Main actions */}
         <div className="flex flex-col gap-2">
           <Link to="/instructor/diary">
-            <Button className="w-full rounded-xl">
+            <Button className="w-full rounded-none">
               Book a Lesson
             </Button>
           </Link>
           <Link to="/instructor/schedule">
-            <Button variant="outline" className="w-full rounded-xl">
+            <Button variant="outline" className="w-full rounded-none">
               View Schedule
             </Button>
           </Link>

@@ -146,7 +146,7 @@ export function FavouriteLocationsList({ instructorId, onNavigate }: FavouriteLo
               </div>
             ) : (
               locations.map((location) => (
-                <div key={location.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={location.id} className="flex items-center gap-3 p-2 rounded-none hover:bg-muted/50 transition-colors">
                   <div className="p-2 rounded-full bg-muted">
                     {categoryIcons[location.category] || <MapPin className="h-4 w-4" />}
                   </div>

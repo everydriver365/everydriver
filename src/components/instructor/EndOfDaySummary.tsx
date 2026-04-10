@@ -81,7 +81,7 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/20 border border-indigo-200/50 dark:border-indigo-800/30 rounded-2xl p-4 mb-4"
+      className="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/20 border border-indigo-200/50 dark:border-indigo-800/30 rounded-none p-4 mb-4"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">

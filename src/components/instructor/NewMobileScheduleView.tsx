@@ -314,7 +314,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         </div>
         <Button
           onClick={() => setAddLessonOpen(true)}
-          className="rounded-xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90 text-white gap-1.5 h-10 px-5"
+          className="rounded-none bg-[#1a3a4a] hover:bg-[#1a3a4a]/90 text-white gap-1.5 h-10 px-5"
         >
           <Plus className="h-4 w-4" />
           Add
@@ -327,7 +327,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : lessons.length === 0 && externalEvents.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-card rounded-none border border-border flex flex-col items-center justify-center py-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground font-medium">No lessons scheduled</p>
           <p className="text-sm text-muted-foreground/70">
@@ -360,14 +360,14 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                     onColorChange={(color) => handleColorChange(lesson.id, color)}
                     onDelete={handleDeleteLesson}
                     renderCustomCollapsed={
-                      <div className={`rounded-xl border p-4 space-y-2 ${
+                      <div className={`rounded-none border p-4 space-y-2 ${
                         lesson.lesson_type === 'driving_test' 
                           ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-300 dark:border-orange-500/30 border-l-4 border-l-orange-500 ring-1 ring-orange-200 dark:ring-orange-500/20' 
                           : `bg-card border-border ${colors.border}`
                       }`}>
                         {/* Driving Test Banner */}
                         {lesson.lesson_type === 'driving_test' && (
-                          <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg px-3 py-2 -mx-1 -mt-1 mb-1">
+                          <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-500/20 rounded-none px-3 py-2 -mx-1 -mt-1 mb-1">
                             <Car className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                             <span className="text-sm font-bold text-orange-700 dark:text-orange-300">DRIVING TEST</span>
                             <span className="ml-auto text-lg font-bold font-mono text-orange-700 dark:text-orange-300 tracking-tight">
@@ -455,7 +455,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           {allDayEvents.map((evt) => (
             <div
               key={evt.id}
-              className="bg-warning/10 rounded-xl border border-foreground px-4 py-2.5 flex items-center gap-2"
+              className="bg-warning/10 rounded-none border border-foreground px-4 py-2.5 flex items-center gap-2"
             >
               <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
               <span className="text-sm font-bold text-foreground truncate">{evt.title}</span>
@@ -474,7 +474,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             return (
               <div
                 key={evt.id}
-                className="bg-card rounded-xl border border-border p-4 space-y-1.5"
+                className="bg-card rounded-none border border-border p-4 space-y-1.5"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">

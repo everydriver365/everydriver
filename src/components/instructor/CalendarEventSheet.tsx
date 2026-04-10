@@ -233,7 +233,7 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
           {event.type === 'block' && event.data && (
             <>
               {event.data.notes && (
-                <div className="p-3 bg-muted rounded-lg">
+                <div className="p-3 bg-muted rounded-none">
                   <div className="text-sm font-medium mb-1">Notes</div>
                   <div className="text-sm text-muted-foreground">{event.data.notes}</div>
                 </div>
@@ -247,7 +247,7 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
 
           {/* External event info */}
           {event.type === 'external' && (
-            <div className="p-3 bg-muted rounded-lg">
+            <div className="p-3 bg-muted rounded-none">
               <div className="text-sm text-muted-foreground">
                 This event is synced from your external calendar.
               </div>

@@ -156,7 +156,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enable/Disable Toggle */}
-          <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="flex items-center justify-between rounded-none border p-4">
             <div className="space-y-0.5">
               <Label className="text-base">Enable Pupil App</Label>
               <p className="text-sm text-muted-foreground">
@@ -173,7 +173,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
             <>
               {/* Share Link */}
               {settings.app_slug && (
-                <div className="rounded-lg border bg-muted/50 p-4 space-y-4">
+                <div className="rounded-none border bg-muted/50 p-4 space-y-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <LinkIcon className="h-4 w-4" />
@@ -206,7 +206,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
 
                   {/* QR Code Display */}
                   {showQR && qrCodeUrl && (
-                    <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-lg border">
+                    <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-none border">
                       <img 
                         src={qrCodeUrl} 
                         alt="QR Code for pupil portal"
@@ -240,7 +240,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
                 <div className="flex items-center gap-4">
                   {settings.logo_url ? (
                     <div 
-                      className="h-16 w-16 rounded-lg border flex items-center justify-center overflow-hidden"
+                      className="h-16 w-16 rounded-none border flex items-center justify-center overflow-hidden"
                       style={{ backgroundColor: settings.brand_colour || '#1e3a5f' }}
                     >
                       <img 
@@ -250,7 +250,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
                       />
                     </div>
                   ) : (
-                    <div className="h-16 w-16 rounded-lg border-2 border-dashed flex items-center justify-center">
+                    <div className="h-16 w-16 rounded-none border-2 border-dashed flex items-center justify-center">
                       <Upload className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
@@ -323,7 +323,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
               </div>
 
               {/* Dark Mode Toggle */}
-              <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center justify-between rounded-none border p-4">
                 <div className="flex items-center gap-3">
                   {settings.pupil_app_dark_mode ? (
                     <Moon className="h-5 w-5 text-primary" />
@@ -347,7 +347,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
               <div className="space-y-2">
                 <Label>Preview</Label>
                 <div 
-                  className="rounded-lg border p-4 transition-colors"
+                  className="rounded-none border p-4 transition-colors"
                   style={{ 
                     backgroundColor: settings.pupil_app_dark_mode ? '#1a1a1a' : '#ffffff',
                     color: settings.pupil_app_dark_mode ? '#ffffff' : '#1a1a1a'
@@ -358,7 +358,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
                       <img src={settings.logo_url} alt="Logo" className="h-10 w-10 object-contain" />
                     ) : (
                       <div 
-                        className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold"
+                        className="h-10 w-10 rounded-none flex items-center justify-center text-white font-bold"
                         style={{ backgroundColor: settings.brand_colour || '#1e3a5f' }}
                       >
                         {settings.name?.charAt(0) || 'A'}
@@ -370,13 +370,13 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
                     </div>
                   </div>
                   <div 
-                    className="rounded-lg p-3 text-center text-white text-sm font-medium"
+                    className="rounded-none p-3 text-center text-white text-sm font-medium"
                     style={{ backgroundColor: settings.brand_colour || '#1e3a5f' }}
                   >
                     Sample Button
                   </div>
                   <div 
-                    className="mt-2 rounded-lg p-3 text-center text-sm font-medium"
+                    className="mt-2 rounded-none p-3 text-center text-sm font-medium"
                     style={{ 
                       backgroundColor: settings.secondary_colour || '#d4a574',
                       color: '#1a1a1a'

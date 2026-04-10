@@ -190,7 +190,7 @@ export function DomainCheckoutModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border bg-muted/30 p-4 mb-4">
+        <div className="rounded-none border bg-muted/30 p-4 mb-4">
           <div className="flex justify-between items-center">
             <div>
               <p className="font-semibold">{domain}</p>

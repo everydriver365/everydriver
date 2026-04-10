@@ -65,7 +65,7 @@ export function IgnitionEventsLog({ events, isLoading, showDeviceName = true }: 
             <div 
               key={event.id} 
               className={cn(
-                "p-2.5 rounded-lg border text-xs",
+                "p-2.5 rounded-none border text-xs",
                 event.event_type === "on" 
                   ? "bg-primary/5 border-primary/20" 
                   : "bg-muted/50 border-border"

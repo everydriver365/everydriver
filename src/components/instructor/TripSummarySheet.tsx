@@ -231,7 +231,7 @@ Roads Visited: ${report.stats.roadsVisited}
             {/* Loading State */}
             {loading && (
               <div className="space-y-4">
-                <Skeleton className="h-48 w-full rounded-xl" />
+                <Skeleton className="h-48 w-full rounded-none" />
                 <div className="grid grid-cols-2 gap-3">
                   <Skeleton className="h-20" />
                   <Skeleton className="h-20" />
@@ -267,7 +267,7 @@ Roads Visited: ${report.stats.roadsVisited}
             {report && !loading && (
               <>
                 {/* Large Route Map */}
-                <div className="rounded-xl overflow-hidden border border-border">
+                <div className="rounded-none overflow-hidden border border-border">
                   <div className="h-56">
                     <MapContainer
                       center={center}
@@ -318,14 +318,14 @@ Roads Visited: ${report.stats.roadsVisited}
 
                 {/* Duration & Distance - Large Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted/30 rounded-xl px-3 py-3 text-center">
+                  <div className="bg-muted/30 rounded-none px-3 py-3 text-center">
                     <Clock className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
                     <p className="text-xl font-bold">
                       {report.stats.duration ? formatDuration(report.stats.duration * 60) : 'N/A'}
                     </p>
                     <p className="text-[10px] text-muted-foreground">Duration</p>
                   </div>
-                  <div className="bg-muted/30 rounded-xl px-3 py-3 text-center">
+                  <div className="bg-muted/30 rounded-none px-3 py-3 text-center">
                     <Navigation className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
                     <p className="text-xl font-bold">
                       {(Number(report.stats.distance) * 0.621371).toFixed(1)} mi
@@ -335,7 +335,7 @@ Roads Visited: ${report.stats.roadsVisited}
                 </div>
 
                 {/* Speed Over Time Graph */}
-                <div className="bg-card border border-border rounded-xl p-4">
+                <div className="bg-card border border-border rounded-none p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-medium text-sm flex items-center gap-2">
                       <Gauge className="h-4 w-4 text-primary" />
@@ -356,7 +356,7 @@ Roads Visited: ${report.stats.roadsVisited}
                 </div>
 
                 {/* Roads Travelled */}
-                <div className="bg-card border border-border rounded-xl">
+                <div className="bg-card border border-border rounded-none">
                   <div className="flex items-center justify-between p-4 pb-2">
                     <h3 className="font-medium text-sm flex items-center gap-2">
                       <Route className="h-4 w-4 text-primary" />
@@ -387,19 +387,19 @@ Roads Visited: ${report.stats.roadsVisited}
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-muted/30 rounded-lg p-3 text-center">
+                  <div className="bg-muted/30 rounded-none p-3 text-center">
                     <p className="text-lg font-bold">
                       {report.stats.avgSpeed ? Math.round(report.stats.avgSpeed * 0.621371) : 'N/A'}
                     </p>
                     <p className="text-[10px] text-muted-foreground">Avg mph</p>
                   </div>
-                  <div className="bg-muted/30 rounded-lg p-3 text-center">
+                  <div className="bg-muted/30 rounded-none p-3 text-center">
                     <p className="text-lg font-bold">
                       {report.stats.maxSpeed ? Math.round(report.stats.maxSpeed * 0.621371) : 'N/A'}
                     </p>
                     <p className="text-[10px] text-muted-foreground">Max mph</p>
                   </div>
-                  <div className="bg-muted/30 rounded-lg p-3 text-center">
+                  <div className="bg-muted/30 rounded-none p-3 text-center">
                     <p className={`text-lg font-bold ${report.stats.speedingIncidents > 0 ? 'text-red-500' : 'text-green-500'}`}>
                       {report.stats.speedingIncidents}
                     </p>

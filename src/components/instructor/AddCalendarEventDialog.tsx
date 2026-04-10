@@ -248,7 +248,7 @@ export function AddCalendarEventDialog({
                         key={color}
                         type="button"
                         className={cn(
-                          'h-8 w-8 rounded-md border-2 transition-all',
+                          'h-8 w-8 rounded-none border-2 transition-all',
                           blockColor === color ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:scale-110'
                         )}
                         style={{ backgroundColor: color }}

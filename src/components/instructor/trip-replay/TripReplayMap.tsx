@@ -105,7 +105,7 @@ export function TripReplayMap({ gpsPoints, currentIndex, bounds }: TripReplayMap
     <MapContainer
       center={center}
       zoom={15}
-      className="h-full w-full rounded-lg"
+      className="h-full w-full rounded-none"
       zoomControl={false}
     >
       <TileLayer url={getMapTileUrl()} attribution={getMapAttribution()} />

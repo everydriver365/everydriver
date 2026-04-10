@@ -118,7 +118,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
   };
 
   if (loading) {
-    return <div className="animate-pulse h-48 bg-muted rounded-lg" />;
+    return <div className="animate-pulse h-48 bg-muted rounded-none" />;
   }
 
   return (
@@ -141,7 +141,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
         {pages.map((page) => (
           <div
             key={page.id}
-            className="flex items-center justify-between p-3 border rounded-lg bg-background"
+            className="flex items-center justify-between p-3 border rounded-none bg-background"
           >
             <div className="flex items-center gap-3">
               {page.is_published ? (
@@ -195,7 +195,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
 
               <TabsContent value="content" className="space-y-4">
                 {/* Published Toggle */}
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-none">
                   <Label className="font-medium">Published</Label>
                   <Switch
                     checked={editingPage.is_published}
@@ -243,7 +243,7 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug, customDomain }: M
                       <img
                         src={editingPage.hero_image_url}
                         alt="Hero preview"
-                        className="w-full h-40 object-cover rounded-lg border"
+                        className="w-full h-40 object-cover rounded-none border"
                       />
                       <Button
                         variant="destructive"

@@ -145,7 +145,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
             {/* Test Routes Tile */}
             <button
               onClick={() => setActiveCategory('test_routes')}
-              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
+              className="w-full p-4 border rounded-none hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
             >
               <div className="p-3 rounded-full bg-primary/10">
                 <GraduationCap className="h-6 w-6 text-primary" />
@@ -165,7 +165,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
             {/* All Routes Tile */}
             <button
               onClick={() => setActiveCategory('all')}
-              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
+              className="w-full p-4 border rounded-none hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
             >
               <div className="p-3 rounded-full bg-muted">
                 <FolderOpen className="h-6 w-6 text-muted-foreground" />
@@ -270,7 +270,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
             </div>
           ) : (
             displayedRoutes.map((route) => (
-              <div key={route.id} className="border rounded-lg overflow-hidden">
+              <div key={route.id} className="border rounded-none overflow-hidden">
                 <button
                   onClick={() => toggleExpand(route.id)}
                   className="w-full p-3 flex items-center justify-between hover:bg-muted/50 transition-colors text-left"

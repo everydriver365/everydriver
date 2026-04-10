@@ -79,7 +79,7 @@ export function LessonPrepCard({ instructorId, pupilId, pupilName }: LessonPrepC
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/40 dark:border-emerald-800/30 rounded-xl p-3 mt-2"
+      className="bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/40 dark:border-emerald-800/30 rounded-none p-3 mt-2"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -127,7 +127,7 @@ export function LessonPrepCard({ instructorId, pupilId, pupilName }: LessonPrepC
                   key={tab.key}
                   onClick={() => !tab.disabled && setActiveTab(tab.key)}
                   disabled={tab.disabled}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${
+                  className={`flex items-center gap-1 px-2 py-1 rounded-none text-[10px] font-medium transition-colors ${
                     activeTab === tab.key
                       ? "bg-emerald-600/10 text-emerald-700 dark:text-emerald-300"
                       : tab.disabled
@@ -158,14 +158,14 @@ export function LessonPrepCard({ instructorId, pupilId, pupilName }: LessonPrepC
                 </div>
 
                 {previousNotes.notes && (
-                  <div className="bg-card/60 rounded-lg p-2.5 border border-border/30">
+                  <div className="bg-card/60 rounded-none p-2.5 border border-border/30">
                     <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Notes</span>
                     <p className="text-[11px] text-foreground leading-relaxed">{previousNotes.notes}</p>
                   </div>
                 )}
 
                 {previousNotes.nextPlan && (
-                  <div className="bg-emerald-100/50 dark:bg-emerald-900/20 rounded-lg p-2.5 border border-emerald-200/30 dark:border-emerald-800/20">
+                  <div className="bg-emerald-100/50 dark:bg-emerald-900/20 rounded-none p-2.5 border border-emerald-200/30 dark:border-emerald-800/20">
                     <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block mb-1">Plan for next lesson</span>
                     <p className="text-[11px] text-foreground leading-relaxed">{previousNotes.nextPlan}</p>
                   </div>
@@ -220,7 +220,7 @@ export function LessonPrepCard({ instructorId, pupilId, pupilName }: LessonPrepC
                     </div>
                     <div className="space-y-1">
                       {syllabus.weakAreas.map((area) => (
-                        <div key={area.id} className="flex items-center gap-2 bg-card/60 rounded-md px-2 py-1.5 border border-border/20">
+                        <div key={area.id} className="flex items-center gap-2 bg-card/60 rounded-none px-2 py-1.5 border border-border/20">
                           <span className="text-[11px] text-foreground flex-1 min-w-0 truncate">
                             {formatCompetencyId(area.id)}
                           </span>

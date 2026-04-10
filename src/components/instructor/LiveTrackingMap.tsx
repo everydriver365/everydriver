@@ -333,7 +333,7 @@ export default function LiveTrackingMap({
       {/* Speed display panel */}
       {sessionId && (isConnected || latitude !== null) && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
-          <div className={`backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border ${
+          <div className={`backdrop-blur-sm rounded-none px-4 py-3 shadow-lg border ${
             isSpeeding ? "bg-destructive/10 border-destructive/50" : "bg-background/95"
           }`}>
             <div className="flex items-center justify-between gap-3">

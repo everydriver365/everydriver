@@ -368,7 +368,7 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? Math.round(s.speedLimi
       {/* Route Map */}
       <Card>
         <CardContent className="p-0">
-          <div className="h-48 rounded-t-lg overflow-hidden">
+          <div className="h-48 rounded-none overflow-hidden">
             <MapContainer
               center={center}
               zoom={13}

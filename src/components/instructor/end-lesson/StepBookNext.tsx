@@ -167,9 +167,9 @@ export function StepBookNext({
             key={slot.label}
             onClick={() => handleBook(slot)}
             disabled={!!booking}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors text-left"
+            className="w-full flex items-center gap-3 p-3 rounded-none bg-muted/50 hover:bg-muted transition-colors text-left"
           >
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+            <div className="flex items-center justify-center w-10 h-10 rounded-none bg-primary/10">
               <Calendar className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">

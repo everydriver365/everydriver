@@ -61,7 +61,7 @@ ${summary}
       {/* Preview card */}
       <div
         ref={cardRef}
-        className="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl p-5 text-white"
+        className="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-none p-5 text-white"
       >
         <div className="flex items-center gap-2 mb-3">
           <Moon className="h-4 w-4 opacity-80" />

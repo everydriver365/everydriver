@@ -130,7 +130,7 @@ export function DigitalWaiverManager() {
               <CardContent className="space-y-3">
                 <Input placeholder="Waiver title" value={title} onChange={e => setTitle(e.target.value)} />
                 <select
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
                   value={waiverType}
                   onChange={e => setWaiverType(e.target.value)}
                 >
@@ -139,7 +139,7 @@ export function DigitalWaiverManager() {
                   <option value="parental">Parental Consent</option>
                 </select>
                 <textarea
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[100px]"
+                  className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm min-h-[100px]"
                   placeholder="Waiver content (HTML supported)"
                   value={contentHtml}
                   onChange={e => setContentHtml(e.target.value)}

@@ -83,7 +83,7 @@ export function StepPayment({
   if (showQR && paymentQrUrl) {
     return (
       <div className="flex flex-col items-center gap-3">
-        <div className="bg-background p-3 rounded-xl shadow-md">
+        <div className="bg-background p-3 rounded-none shadow-md">
           <img src={paymentQrUrl} alt="Payment QR" className="w-48 h-48 object-contain" />
         </div>
         <p className="text-xs text-muted-foreground">Scan to pay</p>
@@ -107,7 +107,7 @@ export function StepPayment({
 
       {paymentLimit.isAtLimit ? null : (<>
       {balanceAfterLesson < 0 && (
-        <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 text-sm">
+        <div className="bg-warning/10 border border-warning/30 rounded-none p-3 text-sm">
           <span className="text-warning">
             Outstanding after lesson: <strong>£{Math.abs(Math.round(balanceAfterLesson))}</strong>
           </span>
@@ -153,7 +153,7 @@ export function StepPayment({
             <RadioGroupItem value={m.value} id={`end-${m.value}`} className="peer sr-only" />
             <Label
               htmlFor={`end-${m.value}`}
-              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
+              className="flex flex-col items-center justify-center rounded-none border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
             >
               <m.icon className="h-5 w-5 mb-1" />
               <span className="text-xs">{m.label}</span>

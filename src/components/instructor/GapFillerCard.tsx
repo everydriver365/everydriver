@@ -47,7 +47,7 @@ export function GapFillerCardSkeleton({ className = "" }: { className?: string }
     <div className={className}>
        <div className="bg-white rounded-none shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
         <div className="flex items-center gap-3">
-           <Skeleton className="w-12 h-12 rounded-xl bg-gray-200" />
+           <Skeleton className="w-12 h-12 rounded-none bg-gray-200" />
           <div className="flex-1 space-y-2">
              <Skeleton className="h-5 w-28 bg-gray-200" />
              <Skeleton className="h-3 w-40 bg-gray-200" />
@@ -208,7 +208,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
           className="w-full p-4 flex items-center gap-3 text-left active:bg-muted/50 transition-colors"
         >
           {/* Tinted icon pill */}
-          <div className="h-8 w-8 rounded-lg overflow-hidden shrink-0">
+          <div className="h-8 w-8 rounded-none overflow-hidden shrink-0">
             <img src={fillGapsIcon} alt="Fill Gaps" className="w-full h-full object-cover" />
           </div>
           {/* Content */}
@@ -254,7 +254,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
             >
               <button
                 onClick={handleViewAll}
-                className="w-full flex items-center justify-between bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/15 hover:to-purple-500/15 rounded-xl px-4 py-3 transition-colors group"
+                className="w-full flex items-center justify-between bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/15 hover:to-purple-500/15 rounded-none px-4 py-3 transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
@@ -280,7 +280,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
             >
               <div className="px-4 pb-4 space-y-3">
                 {gaps.map((gap) => (
-                  <div key={gap.date} className="rounded-xl p-3.5" style={{ backgroundColor: '#D1E4FC' }}>
+                  <div key={gap.date} className="rounded-none p-3.5" style={{ backgroundColor: '#D1E4FC' }}>
                     {/* Date header */}
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-semibold text-foreground">
@@ -301,7 +301,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                             key={slot.id}
                             onClick={() => handleSlotSelect(slot)}
                             className={cn(
-                              "px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-center",
+                              "px-3 py-2.5 rounded-none text-sm font-medium transition-all text-center",
                               isSelected
                                 ? "bg-primary text-primary-foreground shadow-md"
                                 : "bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-foreground"
@@ -343,7 +343,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                                   }}
                                   disabled={!pupil.phone}
                                   className={cn(
-                                    "w-full flex items-center gap-3 rounded-xl p-3 transition-all overflow-hidden",
+                                    "w-full flex items-center gap-3 rounded-none p-3 transition-all overflow-hidden",
                                     isAnySelected
                                       ? "bg-primary text-primary-foreground shadow-md"
                                       : "bg-card border border-border hover:border-primary/50",
@@ -438,7 +438,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="w-full max-w-lg bg-card rounded-t-3xl p-5 pb-safe shadow-2xl"
+                className="w-full max-w-lg bg-card rounded-none p-5 pb-safe shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Handle bar */}
@@ -456,7 +456,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
 
                 <div className="space-y-3 max-h-[50vh] overflow-y-auto">
                   {Array.from(selectedPupils.values()).map((pupil) => (
-                    <div key={`${pupil.id}-${pupil.slot.id}`} className="bg-muted/50 rounded-xl p-4">
+                    <div key={`${pupil.id}-${pupil.slot.id}`} className="bg-muted/50 rounded-none p-4">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-xs font-bold text-white">
                           {pupil.name
@@ -470,7 +470,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                           <p className="text-xs text-muted-foreground">{pupil.phone}</p>
                         </div>
                       </div>
-                      <div className="bg-card rounded-lg p-3 border border-border text-sm text-foreground leading-relaxed">
+                      <div className="bg-card rounded-none p-3 border border-border text-sm text-foreground leading-relaxed">
                         {generateMessage(pupil)}
                       </div>
                     </div>
@@ -480,13 +480,13 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                 <div className="flex gap-3 mt-5">
                   <Button 
                     variant="outline" 
-                    className="flex-1 h-12 rounded-xl" 
+                    className="flex-1 h-12 rounded-none" 
                     onClick={handleCancelPreview}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 h-12 rounded-xl gap-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold"
+                    className="flex-1 h-12 rounded-none gap-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold"
                     onClick={handleSendMessages}
                   >
                     <Send className="h-4 w-4" />

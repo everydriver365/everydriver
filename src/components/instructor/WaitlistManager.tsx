@@ -353,7 +353,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
             {pendingOffers.map((offer) => (
               <div
                 key={offer.id}
-                className={`flex items-center justify-between rounded-lg bg-background p-3 transition-all ${
+                className={`flex items-center justify-between rounded-none bg-background p-3 transition-all ${
                   highlightedOfferIds.has(offer.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
                 }`}
               >
@@ -442,7 +442,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
                 .map(({ entry, bestScore }) => (
                 <div
                   key={entry.id}
-                  className={`flex items-start justify-between rounded-lg border p-3 transition-all ${
+                  className={`flex items-start justify-between rounded-none border p-3 transition-all ${
                     highlightedWaitlistIds.has(entry.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
                   }`}
                 >

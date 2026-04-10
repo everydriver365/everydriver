@@ -354,7 +354,7 @@ export function GoogleStyleScheduleView({
   }, []);
 
   return (
-    <div className="h-full flex flex-col bg-background rounded-lg border overflow-hidden">
+    <div className="h-full flex flex-col bg-background rounded-none border overflow-hidden">
       {/* Minimal header */}
       <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-2 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -431,19 +431,19 @@ export function GoogleStyleScheduleView({
       {/* Color legend */}
       <div className="flex flex-wrap gap-2 p-2 border-t bg-card text-[10px] flex-shrink-0">
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson }} />
+          <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.lesson }} />
           <span className="text-muted-foreground">Paid</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
+          <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
           <span className="text-muted-foreground">Unpaid</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.block_personal }} />
+          <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.block_personal }} />
           <span className="text-muted-foreground">Block</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.external }} />
+          <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.external }} />
           <span className="text-muted-foreground">External</span>
         </div>
       </div>

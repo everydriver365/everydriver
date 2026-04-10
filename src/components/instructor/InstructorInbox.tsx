@@ -362,7 +362,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
             <TabsContent value="admin" className="mt-3 space-y-3">
               <button
                 onClick={() => setShowAdminChat(true)}
-                className="w-full p-4 rounded-lg border hover:bg-muted/50 transition-colors flex items-center gap-4"
+                className="w-full p-4 rounded-none border hover:bg-muted/50 transition-colors flex items-center gap-4"
               >
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-6 w-6 text-primary" />
@@ -379,7 +379,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                   </p>
                 </div>
               </button>
-              <div className="p-4 rounded-lg bg-muted/50">
+              <div className="p-4 rounded-none bg-muted/50">
                 <h4 className="font-medium mb-2">Need Help?</h4>
                 <p className="text-sm text-muted-foreground">
                   Message our admin team for assistance with:
@@ -428,7 +428,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                     <button
                       key={pupil.id}
                       onClick={() => handleStartChat(pupil)}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-3 rounded-none hover:bg-muted/50 transition-colors text-left"
                     >
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarFallback className="bg-primary text-primary-foreground">

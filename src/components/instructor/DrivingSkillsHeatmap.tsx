@@ -404,28 +404,28 @@ const DrivingSkillsHeatmap: React.FC<DrivingSkillsHeatmapProps> = ({
       <CardContent className="space-y-4">
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg text-center">
+          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-none text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </div>
             <p className="text-xl font-bold text-red-600">{problemEvents.length}</p>
             <p className="text-xs text-muted-foreground">Problem Events</p>
           </div>
-          <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg text-center">
+          <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-none text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Map className="h-4 w-4 text-orange-500" />
             </div>
             <p className="text-xl font-bold text-orange-600">{problemAreas.length}</p>
             <p className="text-xs text-muted-foreground">Problem Areas</p>
           </div>
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-center">
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-none text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Gauge className="h-4 w-4 text-amber-500" />
             </div>
             <p className="text-xl font-bold text-amber-600">{eventBreakdown.speeding}</p>
             <p className="text-xs text-muted-foreground">Speeding</p>
           </div>
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg text-center">
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-none text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <TrendingUp className="h-4 w-4 text-rose-500" />
             </div>
@@ -438,7 +438,7 @@ const DrivingSkillsHeatmap: React.FC<DrivingSkillsHeatmapProps> = ({
         <div 
           ref={mapContainer} 
           style={{ height, width: '100%' }} 
-          className="rounded-lg border"
+          className="rounded-none border"
         />
 
         {/* Legend */}
@@ -471,7 +471,7 @@ const DrivingSkillsHeatmap: React.FC<DrivingSkillsHeatmapProps> = ({
               {problemAreas.slice(0, 4).map((area, i) => (
                 <div 
                   key={i} 
-                  className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-2 bg-muted/50 rounded-none"
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${

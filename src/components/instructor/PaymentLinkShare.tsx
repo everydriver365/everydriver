@@ -99,13 +99,13 @@ export function PaymentLinkShare({ instructorId, instructorName, pupils = [] }: 
 
       {/* QR Code */}
       <div className="flex justify-center">
-        <div className="bg-white p-4 rounded-lg">
+        <div className="bg-white p-4 rounded-none">
           <QRCodeSVG value={paymentUrl} size={180} level="M" />
         </div>
       </div>
 
       {/* Link display */}
-      <div className="flex items-center gap-2 p-2.5 bg-muted/50 rounded-md border border-border">
+      <div className="flex items-center gap-2 p-2.5 bg-muted/50 rounded-none border border-border">
         <Link className="h-4 w-4 text-muted-foreground shrink-0" />
         <span className="text-xs text-foreground truncate flex-1">{paymentUrl}</span>
       </div>

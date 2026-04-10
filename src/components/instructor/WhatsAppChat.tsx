@@ -94,7 +94,7 @@ export function WhatsAppChat({ conversation, onBack }: WhatsAppChatProps) {
                 )}
                 <div
                   className={cn(
-                    "px-3 py-2 rounded-2xl text-sm",
+                    "px-3 py-2 rounded-none text-sm",
                     isOutbound
                       ? isAI
                         ? "bg-blue-500/10 text-foreground rounded-br-md border border-blue-200 dark:border-blue-800"

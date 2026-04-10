@@ -159,7 +159,7 @@ export function GPSClockInOut({ instructorId }: { instructorId: string }) {
       {/* Recent history */}
       <div className="space-y-2">
         {recentEntries.map((entry: any) => (
-          <div key={entry.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/50">
+          <div key={entry.id} className="flex items-center justify-between py-2 px-3 rounded-none bg-secondary/50">
             <div>
               <p className="text-sm font-medium">{format(new Date(entry.clock_in_at), "EEE dd MMM")}</p>
               <p className="text-xs text-muted-foreground">

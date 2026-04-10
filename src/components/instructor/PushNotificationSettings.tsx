@@ -43,7 +43,7 @@ export function PushNotificationSettings({ instructorId }: PushNotificationSetti
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg ${isSubscribed ? "bg-success/10" : "bg-muted"}`}>
+            <div className={`p-2 rounded-none ${isSubscribed ? "bg-success/10" : "bg-muted"}`}>
               {isSubscribed ? (
                 <BellRing className="h-5 w-5 text-success" />
               ) : (
@@ -85,7 +85,7 @@ export function PushNotificationSettings({ instructorId }: PushNotificationSetti
 
         {/* Permission warning */}
         {permission === "denied" && (
-          <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg text-sm">
+          <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-none text-sm">
             <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
             <div>
               <p className="font-medium text-destructive">Notifications blocked</p>

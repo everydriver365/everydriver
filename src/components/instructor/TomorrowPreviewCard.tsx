@@ -99,7 +99,7 @@ export function TomorrowPreviewCard({
         animate={{ opacity: 1, y: 0 }}
         className={`mx-4 ${className}`}
       >
-        <div className="rounded-2xl border border-border bg-card shadow-md p-4">
+        <div className="rounded-none border border-border bg-card shadow-md p-4">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-primary">Tomorrow</p>
@@ -112,20 +112,20 @@ export function TomorrowPreviewCard({
               </div>
             )}
           </div>
-          <div className="flex items-center justify-center gap-2 mb-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-2xl px-4 py-3 border border-amber-100/50 dark:border-amber-800/30">
+          <div className="flex items-center justify-center gap-2 mb-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-none px-4 py-3 border border-amber-100/50 dark:border-amber-800/30">
             <span className="text-lg">☕</span>
             <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Enjoy a well-deserved break</span>
             <span className="text-lg">☕</span>
           </div>
           <div className="flex gap-3">
             <Link to="/instructor/schedule" className="flex-1">
-              <Button variant="outline" size="default" className="w-full gap-2 h-12 rounded-2xl font-semibold">
+              <Button variant="outline" size="default" className="w-full gap-2 h-12 rounded-none font-semibold">
                 <img src={calendarIcon} alt="Calendar" className="h-5 w-5" />
                 View Schedule
               </Button>
             </Link>
             <Link to="/instructor/gaps" className="flex-1">
-              <Button size="default" className="w-full gap-2 h-12 rounded-2xl font-semibold">
+              <Button size="default" className="w-full gap-2 h-12 rounded-none font-semibold">
                 <ClipboardList className="h-5 w-5" />
                 Check Waitlist
               </Button>
@@ -143,7 +143,7 @@ export function TomorrowPreviewCard({
       className={`mx-4 ${className}`}
     >
       <Link to="/instructor/schedule">
-        <div className="rounded-2xl border border-border bg-card shadow-md p-4">
+        <div className="rounded-none border border-border bg-card shadow-md p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
