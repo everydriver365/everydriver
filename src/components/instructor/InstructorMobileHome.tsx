@@ -460,7 +460,9 @@ export function InstructorMobileHome({
         gapSlotsCount={gapSuggestions?.length || 0}
       />
 
-      {/* 3. Conditional sections */}
+      {/* Telematics Tile */}
+      <TelematicsTile />
+
       <div className="px-4">
         <CelebrationConfetti
           trigger={showConfetti}
