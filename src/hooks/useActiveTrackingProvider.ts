@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type TrackingProvider = "geotab" | "quartix" | "radius" | "gpsgate" | null;
+export type TrackingProvider = "geotab" | "radius" | null;
 
-const PROVIDER_PRIORITY: TrackingProvider[] = ["geotab", "quartix", "radius", "gpsgate"];
+const PROVIDER_PRIORITY: TrackingProvider[] = ["geotab", "radius"];
 
 export function useActiveTrackingProvider(instructorId: string | null | undefined) {
   const [activeProvider, setActiveProvider] = useState<TrackingProvider>(null);
@@ -15,30 +15,38 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
       return;
     }
 
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("gps_devices")
-        .select("tracking_provider")
-        .eq("instructor_id", instructorId)
-        .eq("is_active", true);
+    const fetchProvider = async () => {
+      // Fetch devices and instructor preference in parallel
+      const [devicesRes, instRes] = await Promise.all([
+        supabase
+          .from("gps_devices")
+          .select("tracking_provider")
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true),
+        supabase
+          .from("instructors")
+          .select("preferred_tracking_provider")
+          .eq("id", instructorId)
+          .single(),
+      ]);
 
-      if (data && data.length > 0) {
-        const providers = data.map((d) => d.tracking_provider as TrackingProvider);
+      const devices = devicesRes.data ?? [];
+      const providers = [...new Set(devices.map((d) => d.tracking_provider as TrackingProvider))];
+      const preference = (instRes.data?.preferred_tracking_provider as TrackingProvider) ?? null;
+
+      if (preference && providers.includes(preference)) {
+        setActiveProvider(preference);
+      } else if (providers.length > 0) {
         const best = PROVIDER_PRIORITY.find((p) => providers.includes(p)) || null;
         setActiveProvider(best);
       } else {
-        // Check if instructor has gpsgate link
-        const { data: inst } = await supabase
-          .from("instructors")
-          .select("gpsgate_user_id")
-          .eq("id", instructorId)
-          .single();
-        setActiveProvider(inst?.gpsgate_user_id ? "gpsgate" : null);
+        setActiveProvider(null);
       }
+
       setIsLoading(false);
     };
 
-    fetch();
+    fetchProvider();
   }, [instructorId]);
 
   return { activeProvider, isLoading };

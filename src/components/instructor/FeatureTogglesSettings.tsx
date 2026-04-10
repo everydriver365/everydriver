@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Sparkles, Radio } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 interface FeatureToggle {
   key: string;
   label: string;
@@ -106,11 +106,77 @@ function ToggleList({ toggles, instructorId }: { toggles: FeatureToggle[]; instr
   );
 }
 
+function TrackingProviderSelector({ instructorId }: { instructorId: string }) {
+  const { instructor, refreshInstructor } = useInstructorAuth();
+  const [providerCount, setProviderCount] = useState(0);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("gps_devices")
+      .select("tracking_provider")
+      .eq("instructor_id", instructorId)
+      .eq("is_active", true)
+      .then(({ data }) => {
+        if (data) {
+          const unique = new Set(data.map((d) => d.tracking_provider));
+          setProviderCount(unique.size);
+        }
+      });
+  }, [instructorId]);
+
+  if (providerCount < 2) return null;
+
+  const currentValue = (instructor as any)?.preferred_tracking_provider || "auto";
+
+  const handleChange = async (value: string) => {
+    setSaving(true);
+    try {
+      const dbValue = value === "auto" ? null : value;
+      const { error } = await supabase
+        .from("instructors")
+        .update({ preferred_tracking_provider: dbValue } as any)
+        .eq("id", instructorId);
+      if (error) throw error;
+      await refreshInstructor();
+      toast({ title: "Tracking provider updated" });
+    } catch {
+      toast({ title: "Error", description: "Failed to update provider", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="pb-4 mb-2 border-b border-border/40">
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Radio className="h-4 w-4 text-primary" />
+        <span className="text-sm font-semibold text-foreground">Tracking Provider</span>
+        {saving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+      </div>
+      <div className="px-1">
+        <IOSSegmentedControl
+          segments={[
+            { value: "auto", label: "Auto" },
+            { value: "geotab", label: "Geotab" },
+            { value: "radius", label: "Kinesis" },
+          ]}
+          value={currentValue}
+          onChange={handleChange}
+        />
+        <p className="text-xs text-muted-foreground mt-2">
+          Choose which GPS provider powers your live tracking and telematics
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsProps) {
   return (
     <div className="space-y-6">
+      <TrackingProviderSelector instructorId={instructorId} />
       <ToggleList toggles={featureToggles} instructorId={instructorId} />
-
       <div className="pt-2">
         <div className="flex items-center gap-2 mb-3 px-1">
           <Sparkles className="h-4 w-4 text-primary" />
