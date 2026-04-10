@@ -826,7 +826,7 @@ export default function InstructorLiveSession() {
           )}
 
           {/* Live Map — self-contained, fetches its own device data */}
-          <LiveTrackingMap className="absolute inset-0" />
+          <LiveTrackingMap className="absolute inset-0" deviceId={device?.id} />
 
            {/* Floating Session Timer Card */}
            <FloatingSessionTimer
