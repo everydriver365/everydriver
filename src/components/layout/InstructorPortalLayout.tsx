@@ -400,10 +400,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen overflow-x-hidden instructor-portal",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : isHomePage ? "pb-16" : "pb-16"
+          "min-h-screen overflow-x-hidden instructor-portal bg-background",
+           isFullscreenMode ? "h-[100dvh] overflow-hidden" : isHomePage ? "pb-16" : "pb-16"
         )}
-        style={undefined}
       >
         {!isFullscreenMode && (
           <>
@@ -768,7 +767,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
           <div className="flex-1 flex flex-col min-w-0">
             {/* Slim Header */}
-            <header className="sticky top-0 z-50 bg-[#142040] shadow-lg">
+            <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
               <div className="flex items-center justify-between px-4 h-12">
                 {/* Left: Sidebar trigger + Search */}
                 <div className="flex items-center gap-2">
