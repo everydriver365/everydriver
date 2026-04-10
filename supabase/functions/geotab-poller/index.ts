@@ -253,7 +253,17 @@ Deno.serve(async (req) => {
     }
 
     // Should we include diagnostics/faults in this cycle?
-    const shouldIncludeDiagnostics = pollMode === "full" || (Date.now() - lastDiagnosticsAt > DIAGNOSTICS_INTERVAL);
+    // In fast mode, check DB-based throttle to skip diagnostics most of the time
+    let shouldIncludeDiagnostics = pollMode === "full";
+    if (!shouldIncludeDiagnostics) {
+      const { data: diagConfig } = await supabase
+        .from("cron_sync_config")
+        .select("last_run_at")
+        .eq("id", "geotab_diagnostics")
+        .maybeSingle();
+      const lastDiagRun = diagConfig?.last_run_at ? new Date(diagConfig.last_run_at).getTime() : 0;
+      shouldIncludeDiagnostics = Date.now() - lastDiagRun > DIAGNOSTICS_INTERVAL;
+    }
 
     // ---- BATCHED CALL ----
     const now = new Date();
