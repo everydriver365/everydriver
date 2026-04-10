@@ -355,7 +355,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods");
+    console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods (mode:", pollMode + ")");
     const batchResults = await geotabMultiCall(session, batchCalls);
 
     // Parse results
@@ -373,26 +373,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    // StatusData results: diagnosticIds.length calls per device, starting after speed limit calls
-    const statusDataOffset = 1 + speedLimitCallCount;
+    // StatusData & FaultData results — only present when diagnostics were included
     const deviceDiagnostics = new Map<string, Record<string, number>>();
-    for (let i = 0; i < resolvedGeotabIds.length; i++) {
-      const diags: Record<string, number> = {};
-      for (let j = 0; j < diagnosticIds.length; j++) {
-        const callIdx = statusDataOffset + i * diagnosticIds.length + j;
-        const sdResults: any[] = batchResults[callIdx] || [];
-        if (sdResults.length > 0) {
-          // Use the last (most recent) value
-          const latest = sdResults[sdResults.length - 1];
-          if (latest.data != null) {
-            diags[diagnosticIds[j]] = latest.data;
+    let exceptionResults: any[] = [];
+
+    if (shouldIncludeDiagnostics) {
+      lastDiagnosticsAt = Date.now();
+      const statusDataOffset = 1 + speedLimitCallCount;
+      for (let i = 0; i < resolvedGeotabIds.length; i++) {
+        const diags: Record<string, number> = {};
+        for (let j = 0; j < diagnosticIds.length; j++) {
+          const callIdx = statusDataOffset + i * diagnosticIds.length + j;
+          const sdResults: any[] = batchResults[callIdx] || [];
+          if (sdResults.length > 0) {
+            const latest = sdResults[sdResults.length - 1];
+            if (latest.data != null) {
+              diags[diagnosticIds[j]] = latest.data;
+            }
           }
         }
+        if (Object.keys(diags).length > 0) {
+          console.log("[GeotabPoller] Diagnostics for device", resolvedGeotabIds[i], ":", JSON.stringify(diags));
+          deviceDiagnostics.set(resolvedGeotabIds[i], diags);
+        }
       }
-      if (Object.keys(diags).length > 0) {
-        console.log("[GeotabPoller] Diagnostics for device", resolvedGeotabIds[i], ":", JSON.stringify(diags));
-        deviceDiagnostics.set(resolvedGeotabIds[i], diags);
-      }
+      // FaultData is second-to-last, ExceptionEvent is last (when diagnostics included)
+      exceptionResults = batchResults[batchResults.length - 1] || [];
     }
 
     const deviceFaults = new Map<string, any[]>();
