@@ -423,10 +423,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <header
               className={cn(
                 "sticky top-0 z-40 pt-[env(safe-area-inset-top)]",
-                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-background border-b border-border"
+                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-primary"
               )}
             >
-              <div className={cn("relative overflow-hidden", isHomePage ? "text-primary-foreground" : "text-foreground")}>
+              <div className="text-primary-foreground relative overflow-hidden">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Hamburger + Title */}
