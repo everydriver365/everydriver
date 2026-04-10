@@ -61,7 +61,6 @@ async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
     headers: refreshHeaders,
     body: JSON.stringify({ refresh: refreshToken }),
   });
-  );
 
   if (!res.ok) {
     const errText = await res.text();
