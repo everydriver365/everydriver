@@ -149,7 +149,7 @@ export function HomepageHero({
       </div>
 
       {/* Carousel overlapping the hero — pulled up */}
-      <div className="-mt-14 relative z-10 px-4">
+      <div className="-mt-10 relative z-10 px-4">
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex">
             {slides.map((slide, i) => (
