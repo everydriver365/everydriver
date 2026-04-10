@@ -203,12 +203,23 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
+// Throttle for slow diagnostics path
+let lastDiagnosticsAt = 0;
+const DIAGNOSTICS_INTERVAL = 60_000; // 60 seconds
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Determine polling mode: "fast" = position-only, "full" = everything
+    let pollMode = "full";
+    try {
+      const body = await req.clone().json();
+      if (body?.mode === "fast") pollMode = "fast";
+    } catch { /* no body or not JSON — default to full */ }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -241,7 +252,10 @@ Deno.serve(async (req) => {
       resolvedGeotabIds.push(internalId || d.geotab_device_id);
     }
 
-    // ---- BATCHED CALL: DeviceStatusInfo + PostedRoadSpeed + StatusData + FaultData in ONE request ----
+    // Should we include diagnostics/faults in this cycle?
+    const shouldIncludeDiagnostics = pollMode === "full" || (Date.now() - lastDiagnosticsAt > DIAGNOSTICS_INTERVAL);
+
+    // ---- BATCHED CALL ----
     const now = new Date();
     const twoMinAgo = new Date(now.getTime() - 2 * 60 * 1000);
     const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);

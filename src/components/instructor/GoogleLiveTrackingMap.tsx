@@ -405,19 +405,19 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       }
     }
     tick();
-    const timer = window.setInterval(tick, 3000);
+    const timer = window.setInterval(tick, 5000);
     return () => { cancelled = true; window.clearInterval(timer); };
   }, [device?.current_session_id, mapsLoaded]);
 
-  // 5b) Trigger poller every 10s
+  // 5b) Trigger poller every 5s (fast mode = position-only for low latency)
   useEffect(() => {
     if (!device?.id || !isConnected) return;
     const triggerPoller = async () => {
-      try { await supabase.functions.invoke("geotab-poller", { method: "POST" }); }
+      try { await supabase.functions.invoke("geotab-poller", { body: { mode: "fast" } }); }
       catch (err) { console.error("Live map poller trigger failed:", err); }
     };
     triggerPoller();
-    const timer = setInterval(triggerPoller, 10000);
+    const timer = setInterval(triggerPoller, 5000);
     return () => clearInterval(timer);
   }, [device?.id, isConnected]);
 
