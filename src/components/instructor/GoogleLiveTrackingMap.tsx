@@ -464,7 +464,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
     };
   }, [device?.current_session_id, mapsLoaded, redrawPolyline, scheduleSnap]);
 
-  // 5b) Trigger poller every 5s (fast mode = position-only for low latency)
+  // 5b) Trigger poller every 3s (fast mode = position-only for low latency)
   useEffect(() => {
     if (!device?.id || !isConnected) return;
     const triggerPoller = async () => {
@@ -472,7 +472,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       catch (err) { console.error("Live map poller trigger failed:", err); }
     };
     triggerPoller();
-    const timer = setInterval(triggerPoller, 5000);
+    const timer = setInterval(triggerPoller, 3000);
     return () => clearInterval(timer);
   }, [device?.id, isConnected]);
 
