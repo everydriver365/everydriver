@@ -464,6 +464,22 @@ export function InstructorMobileHome({
       {/* Telematics Tile */}
       <TelematicsTile />
 
+      {/* View Schedule Tile */}
+      <div className="px-4 mt-3">
+        <button
+          onClick={() => navigate("/instructor/schedule")}
+          className="w-full flex items-center justify-between bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </div>
+
       <div className="px-4">
         <CelebrationConfetti
           trigger={showConfetti}
