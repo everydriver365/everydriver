@@ -133,26 +133,41 @@ export default function InstructorLiveSession() {
     if (!instructor?.id) return;
     
     try {
-      // Fetch active devices, ordered by provider priority (geotab first)
-      const { data: devices, error: deviceError } = await supabase
-        .from("gps_devices")
-        .select("*")
-        .eq("instructor_id", instructor.id)
-        .eq("is_active", true)
-        .order("tracking_provider", { ascending: true })
-        .limit(10);
+      // Fetch active devices and instructor preference in parallel
+      const [devicesRes, prefRes] = await Promise.all([
+        supabase
+          .from("gps_devices")
+          .select("*")
+          .eq("instructor_id", instructor.id)
+          .eq("is_active", true)
+          .limit(10),
+        supabase
+          .from("instructors")
+          .select("preferred_tracking_provider")
+          .eq("id", instructor.id)
+          .single(),
+      ]);
 
-      if (deviceError) throw deviceError;
+      if (devicesRes.error) throw devicesRes.error;
+      const devices = devicesRes.data;
+      const preference = (prefRes.data?.preferred_tracking_provider as string) || null;
       
       if (devices && devices.length > 0) {
-        // Pick the best device by provider priority
+        // Respect instructor's preferred provider, fall back to priority order
         const priorityOrder = ["geotab", "radius"];
-        const sorted = [...devices].sort((a, b) => {
-          const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
-          const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
-          return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
-        });
-        setDevice(sorted[0] as GPSDevice);
+        let chosen = devices[0];
+        if (preference) {
+          const preferred = devices.find(d => d.tracking_provider === preference);
+          if (preferred) chosen = preferred;
+        } else {
+          const sorted = [...devices].sort((a, b) => {
+            const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
+            const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
+            return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+          });
+          chosen = sorted[0];
+        }
+        setDevice(chosen as GPSDevice);
         
         // If session is active, restore timer and distance, and enter fullscreen
         if (devices[0].current_session_id) {
