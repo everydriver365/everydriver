@@ -308,50 +308,52 @@ Deno.serve(async (req) => {
 
     const speedLimitCallCount = resolvedGeotabIds.length;
 
-    // Add StatusData calls — one per diagnostic per device for reliable ID mapping
-    for (const gid of resolvedGeotabIds) {
-      for (const diagId of diagnosticIds) {
-        batchCalls.push({
-          method: "Get",
-          params: {
-            typeName: "StatusData",
-            search: {
-              deviceSearch: { id: gid },
-              diagnosticSearch: { id: diagId },
-              fromDate: thirtyMinAgo.toISOString(),
-              toDate: now.toISOString(),
+    // Add StatusData calls — only in diagnostic cycles (every ~60s or full mode)
+    if (shouldIncludeDiagnostics) {
+      for (const gid of resolvedGeotabIds) {
+        for (const diagId of diagnosticIds) {
+          batchCalls.push({
+            method: "Get",
+            params: {
+              typeName: "StatusData",
+              search: {
+                deviceSearch: { id: gid },
+                diagnosticSearch: { id: diagId },
+                fromDate: thirtyMinAgo.toISOString(),
+                toDate: now.toISOString(),
+              },
+              resultsLimit: 5,
             },
-            resultsLimit: 5,
-          },
-        });
+          });
+        }
       }
+
+      // Add FaultData call for all devices
+      batchCalls.push({
+        method: "Get",
+        params: {
+          typeName: "FaultData",
+          search: {
+            fromDate: twentyFourHoursAgo.toISOString(),
+            toDate: now.toISOString(),
+          },
+          resultsLimit: 200,
+        },
+      });
+
+      // Add ExceptionEvent call for impact/harsh event detection (last 2 minutes)
+      batchCalls.push({
+        method: "Get",
+        params: {
+          typeName: "ExceptionEvent",
+          search: {
+            fromDate: twoMinAgo.toISOString(),
+            toDate: now.toISOString(),
+          },
+          resultsLimit: 50,
+        },
+      });
     }
-
-    // Add FaultData call for all devices
-    batchCalls.push({
-      method: "Get",
-      params: {
-        typeName: "FaultData",
-        search: {
-          fromDate: twentyFourHoursAgo.toISOString(),
-          toDate: now.toISOString(),
-        },
-        resultsLimit: 200,
-      },
-    });
-
-    // Add ExceptionEvent call for impact/harsh event detection (last 2 minutes)
-    batchCalls.push({
-      method: "Get",
-      params: {
-        typeName: "ExceptionEvent",
-        search: {
-          fromDate: twoMinAgo.toISOString(),
-          toDate: now.toISOString(),
-        },
-        resultsLimit: 50,
-      },
-    });
 
     console.log("[GeotabPoller] Sending batched call with", batchCalls.length, "methods");
     const batchResults = await geotabMultiCall(session, batchCalls);
