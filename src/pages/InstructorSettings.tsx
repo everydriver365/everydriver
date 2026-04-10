@@ -340,7 +340,7 @@ export default function InstructorSettings() {
     iconSrc?: string;
     children: React.ReactNode;
   }) => (
-    <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-sm overflow-hidden">
+    <div id={`settings-tile-${id}`} className="bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
       <Collapsible open={isOpen(id)} onOpenChange={() => toggleSection(id)}>
         <CollapsibleTrigger asChild>
           <div className="p-0">
