@@ -424,7 +424,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     {showBackButton && (
                       <button
                         onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
+                        className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
@@ -434,7 +434,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
                         >
                           <Menu className="h-5 w-5" />
                         </Button>
