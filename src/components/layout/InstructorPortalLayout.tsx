@@ -400,7 +400,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen overflow-x-hidden instructor-portal",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "bg-primary pb-16"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : isHomePage ? "pb-16" : "bg-primary pb-16"
         )}
       >
         {!isFullscreenMode && (
@@ -628,7 +628,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`overflow-x-hidden ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: mobileBg }}>{children}</main>
+            <main className={`overflow-x-hidden ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : mobileBg }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
