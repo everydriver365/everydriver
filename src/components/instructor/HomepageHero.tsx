@@ -125,13 +125,15 @@ export function HomepageHero({
   };
 
   return (
-    <div className="relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-      {/* Background image area */}
-      <div className="relative" style={{ aspectRatio: "1 / 0.55", borderRadius: 0, overflow: "hidden" }}>
+    <div className="relative">
+      {/* Background image area — bleeds under the header */}
+      <div className="relative" style={{ aspectRatio: "1 / 0.65", borderRadius: 0, overflow: "hidden" }}>
         <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = instructorHeroImg; }} />
+        {/* Subtle bottom gradient for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
 
-        {/* Top — Avatar + Greeting */}
-        <div className="absolute inset-0 flex flex-col justify-start p-5">
+        {/* Top — Avatar + Greeting, pushed down to clear header */}
+        <div className="absolute inset-0 flex flex-col justify-start" style={{ paddingTop: "calc(env(safe-area-inset-top) + 60px)", paddingLeft: 20, paddingRight: 20 }}>
           <div className="flex items-center gap-3">
             {profileImageUrl ? (
               <img src={profileImageUrl} alt={firstName} className="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md" />
