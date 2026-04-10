@@ -132,25 +132,31 @@ export function ActivityTilesGrid({
           transition={{ delay: idx * 0.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={() => navigate(tile.route)}
-          className="rounded-2xl p-2.5 pb-2 text-center border-0 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center"
+          className="aspect-square rounded-2xl p-2 text-center border-0 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1.5"
           style={{
             backgroundColor: "#F2F3F5",
             boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          {/* Icon */}
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "#E6E8EC" }}
-          >
-            {tile.icon}
+          {/* Icon with badge counter */}
+          <div className="relative">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "#E6E8EC" }}
+            >
+              {tile.icon}
+            </div>
+            {tile.count > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 leading-none"
+                style={{ backgroundColor: tile.accent }}
+              >
+                {tile.count > 99 ? "99+" : tile.count}
+              </span>
+            )}
           </div>
-          {/* Count */}
-          <span className="text-[20px] font-bold text-foreground leading-none mt-1.5">
-            <AnimatedCounter value={tile.count} className="tabular-nums" />
-          </span>
           {/* Title */}
-          <p className="text-[10px] font-semibold text-muted-foreground mt-0.5 leading-tight">
+          <p className="text-[10px] font-semibold text-muted-foreground leading-tight">
             {tile.title}
           </p>
         </motion.div>
