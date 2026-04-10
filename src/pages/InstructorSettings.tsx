@@ -408,7 +408,15 @@ export default function InstructorSettings() {
         {/* Settings Search */}
         <SettingsSearchBar
           items={searchableItems}
-          onSelect={(itemId, categoryId) => {
+          onSelect={(itemId, categoryTitle) => {
+            // Map category title to ID
+            const catMap: Record<string, string> = {
+              "Profile & Identity": "profile", "Compliance & Teaching": "teaching",
+              "Courses & Payments": "courses", "Website & Branding": "website",
+              "Scheduling": "scheduling", "Tracking & Routes": "tracking",
+              "Preferences & Data": "preferences",
+            };
+            const categoryId = catMap[categoryTitle] || "profile";
             // Open the category
             if (!openCategories.includes(categoryId)) {
               setOpenCategories(prev => [...prev, categoryId]);
