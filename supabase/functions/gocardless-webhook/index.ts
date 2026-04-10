@@ -6,6 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, webhook-signature",
 };
 
+async function verifyGoCardlessSignature(body: string, signatureHeader: string, secret: string): Promise<boolean> {
+  // GoCardless sends: Webhook-Signature header as hex-encoded HMAC-SHA256
+  const key = new TextEncoder().encode(secret);
+  const data = new TextEncoder().encode(body);
+  const cryptoKey = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, data);
+  const computed = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return computed === signatureHeader;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -16,7 +26,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const body = await req.json();
+    const rawBody = await req.text();
+
+    // HMAC signature verification
+    const WEBHOOK_SECRET = Deno.env.get("GOCARDLESS_WEBHOOK_SECRET");
+    if (WEBHOOK_SECRET) {
+      const signature = req.headers.get("webhook-signature") || "";
+      const isValid = await verifyGoCardlessSignature(rawBody, signature, WEBHOOK_SECRET);
+      if (!isValid) {
+        console.error("GoCardless webhook signature verification FAILED");
+        return new Response(
+          JSON.stringify({ error: "Invalid signature" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      console.log("GoCardless webhook signature verified ✓");
+    } else {
+      console.warn("GOCARDLESS_WEBHOOK_SECRET not set — skipping signature verification");
+    }
+
+    const body = JSON.parse(rawBody);
     const { events } = body;
 
     if (!events || !Array.isArray(events)) {

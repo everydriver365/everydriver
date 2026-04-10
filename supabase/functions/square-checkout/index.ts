@@ -56,6 +56,13 @@ serve(async (req: Request) => {
       );
     }
 
+    if (amount < 0.50) {
+      return new Response(
+        JSON.stringify({ error: "Minimum payment amount is £0.50" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Check if instructor has connected Square OAuth
     let useInstructorToken = false;
     let effectiveAccessToken = accessToken;
