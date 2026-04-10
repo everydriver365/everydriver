@@ -127,7 +127,7 @@ export function HomepageHero({
   return (
     <div className="relative h-[220px] overflow-hidden hero-banner-no-top-radius" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Background image */}
-      <img src={heroImageUrl || instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover !rounded-none" />
+      <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover !rounded-none" />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
 
       {/* Content layer */}
