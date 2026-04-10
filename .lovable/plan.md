@@ -1,42 +1,39 @@
 
 
-## Fix: Live Tracking Map Not Showing Data
+## Reduce Live Tracking Delay
 
-### Root Cause
-
-The `GoogleLiveTrackingMap` component independently queries `gps_devices` with `.eq("is_active", true).single()`. When an instructor has multiple active devices (which is the case — there are 2 active devices for the current instructor), the `.single()` call returns an error because it expects exactly 1 row. This silently fails, so no device is loaded and no live data appears on the map.
-
-### Plan
-
-**1. Pass device ID from parent to map component**
-
-In `InstructorLiveSession.tsx`, the parent already knows which device is selected. Pass the device ID as a prop to `LiveTrackingMap`:
-
-```tsx
-<LiveTrackingMap className="absolute inset-0" deviceId={device.id} />
+### Current Pipeline (worst case ~30-40s delay)
+```text
+Device → Geotab Cloud (~5-15s) → Poller Edge Fn (every 10s) → DB Write → Realtime → Client
 ```
 
-**2. Update GoogleLiveTrackingMap to accept and use the device ID prop**
+### Why Geotab's Screen Is Faster
+Geotab's MyGeotab dashboard uses a proprietary persistent WebSocket directly to their servers. Their public API only offers polling endpoints, so we can never fully match their speed — but we can get close.
 
-In `GoogleLiveTrackingMap.tsx`:
-- Add a `deviceId` prop to the component
-- Change the device query from `.eq("is_active", true).single()` to `.eq("id", deviceId).single()` when a `deviceId` prop is provided
-- Fall back to the current behavior (first active device) if no prop is given, but use `.limit(1).maybeSingle()` instead of `.single()` to avoid the multi-row error
+### Proposed Improvements
 
-**3. Fix the standalone fallback query**
+**1. Increase poller frequency from 10s to 5s**
+- Update the pg_cron schedule for `geotab-poller` from `10 seconds` to `5 seconds`
+- The poller is already lightweight (single batched API call), so this is safe
 
-Even without the prop, the independent query should not break with multiple devices. Change:
-```ts
-.eq("is_active", true).single()
-```
-to:
-```ts
-.eq("is_active", true).order("last_seen_at", { ascending: false }).limit(1).maybeSingle()
-```
+**2. Optimize the batched API call**
+- The poller currently fetches diagnostics, faults, exception events, and media alongside position data — all in one massive multicall
+- Split into two paths: a **fast position-only poll** (every 5s) and a **slow diagnostics/faults poll** (every 60s)
+- This cuts the API response time significantly for the position update
 
-This ensures the map always picks the most recently seen device and never errors on multiple rows.
+**3. Client-side: reduce GPS trail fetch interval**
+- In `GoogleLiveTrackingMap.tsx`, the GPS trail points are fetched every 3 seconds (line 408) but the poller only writes every 10s, so most fetches return stale data
+- Align this to match the poller cadence, or rely purely on Realtime subscription for position updates (already in place)
 
-### Files to edit
-- `src/components/instructor/GoogleLiveTrackingMap.tsx` — accept `deviceId` prop, fix query
-- `src/pages/InstructorLiveSession.tsx` — pass `device.id` to `LiveTrackingMap`
+**4. Add Geotab Data Feed (optional, advanced)**
+- Geotab offers a "Data Feed" API (`GetFeed`) that returns only new records since a version token — this is more efficient than re-fetching `DeviceStatusInfo` each time
+- Switching to `GetFeed` for `LogRecord` (GPS) would reduce API response size and latency
+
+### Files to Change
+- **Migration SQL** — update cron schedule to 5 seconds
+- `supabase/functions/geotab-poller/index.ts` — split fast/slow polling paths
+- `src/components/instructor/GoogleLiveTrackingMap.tsx` — adjust trail fetch timing
+
+### Expected Result
+Reduce end-to-end delay from ~30-40s to ~10-15s (limited by Geotab's own device reporting interval).
 
