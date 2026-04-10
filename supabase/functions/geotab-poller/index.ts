@@ -388,7 +388,13 @@ Deno.serve(async (req) => {
     let exceptionResults: any[] = [];
 
     if (shouldIncludeDiagnostics) {
-      lastDiagnosticsAt = Date.now();
+      // Record diagnostics timestamp in DB for cross-isolate throttling
+      await supabase.from("cron_sync_config").upsert({
+        id: "geotab_diagnostics",
+        last_run_at: new Date().toISOString(),
+        is_enabled: true,
+        interval_seconds: 60,
+      });
       const statusDataOffset = 1 + speedLimitCallCount;
       for (let i = 0; i < resolvedGeotabIds.length; i++) {
         const diags: Record<string, number> = {};
