@@ -7266,6 +7266,7 @@ export type Database = {
           prefer_earliest_slot: boolean
           preferred_language: string | null
           preferred_lesson_length: number
+          preferred_tracking_provider: string | null
           pricing_rules_enabled: boolean | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
@@ -7417,6 +7418,7 @@ export type Database = {
           prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
+          preferred_tracking_provider?: string | null
           pricing_rules_enabled?: boolean | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -7568,6 +7570,7 @@ export type Database = {
           prefer_earliest_slot?: boolean
           preferred_language?: string | null
           preferred_lesson_length?: number
+          preferred_tracking_provider?: string | null
           pricing_rules_enabled?: boolean | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null

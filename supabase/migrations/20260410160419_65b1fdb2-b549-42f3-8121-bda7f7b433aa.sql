@@ -1,0 +1,1 @@
+ALTER TABLE public.instructors ADD COLUMN preferred_tracking_provider text DEFAULT null;
