@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { SettingsSearchBar, SearchableSettingsItem } from "@/components/instructor/SettingsSearchBar";
 import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag, ClipboardList, ToggleLeft, Mic, Timer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
@@ -363,6 +364,32 @@ export default function InstructorSettings() {
           lucideIcon={Settings}
           title="Settings"
           subtitle="Manage your profile and preferences"
+        />
+
+        {/* Settings Search */}
+        <SettingsSearchBar
+          items={searchableItems}
+          onSelect={(itemId, categoryId) => {
+            // Open the category
+            if (!openCategories.includes(categoryId)) {
+              setOpenCategories(prev => [...prev, categoryId]);
+            }
+            // Open the setting tile
+            if (!openSections.includes(itemId)) {
+              setOpenSections(prev => [...prev, itemId]);
+            }
+            // Scroll to category then tile
+            setTimeout(() => {
+              const el = document.getElementById(`settings-tile-${itemId}`);
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                el.classList.add("ring-2", "ring-primary/50");
+                setTimeout(() => el.classList.remove("ring-2", "ring-primary/50"), 2000);
+              } else {
+                categoryRefs.current[categoryId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }, 150);
+          }}
         />
 
         {/* Quick Jump Navigation — iOS card style */}
