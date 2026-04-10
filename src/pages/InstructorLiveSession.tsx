@@ -170,11 +170,11 @@ export default function InstructorLiveSession() {
         setDevice(chosen as GPSDevice);
         
         // If session is active, restore timer and distance, and enter fullscreen
-        if (devices[0].current_session_id) {
+        if (chosen.current_session_id) {
           const { data: session } = await supabase
             .from("lesson_telematics")
             .select("started_at, total_distance_km")
-            .eq("id", devices[0].current_session_id)
+            .eq("id", chosen.current_session_id)
             .single();
           
           if (session?.started_at) {
