@@ -212,7 +212,7 @@ export function NextUpTile({
             {/* Row 2: Avatar + name + time */}
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
-                <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
+                <div className="w-[52px] h-[52px] rounded-none flex items-center justify-center font-bold text-lg overflow-hidden"
                   style={{ background: "linear-gradient(135deg, hsl(220, 52%, 16%), hsl(220, 52%, 22%))", color: "white" }}>
                   {pupilProfileImage ? (
                     <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
@@ -248,7 +248,7 @@ export function NextUpTile({
 
             {/* Row 3: Location strip */}
             {(pickupLocation || pickupPostcode) && (
-              <div className="flex items-center gap-1.5 mt-2.5 px-3 py-2 rounded-xl"
+              <div className="flex items-center gap-1.5 mt-2.5 px-3 py-2 rounded-none"
                 style={{ background: "rgba(21,30,48,0.06)" }}>
                 <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(220, 52%, 16%)" }} />
                 <span className="text-[12px] font-medium truncate" style={{ color: "hsl(220, 52%, 20%)" }}>
@@ -264,9 +264,9 @@ export function NextUpTile({
           {isRunningLate && !lateDismissed && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-              <div className="mx-4 mb-3 flex items-center gap-2.5 p-3 rounded-2xl"
+              <div className="mx-4 mb-3 flex items-center gap-2.5 p-3 rounded-none"
                 style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))", border: "1px solid rgba(251,191,36,0.3)" }}>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0"
                   style={{ background: "rgba(251,191,36,0.2)" }}>
                   <AlertTriangle className="h-5 w-5" style={{ color: "#FBBF24" }} />
                 </div>
@@ -277,7 +277,7 @@ export function NextUpTile({
                   <p className="text-[10px] mt-0.5 text-muted-foreground">ETA {arrivalTimeText}</p>
                 </div>
                 <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
-                  className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold text-amber-900"
+                  className="shrink-0 px-3 py-1.5 rounded-none text-[11px] font-bold text-amber-900"
                   style={{ background: "#FBBF24" }}>
                   Send ETA
                 </button>
@@ -299,7 +299,7 @@ export function NextUpTile({
               { icon: MapPin, label: "I'm Here", color: "#22c55e", bg: "rgba(34,197,94,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
             ].map((btn) => (
               <button key={btn.label} onClick={btn.action}
-                className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                 style={{ background: btn.bg }}>
                 <btn.icon className="h-[18px] w-[18px]" style={{ color: btn.color }} />
                 <span className="text-[9px] font-bold" style={{ color: btn.color }}>{btn.label}</span>
@@ -324,8 +324,8 @@ export function NextUpTile({
                     { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
                     { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
                   ].map((stat) => (
-                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
+                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-none" style={{ background: "rgba(0,0,0,0.03)" }}>
+                      <div className="w-8 h-8 rounded-none flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
                         <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
                       </div>
                       <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
@@ -336,8 +336,8 @@ export function NextUpTile({
 
                 {/* Live ETA */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(21,30,48,0.05)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,30,48,0.1)" }}>
+                  <div className="flex items-center gap-3 p-3.5 rounded-none" style={{ background: "rgba(21,30,48,0.05)" }}>
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0" style={{ background: "rgba(21,30,48,0.1)" }}>
                       <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />
                     </div>
                     {etaLoading ? (
@@ -366,8 +366,8 @@ export function NextUpTile({
 
                 {/* Weather */}
                 {currentWeather && currentWeather.temperature != null && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.1)" }}>
+                  <div className="flex items-center gap-3 p-3.5 rounded-none" style={{ background: "rgba(0,0,0,0.03)" }}>
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.1)" }}>
                       <Thermometer className="h-5 w-5" style={{ color: "#f59e0b" }} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -384,8 +384,8 @@ export function NextUpTile({
 
                 {/* Vehicle Health */}
                 {primaryDevice && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  <div className="flex items-center gap-3 p-3.5 rounded-none" style={{ background: "rgba(0,0,0,0.03)" }}>
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0"
                       style={{ background: primaryDevice.is_connected ? "rgba(22,163,74,0.1)" : "rgba(220,38,38,0.1)" }}>
                       <Car className="h-5 w-5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
                     </div>
@@ -414,8 +414,8 @@ export function NextUpTile({
 
                 {/* Last Lesson Plan */}
                 {lastLessonPlan && (
-                  <div className="flex items-start gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(124,58,237,0.05)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(124,58,237,0.1)" }}>
+                  <div className="flex items-start gap-3 p-3.5 rounded-none" style={{ background: "rgba(124,58,237,0.05)" }}>
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(124,58,237,0.1)" }}>
                       <BookOpen className="h-5 w-5" style={{ color: "#7c3aed" }} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -427,12 +427,12 @@ export function NextUpTile({
 
                 {/* Payment Warning */}
                 {noBalance && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl"
+                  <div className="flex items-center gap-3 p-3.5 rounded-none"
                     style={{
                       background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
                       border: `1px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
                     }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0"
                       style={{ background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)" }}>
                       <Banknote className="h-5 w-5" style={{ color: paymentDue ? "#dc2626" : "#d97706" }} />
                     </div>
@@ -443,7 +443,7 @@ export function NextUpTile({
                       <p className="text-[10px] mt-0.5 text-muted-foreground">Collect before or after lesson</p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
-                      className="shrink-0 px-3.5 py-2 rounded-xl text-[11px] font-bold text-white"
+                      className="shrink-0 px-3.5 py-2 rounded-none text-[11px] font-bold text-white"
                       style={{ background: paymentDue ? "#ef4444" : "#d97706" }}>
                       Collect
                     </button>
@@ -453,9 +453,9 @@ export function NextUpTile({
                 {/* Unread Messages */}
                 {hasUnread && (
                   <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
+                    className="flex items-center gap-3 p-3.5 rounded-none w-full text-left"
                     style={{ background: "rgba(249,115,22,0.06)" }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
+                    <div className="w-9 h-9 rounded-none flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
                       <MessageCircle className="h-5 w-5 text-orange-500" />
                     </div>
                     <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
@@ -474,7 +474,7 @@ export function NextUpTile({
                       supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
                       navigate(`/instructor/tracking?lesson=${lessonId}`);
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
+                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-none text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
                     style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
                       <Navigation className="h-4.5 w-4.5" /> Start Lesson
                     </button>
@@ -483,7 +483,7 @@ export function NextUpTile({
                   {/* End Lesson */}
                   {minutesUntil <= 0 && (
                     <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                      className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-bold text-[15px] transition-transform active:scale-[0.98]"
+                      className="w-full flex items-center justify-center gap-2 py-[14px] rounded-none font-bold text-[15px] transition-transform active:scale-[0.98]"
                       style={{ background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))" }}>
                       <CheckCircle2 className="h-4.5 w-4.5" /> End Lesson
                     </button>
@@ -493,7 +493,7 @@ export function NextUpTile({
                 {/* Extended actions */}
                 <div className="grid grid-cols-5 gap-2">
                   <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                     style={{ background: "rgba(124,58,237,0.08)" }}>
                     <ClipboardList className="h-4 w-4" style={{ color: "#7c3aed" }} />
                     <span className="text-[9px] font-bold text-muted-foreground">Prep</span>
@@ -501,7 +501,7 @@ export function NextUpTile({
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                      <button className="flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                         style={{ background: "rgba(21,30,48,0.08)" }}
                         onClick={(e) => e.stopPropagation()}>
                         <Send className="h-4 w-4" style={{ color: "hsl(220, 52%, 16%)" }} />
@@ -522,21 +522,21 @@ export function NextUpTile({
                   </DropdownMenu>
 
                   <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                     style={{ background: "rgba(251,191,36,0.08)" }}>
                     <AlertTriangle className="h-4 w-4" style={{ color: "#d97706" }} />
                     <span className="text-[9px] font-bold text-muted-foreground">Late</span>
                   </button>
 
                   <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                     style={{ background: "rgba(0,0,0,0.04)" }}>
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-[9px] font-bold text-muted-foreground">Move</span>
                   </button>
 
                   <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-none transition-transform active:scale-95"
                     style={{ background: "rgba(239,68,68,0.06)" }}>
                     <X className="h-4 w-4" style={{ color: "#dc2626" }} />
                     <span className="text-[9px] font-bold text-muted-foreground">Cancel</span>
@@ -545,7 +545,7 @@ export function NextUpTile({
 
                 {/* GPS Route Recorder */}
                 <button onClick={(e) => { e.stopPropagation(); setShowGPSRecorder(!showGPSRecorder); }}
-                  className="w-full flex items-center justify-center gap-2 py-[11px] rounded-2xl font-bold text-[12px] transition-transform active:scale-[0.98]"
+                  className="w-full flex items-center justify-center gap-2 py-[11px] rounded-none font-bold text-[12px] transition-transform active:scale-[0.98]"
                   style={{
                     background: showGPSRecorder ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
                     color: showGPSRecorder ? "#dc2626" : "#16a34a",

@@ -406,7 +406,7 @@ export function QuickActionTiles({
                   >
                     <motion.div
                       className={cn(
-                        "relative overflow-hidden backdrop-blur-md rounded-xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
+                        "relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
                         style.bg
                       )}
                       whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
@@ -424,7 +424,7 @@ export function QuickActionTiles({
                       </button>
 
                       <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className={`relative w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                      <div className={`relative w-10 h-10 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                         {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-5 w-5 ${style.iconColor}`} />}
                         {showBadge && (
                           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
@@ -454,7 +454,7 @@ export function QuickActionTiles({
                       key={tile.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-none border border-dashed border-muted-foreground/20"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-none ${customIconImages[tile.id] ? '' : 'bg-primary/10'} flex items-center justify-center overflow-hidden`} style={customIconRadius[tile.id] ? { borderRadius: customIconRadius[tile.id] } : undefined}>
@@ -501,7 +501,7 @@ export function QuickActionTiles({
                   {/* Icon */}
                   <div className="relative shrink-0">
                     <div
-                      className={`w-11 h-11 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
+                      className={`w-11 h-11 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
                       style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
                     >
                       {customIconImages[action.id] ? (

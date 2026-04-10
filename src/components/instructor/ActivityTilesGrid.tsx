@@ -43,7 +43,7 @@ export function ActivityTilesGrid({
         <img
           src={jobOffersIcon}
           alt="Job Offers"
-          className="w-full h-full object-cover rounded-[10px]"
+          className="w-full h-full object-cover rounded-none"
         />
       ),
       route: "/instructor/jobs",
@@ -59,7 +59,7 @@ export function ActivityTilesGrid({
         <img
           src={messagesIcon}
           alt="Messages"
-          className="w-full h-full object-cover rounded-[10px]"
+          className="w-full h-full object-cover rounded-none"
         />
       ),
       route: "/instructor/messages",
@@ -75,7 +75,7 @@ export function ActivityTilesGrid({
         <img
           src={testRequestsIcon}
           alt="Test Requests"
-          className="w-full h-full object-cover rounded-[10px]"
+          className="w-full h-full object-cover rounded-none"
         />
       ),
       route: "/instructor/test-requests",
@@ -91,7 +91,7 @@ export function ActivityTilesGrid({
         <img
           src={fillGapsIcon}
           alt="Fill Gaps"
-          className="w-full h-full object-cover rounded-[10px]"
+          className="w-full h-full object-cover rounded-none"
         />
       ),
       route: "/instructor/gaps",
