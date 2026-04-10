@@ -173,7 +173,8 @@ export function NextUpTile({
   };
 
   const isImminent = minutesUntil <= 30;
-  const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : "#10b981";
+  const navBlue = "hsl(220, 52%, 16%)";
+  const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : navBlue;
 
   return (
     <>
