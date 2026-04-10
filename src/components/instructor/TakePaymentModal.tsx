@@ -50,7 +50,7 @@ export function TakePaymentModal({
   instructorId,
   pupils,
 }: TakePaymentModalProps) {
-  const [view, setView] = useState<View>("picker");
+  const [view, setView] = useState<View>("qr");
   const [selectedPupilId, setSelectedPupilId] = useState("");
   const [qrSelectedPupilId, setQrSelectedPupilId] = useState("");
   const [amount, setAmount] = useState("");
@@ -80,7 +80,7 @@ export function TakePaymentModal({
 
   const handleClose = (o: boolean) => {
     if (!o) {
-      setView("picker");
+      setView("qr");
       setSelectedPupilId("");
       setAmount("");
       setLinkSent(false);
@@ -96,7 +96,7 @@ export function TakePaymentModal({
   };
 
   const handleBack = () => {
-    setView("picker");
+    setView("qr");
   };
 
   const handlePupilSelectForLink = (pupilId: string) => {
@@ -221,21 +221,14 @@ export function TakePaymentModal({
         {/* Header */}
         <DialogHeader className="p-4 pb-2 border-b">
           <div className="flex items-center gap-2">
-            {view !== "picker" && (
-              <button onClick={handleBack} className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-            )}
             <div>
                <DialogTitle className="text-base">
-                {view === "picker" && "Take Payment"}
-                {view === "qr" && "QR Code"}
+                {view === "qr" && "Take Payment"}
                 {view === "link" && "Send Payment Request"}
                 {view === "received" && "Payment Received"}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                {view === "picker" && "Choose a payment method"}
-                {view === "qr" && "Pupil scans to pay"}
+                {view === "qr" && "Generate a QR code for pupil to scan & pay"}
                 {view === "link" && "Set amount and send via SMS or email"}
                 {view === "received" && "Thank you!"}
               </DialogDescription>
@@ -244,32 +237,8 @@ export function TakePaymentModal({
         </DialogHeader>
 
         <div className="p-4 max-h-[70vh] overflow-y-auto">
-          {/* === Picker === */}
-          {view === "picker" && (
-            <div className="grid gap-3">
-              {options.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => setView(opt.id)}
-                    className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-accent transition-colors text-left"
-                  >
-                    <div className={`h-11 w-11 rounded-xl ${opt.bg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-5 w-5 ${opt.color}`} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">{opt.label}</p>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* === Payment type switcher (shown on sub-views) === */}
-          {view !== "picker" && view !== "received" && (
+          {/* === Payment type switcher === */}
+          {view !== "received" && (
             <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
               {options.map((opt) => {
                 const Icon = opt.icon;
