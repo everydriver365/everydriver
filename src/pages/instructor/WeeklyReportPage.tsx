@@ -1,27 +1,18 @@
-import { useNavigate } from "react-router-dom";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { WeeklyReportCard } from "@/components/instructor/WeeklyReportCard";
+import { BarChart3 } from "lucide-react";
 
 export default function WeeklyReportPage() {
-  const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const authInstructorId = instructor?.id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-lg font-bold text-foreground">Weekly Report</h1>
-        </div>
+    <InstructorPortalLayout>
+      <div className="space-y-4 max-w-lg mx-auto">
+        <InstructorPageHeader lucideIcon={BarChart3} title="Weekly Report" />
+        <WeeklyReportCard instructorId={instructor?.id} />
       </div>
-      <div className="p-4 max-w-lg mx-auto">
-        <WeeklyReportCard instructorId={authInstructorId} />
-      </div>
-    </div>
+    </InstructorPortalLayout>
   );
 }
