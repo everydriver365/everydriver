@@ -40,11 +40,11 @@ export function ActivityTilesGrid({
       count: pendingJobsCount,
       accent: "#AF52DE",
       icon: (
-        <img
-          src={jobOffersIcon}
-          alt="Job Offers"
-          className="w-full h-full object-cover rounded-none"
-        />
+         <img
+           src={jobOffersIcon}
+           alt="Job Offers"
+           className="w-full h-full object-cover rounded-xl"
+         />
       ),
       route: "/instructor/jobs",
       actionLabel: "VIEW JOBS",
@@ -59,7 +59,7 @@ export function ActivityTilesGrid({
         <img
           src={messagesIcon}
           alt="Messages"
-          className="w-full h-full object-cover rounded-none"
+           className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/messages",
@@ -75,7 +75,7 @@ export function ActivityTilesGrid({
         <img
           src={testRequestsIcon}
           alt="Test Requests"
-          className="w-full h-full object-cover rounded-none"
+           className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/test-requests",
@@ -91,7 +91,7 @@ export function ActivityTilesGrid({
         <img
           src={fillGapsIcon}
           alt="Fill Gaps"
-          className="w-full h-full object-cover rounded-none"
+          className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/gaps",
