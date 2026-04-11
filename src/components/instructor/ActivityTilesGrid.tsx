@@ -40,11 +40,11 @@ export function ActivityTilesGrid({
       count: pendingJobsCount,
       accent: "#AF52DE",
       icon: (
-        <img
-          src={jobOffersIcon}
-          alt="Job Offers"
-          className="w-full h-full object-cover rounded-none"
-        />
+         <img
+           src={jobOffersIcon}
+           alt="Job Offers"
+           className="w-full h-full object-cover rounded-xl"
+         />
       ),
       route: "/instructor/jobs",
       actionLabel: "VIEW JOBS",
@@ -59,7 +59,7 @@ export function ActivityTilesGrid({
         <img
           src={messagesIcon}
           alt="Messages"
-          className="w-full h-full object-cover rounded-none"
+           className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/messages",
@@ -75,7 +75,7 @@ export function ActivityTilesGrid({
         <img
           src={testRequestsIcon}
           alt="Test Requests"
-          className="w-full h-full object-cover rounded-none"
+           className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/test-requests",
@@ -91,7 +91,7 @@ export function ActivityTilesGrid({
         <img
           src={fillGapsIcon}
           alt="Fill Gaps"
-          className="w-full h-full object-cover rounded-none"
+          className="w-full h-full object-cover rounded-xl"
         />
       ),
       route: "/instructor/gaps",
@@ -132,10 +132,10 @@ export function ActivityTilesGrid({
           transition={{ delay: idx * 0.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={() => navigate(tile.route)}
-          className="aspect-square rounded-none p-2 text-center border-0 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1.5"
+          className="aspect-square rounded-2xl p-2 text-center border-0 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1.5"
           style={{
             backgroundColor: "#FFFFFF",
-            boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
+            boxShadow: "0px 2px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
           }}
         >
           {/* Icon with badge counter */}

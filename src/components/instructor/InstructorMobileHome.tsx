@@ -336,12 +336,9 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           backgroundImage: `url(${instructorBg})`,
-           backgroundSize: 'cover',
-           backgroundPosition: 'center',
-           backgroundAttachment: 'fixed',
+           backgroundColor: '#F2F3F5',
          }}
-       >
+        >
 
       {/* Updated feedback banner */}
       <AnimatePresence>
@@ -475,7 +472,8 @@ export function InstructorMobileHome({
       <div className="px-4 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between bg-card border border-border rounded-none px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow"
+          className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 transition-shadow"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
         >
           <div className="flex items-center gap-3">
             <img src={calendarIcon} alt="Schedule" className="w-8 h-8" />

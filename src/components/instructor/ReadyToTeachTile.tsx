@@ -61,7 +61,8 @@ export function ReadyToTeachTile({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="bg-card rounded-none shadow-[0_2px_12px_rgba(20,37,66,0.10)] border border-border/40 p-4"
+      className="bg-white rounded-2xl border border-border/40 p-4"
+      style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
       {/* Header row */}
       <div className="flex items-center gap-3 mb-3">
@@ -102,7 +103,7 @@ export function ReadyToTeachTile({
       {/* 2×2 stat grid */}
       <div className="grid grid-cols-2 gap-2">
         {stats.map((stat, i) => (
-          <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-none ${stat.bg}`}>
+          <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-xl ${stat.bg}`}>
             <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
             <div>
               <p className="text-sm font-bold text-foreground leading-none">{stat.value}</p>
