@@ -67,11 +67,10 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             transition={{ delay: idx * 0.04, type: "spring", stiffness: 400, damping: 25 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(tile.route)}
-            className="relative h-[110px] p-5 rounded-none text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+            className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
             style={{
               backgroundColor: "#FFFFFF",
-              boxShadow:
-                "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+              boxShadow: "0px 2px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
             }}
           >
             {/* Badge */}
