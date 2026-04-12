@@ -102,7 +102,7 @@ export function QuickStatsChips({
               onClick={() => handleChipClick(chip.route)}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5",
-                "bg-card border border-border",
+                "bg-card border border-border rounded-full",
                 "snap-start shrink-0",
                 "active:scale-95 transition-transform duration-150"
               )}
