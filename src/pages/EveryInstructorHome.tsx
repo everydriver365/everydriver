@@ -251,18 +251,6 @@ export default function EveryInstructorHome() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         </div>
 
-        {/* Diagonal accent banner */}
-        <div
-          className="absolute left-0 bottom-[120px] origin-bottom-left"
-          style={{ transform: "rotate(-55deg) translateX(-20px)" }}
-        >
-          <div
-            className="px-6 py-2 text-[13px] font-extrabold text-white uppercase tracking-widest"
-            style={{ backgroundColor: "#0066FF" }}
-          >
-            {overview?.lessonCount === 0 ? "Day Off" : "Live Today"}
-          </div>
-        </div>
 
         {/* Bottom content overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-5 pb-6">
