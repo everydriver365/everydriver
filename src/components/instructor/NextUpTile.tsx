@@ -180,40 +180,35 @@ export function NextUpTile({
     <>
       <div className="w-full overflow-hidden rounded-2xl dark:border dark:border-white/10"
         style={{
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
+          background: "#fff",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)",
         }}
       >
-        {/* ── HEADER ── */}
+        {/* ── HEADER BAND ── */}
+        <div className="px-4 py-3 flex items-center justify-between"
+          style={{ background: "linear-gradient(135deg, hsl(220,52%,16%), hsl(220,52%,24%))" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/70">Next Up</span>
+            {checkInStatus && (
+              <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
+            )}
+            <span className="text-[10px] font-bold text-white/50">·</span>
+            <span className="text-[11px] font-semibold text-white/90">{getDateLabel()}</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#fbbf24" : "#34d399" }} />
+            <span className="text-[12px] font-bold text-white">{getCountdownText()}</span>
+          </div>
+        </div>
+
+        {/* ── MAIN CONTENT ── */}
         <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
-          {/* Top accent bar */}
-          <div className="h-1 w-full shadow-sm opacity-85" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
-
-          <div className="px-4 pt-3.5 pb-3 border-solid border-0">
-            {/* Row 1: Label + countdown badge */}
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-[1px] text-muted-foreground">Next Up</span>
-                {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                style={{ background: `${countdownColor}18` }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: countdownColor }} />
-                <span className="text-[11px] font-bold" style={{ color: countdownColor }}>
-                  {getCountdownText()}
-                </span>
-              </div>
-            </div>
-
-            {/* Row 2: Avatar + name + time */}
-            <div className="flex items-center gap-3">
+          <div className="px-4 py-4">
+            <div className="flex items-center gap-3.5">
+              {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
-                  style={{ background: "linear-gradient(135deg, hsl(220, 52%, 16%), hsl(220, 52%, 22%))", color: "white" }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
+                  style={{ background: "linear-gradient(135deg, hsl(220,52%,16%), hsl(220,52%,28%))", color: "white" }}>
                   {pupilProfileImage ? (
                     <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
                   ) : getInitials(pupilName)}
@@ -226,32 +221,32 @@ export function NextUpTile({
                 )}
               </div>
 
+              {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-[18px] font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>{pupilName}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[12px] text-muted-foreground">{getDateLabel()} · {formatTime24(startTime)} · {formatDuration()}</span>
+                <p className="text-[17px] font-bold truncate" style={{ color: navBlue }}>{pupilName}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-[12px] text-muted-foreground">{formatTime24(startTime)}</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">·</span>
+                  <span className="text-[12px] text-muted-foreground">{formatDuration()}</span>
+                  <span className="text-[10px] text-muted-foreground">·</span>
+                  <span className="text-[12px] font-semibold" style={{ color: effectiveBalance < 0 ? "#f97316" : "#10b981" }}>£{Math.abs(effectiveBalance).toFixed(0)}</span>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center shrink-0 gap-1">
-                <span className="text-[28px] font-black leading-none" style={{
-                  color: "hsl(var(--foreground))",
-                  fontVariantNumeric: "tabular-nums",
-                  fontFamily: "ui-monospace, 'SF Mono', monospace",
-                }}>
-                  {formatTime24(startTime)}
-                </span>
+              {/* Expand */}
+              <div className="shrink-0">
                 <ExpandChevron isExpanded={expanded} />
               </div>
             </div>
 
-            {/* Row 3: Location strip */}
+            {/* Location */}
             {(pickupLocation || pickupPostcode) && (
-              <div className="flex items-center gap-1.5 mt-2.5 px-3 py-2 rounded-2xl"
-                style={{ background: "rgba(21,30,48,0.06)" }}>
-                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(220, 52%, 16%)" }} />
-                <span className="text-[12px] font-medium truncate" style={{ color: "hsl(220, 52%, 20%)" }}>
+              <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl" style={{ background: "rgba(21,30,48,0.04)" }}>
+                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: navBlue }} />
+                <span className="text-[12px] font-medium truncate" style={{ color: "hsl(220,52%,25%)" }}>
                   {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                 </span>
               </div>
