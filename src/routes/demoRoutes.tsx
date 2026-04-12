@@ -100,5 +100,6 @@ export const demoRoutes = (
     <Route path="/demo/admin-designs" element={<DemoAdminDesigns />} />
     <Route path="/demo/instructor-home-designs" element={<DemoInstructorHomeDesigns />} />
     <Route path="/demo/ios-designs" element={<DemoiOSDesigns />} />
+    <Route path="/demo/next-up-redesigns" element={<DemoNextUpRedesigns />} />
   </>
 );
