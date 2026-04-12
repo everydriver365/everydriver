@@ -29,33 +29,38 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import heroImage from "@/assets/every-instructor-hero.jpg";
 
-/* ── Horizontal section wrapper ────────────────────── */
+/* ── Section with bold LBC-style header ────────────── */
 function Section({
   title,
+  subtitle,
   moreRoute,
   children,
 }: {
   title: string;
+  subtitle?: string;
   moreRoute?: string;
   children: React.ReactNode;
 }) {
   const navigate = useNavigate();
   return (
-    <section className="mt-6">
-      <div className="flex items-center justify-between px-5 mb-3">
-        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+    <section className="mt-7">
+      <div className="flex items-baseline justify-between px-5 mb-3">
+        <div>
+          <h2 className="text-[22px] font-extrabold text-gray-900 leading-tight">{title}</h2>
+          {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+        </div>
         {moreRoute && (
           <button
             onClick={() => navigate(moreRoute)}
-            className="text-sm font-semibold flex items-center gap-0.5"
+            className="text-[15px] font-semibold shrink-0"
             style={{ color: "#0066FF" }}
           >
-            More <ChevronRight className="h-4 w-4" />
+            More
           </button>
         )}
       </div>
       <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex gap-3 px-5 snap-x snap-mandatory pb-1">
+        <div className="flex gap-3.5 px-5 snap-x snap-mandatory pb-1">
           {children}
         </div>
       </div>
@@ -63,7 +68,7 @@ function Section({
   );
 }
 
-/* ── Card components ───────────────────────────────── */
+/* ── Image-forward card (LBC podcast style) ────────── */
 function ImageCard({
   title,
   subtitle,
@@ -71,7 +76,6 @@ function ImageCard({
   accent,
   onClick,
   badge,
-  imageUrl,
   compact,
 }: {
   title: string;
@@ -80,36 +84,29 @@ function ImageCard({
   accent: string;
   onClick: () => void;
   badge?: number;
-  imageUrl?: string;
   compact?: boolean;
 }) {
   if (compact) {
     return (
       <motion.div
-        whileTap={{ scale: 0.96 }}
+        whileTap={{ scale: 0.95 }}
         onClick={onClick}
-        className="aspect-square rounded-2xl p-2 text-center cursor-pointer flex flex-col items-center justify-center gap-1.5 bg-white"
-        style={{
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
-        }}
+        className="flex flex-col items-center justify-center gap-1.5 cursor-pointer"
       >
         <div className="relative">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-sm"
             style={{ backgroundColor: accent }}
           >
-            <Icon className="h-5 w-5 text-white" />
+            <Icon className="h-6 w-6 text-white" />
           </div>
           {badge !== undefined && badge > 0 && (
-            <span
-              className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
-              style={{ backgroundColor: accent }}
-            >
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full text-[11px] font-bold text-white bg-red-500 px-1">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
         </div>
-        <p className="text-[10px] font-semibold text-gray-600 leading-tight">{title}</p>
+        <p className="text-[11px] font-semibold text-gray-700 leading-tight text-center">{title}</p>
       </motion.div>
     );
   }
@@ -118,46 +115,26 @@ function ImageCard({
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="snap-start shrink-0 w-36 rounded-2xl overflow-hidden cursor-pointer bg-white"
-      style={{
-        boxShadow: "0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
-      }}
+      className="snap-start shrink-0 w-[155px] cursor-pointer"
     >
-      {imageUrl ? (
-        <div className="h-24 w-full bg-gray-100">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-        </div>
-      ) : (
-        <div
-          className="h-24 w-full flex items-center justify-center"
-          style={{ backgroundColor: `${accent}12` }}
-        >
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: accent }}
-          >
-            <Icon className="h-6 w-6 text-white" />
-          </div>
-        </div>
-      )}
-      <div className="p-3 relative">
-        <p className="text-sm font-semibold text-gray-900 leading-tight">{title}</p>
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
-        )}
+      <div
+        className="w-full aspect-square rounded-2xl flex items-center justify-center relative overflow-hidden shadow-sm"
+        style={{ backgroundColor: accent }}
+      >
+        <Icon className="h-12 w-12 text-white/90" strokeWidth={1.5} />
         {badge !== undefined && badge > 0 && (
-          <span
-            className="absolute top-2 right-2 min-w-[20px] h-5 flex items-center justify-center rounded-full text-[11px] font-bold text-white px-1.5"
-            style={{ backgroundColor: accent }}
-          >
+          <span className="absolute top-2 right-2 min-w-[22px] h-[22px] flex items-center justify-center rounded-full text-[11px] font-bold text-white bg-red-500 px-1.5">
             {badge > 99 ? "99+" : badge}
           </span>
         )}
       </div>
+      <p className="text-[14px] font-semibold text-gray-900 mt-2 leading-tight px-0.5">{title}</p>
+      {subtitle && <p className="text-[12px] text-gray-500 mt-0.5 px-0.5">{subtitle}</p>}
     </motion.div>
   );
 }
 
+/* ── Stat card ─────────────────────────────────────── */
 function StatCard({
   label,
   value,
@@ -175,23 +152,24 @@ function StatCard({
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="snap-start shrink-0 w-40 rounded-2xl p-4 cursor-pointer bg-white"
-      style={{
-        boxShadow: "0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
-      }}
+      className="snap-start shrink-0 w-[155px] aspect-square rounded-2xl p-4 cursor-pointer bg-white flex flex-col justify-between shadow-sm"
+      style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.08)" }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+        className="w-11 h-11 rounded-xl flex items-center justify-center"
         style={{ backgroundColor: `${accent}18` }}
       >
         <Icon className="h-5 w-5" style={{ color: accent }} />
       </div>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <div>
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-[12px] text-gray-500 mt-0.5">{label}</p>
+      </div>
     </motion.div>
   );
 }
 
+/* ── Lesson card ───────────────────────────────────── */
 function LessonCard({
   name,
   time,
@@ -211,25 +189,24 @@ function LessonCard({
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="snap-start shrink-0 w-56 rounded-2xl p-4 cursor-pointer bg-white"
-      style={{
-        boxShadow: "0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
-      }}
+      className="snap-start shrink-0 w-[200px] rounded-2xl overflow-hidden cursor-pointer bg-white shadow-sm"
+      style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.08)" }}
     >
-      <div className="flex items-center gap-3 mb-3">
-        <Avatar className="h-10 w-10">
+      {/* Top colored strip with avatar */}
+      <div className="bg-blue-500 p-4 flex items-center gap-3">
+        <Avatar className="h-11 w-11 ring-2 ring-white/30">
           <AvatarImage src={profileImage || undefined} />
-          <AvatarFallback className="bg-blue-100 text-blue-700 text-sm font-bold">
+          <AvatarFallback className="bg-white/20 text-white text-sm font-bold">
             {initials}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
-          <p className="text-xs text-gray-500">{time}</p>
+          <p className="text-[14px] font-bold text-white truncate">{name}</p>
+          <p className="text-[12px] text-white/80">{time}</p>
         </div>
       </div>
       {location && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+        <div className="px-3.5 py-2.5 flex items-center gap-1.5 text-[12px] text-gray-500">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{location}</span>
         </div>
@@ -257,55 +234,47 @@ export default function EveryInstructorHome() {
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
 
   return (
-    <EveryInstructorLayout>
-      {/* ── Hero ────────────────────────────── */}
+    <EveryInstructorLayout showHeader={false}>
+      {/* ── Tall Hero (LBC-style) ─────────────── */}
       <div className="relative">
-        <div className="aspect-[16/9] w-full overflow-hidden">
+        <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 1.15" }}>
           <img
             src={heroImage}
             alt="Every Instructor"
             className="w-full h-full object-cover"
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        </div>
-
-        {/* Overlaid content */}
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-white/80 text-sm font-medium">
-                {format(new Date(), "EEEE, d MMMM")}
-              </p>
-              <h1 className="text-2xl font-bold text-white mt-0.5">
-                {greeting}, {firstName}
-              </h1>
-              {overview && overview.lessonCount > 0 && (
-                <p className="text-white/90 text-sm mt-1">
-                  {overview.lessonCount} lesson{overview.lessonCount !== 1 ? "s" : ""} today
-                  {overview.expectedEarnings > 0 && ` · £${overview.expectedEarnings}`}
-                </p>
-              )}
-            </div>
-            <Avatar className="h-12 w-12 ring-2 ring-white/50">
-              <AvatarImage src={instructor?.profile_image_url || undefined} />
-              <AvatarFallback className="bg-white/20 text-white font-bold">
-                {firstName[0]}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         </div>
 
         {/* Diagonal accent banner */}
         <div
-          className="absolute top-4 right-0 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider"
-          style={{
-            backgroundColor: "#0066FF",
-            transform: "rotate(-2deg) translateX(4px)",
-            borderRadius: "4px 0 0 4px",
-          }}
+          className="absolute left-0 bottom-[120px] origin-bottom-left"
+          style={{ transform: "rotate(-55deg) translateX(-20px)" }}
         >
-          {overview?.lessonCount === 0 ? "Day Off" : "Live Today"}
+          <div
+            className="px-6 py-2 text-[13px] font-extrabold text-white uppercase tracking-widest"
+            style={{ backgroundColor: "#0066FF" }}
+          >
+            {overview?.lessonCount === 0 ? "Day Off" : "Live Today"}
+          </div>
+        </div>
+
+        {/* Bottom content overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 pb-6">
+          <p className="text-white/70 text-[13px] font-medium">
+            {format(new Date(), "EEEE, d MMMM")}
+          </p>
+          <h1 className="text-[32px] font-extrabold text-white leading-tight mt-1">
+            {greeting},
+            <br />
+            {firstName}
+          </h1>
+          {overview && overview.lessonCount > 0 && (
+            <p className="text-white/80 text-[14px] mt-2">
+              {overview.lessonCount} lesson{overview.lessonCount !== 1 ? "s" : ""} today
+              {overview.expectedEarnings > 0 && ` · £${overview.expectedEarnings}`}
+            </p>
+          )}
         </div>
       </div>
 
@@ -326,15 +295,14 @@ export default function EveryInstructorHome() {
         </Section>
       )}
 
-      {/* ── Quick Actions ───────────────────── */}
-      <section className="mt-6">
-        <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
+      {/* ── Quick Actions (4-column grid) ────── */}
+      <section className="mt-7">
+        <div className="px-5 mb-3">
+          <h2 className="text-[22px] font-extrabold text-gray-900 leading-tight">Quick Actions</h2>
         </div>
-        <div className="grid grid-cols-4 gap-2 px-5">
+        <div className="grid grid-cols-4 gap-3 px-5">
           <ImageCard
-            title="Job Offers"
-            subtitle={pendingJobs > 0 ? `${pendingJobs} available` : "None"}
+            title="Jobs"
             icon={Briefcase}
             accent="#AF52DE"
             badge={pendingJobs}
@@ -343,7 +311,6 @@ export default function EveryInstructorHome() {
           />
           <ImageCard
             title="Messages"
-            subtitle={unreadMessages > 0 ? `${unreadMessages} unread` : "All read"}
             icon={MessageSquare}
             accent="#FF9500"
             badge={unreadMessages}
@@ -352,7 +319,6 @@ export default function EveryInstructorHome() {
           />
           <ImageCard
             title="Payment"
-            subtitle="Collect"
             icon={PoundSterling}
             accent="#34C759"
             onClick={() => navigate("/every-instructor/take-payment")}
@@ -360,7 +326,6 @@ export default function EveryInstructorHome() {
           />
           <ImageCard
             title="Pupils"
-            subtitle="Roster"
             icon={Users}
             accent="#007AFF"
             onClick={() => navigate("/every-instructor/pupils")}
@@ -370,16 +335,16 @@ export default function EveryInstructorHome() {
       </section>
 
       {/* ── Your Business ───────────────────── */}
-      <Section title="Your Business" moreRoute="/every-instructor/pay">
+      <Section title="Your Business" subtitle="Today's Overview" moreRoute="/every-instructor/pay">
         <StatCard
-          label="Today's Earnings"
+          label="Earnings"
           value={`£${overview?.expectedEarnings || 0}`}
           icon={PoundSterling}
           accent="#34C759"
           onClick={() => navigate("/every-instructor/income")}
         />
         <StatCard
-          label="Lessons Today"
+          label="Lessons"
           value={`${overview?.lessonCount || 0}`}
           icon={CalendarDays}
           accent="#007AFF"
@@ -401,7 +366,7 @@ export default function EveryInstructorHome() {
         />
       </Section>
 
-      {/* ── Tools & Features ────────────────── */}
+      {/* ── Tools & Features (image-card scroll) */}
       <Section title="Tools & Features" moreRoute="/every-instructor/menu">
         <ImageCard
           title="Tracking"
@@ -441,24 +406,24 @@ export default function EveryInstructorHome() {
       </Section>
 
       {/* ── Insights ────────────────────────── */}
-      <Section title="Insights">
-        <StatCard
-          label="Performance"
-          value="View"
+      <Section title="Insights" subtitle="Your Performance">
+        <ImageCard
+          title="Performance"
+          subtitle="Analytics"
           icon={TrendingUp}
           accent="#FF6B6B"
           onClick={() => navigate("/every-instructor/performance")}
         />
-        <StatCard
-          label="Referrals"
-          value="Earn"
+        <ImageCard
+          title="Referrals"
+          subtitle="Earn more"
           icon={Zap}
           accent="#34C759"
           onClick={() => navigate("/every-instructor/referrals")}
         />
-        <StatCard
-          label="CPD Log"
-          value="Track"
+        <ImageCard
+          title="CPD Log"
+          subtitle="Development"
           icon={Flame}
           accent="#FF9500"
           onClick={() => navigate("/every-instructor/cpd")}
