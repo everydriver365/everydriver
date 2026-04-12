@@ -189,9 +189,9 @@ export function NextUpTile({
         {/* ── HEADER ── */}
         <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
           {/* Top accent bar */}
-          <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
+          <div className="h-1 w-full rounded-sm shadow-sm opacity-85" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
 
-          <div className="px-4 pt-3.5 pb-3 border-solid">
+          <div className="px-4 pt-3.5 pb-3 border-solid border-0 rounded-sm">
             {/* Row 1: Label + countdown badge */}
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
