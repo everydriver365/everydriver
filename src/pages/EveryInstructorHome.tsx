@@ -295,41 +295,41 @@ export default function EveryInstructorHome() {
         </Section>
       )}
 
-      {/* ── Quick Actions (2-column grid, LBC style) ────── */}
+      {/* ── Quick Actions (4-column grid) ────── */}
       <section className="mt-7">
         <div className="px-5 mb-3">
           <h2 className="text-[22px] font-extrabold text-gray-900 leading-tight">Quick Actions</h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 px-5">
+        <div className="grid grid-cols-4 gap-2 px-5">
           <ImageCard
-            title="Job Offers"
-            subtitle="View available"
+            title="Jobs"
             icon={Briefcase}
             accent="#AF52DE"
             badge={pendingJobs}
             onClick={() => navigate("/every-instructor/jobs")}
+            compact
           />
           <ImageCard
             title="Messages"
-            subtitle="Pupil inbox"
             icon={MessageSquare}
             accent="#FF9500"
             badge={unreadMessages}
             onClick={() => navigate("/every-instructor/messages")}
+            compact
           />
           <ImageCard
             title="Payment"
-            subtitle="Take payment"
             icon={PoundSterling}
             accent="#34C759"
             onClick={() => navigate("/every-instructor/take-payment")}
+            compact
           />
           <ImageCard
             title="Pupils"
-            subtitle="Manage pupils"
             icon={Users}
             accent="#007AFF"
             onClick={() => navigate("/every-instructor/pupils")}
+            compact
           />
         </div>
       </section>
