@@ -95,13 +95,18 @@ function ImageCard({
       >
         <div className="relative">
           <div
-            className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-sm"
+            className="w-full aspect-square rounded-2xl flex items-center justify-center shadow-sm overflow-hidden"
             style={{ backgroundColor: accent }}
           >
-            <Icon className="h-6 w-6 text-white" />
+            <img
+              src={`https://placehold.co/120x120/${accent.replace("#", "")}/${accent.replace("#", "")}?text=+`}
+              alt={title}
+              className="w-full h-full object-cover absolute inset-0 opacity-30"
+            />
+            <Icon className="h-7 w-7 text-white relative z-10" />
           </div>
           {badge !== undefined && badge > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full text-[11px] font-bold text-white bg-red-500 px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full text-[11px] font-bold text-white bg-red-500 px-1 z-20">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
