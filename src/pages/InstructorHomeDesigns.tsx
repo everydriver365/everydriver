@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { Navigate } from "react-router-dom";
-import { Loader2, Check, Sparkles, Layout, Smartphone, Monitor, Palette } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Loader2, Check, Sparkles, Layout, Smartphone, Monitor, Palette, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useInstructorAppearance, LayoutStyle } from "@/hooks/useInstructorAppearance";
@@ -193,6 +193,7 @@ function DesignMockup({ design, isSelected }: { design: DesignOption; isSelected
 }
 
 export default function InstructorHomeDesigns() {
+  const navigate = useNavigate();
   const { instructor, loading: authLoading } = useInstructorAuth();
   const instructorId = instructor?.id;
   const { layoutStyle, updateAppearance, loading: appearanceLoading } = useInstructorAppearance(instructorId);
@@ -287,7 +288,25 @@ export default function InstructorHomeDesigns() {
           ))}
         </div>
 
-        {/* Sticky apply button */}
+        {/* Next Up tile design link */}
+        <div className="px-4 mt-6">
+          <button
+            onClick={() => navigate("/instructor/next-up-redesigns")}
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-[0px_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 flex items-center justify-center">
+                <Layout className="h-5 w-5 text-indigo-600" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-bold text-foreground">Next Up Tile Designs</h3>
+                <p className="text-[11px] text-muted-foreground">Choose a style for your next lesson tile</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+
         <AnimatePresence>
           {selectedDesign && selectedDesign !== layoutStyle && (
             <motion.div
