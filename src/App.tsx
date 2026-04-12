@@ -20,6 +20,7 @@ import { instructorPortalRoutes } from "@/routes/instructorPortalRoutes";
 import { instructorAppRoutes } from "@/routes/instructorAppRoutes";
 import { adminRoutes } from "@/routes/adminRoutes";
 import { demoRoutes } from "@/routes/demoRoutes";
+import { everyInstructorRoutes } from "@/routes/everyInstructorRoutes";
 
 const queryClient = new QueryClient();
 
