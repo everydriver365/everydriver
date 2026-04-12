@@ -178,7 +178,7 @@ export function NextUpTile({
 
   return (
     <>
-      <div className="w-full overflow-hidden rounded-2xl dark:border dark:border-white/10"
+      <div className="w-full overflow-hidden dark:border dark:border-white/10"
         style={{
           background: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(24px)",
@@ -189,9 +189,9 @@ export function NextUpTile({
         {/* ── HEADER ── */}
         <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
           {/* Top accent bar */}
-          <div className="h-1 w-full rounded-sm shadow-sm opacity-85" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
+          <div className="h-1 w-full shadow-sm opacity-85" style={{ background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)` }} />
 
-          <div className="px-4 pt-3.5 pb-3 border-solid border-0 rounded-sm">
+          <div className="px-4 pt-3.5 pb-3 border-solid border-0">
             {/* Row 1: Label + countdown badge */}
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
