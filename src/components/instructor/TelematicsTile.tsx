@@ -44,7 +44,7 @@ export function TelematicsTile() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-none overflow-hidden"
+        className="rounded-2xl overflow-hidden"
         style={{
           backgroundColor: "#FFFFFF",
           boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
@@ -114,7 +114,7 @@ export function TelematicsTile() {
 
                     {/* Fault codes */}
                     {hasFaults && (
-                      <div className="bg-amber-500/10 rounded-none p-2.5">
+                      <div className="bg-amber-500/10 rounded-xl p-2.5">
                         <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 mb-1">Active Faults</p>
                         {faultCodes.slice(0, 3).map((fault, i) => (
                           <p key={i} className="text-[10px] text-amber-600 dark:text-amber-300 truncate">
@@ -166,7 +166,7 @@ export function TelematicsTile() {
 
 function MetricCard({ icon, label, value, warning }: { icon: React.ReactNode; label: string; value: string; warning: boolean }) {
   return (
-    <div className={`rounded-none p-2 text-center ${warning ? "bg-red-500/10" : "bg-white/60 dark:bg-white/5"}`}>
+    <div className={`rounded-xl p-2 text-center ${warning ? "bg-red-500/10" : "bg-white/60 dark:bg-white/5"}`}>
       <div className={`flex justify-center mb-1 ${warning ? "text-red-500" : "text-muted-foreground"}`}>
         {icon}
       </div>
