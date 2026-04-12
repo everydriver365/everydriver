@@ -294,38 +294,47 @@ export default function EveryInstructorHome() {
       )}
 
       {/* ── Quick Actions ───────────────────── */}
-      <Section title="Quick Actions">
-        <ImageCard
-          title="Job Offers"
-          subtitle={pendingJobs > 0 ? `${pendingJobs} available` : "None"}
-          icon={Briefcase}
-          accent="#AF52DE"
-          badge={pendingJobs}
-          onClick={() => navigate("/every-instructor/jobs")}
-        />
-        <ImageCard
-          title="Messages"
-          subtitle={unreadMessages > 0 ? `${unreadMessages} unread` : "All read"}
-          icon={MessageSquare}
-          accent="#FF9500"
-          badge={unreadMessages}
-          onClick={() => navigate("/every-instructor/messages")}
-        />
-        <ImageCard
-          title="Take Payment"
-          subtitle="Collect now"
-          icon={PoundSterling}
-          accent="#34C759"
-          onClick={() => navigate("/every-instructor/take-payment")}
-        />
-        <ImageCard
-          title="Pupils"
-          subtitle="Manage roster"
-          icon={Users}
-          accent="#007AFF"
-          onClick={() => navigate("/every-instructor/pupils")}
-        />
-      </Section>
+      <section className="mt-6">
+        <div className="flex items-center justify-between px-5 mb-3">
+          <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
+        </div>
+        <div className="grid grid-cols-4 gap-2 px-5">
+          <ImageCard
+            title="Job Offers"
+            subtitle={pendingJobs > 0 ? `${pendingJobs} available` : "None"}
+            icon={Briefcase}
+            accent="#AF52DE"
+            badge={pendingJobs}
+            onClick={() => navigate("/every-instructor/jobs")}
+            compact
+          />
+          <ImageCard
+            title="Messages"
+            subtitle={unreadMessages > 0 ? `${unreadMessages} unread` : "All read"}
+            icon={MessageSquare}
+            accent="#FF9500"
+            badge={unreadMessages}
+            onClick={() => navigate("/every-instructor/messages")}
+            compact
+          />
+          <ImageCard
+            title="Payment"
+            subtitle="Collect"
+            icon={PoundSterling}
+            accent="#34C759"
+            onClick={() => navigate("/every-instructor/take-payment")}
+            compact
+          />
+          <ImageCard
+            title="Pupils"
+            subtitle="Roster"
+            icon={Users}
+            accent="#007AFF"
+            onClick={() => navigate("/every-instructor/pupils")}
+            compact
+          />
+        </div>
+      </section>
 
       {/* ── Your Business ───────────────────── */}
       <Section title="Your Business" moreRoute="/every-instructor/pay">
