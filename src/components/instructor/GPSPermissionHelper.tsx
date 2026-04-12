@@ -176,7 +176,7 @@ export function GPSPermissionHelper() {
 
   const IOSInstructions = () => (
     <div className="space-y-4">
-      <div className="p-3 bg-primary/10 border border-primary/20 rounded-none">
+      <div className="p-3 bg-primary/10 border border-primary/20 rounded-2xl">
         <p className="text-sm text-primary font-medium">
           {deviceInfo?.isPWA 
             ? "You're using Drive365 as an installed app" 
@@ -186,8 +186,8 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 1: Open Settings</h4>
-        <div className="flex items-center gap-3 p-3 bg-muted rounded-none">
-          <div className="h-10 w-10 rounded-none bg-gray-500 flex items-center justify-center">
+        <div className="flex items-center gap-3 p-3 bg-muted rounded-2xl">
+          <div className="h-10 w-10 rounded-2xl bg-gray-500 flex items-center justify-center">
             <Settings className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -199,7 +199,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 2: Go to Privacy & Security</h4>
-        <div className="flex items-center justify-between p-3 bg-muted rounded-none">
+        <div className="flex items-center justify-between p-3 bg-muted rounded-2xl">
           <span className="font-medium">Privacy & Security</span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
@@ -207,7 +207,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 3: Tap Location Services</h4>
-        <div className="flex items-center justify-between p-3 bg-muted rounded-none">
+        <div className="flex items-center justify-between p-3 bg-muted rounded-2xl">
           <div className="flex items-center gap-3">
             <MapPin className="h-5 w-5 text-primary" />
             <span className="font-medium">Location Services</span>
@@ -218,7 +218,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 4: Enable Location Services</h4>
-        <div className="p-3 bg-muted rounded-none space-y-2">
+        <div className="p-3 bg-muted rounded-2xl space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Location Services</span>
             <div className="w-12 h-7 bg-green-500 rounded-full flex items-center justify-end px-1">
@@ -231,13 +231,13 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 5: Find {deviceInfo?.isPWA ? "Drive365" : "Safari"}</h4>
-        <div className="p-3 bg-muted rounded-none space-y-3">
+        <div className="p-3 bg-muted rounded-2xl space-y-3">
           <p className="text-sm text-muted-foreground">
             Scroll down and tap on <strong>{deviceInfo?.isPWA ? "Drive365" : "Safari"}</strong>
           </p>
           <div className="flex items-center justify-between py-2 border-t">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-none bg-primary flex items-center justify-center">
+              <div className="h-8 w-8 rounded-2xl bg-primary flex items-center justify-center">
                 <Smartphone className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-medium">{deviceInfo?.isPWA ? "Drive365" : "Safari"}</span>
@@ -249,7 +249,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 6: Set Location Access</h4>
-        <div className="p-3 bg-muted rounded-none space-y-3">
+        <div className="p-3 bg-muted rounded-2xl space-y-3">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 rounded-full border-2 border-primary bg-primary" />
@@ -273,7 +273,7 @@ export function GPSPermissionHelper() {
           <Crosshair className="h-4 w-4 text-primary" />
           Step 7: Enable Precise Location
         </h4>
-        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-none">
+        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-2xl">
           <div className="flex items-center justify-between">
             <div>
               <span className="font-medium">Precise Location</span>
@@ -290,7 +290,7 @@ export function GPSPermissionHelper() {
 
   const AndroidInstructions = () => (
     <div className="space-y-4">
-      <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-none">
+      <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-2xl">
         <p className="text-sm text-green-600 font-medium">
           {deviceInfo?.isPWA 
             ? "You're using Drive365 as an installed app" 
@@ -300,7 +300,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 1: Open Settings</h4>
-        <div className="flex items-center gap-3 p-3 bg-muted rounded-none">
+        <div className="flex items-center gap-3 p-3 bg-muted rounded-2xl">
           <div className="h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center">
             <Settings className="h-6 w-6 text-white" />
           </div>
@@ -313,7 +313,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 2: Go to Location</h4>
-        <div className="flex items-center justify-between p-3 bg-muted rounded-none">
+        <div className="flex items-center justify-between p-3 bg-muted rounded-2xl">
           <div className="flex items-center gap-3">
             <MapPin className="h-5 w-5 text-primary" />
             <span className="font-medium">Location</span>
@@ -324,7 +324,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 3: Turn on Location</h4>
-        <div className="p-3 bg-muted rounded-none">
+        <div className="p-3 bg-muted rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="font-medium">Use location</span>
             <div className="w-12 h-7 bg-green-500 rounded-full flex items-center justify-end px-1">
@@ -336,7 +336,7 @@ export function GPSPermissionHelper() {
 
       <div className="space-y-3">
         <h4 className="font-semibold text-sm">Step 4: App Permissions</h4>
-        <div className="p-3 bg-muted rounded-none space-y-2">
+        <div className="p-3 bg-muted rounded-2xl space-y-2">
           <p className="text-sm">Go to <strong>App permissions</strong> → <strong>{deviceInfo?.isPWA ? "Drive365" : "Chrome"}</strong></p>
           <p className="text-sm text-muted-foreground">Select <strong>"Allow only while using the app"</strong></p>
         </div>
@@ -347,7 +347,7 @@ export function GPSPermissionHelper() {
           <Crosshair className="h-4 w-4 text-primary" />
           Step 5: Use Precise Location
         </h4>
-        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-none">
+        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-2xl">
           <div className="flex items-center justify-between">
             <div>
               <span className="font-medium">Use precise location</span>
@@ -437,7 +437,7 @@ export function GPSPermissionHelper() {
                 exit={{ opacity: 0 }}
               >
                 {testResult.error ? (
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-none">
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-2xl">
                     <div className="flex items-start gap-2">
                       <XCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                       <div>
@@ -447,7 +447,7 @@ export function GPSPermissionHelper() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-none">
+                  <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-2xl">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                       <div>
@@ -479,7 +479,7 @@ export function GPSPermissionHelper() {
               ) : deviceInfo?.isAndroid ? (
                 <AndroidInstructions />
               ) : (
-                <div className="p-4 bg-muted rounded-none">
+                <div className="p-4 bg-muted rounded-2xl">
                   <p className="text-sm text-muted-foreground">
                     Please enable location access in your browser settings. Look for the location/privacy settings in your browser menu.
                   </p>
@@ -489,7 +489,7 @@ export function GPSPermissionHelper() {
           )}
 
           {permissionStatus === "granted" && !testResult && (
-            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-none">
+            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                 <div>

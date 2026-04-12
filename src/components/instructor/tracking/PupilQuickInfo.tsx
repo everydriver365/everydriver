@@ -135,7 +135,7 @@
    return (
      <AnimatePresence>
        <motion.div
-         className="bg-slate-50 dark:bg-muted/30 rounded-none p-3"
+         className="bg-slate-50 dark:bg-muted/30 rounded-2xl p-3"
          initial={{ opacity: 0, height: 0 }}
          animate={{ opacity: 1, height: "auto" }}
          exit={{ opacity: 0, height: 0 }}
@@ -145,7 +145,7 @@
          <div className="grid grid-cols-3 gap-2 mb-2">
            {/* Lesson Hours */}
            <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-none bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+             <div className="w-7 h-7 rounded-2xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
                <BookOpen className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
              </div>
              <div>
@@ -156,7 +156,7 @@
  
            {/* Tracked Hours */}
            <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-none bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+             <div className="w-7 h-7 rounded-2xl bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
                <Navigation className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
              </div>
              <div>
@@ -167,7 +167,7 @@
  
            {/* Payment Status */}
            <div className="flex items-center gap-2">
-             <div className={`w-7 h-7 rounded-none flex items-center justify-center ${paymentColors.bg}`}>
+             <div className={`w-7 h-7 rounded-2xl flex items-center justify-center ${paymentColors.bg}`}>
                <CreditCard className={`h-3.5 w-3.5 ${paymentColors.text}`} />
              </div>
              <div>
@@ -183,7 +183,7 @@
          <div className="flex items-center gap-4 pt-2 border-t border-border/50">
            {/* Last Session */}
            <div className="flex items-center gap-2 flex-1">
-             <div className="w-7 h-7 rounded-none bg-slate-200 dark:bg-muted flex items-center justify-center">
+             <div className="w-7 h-7 rounded-2xl bg-slate-200 dark:bg-muted flex items-center justify-center">
                <History className="h-3.5 w-3.5 text-muted-foreground" />
              </div>
              <div>
@@ -200,7 +200,7 @@
            {/* Test Date */}
            {stats.upcomingTest && daysUntilTest !== null && (
              <div className="flex items-center gap-2">
-               <div className={`w-7 h-7 rounded-none flex items-center justify-center ${
+               <div className={`w-7 h-7 rounded-2xl flex items-center justify-center ${
                  daysUntilTest <= 7 
                    ? "bg-red-100 dark:bg-red-500/20" 
                    : "bg-amber-100 dark:bg-amber-500/20"

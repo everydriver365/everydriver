@@ -32,7 +32,7 @@ export function TripReplayControls({
   onSpeedChange,
 }: TripReplayControlsProps) {
   return (
-    <div className="space-y-3 p-4 bg-card border rounded-none">
+    <div className="space-y-3 p-4 bg-card border rounded-2xl">
       {/* Progress bar */}
       <div className="space-y-2">
         <Slider

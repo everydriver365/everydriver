@@ -13,7 +13,7 @@ export function PDIBanner({ instructorName }: PDIBannerProps) {
   if (dismissed) return null;
 
   return (
-    <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 rounded-none p-4 sm:p-5">
+    <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 rounded-2xl p-4 sm:p-5">
       <button
         onClick={() => setDismissed(true)}
         className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"

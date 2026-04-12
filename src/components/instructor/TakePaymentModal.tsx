@@ -239,7 +239,7 @@ export function TakePaymentModal({
         <div className="p-4 max-h-[70vh] overflow-y-auto">
           {/* === Payment type switcher === */}
           {view !== "received" && (
-            <div className="flex gap-1 p-1 rounded-none bg-muted mb-4">
+            <div className="flex gap-1 p-1 rounded-2xl bg-muted mb-4">
               {options.map((opt) => {
                 const Icon = opt.icon;
                 const isActive = view === opt.id;
@@ -247,7 +247,7 @@ export function TakePaymentModal({
                   <button
                     key={opt.id}
                     onClick={() => setView(opt.id)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-none text-xs font-medium transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-medium transition-colors ${
                       isActive
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -266,7 +266,7 @@ export function TakePaymentModal({
             <div className="space-y-4">
               {qrCheckoutUrl ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="bg-white p-4 rounded-none shadow-md">
+                  <div className="bg-white p-4 rounded-2xl shadow-md">
                     <QRCodeSVG value={qrCheckoutUrl} size={220} />
                   </div>
                   {(() => {

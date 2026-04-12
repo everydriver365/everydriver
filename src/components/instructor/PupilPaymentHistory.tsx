@@ -113,7 +113,7 @@ export function PupilPaymentHistory({
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 rounded-none p-3">
+      <div className="bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 rounded-2xl p-3">
         <div className="flex items-center justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
@@ -122,7 +122,7 @@ export function PupilPaymentHistory({
   }
 
   return (
-    <div className="bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 rounded-none p-3 space-y-3">
+    <div className="bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 rounded-2xl p-3 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <History className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -147,7 +147,7 @@ export function PupilPaymentHistory({
             return (
               <div
                 key={payment.id}
-                className="flex items-center justify-between bg-background/60 rounded-none p-2.5"
+                className="flex items-center justify-between bg-background/60 rounded-2xl p-2.5"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">

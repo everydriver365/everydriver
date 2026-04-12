@@ -351,7 +351,7 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
                         <button
                           onClick={() => handleSelectSession(session)}
                           className={cn(
-                            "w-full text-left p-3 rounded-none border transition-colors",
+                            "w-full text-left p-3 rounded-2xl border transition-colors",
                             selectedSession?.id === session.id
                               ? "bg-primary/5 border-primary"
                               : "hover:bg-muted/50 border-transparent"

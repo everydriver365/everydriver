@@ -134,7 +134,7 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
         {filtered.map((doc: any) => (
           <Card key={doc.id}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-none bg-primary/10 flex items-center justify-center shrink-0">
+              <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
@@ -168,7 +168,7 @@ export function DocumentVault({ instructorId }: { instructorId: string }) {
           <div className="space-y-4">
             <Input placeholder="Document title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <Input placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <select className="w-full rounded-none border p-2 text-sm bg-background" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <select className="w-full rounded-2xl border p-2 text-sm bg-background" value={category} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{categoryLabels[c]}</option>)}
             </select>
             <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />

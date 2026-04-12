@@ -91,7 +91,7 @@ export function LinkDeviceDialog({
               {availableVehicles.map(vehicle => (
                 <div
                   key={vehicle.id}
-                  className="flex items-center space-x-3 rounded-none border p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="flex items-center space-x-3 rounded-2xl border p-3 cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => setSelectedVehicleId(vehicle.id)}
                 >
                   <RadioGroupItem value={vehicle.id} id={vehicle.id} />

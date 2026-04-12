@@ -274,7 +274,7 @@ export function CalendarExportDialog({
                 <RadioGroupItem value="pdf" id="pdf" className="peer sr-only" />
                 <Label
                   htmlFor="pdf"
-                  className="flex flex-col items-center justify-between rounded-none border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                 >
                   <FileText className="h-6 w-6 mb-2" />
                   <span className="font-medium">PDF</span>
@@ -287,7 +287,7 @@ export function CalendarExportDialog({
                 <RadioGroupItem value="ics" id="ics" className="peer sr-only" />
                 <Label
                   htmlFor="ics"
-                  className="flex flex-col items-center justify-between rounded-none border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                 >
                   <Calendar className="h-6 w-6 mb-2" />
                   <span className="font-medium">ICS</span>
@@ -318,7 +318,7 @@ export function CalendarExportDialog({
           </div>
 
           {/* Preview */}
-          <div className="p-3 bg-muted rounded-none">
+          <div className="p-3 bg-muted rounded-2xl">
             <div className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{filteredCount}</span> events will be exported
             </div>

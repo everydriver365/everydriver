@@ -163,7 +163,7 @@ export function GeotabTripHistory({ instructorId }: GeotabTripHistoryProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-none border">
+        <div className="rounded-2xl border">
           <Table>
             <TableHeader>
               <TableRow>

@@ -354,7 +354,7 @@ export function EndLessonWizard({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-none">
+      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-2xl">
         <SheetHeader className="pb-3">
           <SheetTitle className="text-base">
             {step === "completed" ? "Lesson Summary" : `End Lesson — ${pupilName}`}

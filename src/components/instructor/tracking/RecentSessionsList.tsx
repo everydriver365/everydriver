@@ -94,14 +94,14 @@
    return (
      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
        <motion.div
-         className="bg-white dark:bg-card rounded-none shadow-lg overflow-hidden"
+         className="bg-white dark:bg-card rounded-2xl shadow-lg overflow-hidden"
          initial={{ opacity: 0, y: 20 }}
          animate={{ opacity: 1, y: 0 }}
          transition={{ duration: 0.4, delay: 0.2 }}
        >
          <CollapsibleTrigger className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-muted/30 transition-colors">
            <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-none bg-slate-100 dark:bg-muted flex items-center justify-center">
+             <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-muted flex items-center justify-center">
                <RotateCcw className="h-5 w-5 text-muted-foreground" />
              </div>
              <div className="text-left">
@@ -124,13 +124,13 @@
                  {sessions.map((session, index) => (
                    <motion.button
                      key={session.id}
-                     className="w-full flex items-center gap-3 p-3 rounded-none bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors text-left"
+                     className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors text-left"
                      onClick={() => navigate(`/instructor/trip-replay/${session.id}`)}
                      initial={{ opacity: 0, x: -10 }}
                      animate={{ opacity: 1, x: 0 }}
                      transition={{ delay: index * 0.05 }}
                    >
-                     <div className={`w-9 h-9 rounded-none flex items-center justify-center ${
+                     <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
                        session.pupilName 
                          ? "bg-emerald-100 dark:bg-emerald-500/20" 
                          : "bg-amber-100 dark:bg-amber-500/20"

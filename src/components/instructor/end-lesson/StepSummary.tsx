@@ -43,17 +43,17 @@ export function StepSummary({
     <div className="space-y-4">
       {/* Stats grid */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="flex flex-col items-center p-3 rounded-none bg-muted/50">
+        <div className="flex flex-col items-center p-3 rounded-2xl bg-muted/50">
           <Clock className="h-4 w-4 text-muted-foreground mb-1" />
           <span className="text-base font-bold text-foreground">{durationLabel}</span>
           <span className="text-[10px] text-muted-foreground">Duration</span>
         </div>
-        <div className="flex flex-col items-center p-3 rounded-none bg-muted/50">
+        <div className="flex flex-col items-center p-3 rounded-2xl bg-muted/50">
           <Route className="h-4 w-4 text-muted-foreground mb-1" />
           <span className="text-base font-bold text-foreground">—</span>
           <span className="text-[10px] text-muted-foreground">Miles</span>
         </div>
-        <div className="flex flex-col items-center p-3 rounded-none bg-muted/50">
+        <div className="flex flex-col items-center p-3 rounded-2xl bg-muted/50">
           <PoundSterling className="h-4 w-4 text-muted-foreground mb-1" />
           <span className={`text-base font-bold ${balanceAfter < 0 ? "text-destructive" : "text-success"}`}>
             £{Math.abs(Math.round(balanceAfter))}
@@ -96,7 +96,7 @@ export function StepSummary({
 
       {/* Recording indicator */}
       {mode === "voice" && isListening && (
-        <div className="flex items-center gap-2 p-2 rounded-none bg-destructive/10 border border-destructive/20">
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-destructive/10 border border-destructive/20">
           <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
           <span className="text-xs text-destructive font-medium">Listening…</span>
           <Button variant="ghost" size="sm" className="ml-auto h-7 text-xs" onClick={stopListening}>

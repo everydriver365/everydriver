@@ -88,7 +88,7 @@ export function GeotabDiagnosticCharts({ instructorId }: GeotabDiagnosticChartsP
       {isLoading ? (
         <div className="space-y-3">
           {selectedDiags.map((key) => (
-            <Skeleton key={key} className="h-52 w-full rounded-none" />
+            <Skeleton key={key} className="h-52 w-full rounded-2xl" />
           ))}
         </div>
       ) : error ? (

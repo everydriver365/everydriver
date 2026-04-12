@@ -73,7 +73,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                 damping: 30
               }}
               className={cn(
-                "relative overflow-hidden rounded-none border shadow-sm",
+                "relative overflow-hidden rounded-2xl border shadow-sm",
                 isWeather
                   ? "border-primary/20 dark:border-primary/30"
                   : isSevere
@@ -85,7 +85,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
               <div className="flex items-start gap-3 p-3">
                 {/* Icon */}
                 <div className={cn(
-                  "flex-shrink-0 p-2 rounded-none",
+                  "flex-shrink-0 p-2 rounded-2xl",
                   isWeather
                     ? "bg-primary/20 text-primary"
                     : isSevere 

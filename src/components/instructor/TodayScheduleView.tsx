@@ -532,7 +532,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                     {index === 0 && (
                       <PostcodeMapPreview 
                         postcode={lesson.pickup_postcode || lesson.pupil?.postcode || ""} 
-                        className="rounded-none border-0"
+                        className="rounded-2xl border-0"
                         onClick={() => handleNavigate(
                           lesson.pickup_location || lesson.pupil?.address || "",
                           lesson.pickup_postcode || lesson.pupil?.postcode || ""

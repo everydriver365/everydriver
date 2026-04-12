@@ -36,7 +36,7 @@ function PhonePreview({
 }) {
   return (
     <div
-      className="w-full aspect-[9/16] rounded-none border border-border/60 overflow-hidden shadow-inner"
+      className="w-full aspect-[9/16] rounded-2xl border border-border/60 overflow-hidden shadow-inner"
       style={{ backgroundColor: variant === "lockscreen" ? "#1a1a2e" : variant === "clean" ? "#f8f9fa" : variant === "ios-native" || variant === "bestmate" ? "#F2F2F7" : variant === "compact" ? "hsl(var(--background))" : bg }}
     >
       {variant === "lockscreen" ? (
@@ -48,7 +48,7 @@ function PhonePreview({
           </div>
           <div className="px-1.5 space-y-0.5 mt-1">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-none bg-white/10 h-4 w-full" />
+              <div key={i} className="rounded-2xl bg-white/10 h-4 w-full" />
             ))}
           </div>
         </>
@@ -82,12 +82,12 @@ function PhonePreview({
             <div className="h-1 w-10 rounded bg-foreground/10 mb-2" />
             <div className="grid grid-cols-2 gap-1">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-none bg-card h-6 border border-border/40" />
+                <div key={i} className="rounded-2xl bg-card h-6 border border-border/40" />
               ))}
             </div>
             <div className="mt-2 space-y-1">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-none bg-card h-5 border-l-2 border-l-primary/40 border border-border/40" />
+                <div key={i} className="rounded-2xl bg-card h-5 border-l-2 border-l-primary/40 border border-border/40" />
               ))}
             </div>
           </div>
@@ -134,7 +134,7 @@ function PhonePreview({
               <>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-1">
-                    <div className="w-3 h-1.5 rounded-none bg-primary/30" />
+                    <div className="w-3 h-1.5 rounded-2xl bg-primary/30" />
                     <div className="flex-1 h-2.5 rounded bg-card/80" />
                   </div>
                 ))}
@@ -198,7 +198,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
       {/* ── Theme Mode ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Theme</Label>
-        <div className="grid grid-cols-3 gap-1 p-1 rounded-none bg-muted/30 border border-border">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-muted/30 border border-border">
           {([
             { value: "system" as const, label: "System", icon: Monitor },
             { value: "light" as const, label: "Light", icon: Sun },
@@ -208,7 +208,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               key={opt.value}
               onClick={() => setTheme(opt.value)}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-2 rounded-none text-xs font-medium transition-all",
+                "flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-medium transition-all",
                 theme === opt.value
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -237,7 +237,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("dashboard")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "dashboard"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -261,7 +261,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("schedule")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "schedule"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -285,7 +285,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("lockscreen")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "lockscreen"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -309,7 +309,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("clean")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "clean"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -333,7 +333,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("ios-native")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "ios-native"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -357,7 +357,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("compact")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "compact"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -381,7 +381,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
           <button
             onClick={() => handleLayoutChange("bestmate")}
             className={cn(
-              "relative flex flex-col items-center gap-1.5 p-3 rounded-none border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all",
               layoutStyle === "bestmate"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
@@ -409,7 +409,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "relative rounded-none border-2 border-dashed overflow-hidden bg-muted/50 flex items-center justify-center w-full aspect-video max-w-xs",
+              "relative rounded-2xl border-2 border-dashed overflow-hidden bg-muted/50 flex items-center justify-center w-full aspect-video max-w-xs",
               heroImageUrl ? "border-primary" : "border-border"
             )}
           >

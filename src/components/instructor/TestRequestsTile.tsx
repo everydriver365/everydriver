@@ -138,7 +138,7 @@ export function TestRequestsTile({ instructorId }: TestRequestsTileProps) {
 
   return (
     <div className="mx-4 mt-3">
-      <div className="rounded-none overflow-hidden shadow-sm border border-border/30">
+      <div className="rounded-2xl overflow-hidden shadow-sm border border-border/30">
         {/* Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}

@@ -182,7 +182,7 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
           <Sparkles className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">AI & Automation</span>
         </div>
-        <div className="rounded-none border border-border/60 bg-muted/30 px-1">
+        <div className="rounded-2xl border border-border/60 bg-muted/30 px-1">
           <ToggleList toggles={aiFeatureToggles} instructorId={instructorId} />
         </div>
       </div>

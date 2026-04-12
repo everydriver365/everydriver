@@ -148,7 +148,7 @@ export function LessonRouteViewer({ pupilId, pupilName }: LessonRouteViewerProps
           <button
             key={route.id}
             onClick={() => setSelectedRoute(selectedRoute?.id === route.id ? null : route)}
-            className={`w-full text-left p-3 rounded-none border text-sm transition-colors ${
+            className={`w-full text-left p-3 rounded-2xl border text-sm transition-colors ${
               selectedRoute?.id === route.id
                 ? "border-primary bg-primary/5"
                 : "border-border hover:bg-accent"
@@ -183,7 +183,7 @@ export function LessonRouteViewer({ pupilId, pupilName }: LessonRouteViewerProps
 
       {/* Map with speed-colored segments */}
       {selectedRoute && routePath.length > 0 && (
-        <div className="rounded-none overflow-hidden border">
+        <div className="rounded-2xl overflow-hidden border">
           <div className="h-64">
             <MapContainer
               center={center}

@@ -524,7 +524,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       {/* Header bar */}
       <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-foreground bg-background/90 backdrop-blur-sm rounded-none px-3 py-1.5 shadow-md border">
+          <h2 className="text-sm font-semibold text-foreground bg-background/90 backdrop-blur-sm rounded-2xl px-3 py-1.5 shadow-md border">
             Live Tracking
           </h2>
           <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
@@ -557,7 +557,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
           )}
           <button
             onClick={() => setUnit((u) => (u === "mph" ? "kmh" : "mph"))}
-            className="px-2.5 py-1.5 rounded-none border bg-background/90 backdrop-blur-sm shadow-md text-xs font-medium cursor-pointer hover:bg-muted transition-colors"
+            className="px-2.5 py-1.5 rounded-2xl border bg-background/90 backdrop-blur-sm shadow-md text-xs font-medium cursor-pointer hover:bg-muted transition-colors"
           >
             {unit.toUpperCase()}
           </button>
@@ -567,7 +567,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       {/* Road name banner */}
       {device?.last_road_name && isConnected && (
         <div className="absolute top-16 left-4 right-4 z-20">
-          <div className="bg-background/90 backdrop-blur-sm rounded-none px-4 py-2 shadow-md border text-center">
+          <div className="bg-background/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-md border text-center">
             <p className="text-sm font-semibold text-foreground truncate">{device.last_road_name}</p>
           </div>
         </div>
@@ -630,7 +630,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
 
       {/* Note banner */}
       {note && (
-        <div className="absolute top-[6.5rem] left-4 z-20 bg-background/90 backdrop-blur-sm rounded-none px-3 py-2 shadow-md border max-w-xs">
+        <div className="absolute top-[6.5rem] left-4 z-20 bg-background/90 backdrop-blur-sm rounded-2xl px-3 py-2 shadow-md border max-w-xs">
           <p className="text-xs text-muted-foreground">{note}</p>
         </div>
       )}

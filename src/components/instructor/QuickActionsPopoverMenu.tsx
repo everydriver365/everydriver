@@ -94,7 +94,7 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             className="fixed inset-x-4 bottom-20 z-[81] max-w-sm mx-auto max-h-[calc(100vh-8rem)] flex flex-col"
           >
-            <div className="bg-card rounded-none shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
+            <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
               <ScrollArea className="max-h-[55vh]">
                 <div className="p-2 pt-1">
 
@@ -173,7 +173,7 @@ function ActionRow({ action, index, isPinned, onAction, onTogglePin }: ActionRow
     >
       <button
         onClick={() => onAction(action.route)}
-        className="flex-1 flex items-center gap-3 px-3 py-2 rounded-none hover:bg-muted/60 active:bg-muted transition-colors text-left"
+        className="flex-1 flex items-center gap-3 px-3 py-2 rounded-2xl hover:bg-muted/60 active:bg-muted transition-colors text-left"
       >
         <div className={`h-9 w-9 rounded-full ${action.color} flex items-center justify-center shrink-0`}>
           <Icon className="h-4.5 w-4.5 text-white" strokeWidth={2} />
@@ -182,7 +182,7 @@ function ActionRow({ action, index, isPinned, onAction, onTogglePin }: ActionRow
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); onTogglePin(action.id); }}
-        className="p-2 rounded-none hover:bg-muted/60 active:bg-muted transition-colors shrink-0"
+        className="p-2 rounded-2xl hover:bg-muted/60 active:bg-muted transition-colors shrink-0"
         aria-label={isPinned ? "Unpin action" : "Pin action"}
       >
         <Star

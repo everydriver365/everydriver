@@ -415,7 +415,7 @@ export default function LovableTracker() {
               </div>
 
               {gpsPoints.length > 0 && (
-                <div className="bg-muted/50 rounded-none p-3 space-y-2 text-sm">
+                <div className="bg-muted/50 rounded-2xl p-3 space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-green-500" />
                     <span className="text-muted-foreground">Start:</span>
@@ -475,7 +475,7 @@ export default function LovableTracker() {
               />
             </div>
 
-            <div className="bg-muted/50 rounded-none p-3 space-y-2 text-sm">
+            <div className="bg-muted/50 rounded-2xl p-3 space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-500" />
                 <span className="text-muted-foreground">Start:</span>

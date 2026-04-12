@@ -29,7 +29,7 @@ export function EarningsChart({ data, isLoading }: EarningsChartProps) {
 
   if (isLoading) {
     return (
-      <div className="h-32 bg-muted/30 rounded-none animate-pulse" />
+      <div className="h-32 bg-muted/30 rounded-2xl animate-pulse" />
     );
   }
 

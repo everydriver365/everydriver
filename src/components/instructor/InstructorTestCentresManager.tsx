@@ -213,7 +213,7 @@ export function InstructorTestCentresManager({ instructorId }: InstructorTestCen
               <CardContent className="p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-none bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <MapPin className="h-5 w-5 text-primary" />
                     </div>
                     <div className="min-w-0">

@@ -448,7 +448,7 @@ export function TermsSignatureModal({
           </div>
         ) : existingSignature && !needsParentSignature ? (
           <div className="py-6 space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-none">
+            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-2xl">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
               <div>
                 <p className="font-medium text-green-800 dark:text-green-200">
@@ -461,13 +461,13 @@ export function TermsSignatureModal({
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              <div className="border rounded-none p-4">
+              <div className="border rounded-2xl p-4">
                 <p className="text-sm text-muted-foreground mb-2">Pupil Signature:</p>
                 <img src={existingSignature.signature_url} alt="Pupil Signature" className="max-h-20 border rounded" />
               </div>
 
               {existingSignature.parent_signature_url && (
-                <div className="border rounded-none p-4">
+                <div className="border rounded-2xl p-4">
                   <p className="text-sm text-muted-foreground mb-2">
                     Parent/Guardian ({existingSignature.parent_name}):
                   </p>
@@ -476,7 +476,7 @@ export function TermsSignatureModal({
               )}
             </div>
 
-            <ScrollArea className="h-32 border rounded-none p-4">
+            <ScrollArea className="h-32 border rounded-2xl p-4">
               <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
             </ScrollArea>
 
@@ -497,7 +497,7 @@ export function TermsSignatureModal({
         ) : (
           <div className="flex-1 flex flex-col gap-4 overflow-hidden">
             {isUnder18 && (
-              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-none border border-amber-200 dark:border-amber-800">
+              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
                 <div className="text-sm">
                   <p className="font-medium text-amber-800 dark:text-amber-200">Under 18 - Parent Signature Required</p>
@@ -510,13 +510,13 @@ export function TermsSignatureModal({
               {!scrolledToBottom && "Please scroll to read all terms before signing"}
             </div>
 
-            <ScrollArea data-terms-scroll="modal" className="flex-1 border rounded-none p-4 min-h-[120px]" onScrollCapture={handleScroll}>
+            <ScrollArea data-terms-scroll="modal" className="flex-1 border rounded-2xl p-4 min-h-[120px]" onScrollCapture={handleScroll}>
               <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
             </ScrollArea>
 
             <div className="space-y-4">
               {/* Pupil Agreement & Signature */}
-              <div className="space-y-3 p-3 border rounded-none">
+              <div className="space-y-3 p-3 border rounded-2xl">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Pupil</Badge>
                   <span className="text-sm font-medium">{pupilName}</span>
@@ -548,7 +548,7 @@ export function TermsSignatureModal({
 
               {/* Parent Agreement & Signature (if under 18) */}
               {isUnder18 && (
-                <div className="space-y-3 p-3 border rounded-none border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                <div className="space-y-3 p-3 border rounded-2xl border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="border-amber-500 text-amber-700">
                       <Users className="h-3 w-3 mr-1" />

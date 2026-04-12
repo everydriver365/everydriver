@@ -226,7 +226,7 @@ export function AvailabilityRulesManager({ instructorId }: Props) {
         ) : (
           <div className="space-y-2">
             {rules.map(rule => (
-              <div key={rule.id} className="flex items-center gap-3 p-2.5 rounded-none border">
+              <div key={rule.id} className="flex items-center gap-3 p-2.5 rounded-2xl border">
                 <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{getRuleLabel(rule)}</p>

@@ -49,7 +49,7 @@ export function VoiceNoteRecorder({ onRecorded, disabled }: VoiceNoteRecorderPro
 
   if (audioUrl) {
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-none bg-muted/50 border border-border">
+      <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-muted/50 border border-border">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePlayback}>
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
@@ -68,7 +68,7 @@ export function VoiceNoteRecorder({ onRecorded, disabled }: VoiceNoteRecorderPro
 
   if (isRecording) {
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-none bg-destructive/10 border border-destructive/20">
+      <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-destructive/10 border border-destructive/20">
         <span className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
         <span className="text-sm font-medium text-destructive">Recording</span>
         <span className="text-xs text-destructive/70 tabular-nums ml-auto mr-2">{formatTime(duration)}</span>

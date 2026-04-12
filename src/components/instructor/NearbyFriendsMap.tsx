@@ -109,7 +109,7 @@ export function NearbyFriendsMap({ myPosition, friends, onMessageFriend, isLoadi
 
             {/* Lesson status */}
             {selectedFriend.currentLesson ? (
-              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-none" style={{ backgroundColor: "#FFF3E0" }}>
+              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-2xl" style={{ backgroundColor: "#FFF3E0" }}>
                 <Car className="h-3.5 w-3.5" style={{ color: "#FF9500" }} />
                 <div>
                   <p className="text-xs font-semibold text-gray-800">
@@ -121,7 +121,7 @@ export function NearbyFriendsMap({ myPosition, friends, onMessageFriend, isLoadi
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-none" style={{ backgroundColor: "#E8F5E9" }}>
+              <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-2xl" style={{ backgroundColor: "#E8F5E9" }}>
                 <Coffee className="h-3.5 w-3.5" style={{ color: "#34C759" }} />
                 <p className="text-xs font-semibold" style={{ color: "#2E7D32" }}>
                   Free — available for a break ☕

@@ -115,7 +115,7 @@ export function NotesWidget({ instructorId }: NotesWidgetProps) {
             {recentNotes.map((note) => {
               if (editingId === note.id) {
                 return (
-                  <div key={note.id} className="p-2 rounded-none border border-border space-y-2">
+                  <div key={note.id} className="p-2 rounded-2xl border border-border space-y-2">
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
@@ -142,7 +142,7 @@ export function NotesWidget({ instructorId }: NotesWidgetProps) {
 
               if (sharingId === note.id) {
                 return (
-                  <div key={note.id} className="p-2 rounded-none border border-border space-y-2">
+                  <div key={note.id} className="p-2 rounded-2xl border border-border space-y-2">
                     <p className="text-xs font-medium truncate">Share "{note.title}"</p>
                     <Select
                       value={note.shared_with_id || ""}
@@ -170,7 +170,7 @@ export function NotesWidget({ instructorId }: NotesWidgetProps) {
               return (
                 <div
                   key={note.id}
-                  className={`flex items-start gap-2 p-2 rounded-none hover:bg-muted/50 transition-colors group ${isDeleted ? "opacity-50" : ""}`}
+                  className={`flex items-start gap-2 p-2 rounded-2xl hover:bg-muted/50 transition-colors group ${isDeleted ? "opacity-50" : ""}`}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">

@@ -308,7 +308,7 @@ export function InstructorForum() {
                   alerts.map((alert) => (
                     <button
                       key={alert.id}
-                      className="w-full p-3 rounded-none bg-muted/50 hover:bg-muted text-left"
+                      className="w-full p-3 rounded-2xl bg-muted/50 hover:bg-muted text-left"
                       onClick={() => {
                         markAlertReadMutation.mutate(alert.id);
                         // Find and open the topic
@@ -432,7 +432,7 @@ export function InstructorForum() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Original Post */}
-            <div className="p-3 bg-muted/30 rounded-none">
+            <div className="p-3 bg-muted/30 rounded-2xl">
               <p className="text-sm whitespace-pre-wrap">{selectedTopic.content}</p>
             </div>
 

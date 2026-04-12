@@ -44,7 +44,7 @@ export function MileageTaxSavingsCard({ instructorId }: MileageTaxSavingsCardPro
     <Card className="border-border bg-gradient-to-br from-emerald-500/5 to-transparent">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="h-8 w-8 rounded-none bg-emerald-500/10 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
             <Car className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>

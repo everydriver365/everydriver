@@ -235,7 +235,7 @@ export function WeightTracker() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <div className="h-8 w-8 rounded-none bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
               <Scale className="h-4 w-4 text-rose-600 dark:text-rose-400" />
             </div>
             Weight Tracker
@@ -253,12 +253,12 @@ export function WeightTracker() {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 {/* Unit selector */}
-                <div className="flex gap-1 p-1 bg-muted rounded-none">
+                <div className="flex gap-1 p-1 bg-muted rounded-2xl">
                   <button
                     type="button"
                     onClick={() => setInputUnit("kg")}
                     className={cn(
-                      "flex-1 py-2 px-3 text-sm font-medium rounded-none transition-colors",
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-colors",
                       inputUnit === "kg"
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -270,7 +270,7 @@ export function WeightTracker() {
                     type="button"
                     onClick={() => setInputUnit("lbs")}
                     className={cn(
-                      "flex-1 py-2 px-3 text-sm font-medium rounded-none transition-colors",
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-colors",
                       inputUnit === "lbs"
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -282,7 +282,7 @@ export function WeightTracker() {
                     type="button"
                     onClick={() => setInputUnit("stone")}
                     className={cn(
-                      "flex-1 py-2 px-3 text-sm font-medium rounded-none transition-colors",
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-colors",
                       inputUnit === "stone"
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -361,7 +361,7 @@ export function WeightTracker() {
       </CardHeader>
       <CardContent>
         {/* BMI Section */}
-        <div className="mb-4 p-3 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 rounded-none border border-rose-100 dark:border-rose-900/30">
+        <div className="mb-4 p-3 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 rounded-2xl border border-rose-100 dark:border-rose-900/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center">
@@ -395,12 +395,12 @@ export function WeightTracker() {
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   {/* Height unit selector */}
-                  <div className="flex gap-1 p-1 bg-muted rounded-none">
+                  <div className="flex gap-1 p-1 bg-muted rounded-2xl">
                     <button
                       type="button"
                       onClick={() => setHeightInputUnit("cm")}
                       className={cn(
-                        "flex-1 py-2 px-3 text-sm font-medium rounded-none transition-colors",
+                        "flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-colors",
                         heightInputUnit === "cm"
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
@@ -412,7 +412,7 @@ export function WeightTracker() {
                       type="button"
                       onClick={() => setHeightInputUnit("ft")}
                       className={cn(
-                        "flex-1 py-2 px-3 text-sm font-medium rounded-none transition-colors",
+                        "flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-colors",
                         heightInputUnit === "ft"
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
@@ -532,7 +532,7 @@ export function WeightTracker() {
 
         {/* Progress Indicator */}
         {progress && weightLogs && weightLogs.length >= 3 && (
-          <div className="mb-4 p-3 bg-muted/30 rounded-none">
+          <div className="mb-4 p-3 bg-muted/30 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-4 w-4 text-rose-500" />
               <span className="text-sm font-medium">30-Day Progress</span>
@@ -610,7 +610,7 @@ export function WeightTracker() {
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="h-40 flex items-center justify-center bg-muted/30 rounded-none">
+          <div className="h-40 flex items-center justify-center bg-muted/30 rounded-2xl">
             <p className="text-sm text-muted-foreground text-center">
               Log at least 2 weights to see your trend chart
             </p>

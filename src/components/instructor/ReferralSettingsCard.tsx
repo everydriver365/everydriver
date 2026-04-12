@@ -148,15 +148,15 @@ export function ReferralSettingsCard({ instructorId }: ReferralSettingsCardProps
       <CardContent className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-muted/50 rounded-none">
+          <div className="text-center p-3 bg-muted/50 rounded-2xl">
             <div className="text-xl font-bold">{stats.total}</div>
             <div className="text-[10px] text-muted-foreground uppercase">Total</div>
           </div>
-          <div className="text-center p-3 bg-muted/50 rounded-none">
+          <div className="text-center p-3 bg-muted/50 rounded-2xl">
             <div className="text-xl font-bold text-emerald-600">{stats.completed}</div>
             <div className="text-[10px] text-muted-foreground uppercase">Completed</div>
           </div>
-          <div className="text-center p-3 bg-muted/50 rounded-none">
+          <div className="text-center p-3 bg-muted/50 rounded-2xl">
             <div className="text-xl font-bold text-amber-500">{stats.pending}</div>
             <div className="text-[10px] text-muted-foreground uppercase">Pending</div>
           </div>

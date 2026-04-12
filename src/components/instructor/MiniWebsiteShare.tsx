@@ -217,7 +217,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
         {editingSlug ? (
           <div className="flex gap-2">
             <div className="flex-1">
-              <div className="flex items-center rounded-none border bg-muted/50">
+              <div className="flex items-center rounded-2xl border bg-muted/50">
                 <span className="px-3 py-2 text-sm text-muted-foreground whitespace-nowrap border-r bg-muted">
                   {window.location.origin}/i/
                 </span>
@@ -307,7 +307,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
                 Cancel
               </Button>
             </div>
-            <div className="rounded-none bg-amber-500/10 border border-amber-500/30 p-3 mt-2">
+            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3 mt-2">
               <p className="text-xs text-amber-700 dark:text-amber-400">
                 <strong>Note:</strong> After saving your domain, you'll need to set up DNS records with your domain provider. 
                 Point your domain to this app's URL or contact support for help with DNS configuration.
@@ -421,7 +421,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
 
       {/* QR Code Display */}
       {showQR && qrCodeUrl && (
-        <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-none border">
+        <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border">
           <img 
             src={qrCodeUrl} 
             alt="QR Code for mini-website"
@@ -446,7 +446,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
       )}
 
       {/* Tips */}
-      <div className="rounded-none bg-primary/5 border border-primary/20 p-3">
+      <div className="rounded-2xl bg-primary/5 border border-primary/20 p-3">
         <p className="text-xs text-muted-foreground">
           <strong>Tip:</strong> Share your mini-website on social media, business cards, or anywhere you promote your services. Pupils can view your profile, courses, and book directly.
         </p>

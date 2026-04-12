@@ -225,7 +225,7 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
             {lessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="p-3 rounded-none border bg-card hover:bg-muted/50 transition-colors"
+                className="p-3 rounded-2xl border bg-card hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

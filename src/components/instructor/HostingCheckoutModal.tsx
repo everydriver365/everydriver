@@ -147,7 +147,7 @@ export function HostingCheckoutModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-none border bg-muted/30 p-4 mb-4">
+        <div className="rounded-2xl border bg-muted/30 p-4 mb-4">
           <div className="flex justify-between items-center mb-3">
             <div>
               <p className="font-semibold">{package_.name}</p>

@@ -69,7 +69,7 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.04 }}
-                className={`flex items-stretch gap-3 rounded-none p-2.5 transition-colors active:scale-[0.98] ${done ? "bg-muted/50" : "bg-card border shadow-sm"}`}
+                className={`flex items-stretch gap-3 rounded-2xl p-2.5 transition-colors active:scale-[0.98] ${done ? "bg-muted/50" : "bg-card border shadow-sm"}`}
               >
                 {/* Time column */}
                 <div className="flex flex-col items-center justify-center w-12 shrink-0">

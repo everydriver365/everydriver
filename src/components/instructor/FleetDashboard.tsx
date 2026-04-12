@@ -142,9 +142,9 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
   if (loading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-24 rounded-none" />
-        <Skeleton className="h-32 rounded-none" />
-        <Skeleton className="h-48 rounded-none" />
+        <Skeleton className="h-24 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
       </div>
     );
   }
@@ -192,13 +192,13 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
   return (
     <div className="space-y-5">
       {/* ── Period selector ── */}
-      <div className="bg-muted/40 rounded-none p-1 flex max-w-xs">
+      <div className="bg-muted/40 rounded-2xl p-1 flex max-w-xs">
         {(["day", "week", "month"] as const).map(p => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-1 py-1.5 text-xs font-semibold rounded-none transition-all capitalize",
+              "flex-1 py-1.5 text-xs font-semibold rounded-2xl transition-all capitalize",
               period === p
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground"
@@ -249,9 +249,9 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
 
       {/* ── Live vehicle strip ── */}
       {primaryDevice && (
-        <div className="bg-card rounded-none border border-border p-3 flex items-center gap-3 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border p-3 flex items-center gap-3 shadow-sm">
           <div className={cn(
-            "h-10 w-10 rounded-none flex items-center justify-center",
+            "h-10 w-10 rounded-2xl flex items-center justify-center",
             primaryState === "moving" ? "bg-success/10" : primaryState === "idle" ? "bg-warning/10" : "bg-muted/50"
           )}>
             <Car className={cn(
@@ -298,13 +298,13 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
             Vehicles
           </p>
-          <div className="bg-card rounded-none border border-border divide-y divide-border overflow-hidden shadow-sm">
+          <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
             {devices.map(device => {
               const state = getVehicleState(device);
               return (
                 <div key={device.id} className="flex items-center gap-3 px-4 py-3">
                   <div className={cn(
-                    "h-9 w-9 rounded-none flex items-center justify-center",
+                    "h-9 w-9 rounded-2xl flex items-center justify-center",
                     state === "moving" ? "bg-success/10" : state === "idle" ? "bg-warning/10" : "bg-muted/50"
                   )}>
                     {state === "moving" ? (
@@ -344,12 +344,12 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
           Activity
         </p>
-        <div className="bg-card rounded-none border border-border p-4 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <p className="text-sm font-semibold text-foreground mb-3">
             {period === "day" ? "Today's" : period === "week" ? "Weekly" : "Monthly"} Mileage
           </p>
           {tsLoading || mileageLoading ? (
-            <Skeleton className="h-[120px] rounded-none" />
+            <Skeleton className="h-[120px] rounded-2xl" />
           ) : dailyMileage.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">No trip data for this period</p>
           ) : (
@@ -394,7 +394,7 @@ function CategorySection({ title, items, onItemClick }: {
       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
         {title}
       </p>
-      <div className="bg-card rounded-none border border-border divide-y divide-border overflow-hidden shadow-sm">
+      <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
         {items.map(item => (
           <div
             key={item.label}
@@ -405,7 +405,7 @@ function CategorySection({ title, items, onItemClick }: {
             onClick={() => item.tab && onItemClick?.(item.tab)}
           >
             <div className={cn(
-              "h-9 w-9 rounded-none flex items-center justify-center",
+              "h-9 w-9 rounded-2xl flex items-center justify-center",
               item.positive ? "bg-success/10" : "bg-destructive/10"
             )}>
               <item.icon className={cn("h-4 w-4", item.positive ? "text-success" : "text-destructive")} />

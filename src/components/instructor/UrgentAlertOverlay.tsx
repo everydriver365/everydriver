@@ -27,7 +27,7 @@ export function UrgentAlertOverlay({ alerts, onDismiss }: UrgentAlertOverlayProp
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="w-full max-w-sm bg-background rounded-none shadow-2xl border-2 border-destructive overflow-hidden"
+          className="w-full max-w-sm bg-background rounded-2xl shadow-2xl border-2 border-destructive overflow-hidden"
         >
           {/* Red header band */}
           <div className="bg-destructive px-5 py-4 flex items-center gap-3">

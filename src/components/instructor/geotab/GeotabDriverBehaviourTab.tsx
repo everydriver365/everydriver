@@ -129,8 +129,8 @@ export function GeotabDriverBehaviourTab() {
               {events.slice(0, 50).map(ev => {
                 const Icon = eventIcons[ev.event_type] || Shield;
                 return (
-                  <div key={ev.id} className="flex items-center gap-3 p-2 rounded-none hover:bg-muted/50">
-                    <div className="p-1.5 rounded-none bg-muted">
+                  <div key={ev.id} className="flex items-center gap-3 p-2 rounded-2xl hover:bg-muted/50">
+                    <div className="p-1.5 rounded-2xl bg-muted">
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">

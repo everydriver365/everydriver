@@ -80,11 +80,11 @@ export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
             <img
               src={vehicle.image_url}
               alt={vehicle.registration}
-              className="w-full h-full object-cover rounded-none"
+              className="w-full h-full object-cover rounded-2xl"
             />
           </div>
         ) : (
-          <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center rounded-none">
+          <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center rounded-2xl">
             <Camera className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" />
           </div>
         )}

@@ -133,7 +133,7 @@ export function TrackedLessons({ instructorId, compact = false, limit = 50 }: Tr
             {lessons.map(lesson => (
               <div
                 key={lesson.id}
-                className="flex items-center justify-between p-3 bg-muted/30 rounded-none hover:bg-muted/50 transition-colors cursor-pointer group"
+                className="flex items-center justify-between p-3 bg-muted/30 rounded-2xl hover:bg-muted/50 transition-colors cursor-pointer group"
                 onClick={() => navigate(`/instructor/trip-replay/${lesson.id}`)}
               >
                 <div className="flex-1 min-w-0 space-y-1">

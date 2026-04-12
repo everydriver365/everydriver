@@ -132,7 +132,7 @@ export function WellbeingMoodTracker({ instructorId }: { instructorId: string })
         {MOODS.map((m) => {
           const Icon = m.icon;
           return (
-            <button key={m.score} onClick={() => setSelectedMood(m.score)} className={`flex flex-col items-center gap-1 p-2 rounded-none transition-all ${selectedMood === m.score ? "bg-primary/10 scale-110 ring-2 ring-primary" : "hover:bg-secondary"}`}>
+            <button key={m.score} onClick={() => setSelectedMood(m.score)} className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${selectedMood === m.score ? "bg-primary/10 scale-110 ring-2 ring-primary" : "hover:bg-secondary"}`}>
               <Icon className={`h-8 w-8 ${m.color}`} />
               <span className="text-xs">{m.label}</span>
             </button>

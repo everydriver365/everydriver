@@ -19,12 +19,12 @@ export function RunningCostsTab() {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-3 gap-2">
-          <Skeleton className="h-24 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
+          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="h-24 rounded-2xl" />
         </div>
-        <Skeleton className="h-32 rounded-none" />
-        <Skeleton className="h-48 rounded-none" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
       </div>
     );
   }
@@ -89,17 +89,17 @@ export function RunningCostsTab() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-none bg-muted/50">
+            <div className="p-2 rounded-2xl bg-muted/50">
               <p className="text-[10px] text-muted-foreground">Cost/Mile</p>
               <p className="text-sm font-bold">
                 {summary.costPerMile > 0 ? `${(summary.costPerMile * 100).toFixed(1)}p` : "—"}
               </p>
             </div>
-            <div className="p-2 rounded-none bg-muted/50">
+            <div className="p-2 rounded-2xl bg-muted/50">
               <p className="text-[10px] text-muted-foreground">Vehicle MPG</p>
               <p className="text-sm font-bold">{summary.vehicleMpg}</p>
             </div>
-            <div className="p-2 rounded-none bg-muted/50">
+            <div className="p-2 rounded-2xl bg-muted/50">
               <p className="text-[10px] text-muted-foreground">Fuel Price</p>
               <p className="text-sm font-bold">£{summary.fuelCostPerLitre.toFixed(2)}/L</p>
             </div>
@@ -107,7 +107,7 @@ export function RunningCostsTab() {
 
           {/* Today's stats */}
           {todayStats.todayMiles > 0 && (
-            <div className="flex items-center justify-between p-2 rounded-none bg-primary/5 border border-primary/20">
+            <div className="flex items-center justify-between p-2 rounded-2xl bg-primary/5 border border-primary/20">
               <div className="flex items-center gap-2">
                 <Gauge className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Today</span>
@@ -154,7 +154,7 @@ export function RunningCostsTab() {
               {recentTrips.map(trip => (
                 <div 
                   key={trip.id}
-                  className="flex items-center justify-between p-2 rounded-none border bg-card hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-2 rounded-2xl border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Badge

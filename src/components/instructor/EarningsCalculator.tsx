@@ -385,15 +385,15 @@ export function EarningsCalculator({ instructorId }: EarningsCalculatorProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-none bg-muted/50">
+                    <div className="p-4 rounded-2xl bg-muted/50">
                       <div className="text-sm text-muted-foreground mb-1">Income Tax</div>
                       <div className="text-xl font-bold">{formatCurrency(periodData.estimatedTax)}</div>
                     </div>
-                    <div className="p-4 rounded-none bg-muted/50">
+                    <div className="p-4 rounded-2xl bg-muted/50">
                       <div className="text-sm text-muted-foreground mb-1">National Insurance</div>
                       <div className="text-xl font-bold">{formatCurrency(periodData.estimatedNI)}</div>
                     </div>
-                    <div className="p-4 rounded-none bg-primary/10">
+                    <div className="p-4 rounded-2xl bg-primary/10">
                       <div className="text-sm text-muted-foreground mb-1">Take Home</div>
                       <div className="text-xl font-bold text-primary">
                         {formatCurrency(periodData.netProfit - periodData.estimatedTax - periodData.estimatedNI)}
@@ -402,7 +402,7 @@ export function EarningsCalculator({ instructorId }: EarningsCalculatorProps) {
                   </div>
 
                   {annualProjection && period !== "yearly" && (
-                    <div className="mt-4 p-4 rounded-none bg-muted/30 border">
+                    <div className="mt-4 p-4 rounded-2xl bg-muted/30 border">
                       <div className="flex items-center gap-2 mb-2">
                         <AlertCircle className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">Annual Projection</span>

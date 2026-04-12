@@ -182,14 +182,14 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className={cn("rounded-none shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden", className)}>
+    <div className={cn("rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden", className)}>
       {/* Header — matching Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-3.5 py-3.5 flex items-center gap-3"
       >
         <div className="relative shrink-0">
-          <div className="w-11 h-11 rounded-none overflow-hidden">
+          <div className="w-11 h-11 rounded-2xl overflow-hidden">
             <img src={agendaIcon} alt="Agenda" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
           {totalItems > 0 && (
@@ -215,14 +215,14 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
             <PopoverContent className="w-36 p-1 z-50 bg-card border border-border shadow-lg" align="end" side="bottom">
               <button
                 onClick={() => { setAddMode("task"); setShowInput(true); setIsExpanded(true); }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-none hover:bg-muted transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-2xl hover:bg-muted transition-colors"
               >
                 <Flag className="h-3.5 w-3.5 text-muted-foreground" />
                 Add Task
               </button>
               <button
                 onClick={() => { setAddMode("reminder"); setShowInput(true); setIsExpanded(true); }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-none hover:bg-muted transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-2xl hover:bg-muted transition-colors"
               >
                 <Bell className="h-3.5 w-3.5 text-amber-500" />
                 Add Reminder
@@ -255,11 +255,11 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                 >
                   <div className="px-4 py-3 space-y-2.5 bg-muted/30">
                     {/* Mode toggle */}
-                    <div className="flex gap-1 bg-muted rounded-none p-0.5">
+                    <div className="flex gap-1 bg-muted rounded-2xl p-0.5">
                       <button
                         onClick={() => setAddMode("task")}
                         className={cn(
-                          "flex-1 text-[11px] font-medium py-1.5 rounded-none transition-colors flex items-center justify-center gap-1",
+                          "flex-1 text-[11px] font-medium py-1.5 rounded-2xl transition-colors flex items-center justify-center gap-1",
                           addMode === "task" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                         )}
                       >
@@ -268,7 +268,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                       <button
                         onClick={() => setAddMode("reminder")}
                         className={cn(
-                          "flex-1 text-[11px] font-medium py-1.5 rounded-none transition-colors flex items-center justify-center gap-1",
+                          "flex-1 text-[11px] font-medium py-1.5 rounded-2xl transition-colors flex items-center justify-center gap-1",
                           addMode === "reminder" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                         )}
                       >
@@ -442,7 +442,7 @@ function ManualReminderRow({ todo, onToggle, onDelete }: {
         <p className="text-sm font-medium text-foreground truncate">{todo.title}</p>
         {timeLabel && <p className="text-[11px] text-muted-foreground">{timeLabel}</p>}
       </div>
-      <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-red-500 transition-all shrink-0">
+      <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-2xl hover:bg-muted text-muted-foreground hover:text-red-500 transition-all shrink-0">
         <Trash2 className="h-3.5 w-3.5" />
       </button>
     </div>
@@ -473,7 +473,7 @@ function TodoRow({ todo, isOverdue: overdue, onToggle, onDelete, onUpdate }: {
       <button
         onClick={onToggle}
         className={cn(
-          "h-5 w-5 rounded-none border-2 flex items-center justify-center shrink-0 transition-colors",
+          "h-5 w-5 rounded-2xl border-2 flex items-center justify-center shrink-0 transition-colors",
           overdue
             ? "border-red-400 hover:bg-red-50"
             : todo.priority === 1
@@ -514,10 +514,10 @@ function TodoRow({ todo, isOverdue: overdue, onToggle, onDelete, onUpdate }: {
 
       {/* Actions */}
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-all shrink-0">
-        <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-none hover:bg-muted text-muted-foreground transition-colors">
+        <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-2xl hover:bg-muted text-muted-foreground transition-colors">
           <Pencil className="h-3.5 w-3.5" />
         </button>
-        <button onClick={onDelete} className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-red-500 transition-colors">
+        <button onClick={onDelete} className="p-1.5 rounded-2xl hover:bg-muted text-muted-foreground hover:text-red-500 transition-colors">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>

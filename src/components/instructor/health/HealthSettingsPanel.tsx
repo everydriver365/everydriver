@@ -34,7 +34,7 @@ export function HealthSettingsPanel() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <div className="h-8 w-8 rounded-none bg-gray-100 dark:bg-gray-900/30 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-2xl bg-gray-100 dark:bg-gray-900/30 flex items-center justify-center">
             <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
           Health Settings

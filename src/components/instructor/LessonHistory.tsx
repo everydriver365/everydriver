@@ -294,7 +294,7 @@ export function LessonHistory({
 
       <div className="space-y-2">
         <Label>Skills Practiced</Label>
-        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-none">
+        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-2xl">
           {SKILL_OPTIONS.map((skill) => (
             <Badge
               key={skill}

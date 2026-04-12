@@ -307,7 +307,7 @@ export function ExaminerManager({ instructorId }: ExaminerManagerProps) {
       </div>
 
       {examiners.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground border rounded-none">
+        <div className="text-center py-8 text-muted-foreground border rounded-2xl">
           <User className="h-10 w-10 mx-auto mb-2 opacity-20" />
           <p>No examiners added yet.</p>
           <p className="text-sm">Add examiners to track who conducted each test.</p>

@@ -346,7 +346,7 @@ export function TestCentreAnalytics({ instructorId }: TestCentreAnalyticsProps) 
         <CardContent>
           <Accordion type="multiple" className="space-y-2">
             {centreStats.map((cs) => (
-              <AccordionItem key={cs.centre.id} value={cs.centre.id} className="border rounded-none px-4">
+              <AccordionItem key={cs.centre.id} value={cs.centre.id} className="border rounded-2xl px-4">
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex items-center gap-3">
@@ -395,7 +395,7 @@ export function TestCentreAnalytics({ instructorId }: TestCentreAnalyticsProps) 
 
             {/* Unassigned Examiners */}
             {unassignedExaminers.length > 0 && (
-              <AccordionItem value="unassigned" className="border rounded-none px-4">
+              <AccordionItem value="unassigned" className="border rounded-2xl px-4">
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex items-center gap-3">
@@ -439,7 +439,7 @@ function ExaminerCard({ stats, onViewDetails }: { stats: ExaminerStats; onViewDe
   const hasWarning = stats.avgMinorFaults >= 5 || stats.avgSeriousFaults >= 0.5 || stats.physicalActionRate >= 10 || stats.passRate <= 55;
 
   return (
-    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-none">
+    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-2xl">
       <div className="flex items-center gap-3">
         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
           <User className="h-4 w-4 text-primary" />

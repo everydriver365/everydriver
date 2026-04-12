@@ -334,7 +334,7 @@ export function ContextualHomeHero({
 
                   {/* Stats grid */}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center gap-2 p-2 rounded-none bg-primary/5">
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-primary/5">
                       <BookOpen className="h-4 w-4 text-primary" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">
@@ -345,7 +345,7 @@ export function ContextualHomeHero({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-none bg-primary/5">
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-primary/5">
                       <Clock className="h-4 w-4 text-primary" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">
@@ -354,7 +354,7 @@ export function ContextualHomeHero({
                         <p className="text-[10px] text-muted-foreground">teaching time</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-none bg-emerald-500/5">
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-emerald-500/5">
                       <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">
@@ -364,7 +364,7 @@ export function ContextualHomeHero({
                       </div>
                     </div>
                     {weeklyStats && (
-                      <div className="flex items-center gap-2 p-2 rounded-none bg-violet-500/5">
+                      <div className="flex items-center gap-2 p-2 rounded-2xl bg-violet-500/5">
                         <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                         <div>
                           <p className="text-sm font-semibold text-foreground">
@@ -378,7 +378,7 @@ export function ContextualHomeHero({
 
                   {/* Traffic ETA */}
                   {durationMinutes > 0 && nextLesson && (
-                    <div className="flex items-center gap-2 p-2 rounded-none bg-muted/50">
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/50">
                       <Car className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       <span className="text-xs text-muted-foreground">
                         {durationText} drive to {nextLesson.pupilName.split(" ")[0]}'s pickup
@@ -388,7 +388,7 @@ export function ContextualHomeHero({
 
                   {/* Tomorrow */}
                   {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
-                    <div className="flex items-center gap-2 p-2 rounded-none bg-muted/50">
+                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/50">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">
                         Tomorrow: {tomorrowPreview.lessonCount} lesson
@@ -410,7 +410,7 @@ export function ContextualHomeHero({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className={`mt-2 flex items-center gap-1.5 px-3 py-2 rounded-none text-xs font-medium ${
+          className={`mt-2 flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-medium ${
             alerts[0].severity === "severe"
               ? "bg-destructive/10 text-destructive"
               : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"

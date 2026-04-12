@@ -743,7 +743,7 @@ export function DrivingTestReportForm({
             </div>
 
             {/* Totals + result */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border rounded-none p-4 bg-muted/20">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border rounded-2xl p-4 bg-muted/20">
               <div className="flex items-center gap-3 flex-wrap">
                 <Badge variant="secondary">Minor: {totals.minor}</Badge>
                 <Badge variant={totals.serious ? "destructive" : "outline"}>S: {totals.serious}</Badge>

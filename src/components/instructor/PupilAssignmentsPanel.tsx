@@ -179,11 +179,11 @@ export function PupilAssignmentsPanel({ pupilId, instructorId, pupilName }: Pupi
   const completedCount = assignments.filter(a => a.status === 'completed').length;
 
   return (
-    <div className="bg-muted/30 rounded-none border">
+    <div className="bg-muted/30 rounded-2xl border">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/50 transition-colors rounded-none"
+        className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/50 transition-colors rounded-2xl"
       >
         <div className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4 text-muted-foreground" />
@@ -242,7 +242,7 @@ export function PupilAssignmentsPanel({ pupilId, instructorId, pupilName }: Pupi
                     return (
                       <div
                         key={assignment.id}
-                        className="bg-card rounded-none border p-3 space-y-2"
+                        className="bg-card rounded-2xl border p-3 space-y-2"
                       >
                         {/* Assignment Header */}
                         <div className="flex items-start justify-between gap-2">

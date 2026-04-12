@@ -196,7 +196,7 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
         />
 
         {/* Eyesight Check */}
-        <div className="flex items-center justify-between p-3 rounded-none border">
+        <div className="flex items-center justify-between p-3 rounded-2xl border">
           <div className="flex items-center gap-3">
             <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
             <Label className="text-sm">Eyesight check</Label>
@@ -222,7 +222,7 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
         </div>
 
         {/* Needs Glasses */}
-        <div className="flex items-center justify-between p-3 rounded-none border">
+        <div className="flex items-center justify-between p-3 rounded-2xl border">
           <div className="flex items-center gap-3">
             <Glasses className="h-4 w-4 text-muted-foreground shrink-0" />
             <Label className="text-sm">Needs glasses / contacts</Label>
@@ -318,7 +318,7 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
                   <img
                     src={data.licence_photo_url}
                     alt="Licence front"
-                    className="rounded-none border h-24 w-full object-cover"
+                    className="rounded-2xl border h-24 w-full object-cover"
                   />
                   <Button
                     variant="outline"
@@ -366,7 +366,7 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
                   <img
                     src={data.licence_photo_back_url}
                     alt="Licence back"
-                    className="rounded-none border h-24 w-full object-cover"
+                    className="rounded-2xl border h-24 w-full object-cover"
                   />
                   <Button
                     variant="outline"

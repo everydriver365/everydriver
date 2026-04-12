@@ -276,7 +276,7 @@ export function CarStickerGenerator({
 
         {/* Live Preview */}
         <div
-          className="mx-auto rounded-none border-2 overflow-hidden shadow-lg"
+          className="mx-auto rounded-2xl border-2 overflow-hidden shadow-lg"
           style={{
             width: stickerSize === "a6" ? 210 : 250,
             aspectRatio: stickerSize === "a6" ? "105/148" : "148/210",
@@ -284,7 +284,7 @@ export function CarStickerGenerator({
             padding: 6,
           }}
         >
-          <div className="bg-white rounded-none h-full flex flex-col items-center justify-center text-center px-2 py-1 relative overflow-hidden">
+          <div className="bg-white rounded-2xl h-full flex flex-col items-center justify-center text-center px-2 py-1 relative overflow-hidden">
             {/* Top bar */}
             <div
               className="absolute top-0 left-0 right-0 h-1.5"

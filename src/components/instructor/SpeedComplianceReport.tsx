@@ -222,7 +222,7 @@ const SpeedComplianceReport: React.FC<SpeedComplianceReportProps> = ({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-none">
+      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-2xl">
         <div className="flex-shrink-0">
           {overall.overallPercentage >= 95 ? (
             <CheckCircle className="h-8 w-8 text-green-500" />
@@ -258,7 +258,7 @@ const SpeedComplianceReport: React.FC<SpeedComplianceReportProps> = ({
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-center p-4 bg-muted/30 rounded-none"
+          className="text-center p-4 bg-muted/30 rounded-2xl"
         >
           <div className={`text-4xl font-bold ${getComplianceColor(overall.overallPercentage)}`}>
             {Math.round(overall.overallPercentage)}%
@@ -273,17 +273,17 @@ const SpeedComplianceReport: React.FC<SpeedComplianceReportProps> = ({
 
         {/* Summary Stats */}
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="p-2 bg-muted/50 rounded-none">
+          <div className="p-2 bg-muted/50 rounded-2xl">
             <MapPin className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">{overall.segmentCount}</p>
             <p className="text-[10px] text-muted-foreground uppercase">Roads</p>
           </div>
-          <div className="p-2 bg-muted/50 rounded-none">
+          <div className="p-2 bg-muted/50 rounded-2xl">
             <Clock className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">{formatTime(overall.totalTime)}</p>
             <p className="text-[10px] text-muted-foreground uppercase">Duration</p>
           </div>
-          <div className="p-2 bg-muted/50 rounded-none">
+          <div className="p-2 bg-muted/50 rounded-2xl">
             <TrendingUp className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold">{formatTime(overall.compliantTime)}</p>
             <p className="text-[10px] text-muted-foreground uppercase">Compliant</p>
@@ -296,7 +296,7 @@ const SpeedComplianceReport: React.FC<SpeedComplianceReportProps> = ({
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Areas for Improvement
             </p>
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-none">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-2xl">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{overall.worstSegment.roadName}</p>
@@ -327,7 +327,7 @@ const SpeedComplianceReport: React.FC<SpeedComplianceReportProps> = ({
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-3 p-2 bg-muted/30 rounded-none"
+                  className="flex items-center gap-3 p-2 bg-muted/30 rounded-2xl"
                 >
                   <div className="flex-shrink-0 w-10 h-10 rounded-full border-2 border-destructive bg-white flex items-center justify-center">
                     <span className="text-xs font-bold text-gray-900">{toMph(segment.speedLimit)}</span>

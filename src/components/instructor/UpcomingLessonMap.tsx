@@ -160,7 +160,7 @@ export function UpcomingLessonMap({ instructorId }: UpcomingLessonMapProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center bg-muted rounded-none h-44">
+      <div className="flex items-center justify-center bg-muted rounded-2xl h-44">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -177,7 +177,7 @@ export function UpcomingLessonMap({ instructorId }: UpcomingLessonMapProps) {
   const lessonTimeLabel = formatTime(lesson.start_time);
 
   return (
-    <div className="relative rounded-none overflow-hidden border shadow-sm">
+    <div className="relative rounded-2xl overflow-hidden border shadow-sm">
       {/* Map */}
       <div className="relative z-0" style={{ height: "180px" }}>
         <MapContainer
@@ -214,7 +214,7 @@ export function UpcomingLessonMap({ instructorId }: UpcomingLessonMapProps) {
       </div>
 
       {/* Overlay with lesson info */}
-      <div className="absolute top-3 left-3 z-10 bg-card/95 backdrop-blur-sm rounded-none px-3 py-2 shadow-lg border">
+      <div className="absolute top-3 left-3 z-10 bg-card/95 backdrop-blur-sm rounded-2xl px-3 py-2 shadow-lg border">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-sm">
             {initials}

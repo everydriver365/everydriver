@@ -66,7 +66,7 @@ export function GPSgateSetupGuide({ onComplete }: GPSgateSetupGuideProps) {
           <p className="text-sm text-muted-foreground">
             Open the app and enter these server details:
           </p>
-          <div className="bg-muted rounded-none p-3 space-y-2 font-mono text-sm">
+          <div className="bg-muted rounded-2xl p-3 space-y-2 font-mono text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Server:</span>
               <Badge variant="secondary" className="font-mono">

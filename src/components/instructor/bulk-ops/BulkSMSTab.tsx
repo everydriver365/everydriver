@@ -141,7 +141,7 @@ export function BulkSMSTab({ instructorId }: BulkSMSTabProps) {
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
           ) : (
-            <div className="border rounded-none max-h-48 overflow-y-auto">
+            <div className="border rounded-2xl max-h-48 overflow-y-auto">
               <div className="flex justify-between p-2 border-b">
                 <span className="text-xs text-muted-foreground">{selectedPupils.length}/{filteredPupils.length} selected</span>
                 <div className="flex gap-2">

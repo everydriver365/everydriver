@@ -30,10 +30,10 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + index * 0.05 }}
-            className="bg-card rounded-none border p-4 hover:bg-muted/50 transition-colors h-full"
+            className="bg-card rounded-2xl border p-4 hover:bg-muted/50 transition-colors h-full"
           >
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-none bg-primary/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Icon className={`h-5 w-5 ${action.iconColor}`} />
               </div>
               <div className="flex-1">

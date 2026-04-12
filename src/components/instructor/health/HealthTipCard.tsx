@@ -59,7 +59,7 @@ export function HealthTipCard({ tip, variant = "default" }: HealthTipCardProps) 
           <div className="flex items-start gap-4">
             <div
               className={cn(
-                "h-12 w-12 rounded-none flex items-center justify-center flex-shrink-0",
+                "h-12 w-12 rounded-2xl flex items-center justify-center flex-shrink-0",
                 colors.bg
               )}
             >
@@ -91,7 +91,7 @@ export function HealthTipCard({ tip, variant = "default" }: HealthTipCardProps) 
         <div className="flex items-start gap-3">
           <div
             className={cn(
-              "h-10 w-10 rounded-none flex items-center justify-center flex-shrink-0",
+              "h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0",
               colors.bg
             )}
           >

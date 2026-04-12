@@ -110,7 +110,7 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
             transition={{ delay: 0.1 + index * 0.05 }}
             whileTap={{ scale: 0.95 }}
             className={cn(
-              "relative overflow-hidden rounded-none p-3.5",
+              "relative overflow-hidden rounded-2xl p-3.5",
               "bg-card border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)]",
               "active:shadow-md transition-shadow",
               isLarge && "col-span-2 row-span-1"

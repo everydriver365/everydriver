@@ -329,7 +329,7 @@ export const EventReviewPanel: React.FC<EventReviewPanelProps> = ({
 
           {/* Summary */}
           {negativeActiveCount > 0 && filter !== 'dismissed' && (
-            <div className="bg-accent border border-border rounded-none p-3 text-sm">
+            <div className="bg-accent border border-border rounded-2xl p-3 text-sm">
               <p className="text-foreground">
                 <strong>{negativeActiveCount}</strong> negative events detected. 
                 Review and dismiss any false positives caused by GPS errors or sensor glitches.
@@ -349,7 +349,7 @@ export const EventReviewPanel: React.FC<EventReviewPanelProps> = ({
                 filteredEvents.map(event => (
                   <div
                     key={event.id}
-                    className={`p-3 rounded-none border transition-all ${
+                    className={`p-3 rounded-2xl border transition-all ${
                       event.is_dismissed 
                         ? 'bg-muted/50 border-muted opacity-75' 
                         : isPositiveEvent(event.event_type)
@@ -464,7 +464,7 @@ export const EventReviewPanel: React.FC<EventReviewPanelProps> = ({
           
           {selectedEvent && (
             <div className="space-y-4">
-              <div className="bg-muted p-3 rounded-none">
+              <div className="bg-muted p-3 rounded-2xl">
                 <div className="flex items-center gap-2">
                   {getEventIcon(selectedEvent.event_type)}
                   <span className="font-medium">{getEventLabel(selectedEvent.event_type)}</span>

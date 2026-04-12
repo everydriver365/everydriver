@@ -421,7 +421,7 @@ export function DesktopPupilDetailPanel({
       >
         {/* ─── LEFT: Timeline (1/3) ─── */}
         <div className="col-span-1">
-          <div className="bg-card border border-border rounded-none overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="p-3 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <History className="h-4 w-4 text-primary" />
@@ -446,7 +446,7 @@ export function DesktopPupilDetailPanel({
                         <p className="text-[10px] text-muted-foreground font-medium mb-0.5">
                           {event.type === 'warning' ? event.subtitle : format(new Date(event.date), 'EEE, d MMM')}
                         </p>
-                        <div className="bg-muted/30 rounded-none p-2.5">
+                        <div className="bg-muted/30 rounded-2xl p-2.5">
                           <p className="text-sm font-medium line-clamp-2">{event.title}</p>
                           {event.subtitle && event.type !== 'warning' && (
                             <p className="text-xs text-muted-foreground">{event.subtitle}</p>
@@ -465,7 +465,7 @@ export function DesktopPupilDetailPanel({
         {/* ─── RIGHT: Dashboard Cards (2/3) ─── */}
         <div className="col-span-2 space-y-3">
           {/* Header with actions */}
-          <div className="bg-card border border-border rounded-none p-4">
+          <div className="bg-card border border-border rounded-2xl p-4">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-14 w-14 ring-2 ring-primary ring-offset-2">
@@ -642,7 +642,7 @@ export function DesktopPupilDetailPanel({
           </div>
 
           {/* Collapsible detail sections */}
-          <div className="bg-card border border-border rounded-none overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <CollapsibleSection title="Payments" icon={<PoundSterling className="h-4 w-4" />}
               open={expandedSection === "payments"} onToggle={() => toggle("payments")}
               badge={hasDebt ? <Badge variant="destructive" className="text-[10px]">£{Math.abs(pupil.account_balance || 0)} owed</Badge> : undefined}
@@ -755,7 +755,7 @@ export function DesktopPupilDetailPanel({
           </div>
 
           {/* Footer actions */}
-          <div className="bg-card border border-border rounded-none p-4">
+          <div className="bg-card border border-border rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => onViewHistory(pupil)}>
@@ -782,7 +782,7 @@ export function DesktopPupilDetailPanel({
                 </Button>
               </div>
             </div>
-            <div className="bg-muted/30 rounded-none p-3 mt-3">
+            <div className="bg-muted/30 rounded-2xl p-3 mt-3">
               <InlineEditField
                 value={pupil.notes || ""}
                 onSave={(v) => saveField("notes", v || null)}
@@ -806,7 +806,7 @@ export function DesktopPupilDetailPanel({
       <PaymentQRModal open={showQRModal} onOpenChange={setShowQRModal} paymentQrUrl={paymentQrUrl}
         commissionPayer={commissionPayer} instructorName={instructorName} />
       <Sheet open={showSyllabusSheet} onOpenChange={setShowSyllabusSheet}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-none overflow-y-auto">
+        <SheetContent side="bottom" className="h-[85vh] rounded-2xl overflow-y-auto">
           <SheetHeader className="pb-4"><SheetTitle>Driving Syllabus - {pupil.name}</SheetTitle></SheetHeader>
           <DrivingSyllabus pupilId={pupil.id} pupilName={pupil.name} onClose={() => setShowSyllabusSheet(false)} />
         </SheetContent>

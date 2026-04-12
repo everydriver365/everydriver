@@ -111,12 +111,12 @@ export function SavedRoutePreview({ telematicsId, onNavigateToStart }: SavedRout
   };
 
   if (loading) {
-    return <div className="h-32 bg-muted animate-pulse rounded-none" />;
+    return <div className="h-32 bg-muted animate-pulse rounded-2xl" />;
   }
 
   if (gpsPoints.length < 2) {
     return (
-      <div className="h-32 bg-muted/50 rounded-none flex items-center justify-center text-sm text-muted-foreground">
+      <div className="h-32 bg-muted/50 rounded-2xl flex items-center justify-center text-sm text-muted-foreground">
         No GPS data available
       </div>
     );
@@ -124,7 +124,7 @@ export function SavedRoutePreview({ telematicsId, onNavigateToStart }: SavedRout
 
   return (
     <div className="space-y-2">
-      <div ref={mapContainerRef} className="h-32 rounded-none overflow-hidden" />
+      <div ref={mapContainerRef} className="h-32 rounded-2xl overflow-hidden" />
       <Button
         variant="outline"
         size="sm"

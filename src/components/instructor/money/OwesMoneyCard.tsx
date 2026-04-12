@@ -95,12 +95,12 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLin
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
-      className="bg-card rounded-none border border-rose-200 dark:border-rose-900/50"
+      className="bg-card rounded-2xl border border-rose-200 dark:border-rose-900/50"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-rose-100 dark:border-rose-900/30">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-none bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
             <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
           </div>
           <div>

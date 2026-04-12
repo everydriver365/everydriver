@@ -221,7 +221,7 @@ export function BulkSMSDialog({ instructorId, trigger }: BulkSMSDialogProps) {
                 No pupils with phone numbers found
               </p>
             ) : (
-              <div className="border rounded-none max-h-48 overflow-y-auto">
+              <div className="border rounded-2xl max-h-48 overflow-y-auto">
                 {pupils.map((pupil) => (
                   <div
                     key={pupil.id}

@@ -126,7 +126,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {/* Live speed panel */}
         {isOnline && speedKmh !== null && (
           <div className={cn(
-            "p-3 rounded-none border",
+            "p-3 rounded-2xl border",
             isSpeeding ? "bg-destructive/10 border-destructive/30" : "bg-muted/50 border-border"
           )}>
             <div className="flex items-center justify-between">
@@ -188,7 +188,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
             )}
           </div>
 
-          <div className="flex items-center justify-center gap-2 p-2 rounded-none bg-muted/50">
+          <div className="flex items-center justify-center gap-2 p-2 rounded-2xl bg-muted/50">
             <Key className={cn(
               "h-4 w-4",
               isIgnitionOn ? "text-primary" : "text-muted-foreground"
@@ -206,7 +206,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {(fuelPercent != null || batteryVoltage != null || coolantTemp != null) && (
           <div className="grid grid-cols-3 gap-2">
             {fuelPercent != null && (
-              <div className="p-2 rounded-none bg-muted/50 space-y-1">
+              <div className="p-2 rounded-2xl bg-muted/50 space-y-1">
                 <div className="flex items-center gap-1 text-xs">
                   <Fuel className={cn("h-3.5 w-3.5", getFuelColor(fuelPercent))} />
                   <span className="text-muted-foreground">Fuel</span>
@@ -226,7 +226,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
               </div>
             )}
             {batteryVoltage != null && (
-              <div className="p-2 rounded-none bg-muted/50">
+              <div className="p-2 rounded-2xl bg-muted/50">
                 <div className="flex items-center gap-1 text-xs">
                   <Zap className={cn("h-3.5 w-3.5", getVoltageColor(batteryVoltage))} />
                   <span className="text-muted-foreground">12V</span>
@@ -240,7 +240,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
               </div>
             )}
             {coolantTemp != null && (
-              <div className="p-2 rounded-none bg-muted/50">
+              <div className="p-2 rounded-2xl bg-muted/50">
                 <div className="flex items-center gap-1 text-xs">
                   <Thermometer className={cn("h-3.5 w-3.5", getCoolantColor(coolantTemp))} />
                   <span className="text-muted-foreground">Coolant</span>
@@ -260,7 +260,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
         {(odometerMiles !== null || engineHoursFormatted !== null) && (
           <div className="grid grid-cols-2 gap-2 text-xs">
             {odometerMiles !== null && (
-              <div className="flex items-center gap-1.5 p-2 rounded-none bg-muted/50">
+              <div className="flex items-center gap-1.5 p-2 rounded-2xl bg-muted/50">
                 <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
                 <div>
                   <span className="font-medium">{odometerMiles.toLocaleString()} mi</span>
@@ -271,7 +271,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
               </div>
             )}
             {engineHoursFormatted !== null && (
-              <div className="flex items-center gap-1.5 p-2 rounded-none bg-muted/50">
+              <div className="flex items-center gap-1.5 p-2 rounded-2xl bg-muted/50">
                 <Timer className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="font-medium">{engineHoursFormatted}</span>
               </div>
@@ -281,7 +281,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
 
         {/* Tire Pressure */}
         {device.last_tire_pressure_json && Object.keys(device.last_tire_pressure_json).length > 0 && (
-          <div className="p-2 rounded-none bg-muted/50 text-xs">
+          <div className="p-2 rounded-2xl bg-muted/50 text-xs">
             <p className="font-medium text-muted-foreground mb-1">Tire Pressure (PSI)</p>
             <div className="grid grid-cols-2 gap-1">
               {device.last_tire_pressure_json.frontLeft != null && (
@@ -302,7 +302,7 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
 
         {/* Active Fault Codes */}
         {hasFaults && (
-          <div className="p-2 rounded-none bg-destructive/5 border border-destructive/20 space-y-1.5">
+          <div className="p-2 rounded-2xl bg-destructive/5 border border-destructive/20 space-y-1.5">
             <div className="flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4 text-destructive" />
               <span className="text-xs font-medium text-destructive">

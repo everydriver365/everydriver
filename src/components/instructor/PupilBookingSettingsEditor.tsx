@@ -111,7 +111,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
 
       {/* Self-Booking */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between rounded-none border p-4">
+        <div className="flex items-center justify-between rounded-2xl border p-4">
           <div className="flex items-center gap-3">
             <Calendar className="h-5 w-5 text-primary" />
             <div>
@@ -127,7 +127,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
 
         {current.allow_self_booking && (
           <div className="ml-4 pl-4 border-l-2 space-y-4">
-            <div className="flex items-center justify-between rounded-none border p-4">
+            <div className="flex items-center justify-between rounded-2xl border p-4">
               <div>
                 <Label>Require Approval</Label>
                 <p className="text-xs text-muted-foreground">You'll need to confirm each booking</p>
@@ -178,7 +178,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
       </div>
 
       {/* Self-Cancel */}
-      <div className="flex items-center justify-between rounded-none border p-4">
+      <div className="flex items-center justify-between rounded-2xl border p-4">
         <div className="flex items-center gap-3">
           <X className="h-5 w-5 text-destructive" />
           <div>
@@ -210,7 +210,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
       )}
 
       {/* Self-Reschedule */}
-      <div className="flex items-center justify-between rounded-none border p-4">
+      <div className="flex items-center justify-between rounded-2xl border p-4">
         <div className="flex items-center gap-3">
           <RefreshCw className="h-5 w-5 text-blue-500" />
           <div>
@@ -242,7 +242,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
       )}
 
       {/* Extra Hours */}
-      <div className="flex items-center justify-between rounded-none border p-4">
+      <div className="flex items-center justify-between rounded-2xl border p-4">
         <div className="flex items-center gap-3">
           <ShoppingCart className="h-5 w-5 text-green-500" />
           <div>
