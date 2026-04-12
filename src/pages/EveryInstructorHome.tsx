@@ -237,7 +237,7 @@ export default function EveryInstructorHome() {
     <EveryInstructorLayout showHeader={false}>
       {/* ── Tall Hero (LBC-style) ─────────────── */}
       <div className="relative">
-        <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 1.15" }}>
+        <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 0.575" }}>
           <img
             src={heroImage}
             alt="Every Instructor"
