@@ -27,7 +27,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import heroImage from "@/assets/every-instructor-hero.jpg";
+import heroImage from "@/assets/every-instructor-hero.webp";
 
 /* ── Section with bold LBC-style header ────────────── */
 function Section({
