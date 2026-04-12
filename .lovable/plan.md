@@ -1,63 +1,32 @@
 
-What’s happening
 
-- This has been so difficult because the problem is not really in the tile components themselves.
-- The real blocker is a global CSS override in `src/index.css` that flattens corners across the instructor app.
+## Fix: Hero image obscured by header's navy gradient fade
 
-I found the root cause:
+### Root cause
+
+In `InstructorMobileHeader.tsx` (lines 170-176), there's a "graduated fade" div that bleeds 48px below the header:
 
 ```css
-.instructor-portal .bg-card:not(.rounded-full),
-.instructor-portal [class*="shadow-sm"]:not(.rounded-full),
-.instructor-portal [class*="shadow-md"]:not(.rounded-full),
-.instructor-portal [class*="overflow-hidden"]:not(img):not(video):not(.rounded-full):not(.hero-banner-no-top-radius) {
-  border-radius: 0 !important;
-}
+background: linear-gradient(to bottom, 
+  hsl(var(--primary)) 0%,        /* solid navy */
+  hsl(var(--primary) / 0.4) 40%, /* 40% navy */
+  transparent 100%
+)
 ```
 
-Why this breaks repeated fixes
+This sits at `z-40` and paints a heavy navy overlay directly on top of the hero image area. The hero image loads but is immediately covered by this gradient.
 
-- `NextUpTile` already has `rounded-2xl` and `overflow-hidden`.
-- `TelematicsTile` already has `overflow-hidden`, and it was even changed to inline `borderRadius: 16`.
-- But both still match the global `.instructor-portal [class*="overflow-hidden"]` selector.
-- Because that rule uses `border-radius: 0 !important`, it overrides both Tailwind rounding and normal inline `style={{ borderRadius: 16 }}`.
+### Fix
 
-So the reason this became a 10-attempt issue is:
+1. **Remove the graduated fade div** from `InstructorMobileHeader.tsx` (lines 170-176). The hero already has its own subtle gradient for text readability (`from-black/30 via-transparent to-black/20`), so this extra overlay is redundant and destructive.
 
-- the fixes were being made locally,
-- but the bug lives globally,
-- and the global rule keeps canceling every local rounding change.
+2. **Alternative (if some blending is desired)**: Reduce the fade to a much lighter, shorter overlay — e.g. `h-6` with `hsl(var(--primary) / 0.15)` max opacity — so the hero image remains clearly visible.
 
-Why the screenshots look exactly like this bug
+### Files changed
 
-- The outer tile shells are square.
-- Small pills and badges are still rounded.
-- That matches the CSS, because `.rounded-full` is explicitly exempted, while the tile containers are not.
+| File | Change |
+|------|--------|
+| `src/components/instructor/InstructorMobileHeader.tsx` | Remove lines 170-176 (the graduated fade div) |
 
-Plan to fix it
+No other files need changes. The hero image and its own overlay in `HomepageHero.tsx` are correct — they just need to not be covered by the header's fade.
 
-1. Update `src/index.css` to remove or significantly narrow the instructor-wide square-corner reset.
-2. Keep square corners only for elements that actually need them, using targeted opt-in classes instead of blanket selectors.
-3. Leave `rounded-2xl`/`overflow-hidden` on the tile components themselves so the intended design works normally.
-4. Re-check the instructor home variants where `NextUpTile` appears, so the same fix applies everywhere and doesn’t only solve one screen.
-5. Verify the affected tiles after the global CSS change, because this is a cascade/specificity issue, not a rebuild issue.
-
-Technical details
-
-- Root cause file:
-  - `src/index.css` around lines 353–359
-- Wrapper that activates the override:
-  - `src/components/layout/InstructorPortalLayout.tsx`
-- Directly affected components:
-  - `src/components/instructor/NextUpTile.tsx`
-  - `src/components/instructor/TelematicsTile.tsx`
-- Places to audit after fixing the global CSS:
-  - `src/components/instructor/InstructorMobileHome.tsx`
-  - `src/components/instructor/CompactHomeView.tsx`
-  - `src/components/instructor/CleanHomeView.tsx`
-  - `src/components/instructor/BestMateHomeView.tsx`
-
-Expected outcome
-
-- Once the global `!important` reset is removed/narrowed, the tiles should finally render rounded consistently.
-- After that, future rounding changes will be simple again, because component-level `rounded-2xl` will no longer be fighting a hidden global override.
