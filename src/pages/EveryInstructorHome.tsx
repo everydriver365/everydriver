@@ -72,6 +72,7 @@ function ImageCard({
   onClick,
   badge,
   imageUrl,
+  compact,
 }: {
   title: string;
   subtitle?: string;
@@ -80,7 +81,39 @@ function ImageCard({
   onClick: () => void;
   badge?: number;
   imageUrl?: string;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <motion.div
+        whileTap={{ scale: 0.96 }}
+        onClick={onClick}
+        className="aspect-square rounded-2xl p-2 text-center cursor-pointer flex flex-col items-center justify-center gap-1.5 bg-white"
+        style={{
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
+        }}
+      >
+        <div className="relative">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: accent }}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          {badge !== undefined && badge > 0 && (
+            <span
+              className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
+              style={{ backgroundColor: accent }}
+            >
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] font-semibold text-gray-600 leading-tight">{title}</p>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
