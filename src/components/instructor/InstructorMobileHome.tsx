@@ -440,7 +440,7 @@ export function InstructorMobileHome({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg"
+            className="fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
           >
             <div className="flex items-center gap-2 min-w-0">
               <Timer className="h-3.5 w-3.5 shrink-0" />
