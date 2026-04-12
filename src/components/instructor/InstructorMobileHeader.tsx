@@ -167,13 +167,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           </div>
         </div>
       </div>
-      {/* Graduated fade below header */}
-      <div
-        className="h-12 -mb-12 pointer-events-none relative z-40"
-        style={{
-          background: 'linear-gradient(to bottom, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.4) 40%, transparent 100%)'
-        }}
-      />
       <TakePaymentModal
         open={paymentModalOpen}
         onOpenChange={setPaymentModalOpen}
