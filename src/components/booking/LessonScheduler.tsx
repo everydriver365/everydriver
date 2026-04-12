@@ -617,7 +617,7 @@ export function LessonScheduler({
                 "p-1 pointer-events-auto",
                 "[&_table]:w-full",
                 "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
-                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
+                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-2xl",
                 "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
                 "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
               )}
@@ -764,7 +764,7 @@ export function LessonScheduler({
                 "p-1 pointer-events-auto",
                 "[&_table]:w-full",
                 "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
-                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
+                "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-2xl",
                 "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
                 "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
               )}
