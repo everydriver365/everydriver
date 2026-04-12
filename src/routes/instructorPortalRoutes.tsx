@@ -106,6 +106,7 @@ const OutstandingTasksPage = lazy(() => import("@/pages/instructor/OutstandingTa
 const EndOfDayPage = lazy(() => import("@/pages/instructor/EndOfDayPage"));
 const WaitingRoomPage = lazy(() => import("@/pages/instructor-app/WaitingRoomPage"));
 const InstructorHomeDesigns = lazy(() => import("@/pages/InstructorHomeDesigns"));
+const NextUpTileRedesigns = lazy(() => import("@/pages/demo/DemoNextUpRedesigns"));
 
 // School
 const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
