@@ -1,12 +1,15 @@
 
 
-## Plan: Remove rounded corners from Next Up tile
+## Plan: Add rounded corners back to the Next Up tile
 
-The outer container at line 181 has `rounded-2xl`. Change it to remove rounding, matching the reference screenshot which shows sharp corners.
+The "Next Up" tile (the main tile under the "Your Day" section) currently has no border-radius after a previous change removed it. You want it rounded to match the rest of the app.
 
 ### Changes
 
-**`src/components/instructor/NextUpTile.tsx`** (line 181)
-- Remove `rounded-2xl` from the outer container className
-- Also remove `rounded-sm` from the accent bar (line 192) and inner div (line 194) for consistency
+**`src/components/instructor/NextUpTile.tsx`**
+- Line 181: Add `rounded-2xl` to the outer container className
+- Line 192: Add `rounded-sm` to the accent bar for smooth top corners
+- Line 194: Add `rounded-sm` to the inner content div
+
+This restores the consistent `rounded-2xl` design language used across all other tiles.
 
