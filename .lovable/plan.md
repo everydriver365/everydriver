@@ -1,80 +1,64 @@
 
 
-## Scaling to 4,000 Users: Security Hardening and Reliability Plan
+## Plan: "Every Instructor" Mobile Portal — LBC-Style Design
 
-The security scan reveals **critical vulnerabilities** that must be fixed before onboarding more users. Here is everything needed, in priority order.
+### What We're Building
+A new mobile portal at `/every-instructor/*` that mirrors all current instructor portal functionality but restyled to match the LBC app design: bold hero image at top, horizontally scrollable card sections with section headers ("More" links), and a clean bottom tab bar with icons and labels.
 
----
+### Design Reference (from LBC screenshot)
+- **Header**: Minimal top bar with title text + utility icons (search, settings, analytics)
+- **Hero**: Full-width, tall featured image/card with overlaid text
+- **Content sections**: Bold section titles with "More" link, horizontally scrollable card rows
+- **Cards**: Rounded corners, image-heavy with text labels below
+- **Bottom nav**: 5 tabs with icons + labels, highlighted active tab in blue
+- **Background**: Pure white, clean and minimal
 
-### PHASE 1: Critical Security Fixes (must do first)
+### Implementation Approach
 
-These are active data breaches -- real user data is exposed right now.
+**1. Create the Every Instructor layout component**
+`src/components/layout/EveryInstructorLayout.tsx`
+- White background, minimal header with "Every Instructor" title + search/settings/notifications icons
+- Bottom nav with 5 tabs: Home, Schedule, Track, Money, More (matching current nav items)
+- Wraps child pages identical to `InstructorPortalLayout` but with the new styling
 
-**1. Pupil personal data publicly readable**
-The `pupils` table has an anonymous SELECT policy (`Anon can select pupil by id` with `USING (true)`), exposing names, emails, phones, addresses, medical notes, emergency contacts, and DVLA details to anyone on the internet. Fix: remove this policy and scope access to authenticated instructors only.
+**2. Create the Every Instructor home page**
+`src/pages/EveryInstructorHome.tsx`
+- **Hero section**: Full-width image card (instructor's hero image or default) with overlaid greeting text and diagonal accent banner (like LBC's "EXCLUSIVE EPISODES" banner)
+- **Scrollable sections** with bold titles + "More" links:
+  - "Today's Schedule" — horizontal scroll of lesson cards (pupil photo, name, time)
+  - "Quick Actions" — horizontal scroll of action tiles (Job Offers, Messages, Tests, Fill Gaps)
+  - "Your Business" — horizontal scroll of stat cards (Revenue, Expenses, Pupils)
+  - "Insights" — horizontal scroll of insight cards (Streak, Weekly Goals, Tomorrow Preview)
+  - "Vehicle & Tracking" — telematics and GPS cards
+- Each card: rounded-xl, image or icon at top, label + subtitle below
+- Uses all existing hooks (useTodayOverview, useNextLessonDetails, etc.)
 
-**2. Instructor OAuth tokens leaked**
-The `instructors` table's public policy exposes Square payment tokens in plaintext alongside personal details. Fix: create a public view with only safe fields (name, bio, image, area) and restrict the full table to authenticated owners.
+**3. Create route configuration**
+`src/routes/everyInstructorRoutes.tsx`
+- `/every-instructor` → Home
+- All sub-routes (`/every-instructor/schedule`, `/every-instructor/pupils`, etc.) reuse existing page components but wrapped in the new layout
 
-**3. Leftover debug policies (`temp_rork_*`)**
-18+ tables have `temp_rork_anon_read` and `temp_rork_anon_update` policies granting anonymous access to one instructor's data (including GPS, payments, lessons). Fix: drop all `temp_rork_*` policies immediately.
+**4. Bottom Navigation**
+`src/components/instructor/EveryInstructorBottomNav.tsx`
+- 5 tabs: News-style icons matching LBC (Home, Schedule, Track, Money, More)
+- Active tab highlighted in brand blue with filled icon
+- Clean white background with subtle top border
 
-**4. WhatsApp, parent, and live chat data publicly writable**
-`whatsapp_conversations`, `parent_conversations`, `parent_messages`, `live_chat_sessions`, and `live_chat_messages` all have `USING (true)` policies allowing anonymous read/write. Fix: scope to owning instructor.
+### Files to Create/Edit
+| File | Action |
+|---|---|
+| `src/components/layout/EveryInstructorLayout.tsx` | Create — new layout shell |
+| `src/components/instructor/EveryInstructorBottomNav.tsx` | Create — LBC-style bottom nav |
+| `src/pages/EveryInstructorHome.tsx` | Create — LBC-style homepage |
+| `src/routes/everyInstructorRoutes.tsx` | Create — route definitions |
+| `src/App.tsx` | Edit — add route import |
 
-**5. Broken RLS policies (wrong ID comparison)**
-Multiple tables compare `instructor_id = auth.uid()` but `instructor_id` references `instructors.id`, not the auth UUID. These policies silently fail, denying legitimate access or allowing unauthorized access. Fix: use `get_instructor_id_for_user(auth.uid())`.
-
-**6. Expense receipts open to anonymous upload/delete**
-The `expense-receipts` storage bucket lets anyone upload, overwrite, or delete financial documents. Fix: add folder-based ownership checks.
-
----
-
-### PHASE 2: Webhook Security and Payment Integrity
-
-**7. Webhook signature verification**
-`square-webhook` and `gocardless-webhook` accept any POST without HMAC verification. Anyone can spoof a payment event and credit balances. Fix: add signature verification using `SQUARE_WEBHOOK_SIGNATURE_KEY` and `GOCARDLESS_WEBHOOK_SECRET`.
-
-**8. Payment minimum amount validation**
-No minimum payment check exists. Fix: enforce minimum of 50p across all payment edge functions.
-
-**9. Webhook idempotency**
-No duplicate payment ID checks. Fix: add `payment_id` uniqueness checks to prevent double-crediting.
-
----
-
-### PHASE 3: Auth Hardening
-
-**10. Enable leaked password protection (HIBP)**
-Currently disabled. Fix: enable via auth configuration so compromised passwords are rejected at signup.
-
-**11. Realtime channel authorization**
-No RLS on `realtime.messages` -- any authenticated user can subscribe to admin channels. Fix: add channel-scoped RLS policies.
-
----
-
-### PHASE 4: Infrastructure for 4,000 Users
-
-**12. Upgrade Lovable Cloud instance**
-267 tables with 4,000 concurrent users will need a larger compute instance. Go to Cloud > Overview > Advanced settings and select a larger instance size.
-
-**13. Add database indexes**
-High-traffic queries (pupils by instructor, lessons by date, GPS points by session) need composite indexes for sub-100ms response times at scale.
-
-**14. Native deployment (Despia/Capacitor)**
-For reliable live tracking on mobile, wrap the app in a native shell as discussed previously.
-
----
-
-### Execution Approach
-
-Due to the volume of RLS policy changes (~30+ policies across ~25 tables), this will be done in batches:
-- **Batch 1**: Drop `temp_rork_*` policies and fix anonymous data exposure (pupils, instructors, WhatsApp, parent, live chat)
-- **Batch 2**: Fix broken `auth.uid()` comparisons and storage bucket policies
-- **Batch 3**: Add webhook signature verification and payment guardrails
-- **Batch 4**: Enable HIBP, add Realtime RLS, add performance indexes
-
-Each batch is a database migration. The app will continue working throughout -- we are tightening access, not changing schema.
-
-Shall I proceed?
+### Key Styling Details
+- Background: `#FFFFFF` (pure white like LBC)
+- Section headers: Bold, large text (text-2xl font-bold) with blue "More" link
+- Cards: `rounded-2xl`, subtle shadow, image-first design
+- Hero: Aspect ratio ~16:9, full-bleed, diagonal accent banner
+- Bottom nav: White bg, active = blue icon + label, inactive = gray
+- Horizontal scrolling: `overflow-x-auto flex gap-4 snap-x` with peek of next card
+- All existing data hooks, auth context, and business logic reused as-is
 
