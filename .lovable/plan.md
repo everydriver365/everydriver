@@ -1,23 +1,28 @@
 
 
-## Make all instructor tiles consistently rounded
+## Investigation: Why NextUpTile and TelematicsTile appear not rounded
 
-Several tiles in the instructor mobile app are missing `rounded-2xl`, causing them to appear with sharp/square corners instead of the standard 16px border radius.
+### Findings
 
-### Tiles to fix
+Both components **already have `rounded-2xl`** in their code:
+- **NextUpTile.tsx** (line 181): `className="w-full overflow-hidden rounded-2xl ..."`
+- **TelematicsTile.tsx** (line 47): `className="rounded-2xl overflow-hidden"`
 
-| File | Element | Current | Fix |
-|------|---------|---------|-----|
-| `EarningsSummaryStrip.tsx` (line 18) | Inner container | No rounding | Add `rounded-2xl` |
-| `TodoHomeTile.tsx` (line 93) | Outer wrapper | No rounding | Add `rounded-2xl` |
-| `QuickStatsChips.tsx` (line 104) | Chip buttons | No rounding | Add `rounded-full` (pill shape, consistent with chip pattern) |
-| `TodoHomeTile.tsx` (line 100) | Badge span | No rounding | Add `rounded-full` |
+Both also have `overflow-hidden` which should properly clip child content (like the dark navy header band in NextUpTile) to the rounded shape.
 
-### What stays the same
-- `NextUpTile.tsx` — already has `rounded-2xl`
-- `ActivityTilesGrid`, `InsightTilesGrid`, `ReadyToTeachTile`, `BottomPromoGroup`, `PupilCardStack` — already rounded
-- `TodayLessonsList.tsx` — uses inline `borderRadius: 16` (equivalent)
+### Possible causes for them appearing square
 
-### Implementation
-Add the missing `rounded-2xl` (or `rounded-full` for pill-shaped chips/badges) class to the four elements listed above. No structural changes needed.
+1. **NextUpTile's dark header band**: The gradient header fills edge-to-edge inside the card. Combined with `overflow-hidden` and `rounded-2xl`, the top corners should be clipped — but if there's any rendering quirk or if `overflow-hidden` isn't applying correctly, the dark header could make the top corners look sharp.
+
+2. **Build not reflecting latest changes**: You mentioned being on the `/index` route (the public landing page). If you're viewing the **preview** rather than navigating to `/instructor/home`, you won't see the instructor tiles at all. Make sure you're at the instructor home screen.
+
+3. **No actual code issue exists**: Since both tiles correctly have `rounded-2xl` and `overflow-hidden`, the tiles should render rounded. This may be a caching/build issue.
+
+### Plan
+
+1. **Verify visually using the browser** — Navigate to the instructor home in the preview to confirm whether tiles actually appear square or rounded.
+2. **If they do appear square**, investigate whether a parent element or global style is overriding the border-radius and fix it.
+3. **If they appear correctly rounded**, confirm to you that no code change is needed and help you navigate to the right screen.
+
+### No code changes needed unless the browser check reveals a real rendering issue.
 
