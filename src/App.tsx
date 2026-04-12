@@ -45,6 +45,7 @@ const App = () => (
                 {instructorAppRoutes}
                 {adminRoutes}
                 {demoRoutes}
+                {everyInstructorRoutes}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
