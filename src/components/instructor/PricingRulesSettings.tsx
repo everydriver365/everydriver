@@ -126,7 +126,7 @@ export function PricingRulesSettings({ instructorId }: PricingRulesSettingsProps
         </p>
 
         {rules.map(rule => (
-          <div key={rule.id} className="flex items-center gap-3 p-3 rounded-none border bg-card">
+          <div key={rule.id} className="flex items-center gap-3 p-3 rounded-2xl border bg-card">
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">{rule.rule_name}</p>

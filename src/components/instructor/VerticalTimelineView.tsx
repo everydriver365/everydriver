@@ -117,7 +117,7 @@ export function VerticalTimelineView({
               {/* Lesson Card */}
               <motion.div
                 onClick={() => onLessonClick?.(lesson)}
-                className="flex-1 bg-card rounded-none border border-border p-3 cursor-pointer
+                className="flex-1 bg-card rounded-2xl border border-border p-3 cursor-pointer
                   hover:border-primary/30 hover:shadow-sm transition-all"
                 whileTap={{ scale: 0.98 }}
               >
@@ -171,7 +171,7 @@ export function VerticalTimelineView({
                 
                 <div className="w-12" />
                 
-                <div className={`flex-1 py-2 px-3 rounded-none text-xs ${
+                <div className={`flex-1 py-2 px-3 rounded-2xl text-xs ${
                   travelInfo?.status === "warning" ? "bg-destructive/10 text-destructive" :
                   travelInfo?.status === "tight" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
                   "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"

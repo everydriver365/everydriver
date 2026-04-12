@@ -251,7 +251,7 @@ const PupilBrakeGearAnalysis: React.FC<PupilBrakeGearAnalysisProps> = ({
 
             {/* Reverse summary */}
             {gear.reverseManoeuvreCount > 0 && (
-              <div className="mt-3 p-2 bg-muted/50 rounded-none text-xs">
+              <div className="mt-3 p-2 bg-muted/50 rounded-2xl text-xs">
                 <p className="font-medium">Reverse Practice Summary</p>
                 <p className="text-muted-foreground mt-1">
                   {gear.reverseManoeuvreCount} manoeuvre{gear.reverseManoeuvreCount !== 1 ? 's' : ''} • 

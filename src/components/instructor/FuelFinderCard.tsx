@@ -72,7 +72,7 @@ function StationRow({ station, type, badges, onNavigate }: StationRowProps) {
       <div className="flex items-center gap-3">
         {/* Brand Badge */}
         <div className={cn(
-          "w-9 h-9 rounded-none flex items-center justify-center text-white font-bold text-[10px] shadow-sm shrink-0",
+          "w-9 h-9 rounded-2xl flex items-center justify-center text-white font-bold text-[10px] shadow-sm shrink-0",
           brandInfo.bg
         )}>
           {brandInfo.text}
@@ -145,9 +145,9 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   if (loading) {
     return (
       <div className={cn("", className)}>
-        <div className="bg-white rounded-none p-4 animate-pulse shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border">
+        <div className="bg-white rounded-2xl p-4 animate-pulse shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-none bg-gray-200" />
+            <div className="w-10 h-10 rounded-2xl bg-gray-200" />
             <div className="flex-1 space-y-2">
               <div className="h-4 w-20 bg-gray-200 rounded" />
               <div className="h-3 w-28 bg-gray-200 rounded" />
@@ -162,12 +162,12 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
     return (
       <div className={cn("", className)}>
         <div
-          className="bg-white rounded-none p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+          className="bg-white rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
           onClick={handleCardClick}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-none bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <Fuel className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
@@ -197,7 +197,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   return (
     <div className={cn("", className)}>
       <div
-        className="bg-white rounded-none overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+        className="bg-white rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
         onClick={handleCardClick}
       >
         {/* Header */}

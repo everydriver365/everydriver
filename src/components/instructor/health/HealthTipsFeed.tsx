@@ -34,7 +34,7 @@ export function HealthTipsFeed() {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <div className="h-8 w-8 rounded-none bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
             <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
           Health Tips
@@ -71,7 +71,7 @@ export function HealthTipsFeed() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-20 bg-muted/30 rounded-none animate-pulse"
+                className="h-20 bg-muted/30 rounded-2xl animate-pulse"
               />
             ))}
           </div>

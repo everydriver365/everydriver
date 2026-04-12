@@ -270,7 +270,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
       </AnimatePresence>
 
       {/* Main Calendar */}
-      <div className="flex-1 flex flex-col bg-background rounded-none border overflow-hidden">
+      <div className="flex-1 flex flex-col bg-background rounded-2xl border overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-card flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -307,7 +307,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex rounded-none border bg-muted p-1">
+            <div className="flex rounded-2xl border bg-muted p-1">
               {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
                 <Button
                   key={v}
@@ -549,7 +549,7 @@ function MiniCalendarSidebar({
                   key={day.toISOString()}
                   onClick={() => onDateSelect(day)}
                   className={cn(
-                    "relative h-8 w-full text-xs rounded-none transition-colors",
+                    "relative h-8 w-full text-xs rounded-2xl transition-colors",
                     "hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20",
                     !isCurrentMonth && "text-muted-foreground/50",
                     isToday(day) && "font-bold text-primary",
@@ -593,19 +593,19 @@ function MiniCalendarSidebar({
         <div className="text-xs font-medium text-muted-foreground mb-2">Legend</div>
         <div className="grid grid-cols-2 gap-1.5 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.lesson }} />
+            <div className="w-2.5 h-2.5 rounded-2xl" style={{ backgroundColor: calendarColors.lesson }} />
             <span className="text-muted-foreground">Paid</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
+            <div className="w-2.5 h-2.5 rounded-2xl" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
             <span className="text-muted-foreground">Unpaid</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.block_personal }} />
+            <div className="w-2.5 h-2.5 rounded-2xl" style={{ backgroundColor: calendarColors.block_personal }} />
             <span className="text-muted-foreground">Block</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: calendarColors.external }} />
+            <div className="w-2.5 h-2.5 rounded-2xl" style={{ backgroundColor: calendarColors.external }} />
             <span className="text-muted-foreground">External</span>
           </div>
         </div>
@@ -739,7 +739,7 @@ function WeekView({
                       onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
                       onDragEnd={onDragEnd}
                       className={cn(
-                        "absolute left-1 right-1 rounded-none px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
+                        "absolute left-1 right-1 rounded-2xl px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
                         isDraggable && !isBeingResized && "cursor-grab active:cursor-grabbing",
                         event.type === 'external' && "text-muted-foreground"
                       )}
@@ -766,7 +766,7 @@ function WeekView({
                       {/* Resize Handle */}
                       {isResizable && style.height >= 30 && (
                         <div
-                          className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-none"
+                          className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-2xl"
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             onResizeStart(e, event, style.height);
@@ -902,7 +902,7 @@ function DayView({
                 onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
                 onDragEnd={onDragEnd}
                 className={cn(
-                  "absolute left-1 right-1 rounded-none px-3 py-2 cursor-pointer border-l-4 overflow-hidden text-white group",
+                  "absolute left-1 right-1 rounded-2xl px-3 py-2 cursor-pointer border-l-4 overflow-hidden text-white group",
                   isDraggable && !isBeingResized && "cursor-grab active:cursor-grabbing",
                   event.type === 'external' && "text-muted-foreground"
                 )}
@@ -927,7 +927,7 @@ function DayView({
                 {/* Resize Handle */}
                 {isResizable && style.height >= 30 && (
                   <div
-                    className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-none"
+                    className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-2xl"
                     onMouseDown={(e) => {
                       e.stopPropagation();
                       onResizeStart(e, event, style.height);

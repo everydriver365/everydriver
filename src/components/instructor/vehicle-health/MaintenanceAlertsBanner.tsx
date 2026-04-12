@@ -86,7 +86,7 @@ export function MaintenanceAlertsBanner({ className = "" }: MaintenanceAlertsBan
         className={className}
       >
         <div
-          className={`rounded-none border p-3 space-y-2 ${
+          className={`rounded-2xl border p-3 space-y-2 ${
             hasCritical
               ? "border-destructive/30 bg-destructive/5"
               : "border-orange-500/30 bg-orange-500/5"

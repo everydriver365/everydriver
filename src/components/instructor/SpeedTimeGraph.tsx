@@ -96,7 +96,7 @@ const SpeedTimeGraph: React.FC<SpeedTimeGraphProps> = ({ route, startedAt, class
 
   if (data.length < 2) {
     return (
-      <div className={`bg-muted/30 rounded-none p-4 text-center ${className}`}>
+      <div className={`bg-muted/30 rounded-2xl p-4 text-center ${className}`}>
         <p className="text-sm text-muted-foreground">Not enough data points for speed graph</p>
       </div>
     );
@@ -148,7 +148,7 @@ const SpeedTimeGraph: React.FC<SpeedTimeGraphProps> = ({ route, startedAt, class
               if (!active || !payload?.[0]) return null;
               const d = payload[0].payload as SpeedDataPoint;
               return (
-                <div className="bg-popover border border-border rounded-none p-2 shadow-lg text-xs">
+                <div className="bg-popover border border-border rounded-2xl p-2 shadow-lg text-xs">
                   <p className="font-medium">{d.elapsedLabel}</p>
                   <p className="text-primary">{d.speed} mph</p>
                   {d.speedLimit && (

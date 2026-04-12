@@ -407,7 +407,7 @@ export function UpcomingTestsView({ instructorId }: UpcomingTestsViewProps) {
               return (
               <div
                 key={pupil.id}
-                className={`relative rounded-none p-3 space-y-2 ${
+                className={`relative rounded-2xl p-3 space-y-2 ${
                   isUrgentTile
                     ? "border-destructive/40 bg-destructive/10"
                     : "border bg-card"

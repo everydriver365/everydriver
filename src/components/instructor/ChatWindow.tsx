@@ -231,7 +231,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
         <img
           src={message.attachment_url}
           alt="Attachment"
-          className="max-w-full rounded-none mt-2 cursor-pointer hover:opacity-90 transition-opacity"
+          className="max-w-full rounded-2xl mt-2 cursor-pointer hover:opacity-90 transition-opacity"
           style={{ maxHeight: "200px" }}
           onClick={() => window.open(message.attachment_url!, "_blank")}
         />
@@ -243,7 +243,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
         href={message.attachment_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 mt-2 p-2 bg-background/20 rounded-none hover:bg-background/30 transition-colors"
+        className="flex items-center gap-2 mt-2 p-2 bg-background/20 rounded-2xl hover:bg-background/30 transition-colors"
       >
         <File className="h-4 w-4" />
         <span className="text-sm underline">View attachment</span>
@@ -424,7 +424,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
                         )}
                         <div
                           className={cn(
-                            "max-w-[70%] rounded-none px-3 py-2",
+                            "max-w-[70%] rounded-2xl px-3 py-2",
                             isInstructor
                               ? "bg-primary text-primary-foreground rounded-br-md"
                               : "bg-muted rounded-bl-md",
@@ -513,7 +513,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
         )}
         {/* File preview */}
         {selectedFile && (
-          <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
+          <div className="flex items-center gap-2 p-1.5 bg-muted rounded-2xl">
             {previewUrl ? (
               <img src={previewUrl} alt="Preview" className="h-8 w-8 object-cover rounded" />
             ) : (

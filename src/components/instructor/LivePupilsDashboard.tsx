@@ -171,7 +171,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div ref={mapContainer} className="h-48 w-full rounded-none" />
+          <div ref={mapContainer} className="h-48 w-full rounded-2xl" />
         </CardContent>
       </Card>
     );
@@ -183,7 +183,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-none">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-2xl">
               <Car className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
@@ -195,7 +195,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
         
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-none">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-2xl">
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -207,7 +207,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
         
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-none">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
               <Gauge className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
@@ -219,7 +219,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
         
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-none">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-2xl">
               <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
@@ -275,7 +275,7 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
           {/* Error State */}
           {error && (
             <div className="absolute bottom-3 left-3 right-3 z-[1000]">
-              <div className="bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-none text-sm flex items-center gap-2">
+              <div className="bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-2xl text-sm flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 {error}
               </div>
@@ -342,7 +342,7 @@ function PupilListItem({
   return (
     <motion.button
       onClick={onClick}
-      className={`w-full p-3 rounded-none border text-left transition-colors ${
+      className={`w-full p-3 rounded-2xl border text-left transition-colors ${
         isSelected 
           ? 'bg-primary/10 border-primary' 
           : 'bg-card hover:bg-muted border-border'

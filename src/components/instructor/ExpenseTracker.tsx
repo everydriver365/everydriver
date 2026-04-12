@@ -364,10 +364,10 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                       <img 
                         src={receiptPreview} 
                         alt="Receipt preview" 
-                        className="w-full h-48 object-cover rounded-none"
+                        className="w-full h-48 object-cover rounded-2xl"
                       />
                     ) : isDocumentFile ? (
-                      <div className="w-full h-32 bg-muted rounded-none flex flex-col items-center justify-center gap-2">
+                      <div className="w-full h-32 bg-muted rounded-2xl flex flex-col items-center justify-center gap-2">
                         <FileText className="h-10 w-10 text-primary" />
                         <p className="text-sm font-medium text-foreground truncate max-w-[80%]">
                           {receiptFile.name}
@@ -380,10 +380,10 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                       <img 
                         src={existingReceiptUrl} 
                         alt="Receipt preview" 
-                        className="w-full h-48 object-cover rounded-none"
+                        className="w-full h-48 object-cover rounded-2xl"
                       />
                     ) : existingReceiptUrl && isExistingDoc ? (
-                      <div className="w-full h-32 bg-muted rounded-none flex flex-col items-center justify-center gap-2">
+                      <div className="w-full h-32 bg-muted rounded-2xl flex flex-col items-center justify-center gap-2">
                         <FileText className="h-10 w-10 text-primary" />
                         <p className="text-sm font-medium text-foreground">Document attached</p>
                       </div>
@@ -558,18 +558,18 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                   <div className="flex items-start gap-3">
                     {expense.receipt_url ? (
                       isDoc ? (
-                        <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center shrink-0">
+                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
                           <FileText className="h-6 w-6 text-primary" />
                         </div>
                       ) : (
                         <img 
                           src={expense.receipt_url} 
                           alt="Receipt"
-                          className="w-14 h-14 object-cover rounded-none shrink-0"
+                          className="w-14 h-14 object-cover rounded-2xl shrink-0"
                         />
                       )
                     ) : (
-                      <div className="w-14 h-14 bg-muted rounded-none flex items-center justify-center shrink-0">
+                      <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center shrink-0">
                         <Receipt className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}

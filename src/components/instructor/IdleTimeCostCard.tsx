@@ -56,10 +56,10 @@ export function IdleTimeCostCard({ instructorId, className = "" }: { instructorI
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-none border border-border bg-card p-4 ${className}`}
+      className={`rounded-2xl border border-border bg-card p-4 ${className}`}
     >
       <div className="flex items-center gap-2 mb-3">
-        <div className="h-8 w-8 rounded-none bg-amber-500/10 flex items-center justify-center">
+        <div className="h-8 w-8 rounded-2xl bg-amber-500/10 flex items-center justify-center">
           <Timer className="h-4 w-4 text-amber-500" />
         </div>
         <div>
@@ -69,21 +69,21 @@ export function IdleTimeCostCard({ instructorId, className = "" }: { instructorI
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <p className="text-lg font-bold text-foreground">
             {idleHours > 0 ? `${idleHours}h` : ""}{idleMins}m
           </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Idle time</p>
         </div>
 
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <p className="text-lg font-bold text-amber-500">
             £{data.costWasted.toFixed(2)}
           </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Fuel wasted</p>
         </div>
 
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <p className="text-lg font-bold text-foreground">
             {data.idlePercent}%
           </p>
@@ -92,7 +92,7 @@ export function IdleTimeCostCard({ instructorId, className = "" }: { instructorI
       </div>
 
       {data.idlePercent > 20 && (
-        <div className="mt-3 flex items-center gap-2 text-[11px] text-amber-500 bg-amber-500/5 rounded-none p-2">
+        <div className="mt-3 flex items-center gap-2 text-[11px] text-amber-500 bg-amber-500/5 rounded-2xl p-2">
           <TrendingDown className="h-3.5 w-3.5 shrink-0" />
           <span>Your idle time is above average. Try switching off between lessons to save fuel.</span>
         </div>

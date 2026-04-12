@@ -84,7 +84,7 @@ export function ImpactAlertCard({ instructorId }: { instructorId: string }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            className="rounded-none border border-red-500/20 bg-red-500/5 p-3.5 relative overflow-hidden"
+            className="rounded-2xl border border-red-500/20 bg-red-500/5 p-3.5 relative overflow-hidden"
           >
             <button
               onClick={() => handleDismiss(event.id)}
@@ -94,7 +94,7 @@ export function ImpactAlertCard({ instructorId }: { instructorId: string }) {
             </button>
 
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-none bg-red-500/10 flex items-center justify-center shrink-0">
+              <div className="h-10 w-10 rounded-2xl bg-red-500/10 flex items-center justify-center shrink-0">
                 <AlertTriangle className={`h-5 w-5 ${severityColor(event.g_force)}`} />
               </div>
               <div className="flex-1 min-w-0 pr-6">

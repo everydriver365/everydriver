@@ -71,7 +71,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
     return (
       <div className="mx-4 mb-4">
         <button
-          className="w-full rounded-none p-5 flex items-center gap-4 bg-card"
+          className="w-full rounded-2xl p-5 flex items-center gap-4 bg-card"
           onClick={() => navigate("/instructor/diary")}
         >
           <div className="w-12 h-12 rounded-full border-2 border-emerald-500 flex items-center justify-center">
@@ -128,7 +128,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
   return (
     <div className="mx-4 mb-4">
       <motion.div
-        className="rounded-none overflow-hidden"
+        className="rounded-2xl overflow-hidden"
         style={{
           background: "linear-gradient(135deg, rgb(38,64,140) 0%, rgb(31,89,166) 50%, rgb(26,115,179) 100%)",
           boxShadow: "0 6px 12px rgba(0,0,0,0.15)",
@@ -186,7 +186,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
 
         {/* Running Late Alert */}
         {isRunningLate && (
-          <div className="mx-4 mb-2 p-2.5 rounded-none flex items-center gap-2" style={{ backgroundColor: "rgba(255,149,0,0.2)" }}>
+          <div className="mx-4 mb-2 p-2.5 rounded-2xl flex items-center gap-2" style={{ backgroundColor: "rgba(255,149,0,0.2)" }}>
             <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "#FFD60A" }} />
             <span className="text-[12px] flex-1" style={{ color: "#FFD6A0" }}>~{lateByMinutes} min late • ETA {arrivalTimeText}</span>
             <button onClick={sendLateETA} className="text-[11px] font-semibold underline shrink-0" style={{ color: "#FFD60A" }}>Send ETA</button>
@@ -208,17 +208,17 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
 
                 {/* Info Badges */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  <div className="bg-white/[0.08] rounded-none py-3 px-2 text-center">
+                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
                     <Clock className="h-4 w-4 text-white/50 mx-auto mb-1" />
                     <p className="text-[10px] text-white/50">Start</p>
                     <p className="text-[14px] font-bold text-white tabular-nums">{nextLesson.startTime}</p>
                   </div>
-                  <div className="bg-white/[0.08] rounded-none py-3 px-2 text-center">
+                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
                     <Hourglass className="h-4 w-4 text-white/50 mx-auto mb-1" />
                     <p className="text-[10px] text-white/50">Duration</p>
                     <p className="text-[14px] font-bold text-white">{durationLabel}</p>
                   </div>
-                  <div className="bg-white/[0.08] rounded-none py-3 px-2 text-center">
+                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
                     <PoundSterling className="h-4 w-4 mx-auto mb-1" style={{ color: balanceColor }} />
                     <p className="text-[10px] text-white/50">Balance</p>
                     <p className="text-[14px] font-bold" style={{ color: balanceColor }}>£{Math.abs(balance)}</p>
@@ -227,7 +227,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
 
                 {/* ETA Row */}
                 {etaText && (
-                  <div className="bg-white/[0.08] rounded-none p-3 flex items-center gap-3 mb-3">
+                  <div className="bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3">
                     <Car className="h-5 w-5 shrink-0" style={{ color: "#00FFFF" }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] text-white/50">Live ETA</p>
@@ -244,7 +244,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                 {pupilUnreadCount > 0 && (
                   <button
                     onClick={() => navigate("/instructor/messages")}
-                    className="w-full bg-white/[0.08] rounded-none p-3 flex items-center gap-3 mb-3"
+                    className="w-full bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3"
                   >
                     <MessageCircle className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
                     <span className="text-[13px] text-white/80 flex-1 text-left">
@@ -258,7 +258,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                 {canStart && (
                   <button
                     onClick={() => navigate(`/instructor/track?lesson=${nextLesson.lessonId}`)}
-                    className="w-full py-3.5 rounded-none font-semibold text-white text-[15px] flex items-center justify-center gap-2 mb-3"
+                    className="w-full py-3.5 rounded-2xl font-semibold text-white text-[15px] flex items-center justify-center gap-2 mb-3"
                     style={{ background: "linear-gradient(135deg, #34C759, #30B350)" }}
                   >
                     <Play className="h-4 w-4" /> Start Lesson
@@ -272,7 +272,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                       const q = nextLesson.pickupPostcode || nextLesson.pickupLocation || "";
                       window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank");
                     }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-none py-3 min-h-[64px]"
+                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
                   >
                     <Navigation className="h-5 w-5" style={{ color: "#007AFF" }} />
                     <span className="text-[10px] text-white/70">Navigate</span>
@@ -280,7 +280,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-none py-3 min-h-[64px]">
+                      <button className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]">
                         <Send className="h-5 w-5" style={{ color: "#007AFF" }} />
                         <span className="text-[10px] text-white/70">On My Way</span>
                       </button>
@@ -301,7 +301,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
 
                   <button
                     onClick={() => { if (nextLesson.pupilPhone) window.open(`tel:${nextLesson.pupilPhone}`); }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-none py-3 min-h-[64px]"
+                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
                   >
                     <Phone className="h-5 w-5" style={{ color: "#34C759" }} />
                     <span className="text-[10px] text-white/70">Call</span>
@@ -315,7 +315,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                         a.click();
                       }
                     }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-none py-3 min-h-[64px]"
+                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
                   >
                     <MessageSquare className="h-5 w-5" style={{ color: "#FF9500" }} />
                     <span className="text-[10px] text-white/70">SMS</span>
@@ -326,13 +326,13 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setRescheduleOpen(true)}
-                    className="py-2.5 rounded-none bg-white/[0.08] text-white/80 text-[13px] font-medium"
+                    className="py-2.5 rounded-2xl bg-white/[0.08] text-white/80 text-[13px] font-medium"
                   >
                     Reschedule
                   </button>
                   <button
                     onClick={() => setCancelOpen(true)}
-                    className="py-2.5 rounded-none text-[13px] font-medium"
+                    className="py-2.5 rounded-2xl text-[13px] font-medium"
                     style={{ backgroundColor: "rgba(255,0,0,0.12)", color: "#FF3B30" }}
                   >
                     Cancel Lesson
@@ -385,7 +385,7 @@ function FeatureTile({
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-none p-4 relative bg-card"
+      className="flex flex-col items-center gap-2 rounded-2xl p-4 relative bg-card"
     >
       {badge && badge > 0 ? (
         <span className="absolute top-2 right-2 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
@@ -412,7 +412,7 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-none py-3.5 shrink-0 bg-card"
+      className="flex flex-col items-center gap-2 rounded-2xl py-3.5 shrink-0 bg-card"
       style={{ width: 90 }}
     >
       <div
@@ -466,7 +466,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
           </div>
         </div>
 
-        <div className="mx-5 mb-5 rounded-none p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
+        <div className="mx-5 mb-5 rounded-2xl p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
               <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>

@@ -238,7 +238,7 @@ export function XeroExport({ instructorId }: XeroExportProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-3">
-          <div className="p-3 rounded-none border space-y-2">
+          <div className="p-3 rounded-2xl border space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">Expenses</span>
               <div className="flex gap-2">
@@ -272,7 +272,7 @@ export function XeroExport({ instructorId }: XeroExportProps) {
             </p>
           </div>
 
-          <div className="p-3 rounded-none border space-y-2">
+          <div className="p-3 rounded-2xl border space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">Income</span>
               <Button
@@ -314,7 +314,7 @@ export function XeroExport({ instructorId }: XeroExportProps) {
           </Button>
         </div>
 
-        <div className="p-3 rounded-none bg-muted/50 text-xs text-muted-foreground">
+        <div className="p-3 rounded-2xl bg-muted/50 text-xs text-muted-foreground">
           <p className="font-medium mb-1">How to import into Xero:</p>
           <ol className="list-decimal ml-4 space-y-0.5">
             <li>Download the CSV file</li>

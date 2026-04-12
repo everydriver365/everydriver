@@ -224,23 +224,23 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
         <CardContent>
           {/* Summary Stats */}
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-none">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
               <p className="text-xl sm:text-2xl font-bold text-primary">{overallScore}</p>
               <p className="text-xs text-muted-foreground">Score</p>
             </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-none">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
               <p className="text-xl sm:text-2xl font-bold">{totalSessions}</p>
               <p className="text-xs text-muted-foreground">Lessons</p>
             </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-none">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
               <p className="text-xl sm:text-2xl font-bold">{totalDistance.toFixed(1)}</p>
               <p className="text-xs text-muted-foreground">km</p>
             </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-none">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
               <p className="text-xl sm:text-2xl font-bold text-green-500">{goodEvents.length}</p>
               <p className="text-xs text-muted-foreground">Good</p>
             </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-none">
+            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
               <p className="text-xl sm:text-2xl font-bold text-amber-500">{badEvents.length}</p>
               <p className="text-xs text-muted-foreground">Needs Work</p>
             </div>
@@ -288,7 +288,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                       <button
                         key={session.id}
                         onClick={() => loadSessionDetails(session)}
-                        className={`w-full text-left p-3 rounded-none border transition-colors ${
+                        className={`w-full text-left p-3 rounded-2xl border transition-colors ${
                           selectedSession?.id === session.id 
                             ? 'bg-primary/10 border-primary' 
                             : 'hover:bg-muted/50 border-transparent'
@@ -361,7 +361,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                       <CardContent>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {events.map((event) => (
-                            <div key={event.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-2 bg-muted/30 rounded-none">
+                            <div key={event.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-2 bg-muted/30 rounded-2xl">
                               {getEventIcon(event.event_type)}
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">{formatEventType(event.event_type)}</p>
@@ -427,7 +427,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                 <ScrollArea className="h-[300px] lg:h-[400px]">
                   <div className="space-y-2 pr-4">
                     {allEvents.map((event) => (
-                      <div key={event.id} className="flex flex-wrap items-start gap-2 sm:gap-3 p-3 border rounded-none">
+                      <div key={event.id} className="flex flex-wrap items-start gap-2 sm:gap-3 p-3 border rounded-2xl">
                         {getEventIcon(event.event_type)}
                         <div className="flex-1">
                           <p className="font-medium text-sm">{formatEventType(event.event_type)}</p>

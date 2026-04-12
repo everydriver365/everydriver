@@ -31,7 +31,7 @@ function ExpiryBadge({ label, date }: { label: string; date: string | null }) {
   const Icon = expired || days <= 30 ? AlertCircle : CheckCircle;
 
   return (
-    <div className={`rounded-none p-2.5 ${color} flex items-center gap-2`}>
+    <div className={`rounded-2xl p-2.5 ${color} flex items-center gap-2`}>
       <Icon className="h-3.5 w-3.5 shrink-0" />
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
@@ -88,12 +88,12 @@ export function VehicleHealthCard({ instructorId, className = "" }: { instructor
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-none border border-border bg-card overflow-hidden ${className}`}
+      className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-none bg-primary/10 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
             <Car className="h-5 w-5 text-primary" />
           </div>
           <div>

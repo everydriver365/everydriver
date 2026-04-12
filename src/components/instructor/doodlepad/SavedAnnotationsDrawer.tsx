@@ -68,7 +68,7 @@ export function SavedAnnotationsDrawer({ open, onOpenChange, instructorId, onLoa
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between rounded-none border border-border p-3 hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between rounded-2xl border border-border p-3 hover:bg-muted/50 transition-colors"
             >
               <button onClick={() => onLoad(item)} className="flex-1 text-left">
                 <div className="font-medium text-sm">{item.name}</div>

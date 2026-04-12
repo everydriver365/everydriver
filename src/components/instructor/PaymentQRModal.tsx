@@ -36,7 +36,7 @@ export function PaymentQRModal({
         
         <div className="flex flex-col items-center gap-4">
           {paymentQrUrl ? (
-            <div className="bg-white p-4 rounded-none shadow-md">
+            <div className="bg-white p-4 rounded-2xl shadow-md">
               <img 
                 src={paymentQrUrl} 
                 alt="Payment QR Code" 
@@ -44,7 +44,7 @@ export function PaymentQRModal({
               />
             </div>
           ) : (
-            <div className="w-60 h-60 bg-muted flex items-center justify-center rounded-none border-2 border-dashed border-muted-foreground/30">
+            <div className="w-60 h-60 bg-muted flex items-center justify-center rounded-2xl border-2 border-dashed border-muted-foreground/30">
               <div className="text-center">
                 <QrCode className="h-12 w-12 text-muted-foreground/50 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">No QR Code</p>

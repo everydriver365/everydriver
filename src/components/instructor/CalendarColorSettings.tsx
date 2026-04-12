@@ -54,7 +54,7 @@ function ColorPicker({ label, value, onChange }: ColorPickerProps) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="w-10 h-10 rounded-none border-2 border-border shadow-sm cursor-pointer hover:scale-105 transition-transform"
+          className="w-10 h-10 rounded-2xl border-2 border-border shadow-sm cursor-pointer hover:scale-105 transition-transform"
           style={{ backgroundColor: value }}
           onClick={() => setShowPresets(!showPresets)}
         />
@@ -67,12 +67,12 @@ function ColorPicker({ label, value, onChange }: ColorPickerProps) {
         />
       </div>
       {showPresets && (
-        <div className="grid grid-cols-6 gap-1.5 p-2 bg-muted rounded-none">
+        <div className="grid grid-cols-6 gap-1.5 p-2 bg-muted rounded-2xl">
           {COLOR_PRESETS.map((color) => (
             <button
               key={color}
               type="button"
-              className="w-7 h-7 rounded-none border border-border/50 hover:scale-110 transition-transform relative"
+              className="w-7 h-7 rounded-2xl border border-border/50 hover:scale-110 transition-transform relative"
               style={{ backgroundColor: color }}
               onClick={() => {
                 onChange(color);
@@ -184,37 +184,37 @@ export function CalendarColorSettings({
             <h3 className="font-medium text-sm text-muted-foreground">Preview</h3>
             <div className="grid grid-cols-3 gap-2">
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.lesson }}
               >
                 Paid Lesson
               </div>
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.lesson_unpaid }}
               >
                 Unpaid Lesson
               </div>
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.block_personal }}
               >
                 Personal
               </div>
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.block_break }}
               >
                 Break
               </div>
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.block_meeting }}
               >
                 Meeting
               </div>
               <div 
-                className="p-2 rounded-none text-white text-xs font-medium text-center"
+                className="p-2 rounded-2xl text-white text-xs font-medium text-center"
                 style={{ backgroundColor: localColors.external }}
               >
                 External

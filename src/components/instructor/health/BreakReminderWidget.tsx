@@ -35,7 +35,7 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
     return (
       <Card className="border-emerald-200/50 dark:border-emerald-900/30">
         <CardContent className="p-4">
-          <div className="h-16 bg-muted/30 rounded-none animate-pulse" />
+          <div className="h-16 bg-muted/30 rounded-2xl animate-pulse" />
         </CardContent>
       </Card>
     );
@@ -48,7 +48,7 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
       <Card className="border-emerald-200/50 dark:border-emerald-900/30 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-none bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
               <Coffee className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
@@ -74,7 +74,7 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
       >
         <div
           className={cn(
-            "flex items-center gap-3 p-3 rounded-none transition-colors",
+            "flex items-center gap-3 p-3 rounded-2xl transition-colors",
             isNow
               ? "bg-emerald-100 dark:bg-emerald-900/30"
               : "bg-muted/50 hover:bg-muted"
@@ -82,7 +82,7 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
         >
           <div
             className={cn(
-              "h-10 w-10 rounded-none flex items-center justify-center",
+              "h-10 w-10 rounded-2xl flex items-center justify-center",
               isNow
                 ? "bg-emerald-500 text-white"
                 : "bg-emerald-100 dark:bg-emerald-900/30"
@@ -139,7 +139,7 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
           <div className="flex items-start gap-4">
             <div
               className={cn(
-                "h-12 w-12 rounded-none flex items-center justify-center flex-shrink-0",
+                "h-12 w-12 rounded-2xl flex items-center justify-center flex-shrink-0",
                 isNow
                   ? "bg-emerald-500 text-white"
                   : "bg-emerald-100 dark:bg-emerald-900/30"

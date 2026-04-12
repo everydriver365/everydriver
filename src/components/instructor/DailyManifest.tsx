@@ -60,7 +60,7 @@ export function DailyManifest() {
           type="date"
           value={selectedDate}
           onChange={e => setSelectedDate(e.target.value)}
-          className="rounded-none border border-input bg-background px-3 py-2 text-sm flex-1"
+          className="rounded-2xl border border-input bg-background px-3 py-2 text-sm flex-1"
         />
         <Button variant="outline" size="icon" onClick={handlePrint}>
           <Printer className="h-4 w-4" />

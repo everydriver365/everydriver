@@ -106,7 +106,7 @@ export function TelematicsSessionHistory({
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-muted/50 rounded-none animate-pulse" />
+              <div key={i} className="h-20 bg-muted/50 rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : sessions.length === 0 ? (
@@ -122,7 +122,7 @@ export function TelematicsSessionHistory({
                 <button
                   key={session.id}
                   onClick={() => onSelectSession?.(session.id, session.pupil_name || "Pupil")}
-                  className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 rounded-none transition-colors group"
+                  className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 rounded-2xl transition-colors group"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>

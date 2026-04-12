@@ -98,19 +98,19 @@ export function DriverTimesheets({ instructorId }: DriverTimesheetsProps) {
       {/* Summary Cards */}
       {!loading && timesheets.length > 0 && (
         <div className="grid grid-cols-4 gap-2">
-          <div className="bg-muted/50 rounded-none p-2.5 text-center">
+          <div className="bg-muted/50 rounded-2xl p-2.5 text-center">
             <div className="text-lg font-bold">{totals.days}</div>
             <div className="text-[10px] text-muted-foreground">Days Active</div>
           </div>
-          <div className="bg-muted/50 rounded-none p-2.5 text-center">
+          <div className="bg-muted/50 rounded-2xl p-2.5 text-center">
             <div className="text-lg font-bold">{formatDuration(totals.driving)}</div>
             <div className="text-[10px] text-muted-foreground">Driving</div>
           </div>
-          <div className="bg-muted/50 rounded-none p-2.5 text-center">
+          <div className="bg-muted/50 rounded-2xl p-2.5 text-center">
             <div className="text-lg font-bold">{formatDuration(totals.idle)}</div>
             <div className="text-[10px] text-muted-foreground">Idle</div>
           </div>
-          <div className="bg-muted/50 rounded-none p-2.5 text-center">
+          <div className="bg-muted/50 rounded-2xl p-2.5 text-center">
             <div className="text-lg font-bold">{kmToMiles(totals.distance).toFixed(0)}</div>
             <div className="text-[10px] text-muted-foreground">Miles</div>
           </div>
@@ -121,7 +121,7 @@ export function DriverTimesheets({ instructorId }: DriverTimesheetsProps) {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-none" />
+            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
           ))}
         </div>
       ) : error ? (
@@ -169,7 +169,7 @@ function TimesheetRow({
       : null;
 
   return (
-    <div className="bg-muted/30 rounded-none p-3 space-y-2">
+    <div className="bg-muted/30 rounded-2xl p-3 space-y-2">
       {/* Date header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

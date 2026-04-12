@@ -39,7 +39,7 @@
        exit={{ y: 100, opacity: 0 }}
        transition={{ type: "spring", damping: 25, stiffness: 300 }}
      >
-        <div className="bg-card/95 backdrop-blur-xl rounded-none shadow-2xl border border-border px-3 py-2.5 flex items-center gap-3">
+        <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border px-3 py-2.5 flex items-center gap-3">
           {/* Live pulse */}
           <div className="flex items-center gap-1.5 shrink-0">
             <motion.div
@@ -81,7 +81,7 @@
           <Button
             variant="destructive"
             size="sm"
-            className="h-8 px-3 rounded-none font-semibold text-xs shrink-0"
+            className="h-8 px-3 rounded-2xl font-semibold text-xs shrink-0"
             onClick={onStop}
             disabled={isStopping}
           >

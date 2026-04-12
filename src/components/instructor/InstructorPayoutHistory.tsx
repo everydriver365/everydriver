@@ -82,11 +82,11 @@ export function InstructorPayoutHistory({ instructorId }: InstructorPayoutHistor
       <CardContent className="space-y-4">
         {/* Summary */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-none border p-3 text-center">
+          <div className="rounded-2xl border p-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">This Month</p>
             <p className="text-lg font-bold text-emerald-600">£{monthlyTotal.toFixed(2)}</p>
           </div>
-          <div className="rounded-none border p-3 text-center">
+          <div className="rounded-2xl border p-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Awaiting Transfer</p>
             <p className="text-lg font-bold text-amber-600">£{pendingTotal.toFixed(2)}</p>
           </div>
@@ -102,7 +102,7 @@ export function InstructorPayoutHistory({ instructorId }: InstructorPayoutHistor
           <ScrollArea className="h-[200px]">
             <div className="space-y-2 pr-2">
               {payouts.map(payout => (
-                <div key={payout.id} className="flex items-center justify-between rounded-none border p-3">
+                <div key={payout.id} className="flex items-center justify-between rounded-2xl border p-3">
                   <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
                       <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />

@@ -47,8 +47,8 @@ export function LiveTelemetryTab({
   if (isLoading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-32 w-full rounded-none" />
-        <Skeleton className="h-32 w-full rounded-none" />
+        <Skeleton className="h-32 w-full rounded-2xl" />
+        <Skeleton className="h-32 w-full rounded-2xl" />
       </div>
     );
   }

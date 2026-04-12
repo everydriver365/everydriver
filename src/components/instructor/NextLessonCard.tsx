@@ -151,10 +151,10 @@ export function NextLessonCard({
       className="mx-4 mb-4"
     >
       <SwipeHint direction="right" hintKey="next-lesson-swipe" show={!!pickupPostcode}>
-        <div className="relative overflow-hidden rounded-none">
+        <div className="relative overflow-hidden rounded-2xl">
           {/* Slide action background */}
           <motion.div 
-            className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80 rounded-none"
+            className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80 rounded-2xl"
             style={{ 
               width: maxSwipe + 20,
               opacity: actionOpacity
@@ -179,7 +179,7 @@ export function NextLessonCard({
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             style={{ x }}
-             className="relative bg-white rounded-none p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+             className="relative bg-white rounded-2xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
@@ -257,7 +257,7 @@ export function NextLessonCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-none bg-primary/10 hover:bg-primary/20 text-primary"
+                    className="h-8 w-8 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary"
                     onClick={handleNavigate}
                   >
                     <Navigation className="h-4 w-4" />
@@ -267,7 +267,7 @@ export function NextLessonCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-none bg-primary/10 hover:bg-primary/20 text-primary"
+                    className="h-8 w-8 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary"
                     onClick={handleOpenLateSheet}
                   >
                     <MessageSquare className="h-4 w-4" />

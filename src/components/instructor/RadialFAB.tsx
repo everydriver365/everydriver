@@ -200,7 +200,7 @@ export function RadialFAB({
                     exit={{ opacity: 0, x: 10 }}
                     transition={{ delay: 0.1 + index * 0.05 }}
                     className="absolute right-14 top-1/2 -translate-y-1/2 whitespace-nowrap
-                      px-2 py-1 bg-foreground text-background text-xs rounded-none shadow-md"
+                      px-2 py-1 bg-foreground text-background text-xs rounded-2xl shadow-md"
                   >
                     {action.label}
                   </motion.span>

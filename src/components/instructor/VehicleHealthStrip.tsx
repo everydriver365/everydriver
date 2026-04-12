@@ -53,7 +53,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, height: 0 }}
         className={cn(
-          "rounded-none shadow-[0_1px_4px_rgba(0,0,0,0.05)] border bg-card overflow-hidden mt-4 relative",
+          "rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border bg-card overflow-hidden mt-4 relative",
           hasWarning ? "border-destructive/30" : "border-border/40"
         )}
       >
@@ -70,7 +70,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full px-3.5 py-3.5 flex items-center gap-3 pr-12"
         >
-          <div className="w-11 h-11 rounded-none overflow-hidden shrink-0">
+          <div className="w-11 h-11 rounded-2xl overflow-hidden shrink-0">
             <img src={vehicleHealthIcon} alt="Vehicle Health" className="w-full h-full object-cover" style={{ borderRadius: '7px' }} />
           </div>
           <div className="flex-1 min-w-0 text-left">
@@ -95,7 +95,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
             <div className="p-4">
               <div className="grid grid-cols-4 gap-2">
                 {/* Battery */}
-                <div className={cn("flex items-center gap-2 p-2.5 rounded-none", 
+                <div className={cn("flex items-center gap-2 p-2.5 rounded-2xl", 
                   battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-primary/10"
                 )}>
                   <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
@@ -108,7 +108,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
                 </div>
 
                 {/* Ignition */}
-                <div className={cn("flex items-center gap-2 p-2.5 rounded-none",
+                <div className={cn("flex items-center gap-2 p-2.5 rounded-2xl",
                   isIgnitionOn ? "bg-emerald-500/10" : "bg-muted/50"
                 )}>
                   <Key className={cn("h-4 w-4", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")} />
@@ -121,7 +121,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
                 </div>
 
                 {/* Connection */}
-                <div className={cn("flex items-center gap-2 p-2.5 rounded-none",
+                <div className={cn("flex items-center gap-2 p-2.5 rounded-2xl",
                   isOnline ? "bg-emerald-500/10" : "bg-muted/50"
                 )}>
                   {isOnline ? (
@@ -139,7 +139,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
 
                 {/* Fuel Level */}
                 {device.last_fuel_percent != null ? (
-                  <div className={cn("flex items-center gap-2 p-2.5 rounded-none",
+                  <div className={cn("flex items-center gap-2 p-2.5 rounded-2xl",
                     device.last_fuel_percent <= 15 ? "bg-red-500/10" : device.last_fuel_percent <= 30 ? "bg-amber-500/10" : "bg-primary/10"
                   )}>
                     <Fuel className={cn("h-4 w-4",
@@ -155,7 +155,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 p-2.5 rounded-none bg-muted/50">
+                  <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-muted/50">
                     <Fuel className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-bold text-muted-foreground leading-none">—</p>

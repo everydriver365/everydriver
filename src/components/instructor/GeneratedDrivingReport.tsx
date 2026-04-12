@@ -182,15 +182,15 @@ ${report.feedback.encouragement}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 bg-muted/50 rounded-none">
+            <div className="p-2 bg-muted/50 rounded-2xl">
               <p className="text-lg font-bold">{sessionStats.distance} km</p>
               <p className="text-xs text-muted-foreground">Distance</p>
             </div>
-            <div className="p-2 bg-green-500/10 rounded-none">
+            <div className="p-2 bg-green-500/10 rounded-2xl">
               <p className="text-lg font-bold text-green-600">{sessionStats.goodEvents}</p>
               <p className="text-xs text-muted-foreground">Good</p>
             </div>
-            <div className="p-2 bg-amber-500/10 rounded-none">
+            <div className="p-2 bg-amber-500/10 rounded-2xl">
               <p className="text-lg font-bold text-amber-600">{sessionStats.badEvents}</p>
               <p className="text-xs text-muted-foreground">To Improve</p>
             </div>

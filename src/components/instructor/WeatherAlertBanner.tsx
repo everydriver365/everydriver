@@ -81,9 +81,9 @@ export function WeatherAlertBanner({ className = "" }: { className?: string }) {
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-none border p-3 flex items-center gap-3 ${severityStyles[severity]} ${className}`}
+      className={`rounded-2xl border p-3 flex items-center gap-3 ${severityStyles[severity]} ${className}`}
     >
-      <div className="h-9 w-9 rounded-none bg-current/10 flex items-center justify-center shrink-0">
+      <div className="h-9 w-9 rounded-2xl bg-current/10 flex items-center justify-center shrink-0">
         <Icon className="h-4.5 w-4.5" />
       </div>
       <div className="flex-1 min-w-0">

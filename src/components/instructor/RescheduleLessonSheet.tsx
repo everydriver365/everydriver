@@ -344,7 +344,7 @@ export function RescheduleLessonSheet({
                 <Calendar className="h-4 w-4" />
                 Select New Date
               </h4>
-              <div className="rounded-none border p-2">
+              <div className="rounded-2xl border p-2">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}

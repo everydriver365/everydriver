@@ -138,7 +138,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
         </div>
 
         {/* Privacy Notice */}
-        <div className="rounded-none bg-muted/50 p-3 text-sm text-muted-foreground">
+        <div className="rounded-2xl bg-muted/50 p-3 text-sm text-muted-foreground">
           <p className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
             <span>Syncing busy times and pushing lessons to your Google Calendar.</span>
@@ -182,7 +182,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
   // Not configured state - admin hasn't set up secrets
   if (!config?.configured) {
     return (
-      <div className="rounded-none border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-4">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-4">
         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
           <AlertCircle className="h-5 w-5" />
           <span className="font-medium">Calendar sync not available</span>
@@ -196,7 +196,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
 
   // Setup flow - instructor needs to share calendar
   return (
-    <div className="space-y-5 rounded-none border bg-card p-4">
+    <div className="space-y-5 rounded-2xl border bg-card p-4">
       {/* Step 1: Copy Email - Most prominent */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
         </div>
         
         <div className="flex items-center gap-2">
-          <div className="flex-1 rounded-none border-2 border-dashed border-primary/30 bg-primary/5 px-3 py-2.5 text-sm font-mono">
+          <div className="flex-1 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 px-3 py-2.5 text-sm font-mono">
             {config.serviceAccountEmail}
           </div>
           <Button
@@ -230,7 +230,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
           </Button>
         </div>
         
-        <div className="rounded-none bg-muted/50 p-3 text-sm text-muted-foreground space-y-1.5">
+        <div className="rounded-2xl bg-muted/50 p-3 text-sm text-muted-foreground space-y-1.5">
           <p>In Google Calendar:</p>
           <ol className="list-decimal ml-4 space-y-0.5">
             <li>Go to Settings → your calendar → "Share with specific people"</li>
@@ -274,7 +274,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
 
       {/* Test Result */}
       {testResult && (
-        <div className={`rounded-none p-3 ${
+        <div className={`rounded-2xl p-3 ${
           testResult.success 
             ? "bg-green-50 border border-green-200 dark:bg-green-950/30 dark:border-green-800" 
             : "bg-destructive/10 border border-destructive/30"

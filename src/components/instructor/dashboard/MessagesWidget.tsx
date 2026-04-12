@@ -29,14 +29,14 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
   };
 
   return (
-    <div className="rounded-none shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+    <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
       {/* Header — Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-3.5 py-3.5 flex items-center gap-3"
       >
         <div className="relative shrink-0">
-          <div className="w-11 h-11 rounded-none bg-primary/10 dark:bg-primary/20 flex items-center justify-center overflow-hidden">
+          <div className="w-11 h-11 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center overflow-hidden">
             <MessageSquare className="h-5 w-5 text-primary" />
           </div>
           {total > 0 && (
@@ -67,9 +67,9 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
                   <Link
                     key={key}
                     to={route}
-                    className="flex items-center gap-3 p-2.5 rounded-none hover:bg-muted/50 transition-colors group"
+                    className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-muted/50 transition-colors group"
                   >
-                    <div className={`h-8 w-8 rounded-none ${bg} flex items-center justify-center shrink-0`}>
+                    <div className={`h-8 w-8 rounded-2xl ${bg} flex items-center justify-center shrink-0`}>
                       <Icon className={`h-4 w-4 ${color}`} />
                     </div>
                     <div className="flex-1 min-w-0">

@@ -153,7 +153,7 @@ export function TeamMessagingChannels({ instructorId }: { instructorId: string }
         {channels.map((ch: any) => (
           <Card key={ch.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveChannel(ch)}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-none bg-primary/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Hash className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1">

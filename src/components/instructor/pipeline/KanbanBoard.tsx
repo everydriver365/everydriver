@@ -159,7 +159,7 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
           return (
             <div
               key={stage.value}
-              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-none border p-3 transition-colors ${
+              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-2xl border p-3 transition-colors ${
                 dragOverStage === stage.value ? "bg-primary/5 border-primary/30" : "bg-muted/30"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage.value); }}

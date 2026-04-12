@@ -103,7 +103,7 @@ export function ScheduledReportsSettings({ instructorId }: Props) {
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-none ${r.is_active ? 'bg-primary/10' : 'bg-muted/50'}`}>
+                    <div className={`p-2 rounded-2xl ${r.is_active ? 'bg-primary/10' : 'bg-muted/50'}`}>
                       <FileText className={`h-4 w-4 ${r.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
                     </div>
                     <div>

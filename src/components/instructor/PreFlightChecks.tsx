@@ -231,7 +231,7 @@ const PreFlightChecks: React.FC<PreFlightChecksProps> = ({
             {/* Check Items */}
             <div className="space-y-2">
               {Object.entries(checks).map(([key, check]) => (
-                <div key={key} className="flex items-center justify-between p-2 bg-muted/30 rounded-none">
+                <div key={key} className="flex items-center justify-between p-2 bg-muted/30 rounded-2xl">
                   <div className="flex items-center gap-2">
                     {key === 'gps' && <MapPin className="h-4 w-4 text-muted-foreground" />}
                     {key === 'motion' && <Smartphone className="h-4 w-4 text-muted-foreground" />}

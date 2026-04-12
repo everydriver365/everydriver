@@ -66,7 +66,7 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({
 
   if (!vehicles || vehicles.length === 0) {
     return (
-      <div className={cn("flex items-center gap-2 text-sm text-muted-foreground p-2 border rounded-none", className)}>
+      <div className={cn("flex items-center gap-2 text-sm text-muted-foreground p-2 border rounded-2xl", className)}>
         <AlertCircle className="h-4 w-4" />
         <span>No vehicles configured</span>
       </div>

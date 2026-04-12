@@ -275,7 +275,7 @@ export function MiniWebsiteThemeEditor({
                 key={preset.id}
                 onClick={() => handleApplyPreset(preset)}
                 className={cn(
-                  "relative p-3 rounded-none border-2 transition-all text-left",
+                  "relative p-3 rounded-2xl border-2 transition-all text-left",
                   settings.website_theme === preset.id
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-border hover:border-primary/50"
@@ -301,7 +301,7 @@ export function MiniWebsiteThemeEditor({
                   </div>
                   <div className="h-8 bg-gray-100 flex items-center justify-center">
                     <div
-                      className="w-8 h-3 rounded-none"
+                      className="w-8 h-3 rounded-2xl"
                       style={{ backgroundColor: preset.preview.button }}
                     />
                   </div>
@@ -415,7 +415,7 @@ export function MiniWebsiteThemeEditor({
               <CardTitle className="text-sm">Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-none overflow-hidden border">
+              <div className="rounded-2xl overflow-hidden border">
                 <div
                   className="h-10 flex items-center justify-between px-4"
                   style={{ backgroundColor: settings.brand_colour }}
@@ -507,7 +507,7 @@ export function MiniWebsiteThemeEditor({
                   />
                   <Label
                     htmlFor={`header-${style.id}`}
-                    className="flex flex-col items-center justify-between rounded-none border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                    className="flex flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                   >
                     <span className="text-sm font-medium">{style.name}</span>
                     <span className="text-xs text-muted-foreground text-center mt-1">
@@ -529,9 +529,9 @@ export function MiniWebsiteThemeEditor({
               Website Logo
             </Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 rounded-none">
+              <Avatar className="h-20 w-20 rounded-2xl">
                 <AvatarImage src={settings.logo_url} className="object-contain" />
-                <AvatarFallback className="rounded-none bg-muted">
+                <AvatarFallback className="rounded-2xl bg-muted">
                   <Upload className="h-6 w-6 text-muted-foreground" />
                 </AvatarFallback>
               </Avatar>

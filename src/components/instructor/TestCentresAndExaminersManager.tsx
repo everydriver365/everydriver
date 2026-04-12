@@ -338,7 +338,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
             <>
               {/* Saved Indicator */}
               {selectedIds.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-2 rounded-none">
+                <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-2 rounded-2xl">
                   <CheckCircle2 className="h-4 w-4" />
                   <span>
                     {selectedIds.length} test centre{selectedIds.length !== 1 ? "s" : ""} saved to your profile
@@ -404,7 +404,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
 
               {/* Selected Centres */}
               {selectedCentres.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground border rounded-none border-dashed">
+                <div className="text-center py-6 text-muted-foreground border rounded-2xl border-dashed">
                   <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>No test centres selected.</p>
                   <p className="text-sm">Search above to add test centres you cover.</p>
@@ -416,7 +416,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-none bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <MapPin className="h-5 w-5 text-primary" />
                             </div>
                             <div className="min-w-0">
@@ -460,7 +460,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
             <>
               {/* Saved Indicator */}
               {examiners.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-2 rounded-none">
+                <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-2 rounded-2xl">
                   <CheckCircle2 className="h-4 w-4" />
                   <span>
                     {examiners.length} examiner{examiners.length !== 1 ? "s" : ""} saved
@@ -584,7 +584,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
 
               {/* Examiners List */}
               {examiners.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground border rounded-none border-dashed">
+                <div className="text-center py-6 text-muted-foreground border rounded-2xl border-dashed">
                   <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>No examiners added yet.</p>
                   <p className="text-sm">Add examiners to link with test routes and triggers.</p>
@@ -596,7 +596,7 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-none bg-cyan-100 dark:bg-cyan-950 flex items-center justify-center flex-shrink-0">
+                            <div className="h-10 w-10 rounded-2xl bg-cyan-100 dark:bg-cyan-950 flex items-center justify-center flex-shrink-0">
                               <User className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                             </div>
                             <div className="min-w-0">

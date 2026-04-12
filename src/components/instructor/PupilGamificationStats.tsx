@@ -77,7 +77,7 @@ const PupilGamificationStats: React.FC<PupilGamificationStatsProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center p-3 bg-amber-500/10 rounded-none"
+            className="text-center p-3 bg-amber-500/10 rounded-2xl"
           >
             <Coins className="h-5 w-5 mx-auto text-amber-500 mb-1" />
             <p className="text-xl font-bold text-amber-600">{stats.drive_coins || 0}</p>
@@ -89,7 +89,7 @@ const PupilGamificationStats: React.FC<PupilGamificationStatsProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-center p-3 bg-orange-500/10 rounded-none"
+            className="text-center p-3 bg-orange-500/10 rounded-2xl"
           >
             <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
             <p className="text-xl font-bold text-orange-600">{stats.current_streak || 0}</p>
@@ -101,7 +101,7 @@ const PupilGamificationStats: React.FC<PupilGamificationStatsProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-center p-3 bg-[#0075c9]/10 rounded-none"
+            className="text-center p-3 bg-[#0075c9]/10 rounded-2xl"
           >
             <Target className="h-5 w-5 mx-auto text-[#0075c9] mb-1" />
             <p className="text-xl font-bold text-[#0075c9]">{stats.total_trips || 0}</p>
@@ -111,7 +111,7 @@ const PupilGamificationStats: React.FC<PupilGamificationStatsProps> = ({
 
         {/* Streak Status */}
         {(stats.current_streak || 0) > 0 && (
-          <div className="flex items-center justify-between p-2 bg-muted/30 rounded-none">
+          <div className="flex items-center justify-between p-2 bg-muted/30 rounded-2xl">
             <span className="text-sm">{getStreakMessage(stats.current_streak || 0)}</span>
             <Badge variant="outline" className="text-xs">
               Best: {stats.longest_streak || 0} days

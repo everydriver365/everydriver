@@ -298,7 +298,7 @@ export function MobileScheduleView({ instructorId }: MobileScheduleViewProps) {
   return (
     <div className="space-y-4">
       {/* Date Navigation */}
-      <div className="flex items-center justify-between bg-card rounded-none p-3 shadow-sm">
+      <div className="flex items-center justify-between bg-card rounded-2xl p-3 shadow-sm">
         <Button variant="ghost" size="icon" onClick={goToPreviousDay}>
           <ChevronLeft className="h-5 w-5" />
         </Button>

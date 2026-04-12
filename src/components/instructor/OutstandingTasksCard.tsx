@@ -133,7 +133,7 @@ export function OutstandingTasksCard({ instructorId }: OutstandingTasksCardProps
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/20 border border-orange-200/50 dark:border-orange-800/30 rounded-none p-4 mt-3"
+      className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/20 border border-orange-200/50 dark:border-orange-800/30 rounded-2xl p-4 mt-3"
     >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export function OutstandingTasksCard({ instructorId }: OutstandingTasksCardProps
             <div
               key={task.id}
               onClick={() => task.route && navigate(task.route)}
-              className={`flex items-center gap-2.5 p-2.5 rounded-none cursor-pointer transition-colors ${getUrgencyColor(task.urgency)}`}
+              className={`flex items-center gap-2.5 p-2.5 rounded-2xl cursor-pointer transition-colors ${getUrgencyColor(task.urgency)}`}
             >
               <div className="flex-shrink-0">{getCategoryIcon(task.category)}</div>
               <div className="flex-1 min-w-0">

@@ -102,7 +102,7 @@ export function HomeMoneyOverview({ instructorId }: HomeMoneyOverviewProps) {
         <h3 className="text-base font-semibold text-foreground">Money Overview</h3>
         <div className="space-y-2">
           {[1, 2].map(i => (
-            <div key={i} className="bg-card rounded-none border p-4 animate-pulse">
+            <div key={i} className="bg-card rounded-2xl border p-4 animate-pulse">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-muted rounded-full" />
                 <div className="flex-1">
@@ -137,7 +137,7 @@ export function HomeMoneyOverview({ instructorId }: HomeMoneyOverviewProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.35 + index * 0.05 }}
-              className="bg-card rounded-none border p-4 flex items-center gap-3 active:scale-[0.99] transition-transform"
+              className="bg-card rounded-2xl border p-4 flex items-center gap-3 active:scale-[0.99] transition-transform"
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">

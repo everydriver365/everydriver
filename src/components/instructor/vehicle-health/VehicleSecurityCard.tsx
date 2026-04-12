@@ -143,7 +143,7 @@ export function VehicleSecurityCard({ vehicle }: VehicleSecurityCardProps) {
                 />
               </div>
 
-              <div className="flex items-start gap-2 p-3 rounded-none bg-amber-500/10 text-amber-700 dark:text-amber-400">
+              <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <p className="text-xs">
                   Alerts are suppressed during scheduled lessons and 15 minutes before/after to avoid false positives.

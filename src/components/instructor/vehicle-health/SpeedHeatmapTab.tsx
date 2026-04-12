@@ -178,8 +178,8 @@ export function SpeedHeatmapTab() {
   if (isLoading || !mapsReady) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-8 w-full rounded-none" />
-        <Skeleton className="h-[340px] w-full rounded-none" />
+        <Skeleton className="h-8 w-full rounded-2xl" />
+        <Skeleton className="h-[340px] w-full rounded-2xl" />
       </div>
     );
   }
@@ -238,12 +238,12 @@ export function SpeedHeatmapTab() {
       {/* Map */}
       <div
         ref={mapRef}
-        className="w-full h-[340px] rounded-none overflow-hidden border border-border/40 shadow-sm"
+        className="w-full h-[340px] rounded-2xl overflow-hidden border border-border/40 shadow-sm"
       />
 
       {/* Top speeding roads */}
       {topRoads.length > 0 && (
-        <div className="rounded-none border border-border/40 bg-card p-4 space-y-3">
+        <div className="rounded-2xl border border-border/40 bg-card p-4 space-y-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-orange-500" />
             <h3 className="text-sm font-semibold">Most Frequent Speeding Locations</h3>

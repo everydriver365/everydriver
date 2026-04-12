@@ -239,7 +239,7 @@ export function RouteUploader({ open, onOpenChange, instructorId, onUploaded }: 
           <div className="space-y-2">
             <Label>Route File (GPX or KML)</Label>
             <div 
-              className="border-2 border-dashed rounded-none p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -290,7 +290,7 @@ export function RouteUploader({ open, onOpenChange, instructorId, onUploaded }: 
           </div>
 
           {waypoints.length > 0 && (
-            <div className="bg-muted/50 rounded-none p-3 space-y-2 text-sm">
+            <div className="bg-muted/50 rounded-2xl p-3 space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-500" />
                 <span>Start: {waypoints[0].latitude.toFixed(4)}, {waypoints[0].longitude.toFixed(4)}</span>

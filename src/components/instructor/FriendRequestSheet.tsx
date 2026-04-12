@@ -62,7 +62,7 @@ export function FriendRequestSheet({ open, onOpenChange, instructorId }: FriendR
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-none">
+      <SheetContent side="bottom" className="h-[85vh] rounded-2xl">
         <SheetHeader>
           <SheetTitle>ADI Friends</SheetTitle>
         </SheetHeader>
@@ -85,7 +85,7 @@ export function FriendRequestSheet({ open, onOpenChange, instructorId }: FriendR
             {searchResults.length > 0 && (
               <div className="mt-2 space-y-2">
                 {searchResults.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between p-2 rounded-none bg-muted">
+                  <div key={r.id} className="flex items-center justify-between p-2 rounded-2xl bg-muted">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                         {r.profile_image_url ? (
@@ -113,7 +113,7 @@ export function FriendRequestSheet({ open, onOpenChange, instructorId }: FriendR
               </p>
               <div className="space-y-2">
                 {pendingReceived.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between p-2 rounded-none bg-muted">
+                  <div key={f.id} className="flex items-center justify-between p-2 rounded-2xl bg-muted">
                     <span className="text-sm font-medium">{f.friendInstructor?.name || "Unknown"}</span>
                     <div className="flex gap-1">
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600" onClick={() => handleRespond(f.id, "accepted")}>
@@ -137,7 +137,7 @@ export function FriendRequestSheet({ open, onOpenChange, instructorId }: FriendR
               </p>
               <div className="space-y-2">
                 {acceptedFriends.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between p-2 rounded-none bg-muted">
+                  <div key={f.id} className="flex items-center justify-between p-2 rounded-2xl bg-muted">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                         {f.friendInstructor?.profile_image_url ? (
@@ -169,7 +169,7 @@ export function FriendRequestSheet({ open, onOpenChange, instructorId }: FriendR
               <p className="text-sm font-medium text-muted-foreground mb-2">Sent Requests</p>
               <div className="space-y-2">
                 {pendingSent.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between p-2 rounded-none bg-muted/50">
+                  <div key={f.id} className="flex items-center justify-between p-2 rounded-2xl bg-muted/50">
                     <span className="text-sm text-muted-foreground">{f.friendInstructor?.name} — pending</span>
                   </div>
                 ))}

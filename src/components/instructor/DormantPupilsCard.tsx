@@ -89,7 +89,7 @@ export function DormantPupilsCard({ instructorId }: DormantPupilsCardProps) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, height: 0 }}
-              className="bg-card border border-border/40 rounded-none p-3 flex items-center gap-3"
+              className="bg-card border border-border/40 rounded-2xl p-3 flex items-center gap-3"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-medium text-foreground">{pupil.name}</p>
@@ -99,7 +99,7 @@ export function DormantPupilsCard({ instructorId }: DormantPupilsCardProps) {
               </div>
               <button
                 onClick={() => navigate(`/instructor/messages?pupil=${pupil.id}`)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-none bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-2xl bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 transition-colors"
               >
                 <MessageSquare className="h-3 w-3" />
                 Check in

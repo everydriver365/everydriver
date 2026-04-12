@@ -44,7 +44,7 @@ export function CheckEngineBanner() {
   };
 
   return (
-    <div className="mt-4 mx-0 rounded-none overflow-hidden border border-destructive/30 bg-destructive/5">
+    <div className="mt-4 mx-0 rounded-2xl overflow-hidden border border-destructive/30 bg-destructive/5">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-4 py-3">
         <div className="h-9 w-9 rounded-full bg-destructive/15 flex items-center justify-center shrink-0">
@@ -85,7 +85,7 @@ export function CheckEngineBanner() {
             return (
               <div
                 key={i}
-                className="flex items-start gap-2 text-xs p-2 rounded-none bg-background/50"
+                className="flex items-start gap-2 text-xs p-2 rounded-2xl bg-background/50"
               >
                 <Badge
                   variant="outline"

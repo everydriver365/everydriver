@@ -207,7 +207,7 @@ export function StepLessonSummary({
           <Collapsible open={roadsOpen} onOpenChange={setRoadsOpen}>
             <div className="space-y-1">
               {uniqueRoads.slice(0, roadsOpen ? undefined : 5).map((road, i) => (
-                <div key={i} className="flex items-center justify-between text-xs py-1.5 px-2 rounded-none bg-muted/30 dark:bg-muted/20">
+                <div key={i} className="flex items-center justify-between text-xs py-1.5 px-2 rounded-2xl bg-muted/30 dark:bg-muted/20">
                   <span className="truncate mr-2 text-foreground">{road.name}</span>
                   <span className={`shrink-0 font-mono ${
                     road.compliance === "over"
@@ -240,19 +240,19 @@ export function StepLessonSummary({
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Safety Events</p>
           <div className="grid grid-cols-3 gap-2">
             {speedingCount > 0 && (
-              <div className="bg-[hsl(var(--destructive)/0.1)] rounded-none p-2 text-center">
+              <div className="bg-[hsl(var(--destructive)/0.1)] rounded-2xl p-2 text-center">
                 <p className="text-lg font-bold text-[hsl(var(--destructive))]">{speedingCount}</p>
                 <p className="text-[10px] text-muted-foreground">Over Speed</p>
               </div>
             )}
             {brakingCount > 0 && (
-              <div className="bg-[hsl(var(--warning)/0.1)] rounded-none p-2 text-center">
+              <div className="bg-[hsl(var(--warning)/0.1)] rounded-2xl p-2 text-center">
                 <p className="text-lg font-bold text-[hsl(var(--warning))]">{brakingCount}</p>
                 <p className="text-[10px] text-muted-foreground">Harsh Brake</p>
               </div>
             )}
             {accelCount > 0 && (
-              <div className="bg-[hsl(var(--warning)/0.15)] rounded-none p-2 text-center">
+              <div className="bg-[hsl(var(--warning)/0.15)] rounded-2xl p-2 text-center">
                 <p className="text-lg font-bold text-[hsl(var(--warning))]">{accelCount}</p>
                 <p className="text-[10px] text-muted-foreground">Harsh Accel</p>
               </div>
@@ -262,7 +262,7 @@ export function StepLessonSummary({
       )}
 
       {hasTelematics && totalSafetyEvents === 0 && (
-        <div className="bg-[hsl(var(--success)/0.1)] rounded-none p-3 text-center">
+        <div className="bg-[hsl(var(--success)/0.1)] rounded-2xl p-3 text-center">
           <p className="text-sm text-[hsl(var(--success))] font-medium">✓ No safety events detected</p>
         </div>
       )}
@@ -352,7 +352,7 @@ function StatCard({
 }) {
   const styles = VARIANT_STYLES[variant];
   return (
-    <div className={`rounded-none p-3 ${styles.bg}`}>
+    <div className={`rounded-2xl p-3 ${styles.bg}`}>
       <div className={`flex items-center gap-1 ${styles.text} mb-1`}>
         {icon}
         <span className="text-[10px] uppercase tracking-wider">{label}</span>

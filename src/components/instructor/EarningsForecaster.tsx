@@ -124,7 +124,7 @@ export function EarningsForecaster({ instructorId }: EarningsForecasterProps) {
 
   if (loading) {
     return (
-      <Card className="rounded-none">
+      <Card className="rounded-2xl">
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
@@ -133,7 +133,7 @@ export function EarningsForecaster({ instructorId }: EarningsForecasterProps) {
   }
 
   return (
-    <Card className="rounded-none">
+    <Card className="rounded-2xl">
       <CardHeader
         className="pb-3 cursor-pointer select-none"
         onClick={() => setExpanded(!expanded)}
@@ -160,15 +160,15 @@ export function EarningsForecaster({ instructorId }: EarningsForecasterProps) {
             <CardContent className="space-y-4 pt-0">
               {/* Key metrics */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 bg-muted/50 rounded-none text-center">
+                <div className="p-3 bg-muted/50 rounded-2xl text-center">
                   <div className="text-lg font-bold text-primary">£{monthProjected}</div>
                   <div className="text-[10px] text-muted-foreground uppercase">This Month</div>
                 </div>
-                <div className="p-3 bg-muted/50 rounded-none text-center">
+                <div className="p-3 bg-muted/50 rounded-2xl text-center">
                   <div className="text-lg font-bold">{weeklyBookedLessons}</div>
                   <div className="text-[10px] text-muted-foreground uppercase">This Week</div>
                 </div>
-                <div className="p-3 bg-muted/50 rounded-none text-center">
+                <div className="p-3 bg-muted/50 rounded-2xl text-center">
                   <div className="flex items-center justify-center gap-1">
                     <AlertTriangle className="h-3 w-3 text-destructive" />
                     <span className="text-lg font-bold text-destructive">{cancellationRate}%</span>

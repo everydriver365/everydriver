@@ -134,7 +134,7 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
                   onChange={(e) => setNewTitle(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                   placeholder="Add a task…"
-                  className="h-8 text-sm border-0 border-b border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  className="h-8 text-sm border-0 border-b border-border/50 rounded-2xl px-0 focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="flex items-center gap-2">

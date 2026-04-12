@@ -34,7 +34,7 @@ export function RoadAlertsRow({ alerts, className = "" }: RoadAlertsRowProps) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className={`flex items-center gap-2.5 py-2 px-3 rounded-none border ${colors}`}
+            className={`flex items-center gap-2.5 py-2 px-3 rounded-2xl border ${colors}`}
           >
             <Icon className="h-4 w-4 flex-shrink-0" />
             <div className="flex-1 min-w-0">

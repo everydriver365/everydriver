@@ -178,7 +178,7 @@ export function CPDLogManager({ instructorId, onUpdate }: CPDLogManagerProps) {
     <div className="space-y-4">
       {/* Add New Entry Form */}
       {showForm ? (
-        <div className="space-y-4 p-4 rounded-none border bg-muted/30">
+        <div className="space-y-4 p-4 rounded-2xl border bg-muted/30">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Date</Label>
@@ -270,7 +270,7 @@ export function CPDLogManager({ instructorId, onUpdate }: CPDLogManagerProps) {
           entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-start justify-between p-3 rounded-none border bg-background"
+              className="flex items-start justify-between p-3 rounded-2xl border bg-background"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

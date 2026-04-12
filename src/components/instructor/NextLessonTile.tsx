@@ -105,14 +105,14 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
 
   if (isLoading) {
     return (
-      <div className="rounded-none p-4 animate-pulse"
+      <div className="rounded-2xl p-4 animate-pulse"
         style={{
           background: "rgba(255,255,255,0.65)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        <div className="h-16 bg-muted/30 rounded-none" />
+        <div className="h-16 bg-muted/30 rounded-2xl" />
       </div>
     );
   }

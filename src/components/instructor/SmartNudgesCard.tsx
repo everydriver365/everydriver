@@ -115,7 +115,7 @@ export function SmartNudgesCard({ instructorId }: SmartNudgesCardProps) {
 
   return (
     <div className="mt-4 mb-4">
-      <div className="rounded-none border border-border/50 bg-card overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-sm">
         {/* Header */}
         <button
           onClick={() => setExpanded(!expanded)}

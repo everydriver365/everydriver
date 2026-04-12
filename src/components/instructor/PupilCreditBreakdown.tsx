@@ -67,7 +67,7 @@ export function PupilCreditBreakdown({
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 rounded-none p-3">
+      <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 rounded-2xl p-3">
         <div className="flex items-center justify-center py-2">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
@@ -80,7 +80,7 @@ export function PupilCreditBreakdown({
   }
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 rounded-none p-3 space-y-2">
+    <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 rounded-2xl p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-primary" />
@@ -91,7 +91,7 @@ export function PupilCreditBreakdown({
       <div className="space-y-1.5">
         {/* Prepaid Hours */}
         {prepaidHours > 0 && (
-          <div className="flex items-center justify-between bg-background/60 rounded-none px-2.5 py-2">
+          <div className="flex items-center justify-between bg-background/60 rounded-2xl px-2.5 py-2">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
                 <Clock className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
@@ -106,7 +106,7 @@ export function PupilCreditBreakdown({
 
         {/* Deposit */}
         {paymentType === "deposit" && depositPaid > 0 && (
-          <div className="flex items-center justify-between bg-background/60 rounded-none px-2.5 py-2">
+          <div className="flex items-center justify-between bg-background/60 rounded-2xl px-2.5 py-2">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
                 <CreditCard className="h-3 w-3 text-blue-600 dark:text-blue-400" />
@@ -121,7 +121,7 @@ export function PupilCreditBreakdown({
 
         {/* Upsells */}
         {upsells.map((upsell) => (
-          <div key={upsell.id} className="flex items-center justify-between bg-background/60 rounded-none px-2.5 py-2">
+          <div key={upsell.id} className="flex items-center justify-between bg-background/60 rounded-2xl px-2.5 py-2">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/50">
                 <Package className="h-3 w-3 text-purple-600 dark:text-purple-400" />

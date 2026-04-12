@@ -101,13 +101,13 @@ export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCard
       {(todayLessons !== undefined || expectedEarnings !== undefined) && (
         <div className="flex gap-2">
           {todayLessons !== undefined && (
-            <div className="flex-1 bg-primary/5 rounded-none px-3 py-2 text-center">
+            <div className="flex-1 bg-primary/5 rounded-2xl px-3 py-2 text-center">
               <div className="text-lg font-bold text-foreground">{todayLessons}</div>
               <div className="text-[10px] text-muted-foreground font-medium">Lessons today</div>
             </div>
           )}
           {expectedEarnings !== undefined && (
-            <div className="flex-1 bg-emerald-500/5 rounded-none px-3 py-2 text-center">
+            <div className="flex-1 bg-emerald-500/5 rounded-2xl px-3 py-2 text-center">
               <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">£{expectedEarnings}</div>
               <div className="text-[10px] text-muted-foreground font-medium">Expected</div>
             </div>
@@ -125,12 +125,12 @@ export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCard
             transition={{ delay: 0.5 + i * 0.1 }}
             onClick={() => onActionClick?.(action.id)}
             className={cn(
-              "w-full flex items-center gap-3 rounded-none p-2.5 text-left transition-colors",
+              "w-full flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors",
               action.bgColor,
               "hover:ring-1 hover:ring-border"
             )}
           >
-            <div className={cn("h-8 w-8 rounded-none flex items-center justify-center shrink-0", action.bgColor)}>
+            <div className={cn("h-8 w-8 rounded-2xl flex items-center justify-center shrink-0", action.bgColor)}>
               <action.icon className={cn("h-4 w-4", action.color)} />
             </div>
             <div className="flex-1 min-w-0">
@@ -147,7 +147,7 @@ export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCard
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="bg-muted/50 rounded-none px-3 py-2 text-[11px] text-muted-foreground leading-relaxed"
+        className="bg-muted/50 rounded-2xl px-3 py-2 text-[11px] text-muted-foreground leading-relaxed"
       >
         {DAILY_TIPS[tipIndex]}
       </motion.div>

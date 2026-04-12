@@ -147,7 +147,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
           {expandedLog === log.id && (
             <CardContent className="pt-0 pb-4 space-y-3">
               {log.what_went_well && (
-                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-none">
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl">
                   <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">
                     What went well
                   </p>
@@ -156,7 +156,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
               )}
 
               {log.improvements && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-none">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-2xl">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">
                     Areas to improve
                   </p>
@@ -165,7 +165,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
               )}
 
               {log.next_goals && (
-                <div className="bg-primary/5 dark:bg-primary/10 p-3 rounded-none">
+                <div className="bg-primary/5 dark:bg-primary/10 p-3 rounded-2xl">
                   <p className="text-xs font-medium text-primary mb-1">
                     Goals for next lesson
                   </p>
@@ -174,7 +174,7 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
               )}
 
               {log.instructor_response ? (
-                <div className="border-l-4 border-primary p-3 bg-muted/50 rounded-none">
+                <div className="border-l-4 border-primary p-3 bg-muted/50 rounded-2xl">
                   <p className="text-xs font-medium text-primary mb-1">Your Response</p>
                   <p className="text-sm">{log.instructor_response}</p>
                   <p className="text-xs text-muted-foreground mt-2">

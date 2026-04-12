@@ -238,7 +238,7 @@ export function BloodGlucoseTracker() {
 
             {/* Estimated A1C Card */}
             {estimatedA1c && (
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-none p-3 border border-purple-200 dark:border-purple-800/30">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-2xl p-3 border border-purple-200 dark:border-purple-800/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Estimated HbA1c</span>
@@ -263,15 +263,15 @@ export function BloodGlucoseTracker() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-muted/50 rounded-none p-2">
+              <div className="bg-muted/50 rounded-2xl p-2">
                 <p className="text-xs text-muted-foreground">90-day Avg</p>
                 <p className="font-semibold">{avgGlucose}</p>
               </div>
-              <div className="bg-muted/50 rounded-none p-2">
+              <div className="bg-muted/50 rounded-2xl p-2">
                 <p className="text-xs text-muted-foreground">Readings</p>
                 <p className="font-semibold">{readings.length}</p>
               </div>
-              <div className="bg-muted/50 rounded-none p-2">
+              <div className="bg-muted/50 rounded-2xl p-2">
                 <p className="text-xs text-muted-foreground">Trend</p>
                 <div className="flex items-center justify-center gap-1">
                   {trend === "up" && <TrendingUp className="h-4 w-4 text-red-500" />}

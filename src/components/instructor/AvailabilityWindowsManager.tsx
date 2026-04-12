@@ -98,7 +98,7 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
           return (
             <div key={i} className="text-center">
               <p className="text-xs font-medium text-muted-foreground mb-1">{d}</p>
-              <div className={`h-8 rounded-none flex items-center justify-center text-xs font-medium ${daySlots.length > 0 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+              <div className={`h-8 rounded-2xl flex items-center justify-center text-xs font-medium ${daySlots.length > 0 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
                 {daySlots.length > 0 ? `${daySlots.length}` : "–"}
               </div>
             </div>
@@ -145,7 +145,7 @@ export function AvailabilityWindowsManager({ instructorId }: { instructorId: str
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Day</label>
-              <select className="w-full rounded-none border p-2 text-sm bg-background" value={day} onChange={(e) => setDay(+e.target.value)}>
+              <select className="w-full rounded-2xl border p-2 text-sm bg-background" value={day} onChange={(e) => setDay(+e.target.value)}>
                 {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
               </select>
             </div>

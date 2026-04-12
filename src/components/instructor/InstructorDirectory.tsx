@@ -107,7 +107,7 @@ export function InstructorDirectory({ instructorId }: InstructorDirectoryProps) 
             return (
               <div
                 key={inst.id}
-                className="flex items-center justify-between p-3 rounded-none bg-card border border-border"
+                className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">

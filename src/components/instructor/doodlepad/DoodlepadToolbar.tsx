@@ -92,7 +92,7 @@ export function DoodlepadToolbar({
       </div>
 
       {/* Main toolbar */}
-      <div className="flex items-center justify-center gap-1 flex-wrap bg-white/95 dark:bg-card/95 backdrop-blur rounded-none shadow-lg border border-border/50 px-2 py-2">
+      <div className="flex items-center justify-center gap-1 flex-wrap bg-white/95 dark:bg-card/95 backdrop-blur rounded-2xl shadow-lg border border-border/50 px-2 py-2">
         {/* Draw / Pan toggle */}
         <Button
           variant={isDrawing ? "default" : "outline"}
@@ -147,7 +147,7 @@ export function DoodlepadToolbar({
             key={w}
             onClick={() => onLineWidthChange(w)}
             className={cn(
-              "h-8 w-8 rounded-none flex items-center justify-center transition-colors",
+              "h-8 w-8 rounded-2xl flex items-center justify-center transition-colors",
               lineWidth === w ? "bg-primary/20" : "hover:bg-muted"
             )}
             title={`Width ${w}`}

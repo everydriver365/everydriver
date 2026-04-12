@@ -129,7 +129,7 @@ const VideoClipGallery: React.FC<VideoClipGalleryProps> = ({
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="aspect-video rounded-none" />
+              <Skeleton key={i} className="aspect-video rounded-2xl" />
             ))}
           </div>
         </CardContent>
@@ -170,7 +170,7 @@ const VideoClipGallery: React.FC<VideoClipGalleryProps> = ({
               return (
                 <div
                   key={clip.id}
-                  className="group relative aspect-video rounded-none overflow-hidden bg-muted cursor-pointer"
+                  className="group relative aspect-video rounded-2xl overflow-hidden bg-muted cursor-pointer"
                   onClick={() => setSelectedClip(clip)}
                 >
                   {/* Thumbnail or Placeholder */}
@@ -287,7 +287,7 @@ const VideoClipGallery: React.FC<VideoClipGalleryProps> = ({
           </DialogHeader>
           {selectedClip && (
             <div className="p-4 pt-2 space-y-4">
-              <div className="aspect-video rounded-none overflow-hidden bg-black">
+              <div className="aspect-video rounded-2xl overflow-hidden bg-black">
                 <video
                   src={selectedClip.video_url}
                   controls
@@ -296,7 +296,7 @@ const VideoClipGallery: React.FC<VideoClipGalleryProps> = ({
                 />
               </div>
               {selectedClip.instructor_note && (
-                <div className="p-3 bg-muted/50 rounded-none">
+                <div className="p-3 bg-muted/50 rounded-2xl">
                   <p className="text-sm">{selectedClip.instructor_note}</p>
                 </div>
               )}

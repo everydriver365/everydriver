@@ -57,7 +57,7 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
       {/* Empty state */}
       {lessons.length === 0 ? (
         <div
-          className="bg-card rounded-none p-8 flex flex-col items-center justify-center text-center"
+          className="bg-card rounded-2xl p-8 flex flex-col items-center justify-center text-center"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
         >
           <CalendarOff className="h-10 w-10 text-muted-foreground mb-3" />

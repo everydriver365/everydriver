@@ -59,7 +59,7 @@ export function WeatherWidget({ weather, loading, className }: WeatherWidgetProp
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, height: 0 }}
-        className={cn("bg-card rounded-none shadow-sm border border-border overflow-hidden relative", className)}
+        className={cn("bg-card rounded-2xl shadow-sm border border-border overflow-hidden relative", className)}
       >
         {/* Dismiss button */}
         <button
@@ -70,7 +70,7 @@ export function WeatherWidget({ weather, loading, className }: WeatherWidgetProp
         </button>
 
         <div className="px-4 py-3 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-none bg-amber-500/10 flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
             <IconComp className="h-5 w-5 text-amber-500" />
           </div>
           <div className="flex-1 min-w-0">

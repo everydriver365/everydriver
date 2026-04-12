@@ -107,10 +107,10 @@ export function BriefingActionModal({ actionId, instructorId, open, onClose }: B
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-sm rounded-none">
+      <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-none bg-primary/10 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
               <IconComp className="h-4.5 w-4.5 text-primary" />
             </div>
             <DialogTitle className="text-base">{config.title}</DialogTitle>
@@ -131,7 +131,7 @@ export function BriefingActionModal({ actionId, instructorId, open, onClose }: B
           )}
         </div>
 
-        <Button onClick={handleNavigate} className="w-full gap-2 rounded-none">
+        <Button onClick={handleNavigate} className="w-full gap-2 rounded-2xl">
           {config.buttonLabel}
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -148,7 +148,7 @@ function PaymentsContent({ debtors }: { debtors: DebtorInfo[] }) {
   return (
     <div className="space-y-2">
       {debtors.map((d) => (
-        <div key={d.id} className="flex items-center justify-between rounded-none bg-muted/50 px-3 py-2">
+        <div key={d.id} className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2">
           <span className="text-sm font-medium text-foreground truncate">{d.name}</span>
           <span className="text-sm font-semibold text-destructive">£{d.debt.toFixed(2)}</span>
         </div>
@@ -167,7 +167,7 @@ function TestsContent({ tests }: { tests: TestInfo[] }) {
   return (
     <div className="space-y-2">
       {tests.map((t) => (
-        <div key={t.id} className="flex items-center justify-between rounded-none bg-muted/50 px-3 py-2">
+        <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2">
           <div className="min-w-0">
             <span className="text-sm font-medium text-foreground truncate block">{t.pupilName}</span>
             <span className="text-[11px] text-muted-foreground">

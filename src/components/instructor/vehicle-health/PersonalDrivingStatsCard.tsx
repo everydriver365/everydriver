@@ -99,10 +99,10 @@ export function PersonalDrivingStatsCard({ className = "" }: { className?: strin
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`rounded-none border border-border bg-card overflow-hidden ${className}`}
+        className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
       >
         <div className="px-4 pt-4 pb-2 flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-none bg-primary/10 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
             <ShieldCheck className="h-4.5 w-4.5 text-primary" />
           </div>
           <div>
@@ -144,12 +144,12 @@ export function PersonalDrivingStatsCard({ className = "" }: { className?: strin
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`rounded-none border border-border bg-card overflow-hidden ${className}`}
+      className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
     >
       {/* Header */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-none bg-primary/10 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
             <ShieldCheck className="h-4.5 w-4.5 text-primary" />
           </div>
           <div>
@@ -178,17 +178,17 @@ export function PersonalDrivingStatsCard({ className = "" }: { className?: strin
 
       {/* Stats grid */}
       <div className="px-3 pb-3 grid grid-cols-3 gap-2">
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <Fuel className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
           <p className="text-base font-bold tabular-nums">{stats.avgSpeedMph}</p>
           <p className="text-[10px] text-muted-foreground font-medium">avg mph</p>
         </div>
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <Timer className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
           <p className={`text-base font-bold tabular-nums ${idleColor}`}>{stats.idlePercent}%</p>
           <p className="text-[10px] text-muted-foreground font-medium">idle time</p>
         </div>
-        <div className="rounded-none bg-muted/50 p-2.5 text-center">
+        <div className="rounded-2xl bg-muted/50 p-2.5 text-center">
           <TrendingUp className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
           <p className="text-base font-bold tabular-nums">{stats.totalMiles.toLocaleString()}</p>
           <p className="text-[10px] text-muted-foreground font-medium">miles</p>

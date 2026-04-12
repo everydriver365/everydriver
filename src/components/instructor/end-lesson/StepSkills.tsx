@@ -15,7 +15,7 @@ export function StepSkills({ lessonId, pupilId, instructorId, onSaved }: StepSki
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="w-full flex items-center justify-between p-3 rounded-none bg-muted/50 hover:bg-muted transition-colors">
+      <CollapsibleTrigger className="w-full flex items-center justify-between p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors">
         <span className="text-sm font-medium text-foreground">
           {open ? "Update Skills" : "Tap to update skills"}
         </span>

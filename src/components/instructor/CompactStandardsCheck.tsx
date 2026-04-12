@@ -149,19 +149,19 @@ export function CompactStandardsCheck({ instructorId }: CompactStandardsCheckPro
           <>
             {/* Status Banner */}
             {standardsCheckRequired ? (
-              <div className="flex items-center gap-2 p-2 rounded-none bg-destructive/10">
+              <div className="flex items-center gap-2 p-2 rounded-2xl bg-destructive/10">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
                 <span className="text-sm font-medium text-destructive">Standards Check Required</span>
               </div>
             ) : hasWarning ? (
-              <div className="flex items-center gap-2 p-2 rounded-none bg-amber-500/10">
+              <div className="flex items-center gap-2 p-2 rounded-2xl bg-amber-500/10">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
                   {triggersCount} trigger{triggersCount > 1 ? "s" : ""} met
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 p-2 rounded-none bg-emerald-500/10">
+              <div className="flex items-center gap-2 p-2 rounded-2xl bg-emerald-500/10">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">All metrics OK</span>
               </div>
@@ -225,7 +225,7 @@ function TriggerIndicator({
   return (
     <div
       className={cn(
-        "p-2 rounded-none text-center",
+        "p-2 rounded-2xl text-center",
         triggered ? "bg-destructive/10" : "bg-muted/50"
       )}
     >

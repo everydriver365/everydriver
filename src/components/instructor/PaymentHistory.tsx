@@ -158,7 +158,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
               {payments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex items-center justify-between rounded-none border p-3 hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between rounded-2xl border p-3 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">

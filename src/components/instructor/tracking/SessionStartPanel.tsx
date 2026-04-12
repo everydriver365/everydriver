@@ -49,7 +49,7 @@
 
    return (
      <motion.div 
-       className="bg-white dark:bg-card rounded-none shadow-xl overflow-hidden"
+       className="bg-white dark:bg-card rounded-2xl shadow-xl overflow-hidden"
        initial={{ opacity: 0, y: 20 }}
        animate={{ opacity: 1, y: 0 }}
        transition={{ duration: 0.4, delay: 0.1 }}
@@ -65,9 +65,9 @@
          <div className="relative">
            <button
              onClick={() => setShowPupilList(!showPupilList)}
-             className="w-full flex items-center gap-3 p-4 rounded-none bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors"
+             className="w-full flex items-center gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors"
            >
-             <div className={`w-12 h-12 rounded-none flex items-center justify-center ${
+             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                selectedPupilId 
                  ? "bg-primary/10" 
                  : "bg-slate-200 dark:bg-muted"
@@ -95,7 +95,7 @@
            <AnimatePresence>
              {showPupilList && (
                <motion.div
-                 className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-card rounded-none shadow-2xl border border-border overflow-hidden max-h-64 overflow-y-auto"
+                 className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-card rounded-2xl shadow-2xl border border-border overflow-hidden max-h-64 overflow-y-auto"
                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
                  animate={{ opacity: 1, y: 0, scale: 1 }}
                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -108,7 +108,7 @@
                      !selectedPupilId ? "bg-slate-50 dark:bg-muted/50" : ""
                    }`}
                  >
-                   <div className="w-10 h-10 rounded-none bg-slate-200 dark:bg-muted flex items-center justify-center">
+                   <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-muted flex items-center justify-center">
                      <Route className="h-4 w-4 text-muted-foreground" />
                    </div>
                    <div className="text-left">
@@ -131,7 +131,7 @@
                          selectedPupilId === pupil.id ? "bg-slate-50 dark:bg-muted/50" : ""
                        }`}
                      >
-                       <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center">
+                       <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
                          <span className="text-sm font-bold text-primary">
                            {pupil.name?.charAt(0) || "?"}
                          </span>
@@ -169,13 +169,13 @@
                {/* Practice Card */}
                <button
                  onClick={() => setSessionType("practice")}
-                 className={`relative p-4 rounded-none text-left transition-all ${
+                 className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "practice"
                      ? "bg-primary/5 ring-2 ring-primary shadow-md"
                      : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
-                 <div className={`w-10 h-10 rounded-none flex items-center justify-center mb-3 ${
+                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 ${
                    sessionType === "practice"
                      ? "bg-primary text-primary-foreground"
                      : "bg-slate-200 dark:bg-muted text-muted-foreground"
@@ -202,13 +202,13 @@
                {/* Test Route Card */}
                <button
                  onClick={() => setSessionType("test")}
-                 className={`relative p-4 rounded-none text-left transition-all ${
+                 className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "test"
                      ? "bg-primary/5 ring-2 ring-primary shadow-md"
                      : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
-                 <div className={`w-10 h-10 rounded-none flex items-center justify-center mb-3 ${
+                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 ${
                    sessionType === "test"
                      ? "bg-primary text-primary-foreground"
                      : "bg-slate-200 dark:bg-muted text-muted-foreground"
@@ -239,7 +239,7 @@
          <div className="space-y-3">
            <Button 
              size="lg"
-             className="w-full h-14 text-lg font-bold rounded-none shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+             className="w-full h-14 text-lg font-bold rounded-2xl shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
              onClick={handleStartClick}
              disabled={isStarting}
            >
@@ -261,7 +261,7 @@
            <Button 
              size="lg"
              variant="outline"
-             className="w-full h-12 rounded-none border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
+             className="w-full h-12 rounded-2xl border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
              onClick={onOpenDrivingTestDialog}
              disabled={isStarting}
              title="Record Official Driving Test"

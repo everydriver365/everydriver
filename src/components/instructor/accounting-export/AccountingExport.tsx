@@ -182,7 +182,7 @@ export function AccountingExport({ instructorId }: AccountingExportProps) {
                     <Download className="h-3 w-3" />
                     Manual CSV Export
                   </p>
-                  <div className="p-3 rounded-none border space-y-2">
+                  <div className="p-3 rounded-2xl border space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">Expenses</span>
                       <div className="flex gap-2">
@@ -196,7 +196,7 @@ export function AccountingExport({ instructorId }: AccountingExportProps) {
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-none border space-y-2 mt-2">
+                  <div className="p-3 rounded-2xl border space-y-2 mt-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">Income</span>
                       <Button size="sm" variant="outline" onClick={exportIncome} disabled={exporting}>

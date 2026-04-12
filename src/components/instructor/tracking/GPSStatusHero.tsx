@@ -34,7 +34,7 @@ export function GPSStatusHero({
      <div className="space-y-4">
        {/* Main Connection Status Card */}
        <motion.div 
-         className="relative overflow-hidden bg-white dark:bg-card rounded-none shadow-xl"
+         className="relative overflow-hidden bg-white dark:bg-card rounded-2xl shadow-xl"
          initial={{ opacity: 0, y: 20 }}
          animate={{ opacity: 1, y: 0 }}
          transition={{ duration: 0.4 }}
@@ -61,7 +61,7 @@ export function GPSStatusHero({
             <div className={`flex items-center ${showReconnecting ? "gap-2" : "gap-3"}`}>
               {/* Status Icon */}
               <div className="relative">
-                <div className="flex items-center justify-center w-11 h-11 rounded-none bg-white/20">
+                <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/20">
                   {isConnected ? (
                     <Radio className="h-5 w-5 text-white" />
                   ) : isParked ? (
@@ -169,7 +169,7 @@ export function GPSStatusHero({
               <Button 
                  variant="outline" 
                  size="sm" 
-                 className="w-full h-8 rounded-none text-xs"
+                 className="w-full h-8 rounded-2xl text-xs"
                 onClick={onManualReconnect}
               >
                 <RefreshCw className="h-3.5 w-3.5 mr-1.5" />

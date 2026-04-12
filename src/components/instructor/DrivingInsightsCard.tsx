@@ -125,7 +125,7 @@ const DrivingInsightsCard: React.FC<DrivingInsightsCardProps> = ({
       
       <CardContent className="space-y-4">
         {/* Score and Trend */}
-        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-none">
+        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-2xl">
           <div className="flex-1">
             <div className="flex items-baseline gap-2 mb-1">
               <span className={cn("text-4xl font-bold", scoreColor)}>
@@ -145,7 +145,7 @@ const DrivingInsightsCard: React.FC<DrivingInsightsCardProps> = ({
         </div>
 
         {/* Summary */}
-        <p className="text-sm text-muted-foreground bg-primary/5 p-3 rounded-none">
+        <p className="text-sm text-muted-foreground bg-primary/5 p-3 rounded-2xl">
           {insights.summary}
         </p>
 
@@ -195,7 +195,7 @@ const DrivingInsightsCard: React.FC<DrivingInsightsCardProps> = ({
                 <div
                   key={i}
                   className={cn(
-                    "p-3 rounded-none border text-sm",
+                    "p-3 rounded-2xl border text-sm",
                     tip.priority === 'high' && "border-destructive/30 bg-destructive/5",
                     tip.priority === 'medium' && "border-amber-500/30 bg-amber-50/50 dark:bg-amber-900/10",
                     tip.priority === 'low' && "border-border bg-muted/30"

@@ -80,7 +80,7 @@ export function SettingsSearchBar({ items, onSelect }: SettingsSearchBarProps) {
           onFocus={() => { if (query.trim()) setOpen(true); }}
           onKeyDown={handleKeyDown}
           placeholder="Search settings..."
-          className="pl-9 pr-8 rounded-none bg-white dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+          className="pl-9 pr-8 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
         />
         {query && (
           <button
@@ -93,7 +93,7 @@ export function SettingsSearchBar({ items, onSelect }: SettingsSearchBarProps) {
       </div>
 
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-none bg-white dark:bg-[#1C1C1E] shadow-lg border border-border/50 max-h-64 overflow-y-auto">
+        <div className="absolute z-50 mt-1 w-full rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-lg border border-border/50 max-h-64 overflow-y-auto">
           {filtered.map((item, i) => (
             <button
               key={item.id}
@@ -113,7 +113,7 @@ export function SettingsSearchBar({ items, onSelect }: SettingsSearchBarProps) {
       )}
 
       {open && query.trim().length > 0 && filtered.length === 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-none bg-white dark:bg-[#1C1C1E] shadow-lg border border-border/50 p-4 text-center">
+        <div className="absolute z-50 mt-1 w-full rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-lg border border-border/50 p-4 text-center">
           <p className="text-sm text-muted-foreground">No settings found for "{query}"</p>
         </div>
       )}
