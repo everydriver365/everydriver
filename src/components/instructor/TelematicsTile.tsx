@@ -53,7 +53,7 @@ export function TelematicsTile() {
         {/* Main row — always visible */}
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center gap-3 p-3 text-left"
+          className="w-full flex items-center gap-3 p-3 text-left rounded-2xl"
         >
           <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${status.bg}`}>
             <Activity className={`h-4.5 w-4.5 ${status.color}`} />
