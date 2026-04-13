@@ -36,10 +36,20 @@ export default function HomepageRedesignDemo() {
         <div className="container max-w-6xl relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
-                Driving School Management
-                <br />
-                <span className="text-[#0075c9]">Free Forever for ADIs & PDIs!</span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">Free for every driving instructor</span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.08] tracking-tight mb-6">
+                <span className="block">Driving School</span>
+                <span className="block bg-gradient-to-r from-[hsl(var(--primary))] to-[#0075c9] bg-clip-text text-transparent">Management</span>
+                <span className="block text-2xl md:text-3xl lg:text-4xl font-bold text-muted-foreground mt-2">
+                  Free forever for ADIs & PDIs
+                </span>
               </h1>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
