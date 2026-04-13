@@ -37,8 +37,8 @@ export default function SchoolWebsiteInstructors() {
           .from("instructors")
           .select("id, name, phone, lesson_rate, profile_image_url, postcode, transmission_type, bio, app_slug, average_rating, total_reviews")
           .in("id", ids)
-          .eq("is_active", true);
-        setInstructors((data || []).map((i) => ({ ...i, slug: i.app_slug })));
+          .eq("is_active", true) as any;
+        setInstructors((data || []).map((i: any) => ({ ...i, slug: i.app_slug })));
       }
     };
     fetch();
