@@ -130,6 +130,8 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [instructorSchoolMap, setInstructorSchoolMap] = useState<Record<string, string>>({});
 
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
