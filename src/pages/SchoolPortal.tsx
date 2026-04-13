@@ -33,6 +33,7 @@ import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSec
 import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
+import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");

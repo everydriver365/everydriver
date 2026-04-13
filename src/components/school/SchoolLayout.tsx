@@ -106,6 +106,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   "live-map": { title: "Live Map", group: "Overview" },
   "revenue-analytics": { title: "Revenue Analytics", group: "Overview" },
   leaderboard: { title: "Leaderboard", group: "Overview" },
+  "pupil-progress": { title: "Pupil Progress", group: "Overview" },
   instructors: { title: "Instructors", group: "Management" },
   pupils: { title: "Pupils", group: "Management" },
   bookings: { title: "Bookings", group: "Management" },
