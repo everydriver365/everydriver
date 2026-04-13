@@ -24,7 +24,7 @@ interface InstructorCard {
   id: string;
   name: string;
   phone: string;
-  lesson_rate: number;
+  hourly_rate: number | null;
   profile_image_url: string | null;
   postcode: string | null;
   transmission_type: string | null;
