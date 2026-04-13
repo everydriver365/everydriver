@@ -577,14 +577,6 @@ export default function InstructorPay() {
           </div>
         </motion.section>
 
-        {/* ── Payouts ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.42 }}
-        >
-          <InstructorPayoutHistory instructorId={instructorId} />
-        </motion.div>
 
         {/* ── Pupil Balances ── */}
         <motion.section
