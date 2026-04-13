@@ -13290,6 +13290,115 @@ export type Database = {
           },
         ]
       }
+      school_course_instructors: {
+        Row: {
+          id: string
+          instructor_id: string
+          school_course_id: string
+        }
+        Insert: {
+          id?: string
+          instructor_id: string
+          school_course_id: string
+        }
+        Update: {
+          id?: string
+          instructor_id?: string
+          school_course_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_course_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_course_instructors_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_course_instructors_school_course_id_fkey"
+            columns: ["school_course_id"]
+            isOneToOne: false
+            referencedRelation: "school_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_courses: {
+        Row: {
+          course_hours: number
+          course_image_url: string | null
+          course_name: string
+          created_at: string
+          description: string | null
+          discounted_price: number | null
+          display_order: number
+          features: string[] | null
+          id: string
+          is_active: boolean
+          is_intensive: boolean
+          is_popular: boolean
+          price: number
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          course_hours: number
+          course_image_url?: string | null
+          course_name: string
+          created_at?: string
+          description?: string | null
+          discounted_price?: number | null
+          display_order?: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          is_intensive?: boolean
+          is_popular?: boolean
+          price: number
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          course_hours?: number
+          course_image_url?: string | null
+          course_name?: string
+          created_at?: string
+          description?: string | null
+          discounted_price?: number | null
+          display_order?: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          is_intensive?: boolean
+          is_popular?: boolean
+          price?: number
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_courses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_courses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_instructors: {
         Row: {
           id: string
@@ -15679,6 +15788,7 @@ export type Database = {
         Args: { p_distance_km: number; p_vehicle_id: string }
         Returns: undefined
       }
+      is_school_owner: { Args: { p_school_id: string }; Returns: boolean }
       update_live_position:
         | {
             Args: {
