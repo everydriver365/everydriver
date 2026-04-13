@@ -35,7 +35,7 @@ function TyreTrackPattern() {
 }
 
 export function Footer() {
-  const { logo, logoAlt, homeLink } = useRouteLogo();
+  const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
 
   return (
     <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">

@@ -28,6 +28,7 @@ export function useRouteLogo() {
     return {
       logo: isDrive365Route ? drive365Logo : dsmLogo,
       logoAlt: isDrive365Route ? "Drive365" : "DSM",
+      logoText: isDrive365Route ? null : "Driving School Manager",
       homeLink: isDrive365Route ? "/drive365" : "/instructor-app",
       isDrive365: isDrive365Route,
     };
