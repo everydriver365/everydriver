@@ -27,7 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
-import { OwesMoneyCard } from "@/components/instructor/money/OwesMoneyCard";
+import { Button } from "@/components/ui/button";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { haptics } from "@/lib/haptics";
