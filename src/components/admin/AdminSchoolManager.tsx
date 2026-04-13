@@ -22,7 +22,6 @@ interface SchoolRow {
   owner_user_id: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  domain: string | null;
   enabled_features: Json;
   payment_gateway_mode: string | null;
   created_at: string;
@@ -54,7 +53,7 @@ export function AdminSchoolManager() {
     setLoading(true);
     const { data } = await supabase
       .from("schools")
-      .select("id, name, slug, owner_user_id, contact_email, contact_phone, domain, enabled_features, payment_gateway_mode, created_at")
+      .select("id, name, slug, owner_user_id, contact_email, contact_phone, enabled_features, payment_gateway_mode, created_at")
       .order("name");
 
     if (data) {
