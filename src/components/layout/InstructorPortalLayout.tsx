@@ -107,6 +107,7 @@ import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
+import dsmLogo from "@/assets/dsm-logo.png";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -548,10 +549,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </Sheet>
 
                     <img
-                      src="/dsm-logo.png"
+                      src={dsmLogo}
                       alt="DSM"
                       className="h-6 shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                     <MobileNotificationBell instructorId={instructor?.id} />
                   </div>
