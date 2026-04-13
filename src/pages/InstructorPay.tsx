@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   PoundSterling,
   QrCode,
@@ -11,8 +11,12 @@ import {
   Users,
   ArrowUpRight,
   ChevronRight,
+  ChevronDown,
   AlertCircle,
   Trophy,
+  MessageSquare,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
