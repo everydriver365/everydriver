@@ -185,14 +185,27 @@ Deno.serve(async (req) => {
 
     const deviceMap = new Map(devices.map((d: any) => [d.device_identifier, d]));
 
-    // ─── Fetch positions: prefer KT v2, fallback to legacy ───
+    // ─── Fetch positions: try KT v2 first, fallback to legacy ───
     let positions: any[];
     let apiUsed: string;
+    let ktFailed = false;
 
     if (ktApiKey) {
-      positions = await fetchPositionsKT(ktApiKey, customerId);
-      apiUsed = "kt_v2";
-    } else {
+      try {
+        positions = await fetchPositionsKT(ktApiKey, customerId);
+        apiUsed = "kt_v2";
+      } catch (ktErr) {
+        console.log("[RadiusPoller] KT v2 failed, falling back to legacy:", ktErr.message);
+        ktFailed = true;
+      }
+    }
+
+    if (!ktApiKey || ktFailed) {
+      if (!hasLegacy) {
+        return new Response(JSON.stringify({ skipped: true, reason: ktFailed ? "KT v2 failed and no legacy credentials" : "No credentials configured" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+        });
+      }
       const session = await authenticateLegacy(supabase);
       if (!session) {
         return new Response(JSON.stringify({ skipped: true, reason: "Legacy auth failed" }), {
