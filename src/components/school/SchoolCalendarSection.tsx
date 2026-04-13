@@ -193,6 +193,8 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
               </button>
             ))}
           </div>
+        )}
+      </div>
 
       {/* Main calendar */}
       <div className="flex-1 min-w-0">
