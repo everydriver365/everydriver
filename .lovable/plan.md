@@ -1,40 +1,54 @@
 
 
-## Plan: Add BNPL Section to School Manager
+## Plan: School Payment Gateways + Admin School Commission Settings
 
 ### Overview
-Add a "Buy Now, Pay Later" menu item under the Financials group in the school sidebar, linking to a new section where schools can configure their Klarna and Clearpay accounts for use on their booking pages.
+Add a "Payment Gateways" section to the school sidebar where schools choose between using the DSM (platform) Square account (paying a commission set by admin) or connecting their own payment gateway credentials (Square, Stripe, PayPal). Also add a "School Commission" config card in the admin portal's Commission & Fees section.
 
-### Database Migration
-Add two columns to the `schools` table:
-- `klarna_enabled` (boolean, default false)
-- `clearpay_enabled` (boolean, default false)
+### Database Changes
 
-With RLS allowing school owners to update their own record (already covered by existing policies).
+**Add columns to `schools` table:**
+- `payment_gateway_mode` (text, default `'platform'`) — `'platform'` (use DSM Square) or `'own'` (own credentials)
+- `own_square_app_id` (text, nullable)
+- `own_square_access_token` (text, nullable)
+- `own_square_location_id` (text, nullable)
+- `own_stripe_publishable_key` (text, nullable)
+- `own_stripe_secret_key` (text, nullable)
+- `own_paypal_client_id` (text, nullable)
+- `own_paypal_secret` (text, nullable)
+
+**Add row to `platform_commission_config`:**
+- Insert a new row with `commission_type = 'school_payment'` to let admin set the school commission rate separately from instructor rates.
 
 ### Files to Create
 
-**`src/components/school/SchoolBNPLSection.tsx`**
-- Shows two branded cards (Klarna pink, Clearpay green) using the existing SVG logos (`klarna-logo.svg`, `clearpay-logo.svg`)
-- Each card has a toggle switch to enable/disable, status indicator, and info about fees
-- For the live portal: reads/writes `klarna_enabled` and `clearpay_enabled` on the `schools` table
-- For demo mode: local state toggles with toast feedback
-- Informational notes about how BNPL appears on the school's public booking page
+**`src/components/school/SchoolPaymentGatewaysSection.tsx`**
+- Radio toggle: "Use DSM Square Account" vs "Use Your Own Gateway"
+- Platform mode: shows info about commission rate (fetched from `platform_commission_config` where `commission_type = 'school_payment'`), status badge, and explanation
+- Own gateway mode: tabbed form for Square / Stripe / PayPal credential fields with save per provider
+- Reads/writes the new `schools` columns
+- Demo mode: local state with toast feedback
 
 ### Files to Modify
 
 1. **`src/components/school/SchoolLayout.tsx`**
-   - Add `{ key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard }` to the Financials sidebar group
-   - Add `bnpl` to `sectionMeta`
+   - Add `{ key: "payment-gateways", label: "Payment Gateways", icon: CreditCard }` to the Financials sidebar group
+   - Add `payment-gateways` to `sectionMeta`
 
 2. **`src/pages/SchoolPortal.tsx`**
-   - Add `case "bnpl"` returning `<SchoolBNPLSection school={school} onRefresh={refetch} />`
+   - Add `case "payment-gateways"` returning `<SchoolPaymentGatewaysSection school={school} onRefresh={refetch} />`
 
 3. **`src/pages/DemoSchoolPortal.tsx`**
-   - Add `case "bnpl"` returning `<SchoolBNPLSection school={school} onRefresh={noop} />`
+   - Add `case "payment-gateways"` with demo props
 
-### Technical Details
-- Reuses existing `klarna-logo.svg` and `clearpay-logo.svg` assets already in the project
-- Follows the same pattern as `PaymentOptionsSettings.tsx` (the instructor-level BNPL toggle) but adapted for school-level control
-- No new edge functions needed — simple boolean flags on the schools table
+4. **`src/components/admin/CommissionSettingsManager.tsx`**
+   - No code change needed — the new `school_payment` row in `platform_commission_config` will automatically appear as a third card in the existing grid, since the component queries all rows from the table. Just need to handle the label mapping for the new commission type.
+   - Add label mapping: `commission_type === "school_payment"` → "School Payment" with a 🏫 icon
+
+5. **Database migration** — add columns + seed commission row
+
+### Technical Notes
+- Credential fields are stored in the `schools` table for now (can be wired to edge functions later)
+- The commission rate for schools using the platform account is managed by admin via the existing Commission & Fees section
+- No actual payment processing changes — this is configuration UI only, to be wired up later as stated
 
