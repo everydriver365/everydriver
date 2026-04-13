@@ -94,6 +94,7 @@ function PortalDesktopSidebar({
   logoSrc,
   logoAlt,
   portalLabel,
+  quickActions,
 }: Pick<
   PortalShellProps,
   | "sidebarGroups"
@@ -104,6 +105,7 @@ function PortalDesktopSidebar({
   | "logoSrc"
   | "logoAlt"
   | "portalLabel"
+  | "quickActions"
 >) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
