@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Search, Plus, Edit2, Trash2, Users, Power, 
-  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown
+  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown, Building2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
@@ -24,6 +24,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
