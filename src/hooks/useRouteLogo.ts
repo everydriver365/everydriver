@@ -1,8 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import drive365Logo from "@/assets/drive365-logo.png";
-
-const EVERYDRIVER_LOGO = "/everydriver-logo-v2.png";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const DRIVE365_ROUTE_PREFIXES = [
   "/drive365",
