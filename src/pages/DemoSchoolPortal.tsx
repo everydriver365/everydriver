@@ -107,7 +107,7 @@ export default function DemoSchoolPortal() {
 
   return (
     <SchoolDemoProvider isDemo={true}>
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={noop} instructorIds={instructorIds} enabledFeatures={null}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={noop} instructorIds={instructorIds} enabledFeatures={null} schoolId={school.id} notificationPreferences={null}>
         {renderSection()}
       </SchoolLayout>
     </SchoolDemoProvider>
