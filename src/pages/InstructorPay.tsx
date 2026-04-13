@@ -606,29 +606,6 @@ export default function InstructorPay() {
         </motion.section>
 
 
-        {/* ── Pupil Balances ── */}
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="bg-card rounded-2xl border border-border overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              Pupil Balances
-            </h3>
-            <Link
-              to="/instructor/accounts"
-              className="text-xs text-primary font-medium flex items-center gap-0.5"
-            >
-              View all <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="p-4">
-            <PupilBalancesList pupils={pupils} limit={5} />
-          </div>
-        </motion.section>
 
         {/* ── Forecaster ── */}
         <motion.div
