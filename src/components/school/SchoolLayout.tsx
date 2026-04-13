@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   TrendingUp,
   Target,
+  Trophy,
   Tag,
   Globe,
   Megaphone,
