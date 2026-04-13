@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { getInstructorSubdomain } from "@/components/DomainRouter";
 
 interface SEOInstructor {
   id: string;
