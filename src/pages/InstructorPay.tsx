@@ -235,7 +235,98 @@ export default function InstructorPay() {
           </div>
         </motion.section>
 
-        {/* ── Owes Money ── */}
+        {/* ── Summary Tiles ── */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Owes Money */}
+          <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+            >
+              <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertCircle className="h-4.5 w-4.5 text-destructive" />
+              </div>
+              <div className="mt-2">
+                <p className="text-xl font-bold tabular-nums text-destructive">
+                  {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            </motion.div>
+          </Link>
+
+          {/* Recent Payments */}
+          <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.16 }}
+              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Receipt className="h-4.5 w-4.5 text-primary" />
+              </div>
+              <div className="mt-2">
+                <p className="text-xl font-bold tabular-nums text-foreground">
+                  {recentPaymentCount}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Recent Payments
+                </p>
+              </div>
+            </motion.div>
+          </Link>
+
+          {/* Course Rewards */}
+          <Link to="/instructor/bonus" onClick={() => haptics.selection()}>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.20 }}
+              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Trophy className="h-4.5 w-4.5 text-primary" />
+              </div>
+              <div className="mt-2">
+                <p className="text-xl font-bold tabular-nums text-foreground">
+                  £{bonusEarned}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Course Rewards
+                </p>
+              </div>
+            </motion.div>
+          </Link>
+
+          {/* Pupil Balances */}
+          <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24 }}
+              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="h-4.5 w-4.5 text-primary" />
+              </div>
+              <div className="mt-2">
+                <p className="text-xl font-bold tabular-nums text-foreground">
+                  {pupils.length}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Pupil Balances
+                </p>
+              </div>
+            </motion.div>
+          </Link>
+        </div>
+
+        {/* ── Owes Money Detail ── */}
         <OwesMoneyCard
           pupils={pupils}
           instructorId={instructorId}
