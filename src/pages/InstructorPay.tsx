@@ -375,20 +375,19 @@ export default function InstructorPay() {
                 !paymentsExpanded && "min-h-[100px] flex flex-col justify-between"
               )}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Receipt className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xl font-bold tabular-nums text-foreground">{recentPaymentCount}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Recent Payments</p>
-                  </div>
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Receipt className="h-4.5 w-4.5 text-primary" />
+              </div>
+              <div className="mt-2 flex items-end justify-between">
+                <div>
+                  <p className="text-xl font-bold tabular-nums text-foreground">{recentPaymentCount}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Recent Payments</p>
                 </div>
                 <ChevronDown className={cn(
                   "h-4 w-4 text-muted-foreground transition-transform",
                   paymentsExpanded && "rotate-180"
                 )} />
+              </div>
               </div>
             </motion.button>
 
