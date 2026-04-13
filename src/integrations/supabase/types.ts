@@ -779,6 +779,83 @@ export type Database = {
           },
         ]
       }
+      booking_pages: {
+        Row: {
+          brand_colour: string | null
+          created_at: string
+          description: string | null
+          heading: string | null
+          id: string
+          instructor_id: string | null
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          page_type: string
+          school_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          brand_colour?: string | null
+          created_at?: string
+          description?: string | null
+          heading?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          page_type?: string
+          school_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          brand_colour?: string | null
+          created_at?: string
+          description?: string | null
+          heading?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          page_type?: string
+          school_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_pages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_pages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_pages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_pages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_upsells: {
         Row: {
           badge_text: string | null
