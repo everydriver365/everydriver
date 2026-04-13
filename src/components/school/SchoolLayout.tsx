@@ -96,6 +96,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "branding", label: "Branding", icon: Palette },
       { key: "booking-page", label: "School Page", icon: Link2 },
       { key: "booking-pages", label: "Booking Pages", icon: Globe },
+      { key: "website", label: "Website", icon: Globe },
       { key: "notifications", label: "Notifications", icon: Bell },
     ],
   },
@@ -130,6 +131,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   branding: { title: "Branding", group: "Settings" },
   "booking-page": { title: "School Page", group: "Settings" },
   "booking-pages": { title: "Booking Pages", group: "Settings" },
+  website: { title: "Website", group: "Settings" },
   notifications: { title: "Notifications", group: "Settings" },
 };
 

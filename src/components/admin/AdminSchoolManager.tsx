@@ -58,6 +58,7 @@ const FEATURE_DEFS = [
   { key: "branding", label: "Branding", icon: Palette, group: "Settings" },
   { key: "booking-page", label: "School Page", icon: Link2, group: "Settings" },
   { key: "booking-pages", label: "Booking Pages", icon: Link2, group: "Settings" },
+  { key: "website", label: "Website", icon: Link2, group: "Settings" },
   { key: "notifications", label: "Notifications", icon: Bell, group: "Settings" },
 ] as const;
 
