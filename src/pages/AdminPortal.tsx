@@ -89,6 +89,7 @@ import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueMa
 import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
 import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
+import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchiseFees";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -385,7 +386,15 @@ export default function AdminPortal() {
           </motion.div>
         );
 
-      case "comparison-editor":
+      case "school-fees":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="school-fees" className="mb-4" />
+            <AdminSchoolFranchiseFees />
+          </motion.div>
+        );
+
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
