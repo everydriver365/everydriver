@@ -18,9 +18,7 @@ const Benefits = lazy(() => import("@/pages/Benefits"));
 const EarlierTestGuarantee = lazy(() => import("@/pages/EarlierTestGuarantee"));
 const News = lazy(() => import("@/pages/News"));
 const NewsArticle = lazy(() => import("@/pages/NewsArticle"));
-const ParentPortal = lazy(() => import("@/pages/ParentPortal"));
 const InstallPupil = lazy(() => import("@/pages/InstallPupil"));
-const InstallParent = lazy(() => import("@/pages/InstallParent"));
 
 // Legal pages
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -83,9 +81,7 @@ export const publicRoutes = (
     <Route path="/earlier-test-guarantee" element={<EarlierTestGuarantee />} />
     <Route path="/news" element={<News />} />
     <Route path="/news/:slug" element={<NewsArticle />} />
-    <Route path="/parent" element={<ParentPortal />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
-    <Route path="/parent/install" element={<InstallParent />} />
 
     {/* Conditional routes (domain-aware) */}
     <Route path="/contact" element={<ConditionalContact />} />
