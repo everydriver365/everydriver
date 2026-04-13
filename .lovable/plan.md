@@ -1,73 +1,53 @@
 
 
-## Plan: Migrate Radius Poller to Key Telematics Fleet API v2
+## Plan: Fix Radius Poller Authentication
 
 ### Problem
-The current `radius-poller` edge function uses the legacy **Velocity Fleet API** (`velocityfleet.com`) with a fragile Django JWT refresh-token flow. The official Key Telematics Fleet API v2 (`api.uk1.kt1.io`) supports **static API keys** with no expiry, eliminating all token refresh complexity.
+The `radius-poller` function fails with `401 Invalid Token` because the `RADIUS_REFRESH_TOKEN` has expired. The API key from Kinesis Fleet Pro (9631c2b4...) is the same type as `RADIUS_API_TOKEN` — it cannot authenticate on its own without the OAuth refresh flow.
 
-### Key Migration Benefits
-- Eliminates token refresh logic and `radius_session_cache` table dependency
-- Uses the documented, supported API instead of an undocumented legacy endpoint
-- Simpler auth: single `x-api-key` header on every request
-- UK-specific endpoint for lower latency: `https://api.uk1.kt1.io/fleet/v2`
+### Solution: Update RADIUS_API_TOKEN + Get Fresh Refresh Token
 
----
+**Step 1: Update `RADIUS_API_TOKEN` with the newer "365 v2" key**
+The "365 v2" key (9631c2b4...) may be newer/more current than whatever is stored as `RADIUS_API_TOKEN`. Update the secret to use this key.
 
-### Step 1: Add New Secret — `KT_API_KEY`
+**Step 2: Get a fresh refresh token from you**
+You need to log into Kinesis Fleet Pro and capture a fresh refresh token. Here's how:
+1. Open your browser dev tools (F12) → Network tab
+2. Log into `kinesisfleetpro.com`
+3. Look for the login/auth response — it will contain a `refresh` token
+4. Share that token and I'll update `RADIUS_REFRESH_TOKEN`
 
-Request a new Key Telematics API key from the user. This replaces `RADIUS_API_TOKEN` and `RADIUS_REFRESH_TOKEN`.
+**Step 3: (Alternative) Try username/password auth**
+Instead of manually capturing refresh tokens, I can add a username/password login flow to the poller. This would:
+- Add `RADIUS_USERNAME` and `RADIUS_PASSWORD` secrets
+- Call the Kinesis login endpoint to get fresh access + refresh tokens automatically
+- Eliminate the need to manually refresh tokens ever again
 
-The user generates this in the Key Telematics dashboard under their user account > API Keys.
-
-### Step 2: Rewrite `radius-poller` Edge Function
-
-**File**: `supabase/functions/radius-poller/index.ts`
-
-Changes:
-- **Remove** the entire `authenticate()` function and `RadiusSession` interface
-- **Remove** `cachedSession` state and DB cache logic
-- **Replace** auth with a simple `x-api-key` header using `KT_API_KEY` secret
-- **Replace** base URL from `velocityfleet.com` to `https://api.uk1.kt1.io/fleet/v2`
-- **Replace** the live positions endpoint from the undocumented `POST /api/mobile/kinesis/device-live-positions/` to the official `GET /entities/assets?owner={ownerId}` endpoint (each asset includes last known position)
-- **Update** response field mapping to match Key Telematics v2 asset schema (fields like `lastPosition.latitude`, `lastPosition.longitude`, `lastPosition.speed`, `lastPosition.heading`, `lastPosition.timestamp`)
-- **Keep** all existing downstream logic: `gps_devices` updates, `telematics_gps_points` inserts, `live_pupil_positions` updates, distance calculations
-- **Fall back** gracefully: still check for `RADIUS_API_TOKEN` + `RADIUS_REFRESH_TOKEN` as a legacy path if `KT_API_KEY` is not set, so existing setups keep working during transition
-
-### Step 3: Verify & Map Response Fields
-
-Since the full asset/telemetry response schema wasn't fully captured from the docs, I will:
-1. Call the API with `curl_edge_functions` to inspect the actual response shape
-2. Map fields correctly (lat, lng, speed, heading, ignition, timestamp, road/street)
-3. Adjust unit conversions if needed (the v2 API may return km/h directly vs mph)
-
-### Step 4: Clean Up (Optional)
-
-- The `radius_session_cache` table can be deprecated (no longer needed with static API keys)
-- `RADIUS_REFRESH_TOKEN` secret becomes unused with the new auth method
-
----
+### Recommendation
+**Step 3 is the permanent fix.** With username/password auth, the poller can always get a fresh token on its own — no more manual refresh token updates.
 
 ### Technical Details
 
-**Authentication change:**
-```
-// Before (Velocity Fleet - complex)
-POST velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/
-Headers: API-Token, Content-Type
-Body: { refresh, token }
-
-// After (Key Telematics v2 - simple)
-GET api.uk1.kt1.io/fleet/v2/entities/assets?owner={ownerId}
-Headers: x-api-key: {KT_API_KEY}
+Add a new `authenticateWithCredentials()` function to `radius-poller/index.ts`:
+```text
+POST https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/
+Headers: API-Token, Content-Type: application/json
+Body: { "username": "...", "password": "..." }
+Response: { "access": "...", "refresh": "..." }
 ```
 
-**Rate limits to respect:**
-- GET/List: 10 requests/second
-- Auth: 5 requests/hour (not relevant with API keys)
+Auth priority order:
+1. Try cached session (memory → DB)
+2. Try refresh token flow
+3. Fall back to username/password login
+4. Cache new tokens in `radius_session_cache`
 
-**Files changed:**
-| Action | File |
-|--------|------|
-| Modify | `supabase/functions/radius-poller/index.ts` |
-| Secret | `KT_API_KEY` (new) |
+New secrets needed: `RADIUS_USERNAME`, `RADIUS_PASSWORD`
+
+| Action | Detail |
+|--------|--------|
+| Secret | Update `RADIUS_API_TOKEN` → 365 v2 key |
+| Secret | Add `RADIUS_USERNAME` |
+| Secret | Add `RADIUS_PASSWORD` |
+| Modify | `supabase/functions/radius-poller/index.ts` — add credential-based auth |
 
