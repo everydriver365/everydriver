@@ -1,53 +1,64 @@
 
 
-## Plan: White-Label School System — Link Instructors to Schools
+## Plan: Admin-Configurable Booking Pages
 
 ### What this delivers
-A school owner gets a branded booking page showing only their instructors. Their dashboard filters all data (pupils, lessons, earnings) to their team only. Each school gets a unique URL slug for their white-label portal.
+- A new **"Booking Pages"** section in the admin sidebar where admins can create and manage branded booking page configurations
+- Each booking page can be scoped to a **single instructor** or a **school** (all its instructors)
+- Each config generates a unique public URL: `/booking/:slug`
+- The public page shows only the relevant instructor(s) with branding from the config
 
-### Database changes (migration)
+### Database changes
 
-1. **Add `slug` and `custom_domain` columns to `schools`**
-   - `slug TEXT UNIQUE` — used for URLs like `/school/acme-driving`
-   - `custom_domain TEXT` — optional, for full white-label domains
-   - `description TEXT` — school bio for booking page
-   - `contact_email TEXT`, `contact_phone TEXT`
+1. **New `booking_pages` table:**
+   - `id UUID PRIMARY KEY`
+   - `name TEXT` — admin label (e.g. "John's Booking Page")
+   - `slug TEXT UNIQUE NOT NULL` — URL path segment
+   - `page_type TEXT` — `'instructor'` or `'school'`
+   - `instructor_id UUID REFERENCES instructors(id)` — set when type is instructor
+   - `school_id UUID REFERENCES schools(id)` — set when type is school
+   - `heading TEXT` — custom hero heading
+   - `description TEXT` — subtitle/description
+   - `logo_url TEXT` — optional logo override
+   - `brand_colour TEXT` — hex colour for hero
+   - `is_active BOOLEAN DEFAULT true`
+   - `created_at / updated_at TIMESTAMPTZ`
+   - Public SELECT RLS policy (for the public page to read)
+   - Authenticated INSERT/UPDATE/DELETE policies (admin only via `has_role`)
 
-2. **Add public SELECT policy on `schools`** for the booking page (read-only, non-PII fields only via a view)
+### Admin UI
 
-### New pages/components
+2. **New `AdminBookingPagesManager` component** under a new sidebar section "Booking Pages" (in the Platform group):
+   - Table listing all booking pages with name, type, slug, status
+   - Create/edit dialog: pick type (instructor or school), select the entity, set slug, heading, description, logo, brand colour
+   - Toggle active/inactive
+   - Copy shareable URL button
+   - Delete option
 
-3. **`/school/:slug` — Public school booking page**
-   - Fetches school by slug
-   - Lists only instructors linked via `school_instructors`
-   - Applies school branding (logo, brand_colour, name)
-   - Each instructor card links to their individual booking flow
-   - Mobile-responsive grid layout
+3. **Add to admin sidebar** — new item `{ key: "booking-pages", label: "Booking Pages", icon: Globe }` in the Platform group
 
-4. **Enhance `SchoolDashboard.tsx`**
-   - Add slug management (auto-generate from name, allow editing)
-   - Add shareable booking link display
-   - Add instructor invite/remove functionality (currently just shows a school ID code)
+4. **Add to `AdminPortal.tsx`** — import and render `AdminBookingPagesManager` for the `booking-pages` section
 
-### Route additions
+### Public Booking Page
 
-5. **Add route** `/school/:slug` in `publicRoutes.tsx` pointing to the new `SchoolBookingPage`
+5. **New `PublicBookingPortal.tsx`** at route `/booking/:slug`:
+   - Fetches `booking_pages` by slug
+   - If type is `instructor`: shows single instructor card with Book Now linking to `/book/:instructorId`
+   - If type is `school`: fetches school's instructors via `school_instructors` junction table, shows grid (similar to existing `SchoolBookingPage`)
+   - Applies branding (logo, colour, heading) from the booking page config
+   - Falls back to instructor/school defaults if not overridden
+   - DSM logo footer
 
-### Data filtering logic
-
-6. **School-scoped queries** — The school dashboard already filters by instructor IDs from `school_instructors`. The booking page will use the same pattern: fetch `school_instructors` → get instructor IDs → query only those instructors' availability.
+6. **Add route** `/booking/:slug` to `publicRoutes.tsx`
 
 ### Files to create/modify
 
 | File | Action |
 |------|--------|
-| `supabase/migrations/...` | Add slug, custom_domain, description, contact fields to schools |
-| `src/pages/SchoolBookingPage.tsx` | **New** — public white-label booking portal |
-| `src/pages/SchoolDashboard.tsx` | Enhance with slug management, invite flow |
-| `src/routes/publicRoutes.tsx` | Add `/school/:slug` route |
-
-### What this does NOT include (future work)
-- Custom domain DNS routing (requires infrastructure beyond the app)
-- School-level payment collection/splitting
-- School admin roles beyond the owner
+| Migration SQL | Create `booking_pages` table with RLS |
+| `src/components/admin/AdminBookingPagesManager.tsx` | New — admin CRUD for booking pages |
+| `src/pages/PublicBookingPortal.tsx` | New — public booking page |
+| `src/pages/AdminPortal.tsx` | Add section meta + render case |
+| `src/components/admin/AdminDesktopSidebar.tsx` | Add "Booking Pages" item |
+| `src/routes/publicRoutes.tsx` | Add `/booking/:slug` route |
 
