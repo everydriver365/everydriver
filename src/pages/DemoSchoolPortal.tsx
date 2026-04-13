@@ -35,6 +35,7 @@ import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesS
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
 import SchoolWebsiteSection from "@/components/school/SchoolWebsiteSection";
+import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 export default function DemoSchoolPortal() {
@@ -86,6 +87,8 @@ export default function DemoSchoolPortal() {
         return <SchoolFleetSection instructorIds={instructorIds} />;
       case "test-results":
         return <SchoolTestResultsSection instructorIds={instructorIds} />;
+      case "pass-rates":
+        return <SchoolPassRatesSection instructorIds={instructorIds} />;
       case "discount-codes":
         return <SchoolDiscountCodesSection schoolId={school.id} />;
       case "campaigns":
