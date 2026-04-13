@@ -50,6 +50,13 @@ export interface PortalNavGroup {
   items: PortalNavItem[];
 }
 
+export interface PortalQuickAction {
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  variant?: "default" | "outline";
+}
+
 export interface PortalShellProps {
   children: ReactNode;
   sidebarGroups: PortalNavGroup[];
@@ -69,6 +76,9 @@ export interface PortalShellProps {
 
   /** Extra header content (e.g. search, notification bell) */
   headerExtra?: ReactNode;
+
+  /** Quick-action buttons shown at top of sidebar */
+  quickActions?: PortalQuickAction[];
 }
 
 /* ------------------------------------------------------------------ */
