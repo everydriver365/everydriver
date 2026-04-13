@@ -46,6 +46,7 @@ const sidebarGroups: PortalNavGroup[] = [
     icon: PoundSterling,
     items: [
       { key: "payments", label: "Payments", icon: CreditCard },
+      { key: "payment-gateways", label: "Payment Gateways", icon: CreditCard },
       { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard },
       { key: "payroll", label: "Payroll", icon: Wallet },
       { key: "reports", label: "Reports", icon: FileText },
@@ -79,6 +80,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   calendar: { title: "Calendar", group: "Management" },
   courses: { title: "Courses", group: "Management" },
   payments: { title: "Payments", group: "Financials" },
+  "payment-gateways": { title: "Payment Gateways", group: "Financials" },
   bnpl: { title: "Buy Now, Pay Later", group: "Financials" },
   payroll: { title: "Payroll", group: "Financials" },
   reports: { title: "Reports", group: "Financials" },
