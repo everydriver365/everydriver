@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Search, Plus, Edit2, Trash2, Users, Power, 
-  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown
+  MoreVertical, Crown, Sparkles, RotateCcw, ChevronDown, Building2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
@@ -24,6 +24,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,6 +130,8 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [instructorSchoolMap, setInstructorSchoolMap] = useState<Record<string, string>>({});
 
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
@@ -190,7 +199,44 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   useEffect(() => {
     fetchInstructors();
     fetchDeletedInstructors();
+    fetchSchools();
   }, [fetchInstructors, fetchDeletedInstructors]);
+
+  const fetchSchools = async () => {
+    const { data: schoolData } = await supabase.from("schools").select("id, name").order("name") as any;
+    setSchools(schoolData || []);
+
+    const { data: memberships } = await supabase.from("school_instructors").select("instructor_id, school_id") as any;
+    const map: Record<string, string> = {};
+    (memberships || []).forEach((m: any) => { map[m.instructor_id] = m.school_id; });
+    setInstructorSchoolMap(map);
+  };
+
+  const handleSchoolChange = async (instructorId: string, schoolId: string) => {
+    const currentSchoolId = instructorSchoolMap[instructorId];
+
+    // Remove existing assignment
+    if (currentSchoolId) {
+      await supabase.from("school_instructors").delete().eq("instructor_id", instructorId).eq("school_id", currentSchoolId) as any;
+    }
+
+    if (schoolId === "none") {
+      setInstructorSchoolMap(prev => {
+        const next = { ...prev };
+        delete next[instructorId];
+        return next;
+      });
+      toast.success("Instructor unassigned from school");
+      return;
+    }
+
+    // Add new assignment
+    const { error } = await supabase.from("school_instructors").insert({ instructor_id: instructorId, school_id: schoolId, role: "instructor" } as any);
+    if (error) { toast.error("Failed to assign instructor"); return; }
+
+    setInstructorSchoolMap(prev => ({ ...prev, [instructorId]: schoolId }));
+    toast.success("Instructor assigned to school");
+  };
 
   const handleRestore = async (id: string) => {
     try {
@@ -366,6 +412,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                   <TableHead className="text-primary font-semibold hidden lg:table-cell">Location</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Plan</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Pupils</TableHead>
+                  <TableHead className="text-primary font-semibold hidden lg:table-cell">School</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Status</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
@@ -433,6 +480,22 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                       )}>
                         {instructor.pupil_count || 0}
                       </span>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Select
+                        value={instructorSchoolMap[instructor.id] || "none"}
+                        onValueChange={(val) => handleSchoolChange(instructor.id, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {schools.map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-center">
                       {instructor.is_active ? (
