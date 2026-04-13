@@ -121,7 +121,7 @@ export default function InstructorPay() {
   const thisWeek = earnings?.thisWeek || 0;
   const lastMonth = earnings?.lastMonth || 0;
 
-  // Computed stats for tiles
+  const debtors = pupils.filter((p) => (p.account_balance || 0) < 0);
   const totalOwed = debtors.reduce((sum, p) => sum + Math.abs(p.account_balance || 0), 0);
 
   const actions: QuickAction[] = [
