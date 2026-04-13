@@ -48,8 +48,9 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to={homeLink} className="flex items-center">
+            <Link to={homeLink} className="flex items-center gap-2">
               <img src={logo} alt={logoAlt} className="h-10 -mx-1" />
+              {logoText && <span className="text-sm font-semibold text-primary-foreground">{logoText}</span>}
             </Link>
             <p className="text-sm text-primary-foreground/70">
               Professional driving instruction to help you pass your test with confidence.
