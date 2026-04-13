@@ -35,6 +35,7 @@ import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesS
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
 import SchoolWebsiteSection from "@/components/school/SchoolWebsiteSection";
+import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 export default function DemoSchoolPortal() {
