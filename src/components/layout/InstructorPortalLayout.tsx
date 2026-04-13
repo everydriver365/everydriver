@@ -548,7 +548,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <img
                       src={dsmLogo}
                       alt="DSM"
-                      className="h-6 shrink-0"
+                      className="h-9 shrink-0"
                     />
                     <MobileNotificationBell instructorId={instructor?.id} />
                   </div>
