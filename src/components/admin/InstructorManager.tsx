@@ -412,6 +412,7 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                   <TableHead className="text-primary font-semibold hidden lg:table-cell">Location</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Plan</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Pupils</TableHead>
+                  <TableHead className="text-primary font-semibold hidden lg:table-cell">School</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Status</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
