@@ -67,6 +67,7 @@ export default function InstructorPay() {
   const [owesExpanded, setOwesExpanded] = useState(false);
   const [paymentsExpanded, setPaymentsExpanded] = useState(false);
   const [bonusExpanded, setBonusExpanded] = useState(false);
+  const [balancesExpanded, setBalancesExpanded] = useState(false);
   const [chasing, setChasing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -453,23 +454,50 @@ export default function InstructorPay() {
             </AnimatePresence>
           </div>
 
-          {/* Pupil Balances */}
-          <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
-            <motion.div
+          {/* Pupil Balances — expandable */}
+          <div className={cn(balancesExpanded && "col-span-2")}>
+            <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.24 }}
-              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
+              className={cn(
+                "w-full rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
+                !balancesExpanded && "min-h-[100px] flex flex-col justify-between"
+              )}
             >
               <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
                 <Users className="h-4.5 w-4.5 text-primary" />
               </div>
-              <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-foreground">{pupils.length}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Pupil Balances</p>
+              <div className="mt-2 flex items-end justify-between">
+                <div>
+                  <p className="text-xl font-bold tabular-nums text-foreground">{pupils.length}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Pupil Balances</p>
+                </div>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  balancesExpanded && "rotate-180"
+                )} />
               </div>
-            </motion.div>
-          </Link>
+            </motion.button>
+
+            <AnimatePresence>
+              {balancesExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2 bg-card rounded-2xl border border-border p-4">
+                    <PupilBalancesList pupils={pupils} limit={5} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
 
@@ -578,29 +606,6 @@ export default function InstructorPay() {
         </motion.section>
 
 
-        {/* ── Pupil Balances ── */}
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="bg-card rounded-2xl border border-border overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              Pupil Balances
-            </h3>
-            <Link
-              to="/instructor/accounts"
-              className="text-xs text-primary font-medium flex items-center gap-0.5"
-            >
-              View all <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="p-4">
-            <PupilBalancesList pupils={pupils} limit={5} />
-          </div>
-        </motion.section>
 
         {/* ── Forecaster ── */}
         <motion.div
