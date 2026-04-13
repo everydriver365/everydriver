@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2, Plus, Search, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSchoolDemo } from "@/context/SchoolDemoContext";
-import { demoSchoolStats, demoSchoolLessons } from "@/data/demoSchoolData";
+import { demoSchoolStats, demoSchoolLessons, demoSchoolPupils, demoSchoolInstructors } from "@/data/demoSchoolData";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { AVAILABLE_WIDGETS, DEFAULT_ACTIVE_WIDGETS } from "./widgets/WidgetDefinitions";
 import { WIDGET_COMPONENTS } from "./widgets/DashboardWidgets";
 import AddWidgetPanel from "./widgets/AddWidgetPanel";
@@ -110,6 +112,32 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
   });
   const [activeWidgets, setActiveWidgets] = useState<string[]>(loadWidgets);
   const [widgetPanelOpen, setWidgetPanelOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return null;
+    const pupils = (isDemo ? demoSchoolPupils : [])
+      .filter(p => p.name.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q) || p.phone?.includes(q))
+      .slice(0, 4)
+      .map(p => ({ id: p.id, label: p.name, sub: p.instructors?.name ? `w/ ${p.instructors.name}` : p.email || "", type: "Pupil" as const }));
+    const instructors = (isDemo ? demoSchoolInstructors : [])
+      .filter(inst => inst.instructors.name.toLowerCase().includes(q) || inst.instructors.phone?.includes(q))
+      .slice(0, 3)
+      .map(inst => ({ id: inst.id, label: inst.instructors.name, sub: inst.role.replace("_", " "), type: "Instructor" as const }));
+    const lessons = calendarLessons
+      .filter(l => l.pupils?.name?.toLowerCase().includes(q) || l.instructors?.name?.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(l => ({
+        id: l.id,
+        label: `${l.pupils?.name || "Student"} — ${l.instructors?.name || "Instructor"}`,
+        sub: new Date(l.start_time).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+        type: "Lesson" as const,
+      }));
+    return [...pupils, ...instructors, ...lessons];
+  }, [searchQuery, calendarLessons, isDemo]);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -236,6 +264,49 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
           <Plus className="h-4 w-4" />
           Add Widget
         </Button>
+      </div>
+
+      {/* Search bar */}
+      <div className="relative">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            ref={searchRef}
+            type="text"
+            placeholder="Search pupils, instructors, lessons…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+            className="pl-9 pr-9 h-10"
+          />
+          {searchQuery && (
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              onClick={() => { setSearchQuery(""); searchRef.current?.focus(); }}
+            >
+              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+        {searchFocused && searchResults && searchResults.length > 0 && (
+          <div className="absolute z-30 top-full mt-1 w-full bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-72 overflow-y-auto">
+            {searchResults.map(r => (
+              <div key={`${r.type}-${r.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted cursor-pointer text-sm border-b border-border last:border-0">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">{r.type}</Badge>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-muted-foreground text-xs ml-2">{r.sub}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {searchFocused && searchResults && searchResults.length === 0 && searchQuery.trim() && (
+          <div className="absolute z-30 top-full mt-1 w-full bg-background border border-border rounded-lg shadow-lg p-4 text-sm text-muted-foreground text-center">
+            No results for "{searchQuery}"
+          </div>
+        )}
       </div>
 
       {/* Stat tiles */}
