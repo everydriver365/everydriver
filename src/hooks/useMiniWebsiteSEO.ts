@@ -81,11 +81,9 @@ export function useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, meta
     setMetaTag("name", "twitter:description", truncatedDesc);
     if (ogImage) setMetaTag("name", "twitter:image", ogImage);
 
-    // Canonical URL — always use the path-based URL as canonical
-    const isSubdomain = getInstructorSubdomain() !== null;
-    const canonicalBase = "https://everydriver.lovable.app";
+    // Canonical URL — use the drive365 subdomain as canonical
     const pagePath = page === "Home" ? "" : `/${page.toLowerCase()}`;
-    const canonicalUrl = `${canonicalBase}/i/${slug}${pagePath}`;
+    const canonicalUrl = `https://${slug}.drive365.co.uk${pagePath}`;
     setMetaTag("property", "og:url", canonicalUrl);
     setLinkTag("canonical", canonicalUrl);
 

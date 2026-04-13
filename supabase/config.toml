@@ -275,3 +275,9 @@ verify_jwt = false
 
 [functions.rork-geotab-proxy]
 verify_jwt = false
+
+[functions.mini-website-ssr]
+verify_jwt = false
+
+[functions.mini-website-sitemap]
+verify_jwt = false
