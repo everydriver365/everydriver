@@ -3,6 +3,7 @@ import { SchoolLayout } from "@/components/school/SchoolLayout";
 import { useSchoolAuth } from "@/context/SchoolAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useSchoolData } from "@/hooks/useSchoolData";
+import { SchoolDemoProvider } from "@/context/SchoolDemoContext";
 import { Loader2 } from "lucide-react";
 import SchoolDashboardSection from "@/components/school/SchoolDashboardSection";
 import SchoolInstructorsSection from "@/components/school/SchoolInstructorsSection";
@@ -84,8 +85,10 @@ export default function SchoolPortal() {
   };
 
   return (
-    <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
-      {renderSection()}
-    </SchoolLayout>
+    <SchoolDemoProvider isDemo={false}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+        {renderSection()}
+      </SchoolLayout>
+    </SchoolDemoProvider>
   );
 }
