@@ -388,7 +388,6 @@ export default function InstructorPay() {
                   paymentsExpanded && "rotate-180"
                 )} />
               </div>
-              </div>
             </motion.button>
 
             <AnimatePresence>
