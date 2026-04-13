@@ -37,9 +37,9 @@ export default function HomepageRedesignDemo() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
-                The Free Diary App
+                Driving School Management
                 <br />
-                <span className="text-[#0075c9]">Built for ADIs</span>
+                <span className="text-[#0075c9]">Free Forever for ADIs & PDIs!</span>
               </h1>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
