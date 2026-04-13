@@ -35,6 +35,7 @@ interface MiniWebsiteCourseCardProps {
   placementType?: string;
   /** Override for the header/accent color (e.g., from STYLE_OVERRIDES) */
   primaryColor?: string;
+  areaName?: string | null;
 }
 
 export function MiniWebsiteCourseCard({
@@ -50,6 +51,7 @@ export function MiniWebsiteCourseCard({
   discountedPrice,
   customFeatures,
   primaryColor,
+  areaName,
 }: MiniWebsiteCourseCardProps) {
   const navigate = useNavigate();
 
@@ -71,7 +73,7 @@ export function MiniWebsiteCourseCard({
   const hasDelayedAvailability = availableFrom && isFuture(parseISO(availableFrom));
   const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
   const displayDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
-  const locationDisplay = instructor.home_address || instructor.home_postcode;
+  const locationDisplay = areaName || instructor.home_postcode;
 
   const handleBookNow = (e: React.MouseEvent) => {
     e.stopPropagation();

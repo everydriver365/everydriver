@@ -37,6 +37,7 @@ interface Course {
   customFeatures?: string[] | null;
   isPremium?: boolean;
   placementType?: string;
+  areaName?: string | null;
 }
 
 interface MobileCourseCardProps {
@@ -203,10 +204,10 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                       </span>
                       <span>·</span>
                       <span>{transmissionType}</span>
-                      {instructor.home_postcode && (
+                      {(course.areaName || instructor.home_postcode) && (
                         <>
                           <span>·</span>
-                          <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{instructor.home_postcode}</span>
+                          <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{course.areaName || instructor.home_postcode}</span>
                         </>
                       )}
                     </div>

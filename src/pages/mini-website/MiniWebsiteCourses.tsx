@@ -59,6 +59,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     searchedPostcode,
     searchedAreaName,
     clearSearch,
+    areaCache,
   } = useCourseDiscovery("all", instructor?.id ?? null, initialPostcode);
 
   // Auto-search when arriving with a postcode param
@@ -458,6 +459,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                             customFeatures: course.customFeatures,
                             isPremium: course.isPremium,
                             placementType: course.placementType,
+                            areaName: areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null,
                           }}
                           index={index}
                         />
@@ -504,6 +506,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                             isPremium={course.isPremium}
                             placementType={course.placementType}
                             primaryColor={primaryColor}
+                            areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                           />
                         </motion.div>
                       ))}

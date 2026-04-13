@@ -1201,6 +1201,7 @@ export default function Courses() {
                             isIntensive: course.isIntensive,
                             discountedPrice: course.discountedPrice,
                             customFeatures: course.customFeatures,
+                            areaName: areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null,
                           }}
                           index={index}
                         />
@@ -1246,6 +1247,7 @@ export default function Courses() {
                               isIntensive={course.isIntensive}
                               discountedPrice={course.discountedPrice}
                               customFeatures={course.customFeatures}
+                              areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
                             />
                           </motion.div>
                         ))}

@@ -34,6 +34,7 @@ interface DynamicCourseCardProps {
   customFeatures?: string[] | null;
   isPremium?: boolean;
   placementType?: string;
+  areaName?: string | null;
 }
 
 export function DynamicCourseCard({ 
@@ -49,7 +50,8 @@ export function DynamicCourseCard({
   discountedPrice,
   customFeatures,
   isPremium = false,
-  placementType
+  placementType,
+  areaName,
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
@@ -97,8 +99,8 @@ export function DynamicCourseCard({
   const monthName = displayDate ? format(displayDate, "MMM").toUpperCase() : "";
   const fullDateDisplay = displayDate ? format(displayDate, "d MMM") : "TBC";
 
-  // Location display
-  const locationDisplay = instructor.home_address || instructor.home_postcode;
+  // Location display - show area name (city) instead of full address
+  const locationDisplay = areaName || instructor.home_postcode;
 
   return (
     <div
