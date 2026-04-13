@@ -32,6 +32,7 @@ import SchoolLeaderboardSection from "@/components/school/SchoolLeaderboardSecti
 import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSection";
 import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
+import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 export default function DemoSchoolPortal() {
@@ -97,6 +98,8 @@ export default function DemoSchoolPortal() {
         return <SchoolNotificationsSection school={school} onRefresh={noop} />;
       case "franchise-fees":
         return <SchoolFranchiseFeesSection schoolId={school.id} />;
+      case "subscription":
+        return <SchoolSubscriptionSection instructorIds={instructorIds} schoolName={school.name} />;
       default:
         return null;
     }
