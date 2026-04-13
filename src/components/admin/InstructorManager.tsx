@@ -481,6 +481,22 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
                         {instructor.pupil_count || 0}
                       </span>
                     </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Select
+                        value={instructorSchoolMap[instructor.id] || "none"}
+                        onValueChange={(val) => handleSchoolChange(instructor.id, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {schools.map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell className="text-center">
                       {instructor.is_active ? (
                         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
