@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
-import dsmLogo from "@/assets/dsm-logo.png";
+import driveHiveLogo from "@/assets/drive-hive-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
