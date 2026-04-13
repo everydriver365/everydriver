@@ -96,6 +96,7 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
   const { isDemo } = useSchoolDemo();
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null); // null = all
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d;
   });
@@ -134,10 +135,11 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
 
   // Unique instructor legend
   const instructorLegend = useMemo(() => {
-    const seen = new Map<string, { name: string; color: { bg: string; text: string; dot: string } }>();
+    const seen = new Map<string, { id: string; name: string; color: { bg: string; text: string; dot: string } }>();
     lessons.forEach(l => {
       if (!seen.has(l.instructor_id)) {
         seen.set(l.instructor_id, {
+          id: l.instructor_id,
           name: l.instructors?.name || "Instructor",
           color: instructorColorMap[l.instructor_id] || DEFAULT_COLORS[0],
         });
@@ -146,7 +148,12 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
     return [...seen.values()];
   }, [lessons, instructorColorMap]);
 
-  const lessonsForDay = (day: Date) => lessons.filter(l => {
+  const filteredLessons = useMemo(() => {
+    if (!selectedInstructor) return lessons;
+    return lessons.filter(l => l.instructor_id === selectedInstructor);
+  }, [lessons, selectedInstructor]);
+
+  const lessonsForDay = (day: Date) => filteredLessons.filter(l => {
     const ld = new Date(l.start_time);
     return ld.getDate() === day.getDate() && ld.getMonth() === day.getMonth() && ld.getFullYear() === day.getFullYear();
   });
@@ -164,13 +171,26 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
         <MiniCalendar currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
         {/* Legend */}
         {instructorLegend.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Instructors</span>
-            {instructorLegend.map((inst, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs">
-                <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot}`} />
+            <button
+              onClick={() => setSelectedInstructor(null)}
+              className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                ${selectedInstructor === null ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-foreground/40 shrink-0" />
+              All Instructors
+            </button>
+            {instructorLegend.map((inst) => (
+              <button
+                key={inst.id}
+                onClick={() => setSelectedInstructor(selectedInstructor === inst.id ? null : inst.id)}
+                className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                  ${selectedInstructor === inst.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot} shrink-0`} />
                 {inst.name}
-              </div>
+              </button>
             ))}
           </div>
         )}
