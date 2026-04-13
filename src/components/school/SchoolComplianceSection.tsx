@@ -13,8 +13,8 @@ interface Props {
 interface Instructor {
   id: string;
   name: string;
-  adi_licence_no: string | null;
-  adi_expiry_date: string | null;
+  adi_badge_number: string | null;
+  adi_badge_expiry: string | null;
   dbs_certificate_date: string | null;
   dbs_update_service: boolean | null;
 }
