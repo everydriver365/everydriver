@@ -6,96 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface RadiusSession {
-  accessToken: string;
-  expiresAt: number;
-}
-
-let cachedSession: RadiusSession | null = null;
-
-async function authenticate(supabaseClient?: any): Promise<RadiusSession> {
-  // 1. In-memory cache
-  if (cachedSession && cachedSession.expiresAt > Date.now()) {
-    return cachedSession;
-  }
-
-  // 2. DB cache (survives cold starts)
-  if (supabaseClient) {
-    try {
-      const { data: dbSession } = await supabaseClient
-        .from("radius_session_cache")
-        .select("access_token, expires_at")
-        .eq("id", "default")
-        .maybeSingle();
-
-      if (dbSession && new Date(dbSession.expires_at).getTime() > Date.now()) {
-        console.log("[RadiusPoller] Reusing DB-cached token");
-        cachedSession = {
-          accessToken: dbSession.access_token,
-          expiresAt: new Date(dbSession.expires_at).getTime(),
-        };
-        return cachedSession;
-      }
-    } catch (e) {
-      console.log("[RadiusPoller] DB cache lookup failed (non-critical):", e);
-    }
-  }
-
-  // 3. Refresh with Velocity Fleet API
-  const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
-  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
-  if (!refreshToken || !apiToken) {
-    return null as unknown as RadiusSession; // Signal caller to skip gracefully
-    throw new Error("RADIUS_API_TOKEN not configured");
-  }
-
-  const refreshUrl = "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/";
-  const refreshHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-    "API-Token": apiToken,
-  };
-  const res = await fetch(refreshUrl, {
-    method: "POST",
-    headers: refreshHeaders,
-    body: JSON.stringify({
-      refresh: refreshToken,
-      token: apiToken,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Radius auth failed (${res.status}): ${errText}`);
-  }
-
-  const data = await res.json();
-  console.log("[RadiusPoller] Refresh response keys:", Object.keys(data));
-  const accessToken = data.access || data.token || data.access_token;
-  if (!accessToken) {
-    throw new Error("No access token in refresh response: " + JSON.stringify(data));
-  }
-
-  // Cache for 55 minutes (tokens typically expire in 1h)
-  const expiresAt = Date.now() + 55 * 60 * 1000;
-  cachedSession = { accessToken, expiresAt };
-
-  // 4. Persist to DB
-  if (supabaseClient) {
-    try {
-      await supabaseClient.from("radius_session_cache").upsert({
-        id: "default",
-        access_token: accessToken,
-        expires_at: new Date(expiresAt).toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-    } catch (e) {
-      console.log("[RadiusPoller] Failed to persist token to DB (non-critical):", e);
-    }
-  }
-
-  return cachedSession;
-}
-
 // Reverse geocode to get road name using Nominatim
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
   try {
@@ -111,36 +21,161 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
+// ─── Key Telematics Fleet API v2 (preferred) ───
+async function fetchPositionsKT(ktApiKey: string, customerId: string): Promise<any[]> {
+  const url = `https://api.uk1.kt1.io/fleet/v2/entities/assets?owner=${customerId}`;
+  console.log("[RadiusPoller] Using Key Telematics v2 API");
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "x-api-key": ktApiKey,
+      "Accept": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`KT v2 assets API failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  // API returns array of assets or { data: [...] }
+  const assets: any[] = Array.isArray(data) ? data : (data?.data || data?.items || []);
+  console.log("[RadiusPoller] KT v2 returned", assets.length, "assets");
+
+  // Normalise each asset to a common shape
+  return assets.map((a: any) => {
+    const pos = a.lastPosition || a.position || {};
+    return {
+      id: String(a.id || a.assetId || ""),
+      name: a.name || a.label || null,
+      registration: a.registration || a.plateNumber || null,
+      latitude: pos.latitude ?? pos.lat ?? null,
+      longitude: pos.longitude ?? pos.lng ?? pos.lon ?? null,
+      speed_kmh: pos.speed ?? pos.speedKmh ?? null,
+      heading: pos.heading ?? pos.bearing ?? pos.course ?? null,
+      ignition: pos.ignition ?? null,
+      road: pos.road || pos.street || pos.address || null,
+      town: pos.town || pos.city || null,
+      timestamp: pos.timestamp || pos.dateTime || pos.time || a.lastUpdated || null,
+      _source: "kt_v2",
+    };
+  });
+}
+
+// ─── Legacy Velocity Fleet API (fallback) ───
+interface RadiusSession {
+  accessToken: string;
+  expiresAt: number;
+}
+let cachedSession: RadiusSession | null = null;
+
+async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> {
+  if (cachedSession && cachedSession.expiresAt > Date.now()) return cachedSession;
+
+  // DB cache
+  try {
+    const { data: dbSession } = await supabase
+      .from("radius_session_cache")
+      .select("access_token, expires_at")
+      .eq("id", "default")
+      .maybeSingle();
+    if (dbSession && new Date(dbSession.expires_at).getTime() > Date.now()) {
+      cachedSession = { accessToken: dbSession.access_token, expiresAt: new Date(dbSession.expires_at).getTime() };
+      return cachedSession;
+    }
+  } catch (_) { /* non-critical */ }
+
+  const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
+  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
+  if (!refreshToken || !apiToken) return null;
+
+  const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "API-Token": apiToken },
+    body: JSON.stringify({ refresh: refreshToken, token: apiToken }),
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(`Legacy auth failed (${res.status}): ${t}`); }
+
+  const data = await res.json();
+  const accessToken = data.access || data.token || data.access_token;
+  if (!accessToken) throw new Error("No access token in legacy refresh response");
+
+  const expiresAt = Date.now() + 55 * 60 * 1000;
+  cachedSession = { accessToken, expiresAt };
+
+  try {
+    await supabase.from("radius_session_cache").upsert({
+      id: "default", access_token: accessToken, expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
+    });
+  } catch (_) { /* non-critical */ }
+
+  return cachedSession;
+}
+
+async function fetchPositionsLegacy(token: string, customerId: string): Promise<any[]> {
+  console.log("[RadiusPoller] Using legacy Velocity Fleet API");
+  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim() || "";
+  const res = await fetch(
+    `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "API-Token": apiToken },
+      body: JSON.stringify({}),
+    }
+  );
+  if (!res.ok) { const t = await res.text(); throw new Error(`Legacy positions API failed (${res.status}): ${t}`); }
+  const data = await res.json();
+  const raw: any[] = data?.data || data?.results || (Array.isArray(data) ? data : []);
+
+  return raw.map((pos: any) => {
+    const speedMph = parseFloat(pos.speed || 0);
+    return {
+      id: String(pos.id || pos.device_id || ""),
+      name: null,
+      registration: pos.vehicle_registration || pos.registration || null,
+      latitude: parseFloat(pos.lat || pos.latitude || 0) || null,
+      longitude: parseFloat(pos.lon || pos.lng || pos.longitude || 0) || null,
+      speed_kmh: Math.round(speedMph * 1.60934 * 10) / 10,
+      heading: parseFloat(pos.direction || pos.heading || 0) || null,
+      ignition: pos.ignition === "Y" || pos.ignition === true || pos.ignition === 1,
+      road: pos.street || null,
+      town: pos.town || null,
+      timestamp: pos.timestamp || pos.datetime || pos.date_time || null,
+      _source: "legacy",
+    };
+  });
+}
+
+// ─── Main handler ───
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Check if Radius credentials are configured before doing anything
-    if (!Deno.env.get("RADIUS_API_TOKEN") || !Deno.env.get("RADIUS_REFRESH_TOKEN")) {
-      console.log("[RadiusPoller] Skipping — RADIUS_API_TOKEN or RADIUS_REFRESH_TOKEN not configured");
-      return new Response(JSON.stringify({ skipped: true, reason: "Radius credentials not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+    const ktApiKey = Deno.env.get("KT_API_KEY")?.trim();
+    const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && Deno.env.get("RADIUS_REFRESH_TOKEN"));
+
+    if (!ktApiKey && !hasLegacy) {
+      console.log("[RadiusPoller] Skipping — no KT_API_KEY or legacy credentials configured");
+      return new Response(JSON.stringify({ skipped: true, reason: "No Radius/KT credentials configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const customerId = Deno.env.get("RADIUS_CUSTOMER_ID");
     if (!customerId) {
       console.log("[RadiusPoller] Skipping — RADIUS_CUSTOMER_ID not configured");
       return new Response(JSON.stringify({ skipped: true, reason: "RADIUS_CUSTOMER_ID not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
     }
 
-    // Get all Radius devices from our DB
+    // Get all Radius devices from DB
     const { data: devices, error: devErr } = await supabase
       .from("gps_devices")
       .select("id, instructor_id, device_identifier, device_name, current_session_id, session_start_ecu_odometer_km, daily_start_ecu_odometer_km, daily_start_date")
@@ -153,88 +188,61 @@ Deno.serve(async (req) => {
       });
     }
 
-    let session = await authenticate(supabase);
+    const deviceMap = new Map(devices.map((d: any) => [d.device_identifier, d]));
 
-    // Build device identifier lookup map
-    const deviceMap = new Map(devices.map((d) => [d.device_identifier, d]));
+    // ─── Fetch positions: prefer KT v2, fallback to legacy ───
+    let positions: any[];
+    let apiUsed: string;
 
-    // Poll live positions from Velocity Fleet API (with one retry on auth failure)
-    async function fetchPositions(token: string) {
-      console.log("[RadiusPoller] Fetching live positions for customer:", customerId);
-      const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim() || "";
-      return await fetch(
-        `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "API-Token": apiToken,
-          },
-          body: JSON.stringify({}),
-        }
-      );
+    if (ktApiKey) {
+      positions = await fetchPositionsKT(ktApiKey, customerId);
+      apiUsed = "kt_v2";
+    } else {
+      const session = await authenticateLegacy(supabase);
+      if (!session) {
+        return new Response(JSON.stringify({ skipped: true, reason: "Legacy auth failed" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+        });
+      }
+      positions = await fetchPositionsLegacy(session.accessToken, customerId);
+      apiUsed = "legacy";
     }
 
-    let posRes = await fetchPositions(session.accessToken);
-
-    // On 401/403, clear cache, get a fresh token, and retry once
-    if (posRes.status === 401 || posRes.status === 403) {
-      console.log("[RadiusPoller] Got", posRes.status, "- clearing cache and retrying with fresh token");
-      cachedSession = null;
-      try {
-        await supabase.from("radius_session_cache").delete().eq("id", "default");
-      } catch (_) { /* ignore */ }
-
-      session = await authenticate(supabase);
-      posRes = await fetchPositions(session.accessToken);
-    }
-
-    if (!posRes.ok) {
-      const errText = await posRes.text();
-      throw new Error(`Radius positions API failed (${posRes.status}): ${errText}`);
-    }
-
-    const posData = await posRes.json();
-    const positions: any[] = posData?.data || posData?.results || (Array.isArray(posData) ? posData : []);
-
-    console.log("[RadiusPoller] Got", positions.length, "positions, matching against", devices.length, "tracked devices");
+    console.log("[RadiusPoller] Got", positions.length, "positions via", apiUsed, ", matching against", devices.length, "tracked devices");
 
     let updated = 0;
 
     for (const pos of positions) {
-      // Match by device ID (stringified)
-      const deviceId = String(pos.id || pos.device_id || "");
-      const device = deviceMap.get(deviceId);
+      const device = deviceMap.get(pos.id);
       if (!device) continue;
 
-      const lat = parseFloat(pos.lat || pos.latitude || 0);
-      const lon = parseFloat(pos.lon || pos.lng || pos.longitude || 0);
-      const speedMph = parseFloat(pos.speed || 0);
-      const speedKmh = Math.round(speedMph * 1.60934 * 10) / 10;
-      const heading = parseFloat(pos.direction || pos.heading || 0);
-      const ignition = pos.ignition === "Y" || pos.ignition === true || pos.ignition === 1;
+      const lat = pos.latitude;
+      const lon = pos.longitude;
+      const speedKmh = pos.speed_kmh ?? 0;
+      const heading = pos.heading;
+      const ignition = pos.ignition === true || pos.ignition === "on";
 
-      // Build road name from street + town
+      // Build road name
       let roadName: string | null = null;
-      if (pos.street) {
-        roadName = pos.town ? `${pos.street}, ${pos.town}` : pos.street;
+      if (pos.road) {
+        roadName = pos.town ? `${pos.road}, ${pos.town}` : pos.road;
       } else if (lat && lon) {
         roadName = await reverseGeocode(lat, lon);
       }
 
-      // Parse timestamp (Unix epoch in seconds or milliseconds)
+      // Parse timestamp
       let seenAt: string | null = null;
       if (pos.timestamp) {
-        const ts = Number(pos.timestamp);
-        // If less than 1e12, it's seconds; otherwise milliseconds
-        const msTimestamp = ts < 1e12 ? ts * 1000 : ts;
-        seenAt = new Date(msTimestamp).toISOString();
-      } else if (pos.datetime || pos.date_time) {
-        seenAt = new Date(pos.datetime || pos.date_time).toISOString();
+        const ts = typeof pos.timestamp === "string" ? pos.timestamp : null;
+        if (ts) {
+          seenAt = new Date(ts).toISOString();
+        } else {
+          const num = Number(pos.timestamp);
+          seenAt = new Date(num < 1e12 ? num * 1000 : num).toISOString();
+        }
       }
 
-      // Update device in gps_devices table
+      // Update gps_devices
       await supabase
         .from("gps_devices")
         .update({
@@ -246,14 +254,13 @@ Deno.serve(async (req) => {
           last_road_name: roadName,
           last_seen_at: seenAt,
           last_heartbeat_at: new Date().toISOString(),
-          // Use vehicle_registration as fallback device name
-          device_name: device.device_name || pos.vehicle_registration || pos.registration || null,
+          device_name: device.device_name || pos.name || pos.registration || null,
         })
         .eq("id", device.id);
 
       updated++;
 
-      // If device has an active session, record GPS point for route history
+      // Record GPS point if session active
       if (device.current_session_id && lat && lon) {
         await supabase
           .from("telematics_gps_points")
@@ -267,9 +274,9 @@ Deno.serve(async (req) => {
             recorded_at: seenAt || new Date().toISOString(),
           });
 
-        // Speed-based distance estimate (no ECU data from Radius)
+        // Speed-based distance estimate
         if (speedKmh > 0) {
-          const distKm = (speedKmh * 10) / 3600; // 10s poll interval estimate
+          const distKm = (speedKmh * 10) / 3600;
           if (distKm > 0.001) {
             await supabase.rpc("increment_total_distance", {
               p_id: device.current_session_id,
@@ -279,7 +286,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Update live_pupil_positions if active
+      // Update live_pupil_positions
       await supabase
         .from("live_pupil_positions")
         .update({
@@ -294,18 +301,12 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        ok: true,
-        devices: devices.length,
-        positionsReceived: positions.length,
-        positionsUpdated: updated,
-      }),
+      JSON.stringify({ ok: true, api: apiUsed, devices: devices.length, positionsReceived: positions.length, positionsUpdated: updated }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("radius-poller error:", err);
     cachedSession = null;
-
     return new Response(
       JSON.stringify({ ok: false, error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
