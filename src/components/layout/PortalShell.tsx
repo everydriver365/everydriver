@@ -137,6 +137,23 @@ function PortalDesktopSidebar({
         </div>
       </SidebarHeader>
 
+      {quickActions && quickActions.length > 0 && (
+        <div className={cn("border-b px-2 py-2", collapsed ? "flex flex-col gap-1" : "flex flex-col gap-1.5")}>
+          {quickActions.map((action, idx) => (
+            <Button
+              key={idx}
+              variant={action.variant ?? "default"}
+              size="sm"
+              onClick={action.onClick}
+              className={cn("w-full gap-2 text-xs font-medium", collapsed && "px-0 justify-center")}
+            >
+              <action.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && action.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
       <SidebarContent className="py-1">
         {sidebarGroups.map((group) => (
           <SidebarGroup key={group.label} className="py-1">
