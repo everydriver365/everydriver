@@ -108,8 +108,6 @@ const WaitingRoomPage = lazy(() => import("@/pages/instructor-app/WaitingRoomPag
 const InstructorHomeDesigns = lazy(() => import("@/pages/InstructorHomeDesigns"));
 const NextUpTileRedesigns = lazy(() => import("@/pages/demo/DemoNextUpRedesigns"));
 
-// School
-const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
 
 // Helper to wrap a component with FeatureGate
 function Gated({ feature, label, children }: { feature: string; label: string; children: React.ReactNode }) {
@@ -234,7 +232,5 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/home-designs" element={<InstructorHomeDesigns />} />
     <Route path="/instructor/next-up-redesigns" element={<NextUpTileRedesigns />} />
 
-    {/* School */}
-    <Route path="/school/dashboard" element={<SchoolDashboard />} />
   </>
 );
