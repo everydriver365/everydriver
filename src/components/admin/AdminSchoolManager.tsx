@@ -151,9 +151,6 @@ export function AdminSchoolManager() {
                 {s.contact_email && (
                   <p className="text-xs text-muted-foreground truncate">{s.contact_email}</p>
                 )}
-                {s.domain && (
-                  <p className="text-xs text-muted-foreground truncate">{s.domain}</p>
-                )}
               </CardContent>
             </Card>
           ))}
@@ -182,7 +179,7 @@ export function AdminSchoolManager() {
                   {instructorCounts[selected.id] || 0} instructors
                 </span>
                 <span>Gateway: <strong>{selected.payment_gateway_mode === "own" ? "Own" : "Platform"}</strong></span>
-                {selected.domain && <span>Domain: {selected.domain}</span>}
+                
               </div>
 
               {/* Feature toggles */}
