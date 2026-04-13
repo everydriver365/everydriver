@@ -69,7 +69,7 @@ function MiniCalendar({ currentMonth, onMonthChange }: { currentMonth: Date; onM
         </Button>
       </div>
       <div className="grid grid-cols-7 gap-0">
-        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
           <div key={i} className="text-[10px] text-center text-muted-foreground font-medium py-1">{d}</div>
         ))}
         {cells.map((cell, i) => {
