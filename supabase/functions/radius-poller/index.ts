@@ -66,6 +66,53 @@ interface RadiusSession {
 }
 let cachedSession: RadiusSession | null = null;
 
+// Attempt login with username/password to get fresh tokens
+async function authenticateWithCredentials(supabase: any): Promise<RadiusSession | null> {
+  const username = Deno.env.get("RADIUS_USERNAME")?.trim();
+  const password = Deno.env.get("RADIUS_PASSWORD")?.trim();
+  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
+  if (!username || !password || !apiToken) return null;
+
+  console.log("[RadiusPoller] Attempting username/password login...");
+  const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "API-Token": apiToken },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    console.error("[RadiusPoller] Credential login failed:", res.status, t);
+    return null;
+  }
+
+  const data = await res.json();
+  const accessToken = data.access || data.token || data.access_token;
+  const newRefresh = data.refresh || data.refresh_token;
+  if (!accessToken) {
+    console.error("[RadiusPoller] No access token in login response");
+    return null;
+  }
+
+  console.log("[RadiusPoller] Credential login successful, got fresh tokens");
+
+  const expiresAt = Date.now() + 55 * 60 * 1000;
+  cachedSession = { accessToken, expiresAt };
+
+  // Cache the session in DB
+  try {
+    await supabase.from("radius_session_cache").upsert({
+      id: "default",
+      access_token: accessToken,
+      refresh_token: newRefresh || null,
+      expires_at: new Date(expiresAt).toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  } catch (_) { /* non-critical */ }
+
+  return cachedSession;
+}
+
 async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> {
   if (cachedSession && cachedSession.expiresAt > Date.now()) return cachedSession;
 
@@ -82,31 +129,41 @@ async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> 
     }
   } catch (_) { /* non-critical */ }
 
+  // Try refresh token first
   const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
-  if (!refreshToken || !apiToken) return null;
 
-  const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "API-Token": apiToken },
-    body: JSON.stringify({ refresh: refreshToken, token: apiToken }),
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error(`Legacy auth failed (${res.status}): ${t}`); }
+  if (refreshToken && apiToken) {
+    try {
+      const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "API-Token": apiToken },
+        body: JSON.stringify({ refresh: refreshToken, token: apiToken }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const accessToken = data.access || data.token || data.access_token;
+        if (accessToken) {
+          const expiresAt = Date.now() + 55 * 60 * 1000;
+          cachedSession = { accessToken, expiresAt };
+          try {
+            await supabase.from("radius_session_cache").upsert({
+              id: "default", access_token: accessToken, expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
+            });
+          } catch (_) { /* non-critical */ }
+          return cachedSession;
+        }
+      } else {
+        const t = await res.text();
+        console.log("[RadiusPoller] Refresh token failed:", res.status, t, "— trying credentials...");
+      }
+    } catch (e) {
+      console.log("[RadiusPoller] Refresh token error:", e.message, "— trying credentials...");
+    }
+  }
 
-  const data = await res.json();
-  const accessToken = data.access || data.token || data.access_token;
-  if (!accessToken) throw new Error("No access token in legacy refresh response");
-
-  const expiresAt = Date.now() + 55 * 60 * 1000;
-  cachedSession = { accessToken, expiresAt };
-
-  try {
-    await supabase.from("radius_session_cache").upsert({
-      id: "default", access_token: accessToken, expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
-    });
-  } catch (_) { /* non-critical */ }
-
-  return cachedSession;
+  // Fallback: username/password login
+  return await authenticateWithCredentials(supabase);
 }
 
 async function fetchPositionsLegacy(token: string, customerId: string): Promise<any[]> {
