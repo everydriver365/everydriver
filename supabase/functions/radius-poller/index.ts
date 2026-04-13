@@ -66,6 +66,77 @@ interface RadiusSession {
 }
 let cachedSession: RadiusSession | null = null;
 
+// Attempt login with username/password to get fresh tokens
+async function authenticateWithCredentials(supabase: any): Promise<RadiusSession | null> {
+  const username = Deno.env.get("RADIUS_USERNAME")?.trim();
+  const password = Deno.env.get("RADIUS_PASSWORD")?.trim();
+  const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
+  if (!username || !password || !apiToken) return null;
+
+  // Try multiple login endpoints (some may redirect to HTML pages)
+  const loginUrls = [
+    "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/",
+    "https://www.velocityfleet.com/vapi/v1/accounts/users/login/",
+    "https://www.velocityfleet.com/api/v1/accounts/users/oauth2/login/",
+    "https://kinesisfleetpro.com/vapi/v1/accounts/users/oauth2/login/",
+  ];
+
+  for (const loginUrl of loginUrls) {
+    try {
+      console.log("[RadiusPoller] Trying credential login:", loginUrl);
+      const res = await fetch(loginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "API-Token": apiToken },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const bodyText = await res.text();
+
+      if (!res.ok) {
+        console.log("[RadiusPoller] Login failed at", loginUrl, ":", res.status, bodyText.substring(0, 200));
+        continue;
+      }
+
+      let data: any;
+      try { data = JSON.parse(bodyText); } catch {
+        console.log("[RadiusPoller] Non-JSON response from", loginUrl, ":", bodyText.substring(0, 200));
+        continue;
+      }
+
+      const accessToken = data.access || data.token || data.access_token;
+      const newRefresh = data.refresh || data.refresh_token;
+      if (!accessToken) {
+        console.log("[RadiusPoller] No access token in response from", loginUrl);
+        continue;
+      }
+
+      console.log("[RadiusPoller] Credential login successful via", loginUrl);
+
+      const expiresAt = Date.now() + 55 * 60 * 1000;
+      cachedSession = { accessToken, expiresAt };
+
+      // Cache the session in DB
+      try {
+        await supabase.from("radius_session_cache").upsert({
+          id: "default",
+          access_token: accessToken,
+          refresh_token: newRefresh || null,
+          expires_at: new Date(expiresAt).toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      } catch (_) { /* non-critical */ }
+
+      return cachedSession;
+    } catch (e) {
+      console.log("[RadiusPoller] Error at", loginUrl, ":", e.message);
+      continue;
+    }
+  }
+
+  console.error("[RadiusPoller] All credential login endpoints failed");
+  return null;
+}
+
 async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> {
   if (cachedSession && cachedSession.expiresAt > Date.now()) return cachedSession;
 
@@ -82,31 +153,41 @@ async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> 
     }
   } catch (_) { /* non-critical */ }
 
+  // Try refresh token first
   const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
-  if (!refreshToken || !apiToken) return null;
 
-  const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "API-Token": apiToken },
-    body: JSON.stringify({ refresh: refreshToken, token: apiToken }),
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error(`Legacy auth failed (${res.status}): ${t}`); }
+  if (refreshToken && apiToken) {
+    try {
+      const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "API-Token": apiToken },
+        body: JSON.stringify({ refresh: refreshToken, token: apiToken }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const accessToken = data.access || data.token || data.access_token;
+        if (accessToken) {
+          const expiresAt = Date.now() + 55 * 60 * 1000;
+          cachedSession = { accessToken, expiresAt };
+          try {
+            await supabase.from("radius_session_cache").upsert({
+              id: "default", access_token: accessToken, expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
+            });
+          } catch (_) { /* non-critical */ }
+          return cachedSession;
+        }
+      } else {
+        const t = await res.text();
+        console.log("[RadiusPoller] Refresh token failed:", res.status, t, "— trying credentials...");
+      }
+    } catch (e) {
+      console.log("[RadiusPoller] Refresh token error:", e.message, "— trying credentials...");
+    }
+  }
 
-  const data = await res.json();
-  const accessToken = data.access || data.token || data.access_token;
-  if (!accessToken) throw new Error("No access token in legacy refresh response");
-
-  const expiresAt = Date.now() + 55 * 60 * 1000;
-  cachedSession = { accessToken, expiresAt };
-
-  try {
-    await supabase.from("radius_session_cache").upsert({
-      id: "default", access_token: accessToken, expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
-    });
-  } catch (_) { /* non-critical */ }
-
-  return cachedSession;
+  // Fallback: username/password login
+  return await authenticateWithCredentials(supabase);
 }
 
 async function fetchPositionsLegacy(token: string, customerId: string): Promise<any[]> {
@@ -151,7 +232,7 @@ Deno.serve(async (req) => {
 
   try {
     const ktApiKey = Deno.env.get("KT_API_KEY")?.trim();
-    const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && Deno.env.get("RADIUS_REFRESH_TOKEN"));
+    const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && (Deno.env.get("RADIUS_REFRESH_TOKEN") || (Deno.env.get("RADIUS_USERNAME") && Deno.env.get("RADIUS_PASSWORD"))));
 
     if (!ktApiKey && !hasLegacy) {
       console.log("[RadiusPoller] Skipping — no KT_API_KEY or legacy credentials configured");
