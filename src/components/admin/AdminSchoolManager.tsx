@@ -47,6 +47,7 @@ const FEATURE_DEFS = [
   { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard, group: "Financials" },
   { key: "payroll", label: "Payroll", icon: Wallet, group: "Financials" },
   { key: "reports", label: "Reports", icon: FileText, group: "Financials" },
+  { key: "subscription", label: "Subscription & Billing", icon: CreditCard, group: "Financials" },
   // Operations
   { key: "fleet", label: "Fleet Tracking", icon: MapPin, group: "Operations" },
   { key: "test-results", label: "Test Results", icon: Award, group: "Operations" },

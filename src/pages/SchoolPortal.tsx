@@ -32,6 +32,7 @@ import SchoolLeaderboardSection from "@/components/school/SchoolLeaderboardSecti
 import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSection";
 import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
+import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -118,6 +119,8 @@ export default function SchoolPortal() {
         return <SchoolNotificationsSection school={school} onRefresh={refetch} />;
       case "franchise-fees":
         return <SchoolFranchiseFeesSection schoolId={school.id} />;
+      case "subscription":
+        return <SchoolSubscriptionSection instructorIds={instructorIds} schoolName={school.name} />;
       default:
         return null;
     }

@@ -66,6 +66,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "payroll", label: "Payroll", icon: Wallet },
       { key: "reports", label: "Reports", icon: FileText },
       { key: "franchise-fees", label: "Franchise Fees", icon: PoundSterling },
+      { key: "subscription", label: "Subscription & Billing", icon: CreditCard },
     ],
   },
   {
@@ -115,6 +116,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   bnpl: { title: "Buy Now, Pay Later", group: "Financials" },
   payroll: { title: "Payroll", group: "Financials" },
   "franchise-fees": { title: "Franchise Fees", group: "Financials" },
+  subscription: { title: "Subscription & Billing", group: "Financials" },
   reports: { title: "Reports", group: "Financials" },
   fleet: { title: "Fleet Tracking", group: "Operations" },
   "test-results": { title: "Test Results", group: "Operations" },
