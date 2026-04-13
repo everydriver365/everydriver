@@ -101,7 +101,6 @@ export default function InstructorPay() {
       .eq("instructor_id", instructorId);
     setRecentPaymentCount(count || 0);
   };
-  };
 
   if (!instructorId) {
     return (
