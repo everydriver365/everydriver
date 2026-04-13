@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dsmLogo from "@/assets/dsm-logo.png";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, MapPin, Star, Phone, Mail, Clock } from "lucide-react";
@@ -215,8 +216,9 @@ export default function SchoolBookingPage() {
       </div>
 
       {/* Footer */}
-      <div className="border-t py-6 text-center text-xs text-muted-foreground">
-        <p>Powered by EveryDriver</p>
+      <div className="border-t py-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <span>Powered by</span>
+        <img src={dsmLogo} alt="DSM" className="h-5 w-auto" />
       </div>
     </div>
   );
