@@ -127,7 +127,7 @@ export function HomepageHero({
   return (
     <div className="relative">
       {/* Background image area — bleeds under the header */}
-      <div className="relative" style={{ aspectRatio: "1 / 0.43", borderRadius: 0, overflow: "hidden" }}>
+      <div className="relative" style={{ aspectRatio: "1 / 0.35", borderRadius: 0, overflow: "hidden" }}>
         <img src={heroImageUrl && heroImageUrl.trim() !== '' ? heroImageUrl : instructorHeroImg} alt="Driving scene" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = instructorHeroImg; }} />
         {/* Subtle bottom gradient for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
