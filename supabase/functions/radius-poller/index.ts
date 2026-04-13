@@ -73,12 +73,11 @@ async function authenticateWithCredentials(supabase: any): Promise<RadiusSession
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
   if (!username || !password || !apiToken) return null;
 
-  // Try multiple login endpoints (some may redirect to HTML pages)
+  // Try multiple login endpoints
   const loginUrls = [
-    "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/",
+    "https://www.kinesisfleetpro.com/vapi/v1/accounts/users/login/",
+    "https://www.kinesisfleetpro.com/vapi/v1/accounts/users/oauth2/login/",
     "https://www.velocityfleet.com/vapi/v1/accounts/users/login/",
-    "https://www.velocityfleet.com/api/v1/accounts/users/oauth2/login/",
-    "https://kinesisfleetpro.com/vapi/v1/accounts/users/oauth2/login/",
   ];
 
   for (const loginUrl of loginUrls) {
