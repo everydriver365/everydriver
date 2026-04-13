@@ -266,6 +266,49 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
         </Button>
       </div>
 
+      {/* Search bar */}
+      <div className="relative">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            ref={searchRef}
+            type="text"
+            placeholder="Search pupils, instructors, lessons…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+            className="pl-9 pr-9 h-10"
+          />
+          {searchQuery && (
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              onClick={() => { setSearchQuery(""); searchRef.current?.focus(); }}
+            >
+              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+        {searchFocused && searchResults && searchResults.length > 0 && (
+          <div className="absolute z-30 top-full mt-1 w-full bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-72 overflow-y-auto">
+            {searchResults.map(r => (
+              <div key={`${r.type}-${r.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted cursor-pointer text-sm border-b border-border last:border-0">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">{r.type}</Badge>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-muted-foreground text-xs ml-2">{r.sub}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {searchFocused && searchResults && searchResults.length === 0 && searchQuery.trim() && (
+          <div className="absolute z-30 top-full mt-1 w-full bg-background border border-border rounded-lg shadow-lg p-4 text-sm text-muted-foreground text-center">
+            No results for "{searchQuery}"
+          </div>
+        )}
+      </div>
+
       {/* Stat tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {[
