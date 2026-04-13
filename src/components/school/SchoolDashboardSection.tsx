@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2, Plus, Search, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSchoolDemo } from "@/context/SchoolDemoContext";
-import { demoSchoolStats, demoSchoolLessons } from "@/data/demoSchoolData";
+import { demoSchoolStats, demoSchoolLessons, demoSchoolPupils, demoSchoolInstructors } from "@/data/demoSchoolData";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { AVAILABLE_WIDGETS, DEFAULT_ACTIVE_WIDGETS } from "./widgets/WidgetDefinitions";
 import { WIDGET_COMPONENTS } from "./widgets/DashboardWidgets";
 import AddWidgetPanel from "./widgets/AddWidgetPanel";
