@@ -53,6 +53,8 @@ interface LessonSchedulerProps {
   allowedLessonLengths?: number[];
   bufferMinutes?: number;
   pupilId?: string; // Optional - needed for waitlist functionality
+  instructorHomePostcode?: string;
+  pupilPostcode?: string;
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
 
@@ -82,6 +84,8 @@ export function LessonScheduler({
   allowedLessonLengths,
   bufferMinutes = 0,
   pupilId,
+  instructorHomePostcode,
+  pupilPostcode,
   onSlotsChange,
 }: LessonSchedulerProps) {
   const isMobile = useIsMobile();
@@ -94,6 +98,7 @@ export function LessonScheduler({
   const [viewMonth, setViewMonth] = useState(new Date());
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
+  const [travelBufferMinutes, setTravelBufferMinutes] = useState<number | null>(null);
   
   // Base allowed lesson lengths from instructor settings
   const baseDurationOptions = useMemo(() => {
