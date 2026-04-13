@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
-import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Calendar, TrendingUp, Users, Award, Clock, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import { demoSchoolStats, demoSchoolLessons } from "@/data/demoSchoolData";
+import { AVAILABLE_WIDGETS, DEFAULT_ACTIVE_WIDGETS } from "./widgets/WidgetDefinitions";
+import { WIDGET_COMPONENTS } from "./widgets/DashboardWidgets";
+import AddWidgetPanel from "./widgets/AddWidgetPanel";
 
 interface Props {
   instructorIds: string[];
@@ -82,6 +84,20 @@ function MiniCalendar({ currentMonth, onMonthChange }: { currentMonth: Date; onM
   );
 }
 
+const STORAGE_KEY = "school-dashboard-widgets";
+
+function loadWidgets(): string[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return DEFAULT_ACTIVE_WIDGETS;
+}
+
+function saveWidgets(ids: string[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+}
+
 export default function SchoolDashboardSection({ instructorIds, schoolName }: Props) {
   const { isDemo } = useSchoolDemo();
   const [stats, setStats] = useState({ totalLessons: 0, totalEarnings: 0, totalPupils: 0, passRate: 0, upcomingLessons: 0, activeInstructors: 0 });
@@ -92,6 +108,8 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d;
   });
+  const [activeWidgets, setActiveWidgets] = useState<string[]>(loadWidgets);
+  const [widgetPanelOpen, setWidgetPanelOpen] = useState(false);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -147,6 +165,22 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
     setCalendarLoading(false);
   };
 
+  const toggleWidget = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const next = prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id];
+      saveWidgets(next);
+      return next;
+    });
+  }, []);
+
+  const removeWidget = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const next = prev.filter(w => w !== id);
+      saveWidgets(next);
+      return next;
+    });
+  }, []);
+
   const cells = useMemo(() => getMonthGrid(year, month), [year, month]);
 
   const instructorColorMap = useMemo(() => {
@@ -185,14 +219,23 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
   const shiftMonth = (dir: number) => setCurrentMonth(new Date(year, month + dir, 1));
   const goToToday = () => { const d = new Date(); setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1)); };
 
+  const showCalendar = activeWidgets.includes("lesson-calendar");
+  const otherWidgets = activeWidgets.filter(id => id !== "lesson-calendar" && WIDGET_COMPONENTS[id]);
+
   if (loading) return <div className="flex items-center justify-center py-12"><Clock className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold">{schoolName}</h2>
-        <p className="text-muted-foreground">School overview and key metrics</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{schoolName}</h2>
+          <p className="text-muted-foreground">School overview and key metrics</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setWidgetPanelOpen(true)} className="gap-1.5">
+          <Plus className="h-4 w-4" />
+          Add Widget
+        </Button>
       </div>
 
       {/* Stat tiles */}
@@ -215,99 +258,119 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
         ))}
       </div>
 
-      {/* Calendar section */}
-      <div className="flex gap-6">
-        {/* Sidebar */}
-        <div className="hidden lg:flex flex-col gap-4 w-52 shrink-0">
-          <MiniCalendar currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
-          {instructorLegend.length > 0 && (
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">Instructors</span>
-              <button
-                onClick={() => setSelectedInstructor(null)}
-                className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
-                  ${selectedInstructor === null ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-foreground/40 shrink-0" />
-                All Instructors
-              </button>
-              {instructorLegend.map((inst) => (
-                <button
-                  key={inst.id}
-                  onClick={() => setSelectedInstructor(selectedInstructor === inst.id ? null : inst.id)}
-                  className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
-                    ${selectedInstructor === inst.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
-                >
-                  <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot} shrink-0`} />
-                  {inst.name}
-                </button>
-              ))}
-            </div>
-          )}
+      {/* Widgets grid (non-calendar) */}
+      {otherWidgets.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {otherWidgets.map(id => {
+            const Component = WIDGET_COMPONENTS[id];
+            return Component ? <Component key={id} onRemove={() => removeWidget(id)} /> : null;
+          })}
         </div>
+      )}
 
-        {/* Main calendar */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold">{monthLabel}</h3>
-            <div className="flex items-center gap-1 ml-2">
-              <Button variant="outline" size="sm" onClick={goToToday} className="text-xs h-7 px-3">Today</Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => shiftMonth(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
-
-          {calendarLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-          ) : (
-            <div className="border border-border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 border-b border-border bg-muted/30">
-                {DAYS.map(d => (
-                  <div key={d} className="text-[11px] font-medium text-muted-foreground text-center py-2 border-r border-border last:border-r-0">{d}</div>
+      {/* Calendar section */}
+      {showCalendar && (
+        <div className="flex gap-6">
+          {/* Sidebar */}
+          <div className="hidden lg:flex flex-col gap-4 w-52 shrink-0">
+            <MiniCalendar currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
+            {instructorLegend.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">Instructors</span>
+                <button
+                  onClick={() => setSelectedInstructor(null)}
+                  className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                    ${selectedInstructor === null ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-foreground/40 shrink-0" />
+                  All Instructors
+                </button>
+                {instructorLegend.map((inst) => (
+                  <button
+                    key={inst.id}
+                    onClick={() => setSelectedInstructor(selectedInstructor === inst.id ? null : inst.id)}
+                    className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                      ${selectedInstructor === inst.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot} shrink-0`} />
+                    {inst.name}
+                  </button>
                 ))}
               </div>
-              <div className="grid grid-cols-7">
-                {cells.map((cell, i) => {
-                  const dayLessons = lessonsForDay(cell.date);
-                  const isToday = cell.date.toDateString() === today.toDateString();
-                  const isWeekEnd = i % 7 === 5 || i % 7 === 6;
-                  return (
-                    <div
-                      key={i}
-                      className={`min-h-[90px] p-1 border-r border-b border-border last:border-r-0
-                        ${!cell.isCurrentMonth ? "bg-muted/20" : isWeekEnd ? "bg-muted/10" : "bg-background"}`}
-                    >
-                      <div className="flex justify-end mb-0.5">
-                        <span className={`text-xs leading-none w-6 h-6 flex items-center justify-center rounded-full
-                          ${isToday ? "bg-primary text-primary-foreground font-bold" : ""}
-                          ${!cell.isCurrentMonth ? "text-muted-foreground/50" : "text-foreground"}`}>
-                          {cell.date.getDate()}
-                        </span>
-                      </div>
-                      <div className="space-y-0.5 overflow-hidden">
-                        {dayLessons.slice(0, 3).map(l => {
-                          const color = instructorColorMap[l.instructor_id] || DEFAULT_COLORS[0];
-                          const time = new Date(l.start_time).toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" });
-                          return (
-                            <div key={l.id} className={`text-[10px] px-1.5 py-0.5 rounded truncate flex items-center gap-1 ${color.bg} ${color.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${color.dot} shrink-0`} />
-                              <span className="font-medium">{time}</span>
-                              <span className="truncate">{l.pupils?.name || "Student"}</span>
-                            </div>
-                          );
-                        })}
-                        {dayLessons.length > 3 && (
-                          <div className="text-[10px] text-muted-foreground pl-1.5 font-medium">+{dayLessons.length - 3} more</div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+            )}
+          </div>
+
+          {/* Main calendar */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="text-lg font-semibold">{monthLabel}</h3>
+              <div className="flex items-center gap-1 ml-2">
+                <Button variant="outline" size="sm" onClick={goToToday} className="text-xs h-7 px-3">Today</Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => shiftMonth(-1)}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
-          )}
+
+            {calendarLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : (
+              <div className="border border-border rounded-lg overflow-hidden">
+                <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+                  {DAYS.map(d => (
+                    <div key={d} className="text-[11px] font-medium text-muted-foreground text-center py-2 border-r border-border last:border-r-0">{d}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7">
+                  {cells.map((cell, i) => {
+                    const dayLessons = lessonsForDay(cell.date);
+                    const isToday = cell.date.toDateString() === today.toDateString();
+                    const isWeekEnd = i % 7 === 5 || i % 7 === 6;
+                    return (
+                      <div
+                        key={i}
+                        className={`min-h-[90px] p-1 border-r border-b border-border last:border-r-0
+                          ${!cell.isCurrentMonth ? "bg-muted/20" : isWeekEnd ? "bg-muted/10" : "bg-background"}`}
+                      >
+                        <div className="flex justify-end mb-0.5">
+                          <span className={`text-xs leading-none w-6 h-6 flex items-center justify-center rounded-full
+                            ${isToday ? "bg-primary text-primary-foreground font-bold" : ""}
+                            ${!cell.isCurrentMonth ? "text-muted-foreground/50" : "text-foreground"}`}>
+                            {cell.date.getDate()}
+                          </span>
+                        </div>
+                        <div className="space-y-0.5 overflow-hidden">
+                          {dayLessons.slice(0, 3).map(l => {
+                            const color = instructorColorMap[l.instructor_id] || DEFAULT_COLORS[0];
+                            const time = new Date(l.start_time).toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" });
+                            return (
+                              <div key={l.id} className={`text-[10px] px-1.5 py-0.5 rounded truncate flex items-center gap-1 ${color.bg} ${color.text}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${color.dot} shrink-0`} />
+                                <span className="font-medium">{time}</span>
+                                <span className="truncate">{l.pupils?.name || "Student"}</span>
+                              </div>
+                            );
+                          })}
+                          {dayLessons.length > 3 && (
+                            <div className="text-[10px] text-muted-foreground pl-1.5 font-medium">+{dayLessons.length - 3} more</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Add Widget Panel */}
+      <AddWidgetPanel
+        open={widgetPanelOpen}
+        onClose={() => setWidgetPanelOpen(false)}
+        activeWidgets={activeWidgets}
+        onToggleWidget={toggleWidget}
+      />
     </div>
   );
 }
