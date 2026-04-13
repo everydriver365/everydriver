@@ -171,17 +171,28 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
         <MiniCalendar currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
         {/* Legend */}
         {instructorLegend.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Instructors</span>
-            {instructorLegend.map((inst, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs">
-                <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot}`} />
+            <button
+              onClick={() => setSelectedInstructor(null)}
+              className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                ${selectedInstructor === null ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-foreground/40 shrink-0" />
+              All Instructors
+            </button>
+            {instructorLegend.map((inst) => (
+              <button
+                key={inst.id}
+                onClick={() => setSelectedInstructor(selectedInstructor === inst.id ? null : inst.id)}
+                className={`flex items-center gap-2 text-xs w-full rounded px-1.5 py-1 text-left transition-colors
+                  ${selectedInstructor === inst.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-muted"}`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${inst.color.dot} shrink-0`} />
                 {inst.name}
-              </div>
+              </button>
             ))}
           </div>
-        )}
-      </div>
 
       {/* Main calendar */}
       <div className="flex-1 min-w-0">
