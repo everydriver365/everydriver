@@ -1,77 +1,37 @@
 
 
-## Plan: School Franchise Fees Section (Admin Portal)
+## Plan: School Subscription & Billing Section
 
 ### Overview
-Add a "Franchise Fees" section within the Admin Portal's Schools group. This lets admin view and manage per-instructor franchise fee records for each school — tracking status (paid, late, not paid, free), amounts, and due dates. The data model supports future GoCardless integration for automated collection.
+Add a "Subscription & Billing" section to the school portal where school managers can view their current plan, see per-instructor subscription statuses, and review billing history. This reuses the existing `instructor_subscriptions` and `subscription_plans` tables — no new tables needed.
 
-### Database Migration
+### New Files
 
-**New table: `school_franchise_fees`**
-```sql
-CREATE TABLE public.school_franchise_fees (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES public.schools(id) ON DELETE CASCADE,
-  instructor_id UUID NOT NULL REFERENCES public.instructors(id) ON DELETE CASCADE,
-  period_start DATE NOT NULL,
-  period_end DATE NOT NULL,
-  amount NUMERIC NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'not_paid', -- paid, late, not_paid, free
-  payment_method TEXT, -- manual, gocardless, etc.
-  payment_reference TEXT,
-  paid_at TIMESTAMPTZ,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
-ALTER TABLE public.school_franchise_fees ENABLE ROW LEVEL SECURITY;
--- Admin full access
-CREATE POLICY "Admins manage franchise fees"
-  ON public.school_franchise_fees FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'));
--- School owners can view their own
-CREATE POLICY "School owners view franchise fees"
-  ON public.school_franchise_fees FOR SELECT TO authenticated
-  USING (public.is_school_owner(school_id));
-```
-
-**New column on `schools` table:**
-- `franchise_fee_amount` (NUMERIC, default 0) — the standard per-instructor fee for this school
-
-### Files to Create
-
-**`src/components/admin/AdminSchoolFranchiseFees.tsx`**
-- School selector dropdown (fetches all schools)
-- Summary cards: total due, total collected, overdue count
-- Table of fees per instructor per period showing: instructor name, period, amount, status badge (paid=green, late=amber, not_paid=red, free=grey), paid date, payment method
-- Actions: Mark as Paid, Mark as Free, Add Fee (dialog with instructor picker, period, amount)
-- Filter by status and date range
-- Button to bulk-generate fees for all instructors in a school for a given month
+**`src/components/school/SchoolSubscriptionSection.tsx`**
+- **Current Plan card**: Shows school name, number of instructors, total monthly cost (sum of all instructor subscription amounts)
+- **Per-Instructor Breakdown table**: Lists each school instructor with their plan name, status (active/cancelled/past_due), billing cycle, current period end, and monthly amount — fetched by joining `instructor_subscriptions` with `subscription_plans` filtered by `instructorIds`
+- Status badges: active = green, past_due/late = amber, cancelled = red, free = grey
+- **Billing History**: Lists recent `subscription_payments` for school instructors showing date, amount, status, and payment method
+- Summary cards at top: Total Active Subscriptions, Monthly Revenue, Overdue count
 
 ### Files to Modify
 
-1. **`src/pages/AdminPortal.tsx`**
-   - Add `"school-fees"` to sectionMeta under "Schools" group
-   - Add case rendering `<AdminSchoolFranchiseFees />`
+1. **`src/components/school/SchoolLayout.tsx`**
+   - Add `{ key: "subscription", label: "Subscription & Billing", icon: CreditCard }` to the Financials group
+   - Add to `sectionMeta`
+
+2. **`src/pages/SchoolPortal.tsx`**
+   - Add `case "subscription"` rendering `<SchoolSubscriptionSection />`
    - Import the new component
 
-2. **`src/components/admin/AdminLayout.tsx`** + **`AdminDesktopSidebar.tsx`**
-   - Add `{ key: "school-fees", label: "Franchise Fees", icon: PoundSterling }` to the Schools sidebar group
+3. **`src/pages/DemoSchoolPortal.tsx`**
+   - Add `case "subscription"` with demo data
 
-3. **`src/components/school/SchoolLayout.tsx`**
-   - Add `{ key: "franchise-fees", label: "Franchise Fees", icon: PoundSterling }` to the Financials group (read-only view for school managers)
-
-4. **`src/components/school/SchoolFranchiseFeesSection.tsx`** (new)
-   - School-side read-only view of their own franchise fees, scoped by `school_id`
-   - Shows status per instructor per period
-
-5. **`src/pages/SchoolPortal.tsx`** + **`DemoSchoolPortal.tsx`**
-   - Add `case "franchise-fees"` routing
+4. **`src/components/admin/AdminSchoolManager.tsx`**
+   - Add `"subscription"` to `FEATURE_DEFS` so admin can toggle it
 
 ### Technical Notes
-- Status values: `paid`, `late`, `not_paid`, `free`
-- `franchise_fee_amount` on schools table provides the default amount when bulk-generating
-- GoCardless integration placeholder: `payment_method` column will store `"gocardless"` when wired up later
-- School managers see fees read-only; only admin can create/update fee records
+- No database migration needed — queries join existing `instructor_subscriptions` + `subscription_plans` tables filtered by `instructorIds`
+- Read-only for school managers — plan changes are handled by admin or instructors themselves
+- Uses the same `instructorIds` scoping pattern as all other school sections
 
