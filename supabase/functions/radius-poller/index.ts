@@ -73,44 +73,66 @@ async function authenticateWithCredentials(supabase: any): Promise<RadiusSession
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
   if (!username || !password || !apiToken) return null;
 
-  console.log("[RadiusPoller] Attempting username/password login...");
-  const res = await fetch("https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "API-Token": apiToken },
-    body: JSON.stringify({ username, password }),
-  });
+  // Try multiple login endpoints
+  const loginUrls = [
+    "https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/",
+    "https://www.kinesisfleetpro.com/vapi/v1/accounts/users/oauth2/login/",
+  ];
 
-  if (!res.ok) {
-    const t = await res.text();
-    console.error("[RadiusPoller] Credential login failed:", res.status, t);
-    return null;
+  for (const loginUrl of loginUrls) {
+    try {
+      console.log("[RadiusPoller] Trying credential login:", loginUrl);
+      const res = await fetch(loginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "API-Token": apiToken },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const bodyText = await res.text();
+
+      if (!res.ok) {
+        console.log("[RadiusPoller] Login failed at", loginUrl, ":", res.status, bodyText.substring(0, 200));
+        continue;
+      }
+
+      let data: any;
+      try { data = JSON.parse(bodyText); } catch {
+        console.log("[RadiusPoller] Non-JSON response from", loginUrl, ":", bodyText.substring(0, 200));
+        continue;
+      }
+
+      const accessToken = data.access || data.token || data.access_token;
+      const newRefresh = data.refresh || data.refresh_token;
+      if (!accessToken) {
+        console.log("[RadiusPoller] No access token in response from", loginUrl);
+        continue;
+      }
+
+      console.log("[RadiusPoller] Credential login successful via", loginUrl);
+
+      const expiresAt = Date.now() + 55 * 60 * 1000;
+      cachedSession = { accessToken, expiresAt };
+
+      // Cache the session in DB
+      try {
+        await supabase.from("radius_session_cache").upsert({
+          id: "default",
+          access_token: accessToken,
+          refresh_token: newRefresh || null,
+          expires_at: new Date(expiresAt).toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      } catch (_) { /* non-critical */ }
+
+      return cachedSession;
+    } catch (e) {
+      console.log("[RadiusPoller] Error at", loginUrl, ":", e.message);
+      continue;
+    }
   }
 
-  const data = await res.json();
-  const accessToken = data.access || data.token || data.access_token;
-  const newRefresh = data.refresh || data.refresh_token;
-  if (!accessToken) {
-    console.error("[RadiusPoller] No access token in login response");
-    return null;
-  }
-
-  console.log("[RadiusPoller] Credential login successful, got fresh tokens");
-
-  const expiresAt = Date.now() + 55 * 60 * 1000;
-  cachedSession = { accessToken, expiresAt };
-
-  // Cache the session in DB
-  try {
-    await supabase.from("radius_session_cache").upsert({
-      id: "default",
-      access_token: accessToken,
-      refresh_token: newRefresh || null,
-      expires_at: new Date(expiresAt).toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  } catch (_) { /* non-critical */ }
-
-  return cachedSession;
+  console.error("[RadiusPoller] All credential login endpoints failed");
+  return null;
 }
 
 async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> {
