@@ -44,13 +44,16 @@ export function IOSLargeTitle({
         animate={{
           opacity: collapsed ? 1 : 0,
           y: collapsed ? 0 : -8,
+          height: collapsed ? "auto" : 0,
         }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-2.5 flex items-center justify-between pointer-events-auto"
+        className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border overflow-hidden pointer-events-auto"
         style={{ pointerEvents: collapsed ? "auto" : "none" }}
       >
-        <h2 className="text-[17px] font-semibold text-foreground">{title}</h2>
-        {action && <div className="shrink-0">{action}</div>}
+        <div className="px-4 py-2.5 flex items-center justify-between">
+          <h2 className="text-[17px] font-semibold text-foreground">{title}</h2>
+          {action && <div className="shrink-0">{action}</div>}
+        </div>
       </motion.div>
 
       {/* Sentinel for intersection observer */}
