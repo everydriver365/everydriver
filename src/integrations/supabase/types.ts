@@ -13339,14 +13339,23 @@ export type Database = {
           description: string | null
           discounted_price: number | null
           display_order: number
+          driving_test_details: string | null
+          explainer_video_url: string | null
           features: string[] | null
+          full_description: string | null
           id: string
           is_active: boolean
           is_intensive: boolean
           is_popular: boolean
+          payment_terms: string | null
+          prerequisites: string[] | null
           price: number
           school_id: string
+          short_description: string | null
+          terms_conditions: string | null
+          theory_test_details: string | null
           updated_at: string
+          what_to_bring: string[] | null
         }
         Insert: {
           course_hours: number
@@ -13356,14 +13365,23 @@ export type Database = {
           description?: string | null
           discounted_price?: number | null
           display_order?: number
+          driving_test_details?: string | null
+          explainer_video_url?: string | null
           features?: string[] | null
+          full_description?: string | null
           id?: string
           is_active?: boolean
           is_intensive?: boolean
           is_popular?: boolean
+          payment_terms?: string | null
+          prerequisites?: string[] | null
           price: number
           school_id: string
+          short_description?: string | null
+          terms_conditions?: string | null
+          theory_test_details?: string | null
           updated_at?: string
+          what_to_bring?: string[] | null
         }
         Update: {
           course_hours?: number
@@ -13373,14 +13391,23 @@ export type Database = {
           description?: string | null
           discounted_price?: number | null
           display_order?: number
+          driving_test_details?: string | null
+          explainer_video_url?: string | null
           features?: string[] | null
+          full_description?: string | null
           id?: string
           is_active?: boolean
           is_intensive?: boolean
           is_popular?: boolean
+          payment_terms?: string | null
+          prerequisites?: string[] | null
           price?: number
           school_id?: string
+          short_description?: string | null
+          terms_conditions?: string | null
+          theory_test_details?: string | null
           updated_at?: string
+          what_to_bring?: string[] | null
         }
         Relationships: [
           {
