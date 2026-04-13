@@ -52,6 +52,7 @@ const QuoteAcceptPage = lazy(() => import("@/pages/QuoteAcceptPage"));
 const PublicPaymentPage = lazy(() => import("@/pages/PublicPaymentPage"));
 const HealthBenefitsPage = lazy(() => import("@/pages/HealthBenefitsPage"));
 const DataDeletion = lazy(() => import("@/pages/DataDeletion"));
+const SchoolBookingPage = lazy(() => import("@/pages/SchoolBookingPage"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -126,5 +127,6 @@ export const publicRoutes = (
     <Route path="/sign/:token" element={<RemoteSigning />} />
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
+    <Route path="/school/:slug" element={<SchoolBookingPage />} />
   </>
 );

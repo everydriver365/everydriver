@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, TrendingUp, Award, Calendar, Loader2, Plus, Building2 } from "lucide-react";
+import { Users, TrendingUp, Award, Calendar, Loader2, Plus, Building2, Link2, Copy, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import SchoolStatsGrid from "@/components/school/SchoolStatsGrid";
+import SchoolInstructorsList from "@/components/school/SchoolInstructorsList";
+import SchoolSlugManager from "@/components/school/SchoolSlugManager";
 
 interface SchoolInstructor {
   id: string;
@@ -28,8 +31,8 @@ export default function SchoolDashboard() {
   const [instructors, setInstructors] = useState<SchoolInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalLessons: 0, totalEarnings: 0, totalPupils: 0, passRate: 0 });
-  const [inviteEmail, setInviteEmail] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
 
   useEffect(() => {
     fetchSchool();
@@ -60,7 +63,6 @@ export default function SchoolDashboard() {
 
     setInstructors(members || []);
 
-    // Aggregate stats across instructors
     const instructorIds = (members || []).map((m: any) => m.instructor_id);
     if (instructorIds.length > 0) {
       const { data: lessons } = await supabase
@@ -100,14 +102,24 @@ export default function SchoolDashboard() {
     const name = prompt("Enter your school name:");
     if (!name) return;
 
-    const { data, error } = await supabase
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+    const { error } = await supabase
       .from("schools")
-      .insert({ name, owner_user_id: user.id } as any)
+      .insert({ name, slug, owner_user_id: user.id } as any)
       .select()
       .single();
 
     if (error) { toast.error("Failed to create school"); return; }
     toast.success("School created!");
+    fetchSchool();
+  };
+
+  const removeInstructor = async (memberId: string) => {
+    if (!confirm("Remove this instructor from the school?")) return;
+    const { error } = await supabase.from("school_instructors").delete().eq("id", memberId) as any;
+    if (error) { toast.error("Failed to remove instructor"); return; }
+    toast.success("Instructor removed");
     fetchSchool();
   };
 
@@ -152,54 +164,14 @@ export default function SchoolDashboard() {
         </Sheet>
       </div>
 
+      {/* Booking Link */}
+      <SchoolSlugManager school={school} onUpdate={fetchSchool} />
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card><CardContent className="pt-4 text-center">
-          <Calendar className="h-5 w-5 text-primary mx-auto mb-1" />
-          <p className="text-2xl font-bold">{stats.totalLessons}</p>
-          <p className="text-xs text-muted-foreground">Total Lessons</p>
-        </CardContent></Card>
-        <Card><CardContent className="pt-4 text-center">
-          <TrendingUp className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold">£{stats.totalEarnings.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground">Total Earnings</p>
-        </CardContent></Card>
-        <Card><CardContent className="pt-4 text-center">
-          <Users className="h-5 w-5 text-sky-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold">{stats.totalPupils}</p>
-          <p className="text-xs text-muted-foreground">Total Pupils</p>
-        </CardContent></Card>
-        <Card><CardContent className="pt-4 text-center">
-          <Award className="h-5 w-5 text-amber-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold">{stats.passRate}%</p>
-          <p className="text-xs text-muted-foreground">Pass Rate</p>
-        </CardContent></Card>
-      </div>
+      <SchoolStatsGrid stats={stats} />
 
       {/* Instructors */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Instructors ({instructors.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {instructors.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No instructors yet — invite your team!</p>
-          ) : (
-            instructors.map(member => (
-              <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-lg border">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{(member as any).instructors?.name || "Instructor"}</p>
-                  <p className="text-xs text-muted-foreground">{(member as any).instructors?.phone || ""}</p>
-                </div>
-                <Badge variant="outline" className="text-xs">{member.role.replace("_", " ")}</Badge>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <SchoolInstructorsList instructors={instructors} onRemove={removeInstructor} />
     </div>
   );
 }

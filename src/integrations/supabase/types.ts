@@ -13254,6 +13254,13 @@ export type Database = {
             foreignKeyName: "school_instructors_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_instructors_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
             referencedRelation: "schools"
             referencedColumns: ["id"]
           },
@@ -13262,29 +13269,44 @@ export type Database = {
       schools: {
         Row: {
           brand_colour: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
+          custom_domain: string | null
+          description: string | null
           id: string
           logo_url: string | null
           name: string
           owner_user_id: string
+          slug: string | null
           updated_at: string
         }
         Insert: {
           brand_colour?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
+          custom_domain?: string | null
+          description?: string | null
           id?: string
           logo_url?: string | null
           name: string
           owner_user_id: string
+          slug?: string | null
           updated_at?: string
         }
         Update: {
           brand_colour?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
+          custom_domain?: string | null
+          description?: string | null
           id?: string
           logo_url?: string | null
           name?: string
           owner_user_id?: string
+          slug?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -15506,6 +15528,33 @@ export type Database = {
           website_text_color?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
+        }
+        Relationships: []
+      }
+      public_schools: {
+        Row: {
+          brand_colour: string | null
+          description: string | null
+          id: string | null
+          logo_url: string | null
+          name: string | null
+          slug: string | null
+        }
+        Insert: {
+          brand_colour?: string | null
+          description?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          slug?: string | null
+        }
+        Update: {
+          brand_colour?: string | null
+          description?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          slug?: string | null
         }
         Relationships: []
       }
