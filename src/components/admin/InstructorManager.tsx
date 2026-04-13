@@ -199,7 +199,44 @@ export function InstructorManager({ onEdit, onViewProfile }: InstructorManagerPr
   useEffect(() => {
     fetchInstructors();
     fetchDeletedInstructors();
+    fetchSchools();
   }, [fetchInstructors, fetchDeletedInstructors]);
+
+  const fetchSchools = async () => {
+    const { data: schoolData } = await supabase.from("schools").select("id, name").order("name") as any;
+    setSchools(schoolData || []);
+
+    const { data: memberships } = await supabase.from("school_instructors").select("instructor_id, school_id") as any;
+    const map: Record<string, string> = {};
+    (memberships || []).forEach((m: any) => { map[m.instructor_id] = m.school_id; });
+    setInstructorSchoolMap(map);
+  };
+
+  const handleSchoolChange = async (instructorId: string, schoolId: string) => {
+    const currentSchoolId = instructorSchoolMap[instructorId];
+
+    // Remove existing assignment
+    if (currentSchoolId) {
+      await supabase.from("school_instructors").delete().eq("instructor_id", instructorId).eq("school_id", currentSchoolId) as any;
+    }
+
+    if (schoolId === "none") {
+      setInstructorSchoolMap(prev => {
+        const next = { ...prev };
+        delete next[instructorId];
+        return next;
+      });
+      toast.success("Instructor unassigned from school");
+      return;
+    }
+
+    // Add new assignment
+    const { error } = await supabase.from("school_instructors").insert({ instructor_id: instructorId, school_id: schoolId, role: "instructor" } as any);
+    if (error) { toast.error("Failed to assign instructor"); return; }
+
+    setInstructorSchoolMap(prev => ({ ...prev, [instructorId]: schoolId }));
+    toast.success("Instructor assigned to school");
+  };
 
   const handleRestore = async (id: string) => {
     try {
