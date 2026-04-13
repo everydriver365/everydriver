@@ -189,6 +189,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "calendar-sync": { title: "Calendar Sync Queue", group: "System Settings", icon: Calendar },
   "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
   "school-manager": { title: "School Manager", group: "Schools", icon: Users },
+  "school-fees": { title: "Franchise Fees", group: "Schools", icon: PoundSterling },
 };
 
 export default function AdminPortal() {

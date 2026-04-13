@@ -89,6 +89,7 @@ const sidebarGroups: PortalNavGroup[] = [
     icon: Building2,
     items: [
       { key: "school-manager", label: "School Manager", icon: Building2 },
+      { key: "school-fees", label: "Franchise Fees", icon: PoundSterling },
     ],
   },
   {

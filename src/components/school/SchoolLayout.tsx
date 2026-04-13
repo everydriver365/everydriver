@@ -65,6 +65,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard },
       { key: "payroll", label: "Payroll", icon: Wallet },
       { key: "reports", label: "Reports", icon: FileText },
+      { key: "franchise-fees", label: "Franchise Fees", icon: PoundSterling },
     ],
   },
   {
