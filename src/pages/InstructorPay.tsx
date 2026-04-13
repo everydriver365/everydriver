@@ -1,22 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  CreditCard, 
-  TrendingUp, 
-  PoundSterling, 
-  Calendar, 
-  Clock,
-  ChevronRight,
+import {
+  PoundSterling,
   QrCode,
-  History,
-  Receipt,
   Wallet,
+  Receipt,
+  Gift,
+  Car,
+  Calculator,
   Users,
   ArrowUpRight,
-  Gift
+  ChevronRight,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
@@ -25,13 +20,12 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
-import { EarningsChart } from "@/components/instructor/money/EarningsChart";
-import { WeeklyComparisonBar } from "@/components/instructor/money/WeeklyComparisonBar";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
-import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { OwesMoneyCard } from "@/components/instructor/money/OwesMoneyCard";
-
+import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
+import { haptics } from "@/lib/haptics";
+import { cn } from "@/lib/utils";
 
 interface Pupil {
   id: string;
@@ -41,13 +35,23 @@ interface Pupil {
   email: string | null;
 }
 
+interface QuickAction {
+  id: string;
+  label: string;
+  sublabel: string;
+  icon: React.ElementType;
+  href?: string;
+  onClick?: () => void;
+  accent?: boolean;
+}
+
 export default function InstructorPay() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
-  
+
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
-  const [commissionPayer, setCommissionPayer] = useState<string | null>('pupil');
+  const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -93,177 +97,239 @@ export default function InstructorPay() {
     );
   }
 
-  const monthlyChange = earnings?.lastMonth && earnings.lastMonth > 0
-    ? Math.round(((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth) * 100)
-    : 0;
+  const monthlyChange =
+    earnings?.lastMonth && earnings.lastMonth > 0
+      ? Math.round(((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth) * 100)
+      : 0;
+
+  const thisMonth = isLoading ? "—" : (earnings?.thisMonth || 0);
+  const thisWeek = earnings?.thisWeek || 0;
+  const lastMonth = earnings?.lastMonth || 0;
+
+  const actions: QuickAction[] = [
+    {
+      id: "take-payment",
+      label: "Take Payment",
+      sublabel: "QR or manual",
+      icon: QrCode,
+      onClick: () => {
+        haptics.selection();
+        setPaymentModalOpen(true);
+      },
+      accent: true,
+    },
+    {
+      id: "accounts",
+      label: "Accounts",
+      sublabel: "Income & outgoings",
+      icon: Wallet,
+      href: "/instructor/accounts",
+    },
+    {
+      id: "expenses",
+      label: "Expenses",
+      sublabel: "Track costs",
+      icon: Receipt,
+      href: "/instructor/expenses",
+    },
+    {
+      id: "bonus",
+      label: "Bonus",
+      sublabel: "Incentives & rewards",
+      icon: Gift,
+      href: "/instructor/bonus",
+    },
+    {
+      id: "mileage",
+      label: "Mileage",
+      sublabel: "Tax tracker",
+      icon: Car,
+      href: "/instructor/mileage",
+    },
+    {
+      id: "tax",
+      label: "Tax Summary",
+      sublabel: "HMRC ready",
+      icon: Calculator,
+      href: "/instructor/accounts?tab=tax",
+    },
+  ];
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            Money
-          </h1>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setPaymentModalOpen(true)}>
-            <QrCode className="h-4 w-4 mr-1.5" />
-            Take Payment
-          </Button>
-        </div>
-
-        {/* Main Stats Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
+      <div className="space-y-5 pb-24">
+        {/* ── Vault Card ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/75 p-6 text-white shadow-[0_20px_40px_-15px_hsl(var(--primary)/0.5)]"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white/70 text-xs">This Month</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold">
-                  £{isLoading ? "—" : earnings?.thisMonth || 0}
+          {/* subtle glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_50%)] pointer-events-none" />
+
+          <div className="relative z-10">
+            <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
+              Net Earnings · This Month
+            </p>
+            <div className="mt-2 flex items-baseline gap-1">
+              <span className="text-4xl font-extrabold tracking-tighter tabular-nums">
+                £{thisMonth}
+              </span>
+              {monthlyChange !== 0 && (
+                <span
+                  className={cn(
+                    "ml-2 text-xs font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-md",
+                    monthlyChange > 0
+                      ? "bg-emerald-500/20 text-emerald-300"
+                      : "bg-rose-500/20 text-rose-300"
+                  )}
+                >
+                  <ArrowUpRight
+                    className={cn("h-3 w-3", monthlyChange < 0 && "rotate-90")}
+                  />
+                  {Math.abs(monthlyChange)}%
                 </span>
-                {monthlyChange !== 0 && (
-                  <span className={`text-xs font-medium flex items-center gap-0.5 ${
-                    monthlyChange > 0 ? "text-emerald-300" : "text-rose-300"
-                  }`}>
-                    <ArrowUpRight className={`h-3 w-3 ${monthlyChange < 0 ? "rotate-90" : ""}`} />
-                    {Math.abs(monthlyChange)}%
-                  </span>
-                )}
-              </div>
+              )}
             </div>
-            <div className="text-right">
-              <p className="text-white/70 text-xs">Hours</p>
-              <p className="text-xl font-bold">{earnings?.hoursThisMonth || 0}h</p>
+
+            <div className="mt-5 flex gap-8">
+              <div>
+                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
+                  This Week
+                </span>
+                <p className="text-lg font-bold tabular-nums">£{thisWeek}</p>
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
+                  Last Month
+                </span>
+                <p className="text-lg font-bold tabular-nums">£{lastMonth}</p>
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
+                  Per Hour
+                </span>
+                <p className="text-lg font-bold tabular-nums">
+                  £{earnings?.hourlyRate || 40}
+                </p>
+              </div>
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
-        {/* Owes Money - debtors first */}
-        <OwesMoneyCard pupils={pupils} instructorId={instructorId} instructorName={instructorName} paymentLink={resolvedQrUrl} />
+        {/* ── Owes Money ── */}
+        <OwesMoneyCard
+          pupils={pupils}
+          instructorId={instructorId}
+          instructorName={instructorName}
+          paymentLink={resolvedQrUrl}
+        />
 
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-3 gap-3">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-1">
-              <Calendar className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-lg font-bold">£{earnings?.thisWeek || 0}</p>
-            <p className="text-[10px] text-muted-foreground">This Week</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-1">
-              <History className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            </div>
-            <p className="text-lg font-bold">£{earnings?.lastMonth || 0}</p>
-            <p className="text-[10px] text-muted-foreground">Last Month</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card rounded-xl border p-3 text-center"
-          >
-            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-1">
-              <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-            </div>
-            <p className="text-lg font-bold">£{earnings?.hourlyRate || 40}</p>
-            <p className="text-[10px] text-muted-foreground">Per Hour</p>
-          </motion.div>
-        </div>
+        {/* ── Quick Actions Grid ── */}
+        <section>
+          <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
+            Quick Actions
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {actions.map((action, i) => {
+              const Icon = action.icon;
+              const inner = (
+                <motion.div
+                  key={action.id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={cn(
+                    "rounded-2xl p-4 flex flex-col gap-3 min-h-[110px] transition-shadow",
+                    action.accent
+                      ? "bg-primary text-white shadow-[0_8px_24px_hsl(var(--primary)/0.3)]"
+                      : "bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                      action.accent ? "bg-white/15" : "bg-primary/10"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-5 w-5",
+                        action.accent ? "text-white" : "text-primary"
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <p
+                      className={cn(
+                        "text-sm font-semibold leading-tight",
+                        action.accent ? "text-white" : "text-foreground"
+                      )}
+                    >
+                      {action.label}
+                    </p>
+                    <p
+                      className={cn(
+                        "text-[10px] mt-0.5",
+                        action.accent ? "text-white/60" : "text-muted-foreground"
+                      )}
+                    >
+                      {action.sublabel}
+                    </p>
+                  </div>
+                </motion.div>
+              );
 
-        {/* Week Comparison */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="bg-card rounded-xl border p-4"
-        >
-          <WeeklyComparisonBar 
-            thisWeek={earnings?.thisWeek || 0} 
-            lastWeek={earnings?.lastWeek || 0} 
-          />
-        </motion.div>
+              if (action.href) {
+                return (
+                  <Link
+                    key={action.id}
+                    to={action.href}
+                    onClick={() => haptics.selection()}
+                  >
+                    {inner}
+                  </Link>
+                );
+              }
+              return (
+                <button
+                  key={action.id}
+                  onClick={action.onClick}
+                  className="text-left"
+                >
+                  {inner}
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/instructor/accounts">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Wallet className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-sm">Accounts</p>
-                  <p className="text-xs text-muted-foreground">Full breakdown</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </motion.div>
-          </Link>
-          <Link to="/instructor/expenses">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Receipt className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-sm">Expenses</p>
-                  <p className="text-xs text-muted-foreground">Track costs</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </motion.div>
-          </Link>
-        </div>
-
-        {/* Recent Payments */}
-        <motion.div
+        {/* ── Recent Payments ── */}
+        <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card rounded-xl border"
+          className="bg-card rounded-2xl border border-border overflow-hidden"
         >
-          <div className="flex items-center justify-between p-4 border-b">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
               <Receipt className="h-4 w-4 text-primary" />
               Recent Payments
             </h3>
-            <Link to="/instructor/accounts" className="text-xs text-primary font-medium">
-              See all
+            <Link
+              to="/instructor/accounts"
+              className="text-xs text-primary font-medium flex items-center gap-0.5"
+            >
+              See all <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="p-4">
             <PaymentHistory instructorId={instructorId} limit={5} />
           </div>
-        </motion.div>
+        </motion.section>
 
-        {/* Payouts from Admin */}
+        {/* ── Payouts ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -272,28 +338,31 @@ export default function InstructorPay() {
           <InstructorPayoutHistory instructorId={instructorId} />
         </motion.div>
 
-        {/* Pupil Balances */}
-        <motion.div
+        {/* ── Pupil Balances ── */}
+        <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="bg-card rounded-xl border"
+          className="bg-card rounded-2xl border border-border overflow-hidden"
         >
-          <div className="flex items-center justify-between p-4 border-b">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               Pupil Balances
             </h3>
-            <Link to="/instructor/accounts" className="text-xs text-primary font-medium">
-              View all
+            <Link
+              to="/instructor/accounts"
+              className="text-xs text-primary font-medium flex items-center gap-0.5"
+            >
+              View all <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="p-4">
             <PupilBalancesList pupils={pupils} limit={5} />
           </div>
-        </motion.div>
+        </motion.section>
 
-        {/* Earnings Forecaster */}
+        {/* ── Forecaster ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -301,7 +370,6 @@ export default function InstructorPay() {
         >
           <EarningsForecaster instructorId={instructorId} />
         </motion.div>
-
       </div>
 
       <TakePaymentModal
