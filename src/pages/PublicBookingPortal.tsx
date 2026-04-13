@@ -146,8 +146,8 @@ export default function PublicBookingPortal() {
                       {inst.home_postcode && (
                         <Badge variant="outline" className="gap-1"><MapPin className="h-3 w-3" />{inst.home_postcode}</Badge>
                       )}
-                      {inst.transmission_type && (
-                        <Badge variant="outline" className="capitalize">{inst.transmission_type}</Badge>
+                      {inst.car_type && (
+                        <Badge variant="outline" className="capitalize">{inst.car_type}</Badge>
                       )}
                     </div>
 
