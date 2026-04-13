@@ -13622,6 +13622,63 @@ export type Database = {
           },
         ]
       }
+      school_website_pages: {
+        Row: {
+          content_blocks: Json | null
+          created_at: string | null
+          display_order: number | null
+          hero_heading: string | null
+          hero_subheading: string | null
+          id: string
+          is_published: boolean | null
+          page_title: string
+          page_type: string
+          school_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content_blocks?: Json | null
+          created_at?: string | null
+          display_order?: number | null
+          hero_heading?: string | null
+          hero_subheading?: string | null
+          id?: string
+          is_published?: boolean | null
+          page_title: string
+          page_type: string
+          school_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content_blocks?: Json | null
+          created_at?: string | null
+          display_order?: number | null
+          hero_heading?: string | null
+          hero_subheading?: string | null
+          id?: string
+          is_published?: boolean | null
+          page_title?: string
+          page_type?: string
+          school_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_website_pages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_website_pages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           brand_colour: string | null
@@ -13633,6 +13690,7 @@ export type Database = {
           description: string | null
           enabled_features: Json
           franchise_fee_amount: number | null
+          hero_image_url: string | null
           id: string
           klarna_enabled: boolean
           logo_url: string | null
@@ -13649,6 +13707,13 @@ export type Database = {
           payment_gateway_mode: string
           slug: string | null
           updated_at: string
+          website_button_color: string | null
+          website_font: string | null
+          website_footer_bg: string | null
+          website_header_bg: string | null
+          website_header_style: string | null
+          website_theme: string | null
+          website_tier: string | null
         }
         Insert: {
           brand_colour?: string | null
@@ -13660,6 +13725,7 @@ export type Database = {
           description?: string | null
           enabled_features?: Json
           franchise_fee_amount?: number | null
+          hero_image_url?: string | null
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null
@@ -13676,6 +13742,13 @@ export type Database = {
           payment_gateway_mode?: string
           slug?: string | null
           updated_at?: string
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_bg?: string | null
+          website_header_style?: string | null
+          website_theme?: string | null
+          website_tier?: string | null
         }
         Update: {
           brand_colour?: string | null
@@ -13687,6 +13760,7 @@ export type Database = {
           description?: string | null
           enabled_features?: Json
           franchise_fee_amount?: number | null
+          hero_image_url?: string | null
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null
@@ -13703,6 +13777,13 @@ export type Database = {
           payment_gateway_mode?: string
           slug?: string | null
           updated_at?: string
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_bg?: string | null
+          website_header_style?: string | null
+          website_theme?: string | null
+          website_tier?: string | null
         }
         Relationships: []
       }
