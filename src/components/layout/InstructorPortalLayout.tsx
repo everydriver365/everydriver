@@ -107,6 +107,7 @@ import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
+import dsmLogo from "@/assets/dsm-logo.png";
 const sidebarGroups = [
   {
     label: "TEACHING",
@@ -422,11 +423,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* Mobile Header */}
             <header
               className={cn(
-                "sticky top-0 z-40 pt-[env(safe-area-inset-top)]",
-                isHomePage ? "bg-transparent absolute inset-x-0" : "bg-primary"
+                "sticky top-0 z-40",
+                isHomePage ? "bg-transparent absolute inset-x-0" : ""
               )}
             >
-              <div className="text-primary-foreground relative overflow-hidden">
+              {/* Safe area spacer — always primary blue */}
+              <div className="bg-primary" style={{ paddingTop: "env(safe-area-inset-top)" }} />
+
+              <div className="text-primary-foreground relative overflow-hidden bg-primary">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Hamburger + Title */}
@@ -544,11 +548,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </SheetContent>
                     </Sheet>
 
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">
-                        {showBackButton ? mobilePageTitle : headerLabel}
-                      </p>
-                    </div>
+                    <img
+                      src={dsmLogo}
+                      alt="DSM"
+                      className="h-6 shrink-0"
+                    />
                     <MobileNotificationBell instructorId={instructor?.id} />
                   </div>
 
