@@ -25,6 +25,9 @@ import {
   Megaphone,
   Map,
   PhoneCall,
+  BarChart3,
+  Map,
+  PhoneCall,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
@@ -41,6 +44,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "live-map", label: "Live Map", icon: Map },
       { key: "revenue-analytics", label: "Revenue Analytics", icon: TrendingUp },
       { key: "leaderboard", label: "Leaderboard", icon: Trophy },
+      { key: "pupil-progress", label: "Pupil Progress", icon: BarChart3 },
     ],
   },
   {
