@@ -242,6 +242,7 @@ export function PortalShell({
   headerBg = "bg-[#142040]",
   headerTextClass = "text-white/70 hover:text-white hover:bg-white/10",
   headerExtra,
+  quickActions,
 }: PortalShellProps) {
   const isMobile = useIsMobile();
 
@@ -295,6 +296,23 @@ export function PortalShell({
                         ))}
                       </div>
                     ))}
+                    {quickActions && quickActions.length > 0 && (
+                      <div className="border-t mt-2 pt-2 px-4 space-y-1.5">
+                        {quickActions.map((action, idx) => (
+                          <SheetTrigger asChild key={`action-${idx}`}>
+                            <Button
+                              variant={action.variant ?? "default"}
+                              size="sm"
+                              onClick={action.onClick}
+                              className="w-full gap-2 text-xs font-medium"
+                            >
+                              <action.icon className="h-4 w-4" />
+                              {action.label}
+                            </Button>
+                          </SheetTrigger>
+                        ))}
+                      </div>
+                    )}
                     <div className="border-t mt-2 pt-2 px-4">
                       <Button
                         variant="ghost"
@@ -374,6 +392,7 @@ export function PortalShell({
             logoSrc={logoSrc}
             logoAlt={logoAlt}
             portalLabel={portalLabel}
+            quickActions={quickActions}
           />
           {content}
         </div>
