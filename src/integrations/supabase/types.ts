@@ -13482,12 +13482,14 @@ export type Database = {
       schools: {
         Row: {
           brand_colour: string | null
+          clearpay_enabled: boolean
           contact_email: string | null
           contact_phone: string | null
           created_at: string
           custom_domain: string | null
           description: string | null
           id: string
+          klarna_enabled: boolean
           logo_url: string | null
           name: string
           notification_preferences: Json | null
@@ -13497,12 +13499,14 @@ export type Database = {
         }
         Insert: {
           brand_colour?: string | null
+          clearpay_enabled?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           custom_domain?: string | null
           description?: string | null
           id?: string
+          klarna_enabled?: boolean
           logo_url?: string | null
           name: string
           notification_preferences?: Json | null
@@ -13512,12 +13516,14 @@ export type Database = {
         }
         Update: {
           brand_colour?: string | null
+          clearpay_enabled?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           custom_domain?: string | null
           description?: string | null
           id?: string
+          klarna_enabled?: boolean
           logo_url?: string | null
           name?: string
           notification_preferences?: Json | null
