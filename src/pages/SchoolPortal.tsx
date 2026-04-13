@@ -74,6 +74,8 @@ export default function SchoolPortal() {
         return <SchoolRevenueAnalyticsSection instructorIds={instructorIds} />;
       case "leaderboard":
         return <SchoolLeaderboardSection instructorIds={instructorIds} />;
+      case "pupil-progress":
+        return <SchoolPupilProgressSection instructorIds={instructorIds} />;
       case "instructors":
         return <SchoolInstructorsSection schoolId={school.id} onRefresh={refetch} />;
       case "pupils":

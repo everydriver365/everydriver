@@ -53,6 +53,8 @@ export default function DemoSchoolPortal() {
         return <SchoolRevenueAnalyticsSection instructorIds={instructorIds} />;
       case "leaderboard":
         return <SchoolLeaderboardSection instructorIds={instructorIds} />;
+      case "pupil-progress":
+        return <SchoolPupilProgressSection instructorIds={instructorIds} />;
       case "instructors":
         return <SchoolInstructorsSection schoolId={school.id} onRefresh={noop} />;
       case "pupils":
