@@ -21,106 +21,42 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// ─── Kinesis Fleet Pro / Key Telematics API (preferred) ───
+// ─── Key Telematics Fleet API v2 (if KT_API_KEY is a real KT key) ───
 async function fetchPositionsKT(ktApiKey: string, customerId: string): Promise<any[]> {
-  // Try Key Telematics v2 first, then Kinesis/Velocity Fleet API
-  const endpoints = [
-    {
-      name: "KT v2 (UK)",
-      url: `https://api.uk1.kt1.io/fleet/v2/entities/assets?owner=${customerId}`,
-      method: "GET",
-      headers: { "x-api-key": ktApiKey, "Accept": "application/json" },
-    },
-    {
-      name: "KT v2 (EU)",
-      url: `https://api.eu1.kt1.io/fleet/v2/entities/assets?owner=${customerId}`,
-      method: "GET",
-      headers: { "x-api-key": ktApiKey, "Accept": "application/json" },
-    },
-    {
-      name: "Kinesis/Velocity Fleet",
-      url: `https://www.kinesisfleetpro.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
-      method: "POST",
-      headers: { "Content-Type": "application/json", "API-Token": ktApiKey },
-      body: JSON.stringify({}),
-    },
-    {
-      name: "Velocity Fleet (velocityfleet.com)",
-      url: `https://www.velocityfleet.com/api/mobile/kinesis/device-live-positions/?customer=${customerId}`,
-      method: "POST",
-      headers: { "Content-Type": "application/json", "API-Token": ktApiKey },
-      body: JSON.stringify({}),
-    },
-  ];
+  const url = `https://api.uk1.kt1.io/fleet/v2/entities/assets?owner=${customerId}`;
+  console.log("[RadiusPoller] Using Key Telematics v2 API");
 
-  for (const ep of endpoints) {
-    try {
-      console.log(`[RadiusPoller] Trying ${ep.name}...`);
-      const res = await fetch(ep.url, {
-        method: ep.method,
-        headers: ep.headers,
-        body: ep.body || undefined,
-      });
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { "x-api-key": ktApiKey, "Accept": "application/json" },
+  });
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.log(`[RadiusPoller] ${ep.name} failed (${res.status}): ${errText.substring(0, 200)}`);
-        continue;
-      }
-
-      const data = await res.json();
-      console.log(`[RadiusPoller] ${ep.name} succeeded! Response keys:`, Object.keys(data));
-
-      // Normalise response - handle both KT v2 and Velocity Fleet formats
-      const raw: any[] = Array.isArray(data) ? data : (data?.data || data?.results || data?.items || []);
-      console.log(`[RadiusPoller] ${ep.name} returned ${raw.length} items`);
-
-      return raw.map((a: any) => {
-        // KT v2 format
-        const pos = a.lastPosition || a.position || {};
-        const isKT = !!(a.lastPosition || a.position);
-
-        if (isKT) {
-          return {
-            id: String(a.id || a.assetId || ""),
-            name: a.name || a.label || null,
-            registration: a.registration || a.plateNumber || null,
-            latitude: pos.latitude ?? pos.lat ?? null,
-            longitude: pos.longitude ?? pos.lng ?? pos.lon ?? null,
-            speed_kmh: pos.speed ?? pos.speedKmh ?? null,
-            heading: pos.heading ?? pos.bearing ?? pos.course ?? null,
-            ignition: pos.ignition ?? null,
-            road: pos.road || pos.street || pos.address || null,
-            town: pos.town || pos.city || null,
-            timestamp: pos.timestamp || pos.dateTime || pos.time || a.lastUpdated || null,
-            _source: ep.name,
-          };
-        }
-
-        // Velocity/Kinesis Fleet format
-        const speedMph = parseFloat(a.speed || 0);
-        return {
-          id: String(a.id || a.device_id || ""),
-          name: null,
-          registration: a.vehicle_registration || a.registration || null,
-          latitude: parseFloat(a.lat || a.latitude || 0) || null,
-          longitude: parseFloat(a.lon || a.lng || a.longitude || 0) || null,
-          speed_kmh: Math.round(speedMph * 1.60934 * 10) / 10,
-          heading: parseFloat(a.direction || a.heading || 0) || null,
-          ignition: a.ignition === "Y" || a.ignition === true || a.ignition === 1,
-          road: a.street || null,
-          town: a.town || null,
-          timestamp: a.timestamp || a.datetime || a.date_time || null,
-          _source: ep.name,
-        };
-      });
-    } catch (err) {
-      console.log(`[RadiusPoller] ${ep.name} error:`, err.message);
-      continue;
-    }
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`KT v2 assets API failed (${res.status}): ${errText}`);
   }
 
-  throw new Error("All KT/Kinesis API endpoints failed — check KT_API_KEY and RADIUS_CUSTOMER_ID");
+  const data = await res.json();
+  const assets: any[] = Array.isArray(data) ? data : (data?.data || data?.items || []);
+  console.log("[RadiusPoller] KT v2 returned", assets.length, "assets");
+
+  return assets.map((a: any) => {
+    const pos = a.lastPosition || a.position || {};
+    return {
+      id: String(a.id || a.assetId || ""),
+      name: a.name || a.label || null,
+      registration: a.registration || a.plateNumber || null,
+      latitude: pos.latitude ?? pos.lat ?? null,
+      longitude: pos.longitude ?? pos.lng ?? pos.lon ?? null,
+      speed_kmh: pos.speed ?? pos.speedKmh ?? null,
+      heading: pos.heading ?? pos.bearing ?? pos.course ?? null,
+      ignition: pos.ignition ?? null,
+      road: pos.road || pos.street || pos.address || null,
+      town: pos.town || pos.city || null,
+      timestamp: pos.timestamp || pos.dateTime || pos.time || a.lastUpdated || null,
+      _source: "kt_v2",
+    };
+  });
 }
 
 // ─── Legacy Velocity Fleet API (fallback) ───
