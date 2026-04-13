@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 interface InstructorLastPosition {
   latitude: number | null;
@@ -27,10 +28,8 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
   const processData = useCallback((data: any) => {
     if (!data) return;
     
-    // Use last_seen_at as primary indicator of device activity
     const trackTime = data.last_seen_at ? new Date(data.last_seen_at) : null;
     const now = new Date();
-    // Active if real GPS data received within 60 seconds
     const isRecent = trackTime ? (now.getTime() - trackTime.getTime()) < 60000 : false;
 
     setPosition({
@@ -44,57 +43,44 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
     });
   }, []);
 
-  const fetchPosition = useCallback(async () => {
+  useEffect(() => {
     if (!instructorId) {
       setIsLoading(false);
       return;
     }
 
-    try {
-      const { data } = await supabase
-        .from("gps_devices")
-        .select("last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, is_active")
-        .eq("instructor_id", instructorId)
-        .order("last_seen_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    const fetch = async () => {
+      try {
+        const { data } = await supabase
+          .from("gps_devices")
+          .select("last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, is_active")
+          .eq("instructor_id", instructorId)
+          .order("last_seen_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (data) {
-        processData(data);
+        if (data) processData(data);
+      } catch (err) {
+        console.error("Error fetching instructor position:", err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching instructor position:", err);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    fetch();
   }, [instructorId, processData]);
 
-  useEffect(() => {
-    fetchPosition();
-
-    if (!instructorId) return;
-
-    // Subscribe to realtime updates for instant tracking
-    const channel = supabase
-      .channel(`gps-position-${instructorId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "gps_devices",
-          filter: `instructor_id=eq.${instructorId}`,
-        },
-        (payload) => {
-          processData(payload.new);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, fetchPosition, processData]);
+  useRealtimeSubscription(
+    "gps_devices",
+    "UPDATE",
+    (payload) => {
+      processData(payload.new);
+    },
+    {
+      filter: instructorId ? `instructor_id=eq.${instructorId}` : undefined,
+      enabled: !!instructorId,
+    }
+  );
 
   return { ...position, isLoading };
 }

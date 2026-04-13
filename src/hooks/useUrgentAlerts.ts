@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 export interface UrgentAlert {
   id: string;
@@ -35,25 +36,14 @@ export function useUrgentAlerts(instructorId: string | undefined) {
     refetchInterval: 30_000,
   });
 
-  // Realtime subscription
-  useEffect(() => {
-    if (!instructorId) return;
-
-    const channel = supabase
-      .channel(`urgent-alerts-${instructorId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "urgent_alerts" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["urgent-alerts", instructorId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, queryClient]);
+  useRealtimeSubscription(
+    "urgent_alerts",
+    "INSERT",
+    () => {
+      queryClient.invalidateQueries({ queryKey: ["urgent-alerts", instructorId] });
+    },
+    { enabled: !!instructorId }
+  );
 
   const dismissAlert = async (alertId: string) => {
     await supabase

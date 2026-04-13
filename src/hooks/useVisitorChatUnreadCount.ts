@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 export function useVisitorChatUnreadCount(instructorId: string | undefined) {
   const queryClient = useQueryClient();
@@ -34,28 +34,14 @@ export function useVisitorChatUnreadCount(instructorId: string | undefined) {
     staleTime: 30 * 1000,
   });
 
-  useEffect(() => {
-    if (!instructorId) return;
-
-    const channel = supabase
-      .channel(`visitor-chat-unread-${instructorId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "live_chat_messages",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["visitor-chat-unread-count", instructorId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, queryClient]);
+  useRealtimeSubscription(
+    "live_chat_messages",
+    "*",
+    () => {
+      queryClient.invalidateQueries({ queryKey: ["visitor-chat-unread-count", instructorId] });
+    },
+    { enabled: !!instructorId }
+  );
 
   return query;
 }

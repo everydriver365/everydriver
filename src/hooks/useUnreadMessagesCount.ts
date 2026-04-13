@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 export function useUnreadMessagesCount(instructorId: string | undefined) {
   const queryClient = useQueryClient();
@@ -11,7 +11,6 @@ export function useUnreadMessagesCount(instructorId: string | undefined) {
       if (!instructorId) return 0;
 
       try {
-        // First get all conversations for this instructor
         const { data: conversations, error: convError } = await supabase
           .from("conversations")
           .select("id")
@@ -21,7 +20,6 @@ export function useUnreadMessagesCount(instructorId: string | undefined) {
           return 0;
         }
 
-        // Then count unread messages from pupils in those conversations
         const conversationIds = conversations.map((c) => c.id);
         const { count, error } = await supabase
           .from("messages")
@@ -45,29 +43,14 @@ export function useUnreadMessagesCount(instructorId: string | undefined) {
     staleTime: 30 * 1000,
   });
 
-  // Set up realtime subscription for messages
-  useEffect(() => {
-    if (!instructorId) return;
-
-    const channel = supabase
-      .channel(`unread-messages-${instructorId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["unread-messages-count", instructorId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, queryClient]);
+  useRealtimeSubscription(
+    "messages",
+    "*",
+    () => {
+      queryClient.invalidateQueries({ queryKey: ["unread-messages-count", instructorId] });
+    },
+    { enabled: !!instructorId }
+  );
 
   return query;
 }
