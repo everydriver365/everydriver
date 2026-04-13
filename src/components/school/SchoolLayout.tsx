@@ -16,6 +16,15 @@ import {
   Bell,
   Wallet,
   CalendarPlus,
+  MessageSquare,
+  ShieldCheck,
+  TrendingUp,
+  Tag,
+  Trophy,
+  Globe,
+  Megaphone,
+  Map,
+  PhoneCall,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
@@ -28,6 +37,9 @@ const sidebarGroups: PortalNavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { key: "live-map", label: "Live Map", icon: Map },
+      { key: "revenue-analytics", label: "Revenue Analytics", icon: TrendingUp },
+      { key: "leaderboard", label: "Leaderboard", icon: Trophy },
     ],
   },
   {
@@ -39,6 +51,9 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "bookings", label: "Bookings", icon: CalendarDays },
       { key: "calendar", label: "Calendar", icon: BookOpen },
       { key: "courses", label: "Courses", icon: GraduationCap },
+      { key: "enquiries", label: "Enquiries", icon: PhoneCall },
+      { key: "messages", label: "Messages", icon: MessageSquare },
+      { key: "compliance", label: "Compliance", icon: ShieldCheck },
     ],
   },
   {
@@ -61,12 +76,21 @@ const sidebarGroups: PortalNavGroup[] = [
     ],
   },
   {
+    label: "Engagement",
+    icon: Tag,
+    items: [
+      { key: "discount-codes", label: "Discount Codes", icon: Tag },
+      { key: "campaigns", label: "Campaigns", icon: Megaphone },
+    ],
+  },
+  {
     label: "Settings",
     icon: Palette,
     items: [
       { key: "profile", label: "School Profile", icon: Building2 },
       { key: "branding", label: "Branding", icon: Palette },
       { key: "booking-page", label: "Booking Page", icon: Link2 },
+      { key: "booking-pages", label: "Booking Pages", icon: Globe },
       { key: "notifications", label: "Notifications", icon: Bell },
     ],
   },
@@ -74,11 +98,17 @@ const sidebarGroups: PortalNavGroup[] = [
 
 const sectionMeta: Record<string, { title: string; group: string }> = {
   dashboard: { title: "Dashboard", group: "Overview" },
+  "live-map": { title: "Live Map", group: "Overview" },
+  "revenue-analytics": { title: "Revenue Analytics", group: "Overview" },
+  leaderboard: { title: "Leaderboard", group: "Overview" },
   instructors: { title: "Instructors", group: "Management" },
   pupils: { title: "Pupils", group: "Management" },
   bookings: { title: "Bookings", group: "Management" },
   calendar: { title: "Calendar", group: "Management" },
   courses: { title: "Courses", group: "Management" },
+  enquiries: { title: "Enquiries", group: "Management" },
+  messages: { title: "Messages", group: "Management" },
+  compliance: { title: "Compliance", group: "Management" },
   payments: { title: "Payments", group: "Financials" },
   "payment-gateways": { title: "Payment Gateways", group: "Financials" },
   bnpl: { title: "Buy Now, Pay Later", group: "Financials" },
@@ -86,9 +116,12 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   reports: { title: "Reports", group: "Financials" },
   fleet: { title: "Fleet Tracking", group: "Operations" },
   "test-results": { title: "Test Results", group: "Operations" },
+  "discount-codes": { title: "Discount Codes", group: "Engagement" },
+  campaigns: { title: "Campaigns", group: "Engagement" },
   profile: { title: "School Profile", group: "Settings" },
   branding: { title: "Branding", group: "Settings" },
   "booking-page": { title: "Booking Page", group: "Settings" },
+  "booking-pages": { title: "Booking Pages", group: "Settings" },
   notifications: { title: "Notifications", group: "Settings" },
 };
 

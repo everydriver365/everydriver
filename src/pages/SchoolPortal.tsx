@@ -22,6 +22,15 @@ import SchoolNotificationsSection from "@/components/school/SchoolNotificationsS
 import SchoolCoursesSection from "@/components/school/SchoolCoursesSection";
 import SchoolBNPLSection from "@/components/school/SchoolBNPLSection";
 import SchoolPaymentGatewaysSection from "@/components/school/SchoolPaymentGatewaysSection";
+import SchoolEnquiriesSection from "@/components/school/SchoolEnquiriesSection";
+import SchoolMessagesSection from "@/components/school/SchoolMessagesSection";
+import SchoolLiveMapSection from "@/components/school/SchoolLiveMapSection";
+import SchoolComplianceSection from "@/components/school/SchoolComplianceSection";
+import SchoolRevenueAnalyticsSection from "@/components/school/SchoolRevenueAnalyticsSection";
+import SchoolDiscountCodesSection from "@/components/school/SchoolDiscountCodesSection";
+import SchoolLeaderboardSection from "@/components/school/SchoolLeaderboardSection";
+import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSection";
+import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -56,6 +65,12 @@ export default function SchoolPortal() {
     switch (activeSection) {
       case "dashboard":
         return <SchoolDashboardSection instructorIds={instructorIds} schoolName={school.name} />;
+      case "live-map":
+        return <SchoolLiveMapSection instructorIds={instructorIds} />;
+      case "revenue-analytics":
+        return <SchoolRevenueAnalyticsSection instructorIds={instructorIds} />;
+      case "leaderboard":
+        return <SchoolLeaderboardSection instructorIds={instructorIds} />;
       case "instructors":
         return <SchoolInstructorsSection schoolId={school.id} onRefresh={refetch} />;
       case "pupils":
@@ -66,6 +81,12 @@ export default function SchoolPortal() {
         return <SchoolCalendarSection instructorIds={instructorIds} />;
       case "courses":
         return <SchoolCoursesSection schoolId={school.id} instructorIds={instructorIds} />;
+      case "enquiries":
+        return <SchoolEnquiriesSection instructorIds={instructorIds} />;
+      case "messages":
+        return <SchoolMessagesSection instructorIds={instructorIds} />;
+      case "compliance":
+        return <SchoolComplianceSection instructorIds={instructorIds} />;
       case "payments":
         return <SchoolPaymentsSection instructorIds={instructorIds} />;
       case "payment-gateways":
@@ -80,12 +101,18 @@ export default function SchoolPortal() {
         return <SchoolFleetSection instructorIds={instructorIds} />;
       case "test-results":
         return <SchoolTestResultsSection instructorIds={instructorIds} />;
+      case "discount-codes":
+        return <SchoolDiscountCodesSection schoolId={school.id} />;
+      case "campaigns":
+        return <SchoolCampaignsSection schoolId={school.id} />;
       case "profile":
         return <SchoolProfileSection school={school} onRefresh={refetch} />;
       case "branding":
         return <SchoolBrandingSection school={school} onRefresh={refetch} />;
       case "booking-page":
         return <SchoolBookingPageSection school={school} onRefresh={refetch} />;
+      case "booking-pages":
+        return <SchoolBookingPagesSection instructorIds={instructorIds} schoolId={school.id} />;
       case "notifications":
         return <SchoolNotificationsSection school={school} onRefresh={refetch} />;
       default:
