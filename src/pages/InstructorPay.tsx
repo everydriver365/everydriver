@@ -32,6 +32,7 @@ import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Pupil {
   id: string;
