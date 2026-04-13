@@ -422,10 +422,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Mobile Header */}
             <header
-              className={cn(
-                "sticky top-0 z-40",
-                isHomePage ? "bg-transparent absolute inset-x-0" : ""
-              )}
+              className="sticky top-0 z-40"
             >
               {/* Safe area spacer — always primary blue */}
               <div className="bg-primary" style={{ paddingTop: "env(safe-area-inset-top)" }} />
