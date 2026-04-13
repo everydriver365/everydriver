@@ -4,7 +4,7 @@ import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  BarChart3, BookOpen, CreditCard, Globe, Headphones, LayoutDashboard,
+  BarChart3, BookOpen, Building2, CreditCard, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users,
   Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle,
 } from "lucide-react";
@@ -82,6 +82,13 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "instructor-home", label: "App Homepage", icon: Smartphone },
       { key: "comparison-editor", label: "Pricing Comparison", icon: Smartphone },
       { key: "booking-pages", label: "Booking Pages", icon: Globe },
+    ],
+  },
+  {
+    label: "Schools",
+    icon: Building2,
+    items: [
+      { key: "school-manager", label: "School Manager", icon: Building2 },
     ],
   },
   {

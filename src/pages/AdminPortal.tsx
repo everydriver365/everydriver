@@ -187,6 +187,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
   "calendar-sync": { title: "Calendar Sync Queue", group: "System Settings", icon: Calendar },
   "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
+  "school-manager": { title: "School Manager", group: "Schools", icon: Users },
 };
 
 export default function AdminPortal() {
