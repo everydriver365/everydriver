@@ -96,6 +96,7 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
   const { isDemo } = useSchoolDemo();
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null); // null = all
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d;
   });
