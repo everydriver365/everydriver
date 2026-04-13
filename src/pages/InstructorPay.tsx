@@ -276,27 +276,92 @@ export default function InstructorPay() {
 
         {/* ── Summary Tiles ── */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Owes Money */}
-          <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
-            <motion.div
+          {/* Owes Money — expandable */}
+          <div className={cn(owesExpanded && "col-span-2")}>
+            <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12 }}
-              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
+              className={cn(
+                "w-full rounded-2xl p-4 bg-card border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
+                debtors.length > 0 ? "border-destructive/30" : "border-border",
+                !owesExpanded && "min-h-[100px] flex flex-col justify-between"
+              )}
             >
-              <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="h-4.5 w-4.5 text-destructive" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <AlertCircle className="h-4.5 w-4.5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold tabular-nums text-destructive">
+                      {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
+                {debtors.length > 0 && (
+                  <ChevronDown className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform",
+                    owesExpanded && "rotate-180"
+                  )} />
+                )}
               </div>
-              <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-destructive">
-                  {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </motion.div>
-          </Link>
+            </motion.button>
+
+            <AnimatePresence>
+              {owesExpanded && debtors.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2 bg-card rounded-2xl border border-destructive/20 divide-y divide-border/50 overflow-hidden">
+                    {debtors.map((pupil) => {
+                      const amount = Math.abs(pupil.account_balance || 0);
+                      return (
+                        <div key={pupil.id} className="p-3 flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center text-xs font-semibold text-destructive flex-shrink-0">
+                            {getInitials(pupil.name)}
+                          </div>
+                          <Link to={`/instructor/pupils?pupil=${pupil.id}`} className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{pupil.name}</p>
+                            <p className="text-destructive text-xs font-semibold">Owes £{amount.toFixed(2)}</p>
+                          </Link>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7 border-destructive/20 hover:bg-destructive/5"
+                              onClick={(e) => { e.stopPropagation(); handleChase(pupil, "sms"); }}
+                              disabled={!!chasing || !pupil.phone}
+                            >
+                              {chasing === `${pupil.id}-sms` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3 text-destructive" />}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7 border-destructive/20 hover:bg-destructive/5"
+                              onClick={(e) => { e.stopPropagation(); handleChase(pupil, "email"); }}
+                              disabled={!!chasing || !pupil.email}
+                            >
+                              {chasing === `${pupil.id}-email` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 text-destructive" />}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Recent Payments */}
           <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
@@ -310,12 +375,8 @@ export default function InstructorPay() {
                 <Receipt className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-foreground">
-                  {recentPaymentCount}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Recent Payments
-                </p>
+                <p className="text-xl font-bold tabular-nums text-foreground">{recentPaymentCount}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Recent Payments</p>
               </div>
             </motion.div>
           </Link>
@@ -332,12 +393,8 @@ export default function InstructorPay() {
                 <Trophy className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-foreground">
-                  £{bonusEarned}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Course Rewards
-                </p>
+                <p className="text-xl font-bold tabular-nums text-foreground">£{bonusEarned}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Course Rewards</p>
               </div>
             </motion.div>
           </Link>
@@ -354,24 +411,13 @@ export default function InstructorPay() {
                 <Users className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-foreground">
-                  {pupils.length}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Pupil Balances
-                </p>
+                <p className="text-xl font-bold tabular-nums text-foreground">{pupils.length}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Pupil Balances</p>
               </div>
             </motion.div>
           </Link>
         </div>
 
-        {/* ── Owes Money Detail ── */}
-        <OwesMoneyCard
-          pupils={pupils}
-          instructorId={instructorId}
-          instructorName={instructorName}
-          paymentLink={resolvedQrUrl}
-        />
 
         {/* ── Quick Actions Grid ── */}
         <section>
