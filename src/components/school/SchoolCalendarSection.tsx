@@ -206,7 +206,7 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
               {cells.map((cell, i) => {
                 const dayLessons = lessonsForDay(cell.date);
                 const isToday = cell.date.toDateString() === today.toDateString();
-                const isWeekEnd = i % 7 === 0 || i % 7 === 6;
+                const isWeekEnd = i % 7 === 5 || i % 7 === 6;
                 const rowStart = Math.floor(i / 7) < 5;
 
                 return (
