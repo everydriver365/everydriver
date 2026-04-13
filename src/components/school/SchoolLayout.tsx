@@ -114,6 +114,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   "payment-gateways": { title: "Payment Gateways", group: "Financials" },
   bnpl: { title: "Buy Now, Pay Later", group: "Financials" },
   payroll: { title: "Payroll", group: "Financials" },
+  "franchise-fees": { title: "Franchise Fees", group: "Financials" },
   reports: { title: "Reports", group: "Financials" },
   fleet: { title: "Fleet Tracking", group: "Operations" },
   "test-results": { title: "Test Results", group: "Operations" },
