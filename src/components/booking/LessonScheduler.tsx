@@ -53,6 +53,8 @@ interface LessonSchedulerProps {
   allowedLessonLengths?: number[];
   bufferMinutes?: number;
   pupilId?: string; // Optional - needed for waitlist functionality
+  instructorHomePostcode?: string;
+  pupilPostcode?: string;
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
 
@@ -82,6 +84,8 @@ export function LessonScheduler({
   allowedLessonLengths,
   bufferMinutes = 0,
   pupilId,
+  instructorHomePostcode,
+  pupilPostcode,
   onSlotsChange,
 }: LessonSchedulerProps) {
   const isMobile = useIsMobile();
@@ -94,6 +98,7 @@ export function LessonScheduler({
   const [viewMonth, setViewMonth] = useState(new Date());
   const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   const [preferEarliestSlot, setPreferEarliestSlot] = useState(false);
+  const [travelBufferMinutes, setTravelBufferMinutes] = useState<number | null>(null);
   
   // Base allowed lesson lengths from instructor settings
   const baseDurationOptions = useMemo(() => {
@@ -108,6 +113,37 @@ export function LessonScheduler({
   useEffect(() => {
     fetchAvailability();
   }, [instructorId]);
+
+  // Fetch travel time from instructor home to pupil postcode
+  useEffect(() => {
+    if (!instructorHomePostcode || !pupilPostcode) {
+      setTravelBufferMinutes(null);
+      return;
+    }
+    const fetchTravelTime = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("check-travel-buffer", {
+          body: {
+            from_postcode: instructorHomePostcode,
+            to_postcode: pupilPostcode,
+          },
+        });
+        if (!error && data?.travel_minutes != null) {
+          setTravelBufferMinutes(data.travel_minutes);
+        } else {
+          setTravelBufferMinutes(null);
+        }
+      } catch {
+        setTravelBufferMinutes(null);
+      }
+    };
+    fetchTravelTime();
+  }, [instructorHomePostcode, pupilPostcode]);
+
+  // Effective buffer for first-of-day slots: max(travel, buffer)
+  const effectiveFirstSlotBuffer = useMemo(() => {
+    return Math.max(travelBufferMinutes ?? 0, bufferMinutes);
+  }, [travelBufferMinutes, bufferMinutes]);
 
   // Real-time subscription: refetch when new lessons are booked
   useEffect(() => {
@@ -355,6 +391,27 @@ export function LessonScheduler({
     const now = new Date();
     const isToday = isSameDay(date, now);
 
+    // Determine the earliest existing event/lesson on this day to check if slot is "first of day"
+    const daySelectedSlots = selectedSlots
+      .filter(s => isSameDay(s.date, date))
+      .map(s => s.startTime)
+      .sort();
+    const dayExternalStarts = externalEvents
+      .filter(e => {
+        const evDate = new Date(e.start_time);
+        const evEnd = new Date(e.end_time);
+        if (evEnd.getTime() - evDate.getTime() >= 24 * 60 * 60 * 1000) return false;
+        return format(evDate, "yyyy-MM-dd") === dateStr;
+      })
+      .map(e => format(new Date(e.start_time), "HH:mm"))
+      .sort();
+    const hasExistingEvents = daySelectedSlots.length > 0 || dayExternalStarts.length > 0;
+
+    // The earliest time the instructor can start if coming from home
+    const travelAdjustedStart = effectiveFirstSlotBuffer > 0
+      ? addMinutesToTime(startTime, effectiveFirstSlotBuffer)
+      : startTime;
+
     for (const time of TIME_SLOTS) {
       if (time >= startTime && time < endTime) {
         // Check if there's enough time for the selected lesson duration
@@ -366,6 +423,15 @@ export function LessonScheduler({
             if (slotDateTime <= now) {
               continue;
             }
+          }
+
+          // For first-of-day slots, apply travel buffer: slot must start after travelAdjustedStart
+          // A slot is "first of day" if no existing events precede it
+          const isFirstOfDay = !hasExistingEvents || (
+            daySelectedSlots.every(s => s >= time) && dayExternalStarts.every(s => s >= time)
+          );
+          if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes && time < travelAdjustedStart) {
+            continue;
           }
 
           // Check if slot conflicts with already selected slots (with buffer)

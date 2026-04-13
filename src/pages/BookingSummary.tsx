@@ -1558,6 +1558,8 @@ export default function BookingSummary() {
               availableFrom={instructor.available_from}
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
               bufferMinutes={instructor.buffer_minutes}
+              instructorHomePostcode={instructor.home_postcode}
+              pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
               onSlotsChange={handleSlotsChange}
             />
           </motion.div>

@@ -38,14 +38,40 @@ export function StepBookNext({
 
   const findAvailableSlots = async () => {
     try {
-      // Fetch instructor preferences + buffer
+      // Fetch instructor preferences + buffer + home_postcode
       const { data: instructorData } = await supabase
         .from("instructors")
-        .select("prefer_earliest_slot, buffer_minutes")
+        .select("prefer_earliest_slot, buffer_minutes, home_postcode")
         .eq("id", instructorId)
         .single();
       const preferEarliest = (instructorData as any)?.prefer_earliest_slot ?? false;
       const bufferMinutes = (instructorData as any)?.buffer_minutes ?? 0;
+      const homePostcode = (instructorData as any)?.home_postcode;
+
+      // Fetch pupil postcode for travel time calculation
+      const { data: pupilData } = await supabase
+        .from("pupils")
+        .select("postcode")
+        .eq("id", pupilId)
+        .single();
+      const pupilPostcode = pupilData?.postcode;
+
+      // Calculate travel time from home to pupil
+      let travelMinutes = 0;
+      if (homePostcode && pupilPostcode) {
+        try {
+          const { data: travelData } = await supabase.functions.invoke("check-travel-buffer", {
+            body: { from_postcode: homePostcode, to_postcode: pupilPostcode },
+          });
+          if (travelData?.travel_minutes != null) {
+            travelMinutes = travelData.travel_minutes;
+          }
+        } catch {
+          // Fallback to flat buffer
+        }
+      }
+
+      const effectiveFirstSlotBuffer = Math.max(travelMinutes, bufferMinutes);
 
       // Look at next 7 days for gaps in the schedule
       const found: AvailableSlot[] = [];
@@ -88,10 +114,25 @@ export function StepBookNext({
           ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
           : ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
 
+        // Check if day has any existing lessons/events (to determine first-of-day)
+        const hasExistingOnDay = (existing || []).length > 0 || dayCalBusy.length > 0;
+
         for (const ct of candidateTimes) {
           if (found.length >= 3) break;
           const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
           const candidateEnd = candidateStart + durationMinutes * 60000;
+
+          // For first-of-day slots, apply travel buffer
+          const isFirstOfDay = !hasExistingOnDay || (
+            (existing || []).every(ex => parse(ex.start_time, "HH:mm:ss", date).getTime() >= candidateStart) &&
+            dayCalBusy.every(ev => ev.start.getTime() >= candidateStart)
+          );
+          if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes) {
+            // Earliest allowed start = 9:00 + effectiveFirstSlotBuffer minutes
+            const dayStart = parse("09:00:00", "HH:mm:ss", date).getTime();
+            const earliestAllowed = dayStart + effectiveFirstSlotBuffer * 60000;
+            if (candidateStart < earliestAllowed) continue;
+          }
 
           // Check conflicts with existing lessons using flat buffer
           const lessonConflict = (existing || []).some((ex) => {
