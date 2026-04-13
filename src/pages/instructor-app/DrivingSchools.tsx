@@ -4,7 +4,9 @@ import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
 import { SEOHead } from "@/components/SEOHead";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, BarChart3, UserPlus, CreditCard, Shield, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Users, BarChart3, UserPlus, CreditCard, Shield, Clock, ArrowRight } from "lucide-react";
 
 import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
