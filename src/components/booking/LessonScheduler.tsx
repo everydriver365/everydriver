@@ -114,6 +114,37 @@ export function LessonScheduler({
     fetchAvailability();
   }, [instructorId]);
 
+  // Fetch travel time from instructor home to pupil postcode
+  useEffect(() => {
+    if (!instructorHomePostcode || !pupilPostcode) {
+      setTravelBufferMinutes(null);
+      return;
+    }
+    const fetchTravelTime = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("check-travel-buffer", {
+          body: {
+            from_postcode: instructorHomePostcode,
+            to_postcode: pupilPostcode,
+          },
+        });
+        if (!error && data?.travel_minutes != null) {
+          setTravelBufferMinutes(data.travel_minutes);
+        } else {
+          setTravelBufferMinutes(null);
+        }
+      } catch {
+        setTravelBufferMinutes(null);
+      }
+    };
+    fetchTravelTime();
+  }, [instructorHomePostcode, pupilPostcode]);
+
+  // Effective buffer for first-of-day slots: max(travel, buffer)
+  const effectiveFirstSlotBuffer = useMemo(() => {
+    return Math.max(travelBufferMinutes ?? 0, bufferMinutes);
+  }, [travelBufferMinutes, bufferMinutes]);
+
   // Real-time subscription: refetch when new lessons are booked
   useEffect(() => {
     const channel = supabase
