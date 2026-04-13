@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect } from "react";
+import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
 import { motion } from "framer-motion";
 import { Mic, Loader2, Volume2 } from "lucide-react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
