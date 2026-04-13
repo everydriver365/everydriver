@@ -135,10 +135,11 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
 
   // Unique instructor legend
   const instructorLegend = useMemo(() => {
-    const seen = new Map<string, { name: string; color: { bg: string; text: string; dot: string } }>();
+    const seen = new Map<string, { id: string; name: string; color: { bg: string; text: string; dot: string } }>();
     lessons.forEach(l => {
       if (!seen.has(l.instructor_id)) {
         seen.set(l.instructor_id, {
+          id: l.instructor_id,
           name: l.instructors?.name || "Instructor",
           color: instructorColorMap[l.instructor_id] || DEFAULT_COLORS[0],
         });
@@ -147,7 +148,12 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
     return [...seen.values()];
   }, [lessons, instructorColorMap]);
 
-  const lessonsForDay = (day: Date) => lessons.filter(l => {
+  const filteredLessons = useMemo(() => {
+    if (!selectedInstructor) return lessons;
+    return lessons.filter(l => l.instructor_id === selectedInstructor);
+  }, [lessons, selectedInstructor]);
+
+  const lessonsForDay = (day: Date) => filteredLessons.filter(l => {
     const ld = new Date(l.start_time);
     return ld.getDate() === day.getDate() && ld.getMonth() === day.getMonth() && ld.getFullYear() === day.getFullYear();
   });
