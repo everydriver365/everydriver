@@ -29,7 +29,7 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
-  const { logo, logoAlt, homeLink } = useRouteLogo();
+  const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -46,8 +46,9 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="bg-primary overflow-x-hidden">
       <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative" role="navigation" aria-label="Main navigation">
-        <Link to={homeLink} className="hidden md:flex items-center">
+        <Link to={homeLink} className="hidden md:flex items-center gap-2">
           <img src={logo} alt={logoAlt} className="h-9 -mx-1" />
+          {logoText && <span className="text-sm font-semibold text-nav-foreground">{logoText}</span>}
         </Link>
 
         {/* Desktop Navigation - Centered */}
@@ -104,8 +105,9 @@ export function Header() {
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Link to={homeLink} className="flex items-center">
+          <Link to={homeLink} className="flex items-center gap-1.5">
             <img src={logo} alt={logoAlt} className="h-8 -mx-1" />
+            {logoText && <span className="text-xs font-semibold text-nav-foreground">{logoText}</span>}
           </Link>
         </div>
         {/* Mobile right-side controls */}
