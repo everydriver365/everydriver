@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Calendar, TrendingUp, Users, Award, Clock, AlertTriangle } from "lucide-react";
+import { Calendar, TrendingUp, Users, Award, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolStats, demoSchoolLessons } from "@/data/demoSchoolData";
 
 interface Props {
   instructorIds: string[];
@@ -10,14 +12,21 @@ interface Props {
 }
 
 export default function SchoolDashboardSection({ instructorIds, schoolName }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [stats, setStats] = useState({ totalLessons: 0, totalEarnings: 0, totalPupils: 0, passRate: 0, upcomingLessons: 0, activeInstructors: 0 });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDemo) {
+      setStats(demoSchoolStats);
+      setRecentActivity(demoSchoolLessons.filter(l => l.status === "scheduled").slice(0, 5));
+      setLoading(false);
+      return;
+    }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchStats();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchStats = async () => {
     const [lessonsRes, pupilsRes, testsRes, upcomingRes] = await Promise.all([
@@ -78,7 +87,7 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
           <CardContent className="space-y-2">
             {recentActivity.map((a: any) => (
               <div key={a.id} className="flex items-center justify-between p-2 rounded-lg border text-sm">
-                <span className="font-medium">{(a as any).pupils?.name || "Student"}</span>
+                <span className="font-medium">{a.pupils?.name || "Student"}</span>
                 <Badge variant="outline" className="text-xs">{new Date(a.start_time).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</Badge>
               </div>
             ))}

@@ -1,28 +1,27 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolPayments } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; }
 
 export default function SchoolPaymentsSection({ instructorIds }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDemo) { setPayments(demoSchoolPayments); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchPayments();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchPayments = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("payment_history")
-      .select("*, pupils(name), instructors(name)")
-      .in("instructor_id", instructorIds)
-      .order("created_at", { ascending: false })
-      .limit(100);
+    const { data } = await supabase.from("payment_history").select("*, pupils(name), instructors(name)").in("instructor_id", instructorIds).order("created_at", { ascending: false }).limit(100);
     setPayments(data || []);
     setLoading(false);
   };
@@ -43,18 +42,11 @@ export default function SchoolPaymentsSection({ instructorIds }: Props) {
           <p className="text-xs text-muted-foreground">Total received</p>
         </div>
       </div>
-
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Instructor</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Method</TableHead>
-              </TableRow>
+              <TableRow><TableHead>Date</TableHead><TableHead>Student</TableHead><TableHead>Instructor</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {payments.length === 0 ? (
@@ -62,8 +54,8 @@ export default function SchoolPaymentsSection({ instructorIds }: Props) {
               ) : payments.map(p => (
                 <TableRow key={p.id}>
                   <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
-                  <TableCell className="text-sm">{(p as any).pupils?.name || "—"}</TableCell>
-                  <TableCell className="text-sm">{(p as any).instructors?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">{p.pupils?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">{p.instructors?.name || "—"}</TableCell>
                   <TableCell className="text-sm font-medium">£{p.amount}</TableCell>
                   <TableCell className="text-sm">{p.payment_method || "—"}</TableCell>
                 </TableRow>

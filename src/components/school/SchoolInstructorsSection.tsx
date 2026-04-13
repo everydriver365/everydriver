@@ -1,33 +1,37 @@
 import { useState, useEffect } from "react";
 import { Users, Trash2, Plus, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolInstructors } from "@/data/demoSchoolData";
 
 interface Props { schoolId: string; onRefresh: () => void; }
 
 export default function SchoolInstructorsSection({ schoolId, onRefresh }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [instructors, setInstructors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  useEffect(() => { fetchInstructors(); }, [schoolId]);
+  useEffect(() => {
+    if (isDemo) { setInstructors(demoSchoolInstructors); setLoading(false); return; }
+    fetchInstructors();
+  }, [schoolId, isDemo]);
 
   const fetchInstructors = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("school_instructors")
-      .select("*, instructors(name, phone, lesson_rate)")
-      .eq("school_id", schoolId) as any;
+    const { data } = await supabase.from("school_instructors").select("*, instructors(name, phone, lesson_rate)").eq("school_id", schoolId) as any;
     setInstructors(data || []);
     setLoading(false);
   };
 
   const removeInstructor = async (id: string) => {
+    if (isDemo) { toast.info("Demo mode — no changes saved"); return; }
     if (!confirm("Remove this instructor from the school?")) return;
     await supabase.from("school_instructors").delete().eq("id", id) as any;
     toast.success("Instructor removed");

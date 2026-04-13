@@ -1,33 +1,33 @@
 import { useState, useEffect } from "react";
-import { CalendarDays, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolLessons } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; }
-
 type StatusFilter = "all" | "scheduled" | "completed" | "cancelled";
 
 export default function SchoolBookingsSection({ instructorIds }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StatusFilter>("all");
 
   useEffect(() => {
+    if (isDemo) { setLessons(demoSchoolLessons); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchLessons();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchLessons = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("scheduled_lessons")
-      .select("*, pupils(name), instructors(name)")
-      .in("instructor_id", instructorIds)
-      .order("start_time", { ascending: false })
-      .limit(100);
+      .from("scheduled_lessons").select("*, pupils(name), instructors(name)")
+      .in("instructor_id", instructorIds).order("start_time", { ascending: false }).limit(100);
     setLessons(data || []);
     setLoading(false);
   };
@@ -43,24 +43,17 @@ export default function SchoolBookingsSection({ instructorIds }: Props) {
         <h2 className="text-2xl font-bold">Bookings</h2>
         <p className="text-muted-foreground">All lessons across your school</p>
       </div>
-
       <div className="flex gap-2">
         {(["all", "scheduled", "completed", "cancelled"] as StatusFilter[]).map(s => (
           <Button key={s} variant={filter === s ? "default" : "outline"} size="sm" onClick={() => setFilter(s)} className="capitalize">{s}</Button>
         ))}
       </div>
-
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Instructor</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead><TableHead>Student</TableHead><TableHead>Instructor</TableHead><TableHead>Duration</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -69,8 +62,8 @@ export default function SchoolBookingsSection({ instructorIds }: Props) {
               ) : filtered.map(l => (
                 <TableRow key={l.id}>
                   <TableCell className="text-sm">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</TableCell>
-                  <TableCell className="text-sm font-medium">{(l as any).pupils?.name || "—"}</TableCell>
-                  <TableCell className="text-sm">{(l as any).instructors?.name || "—"}</TableCell>
+                  <TableCell className="text-sm font-medium">{l.pupils?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">{l.instructors?.name || "—"}</TableCell>
                   <TableCell className="text-sm">{l.duration_minutes || 60}min</TableCell>
                   <TableCell className="text-sm">£{l.amount_due || 0}</TableCell>
                   <TableCell><Badge className={`text-xs ${statusColor(l.status)}`}>{l.status}</Badge></TableCell>

@@ -1,23 +1,37 @@
 import { useState, useEffect } from "react";
-import { User, BookOpen, CreditCard, MapPin, MessageSquare, Star, Award, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, BookOpen, CreditCard, Award, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolPupils, demoSchoolLessons, demoSchoolPayments, demoSchoolTestResults } from "@/data/demoSchoolData";
 
 interface Props { pupilId: string; }
 
 export default function SchoolPupilDetailPanel({ pupilId }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [pupil, setPupil] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [testResults, setTestResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState<Record<string, boolean>>({ instructor: true, tests: true, lessons: false, payments: false, messages: false });
+  const [open, setOpen] = useState<Record<string, boolean>>({ instructor: true, tests: true, lessons: false, payments: false });
 
-  useEffect(() => { if (pupilId) fetchAll(); }, [pupilId]);
+  useEffect(() => {
+    if (!pupilId) return;
+    if (isDemo) {
+      const p = demoSchoolPupils.find(p => p.id === pupilId);
+      setPupil(p || null);
+      setLessons(demoSchoolLessons.filter(l => l.pupil_id === pupilId));
+      setPayments(demoSchoolPayments.filter(pay => pay.pupil_id === pupilId));
+      setTestResults(demoSchoolTestResults.filter(t => t.pupil_id === pupilId));
+      setLoading(false);
+      return;
+    }
+    fetchAll();
+  }, [pupilId, isDemo]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -41,7 +55,6 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
 
   return (
     <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]">
-      {/* Header */}
       <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-xl">
         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
           <User className="h-6 w-6 text-primary" />
@@ -53,12 +66,10 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
         <Badge variant="outline" className="ml-auto">{pupil.course_status || "active"}</Badge>
       </div>
 
-      {/* Instructor */}
       <Section title="Instructor" icon={User} isOpen={open.instructor} onToggle={() => toggle("instructor")}>
-        <p className="text-sm"><span className="text-muted-foreground">Assigned to:</span> <strong>{(pupil as any).instructors?.name || "Unassigned"}</strong></p>
+        <p className="text-sm"><span className="text-muted-foreground">Assigned to:</span> <strong>{pupil.instructors?.name || "Unassigned"}</strong></p>
       </Section>
 
-      {/* Tests */}
       <Section title="Test Status" icon={Award} isOpen={open.tests} onToggle={() => toggle("tests")}>
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 border rounded-lg text-center">
@@ -84,7 +95,6 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
         </div>
       </Section>
 
-      {/* Lesson History */}
       <Section title={`Lesson History (${lessons.length})`} icon={BookOpen} isOpen={open.lessons} onToggle={() => toggle("lessons")}>
         {lessons.length === 0 ? <p className="text-sm text-muted-foreground text-center py-2">No lessons yet</p> : (
           <Table>
@@ -105,7 +115,6 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
         )}
       </Section>
 
-      {/* Payment History */}
       <Section title={`Payment History (${payments.length})`} icon={CreditCard} isOpen={open.payments} onToggle={() => toggle("payments")}>
         {payments.length === 0 ? <p className="text-sm text-muted-foreground text-center py-2">No payments yet</p> : (
           <Table>

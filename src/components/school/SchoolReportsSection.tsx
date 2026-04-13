@@ -1,20 +1,28 @@
 import { useState, useEffect } from "react";
 import { Download, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolStats } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; schoolName: string; }
 
 export default function SchoolReportsSection({ instructorIds, schoolName }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [stats, setStats] = useState({ lessons: 0, earnings: 0, pupils: 0, passed: 0, tests: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDemo) {
+      setStats({ lessons: demoSchoolStats.totalLessons, earnings: demoSchoolStats.totalEarnings, pupils: demoSchoolStats.totalPupils, passed: 3, tests: 5 });
+      setLoading(false);
+      return;
+    }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchStats();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -25,26 +33,12 @@ export default function SchoolReportsSection({ instructorIds, schoolName }: Prop
     ]);
     const completed = (lessonsRes.data || []).filter(l => l.status === "completed");
     const passed = (testsRes.data || []).filter(t => t.result === "pass").length;
-    setStats({
-      lessons: completed.length,
-      earnings: completed.reduce((s, l) => s + (l.amount_due || 0), 0),
-      pupils: (pupilsRes.data || []).length,
-      passed,
-      tests: (testsRes.data || []).length,
-    });
+    setStats({ lessons: completed.length, earnings: completed.reduce((s, l) => s + (l.amount_due || 0), 0), pupils: (pupilsRes.data || []).length, passed, tests: (testsRes.data || []).length });
     setLoading(false);
   };
 
   const exportCSV = () => {
-    const rows = [
-      ["Metric", "Value"],
-      ["Total Lessons", stats.lessons.toString()],
-      ["Total Earnings", `£${stats.earnings}`],
-      ["Total Pupils", stats.pupils.toString()],
-      ["Tests Taken", stats.tests.toString()],
-      ["Tests Passed", stats.passed.toString()],
-      ["Pass Rate", stats.tests > 0 ? `${Math.round((stats.passed / stats.tests) * 100)}%` : "N/A"],
-    ];
+    const rows = [["Metric", "Value"], ["Total Lessons", stats.lessons.toString()], ["Total Earnings", `£${stats.earnings}`], ["Total Pupils", stats.pupils.toString()], ["Tests Taken", stats.tests.toString()], ["Tests Passed", stats.passed.toString()], ["Pass Rate", stats.tests > 0 ? `${Math.round((stats.passed / stats.tests) * 100)}%` : "N/A"]];
     const csv = rows.map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -63,7 +57,6 @@ export default function SchoolReportsSection({ instructorIds, schoolName }: Prop
         </div>
         <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1"><Download className="h-3.5 w-3.5" /> Export CSV</Button>
       </div>
-
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {[
           { label: "Total Lessons", value: stats.lessons },
