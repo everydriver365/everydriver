@@ -1,14 +1,38 @@
 import { useState, useEffect } from "react";
-import { User, BookOpen, CreditCard, Award, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle, XCircle, Clock, Loader2, ChevronRight } from "lucide-react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { ExpandChevron } from "@/components/ui/ExpandChevron";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import { demoSchoolPupils, demoSchoolLessons, demoSchoolPayments, demoSchoolTestResults } from "@/data/demoSchoolData";
 
 interface Props { pupilId: string; }
+
+function SectionHeader({ title, count, isOpen, onToggle, actionLabel, onAction }: {
+  title: string; count?: number; isOpen: boolean; onToggle: () => void; actionLabel?: string; onAction?: () => void;
+}) {
+  return (
+    <div className="flex items-center border-b border-t bg-muted/20 select-none">
+      <button onClick={onToggle} className="flex items-center gap-1 px-3 py-1.5 flex-1 text-left group">
+        <ChevronRight className={cn("h-3 w-3 text-primary transition-transform", isOpen && "rotate-90")} />
+        <span className="text-[11px] font-semibold text-primary">{title}</span>
+        {count !== undefined && <span className="text-[11px] text-muted-foreground">({count})</span>}
+      </button>
+      {actionLabel && (
+        <button onClick={onAction} className="text-[10px] text-primary hover:underline px-3">{actionLabel}</button>
+      )}
+    </div>
+  );
+}
+
+function DetailRow({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex items-start gap-2 px-3 py-1 text-[11px]", className)}>
+      <span className="text-muted-foreground w-24 shrink-0">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
 
 export default function SchoolPupilDetailPanel({ pupilId }: Props) {
   const { isDemo } = useSchoolDemo();
@@ -17,7 +41,10 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
   const [payments, setPayments] = useState<any[]>([]);
   const [testResults, setTestResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState<Record<string, boolean>>({ instructor: true, tests: true, lessons: false, payments: false });
+  const [open, setOpen] = useState<Record<string, boolean>>({
+    details: true, instructor: true, theory: true, driving: true,
+    lessons: false, payments: false,
+  });
 
   useEffect(() => {
     if (!pupilId) return;
@@ -50,102 +77,147 @@ export default function SchoolPupilDetailPanel({ pupilId }: Props) {
 
   const toggle = (key: string) => setOpen(p => ({ ...p, [key]: !p[key] }));
 
-  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  if (!pupil) return <div className="text-center text-muted-foreground py-12">Pupil not found</div>;
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
+  if (!pupil) return <div className="text-center text-muted-foreground py-12 text-xs">Pupil not found</div>;
+
+  const theoryStatus = pupil.theory_test_passed ? "Passed" : pupil.theory_test_date ? "Booked" : "Not booked";
+  const lastTestResult = testResults.length > 0 ? testResults[0] : null;
+  const drivingStatus = lastTestResult
+    ? (lastTestResult.result === "pass" ? "Passed" : "Failed")
+    : pupil.test_date ? "Booked" : "Not booked";
 
   return (
-    <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]">
-      <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-xl">
-        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <User className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold">{pupil.name}</h3>
-          <p className="text-sm text-muted-foreground">{pupil.email || pupil.phone || "No contact"}</p>
-        </div>
-        <Badge variant="outline" className="ml-auto">{pupil.course_status || "active"}</Badge>
+    <div className="text-[12px]">
+      {/* Pupil name header */}
+      <div className="px-3 py-2 border-b bg-card">
+        <div className="font-bold text-sm">{pupil.name}</div>
+        <div className="text-[11px] text-muted-foreground">{pupil.email || pupil.phone || "No contact info"}</div>
       </div>
 
-      <Section title="Instructor" icon={User} isOpen={open.instructor} onToggle={() => toggle("instructor")}>
-        <p className="text-sm"><span className="text-muted-foreground">Assigned to:</span> <strong>{pupil.instructors?.name || "Unassigned"}</strong></p>
-      </Section>
-
-      <Section title="Test Status" icon={Award} isOpen={open.tests} onToggle={() => toggle("tests")}>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 border rounded-lg text-center">
-            <p className="text-xs text-muted-foreground mb-1">Theory Test</p>
-            {pupil.theory_test_date ? (
-              <>
-                <p className="text-sm font-medium">{new Date(pupil.theory_test_date).toLocaleDateString("en-GB")}</p>
-                {pupil.theory_test_passed ? <CheckCircle className="h-4 w-4 text-emerald-500 mx-auto mt-1" /> : <Clock className="h-4 w-4 text-amber-500 mx-auto mt-1" />}
-              </>
-            ) : <p className="text-xs text-muted-foreground">Not booked</p>}
-          </div>
-          <div className="p-3 border rounded-lg text-center">
-            <p className="text-xs text-muted-foreground mb-1">Driving Test</p>
-            {pupil.test_date ? (
-              <>
-                <p className="text-sm font-medium">{new Date(pupil.test_date).toLocaleDateString("en-GB")}</p>
-                {testResults.length > 0 ? (
-                  testResults[0].result === "pass" ? <CheckCircle className="h-4 w-4 text-emerald-500 mx-auto mt-1" /> : <XCircle className="h-4 w-4 text-destructive mx-auto mt-1" />
-                ) : <Clock className="h-4 w-4 text-amber-500 mx-auto mt-1" />}
-              </>
-            ) : <p className="text-xs text-muted-foreground">Not booked</p>}
-          </div>
+      {/* Details section */}
+      <SectionHeader title="Details" isOpen={open.details} onToggle={() => toggle("details")} />
+      {open.details && (
+        <div className="py-1">
+          <DetailRow label="Status" value={
+            <span className={cn(
+              "capitalize",
+              pupil.course_status === "completed" ? "text-emerald-700" : "text-foreground"
+            )}>{pupil.course_status || "active"}</span>
+          } />
+          <DetailRow label="Phone" value={pupil.phone || "—"} />
+          <DetailRow label="Email" value={pupil.email || "—"} />
+          <DetailRow label="Lessons" value={`${pupil.lessons_completed || 0} completed`} />
+          <DetailRow label="Progress" value={`${pupil.progress || 0}%`} />
         </div>
-      </Section>
+      )}
 
-      <Section title={`Lesson History (${lessons.length})`} icon={BookOpen} isOpen={open.lessons} onToggle={() => toggle("lessons")}>
-        {lessons.length === 0 ? <p className="text-sm text-muted-foreground text-center py-2">No lessons yet</p> : (
-          <Table>
-            <TableHeader><TableRow>
-              <TableHead>Date</TableHead><TableHead>Duration</TableHead><TableHead>Status</TableHead><TableHead>Amount</TableHead>
-            </TableRow></TableHeader>
-            <TableBody>
-              {lessons.map(l => (
-                <TableRow key={l.id}>
-                  <TableCell className="text-xs">{new Date(l.start_time).toLocaleDateString("en-GB")}</TableCell>
-                  <TableCell className="text-xs">{l.duration_minutes || 60}min</TableCell>
-                  <TableCell><Badge variant="outline" className="text-xs">{l.status}</Badge></TableCell>
-                  <TableCell className="text-xs">£{l.amount_due || 0}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Section>
+      {/* Instructor section */}
+      <SectionHeader title="Instructor" isOpen={open.instructor} onToggle={() => toggle("instructor")} />
+      {open.instructor && (
+        <div className="py-1">
+          <DetailRow label="Assigned to" value={<strong>{pupil.instructors?.name || "Unassigned"}</strong>} />
+        </div>
+      )}
 
-      <Section title={`Payment History (${payments.length})`} icon={CreditCard} isOpen={open.payments} onToggle={() => toggle("payments")}>
-        {payments.length === 0 ? <p className="text-sm text-muted-foreground text-center py-2">No payments yet</p> : (
-          <Table>
-            <TableHeader><TableRow>
-              <TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead>
-            </TableRow></TableHeader>
-            <TableBody>
-              {payments.map(p => (
-                <TableRow key={p.id}>
-                  <TableCell className="text-xs">{new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
-                  <TableCell className="text-xs font-medium">£{p.amount}</TableCell>
-                  <TableCell className="text-xs">{p.payment_method || "—"}</TableCell>
+      {/* Theory Test */}
+      <SectionHeader title="Theory Test" isOpen={open.theory} onToggle={() => toggle("theory")} />
+      {open.theory && (
+        <div className="py-1">
+          <DetailRow label="Status" value={
+            <span className="flex items-center gap-1.5">
+              {theoryStatus}
+              {pupil.theory_test_passed && <CheckCircle className="h-3 w-3 text-emerald-500" />}
+              {!pupil.theory_test_passed && pupil.theory_test_date && <Clock className="h-3 w-3 text-amber-500" />}
+            </span>
+          } />
+          {pupil.theory_test_date && (
+            <DetailRow label="Date" value={new Date(pupil.theory_test_date).toLocaleDateString("en-GB")} />
+          )}
+        </div>
+      )}
+
+      {/* Driving Test */}
+      <SectionHeader title="Driving Test" isOpen={open.driving} onToggle={() => toggle("driving")} />
+      {open.driving && (
+        <div className="py-1">
+          <DetailRow label="Status" value={
+            <span className="flex items-center gap-1.5">
+              {drivingStatus}
+              {drivingStatus === "Passed" && <CheckCircle className="h-3 w-3 text-emerald-500" />}
+              {drivingStatus === "Failed" && <XCircle className="h-3 w-3 text-destructive" />}
+              {drivingStatus === "Booked" && <Clock className="h-3 w-3 text-amber-500" />}
+            </span>
+          } />
+          {pupil.test_date && (
+            <DetailRow label="Date" value={new Date(pupil.test_date).toLocaleDateString("en-GB")} />
+          )}
+          {lastTestResult && (
+            <>
+              <DetailRow label="Faults" value={`${lastTestResult.minor_faults || 0} minor, ${lastTestResult.serious_faults || 0} serious`} />
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Lesson History */}
+      <SectionHeader title="Lesson History" count={lessons.length} isOpen={open.lessons} onToggle={() => toggle("lessons")} actionLabel="View all" />
+      {open.lessons && (
+        <div>
+          {lessons.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground text-center py-3">No lessons recorded</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="text-[10px]">
+                  <TableHead className="py-1 px-2 h-auto">Date</TableHead>
+                  <TableHead className="py-1 px-2 h-auto">Duration</TableHead>
+                  <TableHead className="py-1 px-2 h-auto">Status</TableHead>
+                  <TableHead className="py-1 px-2 h-auto">Amount</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Section>
+              </TableHeader>
+              <TableBody>
+                {lessons.map(l => (
+                  <TableRow key={l.id} className="text-[11px]">
+                    <TableCell className="py-1 px-2">{new Date(l.start_time).toLocaleDateString("en-GB")}</TableCell>
+                    <TableCell className="py-1 px-2">{l.duration_minutes || 60}min</TableCell>
+                    <TableCell className="py-1 px-2 capitalize">{l.status}</TableCell>
+                    <TableCell className="py-1 px-2">£{l.amount_due || 0}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      )}
+
+      {/* Payment History */}
+      <SectionHeader title="Payment History" count={payments.length} isOpen={open.payments} onToggle={() => toggle("payments")} actionLabel="View all" />
+      {open.payments && (
+        <div>
+          {payments.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground text-center py-3">No payments recorded</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="text-[10px]">
+                  <TableHead className="py-1 px-2 h-auto">Date</TableHead>
+                  <TableHead className="py-1 px-2 h-auto">Amount</TableHead>
+                  <TableHead className="py-1 px-2 h-auto">Method</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map(p => (
+                  <TableRow key={p.id} className="text-[11px]">
+                    <TableCell className="py-1 px-2">{new Date(p.created_at).toLocaleDateString("en-GB")}</TableCell>
+                    <TableCell className="py-1 px-2 font-medium">£{p.amount}</TableCell>
+                    <TableCell className="py-1 px-2">{p.payment_method || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      )}
     </div>
-  );
-}
-
-function Section({ title, icon: Icon, isOpen, onToggle, children }: { title: string; icon: any; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
-  return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg hover:bg-muted/50 transition-colors">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium flex-1 text-left">{title}</span>
-        <ExpandChevron isExpanded={isOpen} />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="px-3 pb-2">{children}</CollapsibleContent>
-    </Collapsible>
   );
 }
