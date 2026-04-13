@@ -1,46 +1,40 @@
 
 
-## Plan: Align School Courses with Site-Wide Course Template Design
+## Plan: Add BNPL Section to School Manager
 
-### Problem
-The school courses editor is a simplified form compared to the rich `CourseTemplateDialog` used elsewhere. School-created courses are missing fields like short/full descriptions, what-to-bring lists, prerequisites, explainer videos, theory/driving test details, payment terms, and terms & conditions. The creation dialog also lacks image/video upload capabilities.
+### Overview
+Add a "Buy Now, Pay Later" menu item under the Financials group in the school sidebar, linking to a new section where schools can configure their Klarna and Clearpay accounts for use on their booking pages.
 
 ### Database Migration
-Add the missing columns to `school_courses` to match `course_templates`:
+Add two columns to the `schools` table:
+- `klarna_enabled` (boolean, default false)
+- `clearpay_enabled` (boolean, default false)
 
-- `short_description` (text, nullable)
-- `full_description` (text, nullable)  
-- `what_to_bring` (text[], nullable)
-- `prerequisites` (text[], nullable)
-- `theory_test_details` (text, nullable)
-- `driving_test_details` (text, nullable)
-- `payment_terms` (text, nullable)
-- `terms_conditions` (text, nullable)
-- `explainer_video_url` (text, nullable)
+With RLS allowing school owners to update their own record (already covered by existing policies).
 
-### UI Changes
+### Files to Create
 
-**Rewrite `SchoolCoursesSection.tsx` course editor dialog** to match the layout and fields of `CourseTemplateDialog.tsx`:
-
-- Course image upload with preview and remove button (using Supabase storage)
-- Course name, hours, price, discounted price
-- Short description and full description textareas
-- Features list with add/remove individual items (not a single textarea)
-- What-to-bring list with add/remove items
-- Prerequisites list with add/remove items
-- Explainer video upload with preview
-- Theory test details, driving test details textareas
-- Payment terms and terms & conditions textareas
-- Active/Intensive/Popular toggle switches in a grid layout
-- Instructor assignment (kept from current implementation)
-
-**Course card display** — update the course list cards to show the image, short description, and richer badge/feature display matching the style used in `MiniWebsiteCourseCard` and `CourseCard`.
-
-### Demo Data
-Update `demoSchoolCourses` in `demoSchoolData.ts` with the new fields populated.
+**`src/components/school/SchoolBNPLSection.tsx`**
+- Shows two branded cards (Klarna pink, Clearpay green) using the existing SVG logos (`klarna-logo.svg`, `clearpay-logo.svg`)
+- Each card has a toggle switch to enable/disable, status indicator, and info about fees
+- For the live portal: reads/writes `klarna_enabled` and `clearpay_enabled` on the `schools` table
+- For demo mode: local state toggles with toast feedback
+- Informational notes about how BNPL appears on the school's public booking page
 
 ### Files to Modify
-- `src/components/school/SchoolCoursesSection.tsx` — rebuild editor dialog and card display
-- `src/data/demoSchoolData.ts` — add new fields to demo courses
-- Database migration — add missing columns
+
+1. **`src/components/school/SchoolLayout.tsx`**
+   - Add `{ key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard }` to the Financials sidebar group
+   - Add `bnpl` to `sectionMeta`
+
+2. **`src/pages/SchoolPortal.tsx`**
+   - Add `case "bnpl"` returning `<SchoolBNPLSection school={school} onRefresh={refetch} />`
+
+3. **`src/pages/DemoSchoolPortal.tsx`**
+   - Add `case "bnpl"` returning `<SchoolBNPLSection school={school} onRefresh={noop} />`
+
+### Technical Details
+- Reuses existing `klarna-logo.svg` and `clearpay-logo.svg` assets already in the project
+- Follows the same pattern as `PaymentOptionsSettings.tsx` (the instructor-level BNPL toggle) but adapted for school-level control
+- No new edge functions needed — simple boolean flags on the schools table
 
