@@ -889,6 +889,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         </div>
       </SidebarProvider>
       <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
-    </>
+    </RealtimeHubProvider>
   );
 }
