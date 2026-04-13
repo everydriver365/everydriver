@@ -23,15 +23,13 @@ interface BookingPageData {
 interface InstructorCard {
   id: string;
   name: string;
-  phone: string;
+  phone: string | null;
   hourly_rate: number | null;
   profile_image_url: string | null;
-  postcode: string | null;
+  home_postcode: string | null;
   transmission_type: string | null;
   bio: string | null;
-  slug: string | null;
-  average_rating: number | null;
-  total_reviews: number | null;
+  app_slug: string | null;
 }
 
 export default function PublicBookingPortal() {
