@@ -36,7 +36,7 @@ export default function HomepageRedesignDemo() {
         <div className="container max-w-6xl relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 mb-6 backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -44,18 +44,34 @@ export default function HomepageRedesignDemo() {
                 <span className="text-xs font-medium text-muted-foreground">Free for every driving instructor</span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.08] tracking-tight mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.08] tracking-tight mb-4">
                 <span className="block">Driving School</span>
-                <span className="block bg-gradient-to-r from-[hsl(var(--primary))] to-[#0075c9] bg-clip-text text-transparent pb-2 -mb-2">Management</span>
-                <span className="block text-2xl md:text-3xl lg:text-4xl font-bold text-muted-foreground mt-2">
-                  Free forever for ADIs & PDIs
-                </span>
+                <span className="block bg-gradient-to-r from-[hsl(var(--primary))] to-[#0075c9] bg-clip-text text-transparent pb-2 -mb-2 decoration-clone">Management</span>
               </h1>
 
-              <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
-                Manage your lessons, track payments, and grow your business — all from one app. 
-                Free forever, no credit card required. Multi Instructor and White label options available.
+              <p className="text-xl md:text-2xl font-semibold text-foreground/80 mb-4">
+                Free forever for ADIs & PDIs
               </p>
+
+              <p className="text-base text-muted-foreground leading-relaxed mb-6 max-w-lg">
+                Manage your lessons, track payments, and grow your business — all from one app. 
+                No credit card required.
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  <Check className="h-3 w-3" /> Free forever
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  <Check className="h-3 w-3" /> Multi-instructor ready
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  <Check className="h-3 w-3" /> White-label options
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  <Check className="h-3 w-3" /> GDPR compliant
+                </span>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
@@ -70,21 +86,6 @@ export default function HomepageRedesignDemo() {
                     Watch Demo
                   </Link>
                 </Button>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  No credit card
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  Free forever
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  GDPR compliant
-                </span>
               </div>
             </div>
 
