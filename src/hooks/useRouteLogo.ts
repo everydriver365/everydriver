@@ -1,8 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import drive365Logo from "@/assets/drive365-logo.png";
-
-const EVERYDRIVER_LOGO = "/everydriver-logo-v2.png";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const DRIVE365_ROUTE_PREFIXES = [
   "/drive365",
@@ -27,8 +26,8 @@ export function useRouteLogo() {
     ) || pathname === "/";
 
     return {
-      logo: isDrive365Route ? drive365Logo : EVERYDRIVER_LOGO,
-      logoAlt: isDrive365Route ? "Drive365" : "EveryDriver",
+      logo: isDrive365Route ? drive365Logo : dsmLogo,
+      logoAlt: isDrive365Route ? "Drive365" : "DSM",
       homeLink: isDrive365Route ? "/drive365" : "/instructor-app",
       isDrive365: isDrive365Route,
     };
