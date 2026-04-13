@@ -90,6 +90,30 @@ export default function DrivingSchools() {
         </div>
       </section>
 
+      {/* Demo CTA */}
+      <section className="py-16 bg-muted/30">
+        <div className="container max-w-3xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              See It in Action
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+              Explore our interactive demo school portal — fully loaded with mock data so you can see exactly how it works.
+            </p>
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Link to="/school/demo">
+                Try the Demo School Portal
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
       <FeatureCTA />
     </InstructorSaaSLayout>
   );
