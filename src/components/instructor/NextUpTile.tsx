@@ -246,9 +246,17 @@ export function NextUpTile({
             {(pickupLocation || pickupPostcode) && (
               <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl" style={{ background: "rgba(21,30,48,0.04)" }}>
                 <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: navBlue }} />
-                <span className="text-[12px] font-medium truncate" style={{ color: "hsl(220,52%,25%)" }}>
+                <span className="text-[12px] font-medium truncate flex-1" style={{ color: "hsl(220,52%,25%)" }}>
                   {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                 </span>
+                {etaLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />
+                ) : etaMinutes > 0 ? (
+                  <div className="flex items-center gap-1 shrink-0 pl-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
+                    <span className="text-[11px] font-bold" style={{ color: navBlue }}>{etaMinutes} min</span>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
