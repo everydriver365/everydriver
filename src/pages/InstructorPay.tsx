@@ -57,6 +57,8 @@ export default function InstructorPay() {
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [bonusEarned, setBonusEarned] = useState(0);
+  const [recentPaymentCount, setRecentPaymentCount] = useState(0);
 
   useEffect(() => {
     if (instructorId) {
