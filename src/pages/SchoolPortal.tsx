@@ -2,67 +2,89 @@ import { useState } from "react";
 import { SchoolLayout } from "@/components/school/SchoolLayout";
 import { useSchoolAuth } from "@/context/SchoolAuthContext";
 import { useNavigate } from "react-router-dom";
+import { useSchoolData } from "@/hooks/useSchoolData";
+import { Loader2 } from "lucide-react";
+import SchoolDashboardSection from "@/components/school/SchoolDashboardSection";
+import SchoolInstructorsSection from "@/components/school/SchoolInstructorsSection";
+import SchoolPupilsSection from "@/components/school/SchoolPupilsSection";
+import SchoolBookingsSection from "@/components/school/SchoolBookingsSection";
+import SchoolCalendarSection from "@/components/school/SchoolCalendarSection";
+import SchoolPaymentsSection from "@/components/school/SchoolPaymentsSection";
+import SchoolPayrollSection from "@/components/school/SchoolPayrollSection";
+import SchoolReportsSection from "@/components/school/SchoolReportsSection";
+import SchoolFleetSection from "@/components/school/SchoolFleetSection";
+import SchoolTestResultsSection from "@/components/school/SchoolTestResultsSection";
+import SchoolProfileSection from "@/components/school/SchoolProfileSection";
+import SchoolBrandingSection from "@/components/school/SchoolBrandingSection";
+import SchoolBookingPageSection from "@/components/school/SchoolBookingPageSection";
+import SchoolNotificationsSection from "@/components/school/SchoolNotificationsSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const { signOut } = useSchoolAuth();
   const navigate = useNavigate();
+  const { school, instructorIds, loading, refetch } = useSchoolData();
 
   const handleLogout = async () => {
     await signOut();
     navigate("/school/login");
   };
 
+  if (loading) {
+    return (
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      </SchoolLayout>
+    );
+  }
+
+  if (!school) {
+    return (
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+        <div className="text-center py-20">
+          <p className="text-muted-foreground">No school found for this account.</p>
+        </div>
+      </SchoolLayout>
+    );
+  }
+
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">School Dashboard</h2>
-            <p className="text-muted-foreground">
-              Welcome to your School Manager portal. Use the sidebar to navigate.
-            </p>
-          </div>
-        );
+        return <SchoolDashboardSection instructorIds={instructorIds} schoolName={school.name} />;
       case "instructors":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Instructors</h2>
-            <p className="text-muted-foreground">Manage your school's instructors here.</p>
-          </div>
-        );
+        return <SchoolInstructorsSection schoolId={school.id} onRefresh={refetch} />;
+      case "pupils":
+        return <SchoolPupilsSection instructorIds={instructorIds} />;
       case "bookings":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Bookings</h2>
-            <p className="text-muted-foreground">View and manage school bookings.</p>
-          </div>
-        );
+        return <SchoolBookingsSection instructorIds={instructorIds} />;
+      case "calendar":
+        return <SchoolCalendarSection instructorIds={instructorIds} />;
+      case "payments":
+        return <SchoolPaymentsSection instructorIds={instructorIds} />;
+      case "payroll":
+        return <SchoolPayrollSection instructorIds={instructorIds} schoolId={school.id} />;
+      case "reports":
+        return <SchoolReportsSection instructorIds={instructorIds} schoolName={school.name} />;
+      case "fleet":
+        return <SchoolFleetSection instructorIds={instructorIds} />;
+      case "test-results":
+        return <SchoolTestResultsSection instructorIds={instructorIds} />;
+      case "profile":
+        return <SchoolProfileSection school={school} onRefresh={refetch} />;
       case "branding":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Branding</h2>
-            <p className="text-muted-foreground">Customize your school's branding and white-label settings.</p>
-          </div>
-        );
-      case "finances":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Finances</h2>
-            <p className="text-muted-foreground">Financial overview and reports.</p>
-          </div>
-        );
+        return <SchoolBrandingSection school={school} onRefresh={refetch} />;
+      case "booking-page":
+        return <SchoolBookingPageSection school={school} onRefresh={refetch} />;
+      case "notifications":
+        return <SchoolNotificationsSection school={school} onRefresh={refetch} />;
       default:
         return null;
     }
   };
 
   return (
-    <SchoolLayout
-      activeSection={activeSection}
-      onSectionChange={setActiveSection}
-      onLogout={handleLogout}
-    >
+    <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
       {renderSection()}
     </SchoolLayout>
   );

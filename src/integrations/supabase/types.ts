@@ -13354,6 +13354,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          notification_preferences: Json | null
           owner_user_id: string
           slug: string | null
           updated_at: string
@@ -13368,6 +13369,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          notification_preferences?: Json | null
           owner_user_id: string
           slug?: string | null
           updated_at?: string
@@ -13382,6 +13384,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          notification_preferences?: Json | null
           owner_user_id?: string
           slug?: string | null
           updated_at?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.schools ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"new_bookings": true, "payments": true, "test_results": true, "cancellations": true, "email": true, "sms": false}'::jsonb;
