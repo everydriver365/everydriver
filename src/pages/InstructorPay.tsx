@@ -63,6 +63,8 @@ export default function InstructorPay() {
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [bonusEarned, setBonusEarned] = useState(0);
   const [recentPaymentCount, setRecentPaymentCount] = useState(0);
+  const [owesExpanded, setOwesExpanded] = useState(false);
+  const [chasing, setChasing] = useState<string | null>(null);
 
   useEffect(() => {
     if (instructorId) {
