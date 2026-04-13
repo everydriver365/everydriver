@@ -107,6 +107,8 @@ export default function SchoolPortal() {
         return <SchoolFleetSection instructorIds={instructorIds} />;
       case "test-results":
         return <SchoolTestResultsSection instructorIds={instructorIds} />;
+      case "pass-rates":
+        return <SchoolPassRatesSection instructorIds={instructorIds} />;
       case "discount-codes":
         return <SchoolDiscountCodesSection schoolId={school.id} />;
       case "campaigns":

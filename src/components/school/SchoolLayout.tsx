@@ -78,6 +78,7 @@ const sidebarGroups: PortalNavGroup[] = [
     items: [
       { key: "fleet", label: "Fleet Tracking", icon: MapPin },
       { key: "test-results", label: "Test Results", icon: Award },
+      { key: "pass-rates", label: "Pass Rates & DVSA", icon: Target },
     ],
   },
   {
