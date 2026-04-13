@@ -408,23 +408,50 @@ export default function InstructorPay() {
             </AnimatePresence>
           </div>
 
-          {/* Course Rewards */}
-          <Link to="/instructor/bonus" onClick={() => haptics.selection()}>
-            <motion.div
+          {/* Course Rewards — expandable with payouts */}
+          <div className={cn(bonusExpanded && "col-span-2")}>
+            <motion.button
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.20 }}
-              className="rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] min-h-[100px] flex flex-col justify-between"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
+              className={cn(
+                "w-full rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
+                !bonusExpanded && "min-h-[100px] flex flex-col justify-between"
+              )}
             >
               <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
                 <Trophy className="h-4.5 w-4.5 text-primary" />
               </div>
-              <div className="mt-2">
-                <p className="text-xl font-bold tabular-nums text-foreground">£{bonusEarned}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Course Rewards</p>
+              <div className="mt-2 flex items-end justify-between">
+                <div>
+                  <p className="text-xl font-bold tabular-nums text-foreground">£{bonusEarned}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Course Rewards</p>
+                </div>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  bonusExpanded && "rotate-180"
+                )} />
               </div>
-            </motion.div>
-          </Link>
+            </motion.button>
+
+            <AnimatePresence>
+              {bonusExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2">
+                    <InstructorPayoutHistory instructorId={instructorId || ""} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Pupil Balances */}
           <Link to="/instructor/accounts" onClick={() => haptics.selection()}>
