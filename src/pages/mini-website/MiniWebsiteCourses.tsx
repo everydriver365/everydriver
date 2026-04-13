@@ -459,6 +459,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
                             customFeatures: course.customFeatures,
                             isPremium: course.isPremium,
                             placementType: course.placementType,
+                            areaName: areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null,
                           }}
                           index={index}
                         />
