@@ -31,6 +31,7 @@ interface IOSCourseCardProps {
   isIntensive?: boolean;
   discountedPrice?: number | null;
   customFeatures?: string[] | null;
+  areaName?: string | null;
 }
 
 export function IOSCourseCard({
@@ -70,7 +71,7 @@ export function IOSCourseCard({
   const displayDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
   const fullDateDisplay = displayDate ? format(displayDate, "d MMM") : "TBC";
 
-  const locationDisplay = instructor.home_address || instructor.home_postcode;
+  const locationDisplay = areaName || instructor.home_postcode;
 
   const handleBookNow = (e: React.MouseEvent) => {
     e.stopPropagation();

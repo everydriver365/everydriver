@@ -661,5 +661,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     searchedPostcode,
     searchedAreaName,
     clearSearch,
+    areaCache,
   };
 }
