@@ -114,7 +114,7 @@ function PortalDesktopSidebar({
             <img
               src={logoSrc}
               alt={logoAlt ?? "Logo"}
-              className="h-7 shrink-0"
+              className="h-12 shrink-0"
             />
           )}
           {!collapsed && portalLabel && (
@@ -287,7 +287,7 @@ export function PortalShell({
               <img
                 src={logoSrc}
                 alt={logoAlt}
-                className="h-7 md:h-8 shrink-0"
+                className="h-10 md:h-12 shrink-0"
               />
             )}
           </div>
