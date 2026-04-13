@@ -54,7 +54,7 @@ export default function HomepageRedesignDemo() {
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg">
                 Manage your lessons, track payments, and grow your business — all from one app. 
-                Free forever, no credit card required.
+                Free forever, no credit card required. Multi Instructor and White label options available.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
