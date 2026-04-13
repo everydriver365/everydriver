@@ -33,7 +33,7 @@ export default function SchoolPortal() {
 
   if (loading) {
     return (
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds}>
         <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       </SchoolLayout>
     );
@@ -41,7 +41,7 @@ export default function SchoolPortal() {
 
   if (!school) {
     return (
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds}>
         <div className="text-center py-20">
           <p className="text-muted-foreground">No school found for this account.</p>
         </div>
@@ -86,7 +86,7 @@ export default function SchoolPortal() {
 
   return (
     <SchoolDemoProvider isDemo={false}>
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds}>
         {renderSection()}
       </SchoolLayout>
     </SchoolDemoProvider>
