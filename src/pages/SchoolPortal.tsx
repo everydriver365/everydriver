@@ -86,7 +86,7 @@ export default function SchoolPortal() {
 
   return (
     <SchoolDemoProvider isDemo={false}>
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds}>
         {renderSection()}
       </SchoolLayout>
     </SchoolDemoProvider>
