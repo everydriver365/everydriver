@@ -15,8 +15,7 @@ interface Instructor {
   name: string;
   adi_badge_number: string | null;
   adi_badge_expiry: string | null;
-  dbs_certificate_date: string | null;
-  dbs_update_service: boolean | null;
+  dbs_certificate_expiry: string | null;
 }
 
 function expiryStatus(date: string | null): { label: string; variant: "default" | "secondary" | "destructive" } {
@@ -36,8 +35,8 @@ export default function SchoolComplianceSection({ instructorIds }: Props) {
   useEffect(() => {
     if (isDemo) {
       setInstructors([
-        { id: "1", name: "John Smith", adi_licence_no: "ADI123456", adi_expiry_date: new Date(Date.now() + 60 * 86400000).toISOString(), dbs_certificate_date: "2024-01-15", dbs_update_service: true },
-        { id: "2", name: "Sarah Jones", adi_licence_no: "ADI789012", adi_expiry_date: new Date(Date.now() + 20 * 86400000).toISOString(), dbs_certificate_date: "2023-06-01", dbs_update_service: false },
+        { id: "1", name: "John Smith", adi_badge_number: "ADI123456", adi_badge_expiry: new Date(Date.now() + 60 * 86400000).toISOString(), dbs_certificate_expiry: "2025-01-15" },
+        { id: "2", name: "Sarah Jones", adi_badge_number: "ADI789012", adi_badge_expiry: new Date(Date.now() + 20 * 86400000).toISOString(), dbs_certificate_expiry: "2024-06-01" },
       ]);
       setLoading(false);
       return;
@@ -46,7 +45,7 @@ export default function SchoolComplianceSection({ instructorIds }: Props) {
     const fetch = async () => {
       const { data } = await supabase
         .from("instructors")
-        .select("id, name, adi_licence_no, adi_expiry_date, dbs_certificate_date, dbs_update_service")
+        .select("id, name, adi_badge_number, adi_badge_expiry, dbs_certificate_expiry")
         .in("id", instructorIds);
       setInstructors((data as Instructor[]) || []);
       setLoading(false);
@@ -67,7 +66,7 @@ export default function SchoolComplianceSection({ instructorIds }: Props) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {instructors.map((i) => {
-            const adi = expiryStatus(i.adi_expiry_date);
+            const adi = expiryStatus(i.adi_badge_expiry);
             return (
               <Card key={i.id}>
                 <CardHeader className="pb-2">
@@ -80,15 +79,14 @@ export default function SchoolComplianceSection({ instructorIds }: Props) {
                   <div className="flex items-center justify-between">
                     <span>ADI Licence</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">{i.adi_licence_no || "—"}</span>
+                      <span className="text-muted-foreground">{i.adi_badge_number || "—"}</span>
                       <Badge variant={adi.variant}>{adi.label}</Badge>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>DBS Check</span>
+                    <span>DBS Expiry</span>
                     <div className="flex items-center gap-2">
-                      {i.dbs_certificate_date ? <span className="text-muted-foreground">{format(new Date(i.dbs_certificate_date), "dd MMM yyyy")}</span> : <span className="text-muted-foreground">—</span>}
-                      {i.dbs_update_service && <Badge variant="secondary">Update Service</Badge>}
+                      {i.dbs_certificate_expiry ? <span className="text-muted-foreground">{format(new Date(i.dbs_certificate_expiry), "dd MMM yyyy")}</span> : <span className="text-muted-foreground">—</span>}
                     </div>
                   </div>
                   {adi.variant === "destructive" && (
