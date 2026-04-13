@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -15,9 +15,12 @@ import {
   Link2,
   Bell,
   Wallet,
+  CalendarPlus,
 } from "lucide-react";
-import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
+import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
+import SchoolTakeBookingModal from "./SchoolTakeBookingModal";
+import SchoolTakePaymentModal from "./SchoolTakePaymentModal";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
@@ -88,6 +91,7 @@ interface SchoolLayoutProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   onLogout: () => void;
+  instructorIds?: string[];
 }
 
 export function SchoolLayout({
@@ -95,22 +99,54 @@ export function SchoolLayout({
   activeSection,
   onSectionChange,
   onLogout,
+  instructorIds = [],
 }: SchoolLayoutProps) {
   const meta = sectionMeta[activeSection] ?? { title: activeSection, group: "Overview" };
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+
+  const quickActions: PortalQuickAction[] = [
+    {
+      label: "Take a Booking",
+      icon: CalendarPlus,
+      onClick: () => setBookingOpen(true),
+      variant: "default",
+    },
+    {
+      label: "Take a Payment",
+      icon: PoundSterling,
+      onClick: () => setPaymentOpen(true),
+      variant: "outline",
+    },
+  ];
 
   return (
-    <PortalShell
-      sidebarGroups={sidebarGroups}
-      activeSection={activeSection}
-      sectionTitle={meta.title}
-      groupTitle={meta.group}
-      onSectionChange={onSectionChange}
-      onLogout={onLogout}
-      portalLabel="School Manager"
-      logoSrc={driveHiveLogo}
-      logoAlt="Drive Hive"
-    >
-      {children}
-    </PortalShell>
+    <>
+      <PortalShell
+        sidebarGroups={sidebarGroups}
+        activeSection={activeSection}
+        sectionTitle={meta.title}
+        groupTitle={meta.group}
+        onSectionChange={onSectionChange}
+        onLogout={onLogout}
+        portalLabel="School Manager"
+        logoSrc={driveHiveLogo}
+        logoAlt="Drive Hive"
+        quickActions={quickActions}
+      >
+        {children}
+      </PortalShell>
+
+      <SchoolTakeBookingModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        instructorIds={instructorIds}
+      />
+      <SchoolTakePaymentModal
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        instructorIds={instructorIds}
+      />
+    </>
   );
 }
