@@ -28,17 +28,36 @@ interface SchoolRow {
 }
 
 const FEATURE_DEFS = [
-  { key: "courses", label: "Courses", icon: GraduationCap },
-  { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard },
-  { key: "payment-gateways", label: "Payment Gateways", icon: CreditCard },
-  { key: "fleet", label: "Fleet Tracking", icon: MapPin },
-  { key: "payroll", label: "Payroll", icon: Wallet },
-  { key: "test-results", label: "Test Results", icon: Award },
-  { key: "booking-page", label: "Booking Page", icon: Link2 },
-  { key: "branding", label: "Branding", icon: Palette },
-  { key: "notifications", label: "Notifications", icon: Bell },
-  { key: "calendar", label: "Calendar", icon: CalendarDays },
-  { key: "reports", label: "Reports", icon: FileText },
+  // Overview
+  { key: "live-map", label: "Live Map", icon: MapPin, group: "Overview" },
+  { key: "revenue-analytics", label: "Revenue Analytics", icon: Settings, group: "Overview" },
+  { key: "leaderboard", label: "Leaderboard", icon: Award, group: "Overview" },
+  // Management
+  { key: "instructors", label: "Instructors", icon: Users, group: "Management" },
+  { key: "pupils", label: "Pupils", icon: GraduationCap, group: "Management" },
+  { key: "bookings", label: "Bookings", icon: CalendarDays, group: "Management" },
+  { key: "calendar", label: "Calendar", icon: CalendarDays, group: "Management" },
+  { key: "courses", label: "Courses", icon: GraduationCap, group: "Management" },
+  { key: "enquiries", label: "Enquiries", icon: Bell, group: "Management" },
+  { key: "messages", label: "Messages", icon: Bell, group: "Management" },
+  { key: "compliance", label: "Compliance", icon: Award, group: "Management" },
+  // Financials
+  { key: "payments", label: "Payments", icon: CreditCard, group: "Financials" },
+  { key: "payment-gateways", label: "Payment Gateways", icon: CreditCard, group: "Financials" },
+  { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard, group: "Financials" },
+  { key: "payroll", label: "Payroll", icon: Wallet, group: "Financials" },
+  { key: "reports", label: "Reports", icon: FileText, group: "Financials" },
+  // Operations
+  { key: "fleet", label: "Fleet Tracking", icon: MapPin, group: "Operations" },
+  { key: "test-results", label: "Test Results", icon: Award, group: "Operations" },
+  // Engagement
+  { key: "discount-codes", label: "Discount Codes", icon: Settings, group: "Engagement" },
+  { key: "campaigns", label: "Campaigns", icon: Bell, group: "Engagement" },
+  // Settings
+  { key: "branding", label: "Branding", icon: Palette, group: "Settings" },
+  { key: "booking-page", label: "School Page", icon: Link2, group: "Settings" },
+  { key: "booking-pages", label: "Booking Pages", icon: Link2, group: "Settings" },
+  { key: "notifications", label: "Notifications", icon: Bell, group: "Settings" },
 ] as const;
 
 export function AdminSchoolManager() {
@@ -159,7 +178,7 @@ export function AdminSchoolManager() {
 
       {/* Feature toggles dialog */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
@@ -182,28 +201,37 @@ export function AdminSchoolManager() {
                 
               </div>
 
-              {/* Feature toggles */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {FEATURE_DEFS.map(f => {
-                  const Icon = f.icon;
-                  return (
-                    <div
-                      key={f.key}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor={`ft-${f.key}`} className="text-sm cursor-pointer">{f.label}</Label>
-                      </div>
-                      <Switch
-                        id={`ft-${f.key}`}
-                        checked={features[f.key] ?? true}
-                        onCheckedChange={() => toggleFeature(f.key)}
-                      />
+              {/* Feature toggles grouped */}
+              {["Overview", "Management", "Financials", "Operations", "Engagement", "Settings"].map(group => {
+                const groupFeatures = FEATURE_DEFS.filter(f => f.group === group);
+                if (groupFeatures.length === 0) return null;
+                return (
+                  <div key={group} className="space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group}</h4>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {groupFeatures.map(f => {
+                        const Icon = f.icon;
+                        return (
+                          <div
+                            key={f.key}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <Label htmlFor={`ft-${f.key}`} className="text-sm cursor-pointer">{f.label}</Label>
+                            </div>
+                            <Switch
+                              id={`ft-${f.key}`}
+                              checked={features[f.key] ?? true}
+                              onCheckedChange={() => toggleFeature(f.key)}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => setSelected(null)}>
