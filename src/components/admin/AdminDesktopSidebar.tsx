@@ -97,6 +97,7 @@ const sidebarGroups: SidebarGroup[] = [
       { key: "instructor-home", label: "App Homepage", icon: Smartphone },
       
       { key: "comparison-editor", label: "Pricing Comparison", icon: Smartphone },
+      { key: "booking-pages", label: "Booking Pages", icon: Globe },
     ],
   },
   {

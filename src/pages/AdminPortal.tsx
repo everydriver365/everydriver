@@ -75,6 +75,7 @@ import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog"
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 
 import ComparisonEditor from "@/components/admin/ComparisonEditor";
+import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
@@ -151,6 +152,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "instructor-onboarding": { title: "Signup Wizard", group: "Instructor Platform", icon: Rocket },
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
   "page-builder": { title: "Marketing Page Builder", group: "Instructor Platform", icon: FileEdit },
+  "booking-pages": { title: "Booking Pages", group: "Instructor Platform", icon: Globe },
   // Products & Booking
   courses: { title: "Course Templates", group: "Products & Booking", icon: BookOpen },
   "booking-modes": { title: "Booking Modes", group: "Products & Booking", icon: CalendarClock },
