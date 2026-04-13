@@ -2134,6 +2134,7 @@ export type Database = {
           is_active: boolean | null
           max_uses: number | null
           min_purchase_amount: number | null
+          school_id: string | null
           times_used: number | null
           updated_at: string
           valid_from: string | null
@@ -2150,6 +2151,7 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           min_purchase_amount?: number | null
+          school_id?: string | null
           times_used?: number | null
           updated_at?: string
           valid_from?: string | null
@@ -2166,12 +2168,28 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           min_purchase_amount?: number | null
+          school_id?: string | null
           times_used?: number | null
           updated_at?: string
           valid_from?: string | null
           valid_until?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "discount_codes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_codes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       document_read_receipts: {
         Row: {
