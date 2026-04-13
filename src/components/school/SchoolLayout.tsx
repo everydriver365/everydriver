@@ -89,7 +89,7 @@ const sidebarGroups: PortalNavGroup[] = [
     items: [
       { key: "profile", label: "School Profile", icon: Building2 },
       { key: "branding", label: "Branding", icon: Palette },
-      { key: "booking-page", label: "Booking Page", icon: Link2 },
+      { key: "booking-page", label: "School Page", icon: Link2 },
       { key: "booking-pages", label: "Booking Pages", icon: Globe },
       { key: "notifications", label: "Notifications", icon: Bell },
     ],
@@ -120,10 +120,13 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   campaigns: { title: "Campaigns", group: "Engagement" },
   profile: { title: "School Profile", group: "Settings" },
   branding: { title: "Branding", group: "Settings" },
-  "booking-page": { title: "Booking Page", group: "Settings" },
+  "booking-page": { title: "School Page", group: "Settings" },
   "booking-pages": { title: "Booking Pages", group: "Settings" },
   notifications: { title: "Notifications", group: "Settings" },
 };
+
+// Keys that are always visible regardless of enabled_features
+const ALWAYS_VISIBLE_KEYS = new Set(["dashboard", "profile"]);
 
 interface SchoolLayoutProps {
   children: ReactNode;
@@ -131,6 +134,7 @@ interface SchoolLayoutProps {
   onSectionChange: (section: string) => void;
   onLogout: () => void;
   instructorIds?: string[];
+  enabledFeatures?: Record<string, boolean> | null;
 }
 
 export function SchoolLayout({
@@ -139,8 +143,23 @@ export function SchoolLayout({
   onSectionChange,
   onLogout,
   instructorIds = [],
+  enabledFeatures,
 }: SchoolLayoutProps) {
   const meta = sectionMeta[activeSection] ?? { title: activeSection, group: "Overview" };
+
+  // Filter sidebar groups based on enabled features
+  const isFeatureEnabled = (key: string) => {
+    if (ALWAYS_VISIBLE_KEYS.has(key)) return true;
+    if (!enabledFeatures) return true; // default all enabled if not set
+    return enabledFeatures[key] !== false; // default true if key missing
+  };
+
+  const filteredGroups: PortalNavGroup[] = sidebarGroups
+    .map(group => ({
+      ...group,
+      items: group.items.filter(item => isFeatureEnabled(item.key)),
+    }))
+    .filter(group => group.items.length > 0);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
@@ -162,7 +181,7 @@ export function SchoolLayout({
   return (
     <>
       <PortalShell
-        sidebarGroups={sidebarGroups}
+        sidebarGroups={filteredGroups}
         activeSection={activeSection}
         sectionTitle={meta.title}
         groupTitle={meta.group}

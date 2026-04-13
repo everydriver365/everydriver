@@ -28,17 +28,36 @@ interface SchoolRow {
 }
 
 const FEATURE_DEFS = [
-  { key: "courses", label: "Courses", icon: GraduationCap },
-  { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard },
-  { key: "payment-gateways", label: "Payment Gateways", icon: CreditCard },
-  { key: "fleet", label: "Fleet Tracking", icon: MapPin },
-  { key: "payroll", label: "Payroll", icon: Wallet },
-  { key: "test-results", label: "Test Results", icon: Award },
-  { key: "booking-page", label: "Booking Page", icon: Link2 },
-  { key: "branding", label: "Branding", icon: Palette },
-  { key: "notifications", label: "Notifications", icon: Bell },
-  { key: "calendar", label: "Calendar", icon: CalendarDays },
-  { key: "reports", label: "Reports", icon: FileText },
+  // Overview
+  { key: "live-map", label: "Live Map", icon: MapPin, group: "Overview" },
+  { key: "revenue-analytics", label: "Revenue Analytics", icon: Settings, group: "Overview" },
+  { key: "leaderboard", label: "Leaderboard", icon: Award, group: "Overview" },
+  // Management
+  { key: "instructors", label: "Instructors", icon: Users, group: "Management" },
+  { key: "pupils", label: "Pupils", icon: GraduationCap, group: "Management" },
+  { key: "bookings", label: "Bookings", icon: CalendarDays, group: "Management" },
+  { key: "calendar", label: "Calendar", icon: CalendarDays, group: "Management" },
+  { key: "courses", label: "Courses", icon: GraduationCap, group: "Management" },
+  { key: "enquiries", label: "Enquiries", icon: Bell, group: "Management" },
+  { key: "messages", label: "Messages", icon: Bell, group: "Management" },
+  { key: "compliance", label: "Compliance", icon: Award, group: "Management" },
+  // Financials
+  { key: "payments", label: "Payments", icon: CreditCard, group: "Financials" },
+  { key: "payment-gateways", label: "Payment Gateways", icon: CreditCard, group: "Financials" },
+  { key: "bnpl", label: "Buy Now, Pay Later", icon: CreditCard, group: "Financials" },
+  { key: "payroll", label: "Payroll", icon: Wallet, group: "Financials" },
+  { key: "reports", label: "Reports", icon: FileText, group: "Financials" },
+  // Operations
+  { key: "fleet", label: "Fleet Tracking", icon: MapPin, group: "Operations" },
+  { key: "test-results", label: "Test Results", icon: Award, group: "Operations" },
+  // Engagement
+  { key: "discount-codes", label: "Discount Codes", icon: Settings, group: "Engagement" },
+  { key: "campaigns", label: "Campaigns", icon: Bell, group: "Engagement" },
+  // Settings
+  { key: "branding", label: "Branding", icon: Palette, group: "Settings" },
+  { key: "booking-page", label: "School Page", icon: Link2, group: "Settings" },
+  { key: "booking-pages", label: "Booking Pages", icon: Link2, group: "Settings" },
+  { key: "notifications", label: "Notifications", icon: Bell, group: "Settings" },
 ] as const;
 
 export function AdminSchoolManager() {

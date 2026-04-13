@@ -13,6 +13,7 @@ export interface SchoolRecord {
   contact_phone: string | null;
   owner_user_id: string;
   notification_preferences: Record<string, boolean> | null;
+  enabled_features: Record<string, boolean> | null;
   created_at: string;
   updated_at: string;
 }
