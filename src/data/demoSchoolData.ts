@@ -21,6 +21,13 @@ export const demoSchool = {
 
 export const demoSchoolInstructorIds = ["demo-inst-1", "demo-inst-2", "demo-inst-3"];
 
+export const demoSchoolCourses = [
+  { id: "dc-1", school_id: "demo-school-001", course_name: "10 Hour Starter Course", course_hours: 10, price: 350, discounted_price: null, description: "Perfect for beginners who want to get started with driving lessons.", features: ["Free theory test access", "Pick-up and drop-off included"], is_intensive: false, is_popular: true, is_active: true, display_order: 0, assigned_instructor_ids: ["demo-inst-1", "demo-inst-2"] },
+  { id: "dc-2", school_id: "demo-school-001", course_name: "20 Hour Standard Course", course_hours: 20, price: 680, discounted_price: 640, description: "Our most popular package for learners with some experience.", features: ["Free theory test access", "Free re-test if you fail", "Progress tracking"], is_intensive: false, is_popular: true, is_active: true, display_order: 1, assigned_instructor_ids: ["demo-inst-1", "demo-inst-2", "demo-inst-3"] },
+  { id: "dc-3", school_id: "demo-school-001", course_name: "30 Hour Intensive", course_hours: 30, price: 999, discounted_price: 949, description: "Fast-track to your test with our intensive course over 2 weeks.", features: ["Guaranteed test date", "Free re-test", "Daily lessons available", "Theory test support"], is_intensive: true, is_popular: false, is_active: true, display_order: 2, assigned_instructor_ids: ["demo-inst-1", "demo-inst-3"] },
+  { id: "dc-4", school_id: "demo-school-001", course_name: "5 Hour Refresher", course_hours: 5, price: 185, discounted_price: null, description: "Brush up your skills after a break from driving.", features: ["Flexible scheduling"], is_intensive: false, is_popular: false, is_active: false, display_order: 3, assigned_instructor_ids: ["demo-inst-2"] },
+];
+
 export const demoSchoolInstructors = [
   { id: "si-1", instructor_id: "demo-inst-1", role: "lead_instructor", joined_at: subDays(today, 300).toISOString(), instructors: { name: "Mark Thompson", phone: "07700 100001", lesson_rate: 38 } },
   { id: "si-2", instructor_id: "demo-inst-2", role: "instructor", joined_at: subDays(today, 180).toISOString(), instructors: { name: "Sarah Williams", phone: "07700 100002", lesson_rate: 35 } },
