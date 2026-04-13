@@ -27,7 +27,7 @@ interface InstructorCard {
   hourly_rate: number | null;
   profile_image_url: string | null;
   home_postcode: string | null;
-  transmission_type: string | null;
+  car_type: string | null;
   bio: string | null;
   app_slug: string | null;
 }
