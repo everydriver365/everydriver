@@ -13493,7 +13493,15 @@ export type Database = {
           logo_url: string | null
           name: string
           notification_preferences: Json | null
+          own_paypal_client_id: string | null
+          own_paypal_secret: string | null
+          own_square_access_token: string | null
+          own_square_app_id: string | null
+          own_square_location_id: string | null
+          own_stripe_publishable_key: string | null
+          own_stripe_secret_key: string | null
           owner_user_id: string
+          payment_gateway_mode: string
           slug: string | null
           updated_at: string
         }
@@ -13510,7 +13518,15 @@ export type Database = {
           logo_url?: string | null
           name: string
           notification_preferences?: Json | null
+          own_paypal_client_id?: string | null
+          own_paypal_secret?: string | null
+          own_square_access_token?: string | null
+          own_square_app_id?: string | null
+          own_square_location_id?: string | null
+          own_stripe_publishable_key?: string | null
+          own_stripe_secret_key?: string | null
           owner_user_id: string
+          payment_gateway_mode?: string
           slug?: string | null
           updated_at?: string
         }
@@ -13527,7 +13543,15 @@ export type Database = {
           logo_url?: string | null
           name?: string
           notification_preferences?: Json | null
+          own_paypal_client_id?: string | null
+          own_paypal_secret?: string | null
+          own_square_access_token?: string | null
+          own_square_app_id?: string | null
+          own_square_location_id?: string | null
+          own_stripe_publishable_key?: string | null
+          own_stripe_secret_key?: string | null
           owner_user_id?: string
+          payment_gateway_mode?: string
           slug?: string | null
           updated_at?: string
         }

@@ -107,8 +107,8 @@ function CommissionConfigCard({ config }: { config: CommissionConfig }) {
   const fixed = (parseInt(fixedFeePence) || 0) / 100;
   const exampleFee = Math.round((exampleAmount * (rate / 100) + fixed) * 100) / 100;
 
-  const typeLabel = config.commission_type === "payment" ? "Payment" : "Subscription";
-  const typeIcon = config.commission_type === "payment" ? "💳" : "📦";
+  const typeLabel = config.commission_type === "payment" ? "Payment" : config.commission_type === "school_payment" ? "School Payment" : "Subscription";
+  const typeIcon = config.commission_type === "payment" ? "💳" : config.commission_type === "school_payment" ? "🏫" : "📦";
 
   return (
     <Card>
@@ -126,7 +126,7 @@ function CommissionConfigCard({ config }: { config: CommissionConfig }) {
           </div>
         </div>
         <CardDescription>
-          Fee applied to {config.commission_type === "payment" ? "digital pupil payments" : "instructor subscriptions"}
+          Fee applied to {config.commission_type === "payment" ? "digital pupil payments" : config.commission_type === "school_payment" ? "school payments via platform account" : "instructor subscriptions"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
