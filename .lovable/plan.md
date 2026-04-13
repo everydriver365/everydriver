@@ -1,53 +1,54 @@
 
 
-## Plan: Fix Radius Poller Authentication
+## Plan: Reduce Excessive Websocket Connections on Instructor Dashboard
 
 ### Problem
-The `radius-poller` function fails with `401 Invalid Token` because the `RADIUS_REFRESH_TOKEN` has expired. The API key from Kinesis Fleet Pro (9631c2b4...) is the same type as `RADIUS_API_TOKEN` — it cannot authenticate on its own without the OAuth refresh flow.
+Your screenshot shows a flood of "gql" websocket requests (20+ ms each, constantly repeating). Each Supabase realtime `.channel().subscribe()` call opens a separate websocket subscription. The instructor dashboard and its layout collectively mount many components that each create their own channel — leading to excessive websocket traffic.
 
-### Solution: Update RADIUS_API_TOKEN + Get Fresh Refresh Token
+### Root Cause
+Across the codebase, there are **66 files** creating realtime channels. On the `/instructor` page, the layout alone opens channels for:
+- `useInstructorPresence` (presence channel)
+- `usePaymentReceivedAlert` (payment_history changes)
+- `useUrgentAlerts` (urgent_alerts changes)
+- `useLessonEndAlert` (scheduled_lessons changes)
+- `useOfflinePrefetch`
+- `GapsFiller` (2 channels)
+- `TodayScheduleView` / `TomorrowScheduleView`
+- `PaymentSummaryWidget`
+- `MessagesWidget`
+- `RetentionAlertsTile`
+- Plus any test swap, visitor chat, and other notification hooks
 
-**Step 1: Update `RADIUS_API_TOKEN` with the newer "365 v2" key**
-The "365 v2" key (9631c2b4...) may be newer/more current than whatever is stored as `RADIUS_API_TOKEN`. Update the secret to use this key.
+This easily exceeds 10-15 simultaneous channels on a single page.
 
-**Step 2: Get a fresh refresh token from you**
-You need to log into Kinesis Fleet Pro and capture a fresh refresh token. Here's how:
-1. Open your browser dev tools (F12) → Network tab
-2. Log into `kinesisfleetpro.com`
-3. Look for the login/auth response — it will contain a `refresh` token
-4. Share that token and I'll update `RADIUS_REFRESH_TOKEN`
+### Solution: Consolidate Realtime Subscriptions
 
-**Step 3: (Alternative) Try username/password auth**
-Instead of manually capturing refresh tokens, I can add a username/password login flow to the poller. This would:
-- Add `RADIUS_USERNAME` and `RADIUS_PASSWORD` secrets
-- Call the Kinesis login endpoint to get fresh access + refresh tokens automatically
-- Eliminate the need to manually refresh tokens ever again
+**Step 1: Create a shared realtime manager hook**
+- Build `useRealtimeHub` — a single hook that opens ONE channel per table (or a small number of multiplexed channels)
+- Components register their interest in specific table/event combinations
+- The hub broadcasts changes to all registered listeners via a React context
 
-### Recommendation
-**Step 3 is the permanent fix.** With username/password auth, the poller can always get a fresh token on its own — no more manual refresh token updates.
+**Step 2: Refactor the top consumers**
+- Update the 8-10 hooks/components used on the dashboard to subscribe through the hub instead of creating individual channels
+- Keep the cleanup logic (removeChannel) but centralized
+
+**Step 3: Deduplicate channels with the same table**
+- Many components listen to the same tables (`scheduled_lessons`, `payment_history`, `gps_devices`)
+- Merge these into shared subscriptions that fan out to multiple consumers
 
 ### Technical Details
 
-Add a new `authenticateWithCredentials()` function to `radius-poller/index.ts`:
-```text
-POST https://www.velocityfleet.com/vapi/v1/accounts/users/oauth2/login/
-Headers: API-Token, Content-Type: application/json
-Body: { "username": "...", "password": "..." }
-Response: { "access": "...", "refresh": "..." }
-```
+| File | Action |
+|------|--------|
+| `src/hooks/useRealtimeHub.tsx` | **Create** — context provider with a single multiplexed channel manager |
+| `src/components/layout/InstructorPortalLayout.tsx` | **Modify** — wrap children in `RealtimeHubProvider` |
+| `src/hooks/usePaymentReceivedAlert.ts` | **Modify** — use hub instead of own channel |
+| `src/hooks/useGPSConnectionStatus.ts` | **Modify** — use hub |
+| `src/components/instructor/GapsFiller.tsx` | **Modify** — use hub (currently opens 2 channels) |
+| ~6 other dashboard hooks | **Modify** — similar refactor |
 
-Auth priority order:
-1. Try cached session (memory → DB)
-2. Try refresh token flow
-3. Fall back to username/password login
-4. Cache new tokens in `radius_session_cache`
-
-New secrets needed: `RADIUS_USERNAME`, `RADIUS_PASSWORD`
-
-| Action | Detail |
-|--------|--------|
-| Secret | Update `RADIUS_API_TOKEN` → 365 v2 key |
-| Secret | Add `RADIUS_USERNAME` |
-| Secret | Add `RADIUS_PASSWORD` |
-| Modify | `supabase/functions/radius-poller/index.ts` — add credential-based auth |
+### Expected Result
+- Websocket connections drop from 15+ to 3-5 multiplexed channels
+- Reduced network overhead and faster page loads
+- Same real-time functionality preserved
 
