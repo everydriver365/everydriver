@@ -66,6 +66,7 @@ export default function InstructorPay() {
   const [recentPaymentCount, setRecentPaymentCount] = useState(0);
   const [owesExpanded, setOwesExpanded] = useState(false);
   const [paymentsExpanded, setPaymentsExpanded] = useState(false);
+  const [bonusExpanded, setBonusExpanded] = useState(false);
   const [chasing, setChasing] = useState<string | null>(null);
 
   useEffect(() => {
