@@ -112,6 +112,32 @@ export default function SchoolDashboardSection({ instructorIds, schoolName }: Pr
   });
   const [activeWidgets, setActiveWidgets] = useState<string[]>(loadWidgets);
   const [widgetPanelOpen, setWidgetPanelOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return null;
+    const pupils = (isDemo ? demoSchoolPupils : [])
+      .filter(p => p.name.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q) || p.phone?.includes(q))
+      .slice(0, 4)
+      .map(p => ({ id: p.id, label: p.name, sub: p.instructors?.name ? `w/ ${p.instructors.name}` : p.email || "", type: "Pupil" as const }));
+    const instructors = (isDemo ? demoSchoolInstructors : [])
+      .filter(inst => inst.instructors.name.toLowerCase().includes(q) || inst.instructors.phone?.includes(q))
+      .slice(0, 3)
+      .map(inst => ({ id: inst.id, label: inst.instructors.name, sub: inst.role.replace("_", " "), type: "Instructor" as const }));
+    const lessons = calendarLessons
+      .filter(l => l.pupils?.name?.toLowerCase().includes(q) || l.instructors?.name?.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(l => ({
+        id: l.id,
+        label: `${l.pupils?.name || "Student"} — ${l.instructors?.name || "Instructor"}`,
+        sub: new Date(l.start_time).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+        type: "Lesson" as const,
+      }));
+    return [...pupils, ...instructors, ...lessons];
+  }, [searchQuery, calendarLessons, isDemo]);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
