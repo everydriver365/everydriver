@@ -7,6 +7,7 @@ import {
   PoundSterling,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
@@ -66,8 +67,8 @@ export function SchoolLayout({
       onSectionChange={onSectionChange}
       onLogout={onLogout}
       portalLabel="School Manager"
-      logoSrc="/everydriver-logo-v2.png"
-      logoAlt="DSM"
+      logoSrc={dsmLogo}
+      logoAlt="Driving School Manager"
     >
       {children}
     </PortalShell>
