@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 interface GPSConnectionStatus {
   isConnected: boolean;
@@ -86,45 +87,35 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     };
     
     doCheck();
+  }, [checkConnection]);
 
-    if (!instructorId) return;
-
-    const channel = supabase
-      .channel(`gps-connection-${instructorId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "gps_devices",
-          filter: `instructor_id=eq.${instructorId}`,
-        },
-        (payload) => {
-          const newData = payload.new as { 
-            last_seen_at?: string; 
-            last_heartbeat_at?: string;
-            device_name?: string; 
-            device_identifier?: string;
-            is_active?: boolean;
-          };
-          if (newData.last_seen_at) {
-            setLastSeenAt(newData.last_seen_at);
-            setLastTrackTime(newData.last_seen_at);
-          }
-          if (newData.last_heartbeat_at) {
-            setLastHeartbeatAt(newData.last_heartbeat_at);
-          }
-          if (newData.device_name || newData.device_identifier) {
-            setDeviceName(newData.device_name || newData.device_identifier || null);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, checkConnection]);
+  useRealtimeSubscription(
+    "gps_devices",
+    "UPDATE",
+    (payload) => {
+      const newData = payload.new as { 
+        last_seen_at?: string; 
+        last_heartbeat_at?: string;
+        device_name?: string; 
+        device_identifier?: string;
+        is_active?: boolean;
+      };
+      if (newData.last_seen_at) {
+        setLastSeenAt(newData.last_seen_at);
+        setLastTrackTime(newData.last_seen_at);
+      }
+      if (newData.last_heartbeat_at) {
+        setLastHeartbeatAt(newData.last_heartbeat_at);
+      }
+      if (newData.device_name || newData.device_identifier) {
+        setDeviceName(newData.device_name || newData.device_identifier || null);
+      }
+    },
+    {
+      filter: instructorId ? `instructor_id=eq.${instructorId}` : undefined,
+      enabled: !!instructorId,
+    }
+  );
 
   const status = getStatus(lastTrackTime, lastHeartbeatAt);
   const isConnected = status === "active" || status === "recent" || status === "stationary";
@@ -142,5 +133,3 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     manualReconnect 
   };
 }
-
-

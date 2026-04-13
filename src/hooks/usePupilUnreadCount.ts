@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 
 export function usePupilUnreadCount(instructorId: string | undefined, pupilId: string | undefined) {
   const queryClient = useQueryClient();
@@ -11,7 +11,6 @@ export function usePupilUnreadCount(instructorId: string | undefined, pupilId: s
       if (!instructorId || !pupilId) return 0;
 
       try {
-        // Find the conversation between this instructor and pupil
         const { data: conversation } = await supabase
           .from("conversations")
           .select("id")
@@ -21,7 +20,6 @@ export function usePupilUnreadCount(instructorId: string | undefined, pupilId: s
 
         if (!conversation) return 0;
 
-        // Count unread messages from this pupil
         const { count, error } = await supabase
           .from("messages")
           .select("*", { count: "exact", head: true })
@@ -39,24 +37,14 @@ export function usePupilUnreadCount(instructorId: string | undefined, pupilId: s
     staleTime: 30 * 1000,
   });
 
-  useEffect(() => {
-    if (!instructorId || !pupilId) return;
-
-    const channel = supabase
-      .channel(`pupil-unread-${pupilId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["pupil-unread-count", instructorId, pupilId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [instructorId, pupilId, queryClient]);
+  useRealtimeSubscription(
+    "messages",
+    "*",
+    () => {
+      queryClient.invalidateQueries({ queryKey: ["pupil-unread-count", instructorId, pupilId] });
+    },
+    { enabled: !!instructorId && !!pupilId }
+  );
 
   return query;
 }

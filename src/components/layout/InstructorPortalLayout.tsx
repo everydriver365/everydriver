@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect } from "react";
+import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
 import { motion } from "framer-motion";
 import { Mic, Loader2, Volume2 } from "lucide-react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
@@ -381,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Mobile Layout
   if (isMobile) {
     return (
-      <>
+      <RealtimeHubProvider instructorId={instructor?.id}>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -704,7 +705,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorName={instructor?.name}
         />
       </div>
-      </>
+      </RealtimeHubProvider>
     );
   }
 
@@ -749,7 +750,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
   // Desktop Layout - Sidebar
   return (
-    <>
+    <RealtimeHubProvider instructorId={instructor?.id}>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -888,6 +889,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         </div>
       </SidebarProvider>
       <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
-    </>
+    </RealtimeHubProvider>
   );
 }
