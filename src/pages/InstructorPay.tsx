@@ -64,6 +64,7 @@ export default function InstructorPay() {
     if (instructorId) {
       fetchInstructor();
       fetchPupils();
+      fetchRecentPaymentCount();
     }
   }, [instructorId]);
 
@@ -71,13 +72,14 @@ export default function InstructorPay() {
     if (!instructorId) return;
     const { data } = await supabase
       .from("instructors")
-      .select("payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, name")
+      .select("payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, name, bonus_earned")
       .eq("id", instructorId)
       .maybeSingle();
     if (data) {
       setResolvedQrUrl(getActivePaymentQrUrl(data));
       setCommissionPayer(data.commission_payer);
       setInstructorName(data.name || "Your Instructor");
+      setBonusEarned(data.bonus_earned || 0);
     }
   };
 
@@ -89,6 +91,16 @@ export default function InstructorPay() {
       .eq("instructor_id", instructorId)
       .order("name", { ascending: true });
     setPupils(data || []);
+  };
+
+  const fetchRecentPaymentCount = async () => {
+    if (!instructorId) return;
+    const { count } = await supabase
+      .from("payment_history")
+      .select("id", { count: "exact", head: true })
+      .eq("instructor_id", instructorId);
+    setRecentPaymentCount(count || 0);
+  };
   };
 
   if (!instructorId) {
