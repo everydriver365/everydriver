@@ -26,8 +26,8 @@ export function useRouteLogo() {
     ) || pathname === "/";
 
     return {
-      logo: isDrive365Route ? drive365Logo : EVERYDRIVER_LOGO,
-      logoAlt: isDrive365Route ? "Drive365" : "EveryDriver",
+      logo: isDrive365Route ? drive365Logo : dsmLogo,
+      logoAlt: isDrive365Route ? "Drive365" : "DSM",
       homeLink: isDrive365Route ? "/drive365" : "/instructor-app",
       isDrive365: isDrive365Route,
     };
