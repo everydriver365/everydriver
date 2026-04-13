@@ -7,6 +7,7 @@ import {
   PoundSterling,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
