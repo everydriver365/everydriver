@@ -58,54 +58,38 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     fetchAvailableGaps();
     fetchPupilCount();
 
-    // Subscribe to real-time changes for all gap-affecting tables
-    const channel = supabase
-      .channel(`gaps-${instructorId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'scheduled_lessons', filter: `instructor_id=eq.${instructorId}` },
-        () => debouncedRefetch()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'instructor_working_hours', filter: `instructor_id=eq.${instructorId}` },
-        () => debouncedRefetch()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'instructor_date_overrides', filter: `instructor_id=eq.${instructorId}` },
-        () => debouncedRefetch()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'instructor_manual_blocks', filter: `instructor_id=eq.${instructorId}` },
-        () => debouncedRefetch()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'instructor_calendar_events', filter: `instructor_id=eq.${instructorId}` },
-        () => debouncedRefetch()
-      )
-      .subscribe((status) => {
-        setIsLive(status === 'SUBSCRIBED');
-      });
-
-    // Subscribe to pupil changes
-    const pupilChannel = supabase
-      .channel(`pupils-${instructorId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'pupils', filter: `instructor_id=eq.${instructorId}` },
-        () => fetchPupilCount()
-      )
-      .subscribe();
-
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      supabase.removeChannel(channel);
-      supabase.removeChannel(pupilChannel);
     };
-  }, [instructorId, debouncedRefetch]);
+  }, [instructorId]);
+
+  // Use hub for all realtime subscriptions instead of individual channels
+  const hubCallback = useCallback(() => debouncedRefetch(), [debouncedRefetch]);
+
+  useRealtimeSubscription("scheduled_lessons", "*", hubCallback, {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
+  useRealtimeSubscription("instructor_working_hours", "*", hubCallback, {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
+  useRealtimeSubscription("instructor_date_overrides", "*", hubCallback, {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
+  useRealtimeSubscription("instructor_manual_blocks", "*", hubCallback, {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
+  useRealtimeSubscription("instructor_calendar_events", "*", hubCallback, {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
+  useRealtimeSubscription("pupils", "*", () => fetchPupilCount(), {
+    filter: `instructor_id=eq.${instructorId}`,
+    enabled: !!instructorId,
+  });
 
   const fetchInstructorData = async () => {
     try {
