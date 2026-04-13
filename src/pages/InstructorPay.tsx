@@ -291,19 +291,17 @@ export default function InstructorPay() {
                 !owesExpanded && "min-h-[100px] flex flex-col justify-between"
               )}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
-                    <AlertCircle className="h-4.5 w-4.5 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="text-xl font-bold tabular-nums text-destructive">
-                      {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
+              <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertCircle className="h-4.5 w-4.5 text-destructive" />
+              </div>
+              <div className="mt-2 flex items-end justify-between">
+                <div>
+                  <p className="text-xl font-bold tabular-nums text-destructive">
+                    {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
+                  </p>
                 </div>
                 {debtors.length > 0 && (
                   <ChevronDown className={cn(
