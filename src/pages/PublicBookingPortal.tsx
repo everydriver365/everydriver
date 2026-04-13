@@ -58,7 +58,7 @@ export default function PublicBookingPortal() {
     if (data.page_type === "instructor" && data.instructor_id) {
       const { data: inst } = await supabase
         .from("instructors")
-        .select("id, name, phone, hourly_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
+        .select("id, name, phone, hourly_rate, profile_image_url, home_postcode, car_type, bio, app_slug")
         .eq("id", data.instructor_id)
         .eq("is_active", true);
       if (inst) setInstructors(inst);
@@ -71,7 +71,7 @@ export default function PublicBookingPortal() {
         const ids = links.map(l => l.instructor_id);
         const { data: inst } = await supabase
           .from("instructors")
-          .select("id, name, phone, hourly_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
+          .select("id, name, phone, hourly_rate, profile_image_url, home_postcode, car_type, bio, app_slug")
           .in("id", ids)
           .eq("is_active", true)
           .order("name");
@@ -137,21 +137,14 @@ export default function PublicBookingPortal() {
                           {inst.name.charAt(0)}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
+                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-base truncate">{inst.name}</h3>
-                        {inst.average_rating && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                            <span className="font-medium">{inst.average_rating.toFixed(1)}</span>
-                            {inst.total_reviews && <span className="text-muted-foreground">({inst.total_reviews})</span>}
-                          </div>
-                        )}
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2 text-xs">
-                      {inst.postcode && (
-                        <Badge variant="outline" className="gap-1"><MapPin className="h-3 w-3" />{inst.postcode}</Badge>
+                      {inst.home_postcode && (
+                        <Badge variant="outline" className="gap-1"><MapPin className="h-3 w-3" />{inst.home_postcode}</Badge>
                       )}
                       {inst.transmission_type && (
                         <Badge variant="outline" className="capitalize">{inst.transmission_type}</Badge>
