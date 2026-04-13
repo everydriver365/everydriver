@@ -1,51 +1,70 @@
 
 
-## Full School Manager Portal + Master-Detail Pupils Page
+## Plan: School Courses Management
 
-### Shared Data Hook
-- **New** `src/hooks/useSchoolData.ts` — fetches school record + all instructor IDs from `school_instructors`
+### Current Architecture
 
-### Sidebar & Routing Updates
-- **Modify** `SchoolLayout.tsx` — expand sidebar with all sections below
-- **Modify** `SchoolPortal.tsx` — add switch cases for every new section
+The platform has a two-tier course system:
+1. **`course_templates`** — global templates (admin-defined) with hours, features, descriptions
+2. **`instructor_courses`** — per-instructor overrides (custom pricing, images, features) linked by `instructor_id` + `course_hours`
 
-### New Section Components (14 total)
+Schools currently have no course ownership. Their instructors use the global templates with individual overrides. The booking flow resolves courses via instructor → `instructor_courses` → `course_templates` fallback.
 
-| Section | Component | Purpose |
-|---------|-----------|---------|
-| Overview | `SchoolDashboardSection` | KPI cards, activity feed, alerts |
-| Management | `SchoolInstructorsSection` | Instructor table, invite/remove |
-| Management | `SchoolPupilsSection` | Master-detail: pupil list left, detail right |
-| Management | `SchoolPupilDetailPanel` | Detail panel: instructor, tests, lessons, payments, tracking, messages, reviews |
-| Management | `SchoolBookingsSection` | All lessons with status filters |
-| Management | `SchoolCalendarSection` | Multi-instructor calendar view |
-| Financials | `SchoolPaymentsSection` | Payment history + date filters |
-| Financials | `SchoolPayrollSection` | Earnings breakdown per instructor |
-| Financials | `SchoolReportsSection` | Summary cards + CSV export |
-| Operations | `SchoolFleetSection` | Live GPS tracking map |
-| Operations | `SchoolTestResultsSection` | Pass/fail stats across school |
-| Settings | `SchoolProfileSection` | Edit school name, contact |
-| Settings | `SchoolBrandingSection` | Logo upload, colours |
-| Settings | `SchoolBookingPageSection` | Slug manager + preview |
-| Settings | `SchoolNotificationsSection` | Email/SMS alert toggles |
+### Approach: School Courses Table
 
-### Pupils Page Detail
+Create a new **`school_courses`** table that lets schools define their own course catalog. Schools set the price, features, and assign which of their instructors can teach each course. This keeps the existing `instructor_courses` / `course_templates` system untouched for independent instructors.
 
-When a pupil is clicked, the right panel shows collapsible sections:
-1. Instructor assignment
-2. Theory test status
-3. Driving test status
-4. Lesson history table
-5. Payment history
-6. Tracking sessions
-7. Messages
-8. Reviews/feedback
+### Database Changes
 
-All read-only for school managers.
+**New table: `school_courses`**
+- `id` (uuid, PK)
+- `school_id` (uuid, FK → schools)
+- `course_name` (text)
+- `course_hours` (integer)
+- `price` (numeric) — school-set price
+- `discounted_price` (numeric, nullable)
+- `description` (text, nullable)
+- `features` (text[], nullable)
+- `course_image_url` (text, nullable)
+- `is_intensive` (boolean, default false)
+- `is_popular` (boolean, default false)
+- `is_active` (boolean, default true)
+- `display_order` (integer, default 0)
+- `created_at`, `updated_at`
 
-### Database
-- One migration: add `notification_preferences` JSONB column to `schools` table
+**New junction table: `school_course_instructors`**
+- `id` (uuid, PK)
+- `school_course_id` (uuid, FK → school_courses)
+- `instructor_id` (uuid, FK → instructors)
+- Unique on (school_course_id, instructor_id)
 
-### Data Access
-All queries filter by the school's instructor IDs from `school_instructors` — no new tables needed beyond the one column addition.
+RLS: school owner can CRUD their own courses; public can read active courses.
+
+### UI Changes
+
+1. **Add "Courses" to sidebar** in `SchoolLayout.tsx` — placed under Management group with a `BookOpen` icon.
+
+2. **Create `SchoolCoursesSection.tsx`** — the main courses management page:
+   - List of school courses as cards/table with name, hours, price, assigned instructors, active status
+   - "Add Course" button opening a dialog/form
+   - Edit/delete/toggle active per course
+   - Instructor assignment via multi-select of the school's linked instructors
+
+3. **Wire into `SchoolPortal.tsx` and `DemoSchoolPortal.tsx`** — add the new section to the `renderSection` switch.
+
+4. **Add demo data** in `demoSchoolData.ts` for the demo portal.
+
+### Integration with Booking Flow
+
+The `public-courses` edge function and booking pages can be extended later to check `school_courses` when a booking comes through a school's booking page (via school slug), falling back to the existing instructor-level logic for direct instructor bookings. This keeps the current flow working unchanged.
+
+### Files to Create
+- `src/components/school/SchoolCoursesSection.tsx`
+
+### Files to Modify
+- `src/components/school/SchoolLayout.tsx` — add "Courses" nav item + sectionMeta
+- `src/pages/SchoolPortal.tsx` — add courses case
+- `src/pages/DemoSchoolPortal.tsx` — add courses case
+- `src/data/demoSchoolData.ts` — add demo course data
+- Database migration for `school_courses` and `school_course_instructors` tables with RLS
 
