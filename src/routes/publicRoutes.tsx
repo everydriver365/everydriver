@@ -52,6 +52,10 @@ const HealthBenefitsPage = lazy(() => import("@/pages/HealthBenefitsPage"));
 const DataDeletion = lazy(() => import("@/pages/DataDeletion"));
 const SchoolBookingPage = lazy(() => import("@/pages/SchoolBookingPage"));
 const PublicBookingPortal = lazy(() => import("@/pages/PublicBookingPortal"));
+const SchoolWebsiteHome = lazy(() => import("@/pages/school-website/SchoolWebsiteHome"));
+const SchoolWebsiteAbout = lazy(() => import("@/pages/school-website/SchoolWebsiteAbout"));
+const SchoolWebsiteInstructors = lazy(() => import("@/pages/school-website/SchoolWebsiteInstructors"));
+const SchoolWebsiteContact = lazy(() => import("@/pages/school-website/SchoolWebsiteContact"));
 
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
@@ -125,6 +129,9 @@ export const publicRoutes = (
     <Route path="/quote/:token" element={<QuoteAcceptPage />} />
     <Route path="/pay/:instructorId" element={<PublicPaymentPage />} />
     <Route path="/booking/:slug" element={<PublicBookingPortal />} />
-    <Route path="/school/:slug" element={<SchoolBookingPage />} />
+    <Route path="/school/:slug" element={<SchoolWebsiteHome />} />
+    <Route path="/school/:slug/about" element={<SchoolWebsiteAbout />} />
+    <Route path="/school/:slug/instructors" element={<SchoolWebsiteInstructors />} />
+    <Route path="/school/:slug/contact" element={<SchoolWebsiteContact />} />
   </>
 );

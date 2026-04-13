@@ -34,6 +34,7 @@ import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
+import SchoolWebsiteSection from "@/components/school/SchoolWebsiteSection";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 export default function DemoSchoolPortal() {
@@ -103,6 +104,8 @@ export default function DemoSchoolPortal() {
         return <SchoolFranchiseFeesSection schoolId={school.id} />;
       case "subscription":
         return <SchoolSubscriptionSection instructorIds={instructorIds} schoolName={school.name} />;
+      case "website":
+        return <SchoolWebsiteSection school={school} onRefresh={noop} />;
       default:
         return null;
     }
