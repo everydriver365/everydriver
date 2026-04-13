@@ -1,48 +1,33 @@
 
 
-## Options to Get Kinesis GPS Working
+## Plan: Mini-Website SEO Without Cloudflare
 
-### Option A: Get the correct API key from Kinesis (Recommended)
-Contact Kinesis support and ask for:
-- **A Fleet API v2 key** for `api.uk1.kt1.io` (the "365" key doesn't work — it may be a dashboard key, not an API key)
-- **Your Customer/Owner ID** (needed for API calls)
+Since `drive365.co.uk` is on SiteGround, we'll skip the Cloudflare Worker approach and use a simpler method that still gets SEO working for social sharing and search engines.
 
-Draft email you could send:
+### Approach: Edge Function for Social/Bot Previews + Dynamic Sitemap
 
-```text
-Subject: API access for Key Telematics Fleet API v2
+**How it works:**
+1. I build a `mini-website-ssr` edge function that returns a full HTML page with correct meta tags for any instructor slug
+2. The `og:url` and canonical tags in the client-side app will point to the actual `/i/{slug}` URL (unchanged)
+3. For **social sharing** (Facebook, Twitter, LinkedIn, WhatsApp), we update the share links to go through the edge function URL — these platforms will then see the correct title, description, and image
+4. For **Google SEO**, I also build a dynamic `sitemap.xml` edge function listing all instructor pages, which helps Google discover and index them. Google's crawler is good enough to execute JavaScript and will pick up the client-side meta tags from `useMiniWebsiteSEO`
+5. No DNS changes or extra accounts needed
 
-Hi,
+### What I'll Build
 
-I need programmatic access to our fleet data via the Key Telematics
-Fleet API v2 (api.uk1.kt1.io).
+| File | Action |
+|------|--------|
+| `supabase/functions/mini-website-ssr/index.ts` | **Create** — returns HTML with injected SEO meta tags for a given slug |
+| `supabase/functions/mini-website-sitemap/index.ts` | **Create** — generates sitemap.xml of all instructor pages |
+| `public/robots.txt` | **Modify** — add Sitemap directive |
+| `src/hooks/useMiniWebsiteSEO.ts` | **Modify** — ensure og:url uses the correct drive365 subdomain |
 
-Could you provide:
-1. A valid API key for the v2 REST API
-2. Our Customer/Owner ID for API calls
+### What You'd Need To Do On SiteGround (Optional, Later)
 
-My account email is kenneth@dufosse.co.uk and we access the
-dashboard at kinesisfleetpro.com.
+If you want the `{slug}.drive365.co.uk` subdomains to serve SEO-friendly pages directly to bots, you could add a simple `.htaccess` rewrite rule on SiteGround that redirects bot user-agents to the edge function. I can provide the exact rule — it's a copy-paste into SiteGround's file manager. But this is optional; the sitemap + Google's JS rendering handles most SEO needs.
 
-Thanks,
-Kenneth
-```
-
-Once you have the key, I'll update the `KT_API_KEY` secret and test immediately.
-
-### Option B: Capture a refresh token manually (Quick workaround)
-1. Open **kinesisfleetpro.com** in your browser
-2. Press **F12** → **Network** tab
-3. Log in with your credentials
-4. Look for a request to an auth/token endpoint in the network list
-5. In the response body, find a field called `refresh` or `refresh_token`
-6. Share that value — I'll update the secret and the poller will use it to keep authenticating
-
-### Option C: Wait for account unlock + retry Velocity login
-Wait ~30 minutes for the lockout on velocityfleet.com to expire. I'll retry the login with your credentials. This is the least reliable path since it may lock again.
-
-### What I'll do once you have credentials
-- Update the relevant secret (`KT_API_KEY` or `RADIUS_REFRESH_TOKEN`)
-- Deploy and test the `radius-poller` edge function
-- Verify GPS data flows into the `gps_devices` table
+### Result
+- Social sharing previews show correct instructor name, description, and logo
+- Google can discover all instructor pages via sitemap
+- No new accounts or services needed
 
