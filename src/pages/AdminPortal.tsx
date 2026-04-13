@@ -87,6 +87,7 @@ import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueManager";
 import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
+import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 
 const stats = [
@@ -374,6 +375,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "school-manager":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="school-manager" className="mb-4" />
+            <AdminSchoolManager />
+          </motion.div>
+        );
 
       case "comparison-editor":
         return (
