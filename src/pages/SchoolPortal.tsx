@@ -19,6 +19,7 @@ import SchoolProfileSection from "@/components/school/SchoolProfileSection";
 import SchoolBrandingSection from "@/components/school/SchoolBrandingSection";
 import SchoolBookingPageSection from "@/components/school/SchoolBookingPageSection";
 import SchoolNotificationsSection from "@/components/school/SchoolNotificationsSection";
+import SchoolCoursesSection from "@/components/school/SchoolCoursesSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -61,6 +62,8 @@ export default function SchoolPortal() {
         return <SchoolBookingsSection instructorIds={instructorIds} />;
       case "calendar":
         return <SchoolCalendarSection instructorIds={instructorIds} />;
+      case "courses":
+        return <SchoolCoursesSection schoolId={school.id} instructorIds={instructorIds} />;
       case "payments":
         return <SchoolPaymentsSection instructorIds={instructorIds} />;
       case "payroll":

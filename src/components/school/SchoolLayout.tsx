@@ -38,6 +38,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "pupils", label: "Pupils", icon: GraduationCap },
       { key: "bookings", label: "Bookings", icon: CalendarDays },
       { key: "calendar", label: "Calendar", icon: BookOpen },
+      { key: "courses", label: "Courses", icon: GraduationCap },
     ],
   },
   {
@@ -75,6 +76,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   pupils: { title: "Pupils", group: "Management" },
   bookings: { title: "Bookings", group: "Management" },
   calendar: { title: "Calendar", group: "Management" },
+  courses: { title: "Courses", group: "Management" },
   payments: { title: "Payments", group: "Financials" },
   payroll: { title: "Payroll", group: "Financials" },
   reports: { title: "Reports", group: "Financials" },

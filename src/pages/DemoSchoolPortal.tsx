@@ -19,6 +19,7 @@ import SchoolProfileSection from "@/components/school/SchoolProfileSection";
 import SchoolBrandingSection from "@/components/school/SchoolBrandingSection";
 import SchoolBookingPageSection from "@/components/school/SchoolBookingPageSection";
 import SchoolNotificationsSection from "@/components/school/SchoolNotificationsSection";
+import SchoolCoursesSection from "@/components/school/SchoolCoursesSection";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 export default function DemoSchoolPortal() {
@@ -40,6 +41,8 @@ export default function DemoSchoolPortal() {
         return <SchoolBookingsSection instructorIds={instructorIds} />;
       case "calendar":
         return <SchoolCalendarSection instructorIds={instructorIds} />;
+      case "courses":
+        return <SchoolCoursesSection schoolId={school.id} instructorIds={demoSchoolInstructorIds} />;
       case "payments":
         return <SchoolPaymentsSection instructorIds={instructorIds} />;
       case "payroll":
