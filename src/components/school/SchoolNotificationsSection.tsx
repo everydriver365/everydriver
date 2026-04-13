@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Save, Loader2, Bell } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 interface Props { school: SchoolRecord; onRefresh: () => void; }
@@ -13,12 +14,14 @@ interface Props { school: SchoolRecord; onRefresh: () => void; }
 const DEFAULTS = { new_bookings: true, payments: true, test_results: true, cancellations: true, email: true, sms: false };
 
 export default function SchoolNotificationsSection({ school, onRefresh }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [prefs, setPrefs] = useState<Record<string, boolean>>({ ...DEFAULTS, ...(school.notification_preferences || {}) });
   const [saving, setSaving] = useState(false);
 
   const toggle = (key: string) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
   const save = async () => {
+    if (isDemo) { toast.info("Demo mode — no changes saved"); return; }
     setSaving(true);
     const { error } = await supabase.from("schools").update({ notification_preferences: prefs } as any).eq("id", school.id) as any;
     setSaving(false);
@@ -33,7 +36,6 @@ export default function SchoolNotificationsSection({ school, onRefresh }: Props)
         <h2 className="text-2xl font-bold">Notifications</h2>
         <p className="text-muted-foreground">Configure how you receive alerts</p>
       </div>
-
       <Card className="max-w-xl">
         <CardContent className="pt-6 space-y-6">
           <div className="space-y-4">
@@ -53,7 +55,6 @@ export default function SchoolNotificationsSection({ school, onRefresh }: Props)
               </div>
             ))}
           </div>
-
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Channels</h3>
             {[
@@ -69,7 +70,6 @@ export default function SchoolNotificationsSection({ school, onRefresh }: Props)
               </div>
             ))}
           </div>
-
           <Button onClick={save} disabled={saving} className="gap-1">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Preferences
           </Button>

@@ -1,29 +1,28 @@
 import { useState, useEffect } from "react";
-import { Award, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolTestResults } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; }
 
 export default function SchoolTestResultsSection({ instructorIds }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDemo) { setResults(demoSchoolTestResults); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchResults();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchResults = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("driving_test_results")
-      .select("*, pupils(name), instructors(name)")
-      .in("instructor_id", instructorIds)
-      .order("test_date", { ascending: false })
-      .limit(100);
+    const { data } = await supabase.from("driving_test_results").select("*, pupils(name), instructors(name)").in("instructor_id", instructorIds).order("test_date", { ascending: false }).limit(100);
     setResults(data || []);
     setLoading(false);
   };
@@ -46,18 +45,11 @@ export default function SchoolTestResultsSection({ instructorIds }: Props) {
           <div><p className="text-2xl font-bold">{rate}%</p><p className="text-xs text-muted-foreground">Pass Rate</p></div>
         </div>
       </div>
-
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Instructor</TableHead>
-                <TableHead>Result</TableHead>
-                <TableHead>Faults</TableHead>
-              </TableRow>
+              <TableRow><TableHead>Date</TableHead><TableHead>Student</TableHead><TableHead>Instructor</TableHead><TableHead>Result</TableHead><TableHead>Faults</TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {results.length === 0 ? (
@@ -65,8 +57,8 @@ export default function SchoolTestResultsSection({ instructorIds }: Props) {
               ) : results.map(r => (
                 <TableRow key={r.id}>
                   <TableCell className="text-sm">{new Date(r.test_date).toLocaleDateString("en-GB")}</TableCell>
-                  <TableCell className="text-sm font-medium">{(r as any).pupils?.name || "—"}</TableCell>
-                  <TableCell className="text-sm">{(r as any).instructors?.name || "—"}</TableCell>
+                  <TableCell className="text-sm font-medium">{r.pupils?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">{r.instructors?.name || "—"}</TableCell>
                   <TableCell>
                     {r.result === "pass" ? (
                       <Badge className="bg-emerald-100 text-emerald-700 text-xs gap-1"><CheckCircle className="h-3 w-3" /> Pass</Badge>

@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolLessons } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; }
 
 export default function SchoolCalendarSection({ instructorIds }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(() => {
@@ -15,19 +17,18 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
   });
 
   useEffect(() => {
+    if (isDemo) { setLessons(demoSchoolLessons); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchLessons();
-  }, [instructorIds, weekStart]);
+  }, [instructorIds, weekStart, isDemo]);
 
   const fetchLessons = async () => {
     setLoading(true);
     const end = new Date(weekStart); end.setDate(end.getDate() + 7);
     const { data } = await supabase
-      .from("scheduled_lessons")
-      .select("*, pupils(name), instructors(name)")
+      .from("scheduled_lessons").select("*, pupils(name), instructors(name)")
       .in("instructor_id", instructorIds)
-      .gte("start_time", weekStart.toISOString())
-      .lt("start_time", end.toISOString())
+      .gte("start_time", weekStart.toISOString()).lt("start_time", end.toISOString())
       .order("start_time", { ascending: true });
     setLessons(data || []);
     setLoading(false);
@@ -56,7 +57,6 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
           <Button variant="outline" size="icon" onClick={() => shiftWeek(1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       </div>
-
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
@@ -77,7 +77,7 @@ export default function SchoolCalendarSection({ instructorIds }: Props) {
                   {dayLessons.map(l => (
                     <div key={l.id} className="text-[10px] p-1 bg-primary/10 rounded truncate">
                       <span className="font-medium">{new Date(l.start_time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
-                      <br />{(l as any).pupils?.name || "Student"}
+                      <br />{l.pupils?.name || "Student"}
                     </div>
                   ))}
                 </CardContent>

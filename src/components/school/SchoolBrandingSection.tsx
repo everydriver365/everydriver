@@ -6,17 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 interface Props { school: SchoolRecord; onRefresh: () => void; }
 
 export default function SchoolBrandingSection({ school, onRefresh }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [brandColour, setBrandColour] = useState(school.brand_colour || "#6366f1");
   const [logoUrl, setLogoUrl] = useState(school.logo_url || "");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const save = async () => {
+    if (isDemo) { toast.info("Demo mode — no changes saved"); return; }
     setSaving(true);
     const { error } = await supabase.from("schools").update({ brand_colour: brandColour, logo_url: logoUrl } as any).eq("id", school.id) as any;
     setSaving(false);
@@ -26,6 +29,7 @@ export default function SchoolBrandingSection({ school, onRefresh }: Props) {
   };
 
   const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isDemo) { toast.info("Demo mode — uploads disabled"); return; }
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -44,7 +48,6 @@ export default function SchoolBrandingSection({ school, onRefresh }: Props) {
         <h2 className="text-2xl font-bold">Branding</h2>
         <p className="text-muted-foreground">Customise your school's visual identity</p>
       </div>
-
       <Card className="max-w-xl">
         <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
@@ -60,7 +63,6 @@ export default function SchoolBrandingSection({ school, onRefresh }: Props) {
               </Button>
             </div>
           </div>
-
           <div className="space-y-2">
             <Label>Brand Colour</Label>
             <div className="flex items-center gap-3">
@@ -68,7 +70,6 @@ export default function SchoolBrandingSection({ school, onRefresh }: Props) {
               <Input value={brandColour} onChange={e => setBrandColour(e.target.value)} className="w-32" />
             </div>
           </div>
-
           <Button onClick={save} disabled={saving} className="gap-1">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Branding
           </Button>

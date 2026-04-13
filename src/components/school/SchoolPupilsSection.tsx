@@ -5,19 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import SchoolPupilDetailPanel from "./SchoolPupilDetailPanel";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolPupils } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; }
 
 export default function SchoolPupilsSection({ instructorIds }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [pupils, setPupils] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isDemo) { setPupils(demoSchoolPupils); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchPupils();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchPupils = async () => {
     setLoading(true);
@@ -43,7 +47,6 @@ export default function SchoolPupilsSection({ instructorIds }: Props) {
       </div>
 
       <div className="flex gap-4 h-[calc(100vh-16rem)]">
-        {/* Left: pupil list */}
         <div className="w-80 flex-shrink-0 flex flex-col border rounded-xl overflow-hidden">
           <div className="p-3 border-b">
             <div className="relative">
@@ -76,7 +79,6 @@ export default function SchoolPupilsSection({ instructorIds }: Props) {
           </div>
         </div>
 
-        {/* Right: detail panel */}
         <div className="flex-1 border rounded-xl overflow-hidden">
           {selectedId ? (
             <SchoolPupilDetailPanel pupilId={selectedId} />

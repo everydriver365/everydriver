@@ -3,36 +3,30 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
+import { demoSchoolPayroll } from "@/data/demoSchoolData";
 
 interface Props { instructorIds: string[]; schoolId: string; }
 
 export default function SchoolPayrollSection({ instructorIds, schoolId }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [payroll, setPayroll] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDemo) { setPayroll(demoSchoolPayroll); setLoading(false); return; }
     if (instructorIds.length === 0) { setLoading(false); return; }
     fetchPayroll();
-  }, [instructorIds]);
+  }, [instructorIds, isDemo]);
 
   const fetchPayroll = async () => {
     setLoading(true);
-    const { data: members } = await supabase
-      .from("school_instructors")
-      .select("instructor_id, instructors(name, lesson_rate)")
-      .eq("school_id", schoolId) as any;
-
+    const { data: members } = await supabase.from("school_instructors").select("instructor_id, instructors(name, lesson_rate)").eq("school_id", schoolId) as any;
     const results = await Promise.all((members || []).map(async (m: any) => {
-      const { data: lessons } = await supabase
-        .from("scheduled_lessons")
-        .select("amount_due")
-        .eq("instructor_id", m.instructor_id)
-        .eq("status", "completed");
+      const { data: lessons } = await supabase.from("scheduled_lessons").select("amount_due").eq("instructor_id", m.instructor_id).eq("status", "completed");
       const totalEarned = (lessons || []).reduce((s: number, l: any) => s + (l.amount_due || 0), 0);
-      const lessonCount = (lessons || []).length;
-      return { name: m.instructors?.name || "Instructor", rate: m.instructors?.lesson_rate || 0, lessonCount, totalEarned };
+      return { name: m.instructors?.name || "Instructor", rate: m.instructors?.lesson_rate || 0, lessonCount: (lessons || []).length, totalEarned };
     }));
-
     setPayroll(results);
     setLoading(false);
   };
@@ -53,17 +47,11 @@ export default function SchoolPayrollSection({ instructorIds, schoolId }: Props)
           <p className="text-xs text-muted-foreground">Total school earnings</p>
         </div>
       </div>
-
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Instructor</TableHead>
-                <TableHead>Rate</TableHead>
-                <TableHead>Lessons</TableHead>
-                <TableHead>Total Earned</TableHead>
-              </TableRow>
+              <TableRow><TableHead>Instructor</TableHead><TableHead>Rate</TableHead><TableHead>Lessons</TableHead><TableHead>Total Earned</TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {payroll.length === 0 ? (

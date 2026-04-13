@@ -4,6 +4,7 @@ import { ProtectedSchoolRoute } from "@/components/auth/ProtectedSchoolRoute";
 
 const SchoolLogin = lazy(() => import("@/pages/SchoolLogin"));
 const SchoolPortal = lazy(() => import("@/pages/SchoolPortal"));
+const DemoSchoolPortal = lazy(() => import("@/pages/DemoSchoolPortal"));
 
 export const schoolRoutes = (
   <>
@@ -16,5 +17,6 @@ export const schoolRoutes = (
         </ProtectedSchoolRoute>
       }
     />
+    <Route path="/school/demo" element={<DemoSchoolPortal />} />
   </>
 );

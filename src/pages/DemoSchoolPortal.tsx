@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { SchoolLayout } from "@/components/school/SchoolLayout";
-import { useSchoolAuth } from "@/context/SchoolAuthContext";
-import { useNavigate } from "react-router-dom";
-import { useSchoolData } from "@/hooks/useSchoolData";
 import { SchoolDemoProvider } from "@/context/SchoolDemoContext";
-import { Loader2 } from "lucide-react";
+import {
+  demoSchool,
+  demoSchoolInstructorIds,
+} from "@/data/demoSchoolData";
 import SchoolDashboardSection from "@/components/school/SchoolDashboardSection";
 import SchoolInstructorsSection from "@/components/school/SchoolInstructorsSection";
 import SchoolPupilsSection from "@/components/school/SchoolPupilsSection";
@@ -19,42 +19,21 @@ import SchoolProfileSection from "@/components/school/SchoolProfileSection";
 import SchoolBrandingSection from "@/components/school/SchoolBrandingSection";
 import SchoolBookingPageSection from "@/components/school/SchoolBookingPageSection";
 import SchoolNotificationsSection from "@/components/school/SchoolNotificationsSection";
+import type { SchoolRecord } from "@/hooks/useSchoolData";
 
-export default function SchoolPortal() {
+export default function DemoSchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
-  const { signOut } = useSchoolAuth();
-  const navigate = useNavigate();
-  const { school, instructorIds, loading, refetch } = useSchoolData();
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/school/login");
-  };
-
-  if (loading) {
-    return (
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
-        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      </SchoolLayout>
-    );
-  }
-
-  if (!school) {
-    return (
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
-        <div className="text-center py-20">
-          <p className="text-muted-foreground">No school found for this account.</p>
-        </div>
-      </SchoolLayout>
-    );
-  }
+  const school = demoSchool as unknown as SchoolRecord;
+  const instructorIds = demoSchoolInstructorIds;
+  const noop = () => {};
 
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
         return <SchoolDashboardSection instructorIds={instructorIds} schoolName={school.name} />;
       case "instructors":
-        return <SchoolInstructorsSection schoolId={school.id} onRefresh={refetch} />;
+        return <SchoolInstructorsSection schoolId={school.id} onRefresh={noop} />;
       case "pupils":
         return <SchoolPupilsSection instructorIds={instructorIds} />;
       case "bookings":
@@ -72,21 +51,21 @@ export default function SchoolPortal() {
       case "test-results":
         return <SchoolTestResultsSection instructorIds={instructorIds} />;
       case "profile":
-        return <SchoolProfileSection school={school} onRefresh={refetch} />;
+        return <SchoolProfileSection school={school} onRefresh={noop} />;
       case "branding":
-        return <SchoolBrandingSection school={school} onRefresh={refetch} />;
+        return <SchoolBrandingSection school={school} onRefresh={noop} />;
       case "booking-page":
-        return <SchoolBookingPageSection school={school} onRefresh={refetch} />;
+        return <SchoolBookingPageSection school={school} onRefresh={noop} />;
       case "notifications":
-        return <SchoolNotificationsSection school={school} onRefresh={refetch} />;
+        return <SchoolNotificationsSection school={school} onRefresh={noop} />;
       default:
         return null;
     }
   };
 
   return (
-    <SchoolDemoProvider isDemo={false}>
-      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout}>
+    <SchoolDemoProvider isDemo={true}>
+      <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={noop}>
         {renderSection()}
       </SchoolLayout>
     </SchoolDemoProvider>
