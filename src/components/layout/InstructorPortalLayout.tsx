@@ -382,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Mobile Layout
   if (isMobile) {
     return (
-      <>
+      <RealtimeHubProvider instructorId={instructor?.id}>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -705,7 +705,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorName={instructor?.name}
         />
       </div>
-      </>
+      </RealtimeHubProvider>
     );
   }
 
