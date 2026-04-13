@@ -13444,6 +13444,83 @@ export type Database = {
           },
         ]
       }
+      school_franchise_fees: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          period_end: string
+          period_start: string
+          school_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          period_end: string
+          period_start: string
+          school_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          period_end?: string
+          period_start?: string
+          school_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_franchise_fees_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_franchise_fees_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_franchise_fees_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "public_schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_franchise_fees_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_instructors: {
         Row: {
           id: string
@@ -13507,6 +13584,7 @@ export type Database = {
           custom_domain: string | null
           description: string | null
           enabled_features: Json
+          franchise_fee_amount: number | null
           id: string
           klarna_enabled: boolean
           logo_url: string | null
@@ -13533,6 +13611,7 @@ export type Database = {
           custom_domain?: string | null
           description?: string | null
           enabled_features?: Json
+          franchise_fee_amount?: number | null
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null
@@ -13559,6 +13638,7 @@ export type Database = {
           custom_domain?: string | null
           description?: string | null
           enabled_features?: Json
+          franchise_fee_amount?: number | null
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null
