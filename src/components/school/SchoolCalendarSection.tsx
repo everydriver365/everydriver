@@ -23,11 +23,11 @@ function getInstructorColor(id: string, idx: number) {
   return INSTRUCTOR_COLORS[id] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
 }
 
-const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 function getMonthGrid(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
-  const startDay = firstDay.getDay(); // 0=Sun
+  const startDay = (firstDay.getDay() + 6) % 7; // 0=Mon
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const prevMonthDays = new Date(year, month, 0).getDate();
 
