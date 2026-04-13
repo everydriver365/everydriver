@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Save, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
 
 interface Props { school: SchoolRecord; onRefresh: () => void; }
 
 export default function SchoolProfileSection({ school, onRefresh }: Props) {
+  const { isDemo } = useSchoolDemo();
   const [form, setForm] = useState({
     name: school.name || "",
     contact_email: school.contact_email || "",
@@ -21,6 +23,7 @@ export default function SchoolProfileSection({ school, onRefresh }: Props) {
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
+    if (isDemo) { toast.info("Demo mode — no changes saved"); return; }
     setSaving(true);
     const { error } = await supabase.from("schools").update(form as any).eq("id", school.id) as any;
     setSaving(false);
@@ -35,7 +38,6 @@ export default function SchoolProfileSection({ school, onRefresh }: Props) {
         <h2 className="text-2xl font-bold">School Profile</h2>
         <p className="text-muted-foreground">Update your school's details</p>
       </div>
-
       <Card className="max-w-xl">
         <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
