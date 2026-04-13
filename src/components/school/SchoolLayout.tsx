@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
-import dsmLogo from "@/assets/dsm-logo.png";
+import driveHiveLogo from "@/assets/drive-hive-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
@@ -107,8 +107,8 @@ export function SchoolLayout({
       onSectionChange={onSectionChange}
       onLogout={onLogout}
       portalLabel="School Manager"
-      logoSrc={dsmLogo}
-      logoAlt="Driving School Manager"
+      logoSrc={driveHiveLogo}
+      logoAlt="Drive Hive"
     >
       {children}
     </PortalShell>

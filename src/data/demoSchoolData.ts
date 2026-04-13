@@ -5,7 +5,7 @@ const todayStr = format(today, "yyyy-MM-dd");
 
 export const demoSchool = {
   id: "demo-school-001",
-  name: "Demo School of Motoring",
+  name: "Drive Hive",
   slug: "demo-school-of-motoring",
   logo_url: null,
   brand_colour: "#6366f1",
