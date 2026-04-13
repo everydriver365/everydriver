@@ -201,28 +201,37 @@ export function AdminSchoolManager() {
                 
               </div>
 
-              {/* Feature toggles */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {FEATURE_DEFS.map(f => {
-                  const Icon = f.icon;
-                  return (
-                    <div
-                      key={f.key}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor={`ft-${f.key}`} className="text-sm cursor-pointer">{f.label}</Label>
-                      </div>
-                      <Switch
-                        id={`ft-${f.key}`}
-                        checked={features[f.key] ?? true}
-                        onCheckedChange={() => toggleFeature(f.key)}
-                      />
+              {/* Feature toggles grouped */}
+              {["Overview", "Management", "Financials", "Operations", "Engagement", "Settings"].map(group => {
+                const groupFeatures = FEATURE_DEFS.filter(f => f.group === group);
+                if (groupFeatures.length === 0) return null;
+                return (
+                  <div key={group} className="space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group}</h4>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {groupFeatures.map(f => {
+                        const Icon = f.icon;
+                        return (
+                          <div
+                            key={f.key}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <Label htmlFor={`ft-${f.key}`} className="text-sm cursor-pointer">{f.label}</Label>
+                            </div>
+                            <Switch
+                              id={`ft-${f.key}`}
+                              checked={features[f.key] ?? true}
+                              onCheckedChange={() => toggleFeature(f.key)}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => setSelected(null)}>
