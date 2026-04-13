@@ -1,54 +1,48 @@
 
 
-## Plan: Reduce Excessive Websocket Connections on Instructor Dashboard
+## Options to Get Kinesis GPS Working
 
-### Problem
-Your screenshot shows a flood of "gql" websocket requests (20+ ms each, constantly repeating). Each Supabase realtime `.channel().subscribe()` call opens a separate websocket subscription. The instructor dashboard and its layout collectively mount many components that each create their own channel — leading to excessive websocket traffic.
+### Option A: Get the correct API key from Kinesis (Recommended)
+Contact Kinesis support and ask for:
+- **A Fleet API v2 key** for `api.uk1.kt1.io` (the "365" key doesn't work — it may be a dashboard key, not an API key)
+- **Your Customer/Owner ID** (needed for API calls)
 
-### Root Cause
-Across the codebase, there are **66 files** creating realtime channels. On the `/instructor` page, the layout alone opens channels for:
-- `useInstructorPresence` (presence channel)
-- `usePaymentReceivedAlert` (payment_history changes)
-- `useUrgentAlerts` (urgent_alerts changes)
-- `useLessonEndAlert` (scheduled_lessons changes)
-- `useOfflinePrefetch`
-- `GapsFiller` (2 channels)
-- `TodayScheduleView` / `TomorrowScheduleView`
-- `PaymentSummaryWidget`
-- `MessagesWidget`
-- `RetentionAlertsTile`
-- Plus any test swap, visitor chat, and other notification hooks
+Draft email you could send:
 
-This easily exceeds 10-15 simultaneous channels on a single page.
+```text
+Subject: API access for Key Telematics Fleet API v2
 
-### Solution: Consolidate Realtime Subscriptions
+Hi,
 
-**Step 1: Create a shared realtime manager hook**
-- Build `useRealtimeHub` — a single hook that opens ONE channel per table (or a small number of multiplexed channels)
-- Components register their interest in specific table/event combinations
-- The hub broadcasts changes to all registered listeners via a React context
+I need programmatic access to our fleet data via the Key Telematics
+Fleet API v2 (api.uk1.kt1.io).
 
-**Step 2: Refactor the top consumers**
-- Update the 8-10 hooks/components used on the dashboard to subscribe through the hub instead of creating individual channels
-- Keep the cleanup logic (removeChannel) but centralized
+Could you provide:
+1. A valid API key for the v2 REST API
+2. Our Customer/Owner ID for API calls
 
-**Step 3: Deduplicate channels with the same table**
-- Many components listen to the same tables (`scheduled_lessons`, `payment_history`, `gps_devices`)
-- Merge these into shared subscriptions that fan out to multiple consumers
+My account email is kenneth@dufosse.co.uk and we access the
+dashboard at kinesisfleetpro.com.
 
-### Technical Details
+Thanks,
+Kenneth
+```
 
-| File | Action |
-|------|--------|
-| `src/hooks/useRealtimeHub.tsx` | **Create** — context provider with a single multiplexed channel manager |
-| `src/components/layout/InstructorPortalLayout.tsx` | **Modify** — wrap children in `RealtimeHubProvider` |
-| `src/hooks/usePaymentReceivedAlert.ts` | **Modify** — use hub instead of own channel |
-| `src/hooks/useGPSConnectionStatus.ts` | **Modify** — use hub |
-| `src/components/instructor/GapsFiller.tsx` | **Modify** — use hub (currently opens 2 channels) |
-| ~6 other dashboard hooks | **Modify** — similar refactor |
+Once you have the key, I'll update the `KT_API_KEY` secret and test immediately.
 
-### Expected Result
-- Websocket connections drop from 15+ to 3-5 multiplexed channels
-- Reduced network overhead and faster page loads
-- Same real-time functionality preserved
+### Option B: Capture a refresh token manually (Quick workaround)
+1. Open **kinesisfleetpro.com** in your browser
+2. Press **F12** → **Network** tab
+3. Log in with your credentials
+4. Look for a request to an auth/token endpoint in the network list
+5. In the response body, find a field called `refresh` or `refresh_token`
+6. Share that value — I'll update the secret and the poller will use it to keep authenticating
+
+### Option C: Wait for account unlock + retry Velocity login
+Wait ~30 minutes for the lockout on velocityfleet.com to expire. I'll retry the login with your credentials. This is the least reliable path since it may lock again.
+
+### What I'll do once you have credentials
+- Update the relevant secret (`KT_API_KEY` or `RADIUS_REFRESH_TOKEN`)
+- Deploy and test the `radius-poller` edge function
+- Verify GPS data flows into the `gps_devices` table
 
