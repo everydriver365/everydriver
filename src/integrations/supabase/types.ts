@@ -13488,6 +13488,7 @@ export type Database = {
           created_at: string
           custom_domain: string | null
           description: string | null
+          enabled_features: Json
           id: string
           klarna_enabled: boolean
           logo_url: string | null
@@ -13513,6 +13514,7 @@ export type Database = {
           created_at?: string
           custom_domain?: string | null
           description?: string | null
+          enabled_features?: Json
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null
@@ -13538,6 +13540,7 @@ export type Database = {
           created_at?: string
           custom_domain?: string | null
           description?: string | null
+          enabled_features?: Json
           id?: string
           klarna_enabled?: boolean
           logo_url?: string | null

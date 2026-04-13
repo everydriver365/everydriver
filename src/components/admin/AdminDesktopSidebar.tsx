@@ -1,5 +1,5 @@
 import {
-  BarChart3, BookOpen, CreditCard, Gift, Globe, Headphones, LayoutDashboard,
+  BarChart3, BookOpen, Building2, CreditCard, Gift, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users, LucideIcon,
   LogOut, Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle,
 } from "lucide-react";
@@ -98,6 +98,13 @@ const sidebarGroups: SidebarGroup[] = [
       
       { key: "comparison-editor", label: "Pricing Comparison", icon: Smartphone },
       { key: "booking-pages", label: "Booking Pages", icon: Globe },
+    ],
+  },
+  {
+    label: "Schools",
+    icon: Building2,
+    items: [
+      { key: "school-manager", label: "School Manager", icon: Building2 },
     ],
   },
   {

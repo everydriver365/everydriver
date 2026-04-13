@@ -87,6 +87,7 @@ import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
 import { AdminInstructorProfile } from "@/components/admin/AdminInstructorProfile";
 import { CalendarSyncQueueManager } from "@/components/admin/CalendarSyncQueueManager";
 import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconciliationDashboard";
+import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 
 const stats = [
@@ -187,6 +188,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
   "calendar-sync": { title: "Calendar Sync Queue", group: "System Settings", icon: Calendar },
   "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
+  "school-manager": { title: "School Manager", group: "Schools", icon: Users },
 };
 
 export default function AdminPortal() {
@@ -373,6 +375,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "school-manager":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="school-manager" className="mb-4" />
+            <AdminSchoolManager />
+          </motion.div>
+        );
 
       case "comparison-editor":
         return (
