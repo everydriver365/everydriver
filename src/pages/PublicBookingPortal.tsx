@@ -60,7 +60,7 @@ export default function PublicBookingPortal() {
     if (data.page_type === "instructor" && data.instructor_id) {
       const { data: inst } = await supabase
         .from("instructors")
-        .select("id, name, phone, lesson_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
+        .select("id, name, phone, hourly_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
         .eq("id", data.instructor_id)
         .eq("is_active", true);
       if (inst) setInstructors(inst);
@@ -73,7 +73,7 @@ export default function PublicBookingPortal() {
         const ids = links.map(l => l.instructor_id);
         const { data: inst } = await supabase
           .from("instructors")
-          .select("id, name, phone, lesson_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
+          .select("id, name, phone, hourly_rate, profile_image_url, postcode, transmission_type, bio, slug, average_rating, total_reviews")
           .in("id", ids)
           .eq("is_active", true)
           .order("name");
@@ -165,7 +165,7 @@ export default function PublicBookingPortal() {
                     )}
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-lg font-bold">£{inst.lesson_rate}/hr</span>
+                      {inst.hourly_rate && <span className="text-lg font-bold">£{inst.hourly_rate}/hr</span>}
                       <Button size="sm" asChild style={{ backgroundColor: brandColour }}>
                         <Link to={`/book/${inst.id}`}>Book Now</Link>
                       </Button>
