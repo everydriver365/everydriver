@@ -1,45 +1,77 @@
 
 
-## Plan: School Portal Feature Gating & UI Polish
+## Plan: School Franchise Fees Section (Admin Portal)
 
-### Problem
-The admin can toggle `enabled_features` per school via the Admin School Manager, but the school portal **ignores these flags entirely** — all 24 sidebar items always appear. Additionally, a few UI/navigation inconsistencies need tidying up.
+### Overview
+Add a "Franchise Fees" section within the Admin Portal's Schools group. This lets admin view and manage per-instructor franchise fee records for each school — tracking status (paid, late, not paid, free), amounts, and due dates. The data model supports future GoCardless integration for automated collection.
 
-### Issues Identified
+### Database Migration
 
-1. **Feature gating not enforced** — `SchoolLayout` renders all sidebar items regardless of `enabled_features`. Admin toggles have no effect on the school portal.
-2. **`useSchoolData` doesn't expose `enabled_features`** — the `SchoolRecord` interface is missing the field, so it's never available to the layout.
-3. **Admin feature toggle list is incomplete** — `AdminSchoolManager` only has 11 toggleable features, but the school portal has 24 sections. Missing: enquiries, messages, compliance, live-map, revenue-analytics, leaderboard, discount-codes, campaigns, booking-pages, pupils, bookings, instructors, payments, dashboard.
-4. **"Booking Page" vs "Booking Pages" confusion** — both appear in Settings. "Booking Page" is the school's own page config; "Booking Pages" is the multi-page manager. Labels could be clearer.
+**New table: `school_franchise_fees`**
+```sql
+CREATE TABLE public.school_franchise_fees (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES public.schools(id) ON DELETE CASCADE,
+  instructor_id UUID NOT NULL REFERENCES public.instructors(id) ON DELETE CASCADE,
+  period_start DATE NOT NULL,
+  period_end DATE NOT NULL,
+  amount NUMERIC NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'not_paid', -- paid, late, not_paid, free
+  payment_method TEXT, -- manual, gocardless, etc.
+  payment_reference TEXT,
+  paid_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-### What to Fix
+ALTER TABLE public.school_franchise_fees ENABLE ROW LEVEL SECURITY;
+-- Admin full access
+CREATE POLICY "Admins manage franchise fees"
+  ON public.school_franchise_fees FOR ALL TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+-- School owners can view their own
+CREATE POLICY "School owners view franchise fees"
+  ON public.school_franchise_fees FOR SELECT TO authenticated
+  USING (public.is_school_owner(school_id));
+```
 
-**1. Add `enabled_features` to `SchoolRecord` and `useSchoolData`**
-- Add the field to the interface
-- Pass it through to `SchoolLayout`
+**New column on `schools` table:**
+- `franchise_fee_amount` (NUMERIC, default 0) — the standard per-instructor fee for this school
 
-**2. Filter sidebar items in `SchoolLayout` based on `enabled_features`**
-- Accept `enabledFeatures` prop
-- Before rendering, filter out items where the feature is disabled
-- Core items (dashboard, profile) are always visible and cannot be disabled
+### Files to Create
 
-**3. Expand admin feature toggle list in `AdminSchoolManager`**
-- Add all gatable sections to `FEATURE_DEFS`: enquiries, messages, compliance, live-map, revenue-analytics, leaderboard, discount-codes, campaigns, booking-pages, pupils, bookings, payments, instructors
-- Group them visually to match the school sidebar structure
-
-**4. Rename "Booking Page" → "School Page" in sidebar**
-- Disambiguate from "Booking Pages" (the multi-page manager)
+**`src/components/admin/AdminSchoolFranchiseFees.tsx`**
+- School selector dropdown (fetches all schools)
+- Summary cards: total due, total collected, overdue count
+- Table of fees per instructor per period showing: instructor name, period, amount, status badge (paid=green, late=amber, not_paid=red, free=grey), paid date, payment method
+- Actions: Mark as Paid, Mark as Free, Add Fee (dialog with instructor picker, period, amount)
+- Filter by status and date range
+- Button to bulk-generate fees for all instructors in a school for a given month
 
 ### Files to Modify
 
-- **`src/hooks/useSchoolData.ts`** — add `enabled_features` to `SchoolRecord`, expose it from the hook
-- **`src/components/school/SchoolLayout.tsx`** — accept `enabledFeatures` prop, filter sidebar items, always show dashboard + profile
-- **`src/pages/SchoolPortal.tsx`** — pass `school.enabled_features` to `SchoolLayout`
-- **`src/pages/DemoSchoolPortal.tsx`** — pass demo features (all enabled) to `SchoolLayout`
-- **`src/components/admin/AdminSchoolManager.tsx`** — expand `FEATURE_DEFS` to cover all 24 school sections with appropriate icons and grouping
+1. **`src/pages/AdminPortal.tsx`**
+   - Add `"school-fees"` to sectionMeta under "Schools" group
+   - Add case rendering `<AdminSchoolFranchiseFees />`
+   - Import the new component
+
+2. **`src/components/admin/AdminLayout.tsx`** + **`AdminDesktopSidebar.tsx`**
+   - Add `{ key: "school-fees", label: "Franchise Fees", icon: PoundSterling }` to the Schools sidebar group
+
+3. **`src/components/school/SchoolLayout.tsx`**
+   - Add `{ key: "franchise-fees", label: "Franchise Fees", icon: PoundSterling }` to the Financials group (read-only view for school managers)
+
+4. **`src/components/school/SchoolFranchiseFeesSection.tsx`** (new)
+   - School-side read-only view of their own franchise fees, scoped by `school_id`
+   - Shows status per instructor per period
+
+5. **`src/pages/SchoolPortal.tsx`** + **`DemoSchoolPortal.tsx`**
+   - Add `case "franchise-fees"` routing
 
 ### Technical Notes
-- No database migration needed — `enabled_features` column already exists with sensible defaults
-- Items not listed in `enabled_features` default to enabled (backwards compatible)
-- Dashboard and School Profile are always shown regardless of flags
+- Status values: `paid`, `late`, `not_paid`, `free`
+- `franchise_fee_amount` on schools table provides the default amount when bulk-generating
+- GoCardless integration placeholder: `payment_method` column will store `"gocardless"` when wired up later
+- School managers see fees read-only; only admin can create/update fee records
 
