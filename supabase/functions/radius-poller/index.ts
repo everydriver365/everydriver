@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
 
   try {
     const ktApiKey = Deno.env.get("KT_API_KEY")?.trim();
-    const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && Deno.env.get("RADIUS_REFRESH_TOKEN"));
+    const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && (Deno.env.get("RADIUS_REFRESH_TOKEN") || (Deno.env.get("RADIUS_USERNAME") && Deno.env.get("RADIUS_PASSWORD"))));
 
     if (!ktApiKey && !hasLegacy) {
       console.log("[RadiusPoller] Skipping — no KT_API_KEY or legacy credentials configured");
