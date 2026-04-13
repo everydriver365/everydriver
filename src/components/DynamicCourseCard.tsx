@@ -34,6 +34,7 @@ interface DynamicCourseCardProps {
   customFeatures?: string[] | null;
   isPremium?: boolean;
   placementType?: string;
+  areaName?: string | null;
 }
 
 export function DynamicCourseCard({ 
@@ -49,7 +50,8 @@ export function DynamicCourseCard({
   discountedPrice,
   customFeatures,
   isPremium = false,
-  placementType
+  placementType,
+  areaName,
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();

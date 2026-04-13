@@ -46,6 +46,7 @@ export function IOSCourseCard({
   isIntensive,
   discountedPrice,
   customFeatures,
+  areaName,
 }: IOSCourseCardProps) {
   const navigate = useNavigate();
 
