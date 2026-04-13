@@ -127,6 +127,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   reports: { title: "Reports", group: "Financials" },
   fleet: { title: "Fleet Tracking", group: "Operations" },
   "test-results": { title: "Test Results", group: "Operations" },
+  "pass-rates": { title: "Pass Rates & DVSA", group: "Operations" },
   "discount-codes": { title: "Discount Codes", group: "Engagement" },
   campaigns: { title: "Campaigns", group: "Engagement" },
   profile: { title: "School Profile", group: "Settings" },
