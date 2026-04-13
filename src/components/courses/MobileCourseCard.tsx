@@ -37,6 +37,7 @@ interface Course {
   customFeatures?: string[] | null;
   isPremium?: boolean;
   placementType?: string;
+  areaName?: string | null;
 }
 
 interface MobileCourseCardProps {
