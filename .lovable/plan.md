@@ -1,113 +1,73 @@
 
 
-## Plan: Apply All 5 Portal Management Steps
+## Plan: Migrate Radius Poller to Key Telematics Fleet API v2
 
-### Overview
-Implement a unified portal architecture across all five user roles: Admin, Instructor, Pupil, Parent, and School Manager. This involves creating a shared layout system, elevating School and Parent portals, adding role-based routing, and standardizing mobile navigation.
+### Problem
+The current `radius-poller` edge function uses the legacy **Velocity Fleet API** (`velocityfleet.com`) with a fragile Django JWT refresh-token flow. The official Key Telematics Fleet API v2 (`api.uk1.kt1.io`) supports **static API keys** with no expiry, eliminating all token refresh complexity.
 
----
-
-### Step 1: Create Shared `PortalShell` Component
-
-**New file: `src/components/layout/PortalShell.tsx`**
-- A configurable layout component that accepts:
-  - `sidebarGroups` — navigation items grouped by section
-  - `headerBranding` — logo, title, colors
-  - `onLogout` — logout handler
-  - `activeSection` / `onSectionChange` — for sidebar-based portals
-  - `mobileNavItems` — bottom nav config for mobile-first portals
-  - `variant` — `"sidebar"` (Admin/School/Instructor desktop) or `"mobile"` (Pupil/Parent)
-- Desktop: renders collapsible sidebar (using existing Shadcn Sidebar components) + header + breadcrumb
-- Mobile: renders hamburger sheet menu (sidebar portals) or bottom nav (mobile portals)
-- Replaces duplicated patterns from `AdminLayout.tsx`, instructor layouts, etc.
-
-### Step 2: Elevate School Manager to First-Class Portal
-
-**New files:**
-- `src/context/SchoolAuthContext.tsx` — auth context checking `user_roles` for `school_manager` role
-- `src/components/auth/ProtectedSchoolRoute.tsx` — guards `/school/*` routes
-- `src/components/school/SchoolLayout.tsx` — uses `PortalShell` with sidebar variant; sections: Dashboard, Instructors, Bookings, Branding, Finances
-- `src/routes/schoolRoutes.tsx` — dedicated route module with sub-pages:
-  - `/school/login` — school manager login
-  - `/school/dashboard` — overview (refactored from existing `SchoolDashboard.tsx`)
-  - `/school/instructors` — instructor management
-  - `/school/bookings` — bookings overview
-  - `/school/branding` — white-label/branding settings
-  - `/school/finances` — financial summary
-
-**Modified files:**
-- `src/routes/instructorPortalRoutes.tsx` — remove `/school/dashboard` route
-- `src/App.tsx` — import and add `schoolRoutes`
-- Add `school_manager` to `app_role` enum via migration (if not already present)
-
-### Step 3: Elevate Parent Portal to Own Route Module
-
-**New files:**
-- `src/routes/parentRoutes.tsx` — dedicated route module:
-  - `/parent` — main portal (existing `ParentPortal.tsx`)
-  - `/parent/install` — PWA install (move from publicRoutes)
-  - `/parent/messages` — messaging sub-page
-  - `/parent/payments` — payment history sub-page
-- `src/components/layout/ParentLayout.tsx` — uses `PortalShell` with mobile variant, wraps parent pages with consistent header + bottom nav
-
-**Modified files:**
-- `src/routes/publicRoutes.tsx` — remove `/parent` and `/parent/install` routes
-- `src/App.tsx` — import and add `parentRoutes`
-
-### Step 4: Role-Based Auto-Redirect After Login
-
-**New file: `src/components/auth/RoleRedirect.tsx`**
-- On login, queries `user_roles` for the authenticated user
-- Single role → redirect to the correct portal (`/admin`, `/instructor`, `/school/dashboard`, `/parent`, `/pupil`)
-- Multiple roles → show a simple role-picker card UI ("Continue as Admin / Instructor / School Manager")
-- Used after successful login on shared or ambiguous login pages
-
-**Modified files:**
-- `src/context/AdminAuthContext.tsx` — minor: expose role list (not just `isAdmin`)
-- Login pages can optionally redirect through `RoleRedirect` component
-
-### Step 5: Unify Mobile Navigation Patterns
-
-**New file: `src/components/layout/MobilePortalNav.tsx`**
-- Shared bottom navigation component accepting configurable tabs
-- Props: `items: { label, icon, path }[]`, `activeColor`, `inactiveColor`
-- Replaces duplicated bottom nav logic in `ParentBottomNav`, `EveryInstructorBottomNav`, `MobileBottomNav`
-
-**Modified files:**
-- `src/components/parent/ParentBottomNav.tsx` — refactor to use `MobilePortalNav`
-- `src/components/instructor/EveryInstructorBottomNav.tsx` — refactor to use `MobilePortalNav`
-- `src/components/layout/MobileBottomNav.tsx` — refactor to use `MobilePortalNav`
-
-### Step 6: Refactor AdminLayout to Use PortalShell
-
-**Modified files:**
-- `src/components/admin/AdminLayout.tsx` — refactor to wrap `PortalShell` with sidebar variant, passing existing nav groups and branding config. This validates the shared component works before rolling it out further.
+### Key Migration Benefits
+- Eliminates token refresh logic and `radius_session_cache` table dependency
+- Uses the documented, supported API instead of an undocumented legacy endpoint
+- Simpler auth: single `x-api-key` header on every request
+- UK-specific endpoint for lower latency: `https://api.uk1.kt1.io/fleet/v2`
 
 ---
 
-### Database Migration
-- Add `school_manager` to `app_role` enum if not present
-- No other schema changes needed
+### Step 1: Add New Secret — `KT_API_KEY`
 
-### File Summary
+Request a new Key Telematics API key from the user. This replaces `RADIUS_API_TOKEN` and `RADIUS_REFRESH_TOKEN`.
 
+The user generates this in the Key Telematics dashboard under their user account > API Keys.
+
+### Step 2: Rewrite `radius-poller` Edge Function
+
+**File**: `supabase/functions/radius-poller/index.ts`
+
+Changes:
+- **Remove** the entire `authenticate()` function and `RadiusSession` interface
+- **Remove** `cachedSession` state and DB cache logic
+- **Replace** auth with a simple `x-api-key` header using `KT_API_KEY` secret
+- **Replace** base URL from `velocityfleet.com` to `https://api.uk1.kt1.io/fleet/v2`
+- **Replace** the live positions endpoint from the undocumented `POST /api/mobile/kinesis/device-live-positions/` to the official `GET /entities/assets?owner={ownerId}` endpoint (each asset includes last known position)
+- **Update** response field mapping to match Key Telematics v2 asset schema (fields like `lastPosition.latitude`, `lastPosition.longitude`, `lastPosition.speed`, `lastPosition.heading`, `lastPosition.timestamp`)
+- **Keep** all existing downstream logic: `gps_devices` updates, `telematics_gps_points` inserts, `live_pupil_positions` updates, distance calculations
+- **Fall back** gracefully: still check for `RADIUS_API_TOKEN` + `RADIUS_REFRESH_TOKEN` as a legacy path if `KT_API_KEY` is not set, so existing setups keep working during transition
+
+### Step 3: Verify & Map Response Fields
+
+Since the full asset/telemetry response schema wasn't fully captured from the docs, I will:
+1. Call the API with `curl_edge_functions` to inspect the actual response shape
+2. Map fields correctly (lat, lng, speed, heading, ignition, timestamp, road/street)
+3. Adjust unit conversions if needed (the v2 API may return km/h directly vs mph)
+
+### Step 4: Clean Up (Optional)
+
+- The `radius_session_cache` table can be deprecated (no longer needed with static API keys)
+- `RADIUS_REFRESH_TOKEN` secret becomes unused with the new auth method
+
+---
+
+### Technical Details
+
+**Authentication change:**
+```
+// Before (Velocity Fleet - complex)
+POST velocityfleet.com/vapi/v1/accounts/users/oauth2/refresh/
+Headers: API-Token, Content-Type
+Body: { refresh, token }
+
+// After (Key Telematics v2 - simple)
+GET api.uk1.kt1.io/fleet/v2/entities/assets?owner={ownerId}
+Headers: x-api-key: {KT_API_KEY}
+```
+
+**Rate limits to respect:**
+- GET/List: 10 requests/second
+- Auth: 5 requests/hour (not relevant with API keys)
+
+**Files changed:**
 | Action | File |
 |--------|------|
-| Create | `src/components/layout/PortalShell.tsx` |
-| Create | `src/components/layout/MobilePortalNav.tsx` |
-| Create | `src/context/SchoolAuthContext.tsx` |
-| Create | `src/components/auth/ProtectedSchoolRoute.tsx` |
-| Create | `src/components/school/SchoolLayout.tsx` |
-| Create | `src/routes/schoolRoutes.tsx` |
-| Create | `src/routes/parentRoutes.tsx` |
-| Create | `src/components/layout/ParentLayout.tsx` |
-| Create | `src/components/auth/RoleRedirect.tsx` |
-| Modify | `src/App.tsx` |
-| Modify | `src/routes/publicRoutes.tsx` |
-| Modify | `src/routes/instructorPortalRoutes.tsx` |
-| Modify | `src/components/admin/AdminLayout.tsx` |
-| Modify | `src/components/parent/ParentBottomNav.tsx` |
-| Modify | `src/components/instructor/EveryInstructorBottomNav.tsx` |
-| Modify | `src/components/layout/MobileBottomNav.tsx` |
-| Migration | Add `school_manager` to `app_role` enum |
+| Modify | `supabase/functions/radius-poller/index.ts` |
+| Secret | `KT_API_KEY` (new) |
 
