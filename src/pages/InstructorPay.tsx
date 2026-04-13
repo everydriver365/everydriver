@@ -127,8 +127,40 @@ export default function InstructorPay() {
   const thisWeek = earnings?.thisWeek || 0;
   const lastMonth = earnings?.lastMonth || 0;
 
-  const debtors = pupils.filter((p) => (p.account_balance || 0) < 0);
+  const debtors = pupils.filter((p) => (p.account_balance || 0) < 0).sort((a, b) => (a.account_balance || 0) - (b.account_balance || 0));
   const totalOwed = debtors.reduce((sum, p) => sum + Math.abs(p.account_balance || 0), 0);
+
+  const getInitials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  const handleChase = async (pupil: Pupil, method: "sms" | "email") => {
+    const key = `${pupil.id}-${method}`;
+    setChasing(key);
+    try {
+      const amount = Math.abs(pupil.account_balance || 0).toFixed(2);
+      const paymentLinkLine = resolvedQrUrl ? `\n\nPay now: ${resolvedQrUrl}` : "";
+      if (method === "sms") {
+        if (!pupil.phone) { toast.error("No phone number on file"); return; }
+        await supabase.functions.invoke("send-sms", {
+          body: { to: pupil.phone, message: `Hi ${pupil.name.split(" ")[0]}, friendly reminder from ${instructorName} — you have an outstanding balance of £${amount}.${paymentLinkLine} Thank you!` },
+        });
+        toast.success(`SMS reminder sent to ${pupil.name}`);
+      } else {
+        if (!pupil.email) { toast.error("No email on file"); return; }
+        const paymentLinkHtml = resolvedQrUrl ? `<p><a href="${resolvedQrUrl}" style="display:inline-block;padding:12px 24px;background-color:#10b981;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">Pay £${amount} Now</a></p>` : "";
+        await supabase.functions.invoke("send-email", {
+          body: { to: pupil.email, subject: `Payment Reminder — £${amount} outstanding`, html: `<p>Hi ${pupil.name.split(" ")[0]},</p><p>Friendly reminder: you have an outstanding balance of <strong>£${amount}</strong> with ${instructorName}.</p>${paymentLinkHtml}<p>Thank you!</p>` },
+        });
+        toast.success(`Email reminder sent to ${pupil.name}`);
+      }
+      await supabase.from("followup_log").insert({ instructor_id: instructorId, pupil_id: pupil.id, channel: method, trigger_type: "manual_chase", message_content: `Payment reminder for £${amount}` });
+    } catch (e) {
+      console.error("Chase error:", e);
+      toast.error("Failed to send reminder");
+    } finally {
+      setChasing(null);
+    }
+  };
 
   const actions: QuickAction[] = [
     {
