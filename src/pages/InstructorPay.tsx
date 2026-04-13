@@ -11,6 +11,8 @@ import {
   Users,
   ArrowUpRight,
   ChevronRight,
+  AlertCircle,
+  Trophy,
 } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
