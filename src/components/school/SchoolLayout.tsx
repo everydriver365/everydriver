@@ -30,6 +30,7 @@ import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/lay
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
 import SchoolTakeBookingModal from "./SchoolTakeBookingModal";
 import SchoolTakePaymentModal from "./SchoolTakePaymentModal";
+import SchoolNotificationBell from "./SchoolNotificationBell";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
@@ -139,6 +140,8 @@ interface SchoolLayoutProps {
   onLogout: () => void;
   instructorIds?: string[];
   enabledFeatures?: Record<string, boolean> | null;
+  schoolId?: string;
+  notificationPreferences?: Record<string, boolean> | null;
 }
 
 export function SchoolLayout({
@@ -148,6 +151,8 @@ export function SchoolLayout({
   onLogout,
   instructorIds = [],
   enabledFeatures,
+  schoolId,
+  notificationPreferences,
 }: SchoolLayoutProps) {
   const meta = sectionMeta[activeSection] ?? { title: activeSection, group: "Overview" };
 
@@ -195,6 +200,7 @@ export function SchoolLayout({
         logoSrc={driveHiveLogo}
         logoAlt="Drive Hive"
         quickActions={quickActions}
+        headerExtra={<SchoolNotificationBell schoolId={schoolId} notificationPreferences={notificationPreferences} />}
       >
         {children}
       </PortalShell>
