@@ -31,8 +31,8 @@ const SpeedLimitRoundel: React.FC<SpeedLimitRoundelProps> = ({
 
   if (speedLimitMph === null) {
     return (
-      <div className={`${sizeClasses[size]} rounded-full border-muted-foreground/30 bg-muted/50 flex items-center justify-center animate-pulse ${className}`}>
-        <span className="text-muted-foreground font-bold">--</span>
+      <div className={`${sizeClasses[size]} rounded-full border-red-600 bg-white flex items-center justify-center shadow-lg ${className}`}>
+        <span className="font-bold text-gray-900">--</span>
       </div>
     );
   }
