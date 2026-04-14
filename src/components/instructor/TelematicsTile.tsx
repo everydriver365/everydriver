@@ -45,12 +45,11 @@ export function TelematicsTile() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden"
-        className="bg-card dark:bg-[#1C1C1E]"
+        className="overflow-hidden bg-card dark:bg-[#1C1C1E]"
         style={{
           borderRadius: 16,
           boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
-        }
+        }}
       >
         {/* Main row — always visible */}
         <button
