@@ -807,37 +807,6 @@ export default function InstructorLiveSession() {
     return (
       <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
-          {/* Stale data banner with reconnect option */}
-          {!isConnected && (
-            <div className="absolute top-4 left-4 right-4 z-30">
-              <div 
-                className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={manualReconnect}
-              >
-                <div className="flex items-start gap-2">
-                  {isReconnecting ? (
-                    <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
-                  ) : (
-                    <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isReconnecting 
-                        ? `Attempt ${retryCount + 1}. Tap to retry now.`
-                        : `Last update ${lastSeenLabel}. Tap to reconnect.`
-                      }
-                    </p>
-                  </div>
-                  {!isReconnecting && (
-                    <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Live Map — self-contained, fetches its own device data */}
           <LiveTrackingMap className="absolute inset-0" deviceId={device?.id} />
