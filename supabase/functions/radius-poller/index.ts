@@ -114,12 +114,21 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         speedLimitKmh = spd.un === 1 ? Math.round(spd.rd * 1.60934) : spd.rd;
       }
 
-      // Parse date
+      // Parse date — handle multiple formats safely
       let timestamp: string | null = null;
       if (item.date) {
-        // V1: "YYYY/MM/dd HH:mm:ss" → ISO
-        const d = item.date.replace(/\//g, "-").replace(" ", "T") + "Z";
-        timestamp = new Date(d).toISOString();
+        try {
+          // V1: "YYYY/MM/dd HH:mm:ss" → ISO
+          const d = String(item.date).replace(/\//g, "-").replace(" ", "T");
+          const parsed = new Date(d.endsWith("Z") ? d : d + "Z");
+          if (!isNaN(parsed.getTime())) {
+            timestamp = parsed.toISOString();
+          } else {
+            console.warn("[RadiusPoller] Unparseable date:", item.date);
+          }
+        } catch {
+          console.warn("[RadiusPoller] Date parse error:", item.date);
+        }
       }
 
       return {
@@ -145,20 +154,18 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
 
 async function deleteExportBatch(exportEndpoint: string, exportApiKey: string, batchId: string): Promise<void> {
   try {
-    const url = `${exportEndpoint}/${batchId}`;
+    const url = `${exportEndpoint}/${batchId}?token=${exportApiKey}`;
     console.log("[RadiusPoller] Deleting export batch:", batchId);
     const res = await fetch(url, {
       method: "DELETE",
       headers: { "x-access-token": exportApiKey },
     });
+    const body = await res.text().catch(() => "");
     if (!res.ok) {
-      const t = await res.text();
-      console.warn("[RadiusPoller] Export DELETE failed:", res.status, t);
+      console.warn("[RadiusPoller] Export DELETE failed:", res.status, body);
     } else {
       console.log("[RadiusPoller] Export batch deleted successfully");
     }
-    // Consume response body
-    await res.text().catch(() => {});
   } catch (e) {
     console.warn("[RadiusPoller] Export DELETE error:", e.message);
   }
