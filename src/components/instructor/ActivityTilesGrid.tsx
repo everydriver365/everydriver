@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Briefcase, MessageSquare, FileText, CalendarPlus, HelpCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Briefcase, ChatCircle, Exam, CalendarPlus, Question } from "phosphor-react";
 
 interface ActivityTile {
   title: string;
