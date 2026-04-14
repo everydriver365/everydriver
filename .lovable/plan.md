@@ -1,39 +1,41 @@
 
 
-## Show Preferred Tracker Data on Home Page and Track Page
+## Why Backgrounds Haven't Changed
 
-### Problem
+The CSS variable `--background` was updated to `#F4F7F6`, but that change is invisible because:
 
-The `TelematicsTile` on the instructor home page always picks `devices?.[0]` — the first device returned by the query — regardless of which tracker the instructor has selected as their preferred device. The same issue exists with `useVehicleHealth` which doesn't consider the `preferred_tracking_provider` setting stored on the `instructors` table.
+1. **Background image override**: `InstructorPortalLayout.tsx` (the main mobile layout) applies a full-page background image (`instructor-bg-signs.png`) via inline styles, which completely covers the CSS background color.
+
+2. **Hardcoded `bg-white`**: Many instructor components use hardcoded `bg-white` or `backgroundColor: "#FFFFFF"` instead of `bg-background`. For example:
+   - `InstructorMenu.tsx` line 178: search input uses `bg-white`
+   - `InstructorMenu.tsx` line 209: grouped cards use `bg-white`
+   - `TelematicsTile.tsx`: uses `backgroundColor: "#FFFFFF"`
+   - `ActivityTilesGrid.tsx`: uses `backgroundColor: "#FFFFFF"`
+   - `NextLessonCard.tsx`: uses `bg-white`
+   - `EveryInstructorLayout.tsx` header: uses `bg-white/95`
 
 ### Fix
 
-**1. Update `useVehicleHealth` hook** (`src/hooks/useVehicleHealth.ts`)
-- Fetch the instructor's `preferred_tracking_provider` alongside the devices query
-- Sort/filter the returned devices array so the preferred provider's device comes first
-- Export a `preferredDevice` convenience field from the hook so consumers can use it directly
+1. **`InstructorPortalLayout.tsx`** — Change the mobile background from the image to `#F4F7F6`:
+   - Replace the `backgroundImage` inline style with `backgroundColor: "#F4F7F6"` (or remove the inline style entirely so `bg-background` takes effect)
 
-**2. Update `TelematicsTile`** (`src/components/instructor/TelematicsTile.tsx`)
-- Instead of `devices?.[0]`, use the `preferredDevice` from the hook (or the first device matching the preferred provider)
-- This ensures the home page tile shows data from the tracker the instructor selected in settings
+2. **Bulk replace `bg-white` → `bg-card`** across instructor page components where it represents a page/section background (not decorative elements like pills or badges):
+   - `InstructorMenu.tsx` — search input and grouped cards
+   - `EveryInstructorLayout.tsx` — header
+   - `ContextualHomeHero.tsx`, `NextLessonCard.tsx`, `TelematicsTile.tsx`, `ActivityTilesGrid.tsx`, `BestMateHomeView.tsx` — tile/card backgrounds
 
-**3. Update `LiveTelemetryTab`** (`src/components/instructor/vehicle-health/LiveTelemetryTab.tsx`)
-- Default `selectedDeviceId` to the preferred device rather than `devices[0]`
+3. **Leave `bg-white` alone** where it's used for contrast elements inside dark containers (nav pills, badges, overlays on dark backgrounds).
+
+This is a sweeping change across ~15+ files. The key fix is step 1 (the layout background image), which alone will make the page background `#F4F7F6`. Steps 2-3 ensure cards/tiles also respect the theme rather than being hardcoded white.
 
 ### Files Changed
-
-- `src/hooks/useVehicleHealth.ts` — fetch `preferred_tracking_provider`, sort devices so preferred comes first, export `preferredDevice`
-- `src/components/instructor/TelematicsTile.tsx` — use `preferredDevice` instead of `devices?.[0]`
-- `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — default selection to preferred device
-
-### Technical Details
-
-In `useVehicleHealth`, after fetching devices, also fetch:
-```sql
-SELECT preferred_tracking_provider FROM instructors WHERE id = ?
-```
-
-Then sort the active devices array so devices matching the preferred provider appear first. Export both the sorted `devices` array and a `preferredDevice` (first device matching preferred provider, falling back to first device overall).
-
-No database changes needed — the `preferred_tracking_provider` column and device selection logic already exist.
+- `src/components/layout/InstructorPortalLayout.tsx` — remove background image, use `#F4F7F6`
+- `src/pages/InstructorMenu.tsx` — replace `bg-white` with `bg-card`
+- `src/components/layout/EveryInstructorLayout.tsx` — header `bg-white/95` → `bg-background/95`
+- `src/components/instructor/TelematicsTile.tsx` — `#FFFFFF` → theme-aware
+- `src/components/instructor/ActivityTilesGrid.tsx` — `#FFFFFF` → theme-aware
+- `src/components/instructor/BestMateHomeView.tsx` — `#FFFFFF` → theme-aware
+- `src/components/instructor/NextLessonCard.tsx` — `bg-white` → `bg-card`
+- `src/components/instructor/ContextualHomeHero.tsx` — if hardcoded white
+- Additional instructor page files with `bg-white` page backgrounds
 
