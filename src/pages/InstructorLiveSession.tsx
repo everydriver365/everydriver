@@ -93,6 +93,7 @@ export default function InstructorLiveSession() {
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
@@ -154,20 +155,18 @@ export default function InstructorLiveSession() {
       const preference = (prefRes.data?.preferred_tracking_provider as string) || null;
       
       if (devices && devices.length > 0) {
-        // Respect instructor's preferred provider, fall back to priority order
-        const priorityOrder = ["geotab", "radius"];
-        let chosen = devices[0];
-        if (preference) {
-          const preferred = devices.find(d => d.tracking_provider === preference);
-          if (preferred) chosen = preferred;
-        } else {
-          const sorted = [...devices].sort((a, b) => {
-            const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
-            const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
-            return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
-          });
-          chosen = sorted[0];
-        }
+        // Determine active provider
+        const providers = [...new Set(devices.map(d => d.tracking_provider).filter(Boolean))];
+        const effectiveProvider = preference && providers.includes(preference) ? preference : providers[0] || null;
+        setActiveProvider(effectiveProvider);
+
+        // Filter devices to the active provider
+        const providerDevices = effectiveProvider
+          ? devices.filter(d => d.tracking_provider === effectiveProvider)
+          : devices;
+
+        // Pick the best device from filtered set
+        const chosen = providerDevices[0] || devices[0];
         setDevice(chosen as GPSDevice);
         
         // If session is active, restore timer and distance, and enter fullscreen
