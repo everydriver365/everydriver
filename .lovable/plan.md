@@ -1,34 +1,35 @@
 
 
-## Plan: Fix Export Stream Authentication
+## Diagnosis: Why Charlotte's Tracker is Delayed and Missing from Recent Trips
 
-### Problem
-The `radius-poller` sends the API key via `x-access-token` header, but the KT Export Stream API expects authentication via a **query parameter** (`?token=<key>`). Your Postman test confirms the endpoint and key are valid — only the auth method differs.
+### Root Causes Found
 
-### Fix (one-line change)
+**1. No scheduled polling** — The `radius-poller` has no cron job. It only runs when manually invoked. The Geotab poller runs every 5 seconds via cron, but Radius has nothing. This is why data is always delayed.
 
-**File**: `supabase/functions/radius-poller/index.ts`
+**2. GPS points lost because session started after poller ran** — The poller ran at 11:44-11:46 and consumed export queue items from 11:09-11:36. But the current session (`6040cefa`) was created at 11:47:03. So all those GPS points were written to `gps_devices` but NOT to `telematics_gps_points` because `current_session_id` wasn't set yet. The export queue is destructive — once consumed, those points are gone.
 
-Update `fetchFromExportStream()` (line 46) to append the token as a query parameter:
+**3. Recent Trips shows nothing useful** — The `RecentSessionsList` filters for `ended_at IS NOT NULL`. Previous sessions for this instructor either have 0 km distance or wildly wrong values (17,884 km). The current active session has 0 GPS points and 0 distance.
 
-```typescript
-const url = `${exportEndpoint}?token=${exportApiKey}`;
-const res = await fetch(url, {
-  method: "GET",
-  headers: {
-    "x-access-token": exportApiKey,   // keep as fallback
-    "Accept": "application/json",
-  },
-});
-```
+**4. "Offline" status** — The tracking page shows offline because `last_seen_at` is 11:36 (10+ mins ago), and the `useInstructorLastPosition` hook considers anything older than 60 seconds as inactive.
 
-### Steps
-1. Update the fetch URL to include `?token=` query parameter
-2. Re-deploy `radius-poller`
-3. Invoke the poller and verify it returns telemetry data for "Charlotte"
+### Plan (4 changes)
 
-### What stays the same
-- All secrets remain unchanged
-- DELETE acknowledgement logic stays as-is
-- Fallback methods (KT v2, Legacy) remain in place
+**Step 1: Add cron schedule for radius-poller**
+Create a `pg_cron` job to invoke `radius-poller` every 30 seconds (matching the export stream's delivery rate). This ensures data flows continuously without manual invocation.
+
+**Step 2: Auto-create session on first telemetry if ignition is on**
+In the radius-poller, when a device has no `current_session_id` but ignition is ON and we receive valid GPS data — automatically create a `lesson_telematics` session and set `current_session_id` on the device. This prevents the "session created too late" problem.
+
+**Step 3: Auto-end session when ignition turns off**
+When the poller sees ignition OFF and there IS an active session, automatically set `ended_at` on the session and clear `current_session_id`. This ensures sessions appear in Recent Trips.
+
+**Step 4: Fix distance calculation**
+The current speed-based distance estimate (`speedKmh * 10 / 3600`) assumes 10-second intervals but the export stream delivers at ~2-3 minute intervals. This produced the 17,884 km values. Fix by calculating actual time delta between the current and previous GPS point.
+
+### Technical Details
+
+- The cron job will be created via a database migration using `pg_cron` and `pg_net` to call the edge function URL
+- Session auto-creation will insert into `lesson_telematics` with `instructor_id` from the device, `pupil_id` from `current_pupil_id` (if set), and `started_at = now()`
+- Session auto-end will update `ended_at` and trigger the existing `auto_log_mileage` trigger
+- Distance fix: store `recorded_at` of previous point and calculate `(speed * timeDeltaHours)` instead of assuming 10s
 
