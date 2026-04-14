@@ -25,6 +25,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
+import { ProviderSelectorTile } from "@/components/instructor/tracking/ProviderSelectorTile";
 
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
@@ -92,6 +93,7 @@ export default function InstructorLiveSession() {
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
@@ -153,20 +155,18 @@ export default function InstructorLiveSession() {
       const preference = (prefRes.data?.preferred_tracking_provider as string) || null;
       
       if (devices && devices.length > 0) {
-        // Respect instructor's preferred provider, fall back to priority order
-        const priorityOrder = ["geotab", "radius"];
-        let chosen = devices[0];
-        if (preference) {
-          const preferred = devices.find(d => d.tracking_provider === preference);
-          if (preferred) chosen = preferred;
-        } else {
-          const sorted = [...devices].sort((a, b) => {
-            const aIdx = priorityOrder.indexOf(a.tracking_provider || "");
-            const bIdx = priorityOrder.indexOf(b.tracking_provider || "");
-            return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
-          });
-          chosen = sorted[0];
-        }
+        // Determine active provider
+        const providers = [...new Set(devices.map(d => d.tracking_provider).filter(Boolean))];
+        const effectiveProvider = preference && providers.includes(preference) ? preference : providers[0] || null;
+        setActiveProvider(effectiveProvider);
+
+        // Filter devices to the active provider
+        const providerDevices = effectiveProvider
+          ? devices.filter(d => d.tracking_provider === effectiveProvider)
+          : devices;
+
+        // Pick the best device from filtered set
+        const chosen = providerDevices[0] || devices[0];
         setDevice(chosen as GPSDevice);
         
         // If session is active, restore timer and distance, and enter fullscreen
@@ -909,6 +909,33 @@ export default function InstructorLiveSession() {
        <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
+           {/* Provider Selector (Geotab / Radius toggle) */}
+           {instructor?.id && (
+             <ProviderSelectorTile
+               instructorId={instructor.id}
+               currentProvider={activeProvider}
+               onProviderChange={(provider) => {
+                 setActiveProvider(provider);
+                 // Re-fetch to get the best device for this provider
+                 (async () => {
+                   const { data } = await supabase
+                     .from("gps_devices")
+                     .select("*")
+                     .eq("instructor_id", instructor.id)
+                     .eq("is_active", true)
+                     .eq("tracking_provider", provider)
+                     .order("last_seen_at", { ascending: false, nullsFirst: false })
+                     .limit(1);
+                   if (data && data[0]) {
+                     deviceIdRef.current = null;
+                     lastSeenRef.current = null;
+                     setDevice(data[0] as GPSDevice);
+                   }
+                 })();
+               }}
+             />
+           )}
+
            {/* Tracker Selector Tile */}
            {instructor?.id && (
              <TrackerSelectorTile

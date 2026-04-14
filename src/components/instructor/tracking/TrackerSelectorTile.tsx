@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useActiveTrackingProvider } from "@/hooks/useActiveTrackingProvider";
+import type { TrackingProvider } from "@/hooks/useActiveTrackingProvider";
 
 interface TrackerDevice {
   id: string;
