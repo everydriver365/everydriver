@@ -24,8 +24,7 @@ import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
-import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
-import { ProviderSelectorTile } from "@/components/instructor/tracking/ProviderSelectorTile";
+import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
@@ -911,57 +910,37 @@ export default function InstructorLiveSession() {
        <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
-           {/* Provider Selector (Geotab / Radius toggle) */}
-           {instructor?.id && (
-             <ProviderSelectorTile
-               instructorId={instructor.id}
-               currentProvider={activeProvider}
-               onProviderChange={(provider) => {
-                 setActiveProvider(provider);
-                 // Re-fetch to get the best device for this provider
-                 (async () => {
-                   const { data } = await supabase
-                     .from("gps_devices")
-                     .select("*")
-                     .eq("instructor_id", instructor.id)
-                     .eq("is_active", true)
-                     .eq("tracking_provider", provider)
-                     .order("last_seen_at", { ascending: false, nullsFirst: false })
-                     .limit(1);
-                   if (data && data[0]) {
-                     deviceIdRef.current = null;
-                     lastSeenRef.current = null;
-                     setDevice(data[0] as GPSDevice);
-                   }
-                 })();
-               }}
-             />
-           )}
-
-           {/* Tracker Selector Tile */}
-           {instructor?.id && (
-             <TrackerSelectorTile
-               instructorId={instructor.id}
-               currentDeviceId={device.id}
-               currentDeviceName={device.device_name}
-               onDeviceChange={(newDevice) => {
-                 setDevice(prev => prev ? { ...prev, ...newDevice } as typeof prev : prev);
-                 // Re-fetch full device data
-                 supabase
-                   .from("gps_devices")
-                   .select("*")
-                   .eq("id", newDevice.id)
-                   .single()
-                   .then(({ data }) => {
-                     if (data) {
-                       deviceIdRef.current = null;
-                       lastSeenRef.current = null;
-                       setDevice(data as GPSDevice);
-                     }
-                   });
-               }}
-             />
-           )}
+            {/* Device Selector Dropdown (all providers) */}
+            {instructor?.id && (
+              <DeviceSelectorDropdown
+                instructorId={instructor.id}
+                currentDeviceId={device.id}
+                onDeviceChange={(deviceId, provider) => {
+                  setActiveProvider(provider);
+                  // Re-fetch full device data
+                  supabase
+                    .from("gps_devices")
+                    .select("*")
+                    .eq("id", deviceId)
+                    .single()
+                    .then(({ data }) => {
+                      if (data) {
+                        deviceIdRef.current = null;
+                        lastSeenRef.current = null;
+                        setDevice(data as GPSDevice);
+                      }
+                    });
+                  // Persist provider preference
+                  if (provider) {
+                    supabase
+                      .from("instructors")
+                      .update({ preferred_tracking_provider: provider })
+                      .eq("id", instructor.id)
+                      .then(() => {});
+                  }
+                }}
+              />
+            )}
 
 
            {/* GPS Status Hero Card */}
