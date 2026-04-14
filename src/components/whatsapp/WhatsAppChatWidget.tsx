@@ -104,6 +104,37 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [courseTypePref, setCourseTypePref] = useState<CourseType>(null);
   const [transmissionPref, setTransmissionPref] = useState<TransmissionPref>(null);
   const [genderPref, setGenderPref] = useState<GenderPref>(null);
+  // Proactive bubble: show after 10s if no active session
+  useEffect(() => {
+    const dismissKey = `proactive_chat_dismissed_${instructorId || "admin"}`;
+    if (localStorage.getItem(dismissKey)) return;
+    const timer = setTimeout(() => {
+      if (!isOpen && !isMinimized && !conversationId) {
+        setShowProactiveBubble(true);
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [instructorId, isOpen, isMinimized, conversationId]);
+
+  // Auto-dismiss proactive bubble after 8s
+  useEffect(() => {
+    if (!showProactiveBubble) return;
+    const timer = setTimeout(() => {
+      setShowProactiveBubble(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [showProactiveBubble]);
+
+  // Hide proactive bubble when chat opens
+  useEffect(() => {
+    if (isOpen) setShowProactiveBubble(false);
+  }, [isOpen]);
+
+  const dismissProactiveBubble = () => {
+    setShowProactiveBubble(false);
+    localStorage.setItem(`proactive_chat_dismissed_${instructorId || "admin"}`, "1");
+  };
+
   useEffect(() => {
     const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
     const stored = localStorage.getItem(key);
