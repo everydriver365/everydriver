@@ -1,50 +1,23 @@
-<final-text>## Fix speed limits not appearing on live tracking
 
-### What I found
-- The live tracking UI already supports speed limits:
-  - the fullscreen map roundel reads `gps_devices.last_speed_limit_kmh`
-  - the hero card also shows a limit when that value exists
-- The issue is the data pipeline, not the display:
-  - active device rows currently have `last_speed_limit_kmh = null`
-  - recent GPS points for the active session also have `speed_limit_kmh = null`
-  - recent Radius logs show incoming telemetry with `speed_limit_kmh: null`
-  - Geotab logs are also returning `0 speed limits`
-- There is also a direct bug in the Radius backend: it parses a speed limit value, but does not write it back to `gps_devices`, so the fullscreen map would still miss it even when Radius does provide one.
 
-### Plan
-1. Add a shared backend speed-limit lookup helper
-   - Create a shared helper for backend functions that:
-     - checks the existing `speed_limit_cache` table first
-     - falls back to a road-speed lookup source (best fit: OpenStreetMap/Overpass)
-     - normalizes the result into km/h
-     - stores the resolved value back in `speed_limit_cache`
+## Fix delay in drawing the blue route trail
 
-2. Fix Radius device updates
-   - Update `radius-poller` so the resolved speed limit (provider value first, fallback second) is written to:
-     - `gps_devices.last_speed_limit_kmh`
-     - `telematics_gps_points.speed_limit_kmh`
-     - `live_pupil_positions.speed_limit_kmh`
+### Root cause
+There are two layers of delay in the current trail-drawing pipeline:
 
-3. Add the same fallback to Geotab
-   - Update `geotab-poller` so when Geotab returns no speed-limit result, it uses the same shared lookup helper before saving telemetry.
-   - Keep tracker-provided values as the first choice when available.
+1. **Snap debounce (1500ms)**: When a new GPS point arrives via realtime, `scheduleSnap()` sets a 1500ms timeout before calling `redrawPolyline()`.
+2. **Snap-to-road API call**: `redrawPolyline()` calls the `snap-to-road` edge function (Google Roads API), adding another ~500-1500ms of network latency.
 
-4. Keep the UI mostly unchanged
-   - The current map and hero components should start showing limits automatically once the backend writes real values.
-   - Only add a tiny UI fallback if testing shows the fullscreen map still lags behind the latest enriched telemetry.
+Combined, this means the main blue polyline can lag **2-3 seconds** behind the actual vehicle position. The thin "tail" polyline does append points immediately (line 331-341), but only when the device position changes — and it gets cleared every time the snap finishes, creating visual gaps.
 
-### Files to update
-- `supabase/functions/radius-poller/index.ts`
-- `supabase/functions/geotab-poller/index.ts`
-- new shared helper in `supabase/functions/_shared/`
-- possibly `src/components/instructor/GoogleLiveTrackingMap.tsx` only if a small fallback is needed after testing
+### Fix
+Show raw GPS points on the main polyline **immediately**, then upgrade to snapped geometry in the background:
 
-### Technical notes
-- No schema change is needed; the needed columns and `speed_limit_cache` table already exist.
-- No auth or RLS change is needed; this is not a permissions problem.
-- There is already a client-side cache utility in `src/lib/speedLimitCache.ts`, but this page reads live device data from the backend, so the real fix belongs in the backend pollers.
+1. **Immediate raw draw**: When new points arrive (in `scheduleSnap`), instantly update the main polyline with the raw (unsnapped) path so the line visually extends without delay.
+2. **Background snap upgrade**: Keep the 1500ms debounce for the snap-to-road call, but now it just *refines* an already-visible line rather than being the first time the line appears.
+3. **Reduce snap debounce**: Lower from 1500ms to 800ms so snapped geometry arrives sooner.
+4. **Keep tail polyline**: Continue appending to the tail for the segment between the last snap and the current position.
 
-### Validation
-- Confirm active device rows start receiving non-null `last_speed_limit_kmh`
-- Confirm new session GPS points store non-null `speed_limit_kmh`
-- Confirm the fullscreen tracking map and hero card show the same speed limit during a live update</final-text>
+### File changed
+- `src/components/instructor/GoogleLiveTrackingMap.tsx` — Update `scheduleSnap` to immediately draw raw points on the main polyline, reduce debounce to 800ms, and refine `redrawPolyline` to act as a background upgrade.
+
