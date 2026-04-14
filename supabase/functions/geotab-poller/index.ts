@@ -549,8 +549,15 @@ Deno.serve(async (req) => {
         roadName = await reverseGeocode(status.latitude, status.longitude);
       }
 
-      // Speed limit from batched result
-      const speedLimitKmh = speedLimitMap.get(geotabInternalId) ?? null;
+      // Speed limit: batched result first, then fallback via shared helper
+      let speedLimitKmh = speedLimitMap.get(geotabInternalId) ?? null;
+      if (status.latitude && status.longitude) {
+        try {
+          speedLimitKmh = await resolveSpeedLimit(supabase, status.latitude, status.longitude, speedLimitKmh);
+        } catch (e) {
+          console.warn("[GeotabPoller] Speed limit lookup error:", (e as Error).message);
+        }
+      }
 
       // Use device-reported time, not server time
       const geotabSeenAt = status.dateTime || null;
@@ -744,6 +751,7 @@ Deno.serve(async (req) => {
           longitude: status.longitude,
           speed_kmh: status.speed,
           heading: status.bearing,
+          speed_limit_kmh: speedLimitKmh,
           updated_at: new Date().toISOString(),
         })
         .eq("device_id", device.id)
