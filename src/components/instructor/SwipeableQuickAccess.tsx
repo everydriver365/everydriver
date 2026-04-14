@@ -165,17 +165,21 @@ export function SwipeableQuickAccess() {
                       whileTap={{ scale: locked ? 1 : 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={handleClick}
-                      className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+                      className="relative text-left flex flex-col justify-between"
                       style={{
+                        height: 110,
+                        padding: 20,
                         backgroundColor: "#FFFFFF",
-                        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+                        borderRadius: 22,
+                        border: "1px solid #DAE4E1",
+                        boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
                         opacity: locked ? 0.5 : 1,
                       }}
                     >
                       {/* Lock overlay */}
                       {locked && (
-                        <div className="absolute top-2.5 right-2.5 z-10">
-                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <div className="absolute top-3 right-3 z-10">
+                          <Lock className="h-3.5 w-3.5" style={{ color: "#6A7A78" }} />
                         </div>
                       )}
                       {/* Green plus button */}
@@ -185,25 +189,26 @@ export function SwipeableQuickAccess() {
                             e.stopPropagation();
                             setQuickActionsMenuOpen(true);
                           }}
-                          className="absolute bottom-2.5 left-2.5 w-5 h-5 rounded-full bg-emerald-300/40 flex items-center justify-center active:scale-90 transition-transform z-10"
+                          className="absolute bottom-2.5 left-2.5 w-5 h-5 rounded-full flex items-center justify-center active:scale-90 transition-transform z-10"
+                          style={{ backgroundColor: "rgba(15, 118, 110, 0.12)" }}
                         >
-                          <Plus className="h-3 w-3 text-emerald-700/50" strokeWidth={2} />
+                          <Plus className="h-3 w-3" style={{ color: "#0F766E" }} strokeWidth={2} />
                         </div>
                       )}
                       <div>
-                        <p className="text-[16px] font-bold leading-tight text-foreground">
+                        <p className="text-[16px] font-bold leading-tight" style={{ color: "#12263A" }}>
                           {tile.title}
                         </p>
-                        <p className="text-[13px] mt-0.5 text-muted-foreground">
+                        <p className="text-[13px] mt-0.5" style={{ color: "#6A7A78" }}>
                           {tile.subtitle}
                         </p>
                       </div>
                       <div className="self-end">
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(15, 118, 110, 0.08)" }}>
                           {tile.customIcon ? (
-                            <img src={tile.customIcon} alt={tile.title} className="w-7 h-7 object-contain" />
+                            <img src={tile.customIcon} alt={tile.title} className="w-6 h-6 object-contain" />
                           ) : (
-                            <Icon size={24} strokeWidth={1.6} style={{ color: tile.accent }} />
+                            <Icon size={22} strokeWidth={1.6} style={{ color: "#0F766E" }} />
                           )}
                         </div>
                       </div>
@@ -221,11 +226,12 @@ export function SwipeableQuickAccess() {
         {pages.map((_, idx) => (
           <div
             key={idx}
-            className={`transition-all duration-300 ease-in-out ${idx === selectedIndex ? "bg-primary" : "bg-muted-foreground/30"}`}
+            className="transition-all duration-300 ease-in-out"
             style={{
-              width: idx === selectedIndex ? 20 : 7,
-              height: 7,
-              borderRadius: 3.5,
+              width: idx === selectedIndex ? 18 : 6,
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: idx === selectedIndex ? "#0F766E" : "#DAE4E1",
             }}
           />
         ))}
