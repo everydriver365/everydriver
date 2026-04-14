@@ -136,8 +136,8 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         }
       }
 
-      // V2: origin.id is device serial/IMEI; V1: originId flat field
-      const posId = String(origin.id || item.originId || item.imei || item.serialNumber || asset.id || item.assetId || "");
+      // V2: origin.name is the IMEI; origin.id is KT device UUID
+      const posId = String(origin.name || origin.id || item.originId || item.imei || asset.id || item.assetId || "");
       const assetName = asset.name || item.assetName || null;
 
       return {
