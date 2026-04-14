@@ -528,7 +528,7 @@ export function InstructorMobileHome({
         ) : (
           <>
             {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Your Day</p>
             )}
 
             {nextLesson && (
@@ -570,7 +570,7 @@ export function InstructorMobileHome({
         )}
 
         {/* 7. Quick Access — Swipeable Grid */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Quick Access</p>
         <div className="pb-4">
           <SwipeableQuickAccess />
         </div>
@@ -584,7 +584,7 @@ export function InstructorMobileHome({
         </div>
 
         {/* Insights Tiles */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         {/* Vehicle Health & Idle Time */}
