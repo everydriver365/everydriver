@@ -632,6 +632,7 @@ Deno.serve(async (req) => {
             start_time: event.start,
             end_time: event.end,
             is_busy: true,
+            color: event.color,
             synced_at: new Date().toISOString(),
           }));
 
