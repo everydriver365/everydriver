@@ -259,7 +259,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
     try {
       const { data, error } = await supabase
         .from('pupils')
-        .select('id, name, phone, postcode, status, experience_level')
+        .select('id, name, phone, postcode, status, previous_experience')
         .eq('instructor_id', instructorId)
         .eq('status', 'active');
 
