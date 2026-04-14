@@ -469,17 +469,23 @@ export function InstructorMobileHome({
       <TelematicsTile />
 
       {/* View Schedule Tile */}
-      <div className="px-4 mt-3">
+      <div className="px-5 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 transition-shadow"
-          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+          className="w-full flex items-center justify-between transition-shadow"
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 22,
+            padding: "14px 16px",
+            border: "1px solid #DAE4E1",
+            boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
+          }}
         >
           <div className="flex items-center gap-3">
             <img src={calendarIcon} alt="Schedule" className="w-8 h-8" />
-            <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
+            <span className="text-[15px] font-semibold" style={{ color: "#12263A" }}>View Schedule</span>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4" style={{ color: "#6A7A78" }} />
         </button>
       </div>
 
