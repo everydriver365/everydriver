@@ -426,7 +426,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <div className="text-primary-foreground relative overflow-hidden bg-primary">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
-                   {/* Left: Back button + Hamburger + Title */}
+                   {/* Left: Back button + Logo + Notification */}
                   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     {showBackButton && (
                       <button
@@ -436,110 +436,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <ChevronLeft className="h-5 w-5" />
                       </button>
                     )}
-                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                      <SheetTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
-                        >
-                          <Menu className="h-5 w-5" />
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent side="left" className="w-[280px] p-0">
-                        <SheetHeader className="p-4 border-b">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={instructor?.profile_image_url || undefined} />
-                              <AvatarFallback className="bg-primary text-primary-foreground">
-                                {instructor?.name?.charAt(0) || "I"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                              <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-                            </div>
-                          </div>
-                        </SheetHeader>
-
-                        {/* Navigation Links */}
-                        <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                          {/* Search & Voice in sidebar */}
-                          <button
-                            onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                          >
-                            <Search className="h-5 w-5" />
-                            Search
-                          </button>
-                          <button
-                            onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                          >
-                            <Headphones className="h-5 w-5" />
-                            Voice Assistant
-                          </button>
-                          <div className="h-px bg-border my-2" />
-                          {sidebarLinks.map((link) => {
-                            const isActive = location.pathname === link.href;
-                            const isMessages = link.href === "/instructor/messages";
-                            const isAdminChat = link.href === "/instructor/admin-chat";
-                            const isVisitorChats = link.href === "/instructor/visitor-chats";
-                            const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                            const isHighlighted = "highlight" in link && link.highlight;
-                            return (
-                              <button
-                                key={link.href}
-                                onClick={() => handleNavClick(link.href)}
-                                className={cn(
-                                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                                  isActive
-                                    ? "bg-primary text-primary-foreground"
-                                    : isHighlighted
-                                    ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                              >
-                                <span className="relative">
-                                  <link.icon
-                                    className={cn(
-                                      "h-5 w-5",
-                                      isHighlighted && !isActive && "text-emerald-500"
-                                    )}
-                                  />
-                                  {isAdminChat && !isActive && <AdminMessageBadge />}
-                                </span>
-                                {link.label}
-                                {isVisitorChats && !isActive && (
-                                  <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                                {isMessages && !isActive && (
-                                  <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                                {isPendingScheduling && !isActive && (
-                                  <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </nav>
-
-                        {/* Menu Footer */}
-                        <div className="p-3 border-t mt-auto">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start text-muted-foreground hover:text-foreground"
-                            onClick={() => {
-                              handleSignOut();
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <LogOut className="h-5 w-5 mr-3" />
-                            Sign Out
-                          </Button>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
 
                     <img
                       src={dsmLogo}
