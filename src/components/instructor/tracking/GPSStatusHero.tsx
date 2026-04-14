@@ -32,6 +32,9 @@ export function GPSStatusHero({
   retryCount = 0,
   onManualReconnect,
   trackingProvider,
+  odometerKm,
+  dailyDistanceKm,
+  ignitionOn,
 }: GPSStatusHeroProps) {
    const showReconnecting = isReconnecting && !isConnected && !isParked;
  
