@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
-import { CheckCircle2, Briefcase, MessageSquare, FileText, CalendarPlus } from "lucide-react";
+import { CheckCircle2, Briefcase, MessageSquare, FileText, CalendarPlus, HelpCircle } from "lucide-react";
 
 interface ActivityTile {
   title: string;
@@ -117,12 +116,17 @@ export function ActivityTilesGrid({
         >
           {/* Icon with badge counter */}
           <div className="relative">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: tile.gradient }}
-            >
-              <tile.icon size={18} strokeWidth={2} className="text-white" />
-            </div>
+            {(() => {
+              const IconComp = typeof tile.icon === 'function' ? tile.icon : HelpCircle;
+              return (
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: tile.gradient }}
+                >
+                  <IconComp size={18} strokeWidth={2} className="text-white" />
+                </div>
+              );
+            })()}
             {tile.count > 0 && (
               <span
                 className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 leading-none"
