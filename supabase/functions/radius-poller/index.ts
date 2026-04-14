@@ -535,7 +535,6 @@ Deno.serve(async (req) => {
             instructor_id: device.instructor_id,
             pupil_id: device.current_pupil_id || null,
             started_at: seenAt || new Date().toISOString(),
-            tracking_provider: "radius",
           })
           .select("id")
           .single();
