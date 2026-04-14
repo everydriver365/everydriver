@@ -117,7 +117,7 @@ export function AppStyleHomeView({
   };
 
   return (
-    <div className="flex-1 flex flex-col" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
+    <div className="flex-1 flex flex-col" style={{ backgroundColor: wallpaperColor || "#F4F7F6" }}>
 
       <div className="flex-1 overflow-y-auto px-5 pt-8 pb-20">
         <div className="grid grid-cols-4 gap-x-4 gap-y-5">
