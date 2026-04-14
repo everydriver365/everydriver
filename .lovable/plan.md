@@ -1,26 +1,30 @@
 
 
-## Add proactive chat popup on mini-website
+## Customise chat widget colors and welcome message per instructor
 
-### What it does
-After 10 seconds on any instructor mini-website, a small animated speech bubble appears above the chat button with a friendly message like "👋 Hi! Need help finding the right course?". Clicking it opens the chat widget. It dismisses on its own after 8 seconds or if the user closes it, and won't re-appear for that visitor (stored in localStorage).
+### What changes
+The chat widget will use each instructor's `brand_colour` for its floating button, header bar, and proactive bubble accent. The welcome message will personalise with the instructor's name. When no `brand_colour` is set, the current theme primary color is used as fallback.
 
 ### Changes
 
 **`src/components/whatsapp/WhatsAppChatWidget.tsx`**
 
-1. Add a `showProactiveBubble` state, defaulting to `false`
-2. Add a `useEffect` with a 10-second `setTimeout` that:
-   - Checks localStorage for a `proactive_chat_dismissed_{instructorId}` key — if set, skips
-   - Only fires if `!isOpen && !isMinimized && !conversationId` (no active session)
-   - Sets `showProactiveBubble = true`
-3. Add an 8-second auto-dismiss timer when the bubble is shown
-4. Render an animated speech bubble (using `framer-motion`) positioned above the floating chat button (bottom-left), containing:
-   - A short message: "👋 Hi! Need help finding the right course?"
-   - A small "×" dismiss button
-   - Click on the bubble text opens the chat widget
-5. On dismiss (click × or auto-timeout): set localStorage flag and hide the bubble
-6. When `isOpen` becomes true, hide the bubble
+1. Add `primaryColor?: string` and `welcomeMessage?: string` props to the interface
+2. Derive `chatColor` from `primaryColor` prop (fallback to undefined, meaning use CSS `bg-primary`)
+3. Apply `chatColor` via inline `style={{ backgroundColor: chatColor }}` on:
+   - The floating FAB button (line 710)
+   - The chat header bar (line 733)
+4. Update the proactive bubble message (line 689) to use `welcomeMessage` prop or default to `👋 Hi! Need help finding the right course? {instructorName} is here to help!`
+5. When `primaryColor` is set, apply it as accent on the proactive bubble border-left or top stripe for visual branding
 
-No new files or database changes needed — this is a purely client-side UI addition within the existing widget component.
+**`src/components/mini-website/MiniWebsiteLayout.tsx`**
+
+1. Pass `primaryColor={instructor.brand_colour}` to the `WhatsAppChatWidget` (line 335)
+
+**`src/components/layout/MainLayout.tsx`**
+
+1. No changes needed — the main layout widget has no instructor context so it keeps default theming
+
+### Summary
+Two files edited. The instructor's brand color flows from the mini-website layout into the chat widget, colouring the button, header, and proactive popup. Welcome message auto-personalises with the instructor's name.
 
