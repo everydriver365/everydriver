@@ -17,6 +17,8 @@ import { TypingIndicator } from "@/components/ui/typing-indicator";
 interface WhatsAppChatWidgetProps {
   instructorId?: string;
   instructorName?: string;
+  primaryColor?: string;
+  welcomeMessage?: string;
 }
 
 interface ChatMessage {
@@ -78,7 +80,7 @@ function findFirstAvailableDate(
   return null;
 }
 
-export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppChatWidgetProps) {
+export function WhatsAppChatWidget({ instructorId, instructorName, primaryColor, welcomeMessage }: WhatsAppChatWidgetProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -674,7 +676,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="fixed bottom-[7.5rem] md:bottom-[5rem] left-4 md:left-6 z-40 max-w-[260px]"
           >
-            <div className="relative bg-card text-card-foreground rounded-xl shadow-lg px-4 py-3 border border-border">
+            <div className="relative bg-card text-card-foreground rounded-xl shadow-lg px-4 py-3 border-l-4 border border-border" style={{ borderLeftColor: primaryColor || 'hsl(var(--primary))' }}>
               <button
                 onClick={dismissProactiveBubble}
                 className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs hover:bg-accent transition-colors"
@@ -686,7 +688,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
                 onClick={() => setIsOpen(true)}
                 className="text-sm text-left leading-snug hover:opacity-80 transition-opacity"
               >
-                👋 Hi! Need help finding the right course?
+                {welcomeMessage || `👋 Hi! Need help finding the right course?${instructorName ? ` ${instructorName} is here to help!` : ''}`}
               </button>
               {/* Speech bubble tail */}
               <div className="absolute -bottom-2 left-6 w-4 h-4 bg-card border-b border-r border-border rotate-45 -z-10" />
@@ -707,7 +709,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
             <Button
               size="lg"
               onClick={() => setIsOpen(true)}
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow bg-primary text-primary-foreground"
+              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow text-white"
+              style={{ backgroundColor: primaryColor || 'hsl(var(--primary))' }}
             >
               <ChatIcon className="h-6 w-6" />
             </Button>
@@ -730,7 +733,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
           >
             <Card className="overflow-hidden shadow-2xl border-0">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
+              <div className="flex items-center justify-between px-4 py-3 text-white" style={{ backgroundColor: primaryColor || 'hsl(var(--primary))' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                     <ChatIcon className="h-5 w-5" />

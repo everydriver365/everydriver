@@ -335,6 +335,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
       <WhatsAppChatWidget
         instructorId={instructor.id}
         instructorName={instructor.name}
+        primaryColor={instructor.brand_colour || undefined}
       />
     </div>
   );
