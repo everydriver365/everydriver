@@ -336,7 +336,7 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           backgroundColor: '#F2F3F5',
+           backgroundColor: '#F4F7F6',
          }}
         >
 
@@ -349,7 +349,10 @@ export function InstructorMobileHome({
             exit={{ opacity: 0, y: -20 }}
             className="flex items-center justify-center pt-2"
           >
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-medium">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-white"
+              style={{ borderRadius: 20, backgroundColor: "#0F766E" }}
+            >
               <CheckCircle className="h-3 w-3" />
               Updated just now
             </span>
@@ -440,14 +443,15 @@ export function InstructorMobileHome({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
+            className="fixed top-2 left-3 right-3 z-50 px-4 py-2 flex items-center justify-between shadow-lg"
+            style={{ backgroundColor: "#0F766E", borderRadius: 22, color: "#FFFFFF" }}
           >
             <div className="flex items-center gap-2 min-w-0">
               <Timer className="h-3.5 w-3.5 shrink-0" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-yellow-300 mr-1">Next Up</span>
+              <span className="text-[10px] font-medium uppercase tracking-wider mr-1" style={{ color: "rgba(255,255,255,0.7)" }}>Next Up</span>
               <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
             </div>
-            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
               {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
             </span>
           </motion.div>
@@ -469,21 +473,27 @@ export function InstructorMobileHome({
       <TelematicsTile />
 
       {/* View Schedule Tile */}
-      <div className="px-4 mt-3">
+      <div className="px-5 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 transition-shadow"
-          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+          className="w-full flex items-center justify-between transition-shadow"
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 22,
+            padding: "14px 16px",
+            border: "1px solid #DAE4E1",
+            boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
+          }}
         >
           <div className="flex items-center gap-3">
             <img src={calendarIcon} alt="Schedule" className="w-8 h-8" />
-            <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
+            <span className="text-[15px] font-semibold" style={{ color: "#12263A" }}>View Schedule</span>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4" style={{ color: "#6A7A78" }} />
         </button>
       </div>
 
-      <div className="px-4">
+      <div className="px-5">
         <CelebrationConfetti
           trigger={showConfetti}
           onComplete={() => setShowConfetti(false)}
@@ -509,12 +519,12 @@ export function InstructorMobileHome({
       </div>
 
       {/* Pupil Milestone Feed */}
-      <div className="px-4">
+      <div className="px-5">
         <PupilMilestoneFeed instructorId={instructorId} />
       </div>
 
       {/* 4. Your Day */}
-      <div className="px-4">
+      <div className="px-5">
 
         {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
@@ -522,7 +532,7 @@ export function InstructorMobileHome({
         ) : (
           <>
             {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Your Day</p>
             )}
 
             {nextLesson && (
@@ -564,7 +574,7 @@ export function InstructorMobileHome({
         )}
 
         {/* 7. Quick Access — Swipeable Grid */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Quick Access</p>
         <div className="pb-4">
           <SwipeableQuickAccess />
         </div>
@@ -578,7 +588,7 @@ export function InstructorMobileHome({
         </div>
 
         {/* Insights Tiles */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider mt-6 mb-2" style={{ color: "#6A7A78", letterSpacing: "0.08em" }}>Insights</p>
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         {/* Vehicle Health & Idle Time */}
