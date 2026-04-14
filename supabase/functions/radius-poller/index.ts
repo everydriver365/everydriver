@@ -70,23 +70,29 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
     return { positions: [], batchId: null };
   }
 
-  console.log("[RadiusPoller] Export stream raw items FULL:", JSON.stringify(items.slice(0, 2)));
+  console.log("[RadiusPoller] Export stream returned", items.length, "telemetry records, batchId:", batchId);
+  if (items.length > 0) {
+    console.log("[RadiusPoller] First item keys:", Object.keys(items[0]).join(", "));
+    console.log("[RadiusPoller] First item sample:", JSON.stringify(items[0]).substring(0, 500));
+  }
 
   const positions: NormalisedPosition[] = items
     .filter((item: any) => item.type === "telemetry" || !item.type)
     .map((item: any) => {
       const loc = item.location || {};
 
+      // V2 uses nested objects: item.origin.id, item.asset.id/name
+      const origin = item.origin || {};
+      const asset = item.asset || {};
+
       // V1 format: lon/lat in milliarcseconds → convert to decimal degrees
       let lat: number | null = null;
       let lon: number | null = null;
       if (loc.lat != null && loc.lon != null) {
-        // Check if values look like milliarcseconds (absolute > 1000)
         if (Math.abs(loc.lat) > 1000 || Math.abs(loc.lon) > 1000) {
           lat = loc.lat / 3600000;
           lon = loc.lon / 3600000;
         } else {
-          // Already decimal degrees (v2 format)
           lat = loc.lat;
           lon = loc.lon;
         }
@@ -102,13 +108,12 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         road = gc.rd;
         if (gc.nm) road = `${gc.nm} ${road}`;
       } else if (loc.address) {
-        road = loc.address.split(",")[0];
+        road = String(loc.address).split(",")[0];
       }
 
       const town = gc.tw || gc.sb || null;
 
-      // Speed limit from spd object
-      // spd.un: 0 = km/h, 1 = mph
+      // Speed limit
       let speedLimitKmh: number | null = null;
       if (spd.rd != null) {
         speedLimitKmh = spd.un === 1 ? Math.round(spd.rd * 1.60934) : spd.rd;
@@ -118,7 +123,6 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
       let timestamp: string | null = null;
       if (item.date) {
         try {
-          // V1: "YYYY/MM/dd HH:mm:ss" → ISO
           const d = String(item.date).replace(/\//g, "-").replace(" ", "T");
           const parsed = new Date(d.endsWith("Z") ? d : d + "Z");
           if (!isNaN(parsed.getTime())) {
@@ -131,10 +135,13 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         }
       }
 
-      const posId = String(item.originId || item.imei || item.serialNumber || item.assetId || "");
+      // V2: origin.id is device serial/IMEI; V1: originId flat field
+      const posId = String(origin.id || item.originId || item.imei || item.serialNumber || asset.id || item.assetId || "");
+      const assetName = asset.name || item.assetName || null;
+
       return {
         id: posId,
-        name: item.assetName || null,
+        name: assetName,
         registration: null,
         latitude: lat,
         longitude: lon,
