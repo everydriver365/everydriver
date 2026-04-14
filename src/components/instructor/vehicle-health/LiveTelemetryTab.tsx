@@ -19,16 +19,18 @@ interface LiveTelemetryTabProps {
   isLoading: boolean;
   onLinkClick: (device: GPSDeviceHealth) => void;
   onNavigateToSettings: () => void;
+  preferredDeviceId?: string | null;
 }
 
 export function LiveTelemetryTab({ 
   devices, 
   isLoading, 
   onLinkClick, 
-  onNavigateToSettings 
+  onNavigateToSettings,
+  preferredDeviceId,
 }: LiveTelemetryTabProps) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
-    devices[0]?.id || null
+    preferredDeviceId || devices[0]?.id || null
   );
   const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults" | "speeding">("devices");
 

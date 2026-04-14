@@ -10,6 +10,7 @@ export function TelematicsTile() {
   const { devices, vehicles } = useVehicleHealth();
   const [expanded, setExpanded] = useState(false);
 
+  // preferredDevice is already sorted first by the hook
   const primaryDevice = devices?.[0];
   const primaryVehicle = primaryDevice?.vehicle || vehicles?.[0];
 

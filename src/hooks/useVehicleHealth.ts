@@ -22,6 +22,7 @@ export interface GPSDeviceHealth {
   daily_start_date: string | null;
   daily_start_ecu_odometer_km: number | null;
   session_start_ecu_odometer_km: number | null;
+  tracking_provider: string | null;
   // Engine diagnostics from Geotab
   last_fuel_percent: number | null;
   last_battery_voltage: number | null;
