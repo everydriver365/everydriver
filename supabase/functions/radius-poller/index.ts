@@ -62,6 +62,7 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
   }
 
   const data = await res.json();
+  console.log("[RadiusPoller] Export response keys:", Object.keys(data || {}), "items count:", (data?.items || []).length);
   const items: any[] = data?.items || [];
   const batchId: string | null = data?.id || null;
 
