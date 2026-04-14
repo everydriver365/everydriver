@@ -1,16 +1,23 @@
 
 
-## Fix: Crash in ActivityTilesGrid
+## Plan: Switch Activity Tile Icons to Phosphor Icons
 
-### Root Cause
-The "Objects are not valid as a React child" error occurred in `ActivityTilesGrid` during a hot module reload. The component stack confirms it. The current code is actually correct and the page renders fine on a full load (verified in browser), but HMR can sometimes cause stale references.
+Replace Lucide icons with **Phosphor Icons** for the four activity tiles to get a closer SF Symbols aesthetic with duotone/fill weight options.
 
-### Fix
-Add a defensive check in `ActivityTilesGrid.tsx` to ensure the icon is valid before rendering, and also remove the unused `AnimatedCounter` import (cleanup):
+### Changes
+
+**Install**: `phosphor-react` package
 
 **File: `src/components/instructor/ActivityTilesGrid.tsx`**
-- Remove unused `AnimatedCounter` import (line 3)
-- Add a safety check: if `tile.icon` is not a valid component, fall back to a default icon
+- Replace Lucide imports (`Briefcase`, `MessageSquare`, `FileText`, `CalendarPlus`, `HelpCircle`) with Phosphor equivalents in "fill" weight:
+  - Job Offers → `BriefcaseFill` (or `Briefcase` with `weight="fill"`)
+  - Messages → `ChatCircle` with `weight="fill"`
+  - Tests → `Exam` or `ClipboardText` with `weight="fill"`
+  - Fill Gaps → `CalendarPlus` with `weight="fill"`
+- Keep existing gradient circle containers, white icon color, and all tile logic unchanged
+- Update the fallback icon to a Phosphor equivalent
 
-This is a minor defensive improvement that prevents the crash from recurring during development or hot-reload scenarios.
+### What stays the same
+- White tile design, gradient circles, badge counters, layout, animations — all untouched
+- Only the icon shapes change to Phosphor's rounder, more iOS-like style
 
