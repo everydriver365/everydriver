@@ -82,6 +82,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [showProactiveBubble, setShowProactiveBubble] = useState(false);
   const [visitorName, setVisitorName] = useState("");
   const [visitorPhone, setVisitorPhone] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
@@ -103,6 +104,37 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const [courseTypePref, setCourseTypePref] = useState<CourseType>(null);
   const [transmissionPref, setTransmissionPref] = useState<TransmissionPref>(null);
   const [genderPref, setGenderPref] = useState<GenderPref>(null);
+  // Proactive bubble: show after 10s if no active session
+  useEffect(() => {
+    const dismissKey = `proactive_chat_dismissed_${instructorId || "admin"}`;
+    if (localStorage.getItem(dismissKey)) return;
+    const timer = setTimeout(() => {
+      if (!isOpen && !isMinimized && !conversationId) {
+        setShowProactiveBubble(true);
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [instructorId, isOpen, isMinimized, conversationId]);
+
+  // Auto-dismiss proactive bubble after 8s
+  useEffect(() => {
+    if (!showProactiveBubble) return;
+    const timer = setTimeout(() => {
+      setShowProactiveBubble(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [showProactiveBubble]);
+
+  // Hide proactive bubble when chat opens
+  useEffect(() => {
+    if (isOpen) setShowProactiveBubble(false);
+  }, [isOpen]);
+
+  const dismissProactiveBubble = () => {
+    setShowProactiveBubble(false);
+    localStorage.setItem(`proactive_chat_dismissed_${instructorId || "admin"}`, "1");
+  };
+
   useEffect(() => {
     const key = `${STORAGE_KEY}_${instructorId || "admin"}`;
     const stored = localStorage.getItem(key);
@@ -632,6 +664,37 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
 
   return (
     <>
+      {/* Proactive Bubble */}
+      <AnimatePresence>
+        {showProactiveBubble && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="fixed bottom-[7.5rem] md:bottom-[5rem] left-4 md:left-6 z-40 max-w-[260px]"
+          >
+            <div className="relative bg-card text-card-foreground rounded-xl shadow-lg px-4 py-3 border border-border">
+              <button
+                onClick={dismissProactiveBubble}
+                className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs hover:bg-accent transition-colors"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+              <button
+                onClick={() => setIsOpen(true)}
+                className="text-sm text-left leading-snug hover:opacity-80 transition-opacity"
+              >
+                👋 Hi! Need help finding the right course?
+              </button>
+              {/* Speech bubble tail */}
+              <div className="absolute -bottom-2 left-6 w-4 h-4 bg-card border-b border-r border-border rotate-45 -z-10" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* FAB — bottom-left */}
       <AnimatePresence>
         {!isOpen && (
@@ -649,7 +712,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
               <ChatIcon className="h-6 w-6" />
             </Button>
             {isMinimized && conversationId && (
-              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-destructive animate-pulse" />
             )}
           </motion.div>
         )}
