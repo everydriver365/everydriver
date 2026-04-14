@@ -63,9 +63,8 @@ function FeatureTile({
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-2xl p-5 relative border-0 transition-all duration-200 ease-out"
+      className="flex flex-col items-center gap-2 rounded-2xl p-5 relative border-0 transition-all duration-200 ease-out bg-card dark:bg-[#1C1C1E]"
       style={{
-        backgroundColor: "#FFFFFF",
         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
       }}
     >
@@ -95,10 +94,9 @@ function MoreTile({ icon: Icon, title, color, onClick }: {
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-2xl py-4 shrink-0 border-0 transition-all duration-200 ease-out"
+      className="flex flex-col items-center gap-2 rounded-2xl py-4 shrink-0 border-0 transition-all duration-200 ease-out bg-card dark:bg-[#1C1C1E]"
       style={{
         width: 90,
-        backgroundColor: "#FFFFFF",
         boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
       }}
     >
@@ -207,7 +205,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
         </div>
 
         {/* ─── 2. BODY ─── */}
-        <div className="flex-1 pb-24 bg-[#F2F2F7] dark:bg-[#111111]">
+        <div className="flex-1 pb-24 bg-background dark:bg-[#111111]">
           {/* Date/time row */}
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <p className="text-[15px] font-semibold text-primary">

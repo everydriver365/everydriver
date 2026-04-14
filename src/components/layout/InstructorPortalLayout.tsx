@@ -407,12 +407,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         )}
         style={
           !isFullscreenMode
-            ? {
-                backgroundImage: `url(${instructorBg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-              }
+            ? { backgroundColor: "#F4F7F6" }
             : undefined
         }
       >

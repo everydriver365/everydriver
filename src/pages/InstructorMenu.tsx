@@ -175,7 +175,7 @@ export default function InstructorMenu() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search menu..."
-            className="pl-9 pr-8 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+            className="pl-9 pr-8 rounded-2xl bg-card dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
           />
           {searchQuery && (
             <button
@@ -206,7 +206,7 @@ export default function InstructorMenu() {
               <span className="text-[13px] font-normal text-muted-foreground uppercase">{section.title}</span>
             </div>
             {/* White grouped card */}
-            <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
               {filteredItems.map((item, itemIndex) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
