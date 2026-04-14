@@ -957,6 +957,7 @@ export default function InstructorLiveSession() {
               speedKmh={device.last_speed_kmh}
               lastSeenAt={device.last_seen_at}
               isActive={isConnected}
+              sessionId={device.current_session_id}
             />
            {/* Session Start Panel */}
            <SessionStartPanel

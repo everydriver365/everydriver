@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MiniLiveMapProps {
   latitude: number | null;
@@ -10,18 +11,18 @@ interface MiniLiveMapProps {
   speedKmh?: number | null;
   lastSeenAt: string | null;
   isActive: boolean;
+  /** If provided, loads existing GPS trail from this session */
+  sessionId?: string | null;
 }
 
-const ARROW_SVG_PATH =
-  "M12 2 L6 20 L12 16 L18 20 Z";
-
-export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive }: MiniLiveMapProps) {
+export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive, sessionId }: MiniLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
+  const trailLoadedRef = useRef<string | null>(null);
 
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
@@ -105,6 +106,32 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
       mapRef.current = null;
     };
   }, [ready]);
+
+  // Load historical trail from session GPS points
+  useEffect(() => {
+    if (!ready || !mapRef.current || !sessionId || trailLoadedRef.current === sessionId) return;
+    trailLoadedRef.current = sessionId;
+
+    (async () => {
+      const { data: points } = await supabase
+        .from("telematics_gps_points")
+        .select("latitude, longitude")
+        .eq("telematics_id", sessionId)
+        .order("recorded_at", { ascending: true })
+        .limit(500);
+
+      if (!points || points.length === 0 || !mapRef.current) return;
+
+      const trail = points.map(p => new google.maps.LatLng(p.latitude, p.longitude));
+      pathRef.current = trail;
+      polylineRef.current?.setPath(trail);
+
+      // Fit bounds to show entire trail
+      const bounds = new google.maps.LatLngBounds();
+      trail.forEach(pt => bounds.extend(pt));
+      mapRef.current.fitBounds(bounds, 40);
+    })();
+  }, [ready, sessionId]);
 
   // Update marker, polyline, and auto-follow
   useEffect(() => {
