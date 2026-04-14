@@ -14,6 +14,7 @@ interface GPSStatusHeroProps {
   isReconnecting?: boolean;
   retryCount?: number;
   onManualReconnect?: () => void;
+  trackingProvider?: string | null;
 }
  
 export function GPSStatusHero({
@@ -27,6 +28,7 @@ export function GPSStatusHero({
   isReconnecting = false,
   retryCount = 0,
   onManualReconnect,
+  trackingProvider,
 }: GPSStatusHeroProps) {
    const showReconnecting = isReconnecting && !isConnected && !isParked;
  
@@ -88,7 +90,15 @@ export function GPSStatusHero({
                 </h2>
                 {!showReconnecting && (
                   <p className="text-white/80 text-xs font-medium">
-                    {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
+                    {trackingProvider ? (
+                      <span>
+                        <span className="uppercase font-semibold">{trackingProvider === "geotab" ? "Geotab" : trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
+                        {" · "}
+                        {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
+                      </span>
+                    ) : (
+                      isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")
+                    )}
                   </p>
                 )}
               </div>
