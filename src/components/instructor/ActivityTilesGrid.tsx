@@ -124,7 +124,7 @@ export function ActivityTilesGrid({
                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                   style={{ background: tile.gradient }}
                 >
-                  <IconComp size={18} strokeWidth={2} className="text-white" />
+                  <IconComp size={18} weight="fill" className="text-white" />
                 </div>
               );
             })()}
