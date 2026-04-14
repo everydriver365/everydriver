@@ -349,10 +349,14 @@ export function InstructorMobileHome({
             exit={{ opacity: 0, y: -20 }}
             className="flex items-center justify-center pt-2"
           >
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-medium">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-white"
+              style={{ borderRadius: 20, backgroundColor: "#0F766E" }}
+            >
               <CheckCircle className="h-3 w-3" />
               Updated just now
             </span>
+          </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -440,14 +444,15 @@ export function InstructorMobileHome({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
+            className="fixed top-2 left-3 right-3 z-50 px-4 py-2 flex items-center justify-between shadow-lg"
+            style={{ backgroundColor: "#0F766E", borderRadius: 22, color: "#FFFFFF" }}
           >
             <div className="flex items-center gap-2 min-w-0">
               <Timer className="h-3.5 w-3.5 shrink-0" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-yellow-300 mr-1">Next Up</span>
+              <span className="text-[10px] font-medium uppercase tracking-wider mr-1" style={{ color: "rgba(255,255,255,0.7)" }}>Next Up</span>
               <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
             </div>
-            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
               {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
             </span>
           </motion.div>
