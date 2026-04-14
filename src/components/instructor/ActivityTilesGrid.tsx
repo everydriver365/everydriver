@@ -48,7 +48,7 @@ export function ActivityTilesGrid({
       count: unreadMessagesCount,
       accent: "#FF9500",
       gradient: "linear-gradient(135deg, #FF9500, #E08600)",
-      icon: MessageSquare,
+      icon: ChatCircle,
       route: "/instructor/messages",
       actionLabel: "NEW MSG",
       actionRoute: "/instructor/messages",
@@ -59,7 +59,7 @@ export function ActivityTilesGrid({
       count: testRequestsCount,
       accent: "#5AC8FA",
       gradient: "linear-gradient(135deg, #5AC8FA, #4AB0E0)",
-      icon: FileText,
+      icon: Exam,
       route: "/instructor/test-requests",
       actionLabel: "VIEW ALL",
       actionRoute: "/instructor/test-requests",
@@ -118,7 +118,7 @@ export function ActivityTilesGrid({
           {/* Icon with badge counter */}
           <div className="relative">
             {(() => {
-              const IconComp = typeof tile.icon === 'function' ? tile.icon : HelpCircle;
+              const IconComp = typeof tile.icon === 'function' ? tile.icon : Question;
               return (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
