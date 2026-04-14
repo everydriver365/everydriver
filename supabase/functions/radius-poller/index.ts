@@ -43,7 +43,8 @@ interface NormalisedPosition {
 async function fetchFromExportStream(exportEndpoint: string, exportApiKey: string): Promise<{ positions: NormalisedPosition[]; batchId: string | null }> {
   console.log("[RadiusPoller] Using KT Export Stream API");
 
-  const res = await fetch(exportEndpoint, {
+  const url = `${exportEndpoint}?token=${exportApiKey}`;
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       "x-access-token": exportApiKey,
