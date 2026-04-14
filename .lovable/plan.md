@@ -1,24 +1,34 @@
 
 
-## Plan: Fix Radius Export Stream Connection
+## Plan: Fix Export Stream Authentication
 
 ### Problem
-The `RADIUS_EXPORT_ENDPOINT` secret contains the label text from your original message (`admin.editors.exporttask.details.credentials.endpoint:https://...`) instead of just the URL. This causes the "Url scheme not supported" error. All three fallback methods (Export Stream, KT v2, Legacy) are failing.
+The `radius-poller` sends the API key via `x-access-token` header, but the KT Export Stream API expects authentication via a **query parameter** (`?token=<key>`). Your Postman test confirms the endpoint and key are valid — only the auth method differs.
 
-### Fix
+### Fix (one-line change)
 
-**Step 1: Update the corrupted secret**
-- Update `RADIUS_EXPORT_ENDPOINT` to the correct value: `https://export.eu1.kt1.io/v2/stream`
+**File**: `supabase/functions/radius-poller/index.ts`
 
-**Step 2: Test the poller**
-- Call the `radius-poller` edge function and verify it connects to the Export Stream without the "Url scheme not supported" error
-- Check logs to confirm it reaches the API successfully
+Update `fetchFromExportStream()` (line 46) to append the token as a query parameter:
 
-**Step 3: Verify Charlotte tracker status**
-- Confirm the device appears as connected (or at least no longer errors) on your tracking page
+```typescript
+const url = `${exportEndpoint}?token=${exportApiKey}`;
+const res = await fetch(url, {
+  method: "GET",
+  headers: {
+    "x-access-token": exportApiKey,   // keep as fallback
+    "Accept": "application/json",
+  },
+});
+```
+
+### Steps
+1. Update the fetch URL to include `?token=` query parameter
+2. Re-deploy `radius-poller`
+3. Invoke the poller and verify it returns telemetry data for "Charlotte"
 
 ### What stays the same
-- No code changes needed — the `radius-poller` already has the correct logic
-- `RADIUS_EXPORT_API_KEY` is fine as-is
-- Device linkage to your account is already correct
+- All secrets remain unchanged
+- DELETE acknowledgement logic stays as-is
+- Fallback methods (KT v2, Legacy) remain in place
 
