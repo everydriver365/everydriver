@@ -1,35 +1,38 @@
 
 
-## Add Provider Selector to Tracking Page
+## Enrich Tracking Page with Radius Data
 
-Kenneth has both Geotab and Radius devices. Currently the page auto-selects one provider based on priority and hides the other. We need a visible toggle so he can switch between them.
+### The Reality
 
-### Approach
+The Radius app (Kinesis / Velocity Fleet) cannot be embedded or auto-logged-into — this was already discussed. Their portal requires separate credentials and doesn't support SSO or iframe embedding.
 
-**Add a segmented control (Geotab | Radius)** at the top of the tracking page, above the existing device selector tile. Selecting a provider switches the active device, updates the map and status, and persists the choice to `instructors.preferred_tracking_provider`.
+However, the real problem is that **we're throwing away data the Radius API already sends us**. The KT Export Stream includes odometer, driver behaviour events, fuel data, and more — but the poller only stores speed, heading, road name, and ignition. The `gps_devices` table already has columns for `last_ecu_odometer_km`, `last_fuel_percent`, `last_battery_voltage`, `last_coolant_temp_c`, and `last_engine_hours` — they're just never populated for Radius devices.
 
-### Changes
+### Plan
 
-**1. New component: `ProviderSelectorTile.tsx`**
-- Queries `gps_devices` for the instructor to find which providers have active devices
-- Only renders if 2+ providers are available
-- Uses the existing `IOSSegmentedControl` component for a clean pill toggle
-- Shows provider names with status indicators (e.g. last seen time)
-- On change: updates `instructors.preferred_tracking_provider` in the database and calls `onProviderChange` callback
+**1. Capture more data in the radius-poller edge function**
+- Extract `telemetry.odometer` / `telemetry.odo_counter` and store it in `last_ecu_odometer_km`
+- Extract `telemetry.battery` / `telemetry.ext_voltage` and store in `last_battery_voltage`
+- Extract any fuel/temperature data if the KT stream provides it
+- Log the full telemetry object once to discover exactly what fields Charlotte's tracker sends
 
-**2. Update `InstructorLiveSession.tsx`**
-- Add the `ProviderSelectorTile` above `TrackerSelectorTile`
-- When provider changes, re-fetch devices filtered to that provider and select the best one
-- Reset realtime subscriptions (clear `deviceIdRef` and `lastSeenRef`) so the new device starts streaming
+**2. Enrich the GPSStatusHero card**
+- Add odometer reading (daily distance driven = current odometer minus `daily_start_ecu_odometer_km`)
+- Add ignition status indicator (engine on/off icon)
+- Show vehicle registration if available
 
-**3. Update `TrackerSelectorTile.tsx`**
-- Remove the `activeProvider` filter (the parent now controls which provider's devices are shown by passing the selected device directly)
-- Or keep it but accept the provider as a prop instead of deriving it internally
+**3. Add a "View in Radius Portal" convenience link**
+- Small external link button when provider is "radius"
+- Opens `https://www.velocityfleet.com/app/telematics/livemap` in a new tab
+- User logs in manually — but it's one tap away
+
+**4. Fix the failing legacy fallback (bonus)**
+- The Radius account is currently blocked from too many failed login attempts. The poller should skip legacy credential login when the Export Stream is the primary source, to stop hammering the login endpoint and getting blocked.
 
 ### Technical Details
 
-- The `preferred_tracking_provider` column already exists on the `instructors` table -- no migration needed
-- The segmented control uses the existing `IOSSegmentedControl` component for consistency
-- Provider labels: "Geotab" and "Radius" (capitalised)
-- The selector will only appear when the instructor has active devices from multiple providers
+- The `radius-poller` already parses `telemetry.odometer` but doesn't write it to `gps_devices` — just needs one line in the update query
+- No database migration needed — all columns already exist
+- The GPSStatusHero will get 2-3 new optional props (odometer, ignition) with graceful fallback
+- The portal link is a simple `<a>` with `target="_blank"`
 
