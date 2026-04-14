@@ -1,37 +1,26 @@
 
 
-## Messaging system audit results
+## Add proactive chat popup on mini-website
 
-### What's working
-All messaging tables exist in the database: `conversations`, `messages`, `admin_conversations`, `admin_messages`, `parent_conversations`, `parent_messages`, `instructor_direct_messages`, `whatsapp_conversations`, `whatsapp_messages`, `live_chat_sessions`, `live_chat_messages`.
+### What it does
+After 10 seconds on any instructor mini-website, a small animated speech bubble appears above the chat button with a friendly message like "👋 Hi! Need help finding the right course?". Clicking it opens the chat widget. It dismisses on its own after 8 seconds or if the user closes it, and won't re-appear for that visitor (stored in localStorage).
 
-The core messaging flows are wired up:
-- **Pupil <-> Instructor**: `useMessaging` hook queries `conversations` + `messages` tables correctly. `PupilChat` and `ChatWindow` components handle both sides. Realtime subscriptions are in place.
-- **Admin <-> Instructor**: `admin_conversations` + `admin_messages` tables exist, `AdminChatWindow` component handles this. Unread counts are tracked.
-- **Parent <-> Instructor**: `parent_conversations` + `parent_messages` tables exist, `ParentChat` component handles the parent side with realtime.
-- **Instructor <-> Instructor (DMs)**: `instructor_direct_messages` table + `InstructorDirectChat` component with realtime.
-- **Visitor/WhatsApp**: `whatsapp_conversations` + `whatsapp_messages` with AI toggle, delivery status, and SMS forwarding via edge function.
-- **Live Chat**: `live_chat_sessions` + `live_chat_messages` with visitor/AI/instructor flow.
+### Changes
 
-### Bugs found (causing 400 errors right now)
+**`src/components/whatsapp/WhatsAppChatWidget.tsx`**
 
-1. **`instructors.postcode` does not exist** — The `useOfflinePrefetch.ts` (line 59) queries `postcode` on the `instructors` table, but the column is actually called `home_postcode`. This causes a 400 error on every page load.
+1. Add a `showProactiveBubble` state, defaulting to `false`
+2. Add a `useEffect` with a 10-second `setTimeout` that:
+   - Checks localStorage for a `proactive_chat_dismissed_{instructorId}` key — if set, skips
+   - Only fires if `!isOpen && !isMinimized && !conversationId` (no active session)
+   - Sets `showProactiveBubble = true`
+3. Add an 8-second auto-dismiss timer when the bubble is shown
+4. Render an animated speech bubble (using `framer-motion`) positioned above the floating chat button (bottom-left), containing:
+   - A short message: "👋 Hi! Need help finding the right course?"
+   - A small "×" dismiss button
+   - Click on the bubble text opens the chat widget
+5. On dismiss (click × or auto-timeout): set localStorage flag and hide the bubble
+6. When `isOpen` becomes true, hide the bubble
 
-2. **`pupils.experience_level` does not exist** — Two files reference this non-existent column (the actual column is `previous_experience`):
-   - `useOfflinePrefetch.ts` (line 47)
-   - `useOfflineSync.ts` (line 262)
-
-These are not messaging-breaking bugs per se, but they fire on every dashboard load and pollute error logs.
-
-### Fixes
-
-**File: `src/hooks/useOfflinePrefetch.ts`**
-- Line 47: Replace `experience_level` with `previous_experience` in the pupils select
-- Line 59: Replace `postcode` with `home_postcode` in the instructors select
-
-**File: `src/hooks/useOfflineSync.ts`**
-- Line 262: Replace `experience_level` with `previous_experience` in the pupils select
-
-### Summary
-The messaging system is fully wired up across all roles. The only active bugs are two incorrect column names in the offline caching hooks causing 400 errors on page load. The core send/receive/realtime flows for all messaging channels are correctly implemented.
+No new files or database changes needed — this is a purely client-side UI addition within the existing widget component.
 
