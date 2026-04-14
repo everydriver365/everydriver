@@ -482,7 +482,8 @@ export function WhatsAppChatWidget({ instructorId, instructorName, primaryColor,
 
   const handleBookingCardSelect = (result: BookingResult) => {
     const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
-    navigate(`/book/${result.instructorId}?hours=${result.hours}&date=${dateStr}`);
+    window.open(`/book/${result.instructorId}?hours=${result.hours}&date=${dateStr}`, '_blank');
+    addLocalBotMessage("📋 Booking page opened in a new tab! You can continue chatting here.");
   };
 
   const cancelBookingFlow = () => {
