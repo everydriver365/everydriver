@@ -1,20 +1,39 @@
 
 
-## Fix: Radius Device Not Appearing in Dropdown
+## Show Preferred Tracker Data on Home Page and Track Page
 
-### Root Cause
+### Problem
 
-Kenneth's Radius device "Charlotte" (`861778063583081`) is marked `is_active = false` in the database. The `DeviceSelectorDropdown` and the page's `fetchData` both filter with `.eq("is_active", true)`, so it's excluded from the list entirely.
+The `TelematicsTile` on the instructor home page always picks `devices?.[0]` — the first device returned by the query — regardless of which tracker the instructor has selected as their preferred device. The same issue exists with `useVehicleHealth` which doesn't consider the `preferred_tracking_provider` setting stored on the `instructors` table.
 
 ### Fix
 
-1. **Database update** — Set `is_active = true` on the Radius device for Kenneth:
-   ```sql
-   UPDATE gps_devices SET is_active = true WHERE id = '0cd172d5-d9a0-47bb-bbb6-cb30c686a8d4';
-   ```
+**1. Update `useVehicleHealth` hook** (`src/hooks/useVehicleHealth.ts`)
+- Fetch the instructor's `preferred_tracking_provider` alongside the devices query
+- Sort/filter the returned devices array so the preferred provider's device comes first
+- Export a `preferredDevice` convenience field from the hook so consumers can use it directly
 
-2. **No code changes needed** — the dropdown and provider logic already support multiple providers. Once the device is active, it will appear in the selector alongside the Geotab device.
+**2. Update `TelematicsTile`** (`src/components/instructor/TelematicsTile.tsx`)
+- Instead of `devices?.[0]`, use the `preferredDevice` from the hook (or the first device matching the preferred provider)
+- This ensures the home page tile shows data from the tracker the instructor selected in settings
+
+**3. Update `LiveTelemetryTab`** (`src/components/instructor/vehicle-health/LiveTelemetryTab.tsx`)
+- Default `selectedDeviceId` to the preferred device rather than `devices[0]`
 
 ### Files Changed
-- None (database-only fix)
+
+- `src/hooks/useVehicleHealth.ts` — fetch `preferred_tracking_provider`, sort devices so preferred comes first, export `preferredDevice`
+- `src/components/instructor/TelematicsTile.tsx` — use `preferredDevice` instead of `devices?.[0]`
+- `src/components/instructor/vehicle-health/LiveTelemetryTab.tsx` — default selection to preferred device
+
+### Technical Details
+
+In `useVehicleHealth`, after fetching devices, also fetch:
+```sql
+SELECT preferred_tracking_provider FROM instructors WHERE id = ?
+```
+
+Then sort the active devices array so devices matching the preferred provider appear first. Export both the sorted `devices` array and a `preferredDevice` (first device matching preferred provider, falling back to first device overall).
+
+No database changes needed — the `preferred_tracking_provider` column and device selection logic already exist.
 
