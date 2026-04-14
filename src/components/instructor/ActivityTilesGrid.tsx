@@ -119,9 +119,9 @@ export function ActivityTilesGrid({
           <div className="relative">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "#E6E8EC" }}
+              style={{ background: tile.gradient }}
             >
-              {tile.icon}
+              <tile.icon size={18} strokeWidth={2} className="text-white" />
             </div>
             {tile.count > 0 && (
               <span
