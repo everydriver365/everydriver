@@ -124,6 +124,7 @@ export function LiveTelemetryTab({
               speedKmh={selectedDevice.last_speed_kmh ?? null}
               lastSeenAt={selectedDevice.last_seen_at}
               isActive={!!selectedDevice.last_seen_at && (Date.now() - new Date(selectedDevice.last_seen_at).getTime() < 30000)}
+              sessionId={(selectedDevice as any).current_session_id ?? null}
             />
           ) : (
             <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Select a device</CardContent></Card>
