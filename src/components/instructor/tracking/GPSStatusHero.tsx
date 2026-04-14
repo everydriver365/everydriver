@@ -193,20 +193,6 @@ export function GPSStatusHero({
               </div>
             )}
 
-            {/* Radius Portal link */}
-            {trackingProvider === "radius" && (
-              <div className="mt-2 pt-2 border-t border-border">
-                <a
-                  href="https://www.velocityfleet.com/app/telematics/livemap"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  View in Radius Portal
-                </a>
-              </div>
-            )}
           </motion.div>
            )}
          </AnimatePresence>
