@@ -56,7 +56,7 @@ export function DeviceSelectorDropdown({
   }, [instructorId]);
 
   // Don't render if 0 or 1 device
-  if (devices.length <= 1) return null;
+  if (devices.length === 0) return null;
 
   return (
     <div className="flex items-center gap-3">
