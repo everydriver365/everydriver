@@ -14,7 +14,7 @@ interface AppearanceSettingsProps {
 }
 
 const WALLPAPER_PRESETS = [
-  { color: "#E8F1FE", label: "Sky" },
+  { color: "#F4F7F6", label: "Default" },
   { color: "#E8F5E9", label: "Mint" },
   { color: "#FFF3E0", label: "Peach" },
   { color: "#F3E5F5", label: "Lavender" },
@@ -160,7 +160,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
   const [uploading, setUploading] = useState(false);
   const [customColor, setCustomColor] = useState("");
 
-  const currentBg = wallpaperColor || "#E8F1FE";
+  const currentBg = wallpaperColor || "#F4F7F6";
   const currentHero = heroImageUrl || instructorHeroImg;
 
   const handleLayoutChange = (style: LayoutStyle) => {
@@ -187,7 +187,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
     if (/^#[0-9A-Fa-f]{6}$/.test(customColor)) {
       updateAppearance({ wallpaperColor: customColor });
     } else {
-      toast.error("Enter a valid hex colour (e.g. #E8F1FE)");
+      toast.error("Enter a valid hex colour (e.g. #F4F7F6)");
     }
   };
 
@@ -495,7 +495,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
         {/* Custom hex input */}
         <div className="flex items-center gap-2 mt-2">
           <Input
-            placeholder="#E8F1FE"
+            placeholder="#F4F7F6"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
             className="w-32 h-8 text-xs"

@@ -246,7 +246,7 @@ export default function InstructorGPSSetup() {
 
   return (
     <InstructorPortalLayout>
-     <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
+     <div className="min-h-[calc(100dvh-120px)] bg-background -mx-4 -mt-4 p-4">
       <div className="space-y-6 max-w-2xl mx-auto">
        {/* Active Provider Banner */}
         {activeProvider && (
