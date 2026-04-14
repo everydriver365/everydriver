@@ -386,8 +386,19 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
 
   const scheduleSnap = useCallback(() => {
     needsSnapRef.current = true;
+
+    // Immediately draw raw (unsnapped) points so the line extends without delay
+    if (polylineRef.current && rawPointsRef.current.length >= 2) {
+      const w = window as any;
+      const rawPath = rawPointsRef.current.slice(-120).map(
+        (p) => new w.google.maps.LatLng(p.lat, p.lng)
+      );
+      polylineRef.current.setPath(rawPath);
+    }
+
+    // Background: snap-to-road refinement on a shorter debounce
     if (snapDebounceRef.current) clearTimeout(snapDebounceRef.current);
-    snapDebounceRef.current = setTimeout(() => { redrawPolyline(); }, 1500);
+    snapDebounceRef.current = setTimeout(() => { redrawPolyline(); }, 800);
   }, [redrawPolyline]);
 
   useEffect(() => {
