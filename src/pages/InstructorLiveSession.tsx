@@ -811,6 +811,27 @@ export default function InstructorLiveSession() {
           {/* Live Map — self-contained, fetches its own device data */}
           <LiveTrackingMap className="absolute inset-0" deviceId={device?.id} />
 
+          {/* Floating device selector during active session */}
+          {instructor?.id && (
+            <div className="absolute top-4 left-4 z-30 w-56">
+              <DeviceSelectorDropdown
+                instructorId={instructor.id}
+                currentDeviceId={device.id}
+                onDeviceChange={(deviceId, provider) => {
+                  setActiveProvider(provider);
+                  supabase
+                    .from("gps_devices")
+                    .select("*")
+                    .eq("id", deviceId)
+                    .single()
+                    .then(({ data }) => {
+                      if (data) setDevice(data);
+                    });
+                }}
+              />
+            </div>
+          )}
+
            {/* Floating Session Timer Card */}
            <FloatingSessionTimer
              elapsedSeconds={elapsedTime}
