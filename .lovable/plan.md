@@ -1,23 +1,24 @@
 
 
-## Plan: Switch Activity Tile Icons to Phosphor Icons
+## Plan: Fix Radius Export Stream Connection
 
-Replace Lucide icons with **Phosphor Icons** for the four activity tiles to get a closer SF Symbols aesthetic with duotone/fill weight options.
+### Problem
+The `RADIUS_EXPORT_ENDPOINT` secret contains the label text from your original message (`admin.editors.exporttask.details.credentials.endpoint:https://...`) instead of just the URL. This causes the "Url scheme not supported" error. All three fallback methods (Export Stream, KT v2, Legacy) are failing.
 
-### Changes
+### Fix
 
-**Install**: `phosphor-react` package
+**Step 1: Update the corrupted secret**
+- Update `RADIUS_EXPORT_ENDPOINT` to the correct value: `https://export.eu1.kt1.io/v2/stream`
 
-**File: `src/components/instructor/ActivityTilesGrid.tsx`**
-- Replace Lucide imports (`Briefcase`, `MessageSquare`, `FileText`, `CalendarPlus`, `HelpCircle`) with Phosphor equivalents in "fill" weight:
-  - Job Offers → `BriefcaseFill` (or `Briefcase` with `weight="fill"`)
-  - Messages → `ChatCircle` with `weight="fill"`
-  - Tests → `Exam` or `ClipboardText` with `weight="fill"`
-  - Fill Gaps → `CalendarPlus` with `weight="fill"`
-- Keep existing gradient circle containers, white icon color, and all tile logic unchanged
-- Update the fallback icon to a Phosphor equivalent
+**Step 2: Test the poller**
+- Call the `radius-poller` edge function and verify it connects to the Export Stream without the "Url scheme not supported" error
+- Check logs to confirm it reaches the API successfully
+
+**Step 3: Verify Charlotte tracker status**
+- Confirm the device appears as connected (or at least no longer errors) on your tracking page
 
 ### What stays the same
-- White tile design, gradient circles, badge counters, layout, animations — all untouched
-- Only the icon shapes change to Phosphor's rounder, more iOS-like style
+- No code changes needed — the `radius-poller` already has the correct logic
+- `RADIUS_EXPORT_API_KEY` is fine as-is
+- Device linkage to your account is already correct
 
