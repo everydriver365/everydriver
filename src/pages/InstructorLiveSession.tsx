@@ -25,6 +25,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
+import { ProviderSelectorTile } from "@/components/instructor/tracking/ProviderSelectorTile";
 
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
