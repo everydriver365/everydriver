@@ -546,6 +546,7 @@ Deno.serve(async (req) => {
           last_heading: heading || null,
           last_ignition_status: ignition,
           last_road_name: roadName,
+          last_speed_limit_kmh: resolvedSpeedLimit,
           last_seen_at: seenAt,
           last_heartbeat_at: new Date().toISOString(),
           device_name: device.device_name || pos.name || pos.registration || null,
