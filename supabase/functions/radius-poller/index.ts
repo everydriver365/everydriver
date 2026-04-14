@@ -70,7 +70,7 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
     return { positions: [], batchId: null };
   }
 
-  console.log("[RadiusPoller] Export stream raw items:", JSON.stringify(items.map((i: any) => ({ assetId: i.assetId, originId: i.originId, assetName: i.assetName, imei: i.imei, serialNumber: i.serialNumber, date: i.date, type: i.type }))));
+  console.log("[RadiusPoller] Export stream raw items FULL:", JSON.stringify(items.slice(0, 2)));
 
   const positions: NormalisedPosition[] = items
     .filter((item: any) => item.type === "telemetry" || !item.type)
