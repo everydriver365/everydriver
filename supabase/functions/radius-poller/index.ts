@@ -411,6 +411,9 @@ Deno.serve(async (req) => {
     }
 
     const deviceMap = new Map(devices.map((d: any) => [d.device_identifier, d]));
+    // Also build a name-based map for fallback matching
+    const deviceNameMap = new Map(devices.filter((d: any) => d.device_name).map((d: any) => [d.device_name.toLowerCase(), d]));
+    console.log("[RadiusPoller] Device map keys:", [...deviceMap.keys()]);
 
     // ─── Data source priority: Export Stream → KT v2 → Legacy ───
     let positions: NormalisedPosition[] = [];
@@ -461,8 +464,15 @@ Deno.serve(async (req) => {
     let updated = 0;
 
     for (const pos of positions) {
-      const device = deviceMap.get(pos.id);
-      if (!device) continue;
+      // Try matching by device_identifier first, then by name
+      let device = deviceMap.get(pos.id);
+      if (!device && pos.name) {
+        device = deviceNameMap.get(pos.name.toLowerCase());
+      }
+      if (!device) {
+        console.log("[RadiusPoller] No device match for pos.id:", pos.id, "name:", pos.name);
+        continue;
+      }
 
       const lat = pos.latitude;
       const lon = pos.longitude;
