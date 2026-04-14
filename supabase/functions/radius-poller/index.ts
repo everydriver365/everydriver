@@ -131,8 +131,9 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         }
       }
 
+      const posId = String(item.originId || item.imei || item.serialNumber || item.assetId || "");
       return {
-        id: String(item.assetId || item.originId || ""),
+        id: posId,
         name: item.assetName || null,
         registration: null,
         latitude: lat,
