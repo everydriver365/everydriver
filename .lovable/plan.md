@@ -1,18 +1,20 @@
 
 
-## Make Device Selector Always Visible
+## Fix: Radius Device Not Appearing in Dropdown
 
-### Problem
+### Root Cause
 
-The `DeviceSelectorDropdown` component has a guard on line 59: `if (devices.length <= 1) return null;` — it hides itself when there's only one active device. If Kenneth's devices are not all marked `is_active = true`, or the query returns only one, the dropdown won't render.
+Kenneth's Radius device "Charlotte" (`861778063583081`) is marked `is_active = false` in the database. The `DeviceSelectorDropdown` and the page's `fetchData` both filter with `.eq("is_active", true)`, so it's excluded from the list entirely.
 
 ### Fix
 
-1. **Change the guard** in `DeviceSelectorDropdown.tsx` from `devices.length <= 1` to `devices.length === 0` — always show the dropdown when there's at least one device, so the user can see what's selected and switch if more devices appear.
+1. **Database update** — Set `is_active = true` on the Radius device for Kenneth:
+   ```sql
+   UPDATE gps_devices SET is_active = true WHERE id = '0cd172d5-d9a0-47bb-bbb6-cb30c686a8d4';
+   ```
 
-2. **Verify active devices** — Check the database to confirm Kenneth has multiple active devices. If one is marked inactive, the query filters it out.
+2. **No code changes needed** — the dropdown and provider logic already support multiple providers. Once the device is active, it will appear in the selector alongside the Geotab device.
 
-### Files changed
-
-- `src/components/instructor/tracking/DeviceSelectorDropdown.tsx` — change hide condition from `<= 1` to `=== 0`
+### Files Changed
+- None (database-only fix)
 
