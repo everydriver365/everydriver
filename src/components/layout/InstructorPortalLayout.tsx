@@ -426,7 +426,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <div className="text-primary-foreground relative overflow-hidden bg-primary">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
-                   {/* Left: Back button + Hamburger + Title */}
+                   {/* Left: Back button + Logo + Notification */}
                   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     {showBackButton && (
                       <button
@@ -436,17 +436,44 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <ChevronLeft className="h-5 w-5" />
                       </button>
                     )}
+
+                    <img
+                      src={dsmLogo}
+                      alt="DSM"
+                      className="h-7 shrink-0"
+                    />
+                    <MobileNotificationBell instructorId={instructor?.id} />
+                  </div>
+
+                  {/* Right: Action buttons + Hamburger */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setShowSOS(true)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-destructive flex items-center justify-center shadow-md shrink-0"
+                      title="Emergency SOS"
+                    >
+                      <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+                    </button>
+                    <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-primary-foreground shrink-0"
+                          title="Quick Actions"
+                          onClick={() => setHeaderQuickActionsOpen(true)}
+                        >
+                          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
+                        </Button>
                     <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                       <SheetTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
                         >
                           <Menu className="h-5 w-5" />
                         </Button>
                       </SheetTrigger>
-                      <SheetContent side="left" className="w-[280px] p-0">
+                      <SheetContent side="right" className="w-[280px] p-0">
                         <SheetHeader className="p-4 border-b">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
@@ -464,7 +491,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                         {/* Navigation Links */}
                         <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                          {/* Search & Voice in sidebar */}
                           <button
                             onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
@@ -540,33 +566,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         </div>
                       </SheetContent>
                     </Sheet>
-
-                    <img
-                      src={dsmLogo}
-                      alt="DSM"
-                      className="h-7 shrink-0"
-                    />
-                    <MobileNotificationBell instructorId={instructor?.id} />
-                  </div>
-
-                  {/* Right: Action buttons */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setShowSOS(true)}
-                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-destructive flex items-center justify-center shadow-md shrink-0"
-                      title="Emergency SOS"
-                    >
-                      <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
-                    </button>
-                    <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-primary-foreground shrink-0"
-                          title="Quick Actions"
-                          onClick={() => setHeaderQuickActionsOpen(true)}
-                        >
-                          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
-                        </Button>
                   </div>
                 </div>
               </div>
