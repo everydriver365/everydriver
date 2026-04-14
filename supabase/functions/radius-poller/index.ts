@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { resolveSpeedLimit } from "../_shared/speedLimitLookup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -498,6 +499,16 @@ Deno.serve(async (req) => {
         roadName = await reverseGeocode(lat, lon);
       }
 
+      // Resolve speed limit: provider value → cache → Overpass fallback
+      let resolvedSpeedLimit: number | null = pos.speed_limit_kmh ?? null;
+      if (lat && lon) {
+        try {
+          resolvedSpeedLimit = await resolveSpeedLimit(supabase, lat, lon, resolvedSpeedLimit);
+        } catch (e) {
+          console.warn("[RadiusPoller] Speed limit lookup error:", e.message);
+        }
+      }
+
       // Parse timestamp
       let seenAt: string | null = null;
       if (pos.timestamp) {
@@ -535,6 +546,7 @@ Deno.serve(async (req) => {
           last_heading: heading || null,
           last_ignition_status: ignition,
           last_road_name: roadName,
+          last_speed_limit_kmh: resolvedSpeedLimit,
           last_seen_at: seenAt,
           last_heartbeat_at: new Date().toISOString(),
           device_name: device.device_name || pos.name || pos.registration || null,
@@ -602,7 +614,7 @@ Deno.serve(async (req) => {
             latitude: lat,
             longitude: lon,
             speed_kmh: speedKmh,
-            speed_limit_kmh: pos.speed_limit_kmh,
+            speed_limit_kmh: resolvedSpeedLimit,
             heading: heading || null,
             road_name: roadName,
             recorded_at: seenAt || new Date().toISOString(),
@@ -648,7 +660,7 @@ Deno.serve(async (req) => {
           p_heading: heading,
           p_trip_status: ignition ? "driving" : "stopped",
           p_session_id: device.current_session_id,
-          p_speed_limit_kmh: pos.speed_limit_kmh,
+          p_speed_limit_kmh: resolvedSpeedLimit,
         });
       }
     }
