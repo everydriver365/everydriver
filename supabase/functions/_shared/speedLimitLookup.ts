@@ -5,12 +5,10 @@
  */
 
 const GRID_PRECISION = 3; // ~111 m grid cells
+const GRID_FACTOR = Math.pow(10, GRID_PRECISION);
 
-function toGridKey(lat: number, lng: number): string {
-  const f = Math.pow(10, GRID_PRECISION);
-  const gLat = Math.round(lat * f) / f;
-  const gLng = Math.round(lng * f) / f;
-  return `${gLat.toFixed(GRID_PRECISION)},${gLng.toFixed(GRID_PRECISION)}`;
+function toGrid(v: number): number {
+  return Math.round(v * GRID_FACTOR) / GRID_FACTOR;
 }
 
 /**
@@ -29,18 +27,20 @@ export async function resolveSpeedLimit(
 ): Promise<number | null> {
   // 1. Use provider value when available
   if (providerValue != null && providerValue > 0) {
-    // Fire-and-forget cache write
     cacheSpeedLimit(supabase, lat, lng, providerValue).catch(() => {});
     return providerValue;
   }
 
+  const gLat = toGrid(lat);
+  const gLng = toGrid(lng);
+
   // 2. Check DB cache
-  const gridKey = toGridKey(lat, lng);
   try {
     const { data } = await supabase
       .from("speed_limit_cache")
       .select("speed_limit_kmh, expires_at")
-      .eq("grid_key", gridKey)
+      .eq("grid_lat", gLat)
+      .eq("grid_lng", gLng)
       .maybeSingle();
 
     if (data && new Date(data.expires_at) > new Date()) {
@@ -66,7 +66,7 @@ export async function resolveSpeedLimit(
 
 /** Query Overpass API for the maxspeed tag of the nearest road */
 async function fetchFromOverpass(lat: number, lng: number): Promise<number | null> {
-  const radius = 30; // metres
+  const radius = 30;
   const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"]["maxspeed"];out tags 1;`;
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
 
@@ -75,7 +75,7 @@ async function fetchFromOverpass(lat: number, lng: number): Promise<number | nul
     signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) {
-    await res.text(); // consume body
+    await res.text();
     return null;
   }
 
@@ -91,15 +91,12 @@ async function fetchFromOverpass(lat: number, lng: number): Promise<number | nul
 
 /** Parse an OSM maxspeed value into km/h */
 function parseMaxspeed(raw: string): number | null {
-  // "30 mph" → 30 mph → km/h
   const mphMatch = raw.match(/^(\d+)\s*mph$/i);
   if (mphMatch) return Math.round(parseInt(mphMatch[1], 10) * 1.60934);
 
-  // "50" or "50 km/h"
   const numMatch = raw.match(/^(\d+)/);
   if (numMatch) return parseInt(numMatch[1], 10);
 
-  // UK national speed limit
   if (raw.toLowerCase().includes("national")) return 97; // ~60 mph
 
   return null;
@@ -112,17 +109,20 @@ async function cacheSpeedLimit(
   lng: number,
   speedLimitKmh: number,
 ): Promise<void> {
-  const gridKey = toGridKey(lat, lng);
+  const gLat = toGrid(lat);
+  const gLng = toGrid(lng);
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   await supabase.from("speed_limit_cache").upsert(
     {
-      grid_key: gridKey,
+      grid_lat: gLat,
+      grid_lng: gLng,
       speed_limit_kmh: speedLimitKmh,
+      source: "overpass",
       fetched_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     },
-    { onConflict: "grid_key" },
+    { onConflict: "grid_lat,grid_lng", ignoreDuplicates: false },
   );
 }
