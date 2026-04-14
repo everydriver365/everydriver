@@ -44,7 +44,7 @@ export function useOfflinePrefetch({ instructorId }: UseOfflinePrefetchOptions) 
       // 2. Pupils
       const { data: pupils } = await supabase
         .from("pupils")
-        .select("id, name, phone, postcode, address, status, profile_image_url, account_balance, prepaid_hours, experience_level, instructor_id")
+        .select("id, name, phone, postcode, address, status, profile_image_url, account_balance, prepaid_hours, previous_experience, instructor_id")
         .eq("instructor_id", instructorId);
 
       if (pupils) {
@@ -56,7 +56,7 @@ export function useOfflinePrefetch({ instructorId }: UseOfflinePrefetchOptions) 
       // 3. Instructor profile
       const { data: profile } = await supabase
         .from("instructors")
-        .select("id, name, email, phone, profile_image_url, postcode, hourly_rate, is_active")
+        .select("id, name, email, phone, profile_image_url, home_postcode, hourly_rate, is_active")
         .eq("id", instructorId)
         .single();
 
