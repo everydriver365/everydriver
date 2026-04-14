@@ -357,7 +357,6 @@ export function InstructorMobileHome({
               Updated just now
             </span>
           </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
 
