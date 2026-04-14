@@ -1,18 +1,15 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
-import { CheckCircle2 } from "lucide-react";
-import jobOffersIcon from "@/assets/job-offers-icon.png";
-import messagesIcon from "@/assets/messages-icon.png";
-import testRequestsIcon from "@/assets/test-requests-icon.png";
-import fillGapsIcon from "@/assets/fill-gaps-icon.png";
+import { CheckCircle2, Briefcase, MessageSquare, FileText, CalendarPlus } from "lucide-react";
 
 interface ActivityTile {
   title: string;
   subtitle: string;
   count: number;
   accent: string;
-  icon: React.ReactNode;
+  gradient: string;
+  icon: React.ElementType;
   route: string;
   actionLabel: string;
   actionRoute: string;
@@ -39,13 +36,8 @@ export function ActivityTilesGrid({
       subtitle: "Available",
       count: pendingJobsCount,
       accent: "#AF52DE",
-      icon: (
-         <img
-           src={jobOffersIcon}
-           alt="Job Offers"
-           className="w-full h-full object-cover rounded-xl"
-         />
-      ),
+      gradient: "linear-gradient(135deg, #AF52DE, #8B3FBF)",
+      icon: Briefcase,
       route: "/instructor/jobs",
       actionLabel: "VIEW JOBS",
       actionRoute: "/instructor/jobs",
@@ -55,13 +47,8 @@ export function ActivityTilesGrid({
       subtitle: "Unread",
       count: unreadMessagesCount,
       accent: "#FF9500",
-      icon: (
-        <img
-          src={messagesIcon}
-          alt="Messages"
-           className="w-full h-full object-cover rounded-xl"
-        />
-      ),
+      gradient: "linear-gradient(135deg, #FF9500, #E08600)",
+      icon: MessageSquare,
       route: "/instructor/messages",
       actionLabel: "NEW MSG",
       actionRoute: "/instructor/messages",
@@ -71,13 +58,8 @@ export function ActivityTilesGrid({
       subtitle: "Pending",
       count: testRequestsCount,
       accent: "#5AC8FA",
-      icon: (
-        <img
-          src={testRequestsIcon}
-          alt="Test Requests"
-           className="w-full h-full object-cover rounded-xl"
-        />
-      ),
+      gradient: "linear-gradient(135deg, #5AC8FA, #4AB0E0)",
+      icon: FileText,
       route: "/instructor/test-requests",
       actionLabel: "VIEW ALL",
       actionRoute: "/instructor/test-requests",
@@ -87,13 +69,8 @@ export function ActivityTilesGrid({
       subtitle: "Open slots",
       count: gapSlotsCount,
       accent: "#FF2D55",
-      icon: (
-        <img
-          src={fillGapsIcon}
-          alt="Fill Gaps"
-          className="w-full h-full object-cover rounded-xl"
-        />
-      ),
+      gradient: "linear-gradient(135deg, #FF2D55, #E0264B)",
+      icon: CalendarPlus,
       route: "/instructor/gaps",
       actionLabel: "FILL NOW",
       actionRoute: "/instructor/gaps",
@@ -142,9 +119,9 @@ export function ActivityTilesGrid({
           <div className="relative">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "#E6E8EC" }}
+              style={{ background: tile.gradient }}
             >
-              {tile.icon}
+              <tile.icon size={18} strokeWidth={2} className="text-white" />
             </div>
             {tile.count > 0 && (
               <span
