@@ -22,6 +22,7 @@ export interface GPSDeviceHealth {
   daily_start_date: string | null;
   daily_start_ecu_odometer_km: number | null;
   session_start_ecu_odometer_km: number | null;
+  tracking_provider: string | null;
   // Engine diagnostics from Geotab
   last_fuel_percent: number | null;
   last_battery_voltage: number | null;
@@ -96,13 +97,16 @@ export function useVehicleHealth() {
     queryFn: async (): Promise<GPSDeviceHealth[]> => {
       if (!instructor?.id) return [];
 
-      const { data: devices, error } = await supabase
-        .from("gps_devices")
-        .select(`
-          id,
-          device_identifier,
-          device_name,
-          vehicle_id,
+      // Fetch preferred provider in parallel
+      const [devicesRes, prefRes] = await Promise.all([
+        supabase
+          .from("gps_devices")
+          .select(`
+            id,
+            device_identifier,
+            device_name,
+            vehicle_id,
+            tracking_provider,
           last_battery_percent,
           last_ignition_status,
           last_speed_kmh,
@@ -125,8 +129,17 @@ export function useVehicleHealth() {
           last_tire_pressure_json,
           last_fault_codes,
           last_diagnostics_at
-        `)
-        .eq("instructor_id", instructor.id);
+          `)
+          .eq("instructor_id", instructor.id),
+        supabase
+          .from("instructors")
+          .select("preferred_tracking_provider")
+          .eq("id", instructor.id)
+          .single(),
+      ]);
+
+      const { data: devices, error } = devicesRes;
+      const preferredProvider = (prefRes.data?.preferred_tracking_provider as string) ?? null;
 
       if (error) throw error;
 
@@ -153,6 +166,15 @@ export function useVehicleHealth() {
         });
       }
 
+      // Sort so preferred provider devices come first
+      if (preferredProvider) {
+        activeDevices.sort((a, b) => {
+          const aMatch = (a as any).tracking_provider === preferredProvider ? 0 : 1;
+          const bMatch = (b as any).tracking_provider === preferredProvider ? 0 : 1;
+          return aMatch - bMatch;
+        });
+      }
+
       return activeDevices.map(d => {
         const lastSeen = d.last_seen_at ? new Date(d.last_seen_at) : null;
         const heartbeat = (d as any).last_heartbeat_at ? new Date((d as any).last_heartbeat_at) : null;
@@ -166,6 +188,7 @@ export function useVehicleHealth() {
         return {
           ...d,
           is_connected: isConnected,
+          tracking_provider: (d as any).tracking_provider ?? null,
           last_tire_pressure_json: d.last_tire_pressure_json as Record<string, number> | null,
           last_fault_codes: d.last_fault_codes as Array<{ code: string; description: string; severity: string; source: string }> | null,
           vehicle: d.vehicle_id ? vehiclesMap[d.vehicle_id] || null : null,
