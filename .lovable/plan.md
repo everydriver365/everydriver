@@ -1,37 +1,24 @@
 
+What’s happening:
+- The instructor pages are not using only the new global background. On normal instructor routes like `/instructor/pupils`, `InstructorPortalLayout` still reads the saved `wallpaper_color` from `instructor_tile_preferences`, and that saved value can still be the old blue `#E8F1FE`.
+- A few instructor pages still hardcode the old blue directly, especially:
+  - `src/pages/InstructorLiveSession.tsx`
+  - `src/pages/InstructorGPSSetup.tsx`
 
-## Import Google Calendar Event Colors
+Plan:
+1. Create one shared instructor app default background value: `#F4F7F6`.
+2. Update the instructor appearance flow so legacy saved blue values (`#E8F1FE`) no longer override the new default on pages like pupils and schedule.
+3. Update the appearance/settings UI so its preview and default color also use `#F4F7F6` instead of the old blue.
+4. Remove the remaining hardcoded `#E8F1FE` backgrounds from tracking/GPS pages and switch them to the shared instructor background.
+5. Verify the routes where this is most visible: home, pupils, schedule, tracking, and GPS setup.
 
-### Problem
-The `fetchExternalEvents` action in the `google-calendar-service` edge function fetches events from Google Calendar but ignores the `colorId` field from the API response. The `color` column in `instructor_calendar_events` is never populated, so all external events display without their Google Calendar colors.
+Files to update:
+- `src/hooks/useInstructorAppearance.ts`
+- `src/components/layout/InstructorPortalLayout.tsx`
+- `src/components/instructor/AppearanceSettings.tsx`
+- `src/pages/InstructorLiveSession.tsx`
+- `src/pages/InstructorGPSSetup.tsx`
 
-### Fix
-
-**1. Update `google-calendar-service/index.ts`** — Extract `colorId` from Google Calendar events and map it to hex colors
-
-Google Calendar uses numeric `colorId` values (1-11) that map to specific colors. The edge function needs to:
-- Add a color map (Google's standard event color palette)
-- Extract `colorId` from each event in the API response
-- Store the mapped hex color in the `color` column when inserting events
-
-**Google Calendar Event Color Map:**
-```
-1: #7986CB (Lavender)
-2: #33B679 (Sage)
-3: #8E24AA (Grape)
-4: #E67C73 (Flamingo)
-5: #F6BF26 (Banana)
-6: #F4511E (Tangerine)
-7: #039BE5 (Peacock)
-8: #616161 (Graphite)
-9: #3F51B5 (Blueberry)
-10: #0B8043 (Basil)
-11: #D50000 (Tomato)
-```
-
-**2. No frontend changes needed** — The schedule views (`NewMobileScheduleView`, `MobileMonthCalendarView`) already query the `color` column and should already use it for rendering. Will verify the color is actually applied in the UI rendering code, and add it if missing.
-
-### Files Changed
-- `supabase/functions/google-calendar-service/index.ts` — add color map, extract `colorId`, store hex color
-- Possibly schedule view components if color isn't being applied to the event rendering
-
+Technical note:
+- No schema change is needed.
+- The key fix is not just CSS: existing saved appearance data is still forcing blue, so I need to handle that legacy value as part of the implementation.
