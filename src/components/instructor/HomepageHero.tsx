@@ -40,12 +40,12 @@ function ProgressRing({ completed, total, scheduled, gradientId }: { completed: 
         <circle cx="34" cy="34" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} opacity={0.4} />
         <defs>
           <linearGradient id={`${gradientId}-green`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#34D399" />
-            <stop offset="100%" stopColor="#10B981" />
+            <stop offset="0%" stopColor="#14B8A6" />
+            <stop offset="100%" stopColor="#0F766E" />
           </linearGradient>
           <linearGradient id={`${gradientId}-red`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#F87171" />
-            <stop offset="100%" stopColor="#EF4444" />
+            <stop offset="0%" stopColor="#DAE4E1" />
+            <stop offset="100%" stopColor="#C8D4D0" />
           </linearGradient>
         </defs>
         <motion.circle cx="34" cy="34" r={radius} fill="none" stroke={`url(#${gradientId}-red)`} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: scheduledOffset }} transition={{ duration: 1, ease: [0.4, 0, 0.2, 1], delay: 0.2 }} />
