@@ -84,14 +84,15 @@ export function ActivityTilesGrid({
   // All clear state
   if (activeTiles.length === 0) {
     return (
-      <div className="px-4 mt-4">
+      <div className="px-5 mt-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-emerald-500/10"
+          className="flex items-center justify-center gap-2 py-3 px-4"
+          style={{ borderRadius: 22, backgroundColor: "rgba(15, 118, 110, 0.08)" }}
         >
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="h-4 w-4" style={{ color: "#0F766E" }} />
+          <span className="text-sm font-medium" style={{ color: "#0F766E" }}>
             All clear — no actions needed
           </span>
         </motion.div>
@@ -100,7 +101,7 @@ export function ActivityTilesGrid({
   }
 
   return (
-    <div className="px-4 mt-4 grid grid-cols-4 gap-2">
+    <div className="px-5 mt-4 grid grid-cols-4 gap-3">
       {activeTiles.map((tile, idx) => (
         <motion.div
           key={tile.title}
@@ -109,10 +110,13 @@ export function ActivityTilesGrid({
           transition={{ delay: idx * 0.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={() => navigate(tile.route)}
-          className="aspect-square rounded-2xl p-2 text-center border-0 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1.5"
+          className="aspect-square text-center cursor-pointer flex flex-col items-center justify-center gap-1.5"
           style={{
             backgroundColor: "#FFFFFF",
-            boxShadow: "0px 2px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
+            borderRadius: 22,
+            border: "1px solid #DAE4E1",
+            boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
+            padding: 8,
           }}
         >
           {/* Icon with badge counter */}
@@ -122,7 +126,7 @@ export function ActivityTilesGrid({
               return (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: tile.gradient }}
+                  style={{ backgroundColor: "#0F766E" }}
                 >
                   <IconComp size={18} weight="fill" className="text-white" />
                 </div>
@@ -131,14 +135,14 @@ export function ActivityTilesGrid({
             {tile.count > 0 && (
               <span
                 className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 leading-none"
-                style={{ backgroundColor: tile.accent }}
+                style={{ backgroundColor: "#E45A3B" }}
               >
                 {tile.count > 99 ? "99+" : tile.count}
               </span>
             )}
           </div>
           {/* Title */}
-          <p className="text-[10px] font-semibold text-muted-foreground leading-tight">
+          <p className="text-[10px] font-semibold leading-tight" style={{ color: "#6A7A78" }}>
             {tile.title}
           </p>
         </motion.div>
