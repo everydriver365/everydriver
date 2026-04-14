@@ -614,7 +614,7 @@ Deno.serve(async (req) => {
             latitude: lat,
             longitude: lon,
             speed_kmh: speedKmh,
-            speed_limit_kmh: pos.speed_limit_kmh,
+            speed_limit_kmh: resolvedSpeedLimit,
             heading: heading || null,
             road_name: roadName,
             recorded_at: seenAt || new Date().toISOString(),
@@ -660,7 +660,7 @@ Deno.serve(async (req) => {
           p_heading: heading,
           p_trip_status: ignition ? "driving" : "stopped",
           p_session_id: device.current_session_id,
-          p_speed_limit_kmh: pos.speed_limit_kmh,
+          p_speed_limit_kmh: resolvedSpeedLimit,
         });
       }
     }
