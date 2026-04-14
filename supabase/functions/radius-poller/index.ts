@@ -21,8 +21,148 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// ─── Key Telematics Fleet API v2 (if KT_API_KEY is a real KT key) ───
-async function fetchPositionsKT(ktApiKey: string, customerId: string): Promise<any[]> {
+// ─── Normalised position type ───
+interface NormalisedPosition {
+  id: string;
+  name: string | null;
+  registration: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  speed_kmh: number | null;
+  heading: number | null;
+  ignition: boolean | null;
+  road: string | null;
+  town: string | null;
+  timestamp: string | null;
+  speed_limit_kmh: number | null;
+  odometer: number | null;
+  _source: string;
+}
+
+// ─── KT Export Stream API (Priority – push-based queue) ───
+async function fetchFromExportStream(exportEndpoint: string, exportApiKey: string): Promise<{ positions: NormalisedPosition[]; batchId: string | null }> {
+  console.log("[RadiusPoller] Using KT Export Stream API");
+
+  const res = await fetch(exportEndpoint, {
+    method: "GET",
+    headers: {
+      "x-access-token": exportApiKey,
+      "Accept": "application/json",
+      "accept-encoding": "gzip",
+      "connection": "keep-alive",
+    },
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Export Stream API failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const items: any[] = data?.items || [];
+  const batchId: string | null = data?.id || null;
+
+  if (items.length === 0) {
+    console.log("[RadiusPoller] Export stream queue empty");
+    return { positions: [], batchId: null };
+  }
+
+  console.log("[RadiusPoller] Export stream returned", items.length, "telemetry records, batchId:", batchId);
+
+  const positions: NormalisedPosition[] = items
+    .filter((item: any) => item.type === "telemetry" || !item.type)
+    .map((item: any) => {
+      const loc = item.location || {};
+
+      // V1 format: lon/lat in milliarcseconds → convert to decimal degrees
+      let lat: number | null = null;
+      let lon: number | null = null;
+      if (loc.lat != null && loc.lon != null) {
+        // Check if values look like milliarcseconds (absolute > 1000)
+        if (Math.abs(loc.lat) > 1000 || Math.abs(loc.lon) > 1000) {
+          lat = loc.lat / 3600000;
+          lon = loc.lon / 3600000;
+        } else {
+          // Already decimal degrees (v2 format)
+          lat = loc.lat;
+          lon = loc.lon;
+        }
+      }
+
+      const spd = item.spd || {};
+      const gc = loc.gc || {};
+      const telemetry = item.telemetry || {};
+
+      // Build road name from geocode data
+      let road: string | null = null;
+      if (gc.rd) {
+        road = gc.rd;
+        if (gc.nm) road = `${gc.nm} ${road}`;
+      } else if (loc.address) {
+        road = loc.address.split(",")[0];
+      }
+
+      const town = gc.tw || gc.sb || null;
+
+      // Speed limit from spd object
+      // spd.un: 0 = km/h, 1 = mph
+      let speedLimitKmh: number | null = null;
+      if (spd.rd != null) {
+        speedLimitKmh = spd.un === 1 ? Math.round(spd.rd * 1.60934) : spd.rd;
+      }
+
+      // Parse date
+      let timestamp: string | null = null;
+      if (item.date) {
+        // V1: "YYYY/MM/dd HH:mm:ss" → ISO
+        const d = item.date.replace(/\//g, "-").replace(" ", "T") + "Z";
+        timestamp = new Date(d).toISOString();
+      }
+
+      return {
+        id: String(item.assetId || item.originId || ""),
+        name: item.assetName || null,
+        registration: null,
+        latitude: lat,
+        longitude: lon,
+        speed_kmh: loc.speed ?? null,
+        heading: loc.heading ?? null,
+        ignition: item.active ?? (telemetry.ignition === 1 || telemetry.ignition === true),
+        road,
+        town,
+        timestamp,
+        speed_limit_kmh: speedLimitKmh,
+        odometer: telemetry.odometer ?? telemetry.odo_counter ?? null,
+        _source: "export_stream",
+      };
+    });
+
+  return { positions, batchId };
+}
+
+async function deleteExportBatch(exportEndpoint: string, exportApiKey: string, batchId: string): Promise<void> {
+  try {
+    const url = `${exportEndpoint}/${batchId}`;
+    console.log("[RadiusPoller] Deleting export batch:", batchId);
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: { "x-access-token": exportApiKey },
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      console.warn("[RadiusPoller] Export DELETE failed:", res.status, t);
+    } else {
+      console.log("[RadiusPoller] Export batch deleted successfully");
+    }
+    // Consume response body
+    await res.text().catch(() => {});
+  } catch (e) {
+    console.warn("[RadiusPoller] Export DELETE error:", e.message);
+  }
+}
+
+// ─── Key Telematics Fleet API v2 (polling fallback) ───
+async function fetchPositionsKT(ktApiKey: string, customerId: string): Promise<NormalisedPosition[]> {
   const url = `https://api.uk1.kt1.io/fleet/v2/entities/assets?owner=${customerId}`;
   console.log("[RadiusPoller] Using Key Telematics v2 API");
 
@@ -54,6 +194,8 @@ async function fetchPositionsKT(ktApiKey: string, customerId: string): Promise<a
       road: pos.road || pos.street || pos.address || null,
       town: pos.town || pos.city || null,
       timestamp: pos.timestamp || pos.dateTime || pos.time || a.lastUpdated || null,
+      speed_limit_kmh: null,
+      odometer: null,
       _source: "kt_v2",
     };
   });
@@ -66,14 +208,12 @@ interface RadiusSession {
 }
 let cachedSession: RadiusSession | null = null;
 
-// Attempt login with username/password to get fresh tokens
 async function authenticateWithCredentials(supabase: any): Promise<RadiusSession | null> {
   const username = Deno.env.get("RADIUS_USERNAME")?.trim();
   const password = Deno.env.get("RADIUS_PASSWORD")?.trim();
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
   if (!username || !password || !apiToken) return null;
 
-  // Try multiple login endpoints
   const loginUrls = [
     "https://www.kinesisfleetpro.com/vapi/v1/accounts/users/login/",
     "https://www.kinesisfleetpro.com/vapi/v1/accounts/users/oauth2/login/",
@@ -90,7 +230,6 @@ async function authenticateWithCredentials(supabase: any): Promise<RadiusSession
       });
 
       const bodyText = await res.text();
-
       if (!res.ok) {
         console.log("[RadiusPoller] Login failed at", loginUrl, ":", res.status, bodyText.substring(0, 200));
         continue;
@@ -110,18 +249,13 @@ async function authenticateWithCredentials(supabase: any): Promise<RadiusSession
       }
 
       console.log("[RadiusPoller] Credential login successful via", loginUrl);
-
       const expiresAt = Date.now() + 55 * 60 * 1000;
       cachedSession = { accessToken, expiresAt };
 
-      // Cache the session in DB
       try {
         await supabase.from("radius_session_cache").upsert({
-          id: "default",
-          access_token: accessToken,
-          refresh_token: newRefresh || null,
-          expires_at: new Date(expiresAt).toISOString(),
-          updated_at: new Date().toISOString(),
+          id: "default", access_token: accessToken, refresh_token: newRefresh || null,
+          expires_at: new Date(expiresAt).toISOString(), updated_at: new Date().toISOString(),
         });
       } catch (_) { /* non-critical */ }
 
@@ -139,7 +273,6 @@ async function authenticateWithCredentials(supabase: any): Promise<RadiusSession
 async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> {
   if (cachedSession && cachedSession.expiresAt > Date.now()) return cachedSession;
 
-  // DB cache
   try {
     const { data: dbSession } = await supabase
       .from("radius_session_cache")
@@ -152,7 +285,6 @@ async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> 
     }
   } catch (_) { /* non-critical */ }
 
-  // Try refresh token first
   const refreshToken = Deno.env.get("RADIUS_REFRESH_TOKEN")?.trim();
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim();
 
@@ -185,11 +317,10 @@ async function authenticateLegacy(supabase: any): Promise<RadiusSession | null> 
     }
   }
 
-  // Fallback: username/password login
   return await authenticateWithCredentials(supabase);
 }
 
-async function fetchPositionsLegacy(token: string, customerId: string): Promise<any[]> {
+async function fetchPositionsLegacy(token: string, customerId: string): Promise<NormalisedPosition[]> {
   console.log("[RadiusPoller] Using legacy Velocity Fleet API");
   const apiToken = Deno.env.get("RADIUS_API_TOKEN")?.trim() || "";
   const res = await fetch(
@@ -218,6 +349,8 @@ async function fetchPositionsLegacy(token: string, customerId: string): Promise<
       road: pos.street || null,
       town: pos.town || null,
       timestamp: pos.timestamp || pos.datetime || pos.date_time || null,
+      speed_limit_kmh: null,
+      odometer: null,
       _source: "legacy",
     };
   });
@@ -230,11 +363,14 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const exportEndpoint = Deno.env.get("RADIUS_EXPORT_ENDPOINT")?.trim();
+    const exportApiKey = Deno.env.get("RADIUS_EXPORT_API_KEY")?.trim();
     const ktApiKey = Deno.env.get("KT_API_KEY")?.trim();
     const hasLegacy = !!(Deno.env.get("RADIUS_API_TOKEN") && (Deno.env.get("RADIUS_REFRESH_TOKEN") || (Deno.env.get("RADIUS_USERNAME") && Deno.env.get("RADIUS_PASSWORD"))));
+    const hasExport = !!(exportEndpoint && exportApiKey);
 
-    if (!ktApiKey && !hasLegacy) {
-      console.log("[RadiusPoller] Skipping — no KT_API_KEY or legacy credentials configured");
+    if (!hasExport && !ktApiKey && !hasLegacy) {
+      console.log("[RadiusPoller] Skipping — no credentials configured");
       return new Response(JSON.stringify({ skipped: true, reason: "No Radius/KT credentials configured" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
@@ -243,8 +379,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const customerId = Deno.env.get("RADIUS_CUSTOMER_ID");
-    if (!customerId) {
-      console.log("[RadiusPoller] Skipping — RADIUS_CUSTOMER_ID not configured");
+    if (!customerId && !hasExport) {
+      console.log("[RadiusPoller] Skipping — RADIUS_CUSTOMER_ID not configured and no export stream");
       return new Response(JSON.stringify({ skipped: true, reason: "RADIUS_CUSTOMER_ID not configured" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
@@ -253,7 +389,7 @@ Deno.serve(async (req) => {
     // Get all Radius devices from DB
     const { data: devices, error: devErr } = await supabase
       .from("gps_devices")
-      .select("id, instructor_id, device_identifier, device_name, current_session_id, session_start_ecu_odometer_km, daily_start_ecu_odometer_km, daily_start_date")
+      .select("id, instructor_id, device_identifier, device_name, current_session_id, current_pupil_id, session_start_ecu_odometer_km, daily_start_ecu_odometer_km, daily_start_date")
       .eq("tracking_provider", "radius");
 
     if (devErr) throw devErr;
@@ -265,35 +401,48 @@ Deno.serve(async (req) => {
 
     const deviceMap = new Map(devices.map((d: any) => [d.device_identifier, d]));
 
-    // ─── Fetch positions: try KT v2 first, fallback to legacy ───
-    let positions: any[];
-    let apiUsed: string;
-    let ktFailed = false;
+    // ─── Data source priority: Export Stream → KT v2 → Legacy ───
+    let positions: NormalisedPosition[] = [];
+    let apiUsed = "none";
+    let exportBatchId: string | null = null;
 
-    if (ktApiKey) {
+    // 1) Try Export Stream API (push-based queue – best data)
+    if (hasExport) {
       try {
-        positions = await fetchPositionsKT(ktApiKey, customerId);
-        apiUsed = "kt_v2";
-      } catch (ktErr) {
-        console.log("[RadiusPoller] KT v2 failed, falling back to legacy:", ktErr.message);
-        ktFailed = true;
+        const result = await fetchFromExportStream(exportEndpoint!, exportApiKey!);
+        positions = result.positions;
+        exportBatchId = result.batchId;
+        apiUsed = "export_stream";
+      } catch (exportErr: any) {
+        console.warn("[RadiusPoller] Export stream failed:", exportErr.message, "— falling back");
       }
     }
 
-    if (!ktApiKey || ktFailed) {
-      if (!hasLegacy) {
-        return new Response(JSON.stringify({ skipped: true, reason: ktFailed ? "KT v2 failed and no legacy credentials" : "No credentials configured" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
-        });
+    // 2) Fallback to KT v2 polling API
+    if (positions.length === 0 && ktApiKey && customerId) {
+      try {
+        positions = await fetchPositionsKT(ktApiKey, customerId);
+        apiUsed = "kt_v2";
+      } catch (ktErr: any) {
+        console.warn("[RadiusPoller] KT v2 failed:", ktErr.message, "— falling back to legacy");
       }
+    }
+
+    // 3) Fallback to legacy Velocity API
+    if (positions.length === 0 && hasLegacy && customerId) {
       const session = await authenticateLegacy(supabase);
-      if (!session) {
-        return new Response(JSON.stringify({ skipped: true, reason: "Legacy auth failed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
-        });
+      if (session) {
+        positions = await fetchPositionsLegacy(session.accessToken, customerId);
+        apiUsed = "legacy";
+      } else {
+        console.warn("[RadiusPoller] Legacy auth also failed");
       }
-      positions = await fetchPositionsLegacy(session.accessToken, customerId);
-      apiUsed = "legacy";
+    }
+
+    if (positions.length === 0) {
+      return new Response(JSON.stringify({ ok: true, api: apiUsed, message: "No positions available", exportBatchId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log("[RadiusPoller] Got", positions.length, "positions via", apiUsed, ", matching against", devices.length, "tracked devices");
@@ -308,9 +457,9 @@ Deno.serve(async (req) => {
       const lon = pos.longitude;
       const speedKmh = pos.speed_kmh ?? 0;
       const heading = pos.heading;
-      const ignition = pos.ignition === true || pos.ignition === "on";
+      const ignition = pos.ignition === true;
 
-      // Build road name
+      // Build road name – export stream already has geocoded data
       let roadName: string | null = null;
       if (pos.road) {
         roadName = pos.town ? `${pos.road}, ${pos.town}` : pos.road;
@@ -357,6 +506,7 @@ Deno.serve(async (req) => {
             latitude: lat,
             longitude: lon,
             speed_kmh: speedKmh,
+            speed_limit_kmh: pos.speed_limit_kmh,
             heading: heading || null,
             road_name: roadName,
             recorded_at: seenAt || new Date().toISOString(),
@@ -375,21 +525,27 @@ Deno.serve(async (req) => {
       }
 
       // Update live_pupil_positions
-      await supabase
-        .from("live_pupil_positions")
-        .update({
-          latitude: lat,
-          longitude: lon,
-          speed_kmh: speedKmh,
-          heading: heading,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("device_id", device.id)
-        .eq("is_active", true);
+      if (device.current_pupil_id && lat && lon) {
+        await supabase.rpc("update_live_position", {
+          p_pupil_id: device.current_pupil_id,
+          p_latitude: lat,
+          p_longitude: lon,
+          p_speed_kmh: speedKmh,
+          p_heading: heading,
+          p_trip_status: ignition ? "driving" : "stopped",
+          p_session_id: device.current_session_id,
+          p_speed_limit_kmh: pos.speed_limit_kmh,
+        });
+      }
+    }
+
+    // ACK the export batch (DELETE removes it from the queue)
+    if (exportBatchId && apiUsed === "export_stream") {
+      await deleteExportBatch(exportEndpoint!, exportApiKey!, exportBatchId);
     }
 
     return new Response(
-      JSON.stringify({ ok: true, api: apiUsed, devices: devices.length, positionsReceived: positions.length, positionsUpdated: updated }),
+      JSON.stringify({ ok: true, api: apiUsed, devices: devices.length, positionsReceived: positions.length, positionsUpdated: updated, exportBatchId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
