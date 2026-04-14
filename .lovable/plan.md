@@ -1,23 +1,19 @@
 
 
-## Fix delay in drawing the blue route trail
+## Increase map update frequency to 2 seconds
 
-### Root cause
-There are two layers of delay in the current trail-drawing pipeline:
+### What needs to change
+There are two polling intervals on the live tracking page (`InstructorLiveSession.tsx`) that control how often the map refreshes:
 
-1. **Snap debounce (1500ms)**: When a new GPS point arrives via realtime, `scheduleSnap()` sets a 1500ms timeout before calling `redrawPolyline()`.
-2. **Snap-to-road API call**: `redrawPolyline()` calls the `snap-to-road` edge function (Google Roads API), adding another ~500-1500ms of network latency.
+1. **Device fallback poller** (line 308): Currently `5000ms` — polls `gps_devices` for latest position
+2. **Trail edge-function poller** (line 486 in `GoogleLiveTrackingMap.tsx`): Currently `3000ms` — triggers the trail poller edge function
 
-Combined, this means the main blue polyline can lag **2-3 seconds** behind the actual vehicle position. The thin "tail" polyline does append points immediately (line 331-341), but only when the device position changes — and it gets cleared every time the snap finishes, creating visual gaps.
+The `useLivePupilPositions` hook already defaults to `2000ms`, so no change needed there.
 
-### Fix
-Show raw GPS points on the main polyline **immediately**, then upgrade to snapped geometry in the background:
+### Changes
 
-1. **Immediate raw draw**: When new points arrive (in `scheduleSnap`), instantly update the main polyline with the raw (unsnapped) path so the line visually extends without delay.
-2. **Background snap upgrade**: Keep the 1500ms debounce for the snap-to-road call, but now it just *refines* an already-visible line rather than being the first time the line appears.
-3. **Reduce snap debounce**: Lower from 1500ms to 800ms so snapped geometry arrives sooner.
-4. **Keep tail polyline**: Continue appending to the tail for the segment between the last snap and the current position.
+1. **`src/pages/InstructorLiveSession.tsx`** — Change the device fallback poll interval from `5000` to `2000` (line 308)
+2. **`src/components/instructor/GoogleLiveTrackingMap.tsx`** — Change the trail poller interval from `3000` to `2000` (line 486)
 
-### File changed
-- `src/components/instructor/GoogleLiveTrackingMap.tsx` — Update `scheduleSnap` to immediately draw raw points on the main polyline, reduce debounce to 800ms, and refine `redrawPolyline` to act as a background upgrade.
+Both are single-number changes. The realtime subscriptions remain unchanged (they fire instantly on DB changes), so these intervals only affect the fallback/supplementary polling.
 
