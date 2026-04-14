@@ -489,7 +489,7 @@ export function InstructorMobileHome({
         </button>
       </div>
 
-      <div className="px-4">
+      <div className="px-5">
         <CelebrationConfetti
           trigger={showConfetti}
           onComplete={() => setShowConfetti(false)}
@@ -515,12 +515,12 @@ export function InstructorMobileHome({
       </div>
 
       {/* Pupil Milestone Feed */}
-      <div className="px-4">
+      <div className="px-5">
         <PupilMilestoneFeed instructorId={instructorId} />
       </div>
 
       {/* 4. Your Day */}
-      <div className="px-4">
+      <div className="px-5">
 
         {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
