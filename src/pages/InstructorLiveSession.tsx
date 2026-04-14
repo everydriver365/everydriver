@@ -305,7 +305,7 @@ export default function InstructorLiveSession() {
       .subscribe();
     
     // Fallback polling every 5s for faster map updates
-    const interval = setInterval(pollDevice, 5000);
+    const interval = setInterval(pollDevice, 2000);
     
     return () => {
       deviceIdRef.current = null;
