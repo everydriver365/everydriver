@@ -1,19 +1,26 @@
 
 
-## Add prominent "last updated" indicator on the live tracking map
+## Restore tracker selection on the live tracking page
 
-### Current state
-There is already an "Updated Xs ago" line inside the bottom sat-nav card (line 626-628), but it's small (`text-xs`) and buried among other info. The `now` state ticks every 1 second and `agoText` is already computed correctly.
+### Investigation
+I reviewed the current code and the `DeviceSelectorDropdown` component is still present at line 882 of `InstructorLiveSession.tsx`. It renders for 1+ active devices and should be visible when no session is active.
 
-### Change
-Add a **floating badge** in the top-right corner of the map showing `"Updated 3s ago"` with a live-ticking clock icon. This makes the data freshness immediately visible without needing to look at the bottom panel.
+However, there are two issues that could explain why it appears broken:
 
-### File: `src/components/instructor/GoogleLiveTrackingMap.tsx`
+1. **The dropdown only appears when no session is active** — during a live session (fullscreen map mode), the entire non-session UI is skipped, so there's no way to switch trackers mid-session.
+2. **The dropdown queries `is_active = true`** — if the user's devices aren't marked active, nothing shows.
 
-1. Import `Clock` from `lucide-react`
-2. Add a floating overlay div positioned `absolute top-4 right-4 z-20` (next to the existing top-left controls), styled as a pill badge with backdrop blur
-3. Show `agoText` with a small clock icon — green text when connected, amber when offline
-4. Keep the existing "Updated" row in the bottom panel as-is for redundancy
+### Changes
 
-The indicator will auto-update every second since `now` already ticks at 1s intervals.
+**`src/components/instructor/tracking/DeviceSelectorDropdown.tsx`**
+- Remove the `is_active = true` filter so all devices for the instructor are shown (inactive ones can be visually dimmed)
+- Ensure the dropdown renders even with a single device so the user always has confirmation of which tracker is selected
 
+**`src/pages/InstructorLiveSession.tsx`**
+- Add the `DeviceSelectorDropdown` to the **active session view** (lines 806-873) as a small floating selector in the top-left of the fullscreen map, so the user can switch trackers even during a session
+- When switching device mid-session, update the device state and re-subscribe to the new device's data
+
+### Technical details
+- The floating selector during active sessions will be positioned `absolute top-4 left-4 z-30` with a compact style
+- Switching devices mid-session will call the same `onDeviceChange` handler that resets refs and re-fetches device data
+- The dropdown will show all devices (not just active provider) to match the unified selector behaviour established earlier
