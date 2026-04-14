@@ -164,7 +164,7 @@ export function AppStyleHomeView({
 
                 <span
                   className="text-[11px] font-medium leading-tight text-center line-clamp-1 max-w-[64px]"
-                  style={{ color: getContrastTextColor(wallpaperColor || "#E8F1FE") }}
+                  style={{ color: getContrastTextColor(wallpaperColor || "#F4F7F6") }}
                 >
                   {action.title}
                 </span>
