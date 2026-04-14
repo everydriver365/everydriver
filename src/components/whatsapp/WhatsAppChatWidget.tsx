@@ -82,6 +82,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [showProactiveBubble, setShowProactiveBubble] = useState(false);
   const [visitorName, setVisitorName] = useState("");
   const [visitorPhone, setVisitorPhone] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
