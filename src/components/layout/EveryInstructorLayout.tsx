@@ -13,7 +13,7 @@ export function EveryInstructorLayout({ children, title = "Every Instructor", sh
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       {showHeader && (
         <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
