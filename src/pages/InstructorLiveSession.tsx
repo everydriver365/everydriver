@@ -909,6 +909,33 @@ export default function InstructorLiveSession() {
        <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
+           {/* Provider Selector (Geotab / Radius toggle) */}
+           {instructor?.id && (
+             <ProviderSelectorTile
+               instructorId={instructor.id}
+               currentProvider={activeProvider}
+               onProviderChange={(provider) => {
+                 setActiveProvider(provider);
+                 // Re-fetch to get the best device for this provider
+                 (async () => {
+                   const { data } = await supabase
+                     .from("gps_devices")
+                     .select("*")
+                     .eq("instructor_id", instructor.id)
+                     .eq("is_active", true)
+                     .eq("tracking_provider", provider)
+                     .order("last_seen_at", { ascending: false, nullsFirst: false })
+                     .limit(1);
+                   if (data && data[0]) {
+                     deviceIdRef.current = null;
+                     lastSeenRef.current = null;
+                     setDevice(data[0] as GPSDevice);
+                   }
+                 })();
+               }}
+             />
+           )}
+
            {/* Tracker Selector Tile */}
            {instructor?.id && (
              <TrackerSelectorTile
