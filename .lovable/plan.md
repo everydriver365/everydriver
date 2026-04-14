@@ -1,41 +1,37 @@
 
 
-## Why Backgrounds Haven't Changed
+## Import Google Calendar Event Colors
 
-The CSS variable `--background` was updated to `#F4F7F6`, but that change is invisible because:
-
-1. **Background image override**: `InstructorPortalLayout.tsx` (the main mobile layout) applies a full-page background image (`instructor-bg-signs.png`) via inline styles, which completely covers the CSS background color.
-
-2. **Hardcoded `bg-white`**: Many instructor components use hardcoded `bg-white` or `backgroundColor: "#FFFFFF"` instead of `bg-background`. For example:
-   - `InstructorMenu.tsx` line 178: search input uses `bg-white`
-   - `InstructorMenu.tsx` line 209: grouped cards use `bg-white`
-   - `TelematicsTile.tsx`: uses `backgroundColor: "#FFFFFF"`
-   - `ActivityTilesGrid.tsx`: uses `backgroundColor: "#FFFFFF"`
-   - `NextLessonCard.tsx`: uses `bg-white`
-   - `EveryInstructorLayout.tsx` header: uses `bg-white/95`
+### Problem
+The `fetchExternalEvents` action in the `google-calendar-service` edge function fetches events from Google Calendar but ignores the `colorId` field from the API response. The `color` column in `instructor_calendar_events` is never populated, so all external events display without their Google Calendar colors.
 
 ### Fix
 
-1. **`InstructorPortalLayout.tsx`** — Change the mobile background from the image to `#F4F7F6`:
-   - Replace the `backgroundImage` inline style with `backgroundColor: "#F4F7F6"` (or remove the inline style entirely so `bg-background` takes effect)
+**1. Update `google-calendar-service/index.ts`** — Extract `colorId` from Google Calendar events and map it to hex colors
 
-2. **Bulk replace `bg-white` → `bg-card`** across instructor page components where it represents a page/section background (not decorative elements like pills or badges):
-   - `InstructorMenu.tsx` — search input and grouped cards
-   - `EveryInstructorLayout.tsx` — header
-   - `ContextualHomeHero.tsx`, `NextLessonCard.tsx`, `TelematicsTile.tsx`, `ActivityTilesGrid.tsx`, `BestMateHomeView.tsx` — tile/card backgrounds
+Google Calendar uses numeric `colorId` values (1-11) that map to specific colors. The edge function needs to:
+- Add a color map (Google's standard event color palette)
+- Extract `colorId` from each event in the API response
+- Store the mapped hex color in the `color` column when inserting events
 
-3. **Leave `bg-white` alone** where it's used for contrast elements inside dark containers (nav pills, badges, overlays on dark backgrounds).
+**Google Calendar Event Color Map:**
+```
+1: #7986CB (Lavender)
+2: #33B679 (Sage)
+3: #8E24AA (Grape)
+4: #E67C73 (Flamingo)
+5: #F6BF26 (Banana)
+6: #F4511E (Tangerine)
+7: #039BE5 (Peacock)
+8: #616161 (Graphite)
+9: #3F51B5 (Blueberry)
+10: #0B8043 (Basil)
+11: #D50000 (Tomato)
+```
 
-This is a sweeping change across ~15+ files. The key fix is step 1 (the layout background image), which alone will make the page background `#F4F7F6`. Steps 2-3 ensure cards/tiles also respect the theme rather than being hardcoded white.
+**2. No frontend changes needed** — The schedule views (`NewMobileScheduleView`, `MobileMonthCalendarView`) already query the `color` column and should already use it for rendering. Will verify the color is actually applied in the UI rendering code, and add it if missing.
 
 ### Files Changed
-- `src/components/layout/InstructorPortalLayout.tsx` — remove background image, use `#F4F7F6`
-- `src/pages/InstructorMenu.tsx` — replace `bg-white` with `bg-card`
-- `src/components/layout/EveryInstructorLayout.tsx` — header `bg-white/95` → `bg-background/95`
-- `src/components/instructor/TelematicsTile.tsx` — `#FFFFFF` → theme-aware
-- `src/components/instructor/ActivityTilesGrid.tsx` — `#FFFFFF` → theme-aware
-- `src/components/instructor/BestMateHomeView.tsx` — `#FFFFFF` → theme-aware
-- `src/components/instructor/NextLessonCard.tsx` — `bg-white` → `bg-card`
-- `src/components/instructor/ContextualHomeHero.tsx` — if hardcoded white
-- Additional instructor page files with `bg-white` page backgrounds
+- `supabase/functions/google-calendar-service/index.ts` — add color map, extract `colorId`, store hex color
+- Possibly schedule view components if color isn't being applied to the event rendering
 
