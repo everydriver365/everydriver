@@ -46,16 +46,14 @@ export function DeviceSelectorDropdown({
         .from("gps_devices")
         .select("id, device_identifier, device_name, tracking_provider, is_active, last_seen_at")
         .eq("instructor_id", instructorId)
-        .eq("is_active", true)
         .order("last_seen_at", { ascending: false, nullsFirst: false });
-
       if (data) setDevices(data);
     };
 
     fetchDevices();
   }, [instructorId]);
 
-  // Don't render if 0 or 1 device
+  // Don't render if no devices at all
   if (devices.length === 0) return null;
 
   return (
