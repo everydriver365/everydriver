@@ -526,6 +526,55 @@ Deno.serve(async (req) => {
 
       updated++;
 
+      // ─── Auto-create session if ignition ON and no active session ───
+      if (ignition && !device.current_session_id && lat && lon) {
+        console.log("[RadiusPoller] Auto-creating session for device:", device.device_name);
+        const { data: newSession, error: sessErr } = await supabase
+          .from("lesson_telematics")
+          .insert({
+            instructor_id: device.instructor_id,
+            pupil_id: device.current_pupil_id || null,
+            started_at: seenAt || new Date().toISOString(),
+            tracking_provider: "radius",
+          })
+          .select("id")
+          .single();
+
+        if (newSession && !sessErr) {
+          device.current_session_id = newSession.id;
+          await supabase
+            .from("gps_devices")
+            .update({ current_session_id: newSession.id, is_active: true })
+            .eq("id", device.id);
+          console.log("[RadiusPoller] Session created:", newSession.id);
+        } else {
+          console.error("[RadiusPoller] Session create error:", sessErr?.message);
+        }
+      }
+
+      // ─── Auto-end session if ignition OFF and session active ───
+      if (!ignition && device.current_session_id) {
+        console.log("[RadiusPoller] Auto-ending session:", device.current_session_id);
+        await supabase
+          .from("lesson_telematics")
+          .update({ ended_at: seenAt || new Date().toISOString() })
+          .eq("id", device.current_session_id)
+          .is("ended_at", null);
+
+        await supabase
+          .from("gps_devices")
+          .update({
+            current_session_id: null,
+            current_pupil_id: null,
+            session_start_ecu_odometer_km: null,
+            is_active: false,
+          })
+          .eq("id", device.id);
+
+        device.current_session_id = null;
+        console.log("[RadiusPoller] Session ended");
+      }
+
       // Record GPS point if session active
       if (device.current_session_id && lat && lon) {
         await supabase
@@ -541,10 +590,28 @@ Deno.serve(async (req) => {
             recorded_at: seenAt || new Date().toISOString(),
           });
 
-        // Speed-based distance estimate
-        if (speedKmh > 0) {
-          const distKm = (speedKmh * 10) / 3600;
-          if (distKm > 0.001) {
+        // Distance estimate using actual time delta between points
+        if (speedKmh > 0 && seenAt) {
+          // Fetch previous point timestamp to calculate real interval
+          const { data: prevPoint } = await supabase
+            .from("telematics_gps_points")
+            .select("recorded_at")
+            .eq("telematics_id", device.current_session_id)
+            .lt("recorded_at", seenAt)
+            .order("recorded_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          let timeDeltaHours = 10 / 3600; // default 10s fallback
+          if (prevPoint?.recorded_at) {
+            const deltaMs = new Date(seenAt).getTime() - new Date(prevPoint.recorded_at).getTime();
+            if (deltaMs > 0 && deltaMs < 600000) { // cap at 10 minutes
+              timeDeltaHours = deltaMs / 3600000;
+            }
+          }
+
+          const distKm = speedKmh * timeDeltaHours;
+          if (distKm > 0.001 && distKm < 5) { // sanity: max 5km per interval
             await supabase.rpc("increment_total_distance", {
               p_id: device.current_session_id,
               p_distance: distKm,
