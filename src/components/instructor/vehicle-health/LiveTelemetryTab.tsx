@@ -36,7 +36,7 @@ export function LiveTelemetryTab({
 
   useEffect(() => {
     if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
-      setSelectedDeviceId(devices[0].id);
+      setSelectedDeviceId(preferredDeviceId || devices[0].id);
     }
   }, [devices, selectedDeviceId]);
 
