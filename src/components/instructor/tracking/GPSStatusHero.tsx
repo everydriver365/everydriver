@@ -1,8 +1,8 @@
- import { motion, AnimatePresence } from "framer-motion";
- import { WifiOff, RefreshCw, Radio, Car } from "lucide-react";
- import { Button } from "@/components/ui/button";
- import { formatMph } from "@/lib/utils";
- 
+import { motion, AnimatePresence } from "framer-motion";
+import { WifiOff, RefreshCw, Radio, Car, ExternalLink, Gauge } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { formatMph } from "@/lib/utils";
+
 interface GPSStatusHeroProps {
   deviceName: string | null;
   isConnected: boolean;
@@ -15,6 +15,9 @@ interface GPSStatusHeroProps {
   retryCount?: number;
   onManualReconnect?: () => void;
   trackingProvider?: string | null;
+  odometerKm?: number | null;
+  dailyDistanceKm?: number | null;
+  ignitionOn?: boolean | null;
 }
  
 export function GPSStatusHero({
