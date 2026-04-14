@@ -49,6 +49,8 @@ interface GPSDevice {
   is_test_route_mode?: boolean;
   last_ignition_status?: boolean | null;
   tracking_provider?: string;
+  last_ecu_odometer_km?: number | null;
+  daily_start_ecu_odometer_km?: number | null;
 }
 
 interface Pupil {
@@ -975,6 +977,13 @@ export default function InstructorLiveSession() {
               retryCount={retryCount}
               onManualReconnect={manualReconnect}
               trackingProvider={device.tracking_provider}
+              odometerKm={device.last_ecu_odometer_km}
+              dailyDistanceKm={
+                device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
+                  ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
+                  : null
+              }
+              ignitionOn={device.last_ignition_status}
             />
 
            {/* Mini Live Map Preview */}

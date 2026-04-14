@@ -450,8 +450,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3) Fallback to legacy Velocity API
-    if (positions.length === 0 && hasLegacy && customerId) {
+    // 3) Fallback to legacy Velocity API — skip if Export Stream is primary to avoid account lockout
+    if (positions.length === 0 && hasLegacy && customerId && !hasExport) {
       const session = await authenticateLegacy(supabase);
       if (session) {
         positions = await fetchPositionsLegacy(session.accessToken, customerId);
@@ -459,6 +459,8 @@ Deno.serve(async (req) => {
       } else {
         console.warn("[RadiusPoller] Legacy auth also failed");
       }
+    } else if (positions.length === 0 && hasLegacy && hasExport) {
+      console.log("[RadiusPoller] Skipping legacy fallback — Export Stream is primary source (prevents account lockout)");
     }
 
     if (positions.length === 0) {
@@ -508,7 +510,22 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Update gps_devices
+      // Log full telemetry once per batch for diagnostics
+      if (updated === 0 && pos._source === "export_stream") {
+        console.log("[RadiusPoller] Sample telemetry keys for", pos.name, ":", JSON.stringify(pos));
+      }
+
+      // Daily odometer tracking — reset daily_start if new day
+      const today = new Date().toISOString().slice(0, 10);
+      const dailyStartUpdates: Record<string, any> = {};
+      if (pos.odometer != null) {
+        if (!device.daily_start_date || device.daily_start_date !== today) {
+          dailyStartUpdates.daily_start_ecu_odometer_km = pos.odometer;
+          dailyStartUpdates.daily_start_date = today;
+        }
+      }
+
+      // Update gps_devices with enriched telemetry
       await supabase
         .from("gps_devices")
         .update({
@@ -521,6 +538,8 @@ Deno.serve(async (req) => {
           last_seen_at: seenAt,
           last_heartbeat_at: new Date().toISOString(),
           device_name: device.device_name || pos.name || pos.registration || null,
+          ...(pos.odometer != null ? { last_ecu_odometer_km: pos.odometer } : {}),
+          ...dailyStartUpdates,
         })
         .eq("id", device.id);
 

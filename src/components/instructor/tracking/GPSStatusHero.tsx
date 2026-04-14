@@ -1,8 +1,8 @@
- import { motion, AnimatePresence } from "framer-motion";
- import { WifiOff, RefreshCw, Radio, Car } from "lucide-react";
- import { Button } from "@/components/ui/button";
- import { formatMph } from "@/lib/utils";
- 
+import { motion, AnimatePresence } from "framer-motion";
+import { WifiOff, RefreshCw, Radio, Car, ExternalLink, Gauge } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { formatMph } from "@/lib/utils";
+
 interface GPSStatusHeroProps {
   deviceName: string | null;
   isConnected: boolean;
@@ -15,6 +15,9 @@ interface GPSStatusHeroProps {
   retryCount?: number;
   onManualReconnect?: () => void;
   trackingProvider?: string | null;
+  odometerKm?: number | null;
+  dailyDistanceKm?: number | null;
+  ignitionOn?: boolean | null;
 }
  
 export function GPSStatusHero({
@@ -29,6 +32,9 @@ export function GPSStatusHero({
   retryCount = 0,
   onManualReconnect,
   trackingProvider,
+  odometerKm,
+  dailyDistanceKm,
+  ignitionOn,
 }: GPSStatusHeroProps) {
    const showReconnecting = isReconnecting && !isConnected && !isParked;
  
@@ -159,6 +165,48 @@ export function GPSStatusHero({
                  <p className="text-sm font-semibold text-foreground truncate">{roadName || "Awaiting location..."}</p>
               </div>
             </div>
+
+            {/* Enriched telemetry row */}
+            {(odometerKm != null || dailyDistanceKm != null || ignitionOn != null) && (
+              <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border">
+                {ignitionOn != null && (
+                  <div className="flex items-center gap-1">
+                    <span className={`w-2 h-2 rounded-full ${ignitionOn ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+                    <span className="text-[10px] font-medium text-muted-foreground">
+                      {ignitionOn ? "Engine On" : "Engine Off"}
+                    </span>
+                  </div>
+                )}
+                {dailyDistanceKm != null && dailyDistanceKm > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Gauge className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-[10px] font-medium text-muted-foreground">
+                      Today: {Math.round(dailyDistanceKm * 0.621371)} mi
+                    </span>
+                  </div>
+                )}
+                {odometerKm != null && odometerKm > 0 && (
+                  <span className="text-[10px] font-medium text-muted-foreground ml-auto">
+                    ODO: {Math.round(odometerKm * 0.621371).toLocaleString()} mi
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Radius Portal link */}
+            {trackingProvider === "radius" && (
+              <div className="mt-2 pt-2 border-t border-border">
+                <a
+                  href="https://www.velocityfleet.com/app/telematics/livemap"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  View in Radius Portal
+                </a>
+              </div>
+            )}
           </motion.div>
            )}
          </AnimatePresence>
