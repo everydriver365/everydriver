@@ -80,7 +80,7 @@ function findFirstAvailableDate(
   return null;
 }
 
-export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppChatWidgetProps) {
+export function WhatsAppChatWidget({ instructorId, instructorName, primaryColor, welcomeMessage }: WhatsAppChatWidgetProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -676,7 +676,7 @@ export function WhatsAppChatWidget({ instructorId, instructorName }: WhatsAppCha
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="fixed bottom-[7.5rem] md:bottom-[5rem] left-4 md:left-6 z-40 max-w-[260px]"
           >
-            <div className="relative bg-card text-card-foreground rounded-xl shadow-lg px-4 py-3 border border-border">
+            <div className="relative bg-card text-card-foreground rounded-xl shadow-lg px-4 py-3 border-l-4 border border-border" style={{ borderLeftColor: primaryColor || 'hsl(var(--primary))' }}>
               <button
                 onClick={dismissProactiveBubble}
                 className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs hover:bg-accent transition-colors"
