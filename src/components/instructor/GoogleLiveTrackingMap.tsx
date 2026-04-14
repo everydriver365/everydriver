@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crosshair, Compass, Navigation } from "lucide-react";
+import { Crosshair, Compass, Navigation, Clock } from "lucide-react";
 import { loadGoogleMaps, fetchGoogleMapsKey, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { darkMapStyle } from "@/lib/googleMapsDarkStyle";
 import { useTheme } from "@/context/ThemeContext";
@@ -546,6 +546,10 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
               Overspeed
             </Badge>
           )}
+          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full shadow-md backdrop-blur-sm border ${isConnected ? 'bg-background/90 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-background/90 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800'}`}>
+            <Clock className="h-3 w-3" />
+            {agoText}
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
