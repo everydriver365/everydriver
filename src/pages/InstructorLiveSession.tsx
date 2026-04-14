@@ -974,6 +974,7 @@ export default function InstructorLiveSession() {
               isReconnecting={isReconnecting}
               retryCount={retryCount}
               onManualReconnect={manualReconnect}
+              trackingProvider={device.tracking_provider}
             />
 
            {/* Mini Live Map Preview */}
