@@ -41,45 +41,40 @@ export function TelematicsTile() {
     : "No vehicle linked";
 
   return (
-    <div className="px-5 mt-3">
+    <div className="px-4 mt-3">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="overflow-hidden"
         style={{
           backgroundColor: "#FFFFFF",
-          borderRadius: 22,
-          border: "1px solid #DAE4E1",
-          boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
+          borderRadius: 16,
+          boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
         }}
       >
         {/* Main row — always visible */}
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center gap-3 text-left"
-          style={{ padding: "14px 16px", borderRadius: 22 }}
+          className="w-full flex items-center gap-3 p-3 text-left rounded-2xl"
         >
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: healthStatus === "good" ? "rgba(15, 118, 110, 0.1)" : healthStatus === "warning" ? "rgba(245, 158, 11, 0.1)" : "rgba(106, 122, 120, 0.1)" }}
-          >
-            <Activity className="h-4.5 w-4.5" style={{ color: healthStatus === "good" ? "#0F766E" : healthStatus === "warning" ? "#D97706" : "#6A7A78" }} />
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${status.bg}`}>
+            <Activity className={`h-4.5 w-4.5 ${status.color}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold leading-tight" style={{ color: "#12263A" }}>Telematics</p>
-            <p className="text-[11px] leading-tight mt-0.5 truncate" style={{ color: "#6A7A78" }}>
+            <p className="text-[14px] font-semibold text-foreground leading-tight">Telematics</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">
               {vehicleLabel}
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: healthStatus === "good" ? "#0F766E" : healthStatus === "warning" ? "#D97706" : "#6A7A78" }}>
+            <span className={`text-[11px] font-semibold ${status.color} flex items-center gap-1`}>
               <StatusIcon className="h-3.5 w-3.5" />
               {status.label}
             </span>
             {expanded ? (
-              <ChevronUp className="h-4 w-4" style={{ color: "#6A7A78" }} />
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-4 w-4" style={{ color: "#6A7A78" }} />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
         </button>
@@ -173,22 +168,14 @@ export function TelematicsTile() {
 
 function MetricCard({ icon, label, value, warning }: { icon: React.ReactNode; label: string; value: string; warning: boolean }) {
   return (
-    <div
-      className="text-center"
-      style={{
-        borderRadius: 16,
-        padding: "10px 8px",
-        backgroundColor: warning ? "rgba(239, 68, 68, 0.08)" : "rgba(244, 247, 246, 0.8)",
-        border: warning ? "1px solid rgba(239, 68, 68, 0.15)" : "1px solid #DAE4E1",
-      }}
-    >
-      <div className="flex justify-center mb-1" style={{ color: warning ? "#DC2626" : "#6A7A78" }}>
+    <div className={`rounded-xl p-2 text-center ${warning ? "bg-red-500/10" : "bg-white/60 dark:bg-white/5"}`}>
+      <div className={`flex justify-center mb-1 ${warning ? "text-red-500" : "text-muted-foreground"}`}>
         {icon}
       </div>
-      <p className="text-[14px] font-bold leading-none" style={{ color: warning ? "#DC2626" : "#12263A" }}>
+      <p className={`text-[14px] font-bold leading-none ${warning ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
         {value}
       </p>
-      <p className="text-[9px] mt-0.5" style={{ color: "#6A7A78" }}>{label}</p>
+      <p className="text-[9px] text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }

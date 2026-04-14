@@ -56,7 +56,7 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-4">
       {tiles.map((tile, idx) => {
         const Icon = tile.icon;
         return (
@@ -67,42 +67,35 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             transition={{ delay: idx * 0.04, type: "spring", stiffness: 400, damping: 25 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(tile.route)}
-            className="relative text-left flex flex-col justify-between"
+            className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
             style={{
-              height: 110,
-              padding: 20,
               backgroundColor: "#FFFFFF",
-              borderRadius: 22,
-              border: "1px solid #DAE4E1",
-              boxShadow: "0 2px 12px rgba(15, 70, 60, 0.06), 0 1px 4px rgba(15, 70, 60, 0.03)",
+              boxShadow: "0px 2px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
             }}
           >
             {/* Badge */}
             {tile.badge && tile.badge > 0 && (
-              <div
-                className="absolute top-3.5 right-3.5 min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "#E45A3B" }}
-              >
-                <span className="text-[11px] font-bold text-white">{tile.badge}</span>
+              <div className="absolute top-3 right-3 min-w-[20px] h-5 px-1.5 rounded-full bg-destructive flex items-center justify-center">
+                <span className="text-[11px] font-bold text-destructive-foreground">{tile.badge}</span>
               </div>
             )}
             <div>
-              <p className="text-[16px] font-bold leading-tight" style={{ color: "#12263A" }}>
+              <p className="text-[16px] font-bold leading-tight text-foreground">
                 {tile.title}
               </p>
-              <p className="text-[13px] mt-0.5" style={{ color: "#6A7A78" }}>
+              <p className="text-[13px] mt-0.5 text-muted-foreground">
                 {tile.subtitle}
               </p>
             </div>
             <div className="self-end">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "rgba(15, 118, 110, 0.08)" }}
+                className="w-11 h-11 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "#E6E8EC" }}
               >
                 {tile.customIcon ? (
-                  <img src={tile.customIcon} alt={tile.title} className="w-6 h-6 object-contain" />
+                  <img src={tile.customIcon} alt={tile.title} className="w-7 h-7 object-contain" />
                 ) : (
-                  <Icon size={22} strokeWidth={1.6} style={{ color: "#0F766E" }} />
+                  <Icon size={24} strokeWidth={1.6} style={{ color: tile.accent }} />
                 )}
               </div>
             </div>
