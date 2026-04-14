@@ -177,7 +177,7 @@ export function ContextualHomeHero({
       {/* Overlapping Card */}
       <div className="relative -mt-10 mx-4">
         <div
-          className="bg-white dark:bg-card shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden"
+          className="bg-card dark:bg-card shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden"
         >
           <div className="p-4 pb-3">
             {/* Top row: Headline + Ring */}

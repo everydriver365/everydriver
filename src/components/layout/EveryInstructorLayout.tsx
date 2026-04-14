@@ -16,7 +16,7 @@ export function EveryInstructorLayout({ children, title = "Every Instructor", sh
     <div className="min-h-screen bg-background">
       {/* Header */}
       {showHeader && (
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-gray-100">
           <div className="flex items-center justify-between px-5 h-14">
             <h1 className="text-xl font-bold text-gray-900 tracking-tight">{title}</h1>
             <div className="flex items-center gap-3">
