@@ -1,23 +1,16 @@
 
 
-## Plan: Replace Activity Tile PNG Icons with Filled Gradient Lucide Icons
+## Fix: Crash in ActivityTilesGrid
 
-### What Changes
-Replace the four PNG image icons in the activity tiles with Lucide React icons on gradient circle backgrounds, matching the "Filled Gradient" style you selected.
+### Root Cause
+The "Objects are not valid as a React child" error occurred in `ActivityTilesGrid` during a hot module reload. The component stack confirms it. The current code is actually correct and the page renders fine on a full load (verified in browser), but HMR can sometimes cause stale references.
 
-### Icon Mapping
-| Tile | Current | New Lucide Icon | Gradient |
-|------|---------|----------------|----------|
-| Job Offers | `job-offers-icon.png` | `Briefcase` | purple `#AF52DE → #8B3FBF` |
-| Messages | `messages-icon.png` | `MessageSquare` | orange `#FF9500 → #E08600` |
-| Tests | `test-requests-icon.png` | `FileText` | cyan `#5AC8FA → #4AB0E0` |
-| Fill Gaps | `fill-gaps-icon.png` | `CalendarPlus` | pink `#FF2D55 → #E0264B` |
+### Fix
+Add a defensive check in `ActivityTilesGrid.tsx` to ensure the icon is valid before rendering, and also remove the unused `AnimatedCounter` import (cleanup):
 
-### File to Modify
-**`src/components/instructor/ActivityTilesGrid.tsx`**
-- Remove PNG image imports (`job-offers-icon.png`, `messages-icon.png`, `test-requests-icon.png`, `fill-gaps-icon.png`)
-- Import Lucide icons: `Briefcase`, `MessageSquare`, `FileText`, `CalendarPlus`
-- Replace each tile's `icon` from `<img>` to a gradient circle with white Lucide icon inside
-- Add a `gradient` property to each tile definition for the background style
-- Icon container: `w-9 h-9 rounded-full` with `background: linear-gradient(135deg, color1, color2)`, icon rendered white at `size={18}` `strokeWidth={2}`
+**File: `src/components/instructor/ActivityTilesGrid.tsx`**
+- Remove unused `AnimatedCounter` import (line 3)
+- Add a safety check: if `tile.icon` is not a valid component, fall back to a default icon
+
+This is a minor defensive improvement that prevents the crash from recurring during development or hot-reload scenarios.
 
