@@ -483,7 +483,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
       catch (err) { console.error("Live map poller trigger failed:", err); }
     };
     triggerPoller();
-    const timer = setInterval(triggerPoller, 3000);
+    const timer = setInterval(triggerPoller, 2000);
     return () => clearInterval(timer);
   }, [device?.id, isConnected]);
 
