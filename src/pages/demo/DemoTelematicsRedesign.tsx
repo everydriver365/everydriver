@@ -51,7 +51,7 @@ function ConceptA() {
     { id: "dashcam", icon: Camera, label: "Dashcam" },
   ];
 
-  const geotabTabs = [
+  const advancedTabs = [
     { id: "diagnostics", icon: Activity, label: "Diagnostics" },
     { id: "faults", icon: Wrench, label: "Faults", badge: "2" },
     { id: "fuel", icon: Fuel, label: "Fuel" },
@@ -64,7 +64,7 @@ function ConceptA() {
       <div className="bg-gradient-to-br from-primary to-primary/80 px-5 pt-6 pb-16">
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-xl font-bold text-primary-foreground">Telematics</h1>
-          <Badge className="bg-white/20 text-white border-0 text-[10px]">Geotab Connected</Badge>
+          <Badge className="bg-white/20 text-white border-0 text-[10px]">GPS Connected</Badge>
         </div>
         <p className="text-primary-foreground/60 text-xs">Vehicle intelligence & analytics</p>
       </div>
@@ -122,14 +122,14 @@ function ConceptA() {
           </div>
         </div>
 
-        {/* Geotab-specific section */}
+        {/* Advanced section */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">
-            Geotab Deep Dive
+            Advanced
           </p>
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
             <div className="flex gap-1.5 w-max">
-              {geotabTabs.map(tab => (
+              {advancedTabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -488,7 +488,7 @@ export default function DemoTelematicsRedesign() {
           </h1>
           <p className="text-muted-foreground text-sm max-w-lg mx-auto">
             Three iOS-inspired concepts. All maintain the same data & functionality —
-            Overview, Live Map, Lessons, Mileage, Heatmap, Geofences, Alerts, Dashcam, Reports + Geotab tabs.
+            Overview, Live Map, Lessons, Mileage, Heatmap, Geofences, Alerts, Dashcam, Reports + Advanced tabs.
           </p>
         </div>
 
