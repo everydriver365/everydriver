@@ -230,7 +230,7 @@ export default function InstructorSchedule() {
 
 
         {viewMode === 'list' ? (
-          <NewMobileScheduleView instructorId={instructorId} />
+          <MultiDayScheduleView instructorId={instructorId} />
         ) : viewMode === 'month' ? (
           <MobileMonthCalendarView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
