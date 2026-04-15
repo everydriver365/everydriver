@@ -3,8 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 /** Load Google Maps JS SDK into the page (idempotent). */
 export function loadGoogleMaps(apiKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const w = window as any;
-    if (w.google?.maps) return resolve();
+    if (w.google?.maps?.marker?.AdvancedMarkerElement) return resolve();
+    if (w.google?.maps) {
+      // Maps loaded but marker library missing — import it dynamically
+      w.google.maps.importLibrary("marker").then(() => resolve()).catch(reject);
+      return;
+    }
 
     const existing = document.querySelector('script[data-google-maps="1"]') as HTMLScriptElement | null;
     if (existing) {
