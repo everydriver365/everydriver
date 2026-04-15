@@ -12,6 +12,7 @@ const InstructorSchedule = lazy(() => import("@/pages/InstructorSchedule"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
 const InstructorSettings = lazy(() => import("@/pages/InstructorSettings"));
+const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettingsCategory"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 
@@ -131,6 +132,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
+    <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
 
