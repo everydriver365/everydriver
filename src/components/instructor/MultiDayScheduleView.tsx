@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay } from "date-fns";
 import { Calendar, Clock, MapPin, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ScheduleDayTabs } from "./ScheduleDayTabs";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
@@ -65,7 +64,7 @@ interface MultiDayScheduleViewProps {
   instructorId: string;
 }
 
-const DAYS_TO_LOAD = 14;
+const DAYS_TO_LOAD = 365;
 
 const courseTypeLabels: Record<string, string> = {
   standard: "Standard", test_prep: "Test Prep", mock_test: "Mock Test",
@@ -119,7 +118,6 @@ const lessonTypeBarColors: Record<string, string> = {
 export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps) {
   const navigate = useNavigate();
   const todayRef = useRef<HTMLDivElement>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
   const [manualBlocks, setManualBlocks] = useState<ManualBlock[]>([]);
@@ -295,27 +293,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <ScheduleDayTabs selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {/* Week strip */}
-      <ScheduleDayTabs selectedDate={selectedDate} onSelectDate={(d) => {
-        setSelectedDate(d);
-        // Scroll to that day
-        const el = document.getElementById(`schedule-day-${format(d, "yyyy-MM-dd")}`);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }} />
-
+    <div className="space-y-0">
       {/* Add lesson button */}
-      <div className="flex justify-end px-1">
+      <div className="flex justify-end px-1 pb-2">
         <Button
           onClick={() => setAddLessonOpen(true)}
           size="sm"
@@ -326,7 +313,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         </Button>
       </div>
 
-      {/* Multi-day list */}
+      {/* Multi-day infinite list */}
       <div className="divide-y divide-border/40">
         {dayData.map(({ day, dateStr, timeline, allDay }) => {
           const today = isToday(day);
@@ -513,7 +500,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
         instructorId={instructorId}
-        defaultDate={selectedDate}
+        defaultDate={new Date()}
         onSuccess={fetchData}
       />
     </div>
