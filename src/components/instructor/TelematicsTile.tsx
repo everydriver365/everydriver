@@ -20,7 +20,10 @@ export function TelematicsTile() {
   const faultCodes = primaryDevice?.last_fault_codes;
   const lastSeen = primaryDevice?.last_seen_at;
   const odometerKm = primaryDevice?.last_ecu_odometer_km;
+  const engineHours = primaryDevice?.last_engine_hours;
+  const speedKmh = primaryDevice?.last_speed_kmh;
   const hasFaults = faultCodes && faultCodes.length > 0;
+  const hasOBDData = fuelPercent != null || coolantTemp != null;
 
   const vehicleLabel = primaryVehicle
     ? `${primaryVehicle.registration || ""}${primaryVehicle.make ? ` · ${primaryVehicle.make}` : ""}${primaryVehicle.model ? ` ${primaryVehicle.model}` : ""}`.trim()
