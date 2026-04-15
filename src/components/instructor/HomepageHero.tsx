@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { Calendar, MessageCircle, Briefcase, PoundSterling } from "lucide-react";
+import carRoadIllustration from "@/assets/car-road-illustration.png";
 
 interface SlideData {
   label: string;
@@ -71,24 +72,6 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
   );
 }
 
-function MiniCarIllustration() {
-  return (
-    <svg width="72" height="48" viewBox="0 0 72 48" fill="none" className="opacity-40">
-      {/* Winding road */}
-      <path d="M0 38 Q18 28 36 34 Q54 40 72 30" stroke="#C7C7CC" strokeWidth="8" strokeLinecap="round" fill="none" />
-      <path d="M0 38 Q18 28 36 34 Q54 40 72 30" stroke="#E5E5EA" strokeWidth="4" strokeLinecap="round" fill="none" />
-      {/* Road dashes */}
-      <path d="M8 36 Q18 30 28 33" stroke="#fff" strokeWidth="1" strokeDasharray="3 4" fill="none" />
-      <path d="M38 34 Q48 37 58 33" stroke="#fff" strokeWidth="1" strokeDasharray="3 4" fill="none" />
-      {/* Car body */}
-      <rect x="42" y="22" width="18" height="8" rx="3" fill="#fff" />
-      <rect x="45" y="16" width="12" height="8" rx="2" fill="#fff" />
-      {/* Windows */}
-      <rect x="46.5" y="17.5" width="4" height="5" rx="1" fill="#D1D1D6" />
-      <rect x="52" y="17.5" width="4" height="5" rx="1" fill="#D1D1D6" />
-      {/* Wheels */}
-      <circle cx="46" cy="30" r="2.5" fill="#8E8E93" />
-      <circle cx="56" cy="30" r="2.5" fill="#8E8E93" />
     </svg>
   );
 }
