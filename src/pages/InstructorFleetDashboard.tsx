@@ -27,7 +27,7 @@ import {
   Fuel, Zap, ChevronRight,
 } from "lucide-react";
 
-// Geotab tabs removed — Radius only
+
 
 interface TabDef {
   id: string;

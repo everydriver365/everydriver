@@ -85,7 +85,7 @@ export function AdminTrackersManager() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gps_devices")
-        .select("id, geotab_device_id, device_identifier, device_name, vehicle_id, is_active, instructor_id, tracking_provider")
+        .select("id, device_identifier, device_name, vehicle_id, is_active, instructor_id, tracking_provider")
         .eq("is_active", true);
       if (error) throw error;
       return data as LinkedDevice[];

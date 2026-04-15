@@ -71,7 +71,7 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
           dropoff_postcode,
           lesson_miles,
           duration_minutes,
-          geotab_trip_id,
+          trip_id:geotab_trip_id,
           trip_auto_linked_at,
           pupils!inner(name)
         `)
@@ -92,7 +92,7 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
         lesson_miles: l.lesson_miles,
         pupil_name: l.pupils?.name || "Unknown",
         duration_minutes: l.duration_minutes,
-        trip_id: l.geotab_trip_id || null,
+        trip_id: l.trip_id || null,
         trip_auto_linked_at: l.trip_auto_linked_at || null,
       }));
 
