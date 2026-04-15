@@ -36,6 +36,8 @@ export function GPSStatusHero({
   dailyDistanceKm,
   ignitionOn,
 }: GPSStatusHeroProps) {
+   // Sanitize "Geotab" from device names stored in DB
+   const cleanDeviceName = deviceName?.replace(/geotab/gi, "GPS").replace(/\s+/g, " ").trim() || null;
    const showReconnecting = isReconnecting && !isConnected && !isParked;
  
    return (
@@ -96,14 +98,14 @@ export function GPSStatusHero({
                 </h2>
                 {!showReconnecting && (
                   <p className="text-white/80 text-xs font-medium">
-                    {trackingProvider ? (
+                    {trackingProvider && trackingProvider !== "geotab" ? (
                       <span>
                         <span className="uppercase font-semibold">{trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
                         {" · "}
-                        {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
+                        {isParked ? (roadName || cleanDeviceName || "Ignition Off") : (cleanDeviceName || "GPS Tracker")}
                       </span>
                     ) : (
-                      isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")
+                      isParked ? (roadName || cleanDeviceName || "Ignition Off") : (cleanDeviceName || "GPS Tracker")
                     )}
                   </p>
                 )}
