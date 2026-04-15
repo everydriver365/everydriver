@@ -3911,6 +3911,7 @@ export type Database = {
           last_battery_percent: number | null
           last_battery_voltage: number | null
           last_coolant_temp_c: number | null
+          last_dashcam_active: boolean | null
           last_diagnostics_at: string | null
           last_ecu_odometer_km: number | null
           last_engine_hours: number | null
@@ -3924,6 +3925,7 @@ export type Database = {
           last_is_speeding: boolean | null
           last_latitude: number | null
           last_longitude: number | null
+          last_panic_pressed: boolean | null
           last_road_name: string | null
           last_seen_at: string | null
           last_speed_kmh: number | null
@@ -3958,6 +3960,7 @@ export type Database = {
           last_battery_percent?: number | null
           last_battery_voltage?: number | null
           last_coolant_temp_c?: number | null
+          last_dashcam_active?: boolean | null
           last_diagnostics_at?: string | null
           last_ecu_odometer_km?: number | null
           last_engine_hours?: number | null
@@ -3971,6 +3974,7 @@ export type Database = {
           last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_panic_pressed?: boolean | null
           last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
@@ -4005,6 +4009,7 @@ export type Database = {
           last_battery_percent?: number | null
           last_battery_voltage?: number | null
           last_coolant_temp_c?: number | null
+          last_dashcam_active?: boolean | null
           last_diagnostics_at?: string | null
           last_ecu_odometer_km?: number | null
           last_engine_hours?: number | null
@@ -4018,6 +4023,7 @@ export type Database = {
           last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_panic_pressed?: boolean | null
           last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
