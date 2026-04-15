@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dsmLogo from "@/assets/dsm-logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -324,8 +325,8 @@ export default function InstructorLogin() {
         >
           <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-v2.png" 
-              alt="EveryDriver" 
+              src={dsmLogo} 
+              alt="DSM - Driving School Manager" 
               className="h-12 mx-auto"
             />
           </div>
@@ -335,7 +336,7 @@ export default function InstructorLogin() {
           <p className="text-white/80 text-sm mt-1">
             {isForgotPassword 
               ? "Enter your email to receive a reset link"
-              : "Sign in to your EveryDriver account"}
+              : "Sign in to your DSM account"}
           </p>
           <p className="text-white/40 text-[10px] mt-2">Build: {BUILD_MARKER}</p>
         </motion.div>
