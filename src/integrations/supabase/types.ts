@@ -3921,6 +3921,7 @@ export type Database = {
           last_heading: number | null
           last_heartbeat_at: string | null
           last_ignition_status: boolean | null
+          last_is_speeding: boolean | null
           last_latitude: number | null
           last_longitude: number | null
           last_road_name: string | null
@@ -3967,6 +3968,7 @@ export type Database = {
           last_heading?: number | null
           last_heartbeat_at?: string | null
           last_ignition_status?: boolean | null
+          last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
           last_road_name?: string | null
@@ -4013,6 +4015,7 @@ export type Database = {
           last_heading?: number | null
           last_heartbeat_at?: string | null
           last_ignition_status?: boolean | null
+          last_is_speeding?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
           last_road_name?: string | null
@@ -10045,6 +10048,63 @@ export type Database = {
         }
         Relationships: []
       }
+      overspeed_events: {
+        Row: {
+          created_at: string | null
+          device_id: string | null
+          excess_kmh: number
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          road_name: string | null
+          speed_kmh: number
+          speed_limit_kmh: number
+          telematics_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_id?: string | null
+          excess_kmh: number
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          road_name?: string | null
+          speed_kmh: number
+          speed_limit_kmh: number
+          telematics_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string | null
+          excess_kmh?: number
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          road_name?: string | null
+          speed_kmh?: number
+          speed_limit_kmh?: number
+          telematics_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overspeed_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overspeed_events_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_conversations: {
         Row: {
           created_at: string
@@ -14445,6 +14505,7 @@ export type Database = {
           gps_accuracy_m: number | null
           heading: number | null
           id: string
+          is_speeding: boolean | null
           latitude: number
           longitude: number
           recorded_at: string
@@ -14459,6 +14520,7 @@ export type Database = {
           gps_accuracy_m?: number | null
           heading?: number | null
           id?: string
+          is_speeding?: boolean | null
           latitude: number
           longitude: number
           recorded_at?: string
@@ -14473,6 +14535,7 @@ export type Database = {
           gps_accuracy_m?: number | null
           heading?: number | null
           id?: string
+          is_speeding?: boolean | null
           latitude?: number
           longitude?: number
           recorded_at?: string
