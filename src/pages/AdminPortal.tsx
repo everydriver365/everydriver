@@ -78,7 +78,7 @@ import ComparisonEditor from "@/components/admin/ComparisonEditor";
 import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
-import { AdminGeotabFleet } from "@/components/admin/AdminGeotabFleet";
+
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 import { AdminScrapedMatchesPanel } from "@/components/admin/AdminScrapedMatchesPanel";
 import { ChurnAnalyticsDashboard } from "@/components/admin/ChurnAnalyticsDashboard";
@@ -183,7 +183,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   
   "comparison-editor": { title: "Pricing Comparison", group: "Pricing & Plans", icon: Layers },
   trackers: { title: "GPS Trackers", group: "System Settings", icon: Satellite },
-  "geotab-fleet": { title: "Geotab Fleet", group: "System Settings", icon: Satellite },
+  
   leaderboard: { title: "Instructor Leaderboard", group: "Dashboard", icon: Trophy },
   "churn-analysis": { title: "Churn Analysis", group: "Dashboard", icon: TrendingUp },
   "waiting-room": { title: "The Waiting Room", group: "Engagement & Rewards", icon: Video },
@@ -1020,13 +1020,6 @@ export default function AdminPortal() {
           </motion.div>
         );
 
-      case "geotab-fleet":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <AdminBackButton onClick={() => setActiveSection("overview")} />
-            <AdminGeotabFleet />
-          </motion.div>
-        );
 
       case "test-requests":
         return (

@@ -23,7 +23,6 @@ export interface GPSDeviceHealth {
   daily_start_ecu_odometer_km: number | null;
   session_start_ecu_odometer_km: number | null;
   tracking_provider: string | null;
-  // Engine diagnostics from Geotab
   last_fuel_percent: number | null;
   last_battery_voltage: number | null;
   last_coolant_temp_c: number | null;
@@ -82,12 +81,9 @@ export function useVehicleHealth() {
   // Adaptive poller: trigger GPS backend function faster when moving
   const triggerPoller = useCallback(async () => {
     try {
-      await Promise.allSettled([
-        supabase.functions.invoke("geotab-poller", { method: "POST" }),
-        supabase.functions.invoke("radius-poller", { method: "POST" }),
-      ]);
+      await supabase.functions.invoke("radius-poller", { method: "POST" });
     } catch (err) {
-      console.error("Failed to trigger pollers:", err);
+      console.error("Failed to trigger poller:", err);
     }
   }, []);
 
