@@ -1,28 +1,51 @@
 
 
-## Open booking flow without leaving the chat conversation
+## DSM Wrapper Layout for All Instructor Pages
 
-### Problem
-Currently, clicking "View & Book" on a course card in the chat widget calls `navigate()`, which navigates away from the page and closes the chat entirely. The user loses their conversation context.
+### What it does
+Creates a reusable `DSMLayout` wrapper component that applies the iOS-style design from the DSM homepage to all existing instructor pages. Each feature tile on the DSM page will navigate to `/instructor-app/dsm/{feature}` routes, which render the existing page components inside this new consistent wrapper -- no need to rebuild 80+ pages.
 
-### Solution
-Open the booking page in a new browser tab instead of navigating in the same tab. This keeps the chat conversation active while the visitor can complete their booking in the new tab. Also apply the same pattern to the `CourseChatCards` component used in the live chat.
+### Design
+The `DSMLayout` wrapper replaces `InstructorPortalLayout` visually with:
+- iOS-style `#F2F2F7` background
+- A slim header with back arrow and page title (matching DSM's font/spacing)
+- No sidebar or bottom nav (clean single-page focus, back button returns to DSM)
+- Content area renders the existing component directly
 
 ### Changes
 
-**`src/components/whatsapp/WhatsAppChatWidget.tsx`**
-1. Change `handleBookingCardSelect` (line 483-486) to use `window.open()` with `_blank` instead of `navigate()`:
-   ```ts
-   const handleBookingCardSelect = (result: BookingResult) => {
-     const dateStr = format(result.nextAvailable, "yyyy-MM-dd");
-     window.open(`/book/${result.instructorId}?hours=${result.hours}&date=${dateStr}`, '_blank');
-   };
-   ```
-2. Add a brief confirmation message in the chat after clicking, e.g. "📋 Booking page opened in a new tab!"
+**New file: `src/components/layout/DSMLayout.tsx`**
+- Accepts `title` and `children` props
+- Renders iOS-style sticky header with back navigation to `/instructor-app/dsm`
+- `#F2F2F7` background, SF-style typography, `rounded-2xl` content cards
+- Wraps children in consistent padding
 
-**`src/components/live-chat/CourseChatCards.tsx`**
-- Already uses `target="_blank"` on the `<motion.a>` links — no change needed here.
+**New file: `src/routes/dsmRoutes.tsx`**
+- ~80 routes under `/instructor-app/dsm/*` (e.g. `/instructor-app/dsm/pupils`, `/instructor-app/dsm/schedule`)
+- Each route renders the existing page component (e.g. `InstructorPupils`) wrapped in `DSMLayout`
+- Lazy-loaded like all other routes
+
+**Updated: `src/pages/instructor-app/DSM.tsx`**
+- Update all `featureTiles` routes from `/instructor/xxx` to `/instructor-app/dsm/xxx`
+- Update quick tiles, schedule link, CTA routes similarly
+- Add all ~80 real functions from the instructor portal (replacing the current 40 placeholder tiles)
+
+**Updated: `src/routes/instructorAppRoutes.tsx`**
+- Import and spread `{dsmRoutes}` into the route tree
+
+### How it works
+```text
+DSM Homepage ──click tile──▶ /instructor-app/dsm/pupils
+                                │
+                                ▼
+                          DSMLayout (iOS header + back btn)
+                                │
+                                ▼
+                          <InstructorPupils /> (existing component)
+```
+
+Each existing page component renders its own content inside the DSMLayout wrapper. The wrapper overrides the outer chrome (header, nav) while preserving all functionality. Pages that use `InstructorPortalLayout` internally will have it nested -- we'll handle that by having the DSMLayout detect and suppress the inner layout's nav elements via a context flag.
 
 ### Summary
-Single function change in the widget. The booking page opens in a new tab so the visitor keeps their chat conversation open and can return to it.
+4 files touched. One new layout component, one new route file, two updates. All 80+ functions available under the DSM with consistent iOS styling, zero page rebuilds.
 
