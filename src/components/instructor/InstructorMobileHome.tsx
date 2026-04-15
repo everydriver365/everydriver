@@ -488,9 +488,15 @@ export function InstructorMobileHome({
       {/* Telematics Tile */}
       <TelematicsTile />
 
-      {/* Weather Alert */}
+      {/* Weather, Traffic & Late Alerts */}
       <div className="px-4 mt-3">
-        <WeatherAlertBanner />
+        <WeatherAlertBanner
+          trafficAlerts={trafficAlerts}
+          onDismissTraffic={dismissAlert}
+          nextLessonMinutesUntil={nextLesson?.minutesUntil}
+          nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
+          nextLessonPupilName={nextLesson?.pupilName}
+        />
       </div>
 
       {/* View Schedule Tile */}
