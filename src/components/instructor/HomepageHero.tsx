@@ -240,9 +240,22 @@ export function HomepageHero({
                   </div>
 
                   {/* Ring + Lessons info + car illustration */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 relative">
+                    {/* Car illustration behind text */}
+                    <img
+                      src={carRoadIllustration}
+                      alt=""
+                      className="absolute pointer-events-none select-none"
+                      style={{
+                        right: -10,
+                        bottom: -8,
+                        width: 150,
+                        height: "auto",
+                        opacity: 0.15,
+                      }}
+                    />
                     <ActivityRing completed={slide.completed} total={slide.total} />
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
                         {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : "Lessons Today"}
                       </p>
@@ -256,10 +269,6 @@ export function HomepageHero({
                           transition={{ duration: 1, delay: 0.5 }}
                         />
                       </div>
-                    </div>
-                    {/* Mini car illustration */}
-                    <div className="shrink-0 self-end -mb-1">
-                      <img src={carRoadIllustration} alt="" className="w-[100px] h-auto opacity-60" />
                     </div>
                   </div>
                 </div>
