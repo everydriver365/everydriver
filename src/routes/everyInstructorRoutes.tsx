@@ -10,6 +10,7 @@ const InstructorPupils = lazy(() => import("@/pages/InstructorPupils"));
 const InstructorSchedule = lazy(() => import("@/pages/InstructorSchedule"));
 const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
 const InstructorSettings = lazy(() => import("@/pages/InstructorSettings"));
+const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettingsCategory"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
 const InstructorPay = lazy(() => import("@/pages/InstructorPay"));
@@ -34,6 +35,7 @@ export const everyInstructorRoutes = (
     <Route path="/every-instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/every-instructor/menu" element={<InstructorMenu />} />
     <Route path="/every-instructor/settings" element={<InstructorSettings />} />
+    <Route path="/every-instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
     <Route path="/every-instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/every-instructor/jobs" element={<InstructorJobs />} />
     <Route path="/every-instructor/pay" element={<InstructorPay />} />
