@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff, Camera, ShieldAlert } from "lucide-react";
+import carShellIcon from "@/assets/car-shell-icon.jpg";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
@@ -48,12 +49,7 @@ export function TelematicsTile() {
           className="w-full flex items-center gap-3 px-4 py-3 text-left"
         >
           {/* Icon */}
-          <div
-            className="flex items-center justify-center shrink-0"
-            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#F2F2F7" }}
-          >
-            <Activity className="h-4 w-4" style={{ color: "#8E8E93" }} />
-          </div>
+          <img src={carShellIcon} alt="Vehicle" className="shrink-0" style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
 
           {/* Centre */}
           <div className="flex-1 min-w-0">
