@@ -102,6 +102,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Availability", subtitle: "Working hours", icon: Clock, customIcon: availabilityIcon, accent: "#34C759", route: "/instructor/availability" },
   { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
   { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, accent: "#5856D6", route: "/instructor/nearby-friends" },
+  { title: "Find Colleague", subtitle: "School fleet", icon: Users, accent: "#007AFF", route: "/instructor/fleet-map?mode=colleagues" },
   { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, customIcon: monthEndIcon, accent: "#5856D6", route: "/instructor/month-end" },
   { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, customIcon: weeklyReportIcon, accent: "#7C3AED", route: "/instructor/weekly-report" },
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },

@@ -80,6 +80,7 @@ const additionalTiles: QuickAction[] = [
   { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 106 },
   { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
   { id: "nearby-adis", title: "Nearby ADIs", icon: "Users", route: "/instructor/nearby-friends", display_order: 108 },
+  { id: "find-colleague", title: "Find Colleague", icon: "Users", route: "/instructor/fleet-map?mode=colleagues", display_order: 109 },
   { id: "month-end", title: "Month End", icon: "FileBarChart", route: "/instructor/month-end", display_order: 109 },
   { id: "weekly-report", title: "Weekly Report", icon: "BarChart3", route: "/instructor/weekly-report", display_order: 110 },
   { id: "tasks-due", title: "Tasks Due", icon: "ClipboardCheck", route: "/instructor/outstanding-tasks", display_order: 111 },

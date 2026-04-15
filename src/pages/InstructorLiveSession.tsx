@@ -14,7 +14,8 @@ import {
   Clock,
   Settings,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  MapPin
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
