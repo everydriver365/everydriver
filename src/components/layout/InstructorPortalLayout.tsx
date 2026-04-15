@@ -635,7 +635,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : mobileBg }}>{children}</main>
+            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : '#F2F2F7' }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
