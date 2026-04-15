@@ -1,93 +1,63 @@
 
 
-## Make the Instructor Mobile App Very iOS-Styled
+## Unified Settings Hub — iOS-style category navigation
 
-This is a substantial visual overhaul targeting the mobile instructor experience across the main portal (`/instructor/*`). The DSM page and Every Instructor portal already use iOS conventions — the main portal layout and its sub-pages need to be brought in line.
+### Problem
+Settings are crammed into a single 1335-line scrollable page with 7 collapsible categories and 35+ nested collapsible tiles. On a 390px mobile screen this means:
+- Endless vertical scrolling
+- Hard to find specific settings
+- Opening one tile pushes others off-screen
+- No clear sense of where you are
 
-### What "iOS-styled" means here
+### Solution
+Replace the single monolithic page with an **iOS Settings-style two-level navigation**:
 
 ```text
-┌──────────────────────────────┐
-│  status bar (safe area)      │
-├──────────────────────────────┤
-│  Large title header          │
-│  (SF-style, left-aligned)    │
-├──────────────────────────────┤
-│  #F2F2F7 background          │
-│                              │
-│  ┌────────────────────────┐  │
-│  │ Inset grouped cards    │  │
-│  │ with rounded-[10px]    │  │
-│  │ and thin dividers      │  │
-│  └────────────────────────┘  │
-│                              │
-│  System blue (#007AFF)       │
-│  accent throughout           │
-│                              │
-├──────────────────────────────┤
-│  Tab bar (5 icons, blur bg)  │
-│  with active pill indicator  │
-└──────────────────────────────┘
+Level 1: Settings Hub               Level 2: Category Page
+┌──────────────────────────┐        ┌──────────────────────────┐
+│  ← Settings              │        │  ← Settings    Profile   │
+├──────────────────────────┤        ├──────────────────────────┤
+│  🔍 Search settings...   │        │                          │
+├──────────────────────────┤        │  ┌────────────────────┐  │
+│                          │        │  │ 👤 Profile          │  │
+│  ┌────────────────────┐  │        │  │────────────────────│  │
+│  │ 👁 Listed on Website│  │        │  │ 🚗 Vehicle & Quals  │  │
+│  │ 🎤 Hey ED          │  │        │  │────────────────────│  │
+│  └────────────────────┘  │        │  │ 🖼 Images & Media   │  │
+│                          │        │  └────────────────────┘  │
+│  PROFILE & IDENTITY    > │        │                          │
+│  COMPLIANCE & TEACHING > │        │  Each row expands inline │
+│  COURSES & PAYMENTS    > │        │  as today (collapsible)  │
+│  WEBSITE & BRANDING    > │        │                          │
+│  SCHEDULING            > │        └──────────────────────────┘
+│  TRACKING & ROUTES     > │
+│  PREFERENCES & DATA    > │
+│                          │
+└──────────────────────────┘
 ```
 
-### Scope of changes
+**Level 1** (Settings Hub) shows the search bar, quick toggles (visibility, Hey ED), and 7 tappable category rows — each navigates to Level 2.
 
-**1. Global iOS colour tokens** — `src/index.css`
-- Add an `.ios-mobile` class scope with iOS system colour variables:
-  - Background: `#F2F2F7`, Card: `#FFFFFF`, System Blue: `#007AFF`
-  - System Gray labels: `#8E8E93`, `#3A3A3C`, `#1C1C1E`
-  - Separator: `#C6C6C8` (hairline dividers)
+**Level 2** (Category Page) shows only that category's tiles with the existing collapsible expand behaviour. The back button returns to Level 1.
 
-**2. Mobile header redesign** — `src/components/layout/InstructorPortalLayout.tsx`
-- Replace the current `bg-primary` header bar with an iOS-style navigation bar:
-  - Translucent white/blur background (`bg-white/80 backdrop-blur-xl`)
-  - Dark text instead of white-on-blue
-  - Large title on home, compact inline title on sub-pages (matching iOS UINavigationBar)
-  - Back chevron using SF-style `<` with page name
-  - Hamburger menu replaced with a bottom tab bar (see below)
-- Page background changed from `#F4F7F6` to `#F2F2F7` (iOS system grouped background)
+### Key benefits
+- Each screen has at most 5-8 items instead of 35+
+- Search still works globally (navigates to the right category page and opens the tile)
+- Matches iOS Settings app mental model exactly
+- Retains every single existing setting and feature
 
-**3. Bottom tab bar** — new or updated component
-- Replace the hamburger menu navigation with a proper iOS tab bar
-- 5 tabs: Home, Schedule, Pupils, Payments, More
-- Use `MobilePortalNav` component already in the codebase
-- Frosted glass effect: `bg-white/80 backdrop-blur-xl border-t border-[#C6C6C8]/50`
-- Active state: filled icon + system blue colour + dot indicator
-- Haptic feedback already wired via `haptics.selection()`
+### Files to change
 
-**4. Card and list styling updates**
-- Existing `InstructorCard` and `IOSGroupedList` components are already well-designed — ensure they're used consistently across instructor sub-pages
-- Cards: pure white, `rounded-2xl`, subtle shadow (`0_1px_3px_rgba(0,0,0,0.08)`)
-- List rows: `IOSListRow` pattern with 29px icon squares and chevron disclosure
+| File | What |
+|------|------|
+| `src/pages/InstructorSettings.tsx` | Strip down to Level 1 hub: search bar, quick toggles, 7 category navigation rows. Remove all tile content from this file. |
+| `src/pages/InstructorSettingsCategory.tsx` | **New file.** Level 2 page receiving `categoryId` as route param. Renders only that category's `SettingsTile` components (moved from the monolith). |
+| `src/routes/instructorPortalRoutes.tsx` | Add route `/instructor/settings/:categoryId` → `InstructorSettingsCategory` |
+| `src/routes/everyInstructorRoutes.tsx` | Add matching route for Every Instructor portal |
 
-**5. Typography alignment**
-- Large titles: 28px bold (already in DSM)
-- Section headers: 13px uppercase semibold `#8E8E93` (already in DSM)
-- Body: 15-17px system font weights
-- Already using SF Pro in the font stack — no change needed
-
-**6. Safe area and status bar**
-- Already handling `env(safe-area-inset-top)` — verify consistent application
-- Ensure bottom nav respects `env(safe-area-inset-bottom)`
-
-### Files to modify
-
-| File | Change |
-|------|--------|
-| `src/index.css` | Add iOS system colour variables scoped to mobile instructor |
-| `src/components/layout/InstructorPortalLayout.tsx` | Redesign mobile header (translucent nav bar, large titles), add bottom tab bar, remove hamburger for mobile, update background colour |
-| `src/components/instructor/InstructorMobileHeader.tsx` | Update to translucent iOS nav bar style for pages that use it |
-| `src/components/instructor/EveryInstructorBottomNav.tsx` | Update styling to match frosted glass tab bar |
-| `src/components/layout/MobilePortalNav.tsx` | Add frosted glass bg option, ensure safe area bottom padding |
-
-### Files NOT modified
-- DSM page — already iOS-styled
-- Desktop sidebar — unchanged (iOS styling is mobile-only)
-- `IOSGroupedList`, `IOSSheet`, `InstructorCard` — already well-styled, no changes needed
-
-### Technical notes
-- All changes are CSS/component-level — no database or backend changes
-- Uses existing design system components where possible
-- The hamburger menu content moves to a "More" tab page (grid of all features, similar to DSM's feature grid)
-- Desktop layout remains exactly as-is (changes gated behind `isMobile`)
+### Implementation detail
+- The `SettingsTile` component and all category content (profile form, working hours editor, etc.) move into `InstructorSettingsCategory.tsx` with a switch on `categoryId`
+- Search `onSelect` calls `navigate(`/instructor/settings/${categoryId}?open=${itemId}`)` — the category page reads the query param and auto-opens that tile
+- Quick toggles (visibility, Hey ED, feature toggles) stay on Level 1 since they're frequently accessed
+- Desktop (>768px) can optionally show a sidebar + content split, but mobile gets the two-level nav
 
