@@ -72,9 +72,6 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
   );
 }
 
-    </svg>
-  );
-}
 
 export function HomepageHero({
   firstName,
