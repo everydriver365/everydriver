@@ -73,29 +73,32 @@ function getGreeting() {
   return "Good Evening";
 }
 
+// Mock data for demonstration
+const mockNextLesson = {
+  id: "mock-lesson-1",
+  start_time: (() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 2, 0, 0, 0);
+    return d.toISOString();
+  })(),
+  pickup_location: "23 Oak Avenue, BR1 3PQ",
+  pupils: { name: "Emma Thompson" },
+};
+
+const mockBadges: Record<string, number> = {
+  "Job Offers": 3,
+  "Messages": 5,
+  "Tests": 1,
+  "Fill Gaps": 2,
+};
+
 export default function DSM() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
 
-  const { data: nextLesson } = useQuery({
-    queryKey: ["dsm-next-lesson", instructor?.id],
-    queryFn: async () => {
-      if (!instructor?.id) return null;
-      const { data, error } = await supabase
-        .from("scheduled_lessons")
-        .select("id, start_time, pickup_location, pupils(name)")
-        .eq("instructor_id", instructor.id)
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (error || !data) return null;
-      return data;
-    },
-    enabled: !!instructor?.id,
-    staleTime: 60_000,
-  });
+  // Use mock data so the page is always populated
+  const nextLesson = mockNextLesson;
 
   const lessonDate = nextLesson?.start_time ? new Date(nextLesson.start_time) : null;
   const lessonDay = lessonDate
