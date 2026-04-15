@@ -90,6 +90,7 @@ import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconc
 import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchiseFees";
+import { AdminEventsManager } from "@/components/admin/AdminEventsManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
