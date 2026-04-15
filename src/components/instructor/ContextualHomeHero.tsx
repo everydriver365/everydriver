@@ -136,24 +136,30 @@ export function ContextualHomeHero({
     nextLesson?.pickupPostcode || null
   );
 
-  // Weekly progress
+  // Daily progress (completed lessons out of total today)
+  const completedToday = todayOverview?.completedLessons || 0;
+  const totalToday = todayOverview?.lessonCount || 0;
+  const dailyPercent = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0;
+  const clampedDaily = Math.min(dailyPercent, 100);
+
+  // Weekly progress (still used in expanded section)
   const hoursThisWeek = weeklyStats?.hoursThisWeek || 0;
   const hoursGoal = weeklyStats?.hoursGoal || 42;
   const progressPercent = weeklyStats?.progressPercent || 0;
   const clampedProgress = Math.min(progressPercent, 100);
   const hoursRemaining = Math.max(hoursGoal - hoursThisWeek, 0);
 
-  // SVG ring math
+  // SVG ring math — now driven by daily progress
   const radius = 25;
   const ringStroke = 8;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
-  const heroGradientColors = clampedProgress >= 80
+  const strokeDashoffset = circumference - (clampedDaily / 100) * circumference;
+  const heroGradientColors = clampedDaily >= 80
     ? { start: "#22c55e", end: "#06b6d4" }
-    : clampedProgress >= 50
+    : clampedDaily >= 50
     ? { start: "#eab308", end: "#22c55e" }
-    : { start: "#ef4444", end: "#f97316" };
-  const heroGlowColor = clampedProgress >= 80 ? "rgba(34,197,94,0.4)" : clampedProgress >= 50 ? "rgba(234,179,8,0.4)" : "rgba(239,68,68,0.4)";
+    : { start: "#3b82f6", end: "#6366f1" };
+  const heroGlowColor = clampedDaily >= 80 ? "rgba(34,197,94,0.4)" : clampedDaily >= 50 ? "rgba(234,179,8,0.4)" : "rgba(99,102,241,0.4)";
 
   // Parallax
   const { scrollY } = useScroll();
@@ -275,11 +281,10 @@ export function ContextualHomeHero({
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-lg font-bold text-foreground leading-none">
-                      {hoursThisWeek}
-                      <span className="text-sm">h</span>
+                      {completedToday}/{totalToday}
                     </span>
                     <span className="text-[10px] text-muted-foreground font-medium">
-                      {clampedProgress}%
+                      today
                     </span>
                   </div>
                 </div>
