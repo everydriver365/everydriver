@@ -80,6 +80,7 @@ interface TileDef {
   iconBg: string;
   iconSrc?: string;
   category: string;
+  externalUrl?: string;
 }
 
 // ─── Tile definitions per category ───────────────────────────────────

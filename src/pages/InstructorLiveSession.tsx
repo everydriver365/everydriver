@@ -15,7 +15,8 @@ import {
   Settings,
   Loader2,
   ExternalLink,
-  MapPin
+  MapPin,
+  Camera
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
