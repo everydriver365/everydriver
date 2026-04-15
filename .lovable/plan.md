@@ -1,45 +1,59 @@
-<final-text>Root cause summary
 
-- The Continue button currently does nothing because `src/pages/InstructorGPSSetup.tsx` passes empty callbacks to `PreFlightChecks`:
-  - `onAllPassed={() => {}}`
-  - `onSkip={() => {}}`
-- The GPS setup page has the device creation logic (`deviceId`, `deviceName`, `createDevice`) but the actual registration form is missing from the rendered UI, so there is no way to add/connect a tracker from that page.
-- The tracking page is also using the wrong condition for “device configured”. In `src/pages/InstructorLiveSession.tsx` it only loads `gps_devices` where `is_active = true`, but the current network data shows Charlotte already exists for this instructor and has recent GPS/heartbeat data while `is_active` is `false`. That makes the page incorrectly fall back to “No Device Configured”.
 
-Implementation plan
+## Consolidate All Settings onto One Searchable Page
 
-1. Fix the GPS setup page interaction
-- Restore the missing device registration section in `src/pages/InstructorGPSSetup.tsx` using the existing state and `createDevice()` handler.
-- Add the expected inputs and CTA so the user can actually register a Radius device from this screen.
+### Current structure
+Settings are split across two pages: `InstructorSettings.tsx` (category list with navigation) routes to `InstructorSettingsCategory.tsx` (individual category with collapsible tiles). The user must tap a category, then find the setting — two levels deep.
 
-2. Make the Pre-Flight Continue button do something useful
-- Replace the no-op callbacks with real handlers.
-- If no device exists, Continue should scroll/focus to the registration form.
-- If a device already exists, Continue should route back to `/instructor/tracking`.
+### What changes
 
-3. Fix the tracker page device lookup
-- Update `src/pages/InstructorLiveSession.tsx` so it no longer requires `is_active = true` just to consider a device “configured”.
-- Load the instructor’s Radius devices, choose the most recently seen one, and keep using timestamp/heartbeat/ignition logic to decide whether it is connected, parked, recent, or offline.
+**Merge everything into a single scrollable page** with all ~35 settings tiles visible, grouped by category headers. The existing search bar filters tiles in real time — non-matching tiles hide, matching ones auto-expand.
 
-4. Align provider detection
-- Update `src/hooks/useActiveTrackingProvider.ts` so it does not hide the active Radius provider just because `is_active` is false on an otherwise valid device row.
-- This keeps GPS setup, tracking, and fleet views consistent.
+### Technical approach
 
-Technical details
+**File: `src/pages/InstructorSettings.tsx`** — Major rewrite
+1. Import all the settings components currently in `InstructorSettingsCategory.tsx` (profile editors, course managers, compliance tracker, etc.)
+2. Remove the category navigation cards (the chevron list)
+3. Render all tiles inline, grouped under category headers (e.g. "Profile & Identity", "Courses & Payments")
+4. Reuse the existing `SettingsTile` collapsible pattern from `InstructorSettingsCategory.tsx`
+5. Enhance search: filter the `IOSSearchBar` or `SettingsSearchBar` to show/hide tiles by matching title/description, and auto-open matching tiles
+6. Keep quick toggles (visibility, Hey ED, feature toggles) at the top
 
-- `src/pages/InstructorGPSSetup.tsx`
-  - Re-add UI for `deviceId`, `deviceName`, and the register button.
-  - Wire `PreFlightChecks` callbacks to real handlers.
-- `src/pages/InstructorLiveSession.tsx`
-  - Remove the `.eq("is_active", true)` gate from the initial `gps_devices` query.
-  - Treat an existing device row as configured; treat freshness separately.
-- `src/hooks/useActiveTrackingProvider.ts`
-  - Stop depending only on `is_active` for provider selection.
+**File: `src/pages/InstructorSettingsCategory.tsx`** — Keep for route compatibility
+- Redirect `/instructor/settings/:categoryId` to `/instructor/settings` with `?open=` and `?category=` params so existing links/bookmarks still work
 
-Verification
+**Search behaviour:**
+- Empty query: all tiles visible, all collapsed
+- Typing: only matching tiles shown, auto-expanded
+- Clear: reset to default view
 
-- Open `/instructor/settings/gps` and confirm Continue now advances the flow.
-- Register or select the existing tracker and return to `/instructor/tracking`.
-- Confirm Charlotte shows on the tracking page instead of the “No Device Configured” empty state.
-- Confirm stale devices still appear as offline/parked rather than disappearing.
-- Test end to end: GPS setup → tracking page → fleet map.</final-text>
+### Structure on page
+```text
+┌─────────────────────────┐
+│ Settings (large title)  │
+│ [Search settings...]    │
+│                         │
+│ ── Quick Toggles ────── │
+│ Listed on Website  [sw] │
+│ Hey ED             [sw] │
+│ Feature Toggles         │
+│                         │
+│ ── Profile & Identity ─ │
+│ ▸ Profile               │
+│ ▸ Vehicle & Quals       │
+│ ▸ Images & Media        │
+│                         │
+│ ── Compliance ───────── │
+│ ▸ Compliance & CPD      │
+│ ▸ Test Centres          │
+│ ▸ Terms & Conditions    │
+│                         │
+│ ... (all categories)    │
+└─────────────────────────┘
+```
+
+### Files to edit
+1. **`src/pages/InstructorSettings.tsx`** — Merge in all tile content from `InstructorSettingsCategory.tsx`, add search filtering
+2. **`src/pages/InstructorSettingsCategory.tsx`** — Convert to a redirect to the main settings page
+3. **`src/components/instructor/SettingsSearchBar.tsx`** — Update to support live filtering callback (return filtered IDs to parent) instead of only dropdown navigation
+
