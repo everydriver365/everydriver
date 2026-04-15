@@ -1,19 +1,24 @@
 
 
-# Make Hero & Activity Tiles Match Quick Access Elevation
+# Match iPhone Safe Areas to Instructor Header Color
 
-## What's changing
-The "Good evening" hero card and the 4 activity tiles (Job Offers, Messages, Tests, Fill Gaps) currently have a flat, subtle shadow (`0 1px 3px rgba(0,0,0,0.08)` + border). The Quick Access tiles use a more elevated, prominent shadow that makes them "pop". We'll apply that same shadow style to the hero and activity tiles.
+## What's happening now
+The instructor mobile app header uses a frosted white glass (`bg-white/80 backdrop-blur-xl`), but the iPhone status bar safe area is colored `#142741` (dark navy) via the `theme-color` meta tag. This creates a visual mismatch — the status bar area appears dark while the header below it is white.
 
 ## Changes
 
-### 1. `src/components/instructor/HomepageHero.tsx`
-- Update the hero card's `boxShadow` from `"0 1px 3px rgba(0,0,0,0.08)"` to the Quick Access style: `"inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)"`
-- Remove the `border: "0.5px solid #E5E5EA"` to match the borderless Quick Access look
+### 1. `src/components/pwa/DynamicPWAMeta.tsx`
+- Update the `instructor` config's `themeColor` from `"#142741"` to `"#FFFFFF"` so the iPhone status bar area matches the white frosted header.
 
-### 2. `src/components/instructor/ActivityTilesGrid.tsx`
-- Update each activity tile's `boxShadow` from `"0 1px 3px rgba(0,0,0,0.08)"` to the same elevated shadow
-- Remove the `border: "0.5px solid #E5E5EA"` from each tile
+### 2. `index.html`
+- Update the default `<meta name="theme-color" content="#142741" />` to `"#FFFFFF"` so it matches on first load before the dynamic script runs.
 
-Both components will then visually match the SwipeableQuickAccess tiles' elevated card style.
+### 3. `src/components/instructor/InstructorMobileHeader.tsx`
+- Line 78: the safe area fill div already uses `bg-white/80` — no change needed, it already matches.
+
+### 4. `src/index.css`
+- Line 386-388: Update the `html` background-color rule to also account for the white safe area on instructor routes (the current `hsl(var(--background))` should already resolve to the right value, but we'll verify it works correctly with the white theme-color).
+
+### Result
+The iPhone status bar, notch area, and bottom home indicator will all appear white, seamlessly blending with the frosted glass header and bottom nav.
 
