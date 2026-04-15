@@ -499,11 +499,12 @@ Deno.serve(async (req) => {
         roadName = await reverseGeocode(lat, lon);
       }
 
-      // Resolve speed limit: provider value → cache → Overpass fallback
+      // Resolve speed limit: provider value → cache → Overpass → UK defaults
       let resolvedSpeedLimit: number | null = pos.speed_limit_kmh ?? null;
       if (lat && lon) {
         try {
           resolvedSpeedLimit = await resolveSpeedLimit(supabase, lat, lon, resolvedSpeedLimit);
+          console.log(`[RadiusPoller] Speed limit for ${lat.toFixed(4)},${lon.toFixed(4)}: ${resolvedSpeedLimit ?? 'null'} km/h`);
         } catch (e) {
           console.warn("[RadiusPoller] Speed limit lookup error:", e.message);
         }
