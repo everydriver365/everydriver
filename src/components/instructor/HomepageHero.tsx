@@ -49,7 +49,7 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
         </defs>
         <circle
           cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#E5E5EA" strokeWidth={stroke}
+          fill="none" stroke={total === 0 ? "rgba(0,122,255,0.15)" : "#E5E5EA"} strokeWidth={stroke}
         />
         <motion.circle
           cx={size / 2} cy={size / 2} r={radius}
