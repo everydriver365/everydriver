@@ -80,6 +80,7 @@ interface TileDef {
   iconBg: string;
   iconSrc?: string;
   category: string;
+  externalUrl?: string;
 }
 
 // ─── Tile definitions per category ───────────────────────────────────
@@ -130,6 +131,7 @@ const allTiles: TileDef[] = [
   // Tracking
   { id: "gps-mobile", title: "Mobile GPS Tracking", description: "Link your GPS Gate account", icon: Satellite, iconColor: "text-cyan-600", iconBg: "bg-cyan-100 dark:bg-cyan-900/30", category: "tracking" },
   { id: "routes", title: "Saved Routes", description: "View and manage your recorded driving routes", icon: Route, iconColor: "text-fuchsia-600", iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/30", category: "tracking" },
+  { id: "dashcam-portal", title: "Dashcam Portal", description: "View footage on Kinesis Fleet Pro", icon: Camera, iconColor: "text-slate-600", iconBg: "bg-slate-100 dark:bg-slate-900/30", category: "tracking", externalUrl: "https://www.kinesisfleetpro.com/#/login;next=%2Fstatus" },
   // Preferences
   { id: "demo-mode", title: "Demo Mode", description: "Preview the app with sample data", icon: Eye, iconColor: "text-amber-600", iconBg: "bg-amber-100 dark:bg-amber-900/30", category: "preferences" },
   { id: "appearance", title: "Appearance", description: "Layout, hero image & wallpaper", icon: Paintbrush, iconColor: "text-pink-600", iconBg: "bg-pink-100 dark:bg-pink-900/30", category: "preferences" },
@@ -312,6 +314,29 @@ export default function InstructorSettings() {
 
   const SettingsTile = ({ tile, statusBadge, children }: { tile: TileDef; statusBadge?: React.ReactNode; children: React.ReactNode }) => {
     const Icon = tile.icon;
+
+    if (tile.externalUrl) {
+      return (
+        <div id={`settings-tile-${tile.id}`} className="overflow-hidden transition-all duration-300">
+          <button
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+            onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn("h-[29px] w-[29px] rounded-[7px] flex items-center justify-center shrink-0", tile.iconBg)}>
+                <Icon className={cn("h-4 w-4", tile.iconColor)} />
+              </div>
+              <div className="text-left">
+                <span className="text-[15px] font-normal text-foreground">{tile.title}</span>
+                <div className="text-[13px] text-muted-foreground">{tile.description}</div>
+              </div>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground/40" />
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div id={`settings-tile-${tile.id}`} className="overflow-hidden transition-all duration-300">
         <Collapsible open={isOpen(tile.id)} onOpenChange={() => toggleSection(tile.id)}>
