@@ -1,74 +1,64 @@
 
 
-## Make Instructor App Consistently iOS-Styled
+## Elevate Instructor Pages — From Flat to Rich iOS
 
-The homepage already uses iOS-native design language (#F2F2F7 bg, SF Pro fonts, GlassCards, rounded-[16px] tiles with hairline borders, system blue accents). The layout wrapper already applies `#F2F2F7` to all mobile pages. Several sub-pages still use shadcn Card/Tabs components that look out of place. This plan brings visual consistency across all key instructor pages.
+The iOS structure is right (rounded-[10px], SF Pro, section headers), but the pages feel monotone because every card is plain white with a thin border. Real iOS apps like Health, Wallet, and Fitness use **colour accents, subtle gradients, tinted icon backgrounds, and layered depth** to create visual interest.
 
-### What's already iOS-styled
-- **Homepage** (all layout variants) — full iOS native
-- **Settings** — already uses 29px icon roundels, grouped list dividers, collapsible tiles
-- **Layout header/nav** — frosted glass `backdrop-blur-xl`, system blue back chevron, iOS bottom tab bar
+### Design upgrades
 
-### Pages to update (mobile views only, per mobile update policy)
+**1. Tinted section hero cards** — Each major page gets a coloured hero/summary card at the top (like the Pay vault card already has), creating an immediate visual anchor:
+- **Health**: Rose/pink gradient hero showing today's wellness score
+- **Pipeline**: Blue-to-indigo gradient showing lead funnel summary
+- **Schedule**: Warm amber gradient with today's lesson count
+- **Notifications**: Purple gradient with unread badge count
+- **Messages**: Indigo gradient with conversation stats
+- **Expenses**: Emerald gradient with month-to-date spend
+- **Jobs**: Teal gradient with pending offers count
 
-**Batch 1 — High-traffic pages**
+**2. Coloured icon roundels on quick-stat tiles** — Replace the monochrome `bg-primary/10` icon circles with category-specific tinted backgrounds (rose for health, sky for water, amber for alerts, emerald for money) — similar to iOS Settings icons.
 
-| Page | Current | Change |
-|------|---------|--------|
-| `InstructorPay.tsx` | Mixed — vault card is good, but quick-action grid uses inconsistent styles | Wrap action tiles in iOS grouped list style; standardise section headers to `text-[13px] uppercase tracking-wide` |
-| `InstructorSchedule.tsx` | Uses `InstructorPageHeader` with 44px circle icon, shadcn `DropdownMenu` | Replace header with compact iOS nav title; style view-mode selector as `IOSSegmentedControl`; remove `InstructorPageHeader` |
-| `InstructorPupils.tsx` | Uses `IOSLargeTitle` + `IOSSearchBar` ✓ but pupil cards use shadcn `Card` | Restyle pupil list items as iOS grouped list rows; use `IOSGroupedList` wrapper |
-| `InstructorPipeline.tsx` | Uses `InstructorPageHeader` with 32px icon | Replace with iOS inline title; style Kanban columns with iOS card aesthetic |
-| `InstructorMessages.tsx` | Delegates to `InstructorInbox` | Style conversation list as iOS-style rows (avatar + name + preview + timestamp + chevron) |
+**3. Subtle card gradients** — Replace flat `bg-card border` with `bg-gradient-to-br from-white to-[color]/5` on interactive tiles, giving them warmth without being heavy.
 
-**Batch 2 — Secondary pages**
+**4. Staggered entrance animations** — Add `motion.div` with cascading `delay` values (already partially done on Pay) to all page sections, making content feel alive on load.
 
-| Page | Change |
+**5. Improved shadow layering** — Upgrade from `shadow-[0_2px_8px_rgba(0,0,0,0.04)]` to the richer `InstructorCard`-style multi-layer shadows on key interactive tiles.
+
+**6. Section divider lines** — Add thin `h-px bg-border/30 mx-4` dividers between major sections for clearer visual rhythm.
+
+### Files to edit
+
+| File | Change |
 |------|--------|
-| `InstructorHealth.tsx` | Wrap health cards in GlassCard; iOS grouped sections |
-| `InstructorExpenses.tsx` | iOS grouped list for expense entries |
-| `InstructorAccounts.tsx` | iOS section headers + grouped card style |
-| `InstructorJobs.tsx` | Job cards as iOS list rows |
-| `InstructorNotifications.tsx` | Notification items as iOS list rows |
+| `InstructorHealth.tsx` | Add rose gradient hero card; colour-code stat tiles |
+| `InstructorPipeline.tsx` | Add blue gradient summary banner above Kanban |
+| `InstructorNotifications.tsx` | Add purple gradient unread hero; improve notification row styling |
+| `InstructorMessages.tsx` | Add indigo gradient stats hero |
+| `InstructorExpenses.tsx` | Add emerald gradient month summary hero |
+| `InstructorJobs.tsx` | Add teal gradient hero with pending count |
+| `InstructorPay.tsx` | Improve summary tile gradients and icon colours (vault card is already good) |
+| `InstructorSchedule.tsx` | Add amber/warm gradient today summary |
+| `KanbanBoard.tsx` | Tint column headers with stage colours; improve card depth |
+| `InstructorAccounts.tsx` | Add gradient hero showing balance overview |
 
-### Design tokens to standardise
+### What stays the same
+- Page structure, font stack, `IOSPageWrapper` usage
+- Functional logic — zero behaviour changes
+- Mobile-only scope (per policy)
 
-All updated pages will use:
-- **Background**: inherited from layout (`#F2F2F7`)
-- **Cards**: `bg-white rounded-[10px] shadow-sm` (not shadcn `bg-card border`)
-- **Section headers**: `text-[13px] font-normal text-muted-foreground uppercase tracking-wide px-4 pb-1.5`
-- **List dividers**: `divide-y divide-border/40` inside card containers
-- **Row padding**: `px-4 py-3`
-- **Icon containers**: `h-[29px] w-[29px] rounded-[7px]` with coloured backgrounds
-- **Font stack**: `-apple-system, 'SF Pro Text', sans-serif` (already set on homepage)
-- **Accent blue**: `hsl(211 100% 50%)` for interactive elements
+### Pattern for hero cards
+```text
+┌──────────────────────────────────┐
+│  gradient bg (e.g. rose→pink)    │
+│  ┌──┐                           │
+│  │🏥│  Health & Wellness         │
+│  └──┘  3 metrics tracked today   │
+│                                  │
+│  ┌──────┐ ┌──────┐ ┌──────┐     │
+│  │ 72kg │ │ 6/8  │ │120/80│     │
+│  │Weight│ │Water │ │ BP   │     │
+│  └──────┘ └──────┘ └──────┘     │
+└──────────────────────────────────┘
+```
 
-### Implementation approach
-
-1. **Create a shared `IOSPageWrapper`** component that applies the iOS font stack and consistent spacing to any page content (avoiding per-page duplication)
-2. Update each page's mobile view in priority order (Batch 1 first)
-3. Replace `InstructorPageHeader` usage with a simpler iOS inline title pattern
-4. Swap shadcn `Card` wrappers for `bg-white rounded-[10px] shadow-sm` or `GlassCard` where appropriate
-5. Convert `Tabs`/`TabsList` to `IOSSegmentedControl` where used as view-mode toggles
-
-### Files to create
-- `src/components/instructor/IOSPageWrapper.tsx` — shared wrapper for consistent iOS page styling
-
-### Files to edit (Batch 1)
-- `src/pages/InstructorSchedule.tsx`
-- `src/pages/InstructorPupils.tsx`
-- `src/pages/InstructorPipeline.tsx`
-- `src/pages/InstructorMessages.tsx`
-- `src/pages/InstructorPay.tsx`
-- `src/components/instructor/InstructorInbox.tsx`
-- `src/components/instructor/pipeline/KanbanBoard.tsx`
-
-### Files to edit (Batch 2)
-- `src/pages/InstructorHealth.tsx`
-- `src/pages/InstructorExpenses.tsx`
-- `src/pages/InstructorAccounts.tsx`
-- `src/pages/InstructorJobs.tsx`
-- `src/pages/InstructorNotifications.tsx`
-
-This is a large visual refresh — I'll implement Batch 1 first, then Batch 2 in a follow-up if you're happy with the direction.
+Each hero uses the same pattern as the existing Pay vault card — `bg-gradient-to-br from-[color] via-[color]/90 to-[color]/75` with white text and a radial glow overlay.
 
