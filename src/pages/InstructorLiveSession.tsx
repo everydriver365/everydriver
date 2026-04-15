@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,9 @@ import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceS
 
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
+
+const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
 
 
 interface GPSDevice {
@@ -892,6 +895,23 @@ export default function InstructorLiveSession() {
        <div className="min-h-[calc(100dvh-120px)] bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
+            {/* Live / Fleet toggle */}
+            <IOSSegmentedControl
+              segments={[
+                { value: "live", label: "Live" },
+                { value: "fleet", label: "Fleet" },
+              ]}
+              value={viewMode}
+              onChange={(v) => setViewMode(v as "live" | "fleet")}
+            />
+
+            {viewMode === "fleet" ? (
+              <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+                <div className="rounded-2xl overflow-hidden border border-border" style={{ height: "70vh" }}>
+                  <InstructorFleetMap />
+                </div>
+              </Suspense>
+            ) : (<>
             {/* Device Selector Dropdown (all providers) */}
             {instructor?.id && (
               <DeviceSelectorDropdown
@@ -947,17 +967,6 @@ export default function InstructorLiveSession() {
               ignitionOn={device.last_ignition_status}
             />
 
-           {/* Fleet Map Link */}
-           <button
-             onClick={() => navigate("/instructor/fleet-map")}
-             className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors mb-3"
-           >
-             <div className="flex items-center gap-2">
-               <MapPin className="h-4 w-4 text-primary" />
-               <span className="text-sm font-medium text-foreground">Fleet Map</span>
-             </div>
-             <span className="text-xs text-muted-foreground">View all vehicles →</span>
-           </button>
 
            {/* Dashcam Portal Link */}
            <button
@@ -1004,6 +1013,7 @@ export default function InstructorLiveSession() {
            {instructor?.id && (
              <RecentSessionsList instructorId={instructor.id} />
            )}
+            </>)}
         </div>
 
         {/* Trip Summary Sheet */}
