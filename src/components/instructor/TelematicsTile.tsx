@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff } from "lucide-react";
+import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff, Camera, ShieldAlert } from "lucide-react";
+import carHealthIcon from "@/assets/car-health-icon.png";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
@@ -24,6 +25,8 @@ export function TelematicsTile() {
   const speedKmh = primaryDevice?.last_speed_kmh;
   const hasFaults = faultCodes && faultCodes.length > 0;
   const hasOBDData = fuelPercent != null || coolantTemp != null;
+  const dashcamActive = primaryDevice?.last_dashcam_active;
+  const panicPressed = primaryDevice?.last_panic_pressed;
 
   const vehicleLabel = primaryVehicle
     ? `${primaryVehicle.registration || ""}${primaryVehicle.make ? ` · ${primaryVehicle.make}` : ""}${primaryVehicle.model ? ` ${primaryVehicle.model}` : ""}`.trim()
@@ -43,15 +46,24 @@ export function TelematicsTile() {
       >
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left relative overflow-hidden"
         >
-          {/* Icon */}
-          <div
-            className="flex items-center justify-center shrink-0"
-            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#F2F2F7" }}
-          >
-            <Activity className="h-4 w-4" style={{ color: "#8E8E93" }} />
-          </div>
+          {/* Background car image */}
+          <img
+            src={carHealthIcon}
+            alt=""
+            aria-hidden="true"
+            className="absolute pointer-events-none select-none"
+            style={{
+              right: -15,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 120,
+              height: 120,
+              objectFit: "contain",
+              opacity: 0.15,
+            }}
+          />
 
           {/* Centre */}
           <div className="flex-1 min-w-0">
@@ -140,6 +152,26 @@ export function TelematicsTile() {
                             {fault.code}: {fault.description}
                           </p>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Dashcam & Panic indicators */}
+                    {(dashcamActive != null || panicPressed != null) && (
+                      <div className="flex items-center gap-2">
+                        {dashcamActive != null && (
+                          <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
+                            <Camera className="h-3 w-3" style={{ color: dashcamActive ? "#30D158" : "#8E8E93" }} />
+                            <span style={{ color: dashcamActive ? "#30D158" : "#8E8E93", fontWeight: 600 }}>
+                              {dashcamActive ? "Cam On" : "Cam Off"}
+                            </span>
+                          </div>
+                        )}
+                        {panicPressed && (
+                          <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
+                            <ShieldAlert className="h-3 w-3 animate-pulse" style={{ color: "#FF3B30" }} />
+                            <span style={{ color: "#FF3B30", fontWeight: 700 }}>PANIC</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
