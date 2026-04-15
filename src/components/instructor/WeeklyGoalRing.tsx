@@ -19,8 +19,8 @@ export function WeeklyGoalRing({
   className = "",
 }: WeeklyGoalRingProps) {
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
-  const radius = 22;
-  const strokeWidth = 4;
+  const radius = 20;
+  const strokeWidth = 6;
   const circumference = 2 * Math.PI * radius;
   const clampedProgress = Math.min(progressPercent, 100);
   const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
@@ -43,10 +43,11 @@ export function WeeklyGoalRing({
     }
   }, [progressPercent, hasTriggeredConfetti]);
 
-  // Gradient colors based on progress
+  // Gradient colors based on progress — iOS Health style
   const getGradientColors = () => {
-    if (progressPercent >= 100) return { start: "#ef4444", end: "#dc2626" }; // red
-    return { start: "#ef4444", end: "#f87171" }; // red gradient
+    if (progressPercent >= 100) return { start: "#22c55e", end: "#06b6d4" }; // green→cyan
+    if (progressPercent >= 60) return { start: "#eab308", end: "#22c55e" }; // yellow→green
+    return { start: "#ef4444", end: "#f97316" }; // red→orange
   };
 
   const gradientColors = getGradientColors();
@@ -88,7 +89,7 @@ export function WeeklyGoalRing({
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             stroke={`url(#${gradientId})`}
-            filter={progressPercent >= 50 ? `url(#${glowId})` : undefined}
+            filter={`url(#${glowId})`}
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset }}
             transition={{ duration: 1, ease: "easeOut" }}

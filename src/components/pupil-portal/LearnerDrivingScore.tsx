@@ -4,42 +4,61 @@ import { motion } from "framer-motion";
 import { Trophy, TrendingUp, TrendingDown, Minus, Shield, Zap, Gauge } from "lucide-react";
 
 function ScoreRing({ score, size = 100 }: { score: number; size?: number }) {
-  const radius = (size - 12) / 2;
+  const strokeWidth = 12;
+  const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
 
-  const color =
-    score >= 80 ? "text-emerald-500" : score >= 60 ? "text-amber-500" : "text-red-500";
+  const gradientColors = score >= 80
+    ? { start: "#22c55e", end: "#06b6d4" }
+    : score >= 60
+    ? { start: "#eab308", end: "#22c55e" }
+    : { start: "#ef4444", end: "#f97316" };
   const label = score >= 80 ? "Excellent" : score >= 60 ? "Good" : "Needs work";
+  const glowColor = score >= 80 ? "rgba(34,197,94,0.4)" : score >= 60 ? "rgba(234,179,8,0.4)" : "rgba(239,68,68,0.4)";
+
+  const tipAngle = (score / 100) * 2 * Math.PI - Math.PI / 2;
+  const tipX = size / 2 + radius * Math.cos(tipAngle);
+  const tipY = size / 2 + radius * Math.sin(tipAngle);
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
+        <defs>
+          <linearGradient id="drivingScoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={gradientColors.start} />
+            <stop offset="100%" stopColor={gradientColors.end} />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
           stroke="hsl(var(--muted))"
-          strokeWidth={8}
+          strokeWidth={strokeWidth}
+          opacity="0.1"
         />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="currentColor"
-          strokeWidth={8}
+          stroke="url(#drivingScoreGrad)"
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className={color}
+          style={{ filter: `drop-shadow(0 0 6px ${glowColor})` }}
         />
+        {score > 2 && (
+          <circle cx={tipX} cy={tipY} r={strokeWidth / 2 + 1} fill={gradientColors.end} opacity="0.5" style={{ filter: "blur(2px)" }} />
+        )}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-2xl font-bold ${color}`}>{score}</span>
+        <span className="text-2xl font-bold" style={{ color: gradientColors.end }}>{score}</span>
         <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">{label}</span>
       </div>
     </div>

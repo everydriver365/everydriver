@@ -30,7 +30,7 @@ interface HomepageHeroProps {
 // Apple Health-style activity ring
 function ActivityRing({ completed, total }: { completed: number; total: number }) {
   const size = 80;
-  const stroke = 8;
+  const stroke = 12;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = total > 0 ? Math.min(completed / total, 1) : 0;
@@ -47,13 +47,13 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
         {/* Track */}
         <circle
           cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#D4F5DF" strokeWidth={stroke}
+          fill="none" stroke="#D4F5DF" strokeWidth={stroke} opacity="0.1"
         />
         {/* Progress gradient */}
         <defs>
           <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5EE87A" />
-            <stop offset="100%" stopColor="#25A244" />
+            <stop offset="0%" stopColor="#22c55e" />
+            <stop offset="100%" stopColor="#06b6d4" />
           </linearGradient>
         </defs>
         <motion.circle
@@ -64,15 +64,18 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
+          style={{ filter: "drop-shadow(0 0 6px rgba(34,197,94,0.4))" }}
         />
         {/* End cap dot */}
         {progress > 0.02 && (
           <motion.circle
-            cx={cx} cy={cy} r={stroke / 2}
-            fill="#25A244"
+            cx={cx} cy={cy} r={stroke / 2 + 1}
+            fill="#06b6d4"
+            opacity="0.5"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 0.5 }}
             transition={{ delay: 1.4 }}
+            style={{ filter: "blur(2px)" }}
           />
         )}
       </svg>
