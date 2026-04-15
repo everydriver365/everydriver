@@ -650,6 +650,7 @@ export function InstructorMobileHome({
 
         {/* Waiting Room & Discover Features */}
         <BottomPromoGroup className="mt-6 mb-2" />
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Upcoming Events</p>
         <UpcomingEventsCard className="mb-6" />
 
 
