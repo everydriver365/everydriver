@@ -26,7 +26,7 @@ interface DeviceSelectorDropdownProps {
 
 function formatProvider(provider: string | null): string {
   if (!provider) return "";
-  if (provider === "geotab") return "Geotab";
+  if (provider === "geotab") return "GPS";
   if (provider === "radius") return "Radius";
   return provider.charAt(0).toUpperCase() + provider.slice(1);
 }

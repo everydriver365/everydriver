@@ -852,19 +852,8 @@ export default function InstructorLiveSession() {
             </div>
           )}
 
-          {/* Timer badge */}
-          <div className="absolute top-24 right-4 z-30 flex items-center gap-2">
-            {device.tracking_provider === "geotab" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 bg-[#1c1c1e]/90 text-white border-0 hover:bg-[#1c1c1e] text-xs"
-                onClick={() => window.open("https://my.geotab.com", "_blank")}
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                Geotab Live
-              </Button>
-            )}
+            {/* Timer badge */}
+            <div className="absolute top-24 right-4 z-30 flex items-center gap-2">
             <Badge variant="secondary" className="text-xs px-2 py-1 bg-[#1c1c1e]/90 text-white border-0">
               <Clock className="h-3 w-3 mr-1" />
               {formatElapsedTime(elapsedTime)}

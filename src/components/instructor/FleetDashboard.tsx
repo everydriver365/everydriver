@@ -64,7 +64,7 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
   const toDate = useMemo(() => new Date(), [rangeDays]);
   const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
 
-  // Live driver score from geotab events
+  // Live driver score from driver events
   const { data: driverData } = useGeotabDriverEvents(instructorId, fromDate, toDate);
   const driverScore = driverData?.scores?.overall ?? null;
 
