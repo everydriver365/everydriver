@@ -55,13 +55,13 @@ export function TelematicsTile() {
             aria-hidden="true"
             className="absolute pointer-events-none select-none"
             style={{
-              right: -10,
+              right: -15,
               top: "50%",
               transform: "translateY(-50%)",
-              width: 80,
-              height: 80,
+              width: 120,
+              height: 120,
               objectFit: "contain",
-              opacity: 0.12,
+              opacity: 0.15,
             }}
           />
 
