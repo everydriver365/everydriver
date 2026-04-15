@@ -84,7 +84,7 @@ export default function DSM() {
       if (!instructor?.id) return null;
       const { data, error } = await supabase
         .from("scheduled_lessons")
-        .select("id, start_time, end_time, pickup_location, pupils(name)")
+        .select("id, start_time, pickup_location, pupils(name)")
         .eq("instructor_id", instructor.id)
         .gte("start_time", new Date().toISOString())
         .order("start_time", { ascending: true })

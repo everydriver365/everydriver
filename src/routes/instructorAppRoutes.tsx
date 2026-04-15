@@ -18,6 +18,7 @@ const InstructorOnboarding = lazy(() => import("@/pages/instructor-app/onboardin
 const OnboardingPreview = lazy(() => import("@/pages/instructor-app/onboarding/OnboardingPreview"));
 const DrivingSchools = lazy(() => import("@/pages/instructor-app/DrivingSchools"));
 const InstructorMTD = lazy(() => import("@/pages/instructor-app/InstructorMTD"));
+const DSM = lazy(() => import("@/pages/instructor-app/DSM"));
 
 export const instructorAppRoutes = (
   <>
@@ -40,5 +41,6 @@ export const instructorAppRoutes = (
     <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
     <Route path="/instructor-app/mtd" element={<InstructorMTD />} />
     <Route path="/driving-schools" element={<DrivingSchools />} />
+    <Route path="/instructor-app/dsm" element={<DSM />} />
   </>
 );
