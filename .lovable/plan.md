@@ -1,23 +1,26 @@
 
 
-# Stop Floating Tracking Bar from Auto-Appearing
+# Stop Tracking Bar from Auto-Appearing
 
-## Problem
-The `FloatingSessionBar` (showing "Tracking · LIVE · 3 min · 0 mph") appears on the homepage whenever the `gps_devices` table has a row with `is_active = true` and a `current_session_id` set. It doesn't verify whether the instructor manually started a tracking session — stale or auto-created data triggers it.
+## Root Cause
+The `radius-poller` edge function automatically creates `lesson_telematics` sessions whenever it detects the vehicle ignition is ON. The `FloatingSessionBar` then picks up this session because the GPS device data is genuinely live (within 60 seconds). This is why the bar keeps popping up without pressing "Start Track."
 
-## What stays untouched
-Weather alerts, driving alerts, and all other banners remain as-is.
+## Solution
+Add a `manually_started` boolean flag to `lesson_telematics`. The `FloatingSessionBar` will only show sessions where this flag is `true`. Auto-created sessions from the poller will default to `false` and continue recording GPS data silently in the background.
 
 ## Changes
 
-### 1. `src/hooks/useActiveSession.ts`
-Add a stricter liveness check: only return an active session if `last_seen_at` is within the last **60 seconds** (not 5 minutes). This prevents stale device data from triggering the bar. The current 5-minute window is far too generous and causes the bar to appear long after any real activity.
+### 1. Database Migration
+Add column `manually_started` (boolean, default `false`) to `lesson_telematics`.
 
-Additionally, add a check that `current_session_id` corresponds to a `lesson_telematics` record whose `ended_at` is null — ensuring we only show truly in-progress sessions, not completed ones with stale device state.
+### 2. `src/hooks/useActiveSession.ts`
+Add `.eq("manually_started", true)` to the `lesson_telematics` query so the floating bar only appears for sessions the instructor explicitly started.
 
-### 2. `src/components/instructor/FloatingSessionBar.tsx`
-No structural changes needed — it already conditionally renders based on `hasActiveSession`. The fix in the hook will prevent false positives.
+### 3. `src/components/instructor/LovableTracker.tsx`
+When the instructor presses "Start Tracking," update the current `lesson_telematics` record to set `manually_started = true` (or create one with that flag if none exists).
 
-### Result
-The tracking bar will only appear when there is a genuinely active, recently-updated tracking session — not from stale GPS device records. Weather and other alerts remain unchanged.
+### What stays untouched
+- Weather alerts, driving alerts, all other banners
+- The `radius-poller` continues auto-creating sessions for background GPS logging
+- The GPS device data flow is unchanged
 
