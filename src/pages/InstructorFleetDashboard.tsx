@@ -48,7 +48,7 @@ const GENERAL_TABS: TabDef[] = [
   { id: "reports", icon: Mail, label: "Reports", category: "general" },
 ];
 
-// GEOTAB_TABS removed — Radius only
+
 
 export default function InstructorFleetDashboard() {
   const { instructor, subscription } = useInstructorAuth();
@@ -59,7 +59,7 @@ export default function InstructorFleetDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
 
   const { activeProvider } = useActiveTrackingProvider(instructor?.id);
-  const isGeotab = false; // Geotab removed — Radius only
+  
 
   const allTabs = GENERAL_TABS;
   const currentTabDef = allTabs.find(t => t.id === activeTab);

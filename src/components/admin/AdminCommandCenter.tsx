@@ -135,7 +135,7 @@ const settingsCategories = [
     bg: "bg-slate-500/10",
     links: [
       { key: "trackers", title: "GPS Trackers" },
-      { key: "geotab-fleet", title: "Geotab Fleet" },
+      
       { key: "pwa-apps", title: "PWA Config" },
       { key: "site-settings", title: "Site Settings" },
       { key: "activity-log", title: "Activity Log" },

@@ -132,7 +132,7 @@ const settingsCategories: SettingsCategory[] = [
     iconColor: "text-slate-500",
     links: [
       { key: "trackers", title: "GPS Trackers", description: "Assign and manage GPS trackers for instructors." },
-      { key: "geotab-fleet", title: "Geotab Fleet", description: "Fleet-wide Geotab overview, trip history & dashcam." },
+      
       { key: "pwa-apps", title: "PWA Configuration", description: "Mobile app settings and icons." },
       { key: "site-settings", title: "Site Settings & SEO", description: "Global configuration and metadata." },
       { key: "activity-log", title: "Activity Log", description: "Track all admin actions and changes." },
