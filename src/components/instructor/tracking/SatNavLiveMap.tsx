@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
-import { formatMph } from "@/lib/utils";
 import SpeedLimitRoundel from "@/components/instructor/SpeedLimitRoundel";
 
 interface SatNavLiveMapProps {
@@ -18,11 +17,15 @@ interface SatNavLiveMapProps {
   sessionId?: string | null;
   ignitionOn?: boolean | null;
   dailyDistanceKm?: number | null;
+  /** When true, fills parent container instead of using fixed height */
+  fullscreen?: boolean;
+  className?: string;
 }
 
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
+  fullscreen = false, className = "",
 }: SatNavLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -58,16 +61,30 @@ export function SatNavLiveMap({
     return () => { cancelled = true; };
   }, []);
 
+  // Wake lock for fullscreen mode
+  useEffect(() => {
+    if (!fullscreen) return;
+    let wakeLock: any = null;
+    let released = false;
+    async function acquire() {
+      try { if ("wakeLock" in navigator && !released) { wakeLock = await (navigator as any).wakeLock.request("screen"); } } catch {}
+    }
+    acquire();
+    const onVis = () => { if (document.visibilityState === "visible") acquire(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { released = true; document.removeEventListener("visibilitychange", onVis); wakeLock?.release?.().catch(() => {}); };
+  }, [fullscreen]);
+
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
     path: "M 0,-10 L -6,10 L 0,5 L 6,10 Z",
     fillColor: active ? "#3b82f6" : "#9ca3af",
     fillOpacity: 1,
     strokeColor: "white",
     strokeWeight: 2.5,
-    scale: 2.8,
+    scale: fullscreen ? 3.2 : 2.8,
     rotation: rotation,
     anchor: new google.maps.Point(0, 0),
-  }), []);
+  }), [fullscreen]);
 
   // Init map once SDK is ready
   useEffect(() => {
@@ -121,7 +138,7 @@ export function SatNavLiveMap({
     };
   }, [ready]);
 
-  // Load historical trail
+  // Load historical trail + subscribe to new GPS points for active sessions
   useEffect(() => {
     if (!ready || !mapRef.current || !sessionId || trailLoadedRef.current === sessionId) return;
     trailLoadedRef.current = sessionId;
@@ -145,11 +162,39 @@ export function SatNavLiveMap({
 
       polylineRef.current?.setPath(pathRef.current);
 
-      const bounds = new google.maps.LatLngBounds();
-      trail.forEach(pt => bounds.extend(pt));
-      mapRef.current.fitBounds(bounds, 40);
+      // Only fit bounds if not fullscreen (fullscreen auto-follows)
+      if (!fullscreen) {
+        const bounds = new google.maps.LatLngBounds();
+        trail.forEach(pt => bounds.extend(pt));
+        mapRef.current.fitBounds(bounds, 40);
+      }
     })();
-  }, [ready, sessionId]);
+
+    // Subscribe to realtime GPS points for live trail updates
+    const channel = supabase
+      .channel(`satnav_trail_${sessionId}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "telematics_gps_points",
+        filter: `telematics_id=eq.${sessionId}`,
+      }, (payload) => {
+        const p = payload.new as any;
+        if (!Number.isFinite(p.latitude) || !Number.isFinite(p.longitude)) return;
+        const newPt = new google.maps.LatLng(p.latitude, p.longitude);
+        const lastPt = pathRef.current[pathRef.current.length - 1];
+        const shouldAdd = !lastPt ||
+          Math.abs(lastPt.lat() - p.latitude) > 0.000005 ||
+          Math.abs(lastPt.lng() - p.longitude) > 0.000005;
+        if (shouldAdd) {
+          pathRef.current.push(newPt);
+          polylineRef.current?.setPath(pathRef.current);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [ready, sessionId, fullscreen]);
 
   // Update marker, polyline, heading-up rotation, and auto-follow
   useEffect(() => {
@@ -168,7 +213,6 @@ export function SatNavLiveMap({
     // Update or create arrow marker
     if (markerRef.current) {
       markerRef.current.setPosition(pos);
-      // In heading-up mode the marker arrow should point up (0) since the map rotates
       markerRef.current.setIcon(getArrowIcon(0, isActive));
     } else {
       markerRef.current = new google.maps.Marker({
@@ -192,9 +236,13 @@ export function SatNavLiveMap({
     map.panTo(pos);
   }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
+  const containerStyle = fullscreen
+    ? { height: "100%", width: "100%" }
+    : { height: "55vh", minHeight: 320 };
+
   return (
-    <div className="rounded-2xl border bg-card text-card-foreground shadow-sm overflow-hidden">
-      <div className="relative" style={{ height: "55vh", minHeight: 320 }}>
+    <div className={`${fullscreen ? "" : "rounded-2xl border bg-card text-card-foreground shadow-sm"} overflow-hidden ${className}`}>
+      <div className="relative" style={containerStyle}>
         {/* Map canvas */}
         <div ref={mapDivRef} className="absolute inset-0 z-0" />
 
@@ -228,7 +276,7 @@ export function SatNavLiveMap({
                 {/* Speed readout */}
                 <div className="flex items-end gap-2.5">
                   <div className="text-center">
-                    <span className={`text-4xl font-bold tabular-nums leading-none ${isOverSpeed ? "text-red-600 animate-pulse" : "text-foreground"}`}>
+                    <span className={`${fullscreen ? "text-5xl" : "text-4xl"} font-bold tabular-nums leading-none ${isOverSpeed ? "text-red-600 animate-pulse" : "text-foreground"}`}>
                       {speedMph ?? 0}
                     </span>
                     <p className="text-[10px] font-medium text-muted-foreground mt-0.5">mph</p>
@@ -237,7 +285,7 @@ export function SatNavLiveMap({
                     <SpeedLimitRoundel
                       speedLimit={speedLimitKmh}
                       isExceeding={isOverSpeed}
-                      size="sm"
+                      size={fullscreen ? "md" : "sm"}
                     />
                   )}
                 </div>
