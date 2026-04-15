@@ -124,8 +124,7 @@ export function ActivityTilesGrid({
             style={{
               backgroundColor: "#FFFFFF",
               borderRadius: 16,
-              border: "0.5px solid #E5E5EA",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+              boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
               fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
             }}
           >
