@@ -37,6 +37,8 @@ interface NormalisedPosition {
   timestamp: string | null;
   speed_limit_kmh: number | null;
   odometer: number | null;
+  battery_voltage: number | null;
+  engine_hours: number | null;
   _source: string;
 }
 
@@ -76,6 +78,12 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
   if (items.length > 0) {
     console.log("[RadiusPoller] First item keys:", Object.keys(items[0]).join(", "));
     console.log("[RadiusPoller] First item sample:", JSON.stringify(items[0]).substring(0, 500));
+    // Diagnostic: log full OBD-II objects to discover available fields
+    const first = items[0];
+    console.log("[OBD] telemetry:", JSON.stringify(first.telemetry || null));
+    console.log("[OBD] counters:", JSON.stringify(first.counters || null));
+    console.log("[OBD] io:", JSON.stringify(first.io || null));
+    console.log("[OBD] state:", JSON.stringify(first.state || null));
   }
 
   const positions: NormalisedPosition[] = items
@@ -141,6 +149,11 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
       const posId = String(origin.name || origin.id || item.originId || item.imei || asset.id || item.assetId || "");
       const assetName = asset.name || item.assetName || null;
 
+      // Extract OBD-II diagnostics from telemetry/counters
+      const counters = item.counters || {};
+      const batteryVoltage: number | null = telemetry.power_voltage ?? telemetry.ext_voltage ?? telemetry.battery ?? null;
+      const engineHours: number | null = telemetry.hours_00_counter ?? counters.hours ?? null;
+
       return {
         id: posId,
         name: assetName,
@@ -154,7 +167,9 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         town,
         timestamp,
         speed_limit_kmh: speedLimitKmh,
-        odometer: telemetry.odometer ?? telemetry.odo_counter ?? null,
+        odometer: telemetry.odometer ?? telemetry.odo_counter ?? counters.odometer ?? null,
+        battery_voltage: batteryVoltage,
+        engine_hours: engineHours,
         _source: "export_stream",
       };
     });
@@ -371,6 +386,8 @@ async function fetchPositionsLegacy(token: string, customerId: string): Promise<
       timestamp: pos.timestamp || pos.datetime || pos.date_time || null,
       speed_limit_kmh: null,
       odometer: null,
+      battery_voltage: null,
+      engine_hours: null,
       _source: "legacy",
     };
   });
@@ -552,6 +569,8 @@ Deno.serve(async (req) => {
           last_heartbeat_at: new Date().toISOString(),
           device_name: device.device_name || pos.name || pos.registration || null,
           ...(pos.odometer != null ? { last_ecu_odometer_km: pos.odometer } : {}),
+          ...(pos.battery_voltage != null ? { last_battery_voltage: pos.battery_voltage } : {}),
+          ...(pos.engine_hours != null ? { last_engine_hours: pos.engine_hours } : {}),
           ...dailyStartUpdates,
         })
         .eq("id", device.id);
