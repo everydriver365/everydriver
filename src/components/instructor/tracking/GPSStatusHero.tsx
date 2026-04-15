@@ -102,10 +102,10 @@ export function GPSStatusHero({
                       <span>
                         <span className="uppercase font-semibold">{trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
                         {" · "}
-                        {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
+                        {isParked ? (roadName || cleanDeviceName || "Ignition Off") : (cleanDeviceName || "GPS Tracker")}
                       </span>
                     ) : (
-                      isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")
+                      isParked ? (roadName || cleanDeviceName || "Ignition Off") : (cleanDeviceName || "GPS Tracker")
                     )}
                   </p>
                 )}
