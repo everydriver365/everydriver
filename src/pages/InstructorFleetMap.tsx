@@ -58,12 +58,14 @@ export default function InstructorFleetMap() {
   const [devices, setDevices] = useState<FleetDevice[]>([]);
   const devicesRef = useRef<FleetDevice[]>([]);
   const [showSignalLost, setShowSignalLost] = useState(true);
+  const [autoFollow, setAutoFollow] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const prevSpeedingRef = useRef<Map<string, boolean>>(new Map());
+  const userInteractedRef = useRef(false);
   const [colleagueIds, setColleagueIds] = useState<string[] | null>(null);
 
   // Keep devicesRef in sync with latest state for closure-safe access
