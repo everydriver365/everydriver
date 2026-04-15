@@ -315,17 +315,26 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
 
       {/* Multi-day infinite list */}
       <div className="divide-y divide-border/40">
-        {dayData.map(({ day, dateStr, timeline, allDay }) => {
+        {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
+          const prevDay = idx > 0 ? dayData[idx - 1].day : null;
+          const showMonthHeader = !prevDay || day.getMonth() !== prevDay.getMonth();
           const today = isToday(day);
           const isEmpty = timeline.length === 0 && allDay.length === 0;
 
           return (
-            <div
-              key={dateStr}
-              id={`schedule-day-${dateStr}`}
-              ref={today ? todayRef : undefined}
-              className="flex min-h-[72px]"
-            >
+            <div key={dateStr}>
+              {showMonthHeader && (
+                <div className="px-4 py-2.5 bg-muted/50 border-b border-border/40">
+                  <span className="text-[13px] font-bold text-foreground">
+                    {format(day, "MMMM yyyy")}
+                  </span>
+                </div>
+              )}
+              <div
+                id={`schedule-day-${dateStr}`}
+                ref={today ? todayRef : undefined}
+                className="flex min-h-[72px]"
+              >
               {/* Date column */}
               <div className="w-14 shrink-0 flex flex-col items-center pt-3 pb-2">
                 <span className={`text-[11px] font-semibold uppercase tracking-wide ${today ? "text-[#1a73e8]" : "text-muted-foreground"}`}>
@@ -456,6 +465,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     No events
                   </div>
                 )}
+              </div>
               </div>
             </div>
           );
