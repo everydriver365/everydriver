@@ -17,7 +17,7 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
     s.dataset.googleMaps = "1";
     s.async = true;
     s.defer = true;
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=visualization`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=visualization,marker`;
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("Google Maps script failed to load"));
     document.head.appendChild(s);
