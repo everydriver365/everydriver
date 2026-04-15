@@ -59,42 +59,42 @@ export default function InstructorNotifications() {
     <div className="min-h-screen bg-primary">
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
-      <div className="bg-background min-h-screen px-4 py-4 space-y-4">
+      <div className="bg-background min-h-screen px-4 py-4 space-y-4" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
         {/* Messages tile - always visible */}
         <button
           onClick={() => navigate("/instructor/messages")}
-          className="w-full flex items-center gap-3 rounded-xl border bg-card p-4 text-left hover:bg-muted/50 transition-colors"
+          className="w-full flex items-center gap-3 rounded-[10px] border border-border/40 bg-card px-4 py-3 text-left active:bg-muted/50 transition-colors"
         >
-          <div className="h-10 w-10 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="h-5 w-5" />
+          <div className="h-[29px] w-[29px] rounded-[7px] bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="h-3.5 w-3.5 text-purple-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Messages</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[15px] font-semibold">Messages</p>
+            <p className="text-[13px] text-muted-foreground">
               {messageCount > 0 ? `${messageCount} unread` : "No unread messages"}
             </p>
           </div>
           {messageCount > 0 && (
-            <Badge variant="destructive" className="text-xs">{messageCount}</Badge>
+            <Badge variant="destructive" className="text-[10px]">{messageCount}</Badge>
           )}
         </button>
 
         {/* Quick counts */}
         {quickCards.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="bg-card rounded-[10px] border border-border/40 divide-y divide-border/40 overflow-hidden">
             {quickCards.map(card => (
               <button
                 key={card.label}
                 onClick={() => navigate(card.path)}
-                className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-muted/50 transition-colors"
               >
-                <div className={cn("h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0", card.color)}>
-                  <card.icon className="h-4 w-4" />
+                <div className="h-[29px] w-[29px] rounded-[7px] bg-muted flex items-center justify-center flex-shrink-0">
+                  <card.icon className="h-3.5 w-3.5 text-foreground" />
                 </div>
-                <div>
-                  <p className="text-lg font-bold leading-tight">{card.count}</p>
-                  <p className="text-[11px] text-muted-foreground">{card.label}</p>
+                <div className="flex-1">
+                  <p className="text-[15px] font-medium">{card.label}</p>
                 </div>
+                <Badge variant="destructive" className="text-[10px]">{card.count}</Badge>
               </button>
             ))}
           </div>
@@ -129,13 +129,13 @@ export default function InstructorNotifications() {
         </div>
 
         {/* Notification list */}
-        <div className="space-y-1">
+        <div className="bg-card rounded-[10px] border border-border/40 divide-y divide-border/40 overflow-hidden">
           {loading ? (
-            <div className="py-12 text-center text-muted-foreground text-sm">Loading…</div>
+            <div className="py-12 text-center text-muted-foreground text-[13px]">Loading…</div>
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center">
               <Bell className="h-10 w-10 mx-auto mb-3 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 {filter === "unread" ? "No unread notifications" : "No notifications yet"}
               </p>
             </div>
@@ -148,20 +148,20 @@ export default function InstructorNotifications() {
                   key={n.id}
                   onClick={() => handleClick(n)}
                   className={cn(
-                    "w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors",
-                    !n.is_read ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/50"
+                    "w-full flex items-start gap-3 px-4 py-3 text-left transition-colors",
+                    !n.is_read ? "bg-primary/5 active:bg-primary/10" : "active:bg-muted/50"
                   )}
                 >
-                  <div className={cn("h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0", color)}>
-                    <Icon className="h-4 w-4" />
+                  <div className={cn("h-[29px] w-[29px] rounded-[7px] flex items-center justify-center flex-shrink-0", color)}>
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium truncate">{n.title}</p>
+                      <p className="text-[15px] font-medium truncate">{n.title}</p>
                       {!n.is_read && <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
-                    <p className="text-[10px] text-muted-foreground/70 mt-1">
+                    <p className="text-[13px] text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
+                    <p className="text-[11px] text-muted-foreground/70 mt-1">
                       {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                     </p>
                   </div>
